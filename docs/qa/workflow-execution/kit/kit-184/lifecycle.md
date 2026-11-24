@@ -278,3 +278,27 @@ characters; no job ran.
   (VAL-54); a file worse on the head is a result and is reported, not re-run.
 - The account before sending (`gh run list`): 13 runs not completed, 51 jobs in progress, none queued; two full
   suites of other tickets were finishing (7 jobs left between them) and none was queued.
+
+## F and the last runs: what came back (2026-11-24)
+
+- **F was sent once** (run 45402062487, request `k184-f-full-0a511795`, head 0a511795 against staging 8cb536cc) and ran
+  in one attempt; every job succeeded. 1,268.4 job-minutes (84.56 core-hours): **188.4 above row F's ceiling of 1,080**
+  (the declaration above allowed for up to 120). By ticket section 11 it is not repeated or split, and its times go to
+  the owner. The ticket's ceiling is not reached (205.2 of 303.33 core-hours used).
+- **Result** (`f/summary.md`, `f/compare.tsv`): 466 files; 455 `same`; the new file passes (493, 0 failed); this
+  ticket's other test files pass with more expectations; check identical on both sides. **One file is worse on the
+  head**: `test-gui-entry-proteomics.R`, lane `prot_dia_limpa`, four expectations (the steps `summary_save`,
+  `summary_copy`, `summary_report`, `summary_export`). The stored reference
+  `tests/testdata/gui-entry/prot_dia_limpa.json` lists the files of the proteomics integration input, and with RUV
+  applied the head writes one more, `integration/proteomics/removed_proteomics.parquet` (`f/moved-references.txt`).
+  That is this ticket's intended change (ticket 7.2). When the ticket was written no GUI-entry reference listed a
+  Parquet file (ticket 8.5); KIT-199 re-froze this one on staging since (bf2b04d7). Ticket 8.5 foresees the case ("any
+  reference its full suite finds moved (a capture that lists an integration input's files ...), with its size ... on
+  merge"). The implementer's brief forbids re-recording a stored reference unless the ticket names the file, and the
+  ticket names the kind, not the file: **not re-recorded; for the coordinator.** Its size: one artifact entry in each
+  of four steps.
+- The same file name appears in the failure messages of four captures that fail on the base already (`trx_main`,
+  `trx_managed` in `test-omic-summary-module.R` and `test-omics-summary-core.R`): their references are stale on
+  staging for other reasons; when they are re-frozen they will list `removed_transcriptomics.parquet`.
+- **The same file on ubuntu-24.04** (45401782250): 493 passed, 0 failed. **Gate off at the final head** (45463933843):
+  pages identical to staging's.

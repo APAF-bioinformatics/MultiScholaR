@@ -3,3 +3,6 @@ ubuntu-22.04 (run-tests, the reference)	45325536775	939a9d10	test-integration-re
 ubuntu-22.04 (the installed bundle)	45332726284	83f745ee	test-integration-removed-factors.R	439	0	0	3	passed	largest principal angle to the reference's factors at most 1e-8; IDs and directions identical; pvalue, p.adjust, correlation and effect within 1e-6
 windows-2025 (the installed bundle)	45332726284	83f745ee	test-integration-removed-factors.R	439	0	0	3	passed	the same
 ubuntu-24.04 (the installed bundle)	45336831513	5e5df9b9	test-integration-removed-factors.R	439	0	0	3	passed	the same
+ubuntu-22.04 (the installed bundle; after VAL-160)	45398091058	f8a2085c	test-integration-removed-factors.R	493	0	0	3	passed (the block asks for the adjusted form by name; the reference is unchanged)	the same
+windows-2025 (the installed bundle; after VAL-160)	45398091058	f8a2085c	test-integration-removed-factors.R	493	0	0	3	passed	the same
+ubuntu-24.04 (the installed bundle; after VAL-160)	45401782250	ccbbafee	test-integration-removed-factors.R	493	0	0	3	passed	the same
