@@ -1,0 +1,23 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+23:32:22 KIT-231 G0: start; package root /home/runner/work/MultiScholaR/MultiScholaR/pkg ; out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-231/g0-out 
+
+23:32:32 KIT-231 G0: attached 72 ; not installed 3 
+23:32:32 KIT-231 G0: part P: primitives 
+23:32:32 KIT-231 G0: fixture and DA result 
+[1] "Read globalParameters: number_of_cpus = 8"
+[1] "Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = Run, Precursor.Id, Protein.Group, Protein.Ids, Stripped.Sequence, Modified.Sequence, Precursor.Charge, Precursor.Quantity, Precursor.Normalised"
+[1] "Read plotRle: yaxis_limit = -3, 3"
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+Error in ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x),  : 
+  could not find function "ProteinQuantitativeData"
+Calls: kit200Object
+Execution halted

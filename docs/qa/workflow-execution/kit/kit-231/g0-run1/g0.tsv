@@ -1,0 +1,19 @@
+part	file	line	chunk	expression	line_text	value	class	condition_class	condition_message	condition_call	messages	warnings	files_created	note
+P				list(a = 1)$de_output_dir		NULL	NULL						none	
+P				file.path(NULL)		character(0)	character						none	
+P				file.path(NULL, "x")		character(0)	character						none	
+P				file.exists(character(0))		logical(0)	logical						none	
+P				logical(0) && TRUE		NA	logical						none	
+P				logical(0) && FALSE		FALSE	logical						none	
+P				if (file.exists(character(0)) && !FALSE) 1				simpleError,error,condition	missing value where TRUE/FALSE needed	if (file.exists(character(0)) && !FALSE) 1			none	
+P				if (file.exists(character(0)) && !TRUE) 1		NULL	NULL						none	
+P				dir.create(character(0))				simpleError,error,condition	invalid 'path' argument	dir.create(character(0))			none	
+P				ggplot2::ggsave(character(0), p)				rlang_error,error,condition	`filename` must be a single string, not an empty character vector.	ggplot2::ggsave(character(0), p)			none	
+P				ggplot2::ggsave(png_path, plot = NULL)		"/tmp/Rtmpk91nni/kit231-scratch-4cc2138fedd1/kit231-null-plot.png"	character				Saving 7 x 7 in image		<scratch>/kit231-null-plot.png	
+P				grDevices::png(character(0))				simpleError,error,condition	'filename' must be a non-empty character string	grDevices::png(character(0))			none	
+P				grDevices::pdf(character(0))		NULL	NULL						<wd>/NA	device opened: pdf 2; closed with dev.off()
+P				saveRDS(1, character(0))				simpleError,error,condition	'file' must be a non-empty character string	base::saveRDS(object, file = file, ascii = ascii, version = version, compress = compress, refhook = refhook)			none	
+P				vroom::vroom_write(data.frame(a = 1), character(0))				simpleError,error,condition	argument is of length zero	if (is_url(path)) {     ext <- tolower(tools::file_ext(path))     if (ext %in% c("gz", "bz2", "xz", "zip")) {         cli::cli_abort("Remote compressed files must be handled upstream of this function.", .internal = TRUE)     }     if (requireNamespace("curl", quietly = TRUE)) {         con <- curl::curl(path)     }     else {         inform("`curl` package not installed, falling back to using `url()`")         con <- url(path)     }     return(con) }			none	
+P				writexl::write_xlsx(data.frame(a = 1), character(0))				simpleError,error,condition	is.character(path) && length(path) is not TRUE	writexl::write_xlsx(data.frame(a = 1), character(0))			none	
+P				createDAResultsForEnrichment(contrasts_tbl = NULL, design_matrix = NULL, de_output_dir = stop("evaluated"))				simpleError,error,condition	unused argument (de_output_dir = stop("evaluated"))	createDAResultsForEnrichment(contrasts_tbl = NULL, design_matrix = NULL, de_output_dir = stop("evaluated"))			none	
+P				fs::dir_copy(<system.file('workbooks','proteomics')>, <dst>, overwrite = TRUE)		dst/DIA_workflow_starter.rmd first line now: '---' (shipped first line: '---'); user's own file kept: TRUE; nested <dst>/proteomics exists: FALSE; files in dst: 6; files in src: 5								dst listing: DIA_workflow_experienced.rmd; DIA_workflow_limpa_experienced.rmd; DIA_workflow_limpa_starter.rmd; DIA_workflow_limpa.rmd; DIA_workflow_starter.rmd; kit231_user_notes.txt
