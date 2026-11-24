@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-201 R1: failing-first run of the tests-only commit (new test file and the two rewritten contract files); family.tsv check",
+  "label": "KIT-201 R1 tests-only ed56c7a6",
+  "package_commit": "ed56c7a6062b7778afa7663428da926d254c1ae1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit201-treat-moderation.R",
+    "test-prot-ruv-factors-in-model.R",
+    "test-omic-norm-ruv-design.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-201/m1-sim.R",
+      "args": [
+        "family",
+        "r1-family"
+      ],
+      "out": "r1-family",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
