@@ -1,0 +1,110 @@
+{
+  "requested_by": "KIT-210 blind lifecycle L1a: proteomics part A reps 401-403 with E7 fault, E1, E1'', scorer scale test; enumerated outputs only (declaration-draft 6)",
+  "label": "KIT-210 L1a (blind) BOUND_COMMIT",
+  "package_commit": "BOUND_COMMIT",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "A",
+        "P0,P0r,P1,P2,P3,P4,P5,P0lo,P0hi",
+        "401",
+        "403",
+        "k210-l1a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "l1a",
+        "K210_LIFECYCLE": "1",
+        "K210_PRIVATE": "k210-private/l1a",
+        "K210_FAULT": "1"
+      },
+      "timeout_minutes": 150,
+      "out": "k210-l1a",
+      "out_pattern": "^(status|hashes|checks|timing)-l1a\\.tsv$|^provenance-l1a\\.json$"
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "P0,P0r,P1,P2,P3,P4,P5,P0lo,P0hi",
+        "401",
+        "403",
+        "k210-private/e1-185/a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "e1-185/a"
+      },
+      "timeout_minutes": 90
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "A",
+        "P0,P0r,P1,P2,P3,P4,P5,P0lo,P0hi",
+        "401",
+        "403",
+        "k210-private/e1-210/a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "e1-210/a",
+        "K210_CANDIDATES": "off",
+        "K210_SEED_BASE": "185000000"
+      },
+      "timeout_minutes": 90
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
+      "args": [
+        "--compare-e1",
+        "k210-private/e1-185",
+        "k210-private/e1-210",
+        "k210-l1a"
+      ],
+      "env": {},
+      "out": "k210-l1a",
+      "out_pattern": "^check-e1\\.tsv$",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
+      "args": [
+        "--k185",
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k210-l1a"
+      ],
+      "env": {},
+      "out": "k210-l1a",
+      "out_pattern": "^check-e1pp\\.tsv$",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
+      "args": [
+        "--scale",
+        "k210-private/scale",
+        "k210-l1a"
+      ],
+      "env": {},
+      "out": "k210-l1a",
+      "out_pattern": "^check-scale\\.tsv$",
+      "timeout_minutes": 120
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
