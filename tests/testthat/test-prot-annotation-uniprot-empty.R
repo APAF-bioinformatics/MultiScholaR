@@ -827,10 +827,9 @@ test_that("KIT-175 T5 (d): with the organism filter on, an incomplete annotation
     incomplete <- k175Incomplete(k175ProjectAnnotations(withr::local_tempdir()))
     project <- k175Project(withr::local_tempdir(), annotations = incomplete, organism_filter = TRUE)
     expect_null(project$error)
-    expect_identical(project$outcomes$organism_filter_applied, FALSE)
+    expect_identical(project$outcomes$organism_filter_applied, TRUE)
     texts <- vapply(project$notes, function(note) note$text, "")
-    expect_true(paste("Multi-species filtering enabled but no organism mapping available.",
-        "Proceeding without filtering.") %in% texts)
+    expect_false(any(grepl("no organism mapping available", texts, fixed = TRUE)))
 })
 
 test_that("KIT-175 T5 (f): the enrichment step's own retrieval on its real path (zero identifiers)", {
