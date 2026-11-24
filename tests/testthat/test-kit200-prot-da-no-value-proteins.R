@@ -667,20 +667,31 @@ test_that("KIT-200 T8: the declared designs (factors in the model, and none) com
     }
 })
 
-test_that("KIT-200 T9: the scripted wrapper daAnalysisWrapperFunction completes on T2's object", {
-    # The wrapper's RLE, PCA and value-count plots are not this ticket's subject; they are replaced so that the test
-    # observes the DA it runs (runTestsContrasts).
+test_that("KIT-200 T9: the scripted wrapper daAnalysisWrapperFunction's DA step completes on T2's object", {
+    # The owner's decision VAL-180 (option (a)): T9 asserts only that the wrapper's differential-abundance step
+    # (runTestsContrasts) completes and reports the protein without values as not tested. The wrapper's later steps stop
+    # on any data (R/func_prot_da_model_wrapper.R:272-275, a list nested one level too deep for getSignificantData); that
+    # defect has its own ticket. The wrapper's RLE, PCA and value-count plots are replaced: they precede the DA step.
+    run_tests <- get("runTestsContrasts", envir = asNamespace("MultiScholaR"))
+    seen <- new.env(parent = emptyenv())
     testthat::local_mocked_bindings(plotRle = function(...) ggplot2::ggplot(), plotPca = function(...) ggplot2::ggplot(),
-        plotNumOfValuesNoLog = function(...) ggplot2::ggplot(), .package = "MultiScholaR")
+        plotNumOfValuesNoLog = function(...) ggplot2::ggplot(), runTestsContrasts = function(...) {
+            seen$value <- tryCatch(run_tests(...), error = function(e) {
+                seen$error <- conditionMessage(e)
+                stop(e)
+            })
+            seen$value
+        }, .package = "MultiScholaR")
     x <- kit200AddRow(kit200SetScatter(kit200Matrix()), "P_empty")
     object <- kit200Object(x, kit200Design())
-    run <- tryCatch(list(value = kit200Quiet(daAnalysisWrapperFunction(object,
+    try(kit200Quiet(daAnalysisWrapperFunction(object,
         contrasts_tbl = data.frame(contrasts = "groupB-groupA", full_format = "B_vs_A=groupB-groupA", stringsAsFactors = FALSE),
         formula_string = "~ 0 + group",
-        treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Ids"))),
-        error = function(e) list(error = conditionMessage(e)))
-    if (!kit200Completed(run, "T9 error")) return(invisible())
-    kit200ExpectUntested(run$value$contrasts_results$results, "P_empty")
+        treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Ids")), silent = TRUE)
+    if (!kit200Completed(list(error = seen$error), "T9 DA step error")) return(invisible())
+    expect_false(is.null(seen$value))
+    expect_identical(seen$value$features_without_values, "P_empty")
+    kit200ExpectUntested(seen$value$results, "P_empty")
 })
 
 test_that("KIT-200 T10: T6's chain is recorded and replayed to the same DA tables", {
