@@ -99,6 +99,14 @@
    accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
    has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
    annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
+ * Proteomics: when the protein table built in a script already carries gene names and the protein annotation is also
+   present, the differential analysis tables lost every gene name (the two name columns collided); they now take the
+   annotation's name and fall back to the table's own. On the g:Profiler enrichment route, a comparison in which no
+   protein has a gene name is now refused with a message instead of being saved as a run with no terms, and a
+   direction (up or down) whose proteins all lack gene names is reported as not tested instead of being sent empty.
+   An analysis record of such a run made before this change no longer replays; it is refused with the same message.
+   The first change does not affect data imported in the application, whose names come from the annotation; the
+   second changes only runs in which a comparison, or one direction of it, has no protein with a gene name (KIT-208).
 
 ### Scientific changes
 
