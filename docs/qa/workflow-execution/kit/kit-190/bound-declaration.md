@@ -1,4 +1,12 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 7
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 8
+
+**Revision 8 (2026-11-25): the diff check of revision 7 applied, and nothing else.** `reestimate.R`'s `writeEstimate`
+prints each value with `sprintf("%.10g")`, unpadded, so a stage-2 job covering some cells writes exactly the lines
+stage 1's full table holds for those cells (S1's check is then equivalent to byte for byte per line). Added lifecycle
+run **(xi-b)**: `effect.R bound stage2` on N-w and E-w only (`K190_CELLS = N-w,E-w`), with the same plan and stage-1
+estimate as (xi); it must pass the S1 check. SHA-256: `reestimate.R` f8f60d2aa3eff0592a834736584f72df0d3e456fa51a026a841f0c712da6906b;
+`effect.R`, `decide.R`, `lc-plan.tsv`, `size2stage.py` unchanged from revision 7.
+
 
 **Revision 7 (2026-11-25): the script check of revision 6 (S1 to S7) applied.** Files and SHA-256:
 - `effect.R`: 7d76467a37c9fcf890a557efa0ba8b26498052301f18f15f9231f87177cc5b5a

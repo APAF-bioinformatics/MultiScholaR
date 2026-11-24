@@ -50,8 +50,11 @@ estimate <- function(capped) {
   res
 }
 
-writeEstimate <- function(res, path) utils::write.table(format(res, digits = 10), path, sep = "\t", quote = FALSE,
-  row.names = FALSE)
+writeEstimate <- function(res, path) {
+  # Each value printed alone, unpadded, so a job covering some cells writes the same lines as one covering all.
+  res$value <- sprintf("%.10g", res$value)
+  utils::write.table(res, path, sep = "\t", quote = FALSE, row.names = FALSE)
+}
 
 plan <- function(est, prov, spent) {
   z <- stats::qnorm(0.95)
