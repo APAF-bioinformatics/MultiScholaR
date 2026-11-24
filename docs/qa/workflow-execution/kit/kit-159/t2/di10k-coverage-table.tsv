@@ -1,0 +1,17 @@
+regime	method	class	form	design	transform	n	level	status	coverage	mc_se	source	statistic	coverage_min	coverage_max	failed_condition	failed_side	zero_width	effect	half_width_ratio	se_inflation	generator
+C4e	jackknife	accuracy	block	NA	NA	5	0.95	conservative	0.9555	0.00461084319837489	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.9555	0.988	NA	NA	0	NA	1.40287168561955	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.975	conservative	0.9775	0.00331615364541512	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.9775	0.9955	NA	NA	0	NA	1.54438179158166	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.983333333333333	conservative	0.9855	0.00267298989897081	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.9855	0.9965	NA	NA	0	NA	1.63846775665881	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.9875	conservative	0.9885	0.00238408787589719	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.9885	0.9975	NA	NA	0	NA	1.71073170720305	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.991666666666667	conservative	0.993	0.00186426929385215	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.993	0.998	NA	NA	0	NA	1.82092406743383	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.99375	pass	0.994	0.0017268468374468	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.994	0.998	NA	NA	0	NA	1.90542963927438	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.995833333333333	conservative	0.996	0.00141138230115019	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.996	0.999	NA	NA	0	NA	2.03414476478628	0.99032319191106	fixed_onedir
+C4e	jackknife	accuracy	block	NA	NA	5	0.996666666666667	pass	0.996	0.00141138230115019	harness	mae@matrix4840acc_block, bias@matrix4840acc_block	0.996	0.999	NA	NA	0	NA	2.11009546179906	0.99032319191106	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.95	pass	0.9825	0.00293204280323463	harness	rej@matrix4840acc_block	0.9825	0.9825	NA	NA	0	NA	1.85702114814951	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.975	pass	0.9875	0.00248432586429397	harness	rej@matrix4840acc_block	0.9875	0.9875	NA	NA	0	NA	2.04434209998158	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.983333333333333	pass	0.9895	0.00227922684259377	harness	rej@matrix4840acc_block	0.9895	0.9895	NA	NA	0	NA	2.16888636777409	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.9875	pass	0.992	0.0019919839356782	harness	rej@matrix4840acc_block	0.992	0.992	NA	NA	0	NA	2.2645442143078	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.991666666666667	pass	0.995	0.00157718102955875	harness	rej@matrix4840acc_block	0.995	0.995	NA	NA	0	NA	2.41040897543362	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.99375	pass	0.9955	0.00149662119455792	harness	rej@matrix4840acc_block	0.9955	0.9955	NA	NA	0	NA	2.52227140423092	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.995833333333333	pass	0.9965	0.00132055859392909	harness	rej@matrix4840acc_block	0.9965	0.9965	NA	NA	0	NA	2.69265527654976	1.3109189740825	fixed_onedir
+C4e	jackknife	threshold_count	block	NA	NA	5	0.996666666666667	pass	0.9965	0.00132055859392909	harness	rej@matrix4840acc_block	0.9965	0.9965	NA	NA	0	NA	2.79319337423553	1.3109189740825	fixed_onedir

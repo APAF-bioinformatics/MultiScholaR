@@ -1,0 +1,27 @@
+== test-repair.R :: R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I15: G1(a) does not admit limpa_da_last_digits without its ruling and G1D's digest (1 not passed)
+Expected `valReadChain(...)` to throw a error with class <val_spec_invalid>.
+
+== test-repair.R :: R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair3.R :: R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes (1 not passed)
+Error in `valClassifyLiveDiffs(diffs, steps)`: could not find function "valClassifyLiveDiffs"
+
+== test-repair3.R :: R-D19: limpa_da_last_digits is admitted only once KIT-199's merge is in the commit under test (3 not passed)
+Expected `msrval:::valG1aClasses(list(ruling = "KIT-199 merged", digest = "8a4c2dd5ab"))` to throw a error with class <val_spec_invalid>.
+

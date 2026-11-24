@@ -1,0 +1,50 @@
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E14 (audit I01): after a second enrichment run the export proceeds and the Summary's refresh writes (fails before)
+kind: failure
+message:
+  Expected `recorder$calls` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E14 (audit I01): after a second enrichment run the export proceeds and the Summary's refresh writes (fails before)
+kind: failure
+message:
+  Expected `log$errors` to have length 0.
+  Actual length: 1.
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E14 (audit I01): after a second enrichment run the export proceeds and the Summary's refresh writes (fails before)
+kind: failure
+message:
+  Expected `error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <prot_norm_correlation_input_stale/rlang_error/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E14 (audit I01): after a second enrichment run the export proceeds and the Summary's refresh writes (fails before)
+kind: failure
+message:
+  Expected `added` to have length 1.
+  Actual length: 0.
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E14 (audit I01): after a second enrichment run the export proceeds and the Summary's refresh writes (fails before)
+kind: failure
+message:
+  Expected `recorder$calls` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E11b (audit I02): a Save refused at a stale head removes the earlier proteomics integration input (fails before)
+kind: failure
+message:
+  Expected `dir.exists(input)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+

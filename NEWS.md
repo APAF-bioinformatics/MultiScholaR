@@ -30,6 +30,22 @@
 
 ### Fixes
 
+ * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
+   Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
+   example after a quality-control step was reverted or applied again following normalisation. Before, the session
+   file named that table as current while carrying the earlier normalisation's results. 'Export S4 compatibility RDS',
+   which runs only in a guarded diagnostic session, refuses in the same case. The session export now takes its results
+   file and its statement of whether RUV was applied from the normalisation that was run, not from the current RUV
+   setting; a missing file is reported plainly and no longer blocks the next steps until the application is restarted.
+   A Summary save refused because the current table is not the normalisation tab's last result also removes the
+   proteomics input that the Integration tab reads from an earlier save, as in the other omics. Exports made at the
+   end of the normalisation tab, and projects reopened from them, are unchanged, except that the session file now
+   states the RUV mode of the run: on DIA with limpa the RUV covariates step's mode, and 'none' where the chosen rule
+   applied no RUV, rather than the RUV setting shown. In a session file exported before this version, the 'RUV Mode'
+   line of filtered_session_summary.txt is the setting shown at export. The RUV the run applied is in the project's
+   analysis_record.json (the normalisation step's ruv_applied) and in the normalisation tab's RUV summary. No result,
+   report or Methods text used that line (KIT-206).
+
  * Lipidomics and metabolomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or
    'covariate contains NA or infinite values') when an assay holds a feature with no value in any sample. Examples are a
    feature below the detection limit everywhere, which the intensity filter keeps, or a feature measured only in samples
@@ -157,8 +173,17 @@
 
 ### Scientific changes
 
+ * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
+   those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
+   Before, it also held proteins that could not be tested (no value in a compared group, or none in the analysed
+   samples), which can make a term look more or less enriched than it is (in a worked example, a term of 50 proteins
+   none of which was untested, 300 of 3,000 proteins untested and lists of 150 drawn with no real change, a test at the
+   5 % level called the term on 5.6 % of lists). Comparisons in which every protein was tested give the same results
+   as before. Analyses recorded before this change replay with the earlier background, and their reports describe it
+   (KIT-205).
+
  * Gene Ontology enrichment for organisms outside g:Profiler's set now calls a term significant by its
-   Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins, including terms with none of the
+   Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins, including terms with none of the
    listed proteins. The earlier flag, Storey's q-value over the terms with at least one listed protein, is still
    offered; in simulations at a cutoff of 0.05 it called terms on up to 42.9 % of random protein lists without parent
    terms and up to 22.9 % with them. Analyses recorded before this change replay with the q-value, unchanged (KIT-203).

@@ -1,0 +1,7 @@
+== test-licence.R :: T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach only the private log (1 not passed)
+Expected `any(grepl(paste0("SENTINEL-", s, "-7731"), log_text))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+

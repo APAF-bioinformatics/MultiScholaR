@@ -348,7 +348,7 @@ omicEnrichServiceTab <- function(service, ns) {
             DT::DTOutput(ns("clusterprofiler_results_table")),
             # KIT-203: what the adjusted columns are (OD1: the kept-terms column named with its family)
             shiny::helpText(paste("p.adjust: Benjamini-Hochberg over the terms with at least one listed protein.",
-              "p_adjust_family: Benjamini-Hochberg over every term of 10 to 500 measured proteins. qvalue: Storey's",
+              "p_adjust_family: Benjamini-Hochberg over every term of 10 to 500 tested proteins. qvalue: Storey's",
               "q-value over the terms with at least one listed protein. In the saved table, neg_log10_q is from the",
               "q-value whatever the rule.")),
             

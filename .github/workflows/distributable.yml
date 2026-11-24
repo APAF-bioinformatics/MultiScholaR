@@ -26,6 +26,10 @@ name: KIT-134 distributable
 #                     the lifecycle, its bundle built in an ubuntu:22.04 container; Windows: the
 #                     lanes without DIA, D4); on Linux the installed R on other distributions
 #   [dist:container]  D5: the Windows library, then loaded in a Server Core container
+# Stage parity (KIT-159 7.9, G13; dispatch only, on run-val-parity, with input parity_request): the
+# steps of stage full up to the install and the test tools, then the harness's parity step
+# (val-parity.R), the check of its folder (parity-check) and its one admitted upload
+# (parity-results, val-out/parity/ only); no lifecycle, hosts, lanes or figures.
 # [dist-linux] or [dist-windows] limits the run to one platform.
 
 on:
@@ -35,12 +39,16 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container, kit167-engine]
+        options: [snapshot, library, full, container, parity, kit167-engine]
       platform:
         description: "Platform"
         type: choice
         default: both
         options: [both, linux, windows]
+      parity_request:
+        description: "Stage parity: docs/qa/workflow-execution/kit/kit-159/parity/requests/<name>.json"
+        type: string
+        default: ""
   push:
     branches: [kit-134]
     paths:
@@ -79,29 +87,46 @@ jobs:
       container: ${{ steps.plan.outputs.container }}
       kit167_engine: ${{ steps.plan.outputs.kit167_engine }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
+      parity: ${{ steps.plan.outputs.parity }}
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: .github/workflows
+          fetch-depth: 0
+          sparse-checkout: |
+            .github/workflows
+            docs/qa/workflow-execution/kit/kit-159/parity/requests
       - name: No cache and no upload from a build job (decision M20; revision 1.2, IR-B2)
         run: |
           file=.github/workflows/distributable.yml
           if grep -nE 'uses: *actions/cache|^ *cache(-dependency-path)?:|uses: *actions/download-artifact' "$file"; then
             echo "::error::the distributable workflow must not use a cache or pass an artifact between jobs"; exit 1
           fi
-          # one upload in the file: the snapshot job's text scores (no token, nothing built)
+          # uploads: the snapshot job's text scores (no token, nothing built), and in each of the linux and
+          # windows jobs exactly one step parity-results (KIT-159 7.9): stage parity, after parity-check
+          # succeeded, val-out/parity/ only (the comparison tables the harness checked, nothing built)
           uploads="$(grep -cE 'uses: *actions/upload-artifact' "$file")"
           snapshot_uploads="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job == "snapshot:" { n++ } END { print n + 0 }' "$file")"
-          if [ "$uploads" != 1 ] || [ "$snapshot_uploads" != 1 ]; then
-            echo "::error::an upload outside the snapshot job ($uploads in the file, $snapshot_uploads in snapshot)"; exit 1
+          parity_ok="$(awk '
+            /^  [a-z-]+:$/ { job = $1 }
+            /^      - / { if (up) { print job, name, cond, path }; up = 0; name = ""; cond = ""; path = "" }
+            /^      - name: / || /^        name: / { if (name == "") name = $0 }
+            /^        if: / { cond = $0 }
+            /^          path: / { path = $0 }
+            /uses: *actions\/upload-artifact/ { up = 1 }
+            END { if (up) print job, name, cond, path }' "$file" | grep -v '^snapshot:' \
+            | grep -c "name: parity-results.*needs.plan.outputs.stage == 'parity'.*steps.parity-check.outcome == 'success'.*path: val-out/parity/$")"
+          parity_jobs="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job != "snapshot:" { print job }' "$file" | sort | tr '\n' ' ')"
+          if [ "$uploads" != 3 ] || [ "$snapshot_uploads" != 1 ] || [ "$parity_ok" != 2 ] || [ "$parity_jobs" != "linux: windows: " ]; then
+            echo "::error::uploads: $uploads in the file, $snapshot_uploads in snapshot, $parity_ok guarded parity-results ($parity_jobs)"; exit 1
           fi
-          echo "no cache, no artifact passed between jobs, no upload from a build job"
+          echo "no cache, no artifact passed between jobs, no upload from a build job except the guarded parity-results"
       - id: plan
         env:
           EVENT: ${{ github.event_name }}
           MESSAGE: ${{ github.event.head_commit.message }}
           INPUT_STAGE: ${{ inputs.stage }}
           INPUT_PLATFORM: ${{ inputs.platform }}
+          INPUT_PARITY_REQUEST: ${{ inputs.parity_request }}
         run: |
           if [ "$EVENT" = workflow_dispatch ]; then
             stage="$INPUT_STAGE"; platform="$INPUT_PLATFORM"
@@ -111,20 +136,28 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container|kit167-engine) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
-          build=false; full=false; container=false; kit167_engine=false; linux_runners='["ubuntu-22.04"]'
+          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          build=false; full=false; container=false; parity=false; kit167_engine=false; linux_runners='["ubuntu-22.04"]'
           case "$stage" in
             kit167-engine) kit167_engine=true; platform=windows ;;
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
             container) build=true; container=true; platform=windows ;;
+            parity) build=true; full=true; parity=true ;;
           esac
+          if [ "$parity" = true ]; then
+            # KIT-159 7.9: dispatch only, on run-val-parity, one new request file per run
+            req="docs/qa/workflow-execution/kit/kit-159/parity/requests/$INPUT_PARITY_REQUEST.json"
+            [ "$EVENT" = workflow_dispatch ] && [ "$GITHUB_REF" = refs/heads/run-val-parity ] || { echo "::error::stage parity runs only by dispatch on run-val-parity"; exit 1; }
+            printf '%s' "$INPUT_PARITY_REQUEST" | grep -qE '^[a-z0-9][a-z0-9._-]{0,79}$' && [ -f "$req" ] || { echo "::error::no parity request $req"; exit 1; }
+            [ "$(git log --format=%H -- "$req" | wc -l)" = 1 ] || { echo "::error::$req was changed after it was added: write a new request"; exit 1; }
+          fi
           linux=false; windows=false
           case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "full=$full"; echo "container=$container"; echo "kit167_engine=$kit167_engine"
-            echo "linux_runners=$linux_runners"
+            echo "linux_runners=$linux_runners"; echo "parity=$parity"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -474,7 +507,7 @@ jobs:
 
       - name: "P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)"
         id: lifecycle
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
         run: |
           # ubuntu-22.04: the kernel is older than 6.12. ubuntu-24.04: every host requirement holds except a user
           # D-Bus, which a desktop session has and the hosted runner lacks (runs 44055833237, 44059705566,
@@ -512,7 +545,7 @@ jobs:
       # putting R's original file back for the "before" rows, then the build's (the only difference between the two).
       - name: "Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)"
         id: hosts
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
         timeout-minutes: 60
         run: |
           status=0
@@ -559,7 +592,7 @@ jobs:
       # oracle on ubuntu-22.04 in run 44275615462 only; the repeats are labelled trx_screen_r2 .. _r8.
       - name: "Lanes: every GUI-entry lane in process with the installed application's R (network closed, the laptop's locale)"
         id: lanes
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
         timeout-minutes: 90
         run: |
           sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
@@ -595,7 +628,7 @@ jobs:
       # (MULTISCHOLAR_E2E_INSTALLED=1); Chrome is the runner's. CI=true as in Module CI's e2e jobs.
       - name: "e2e lanes: the seven browser lanes against the installed application's package (network closed, the laptop's locale)"
         id: e2e
-        if: ${{ !cancelled() && matrix.runner == 'ubuntu-22.04' && steps.testtools.outcome == 'success' }}
+        if: ${{ !cancelled() && matrix.runner == 'ubuntu-22.04' && steps.testtools.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
         timeout-minutes: 120
         run: |
           sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
@@ -620,6 +653,21 @@ jobs:
           } | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
 
+      # KIT-159 7.9: the parity step (the harness of the request's commit, by git show; no token in any environment)
+      - name: "Parity (KIT-159 G13): the driver and the browser on the installed application, compared"
+        id: parity
+        if: ${{ !cancelled() && needs.plan.outputs.parity == 'true' && steps.testtools.outcome == 'success' }}
+        env:
+          PARITY_REQUEST: docs/qa/workflow-execution/kit/kit-159/parity/requests/${{ inputs.parity_request }}.json
+        run: |
+          harness_commit="$(jq -r .harness_commit "$PARITY_REQUEST")"
+          mkdir -p "$RUNNER_TEMP/val-harness"
+          git archive "$harness_commit" docs/qa/workflow-execution/kit/kit-159/harness | tar -x -C "$RUNNER_TEMP/val-harness"
+          MSR_PKG_PATHS="$(bash -c 'source packaging/package-commit.sh; printf "%s" "$PKG_PATHS"')" \
+          "$DEST/app/resources/runtime/bin/Rscript" --vanilla \
+            "$RUNNER_TEMP/val-harness/docs/qa/workflow-execution/kit/kit-159/harness/val-parity.R" \
+            "$PARITY_REQUEST" "$DEST" "$TEST_TOOLS" "$RUNNER_TEMP/val-harness" val-out/parity
+
       - name: Uninstall; nothing of the build is left
         id: uninstall
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -627,6 +675,19 @@ jobs:
           "$DEST/uninstall.sh"
           test ! -e "$DEST"
           test ! -e "$XDG_DATA_HOME/applications/multischolar.desktop"
+
+      - name: "Parity check (KIT-159 7.9): the allow-list and hashes of val-out/parity/, after the uninstall"
+        id: parity-check
+        if: ${{ !cancelled() && needs.plan.outputs.parity == 'true' && steps.parity.outcome == 'success' }}
+        run: bash "$RUNNER_TEMP/val-harness/docs/qa/workflow-execution/kit/kit-159/harness/check-evidence.sh" val-out/parity
+
+      - name: parity-results
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'parity' && steps.parity-check.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-linux
+          retention-days: 30
+          path: val-out/parity/
 
       - name: Results
         if: ${{ !cancelled() }}
@@ -940,7 +1001,7 @@ jobs:
 
       - name: "P3 lifecycle: the installed application (network cut for its programs)"
         id: lifecycle
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
         run: |
           Set-NetFirewallProfile -All -Enabled True
           $programs = Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe
@@ -1033,7 +1094,7 @@ jobs:
       # figures with its message (RAISED lines).
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
@@ -1067,6 +1128,36 @@ jobs:
             'off-root85=42:trx_worker_da,omic_worker_da', 'off-root95=52:trx_worker_da,omic_worker_da', `
             'off-tmt90=31:prot_tmt_lane', 'off-tmt118=59:prot_tmt_lane'
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
+
+      # KIT-159 7.9: the parity step, then its check and its one upload (the Windows job has no uninstall step)
+      - name: "Parity (KIT-159 G13): the driver and the browser on the installed application, compared"
+        id: parity
+        if: ${{ !cancelled() && needs.plan.outputs.parity == 'true' && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
+        shell: bash
+        env:
+          PARITY_REQUEST: docs/qa/workflow-execution/kit/kit-159/parity/requests/${{ inputs.parity_request }}.json
+        run: |
+          harness_commit="$(jq -r .harness_commit "$PARITY_REQUEST")"
+          mkdir -p "$RUNNER_TEMP/val-harness"
+          git archive "$harness_commit" docs/qa/workflow-execution/kit/kit-159/harness | tar -x -C "$RUNNER_TEMP/val-harness"
+          MSR_PKG_PATHS="$(bash -c 'source packaging/package-commit.sh; printf "%s" "$PKG_PATHS"')" \
+          "$APP_FOLDER/resources/runtime/bin/Rscript.exe" --vanilla \
+            "$RUNNER_TEMP/val-harness/docs/qa/workflow-execution/kit/kit-159/harness/val-parity.R" \
+            "$PARITY_REQUEST" "$APP_FOLDER" "$TEST_TOOLS" "$RUNNER_TEMP/val-harness" val-out/parity
+
+      - name: "Parity check (KIT-159 7.9): the allow-list and hashes of val-out/parity/"
+        id: parity-check
+        if: ${{ !cancelled() && needs.plan.outputs.parity == 'true' && steps.parity.outcome == 'success' }}
+        shell: bash
+        run: bash "$RUNNER_TEMP/val-harness/docs/qa/workflow-execution/kit/kit-159/harness/check-evidence.sh" val-out/parity
+
+      - name: parity-results
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'parity' && steps.parity-check.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-windows
+          retention-days: 30
+          path: val-out/parity/
 
       - name: Results
         if: ${{ !cancelled() }}
