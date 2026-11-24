@@ -160,6 +160,22 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
+   numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
+   it counted in how many samples a feature was below it. An MS-DIAL table imported with its default identifier column
+   ('Peak ID' for lipids, 'Alignment ID' for metabolites), whose identifiers are whole numbers, had that column counted
+   as a sample, so the threshold could be set by identifier numbers and whether a feature was removed could depend on
+   its row number. For example, on an MS-DIAL metabolite table of 8 features and 4 samples at the 10th percentile and
+   0.5, the threshold was 4.9 instead of 16,410 and no feature was removed instead of 2. A custom-format table with a
+   numeric identifier or annotation column was affected in the same way, and so were the metabolomics workbooks, which
+   keep retention time and m/z columns, and designs imported from a folder whose tables hold MS-DIAL's numeric columns
+   (retention time, m/z, scores). Tables with no such column (for example LipidSearch imports, and custom imports whose
+   identifier and annotation columns are text) give the same results as before. Analyses saved before this change
+   replay as they were made. A design sample that is missing from a table or is not numeric is now refused with a
+   message. The helpers `lipidIntensityFilteringHelper()` and `metaboliteIntensityFilteringHelper()` take a new optional
+   argument `sample_columns`; without it they count every numeric column except the identifier column and warn which
+   columns they counted. (KIT-202, VAL-118)
+
  * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
    those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
    Before, it also held proteins that could not be tested (no value in a compared group, or none in the analysed
