@@ -147,7 +147,7 @@ getUniprotAnnotations <- function(input_tbl,
 #' 30 seconds per attempt and up to three attempts; a transport failure and the statuses 429, 500, 502, 503 and 504
 #' are tried again (`Retry-After` honoured up to 10 seconds). After three consecutive requests refused with such a
 #' status the remaining requests are not sent. A request fails when its final status is not 200 or its answer is not
-#' a UniProt table; an answer is cut short when a requested accession (isoform suffix removed) is absent and the
+#' a UniProt table; an answer is cut short when a requested accession (isoform suffixes are removed before the query; the counts are of distinct canonical accessions) is absent and the
 #' answer announces a next page (`Link: rel="next"`); its rows are kept and its absent accessions count as not looked
 #' up. `X-Total-Results` is a count only. When no request returns rows a warning of class
 #' `prot_annotation_uniprot_empty` is signalled (field `reason`: `service_status`, `invalid_response`, `no_rows` or
@@ -187,6 +187,10 @@ directUniprotDownload <- function(input_tbl,
   
   # Filter IDs matching the pattern
   protein_ids <- original_protein_ids[grepl(uniprot_regex, original_protein_ids)]
+  # KIT-175 (I01): an isoform is asked for by its canonical accession. A field-qualified isoform term
+  # (`accession:P05067-4`) makes UniProt return isoform entries for every accession of the request; the bare query
+  # of earlier versions returned the canonical entry. The design step already strips isoforms.
+  protein_ids <- unique(normalizeUniprotAccession(protein_ids, remove_isoform = TRUE))
   
   n_skipped <- length(original_protein_ids) - length(protein_ids)
   if (n_skipped > 0) {
