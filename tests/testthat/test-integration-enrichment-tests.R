@@ -498,7 +498,7 @@ test_that("KIT-183 T3, T9, T10: camera through the store: U_cam from the views, 
     # KIT-191: each entry's own test's figure (metabolites: camera 6.7 %, gsea 34.4 %).
     strengthOf <- function(figure, phrase) sprintf(texts[["enrich_factor_strength"]],
         integrationEnrichmentPercent(strength$factor_r2_percent), integrationEnrichmentPercent(strength$largest_r2_percent),
-        "metabolite", texts[["enrich_strength_terms_metabolites"]], figure, phrase)
+        "metabolite data", texts[["enrich_strength_terms_metabolites"]], figure, phrase)
     expect_setequal(unique(tables$summary[[texts[["col_enrich_strength"]]]]),
         c(strengthOf("6.7 %", "correlation-adjusted test"), strengthOf("34.4 %", "pre-ranked test")))
     expect_identical(texts[["col_enrich_score"]], paste("Enrichment score (NES), or effect: the difference in mean z-score",
@@ -830,7 +830,7 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
         strength <- integrationEnrichmentFactorStrength(fixture$run$value, "Factor1", "metabolomics_GCMS")
         expect_match(result, escaped(sprintf(texts[["enrich_factor_strength"]],
             integrationEnrichmentPercent(strength$factor_r2_percent),
-            integrationEnrichmentPercent(strength$largest_r2_percent), "metabolite",
+            integrationEnrichmentPercent(strength$largest_r2_percent), "metabolite data",
             texts[["enrich_strength_terms_metabolites"]], "6.7 %", "correlation-adjusted test")), fixed = TRUE)
         expect_false(grepl("Terms at the top of the list", result, fixed = TRUE))
         # STRING: no selector, no note.

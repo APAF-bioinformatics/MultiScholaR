@@ -507,7 +507,19 @@ test_that("KIT-191 U9: the record: evidence sheet, Methods per test, limits per 
         sprintf(texts[["methods_test_settings_permutation"]], 3L, counts$samples, counts$universe,
             permutation$run$value$mapping_counts$mapped), "KEGG Release fixture", "hsa", 5L, 500L,
         permutation$run$value$service$pathways_testable)
-    expect_true(permutation_sentence %in% methods)
+    # VAL-115 (3): the permutation's Methods sentence states its floor, as the same exact fraction.
+    d <- permutation$run$value$permutation$identity_draws
+    floor_clause <- integrationMethodsPermutationFloor(permutation$run$value$permutation, permutation$run$value$tests, texts)
+    expect_identical(floor_clause, sprintf(texts[["methods_enrich_permutation_floor"]], integrationEnrichmentFloorFraction(d,
+        1000L), as.integer(permutation$run$value$tests), integrationEnrichmentFloorMinimum(d, 1000L,
+        permutation$run$value$tests)))
+    expect_match(floor_clause, "1/1,001", fixed = TRUE)
+    expect_true(paste(permutation_sentence, floor_clause) %in% methods)
+    expect_identical(integrationMethodsPermutationFloor(list(permutations = 1000L, identity_draws = 50L, samples = 4L), 10L,
+        texts), sprintf(texts[["methods_enrich_permutation_floor_none"]], "51/1,001"))
+    # VAL-115 (4): the power rows' clause on larger tables is marked as expected, not measured.
+    applies <- sheet[[texts[["col_evidence_applies"]]]][INTEGRATION_ENRICHMENT_TEST_EVIDENCE$measure %in% c("G", "H", "I")]
+    expect_true(all(grepl("(expected, not measured", applies, fixed = TRUE)))
     floor_sentence <- sprintf(texts[["methods_enrich_camera_floor"]], "Factor1", view, "KEGG",
         texts[["methods_test_name_camera_floor"]], sprintf(texts[["methods_test_settings_camera_floor"]], counts$samples,
             counts$universe, floor$run$value$mapping_counts$mapped), "KEGG Release fixture", "hsa", 5L, 500L,
@@ -613,8 +625,8 @@ test_that("KIT-191 U10: the tab: four tests, camera pre-selected, the kind's not
         expect_false(grepl(escaped(texts[["enrich_evidence_lipids"]]), evidence, fixed = TRUE))
         for (test in INTEGRATION_ENRICHMENT_TESTS_OFFERED) {
             session$setInputs(test = test)
-            expect_match(as.character(output$test_note$html), escaped(texts[[paste0("enrich_test_", test, "_note_metabolites")]]),
-                fixed = TRUE)
+            expect_match(as.character(output$test_note$html), escaped(integrationEnrichmentTestNotes(test, 12L, "uncorrected",
+                "metabolomics", texts)[[1L]]), fixed = TRUE)
         }
         # A lipid data set: the metabolite figures, with the line saying no lipid data were simulated.
         lipid <- names(state$model$omics)[state$model$omics == "lipidomics"][[1L]]
@@ -648,6 +660,22 @@ test_that("KIT-191 U10: the tab: four tests, camera pre-selected, the kind's not
         fixed = TRUE)
     expect_false(grepl(escaped(texts[["enrich_evidence_I"]]), genes, fixed = TRUE))
     expect_match(genes, escaped(integrationEnrichmentEvidenceValue("genes_proteins", "camera", "B")), fixed = TRUE)
+    # VAL-115 (4): the permutation note names the number of reorderings chosen; every offered test's note gives the
+    # caution about paired, repeated or batched samples; the lipid wording.
+    ten <- integrationEnrichmentTestNotes("permutation", 12L, "uncorrected", "metabolomics", texts, permutations = 10000L)
+    expect_match(ten[[1L]], "what 10,000 random reorderings", fixed = TRUE)
+    expect_false(grepl("1,000 random", ten[[1L]], fixed = TRUE))
+    one <- integrationEnrichmentTestNotes("permutation", 12L, "uncorrected", "proteomics", texts)
+    expect_match(one[[1L]], "what 1,000 random reorderings", fixed = TRUE)
+    expect_match(one[[1L]], "4.8 to 5.3 % of cases", fixed = TRUE)
+    for (test in INTEGRATION_ENRICHMENT_TESTS_OFFERED) for (omic in c("metabolomics", "proteomics")) {
+        expect_match(integrationEnrichmentTestNotes(test, 12L, "uncorrected", omic, texts)[[1L]],
+            "in pairs, repeatedly from one subject, or in batches", fixed = TRUE)
+    }
+    lipid <- integrationEnrichmentStrengthText(list(database = "kegg", omic = "lipidomics", test = "camera",
+        factor_r2_percent = 5, largest_r2_percent = 20), texts)
+    expect_match(lipid, "In a check on simulated metabolite data (no lipid data were simulated), on factors", fixed = TRUE)
+    expect_false(grepl("simulated) data", lipid, fixed = TRUE))
     # The few-samples sentence per test and kind, with the most variable features' figure.
     notes <- integrationEnrichmentTestNotes("camera", 8L, "uncorrected", "proteomics", texts)
     expect_identical(notes, c(texts[["enrich_test_camera_note_genes_proteins"]],
@@ -745,8 +773,11 @@ test_that("KIT-191 U12: the guard: the prediction, refused above the tab's limit
     refused <- expect_error(integrationEnrichmentPathwayTest(fixture$ranked, fixture$term2gene, fixture$term2name, 1L,
         intEoSettings(permutations = 1000L, time_limit = INTEGRATION_ENRICHMENT_TAB_SECONDS), test = "permutation",
         values = fixture$values), class = "integration_enrichment_test_too_large")
+    # VAL-115 (4): the predicted time and the limit in the same unit.
     expect_identical(conditionMessage(refused), sprintf(INTEGRATION_ENRICHMENT_REFUSALS[["integration_enrichment_test_too_large"]],
-        "2.0", 40L, 12L, 4L, 1000L))
+        "121", 40L, 12L, 4L, 1000L, 120L))
+    expect_match(conditionMessage(refused), "about 121 seconds", fixed = TRUE)
+    expect_match(conditionMessage(refused), "longer than the 120 seconds allowed", fixed = TRUE)
     expect_identical(refused$predicted_seconds, 121)
     # Scripts (no limit): the message, then the run.
     expect_message(scripted <- integrationEnrichmentPathwayTest(fixture$ranked, fixture$term2gene, fixture$term2name, 1L,
