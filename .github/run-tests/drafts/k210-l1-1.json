@@ -1,0 +1,79 @@
+{
+  "requested_by": "KIT-210 blind lifecycle k210-l1-1: lifecycle: proteomics part A with the E7 fault, the D5 cells, the run-aligned masks; enumerated outputs only (declaration-draft 6); script timeouts 240 min",
+  "label": "KIT-210 k210-l1-1 BOUND_COMMIT",
+  "package_commit": "BOUND_COMMIT",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "A",
+        "P0,P0r,P1,P2,P3,P4,P5,P0lo,P0hi",
+        "401",
+        "403",
+        "k210-l1-1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "l1-1-prot",
+        "K210_LIFECYCLE": "1",
+        "K210_PRIVATE": "k210-private/l1-1-prot",
+        "K210_FAULT": "1"
+      },
+      "out": "k210-l1-1",
+      "out_pattern": "^(status|hashes|checks|timing)-l1-1-prot\\.tsv$|^provenance-l1-1-prot\\.json$",
+      "timeout_minutes": 120
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "A",
+        "P4b,L1b,M1b",
+        "401",
+        "403",
+        "k210-l1-1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "l1-1-d5",
+        "K210_LIFECYCLE": "1",
+        "K210_PRIVATE": "k210-private/l1-1-d5"
+      },
+      "out": "k210-l1-1",
+      "out_pattern": "^(status|hashes|checks|timing)-l1-1-d5\\.tsv$|^provenance-l1-1-d5\\.json$",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "R",
+        "P0,P1,L2,M2",
+        "401",
+        "403",
+        "k210-l1-1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "l1-1-ra",
+        "K210_LIFECYCLE": "1",
+        "K210_PRIVATE": "k210-private/l1-1-ra"
+      },
+      "out": "k210-l1-1",
+      "out_pattern": "^(status|hashes|checks|timing)-l1-1-ra\\.tsv$|^provenance-l1-1-ra\\.json$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

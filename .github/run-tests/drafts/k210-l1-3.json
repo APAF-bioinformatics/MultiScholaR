@@ -1,6 +1,6 @@
 {
-  "requested_by": "KIT-210 blind lifecycle L1a: proteomics part A reps 401-403 with E7 fault, E1, E1'', scorer scale test; enumerated outputs only (declaration-draft 6)",
-  "label": "KIT-210 L1a (blind) BOUND_COMMIT",
+  "requested_by": "KIT-210 blind lifecycle k210-l1-3: E1 on the proteomics part-A units, E1'' and E10 (candidates on, KIT-185's seeds, replicates 1-3); enumerated outputs only (declaration-draft 6); script timeouts 270 min",
+  "label": "KIT-210 k210-l1-3 BOUND_COMMIT",
   "package_commit": "BOUND_COMMIT",
   "base_commit": "none",
   "tools_ref": "",
@@ -15,26 +15,6 @@
   "check": false,
   "scripts": [
     {
-      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
-      "args": [
-        "A",
-        "P0,P0r,P1,P2,P3,P4,P5,P0lo,P0hi",
-        "401",
-        "403",
-        "k210-l1a"
-      ],
-      "env": {
-        "OMP_NUM_THREADS": "1",
-        "K210_JOB": "l1a",
-        "K210_LIFECYCLE": "1",
-        "K210_PRIVATE": "k210-private/l1a",
-        "K210_FAULT": "1"
-      },
-      "timeout_minutes": 150,
-      "out": "k210-l1a",
-      "out_pattern": "^(status|hashes|checks|timing)-l1a\\.tsv$|^provenance-l1a\\.json$"
-    },
-    {
       "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
       "args": [
         "A",
@@ -45,9 +25,9 @@
       ],
       "env": {
         "OMP_NUM_THREADS": "1",
-        "K185_JOB": "e1-185/a"
+        "K185_JOB": "e1-185-a"
       },
-      "timeout_minutes": 90
+      "timeout_minutes": 60
     },
     {
       "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
@@ -60,11 +40,11 @@
       ],
       "env": {
         "OMP_NUM_THREADS": "1",
-        "K210_JOB": "e1-210/a",
-        "K210_CANDIDATES": "off",
-        "K210_SEED_BASE": "185000000"
+        "K210_JOB": "e1-210-a",
+        "K210_SEED_BASE": "185000000",
+        "K210_CANDIDATES": "off"
       },
-      "timeout_minutes": 90
+      "timeout_minutes": 60
     },
     {
       "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
@@ -72,36 +52,54 @@
         "--compare-e1",
         "k210-private/e1-185",
         "k210-private/e1-210",
-        "k210-l1a"
+        "k210-l1-3"
       ],
       "env": {},
-      "out": "k210-l1a",
+      "out": "k210-l1-3",
       "out_pattern": "^check-e1\\.tsv$",
-      "timeout_minutes": 60
+      "timeout_minutes": 15
     },
     {
       "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
       "args": [
         "--k185",
         "docs/qa/workflow-execution/kit/kit-185",
-        "k210-l1a"
+        "k210-l1-3"
       ],
       "env": {},
-      "out": "k210-l1a",
+      "out": "k210-l1-3",
       "out_pattern": "^check-e1pp\\.tsv$",
-      "timeout_minutes": 60
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "A",
+        "P0,P0r,P1,P2,P3,P4,P5,L1,L2,M1,M2,P4b,L1b,M1b",
+        "1",
+        "3",
+        "k210-private/e10"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "e10",
+        "K210_SEED_BASE": "185000000",
+        "K210_CANDIDATES": "on"
+      },
+      "timeout_minutes": 90
     },
     {
       "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
       "args": [
-        "--scale",
-        "k210-private/scale",
-        "k210-l1a"
+        "--compare-e10",
+        "k210-private/e10",
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k210-l1-3"
       ],
       "env": {},
-      "out": "k210-l1a",
-      "out_pattern": "^check-scale\\.tsv$",
-      "timeout_minutes": 120
+      "out": "k210-l1-3",
+      "out_pattern": "^check-e10\\.tsv$",
+      "timeout_minutes": 15
     }
   ],
   "fetch_refs": [],

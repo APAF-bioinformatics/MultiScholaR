@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-210 blind lifecycle k210-l1-7: the scorer's scale test on synthetic rows of the counted run's size; enumerated outputs only (declaration-draft 6); script timeouts 240 min",
+  "label": "KIT-210 k210-l1-7 BOUND_COMMIT",
+  "package_commit": "BOUND_COMMIT",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
+      "args": [
+        "--scale",
+        "k210-private/scale",
+        "k210-l1-7"
+      ],
+      "env": {},
+      "out": "k210-l1-7",
+      "out_pattern": "^check-scale\\.tsv$",
+      "timeout_minutes": 240
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

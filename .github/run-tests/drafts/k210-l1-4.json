@@ -1,0 +1,98 @@
+{
+  "requested_by": "KIT-210 blind lifecycle k210-l1-4: E1 on the lipid/metab part-A units and the sensitivity panel; enumerated outputs only (declaration-draft 6); script timeouts 195 min",
+  "label": "KIT-210 k210-l1-4 BOUND_COMMIT",
+  "package_commit": "BOUND_COMMIT",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "L1,L2,M1,M2",
+        "401",
+        "403",
+        "k210-private/e1-185/a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "e1-185-a"
+      },
+      "timeout_minutes": 45
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "A",
+        "L1,L2,M1,M2",
+        "401",
+        "403",
+        "k210-private/e1-210/a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "e1-210-a",
+        "K210_SEED_BASE": "185000000",
+        "K210_CANDIDATES": "off"
+      },
+      "timeout_minutes": 45
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "S",
+        "P0,M2",
+        "401",
+        "403",
+        "k210-private/e1-185/s"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "e1-185-s"
+      },
+      "timeout_minutes": 45
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/sim-k210.R",
+      "args": [
+        "S",
+        "P0,M2",
+        "401",
+        "403",
+        "k210-private/e1-210/s"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K210_JOB": "e1-210-s",
+        "K210_SEED_BASE": "185000000",
+        "K210_CANDIDATES": "off"
+      },
+      "timeout_minutes": 45
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/score-k210.R",
+      "args": [
+        "--compare-e1",
+        "k210-private/e1-185",
+        "k210-private/e1-210",
+        "k210-l1-4"
+      ],
+      "env": {},
+      "out": "k210-l1-4",
+      "out_pattern": "^check-e1\\.tsv$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
