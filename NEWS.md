@@ -1,8 +1,66 @@
 # MultiScholaR NEWS
 
-## MultiScholaR 0.9.5 (staging)
+## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
+
+### Fixes
+
+ * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
+   RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
+   model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
+   refused these runs with 'Run the normalisation first', although the normalisation had run. Runs that applied RUV are
+   unchanged. Both cases are offered only when the RUV design panel is switched on. For every user, the message shown
+   when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
+   differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
+   model only when the normalisation added them. The report then states that no correction for unwanted variation was
+   applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
+   and figures are written; this is fixed separately (KIT-192).
 
 ### Scientific changes
+
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
+   after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
+   percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
+   value of three (33.3333 %) exceeded the rounded 33.333 %, so at the tab's defaults only proteins measured in every
+   sample were kept. The same happened for some other group sizes (for example 6, 7 or 11 samples with 1 required; 11
+   to 14 with 2) and for three groups with 'Min Groups Required' 2. Group sizes whose allowed share is exact or rounds
+   up (for example 2, 4, 5, 6, 7, 8, 9 or 10 samples with 2 required) give the same results as before. In simulated
+   data (KIT-185's generator with no unwanted variation and no RUV, 2 groups of 3, 3,000 proteins, R = 100 draws per
+   condition) the filter now keeps, at 5 %, 10 % and 25 % value-dependent missingness, 2,838, 2,668 and 2,086 proteins
+   instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
+   changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
+   unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
+   were false); these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
+   Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
+   version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis
+   record, the protein intensity filter and normalisation steps made with this version list the fixed parameter
+   'missing_value_comparison = counts'; a step without it was made with the earlier rule. A session saved before this
+   version and continued after it applies the new rule from its next missing-value step. The peptide intensity
+   filter's percentage-only call (deprecated) reads its percentages the same way. The proteomics reports now say that
+   a protein failed a group when its share of missing values exceeded the allowed share, and was kept when the share
+   of groups it failed did not exceed the allowed share; they said 'or more' and 'at most' of the rounded percentages.
+   (KIT-187, VAL-71)
+ * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
+   default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
+   a pathway's features, on the features measured in every biological sample; of several features on one compound
+   identifier, the one with the largest mean value is kept). The pre-ranked test used before (GSEA on each feature's
+   correlation with the factor) assumes features are independent, which gives p-values that are too small for
+   pathways whose features vary together; it stays selectable, with that assumption stated. Existing scripts that call
+   `integrationEnrichFactor()` without naming a test now get the new test and different p-values (the size of the
+   change is given by the check on simulated data below; on the synthetic test corpus, 40 pathways of randomly chosen
+   measured features were called by neither test). In a check on simulated data shaped like a 12-sample study, on the
+   main factor, unrelated sets whose features vary together at a correlation of 0.3 were called at the 5 % level by
+   the earlier test in 13.5 % (sets of 5 to 10 metabolites) to 43.0 % (sets of 10 to 100 genes) of cases and by the
+   new test in at most 0.6 %. Over every kind of unrelated set checked, the new test called at most 4.4 % on the main
+   factor and at most 6.6 % against values unrelated to the data, except sets made only of the most variable features
+   (up to 10.1 %); on weaker factors both tests call unrelated sets of the model's features too often (the new test up
+   to 12.8 %, the earlier one up to 60.1 %). To get the earlier test, pass `overrides = list(test = "gsea")`; its
+   results are unchanged. In the Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
+   KEGG and Reactome summary now carries a caution (the factor was learned from the same data, so the results are
+   exploratory) and the factor's variance explained in the data set. STRING is unchanged and ignores the setting.
+   Further test options follow in KIT-191 (VAL-85 (2)): the correlation-adjusted test with negative correlations
+   floored, a permutation test and the pre-ranked test, each shown with its measured false-positive rate and power from
+   this check.
 
  * Proteomics enrichment for organisms outside the 13 served by g:Profiler: Gene Ontology sets now include each
    term's more specific terms (parent-term propagation over is a, part of, regulates, positively and negatively
@@ -36,7 +94,6 @@
    number changes: counts, set sizes, ratios, p-values, q-values and the sets themselves are unchanged. (KIT-173,
    VAL-61)
 
-## MultiScholaR 0.9.4 (staging)
 
 ### Scientific changes
 
@@ -78,7 +135,6 @@
  * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
    the assay holds missing values.
 
-## MultiScholaR 0.9.3 (staging)
 
 ### Scientific changes
 
@@ -106,7 +162,6 @@
    Control tab shows the number of proteins left after each step. Projects and analysis records made before this
    change are not altered; replaying a record repeats the steps it recorded.
 
-## MultiScholaR 0.9.2 (staging)
 
 ### Distribution
 
@@ -116,7 +171,6 @@
    from. Reports and analysis records made with the installed application name the same commit; before, they named
    none.
 
-## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes
 
