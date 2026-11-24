@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 REAUDIT2 line: R2-01 and R2-02 fix at 41239449 (fix commit 815be580): reaudit2, replay, repair, phases, records with --lint; ceiling 35 min; decides R2-01 and R2-02 (one correction each)",
+  "label": "KIT-159 R2 fix at 41239449",
+  "package_commit": "41239449bda4f46e7aaf9ade29d00b2a03eb2dba",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r2f-out",
+        "--files",
+        "reaudit2,replay,repair,phases,records",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r2f-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 35
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
