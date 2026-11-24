@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-200 R1 instrument re-run 1 of 3 (VAL-54): fixture row names fixed; same tests, values and ceiling 60 min",
+  "label": "KIT-200 R1-2 tests-only bd907fa2",
+  "package_commit": "bd907fa255e1b3ce18a7eedfd9af571636d3181b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit200-prot-da-no-value-proteins.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit200-prot-da-no-value-proteins.R": 50
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
