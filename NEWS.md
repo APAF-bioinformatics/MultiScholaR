@@ -17,6 +17,23 @@
 
 ### Fixes
 
+ * Lipidomics and metabolomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or
+   'covariate contains NA or infinite values') when an assay holds a feature with no value in any sample. Examples are a
+   feature below the detection limit everywhere, which the intensity filter keeps, or a feature measured only in samples
+   the correlation filter removed. Such a feature is not tested: it appears in each comparison's table without a fold
+   change or p-value and is counted in the summary's 'Not tested' line, and it no longer affects any other feature's
+   result. Before, the assay's analysis failed, and the whole analysis stopped when every assay failed. A saved analysis
+   that failed this way now completes when it is replayed. With the default settings every result produced before is
+   unchanged, except in an assay of only one or two features, one of them without values, where the B statistic changes;
+   an assay that failed this way while the other assays completed now has results too, also when the saved analysis is
+   replayed. The older S4 method `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects is not
+   changed. With the trend option off (available only when calling the functions directly), on data that contain such
+   features the result tables change: those features move to the end of each table without an average intensity. With
+   the robust option also on, the other features' results change, to those of the same data without them. With RUV
+   factors in the model these features were already left out of the tables and listed separately; that is unchanged. An
+   assay in which no feature has any value is now refused with 'no feature has a value in any sample, so nothing can be
+   tested'. `runLipidsDA()` and `runMetabolitesDA()` return `features_without_values` (per assay, the ids) when there
+   are such features (KIT-196).
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
    Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
    differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
@@ -49,6 +66,31 @@
    analysis_record.json: the first internal-standard or log2 step's input (input_entity_ids), or a quality-control
    step's input, is the result (result_entity_id) of a normalisation, RUV or correlation step. The data were then
    normalised twice, or filtered after normalisation. Run such analyses again with this version (KIT-194).
+
+ * Lipidomics, metabolomics and transcriptomics: the Summary tab's 'Save Workflow Arguments', 'Generate Report' and
+   'Export Session State' now refuse with a message when the current table is not the result of the last
+   normalisation, for example after Quality Control was reverted or the normalisation was reset after it ran. Before,
+   the saved final object (<omic>_<label>_final_s4.RDS), the study parameters and the analysis record could describe
+   the quality-control table (not normalised), an empty object, or an earlier normalisation, while the differential
+   analysis shown came from the normalised data. A refused save writes nothing and removes the omic's integration
+   input folder (integration/<omic>/), as a save without a final table already did, so the Integration tab does not
+   read an earlier input after a refused save. This includes an input saved earlier in the same session: after a
+   Revert and a refused save, run the normalisation again and save before integrating. 'Generate Report' and 'Export
+   Session State' refuse without removing anything. After a Reset, press Revert once in a Quality Control sub-tab (or
+   run the normalisation again) before saving; after one Revert to the RUV-corrected table that table is saved; a save
+   right after a run, before the correlation step, is allowed; the Summary does not check that the differential
+   analysis shown was run on the table it saves. Transcriptomics no longer writes an earlier normalisation's RUVIII
+   matrix as the integration file: after a second normalisation without a new RUVIII export the save says so. In every
+   omic, proteomics included, a save whose integration input is refused for another reason now names the reason. Saves
+   at the end of the normalisation, after its correlation step or Skip, and after the differential analysis are
+   unchanged. To check an earlier save: open analysis_record.json in the folder of study_parameters.txt (the same save
+   wrote both). If the last step it lists is not a normalisation result (a state ending in _normalized,
+   _ruv_corrected, _correlation_filtered or _norm_complete, or loaded_for_de; for transcriptomics trx_ruvs), for
+   example a quality-control, Reset, internal-standard or log2 state, that save's final object, study parameters and
+   (transcriptomics) integration file do not describe the normalised analysis: save again with this version. A
+   transcriptomics save that showed 'Study parameters saved with warnings' after a second normalisation may have
+   written the earlier RUVIII export as transcriptomics_normalized_data.tsv: run the RUVIII export and save again
+   (KIT-207).
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
