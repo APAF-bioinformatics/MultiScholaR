@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 line P1K (r1.27): R-P1 tests first at 0e0b43f4; expected: the two R-P1 tests fail (no miss_low/miss_high columns: actual NULL), the six earlier p1k tests pass (170 cells, seeds, pinned SHA-256); no coverage simulation; ceiling 30 job-minutes",
+  "label": "KIT-159 P1K R-P1 tests-first at 0e0b43f4",
+  "package_commit": "0e0b43f4e137375fd9bd3e589a8ad2ec9dcc996f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/p1k-rp1t-out",
+        "--files",
+        "p1k"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/p1k-rp1t-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
