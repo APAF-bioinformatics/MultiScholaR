@@ -101,6 +101,7 @@ runProteinAccessionCleanupStep <- function(workflowData,
                                            saveRdsFn = saveRDS,
                                            existsFn = exists,
                                            getFn = get) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   pending <- if (identical(workflowData$state_manager$current_state, "protein_accession_cleaned"))
     resumeDIAProteinAction(workflowData, "protein_accession_cleaned") else NULL
   if (!is.null(pending)) return(pending)
@@ -267,6 +268,7 @@ mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, experiment_pat
     # Step 2: Protein Accession Cleanup (chunk 19)
     shiny::observeEvent(input$apply_accession_cleanup, {
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "protein accession cleanup")) return(invisible(NULL)) # KIT-182
         managed_step$apply(list(delimiter = input$delimiter, aggregation_method = input$aggregation_method))
         return(invisible(NULL))
       }

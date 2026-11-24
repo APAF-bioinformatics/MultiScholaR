@@ -14,6 +14,21 @@
    model only when the normalisation added them. The report then states that no correction for unwanted variation was
    applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
    and figures are written; this is fixed separately (KIT-192).
+ * Proteomics normalisation run again after changes in Quality Control now uses the current quality-control result.
+   Before, once normalisation had run, every later run reused the protein table the first run had read until Reset was
+   pressed, and in some cases even the first run used a table from before the latest quality-control changes, so
+   filters changed or completed afterwards were silently ignored (DIA, label-free and TMT; DIA with limpa was not
+   affected). Results of such a run change: normalisation, RUV, the correlation filter and the differential analysis are
+   now computed from the filtered table the Quality Control tab shows, the pre-normalisation figures and the
+   pre-normalisation column of the composite QC figure are redrawn from that same table, and a notice says that the
+   table differs from the previous run's. A run with no quality-control change in between gives the same results as
+   before. The protein quality-control steps can no longer be applied to a normalised table; press Revert in the Quality
+   Control tab to change quality control after normalisation. If a project saved earlier already holds quality-control
+   steps applied to a normalised table, normalisation now stops with a message naming the step to go back to, instead
+   of normalising an earlier table or normalising the data twice. "Apply Correlation Filter" and "Skip Filtering &
+   Proceed to DE" now stop with a message when quality control has changed since normalisation, instead of filtering
+   the earlier normalisation's result. Saved projects and analysis records are not changed; replaying a record repeats
+   the steps it recorded (KIT-182).
 
 ### Scientific changes
 

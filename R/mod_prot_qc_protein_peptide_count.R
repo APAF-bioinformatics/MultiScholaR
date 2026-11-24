@@ -65,6 +65,7 @@ runProteinPeptideCountStep <- function(workflowData, minPeptides, minPeptidoform
                                        filterMinNumPeptidesPerProteinFn = filterMinNumPeptidesPerProtein,
                                        logInfoFn = logger::log_info,
                                        nowFn = Sys.time) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   runDIAReferenceProteinPeptideCountFilter(workflowData, list(num_peptides_per_protein_thresh = minPeptides,
     num_peptidoforms_per_protein_thresh = minPeptidoforms))
 }
@@ -148,6 +149,7 @@ mod_prot_qc_protein_peptide_count_server <- function(id, workflow_data, experime
       parameters <- list(num_peptides_per_protein_thresh = as.numeric(input$num_peptides_per_protein_thresh),
         num_peptidoforms_per_protein_thresh = as.numeric(input$num_peptidoforms_per_protein_thresh))
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "peptide count filter")) return(invisible(NULL)) # KIT-182
         managed_step$apply(parameters)
         return(invisible(NULL))
       }
