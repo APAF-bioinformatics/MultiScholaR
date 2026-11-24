@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-206 R3: full suite once on the merge 75360c69 (KIT-206 + staging with KIT-207, combined summaryFailed) vs staging 91e3cdcb, check false (R2 checked the fix's R/); ceiling 2800 job-min (186.7 core-h); decides A3",
+  "label": "KIT-206 R3 full suite 75360c69 vs 91e3cdcb",
+  "package_commit": "75360c698cabafa0b6ea453339865a5bdc4bc546",
+  "base_commit": "91e3cdcb5e3a6fa34712a1575ecbfb855ed02cf2",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
