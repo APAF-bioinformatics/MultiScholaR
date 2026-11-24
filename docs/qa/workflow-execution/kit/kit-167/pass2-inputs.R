@@ -11,10 +11,15 @@
 #   DEMO the demo mapping tables of the four strains with the pinned DIAMOND and the shipped references (the
 #      real-engine lane: KPC2 also mapped at threads 1 and 4, decision tables compared).
 # Writes only into <out>/ (tables of identifiers, counts and hashes; the cut annotation lines; the demo tables).
-# Usage: Rscript pass2-inputs.R <out dir>
+# Usage: Rscript pass2-inputs.R <out dir> [sections, comma-separated; default all]
+# Instrument run 2 (run 45352823145 produced F3 and F6; A and CUT failed in the script's mechanics: a `<<-` into a
+# list of the top level, and the GEO folder listing read nothing): results are kept in an environment; the GEO folder
+# is listed over https and, failing that, ftp; B36's FASTA, absent from its PRIDE projects, is built by F4's route.
 
 arguments <- commandArgs(trailingOnly = TRUE)
 out <- normalizePath(if (length(arguments)) arguments[[1L]] else "pass2-out", mustWork = FALSE)
+wanted <- if (length(arguments) > 1L) strsplit(arguments[[2L]], ",", fixed = TRUE)[[1L]] else
+    c("A", "F4", "CUT", "F6", "F3", "DEMO")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 work <- file.path(tempdir(), "k167-pass2")
 dir.create(work, recursive = TRUE, showWarnings = FALSE)
@@ -38,9 +43,17 @@ read_text <- function(url) tryCatch(paste(readLines(url, warn = FALSE), collapse
 listing <- function(folder) {
     text <- read_text(folder)
     files <- unique(sub("^href=\"(.*)\"$", "\\1", regmatches(text, gregexpr("href=\"[^\"?]+\"", text))[[1L]]))
-    files[!grepl("^/|^\\.\\.", files)]
+    files <- files[!grepl("^/|^\\.\\.", files)]
+    if (!length(files) && startsWith(folder, "https://ftp.ncbi.nlm.nih.gov/")) {
+        ftp <- sub("^https://", "ftp://", folder)
+        lines <- strsplit(read_text(ftp), "\n", fixed = TRUE)[[1L]]
+        files <- sub("^.*[[:space:]]", "", trimws(lines[nzchar(trimws(lines))]))
+        log_line("listing", folder, "https empty; ftp gave", length(files), "names")
+    }
+    files
 }
 section <- function(name, code) {
+    if (!name %in% wanted) return(invisible(NULL))
     status <- tryCatch({
         code
         "ok"
@@ -57,7 +70,9 @@ strains <- data.frame(strain = c("B36", "KPC2", "BPH2900", "HKU419"),
     dda = c("PXD020545", "PXD020839", "PXD020791", "PXD020863"),
     geo = c("GSE152966", "GSE152843", "GSE152835", "GSE152824"),
     reference = c("UP000000625", "UP000000265", "UP000008816", "UP000000750"), stringsAsFactors = FALSE)
-located <- list()
+found_inputs <- new.env()
+found_inputs$located <- list()
+found_inputs$geo <- list()
 
 # --- A: the projects' folders and the search FASTAs ---------------------------------------------------------------
 pride_folder <- function(accession) {
@@ -104,7 +119,7 @@ section("A", {
             fasta[[length(fasta) + 1L]] <- data.frame(strain = strains$strain[i], project = hits$project[j],
                 url = paste0(hits$folder[j], hits$file[j]), bytes = if (ok) file.size(dest) else NA_real_,
                 sha256 = if (ok) sha256(dest) else NA_character_, stringsAsFactors = FALSE)
-            if (ok && is.null(located[[strains$strain[i]]])) located[[strains$strain[i]]] <<- dest
+            if (ok && is.null(found_inputs$located[[strains$strain[i]]])) found_inputs$located[[strains$strain[i]]] <- dest
         }
         if (!nrow(hits)) fasta[[length(fasta) + 1L]] <- data.frame(strain = strains$strain[i], project = "none found",
             url = NA_character_, bytes = NA_real_, sha256 = NA_character_)
@@ -114,7 +129,6 @@ section("A", {
 })
 
 # --- F4: the GEO annotations; CUT: the B36 cut ---------------------------------------------------------------------
-geo <- list()
 section("F4", {
     rows <- list()
     attributes <- list()
@@ -127,7 +141,7 @@ section("F4", {
             dest <- file.path(work, file)
             if (!fetch(paste0(folder, file), dest)) next
             format <- if (grepl("\\.gtf\\.gz$", file)) "gtf" else "gff3"
-            geo[[paste(strains$strain[i], format)]] <<- dest
+            found_inputs$geo[[paste(strains$strain[i], format)]] <- dest
             lines <- readLines(gzfile(dest), warn = FALSE)
             body <- lines[nzchar(lines) & !startsWith(lines, "#")]
             fields <- strsplit(body, "\t", fixed = TRUE)
@@ -148,10 +162,73 @@ section("F4", {
     }
     write_tsv(do.call(rbind, rows), "F4-geo-annotation.tsv")
     write_tsv(do.call(rbind, attributes), "F4-geo-attributes.tsv")
+    # B36's search FASTA (gate F4): the zip central directory of Ecoli_B36_MQtxt.zip read by an HTTP range request;
+    # if it holds no FASTA, the protein FASTA built from the GEO GFF's WP_ accessions with NCBI efetch.
+    if (is.null(found_inputs$located[["B36"]])) {
+        project <- pride_folder("PXD020545")
+        zip <- grep("B36_MQtxt\\.zip$", project$files, value = TRUE)[1L]
+        names <- character()
+        if (!is.na(zip)) {
+            handle <- curl::new_handle()
+            curl::handle_setheaders(handle, Range = "bytes=-1048576")
+            tail <- tryCatch(curl::curl_fetch_memory(paste0(project$folder, zip), handle = handle)$content,
+                error = function(e) raw())
+            eocd <- grepRaw(as.raw(c(0x50, 0x4b, 0x05, 0x06)), tail, all = TRUE)
+            if (length(eocd)) {
+                at <- eocd[[length(eocd)]]
+                le <- function(x) sum(as.integer(x) * 256^(seq_along(x) - 1L))
+                count <- le(tail[at + 10:11])
+                size <- le(tail[at + 12:15])
+                start <- at - size
+                pos <- start
+                for (k in seq_len(count)) {
+                    if (pos < 1L || !identical(tail[pos + 0:3], as.raw(c(0x50, 0x4b, 0x01, 0x02)))) break
+                    n <- le(tail[pos + 28:29]); m <- le(tail[pos + 30:31]); c2 <- le(tail[pos + 32:33])
+                    names <- c(names, rawToChar(tail[pos + 46 + seq_len(n) - 1L]))
+                    pos <- pos + 46 + n + m + c2
+                }
+            }
+        }
+        log_line("F4", "B36 zip", zip, length(names), "entries;", paste(grep("fasta", names, value = TRUE,
+            ignore.case = TRUE), collapse = " "))
+        write_tsv(data.frame(entry = names), "F4-b36-zip-entries.tsv")
+        gff <- found_inputs$geo[["B36 gff3"]]
+        if (!is.null(gff)) {
+            lines <- readLines(gzfile(gff), warn = FALSE)
+            ids <- sort(unique(sub("^.*protein_id=([^;]+).*$", "\\1", grep("\tCDS\t.*protein_id=", lines, value = TRUE))),
+                method = "radix")
+            fasta_out <- file.path(work, "B36-efetch.fasta")
+            unlink(fasta_out)
+            for (chunk in split(ids, ceiling(seq_along(ids) / 200))) {
+                body <- NULL
+                for (attempt in 1:3) {
+                    body <- tryCatch(httr2::request("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi") |>
+                        httr2::req_body_form(db = "protein", rettype = "fasta", retmode = "text",
+                            id = paste(chunk, collapse = ",")) |>
+                        httr2::req_user_agent("MultiScholaR") |> httr2::req_perform() |> httr2::resp_body_string(),
+                        error = function(e) NULL)
+                    if (!is.null(body)) break
+                    Sys.sleep(5)
+                }
+                if (is.null(body)) stop("efetch failed")
+                cat(body, file = fasta_out, append = TRUE)
+                Sys.sleep(0.4)
+            }
+            got <- sub("^>([^ ]+).*$", "\\1", grep("^>", readLines(fasta_out), value = TRUE))
+            log_line("F4", "B36 efetch", length(ids), "accessions asked,", length(got), "returned,",
+                length(setdiff(ids, got)), "missing")
+            file.copy(fasta_out, file.path(out, "F4-B36-efetch.fasta.txt"))
+            write_tsv(data.frame(accession = got), "F4-B36-efetch-versions.tsv")
+            write_tsv(data.frame(accession = setdiff(ids, got)), "F4-B36-efetch-missing.tsv")
+            found_inputs$located[["B36"]] <- fasta_out
+            write_tsv(data.frame(strain = "B36", route = "efetch", bytes = file.size(fasta_out), sha256 = sha256(fasta_out),
+                entries = length(got)), "F4-B36-fasta.tsv")
+        }
+    }
 })
 section("CUT", {
-    gff <- geo[["B36 gff3"]]
-    gtf <- geo[["B36 gtf"]]
+    gff <- found_inputs$geo[["B36 gff3"]]
+    gtf <- found_inputs$geo[["B36 gtf"]]
     if (is.null(gff)) stop("the B36 GFF3 was not fetched")
     lines <- readLines(gzfile(gff), warn = FALSE)
     body <- which(nzchar(lines) & !startsWith(lines, "#"))
@@ -315,7 +392,7 @@ section("DEMO", {
     Sys.chmod(Sys.getenv("MSR_DIAMOND"), "0755")
     rows <- list()
     for (i in seq_len(nrow(strains))) {
-        fasta <- located[[strains$strain[i]]]
+        fasta <- found_inputs$located[[strains$strain[i]]]
         if (is.null(fasta)) {
             log_line("DEMO", strains$strain[i], "no strain FASTA located")
             next
