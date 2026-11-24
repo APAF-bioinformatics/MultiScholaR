@@ -737,3 +737,118 @@ test_that("KIT-222 G5: the peptide replicate filter's grouping is unchanged on a
     Protein.Ids, Stripped.Sequence)
   expect_identical(filter(head), filter(base))
 })
+
+# ------------------------------------------------------------------------------------------------------------------
+# Added before the fix (second tests-only commit): opening a project, the replay's relaxation, G6.
+# ------------------------------------------------------------------------------------------------------------------
+
+test_that("KIT-222 E12b: opening a lipid session file whose design carries D1 names the key", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  source_dir <- file.path(root, "source")
+  dir.create(source_dir)
+  session <- omicsOwnerSession()
+  object <- omicsOwnerLipidObject()
+  design <- object@design_matrix
+  design$replicates <- c(1L, 1L, 1L, 2L)
+  design$tech_reps <- c(1L, 1L, NA, NA)
+  design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
+  object@design_matrix <- design
+  object@technical_replicate_id <- "tech_rep_group"
+  workflow <- list2env(list(state_update_trigger = NULL, config_list = list(threshold = 0.5), design_matrix = design))
+  workflow$state_manager <- createDIASessionOwner(workflow, list(source_dir = source_dir), session, omic_type = "lipidomics")
+  shiny::withReactiveDomain(session, bindWorkflowOwnerTypeAtDesign(workflow, "LIPIDOMICS"))
+  withr::defer(closeDIAStateAdapter(workflow$state_manager))
+  value <- list(r6_current_state_name = "lipid_correlation_filtered", current_s4_object = object, design_matrix = design,
+    config_list = list(threshold = 0.5), omic_type = "lipidomics", experiment_label = "legacy")
+  warned <- NULL
+  outcome <- withCallingHandlers(tryCatch(shiny::withReactiveDomain(session, ingestWorkflowOmicsLegacySession(value,
+    workflow, source_dir, "lipidomics")), error = identity),
+    omics_design_replicate_key_collision_open = function(condition) {
+      warned <<- conditionMessage(condition)
+      invokeRestart("muffleWarning")
+    })
+  kit222Obs("E12b", c(class(outcome)[[1L]], warned %||% "no message"))
+  expect_true(isTRUE(outcome))
+  expect_type(warned, "character")
+  if (is.character(warned)) expect_match(warned, "'A_1': S1, S2", fixed = TRUE)
+})
+
+test_that("KIT-222 E12 (open check): a peptide checkpoint's design with D1 is named; a design without marks is not", {
+  checkpoint <- kit222MergedRows()[, c("Run", "group", "replicates", "tech_reps")]
+  warned <- NULL
+  outcome <- withCallingHandlers(tryCatch(noteOmicsDesignReplicateKeyCollisionOnOpen(
+    transform(checkpoint, tech_rep_group = paste(group, replicates, sep = "_"))), error = identity),
+    warning = function(condition) {
+      if (inherits(condition, "omics_design_replicate_key_collision_open")) warned <<- conditionMessage(condition)
+      invokeRestart("muffleWarning")
+    })
+  kit222Obs("E12 open check", c(class(outcome)[[1L]], warned %||% "no message"))
+  expect_type(warned, "character")
+  if (is.character(warned)) expect_match(warned, "'Ctrl_3': A_1, B_1, A_2, B_2", fixed = TRUE)
+  unmarked <- checkpoint
+  unmarked$tech_reps <- NA_integer_
+  unmarked$replicates <- c(1L, 2L, 3L, 4L, 1L, 2L)
+  quiet <- tryCatch(noteOmicsDesignReplicateKeyCollisionOnOpen(transform(unmarked,
+    tech_rep_group = paste(group, replicates, sep = "_"))), error = identity)
+  expect_s3_class(quiet, "data.frame")
+  expect_identical(nrow(quiet), 0L)
+})
+
+test_that("KIT-222 E13 (mechanism): inside the replay the refusal is recorded, base's block returned, and stated", {
+  rows <- kit222MergedRows()
+  recorder <- new.env(parent = emptyenv())
+  block <- tryCatch(withr::with_options(list(MultiScholaR.replicate_key_collisions = recorder),
+    resolveProtTechnicalReplicateBlock(rows, "group", "tech_rep_group")), error = identity)
+  kit222Obs("E13", c(class(block)[[1L]], if (is.list(recorder$collisions)) recorder$collisions$key else "nothing recorded"))
+  expect_type(block, "list")
+  expect_identical(block$block, rows$tech_rep_group)
+  expect_identical(recorder$collisions$key, "Ctrl_3")
+  statement <- tryCatch(workflowReplayKeyCollisionStatement(recorder$collisions), error = identity)
+  expect_type(statement, "character")
+  if (is.character(statement)) expect_match(statement, "not valid estimates", fixed = TRUE)
+  # Outside the replay the same design is refused.
+  expect_error(resolveProtTechnicalReplicateBlock(rows, "group", "tech_rep_group"),
+    class = "omics_design_replicate_key_collision")
+})
+
+test_that("KIT-222 G6: every sequence of two edits on five runs keeps one marking action per biological sample", {
+  runs <- paste0("r", 1:5)
+  start <- kit222Assign(kit222Design(runs), runs, "G")
+  selections <- unlist(lapply(2:5, function(k) utils::combn(runs, k, simplify = FALSE)), recursive = FALSE)
+  edits <- list()
+  for (selection in selections) {
+    edits[[length(edits) + 1L]] <- list(runs = selection, mode = "lowest", number = NULL)
+    for (first in selection) edits[[length(edits) + 1L]] <- list(runs = c(first, setdiff(selection, first)),
+      mode = "first", number = NULL)
+    for (number in 1:5) edits[[length(edits) + 1L]] <- list(runs = selection, mode = "manual", number = number)
+  }
+  # The marking action each run's mark came from; within a key all marked runs must share one action.
+  violates <- function(design, action) {
+    marked <- !is.na(design$tech_reps)
+    any(vapply(split(action[marked], design$replicates[marked]), function(a) length(unique(a)) > 1L, logical(1)))
+  }
+  apply_edit <- function(design, action, edit, id) {
+    result <- applyOmicsDesignTechRepAssignment(design, edit$runs, edit$mode, edit$number)
+    if (!isTRUE(result$ok)) return(NULL)
+    action[match(edit$runs, design$Run)] <- id
+    # A run whose mark was cleared (none here) would keep no action.
+    list(design = result$designMatrix, action = action)
+  }
+  first_violation <- NULL
+  for (i in seq_along(edits)) {
+    one <- apply_edit(start, rep(NA_integer_, 5L), edits[[i]], 1L)
+    if (is.null(one)) next
+    if (violates(one$design, one$action)) { first_violation <- c(i, NA); break }
+    for (j in seq_along(edits)) {
+      two <- apply_edit(one$design, one$action, edits[[j]], 2L)
+      if (!is.null(two) && violates(two$design, two$action)) { first_violation <- c(i, j); break }
+    }
+    if (!is.null(first_violation)) break
+  }
+  describe <- function(k) if (is.na(k)) "" else sprintf("%s(%s%s)", edits[[k]]$mode, paste(edits[[k]]$runs, collapse = ","),
+    if (is.null(edits[[k]]$number)) "" else paste0(";", edits[[k]]$number))
+  kit222Obs("G6 first violation", if (is.null(first_violation)) "none" else paste(describe(first_violation[[1L]]), "then",
+    describe(first_violation[[2L]])))
+  expect_null(first_violation)
+})

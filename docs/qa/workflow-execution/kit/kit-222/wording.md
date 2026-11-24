@@ -1,0 +1,17 @@
+# KIT-222 user-facing texts (draft; the owner sets the final wording, VAL-41)
+
+Every text below is a DRAFT as implemented at the fix commit. `<...>` are filled from the design.
+
+| Where | Code | Draft text |
+|---|---|---|
+| Technical-replicate edit, number held (every mode) | `applyOmicsDesignTechRepAssignment`, code `number_held` | "Replicate number <n> already belongs to <runs> in group <g>, marked as another biological sample. Choose a number no other sample uses." |
+| Technical-replicate edit, only some of a sample's runs | code `partial_sample` | "Selected runs <selection>: <run(s)> is already marked with <other runs> as one biological sample. Select all runs of that sample (<runs>) together in one action, with any further runs of the same sample." |
+| Save (every omic's builder, the proteomics save) and import, two marking actions in one key | `omicsDesignSaveRefusal` (rule D1) | "Runs <runs> share the biological sample '<key>' but were marked as technical replicates in separate steps, so they would be analysed as one biological sample. Mark the runs of each biological sample together, each sample with its own number. If these runs are one sample, mark all of them in one action." |
+| Save and import, a shared number with an unmarked run | `omicsDesignSaveRefusal` (KIT-128's text, unchanged; now also proteomics and the imports) | "Runs <runs> share a replicate number within their group but were not marked as technical replicates, so they would be analysed as one biological sample. Give each biological replicate its own number (the starting replicate number), or mark the runs of one biological sample with 'Assign Technical Replicates'." |
+| Opening a project; an analysis step on such a design | `omicsDesignReplicateKeyCollisionText` | "This design gives one biological sample's name to runs of two samples ('<key>': <runs>): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one." |
+| Replay of a record with such a design (in the replay's result, `design_statement`, and as a warning) | `workflowReplayKeyCollisionStatement` | "This record's design analysed runs of two different biological samples as one ('<key>': <runs>). The replay repeats that analysis as recorded, so its results are not valid estimates. To obtain valid results, correct the design (mark the runs of each sample together) and run the analysis again." |
+
+Notes for the owner:
+- "If these runs are one sample, mark all of them in one action" is the remedy for the one correct older pattern the check also flags (a third run added later to a marked pair: technical numbers 1, 2, 2). Marking all of that sample's runs in one action gives 1, 2, 3 and the same sample name.
+- The proteomics builder's success text is unchanged ("... with biological replicate number <n> and adjusted subsequent replicate numbers"); <n> is now the sample's position in its group after the renumbering.
+- No NEWS entry (OD-6).
