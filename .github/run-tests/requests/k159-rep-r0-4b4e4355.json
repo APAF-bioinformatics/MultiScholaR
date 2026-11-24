@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R0, the repair tests only (repair, e2e, tab-repair, phases, records) before the fix, shown failing where the audit faults are; ceiling 60 min, about 1.5 core-hours",
+  "label": "KIT-159 repair R0: new tests shown failing at 4b4e4355",
+  "package_commit": "4b4e435570401916bb7206b7ce0dde9ec837ba39",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r0-out",
+        "--files",
+        "repair,e2e,tab-repair,phases,records"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r0-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
