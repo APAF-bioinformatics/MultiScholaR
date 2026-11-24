@@ -87,3 +87,4 @@ KIT-194 T7 base	lipid	the session file names lipid_qc_complete as its current st
 KIT-194 effect	metab	F-j J1	DA-input max	1.37346e+06	normalised max	20.3774	equal to qc_complete on kept samples	TRUE
 KIT-194 T6 (g) base	metab	norm_complete equals the second run's normalised table on kept samples: FALSE
 KIT-194 T7 base	metab	the session file names metab_qc_complete as its current state
+KIT-194 T2 base	trx_expression_filtered committed on trx_ruvs with W columns: W_1,W_2

@@ -9,21 +9,32 @@
    differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
    normalisation), and reported the analysis complete. They now stop with a message asking to run the normalisation
    again. Lipidomics, metabolomics and transcriptomics: pressing 'Run Normalization Pipeline' a second time without
-   Reset normalised the already normalised table (log2 applied twice), and in transcriptomics could keep factors of the
-   earlier run in the model; it now runs again from the table the first run started from, and it is refused on a table
-   loaded from a session file and while a step is still running. Quality-control steps can no longer be applied to a
-   normalised table; the message names the step to Revert to. A table that carries the name of a normalisation step is
-   treated as normalised even when it was made by a script rather than by the tab: quality control and the normalisation
-   refuse it, and the message asks to Revert to the last quality-control step (or, when none is left, to import the data
-   again). The differential analysis no longer runs on a session file named after a quality-control, reset,
+   Reset normalised the already normalised table (log2 applied twice), and in transcriptomics a second run with fewer
+   factors stopped with an error and kept the first run's factors (seen with 2 then 1), and the expression filter
+   applied after normalisation kept factors estimated on the unfiltered genes; it now runs again from the table the
+   first run started from, and it is refused on a table loaded from a session file and while a step is still running.
+   Quality-control steps can no longer be applied to a normalised table; the message names the step to Revert to. A
+   table that carries the name of a normalisation step is treated as normalised even when it was made by a script, or
+   loaded from a session file, rather than by the tab: quality control and the normalisation refuse it, and the message
+   asks to Revert to the last quality-control step (or, when none is left, to import the data again). Scripts that call
+   the package's step functions directly are not guarded, as in proteomics; a script decides which table it passes. The
+   differential analysis no longer runs on a session file named after a design, quality-control, reset,
    internal-standard or log2 state (such a file was exported after Quality Control was reverted past the normalisation).
    Results change only for sessions that took these routes; analysis records are not changed, and replaying one repeats
-   the steps it recorded. To check an earlier lipidomics or metabolomics result: open its analysis record
-   (analysis_record.xlsx, exported with the results). If no log2 and no normalisation step stands before the
-   differential analysis, the analysis tested values that were not normalised. If a log2 step's input was already a
-   normalised table, or the normalisation steps were run twice without Reset, the data were normalised twice. Run the
-   analysis again with this version. A session file exported after Quality Control was reverted past the normalisation
-   holds data that were not normalised and should not be loaded for differential analysis (KIT-194).
+   the steps it recorded. To check an earlier lipidomics or metabolomics result, open its analysis record
+   (analysis_record.xlsx, exported with the results). In the sheet 'analyses', the column source_state names the table
+   the differential analysis tested. If that name ends in _intensity_filtered, _duplicates_resolved, _qc_complete,
+   _reset, _itsd_norm or _log2, the analysis tested values that were not normalised, or not fully. If it ends in
+   _correlation_filtered or _norm_complete, look at the sheet 'steps': unless a log2 step (state ending _log2) and a
+   normalisation step (state ending _normalized) stand between the quality-control steps and that state, the analysis
+   tested values that were not normalised. If the sheet 'steps' starts from a session file loaded with 'Load Filtered
+   Session' (one step, operation 'legacy'), the record cannot show how that file was made: this version refuses files
+   named after a design, quality-control, reset, internal-standard or log2 state, and a file named after the correlation
+   step is affected only if Quality Control was reverted before it was exported. A second normalisation run without
+   Reset, and quality control applied after normalisation, do not show in the sheet 'steps'. They show in
+   analysis_record.json: the first internal-standard or log2 step's input (input_entity_ids), or a quality-control
+   step's input, is the result (result_entity_id) of a normalisation, RUV or correlation step. The data were then
+   normalised twice, or filtered after normalisation. Run such analyses again with this version (KIT-194).
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The

@@ -51,8 +51,11 @@ allowed (simpleError)" and `trx_ruvs` keeps `W_1`, `W_2` from the first run. (On
 
 ## F3: lipid/metab second run with ITSD by pattern (recorded, not a stop)
 
-No error on either omic; the second run's normalised maximum is 4.33 against the first run's 20.11: ITSD, log2 and the
-normalisation applied to the normalised table (normalised twice).
+No error on either omic; the second run's normalised maximum is 4.33 against the first run's 20.11: log2 and the
+normalisation applied to the normalised table (normalised twice). The ITSD step changed nothing in either run: on
+F172 the pattern `^IS_` is matched against the annotation column, which reads `ISTD`, so no standard is found and the
+step is skipped (read; the first-run maximum equals the ITSD-off run's, 20.112). F3's question (the pattern on a table
+whose standards were removed) is not answered by this fixture.
 
 ## The test file on the tests-only commit (G0 tests job)
 

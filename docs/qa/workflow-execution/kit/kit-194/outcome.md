@@ -49,8 +49,7 @@ passed on both. R CMD check: findings identical, none only on head (`r1c-check-c
 (second run maximum 20.11, started from `<prefix>_qc_complete`).
 
 **R2 (run 45319721518), full suite, 8290ddb8 against 19997323.** 457 files `same`, 1 `only-on-head`
-(`test-omics-norm-state-guards.R`, 647 passed, 0 failed); no new failure, no changed message; 36 files fail identically on
-base and head (known laptop-recorded references); no timeout or crash; longest job 50.5 minutes (`r2-compare.tsv`).
+(`test-omics-norm-state-guards.R`, 647 passed, 0 failed); no new failure, no changed message; 35 files fail identically on base and head (920 failed expectations and 13 errors on each side) (known laptop-recorded references); no timeout or crash; longest job 50.5 minutes (`r2-compare.tsv`).
 
 **Fixtures building a lineage-free normalisation-named start (surveyed for the ruling; none changed).** Each passes
 because it does not press Run (or QC) at that state:
@@ -111,3 +110,65 @@ because it does not press Run (or QC) at that state:
 - Staging moved after the merge (to 67d38df3: KIT-192, KIT-189, KIT-191 merged); R2 is against 19997323. The merger's rule (6.3) applies.
 - Enrichment downstream of an affected DA; the report text of an affected record; F-m, F-p, F-q, F-r (candidates).
 - Lipid's recorded log2 argument (D4 (b2)) and the state names older builds wrote.
+
+## Left for the owner's wording pass (implementation audit I02; VAL-41)
+
+Not changed here; the auditor's proposals, verbatim:
+- **The DA text for a loaded file** (D4 (b1), the loaded branch of `runOmicDaAnalysis`). Today it shows
+  `omicNormGuardTexts()$da` ("…Run the normalisation (and the correlation filter or its Skip) again, then run the
+  analysis."), which that adopted session refuses (A07). Proposed separate text: "This session file was saved after
+  Quality Control was reverted past the normalisation, so its table ("<state>") was not normalised and cannot be used
+  for the differential analysis. Import the data again, run quality control and the normalisation, then run the
+  analysis." T8 (b1)'s expectation (`k194DaText`) changes with it.
+- **The export text** repeats the correlation sentence. Proposed: "the current table is not the one the last
+  normalisation produced (Quality Control was reverted since), so the exported session would not hold the normalised
+  table the analysis reports. Press "Run Normalization Pipeline" again, then export."
+
+## For the change report
+
+**What was wrong, and who was affected.** In lipidomics and metabolomics the normalisation tab remembered that a
+normalisation had run, but nothing checked that the table in front of it was still that normalisation's result.
+- After Quality Control was reverted past the normalisation (or after "Reset to Pre-Normalization"), "Apply Correlation
+  Filter", its Skip, "Export Normalized Data" and the differential analysis worked on the quality-control table. The DA
+  tested intensities with no internal-standard step, no log2 and no between-sample normalisation, and reported the
+  analysis complete. A Revert that stopped inside the normalisation gave a partly normalised table.
+- Pressing "Run Normalization Pipeline" a second time without Reset (to try another method) normalised the normalised
+  table: log2 of log2 values, then normalisation again; at the default offset 0 every value at or below 1 on the first
+  log2 scale became missing. The same happened in a reopened session. In transcriptomics a second run with fewer RUV
+  factors stopped with an error and kept the earlier factors.
+- Quality-control steps could be applied to a normalised table (thresholds computed on log or normalised values); in
+  transcriptomics the expression filter on `trx_ruvs` kept factors estimated on the unfiltered genes.
+Affected: any lipidomics, metabolomics or transcriptomics session that took one of these routes in the application.
+Not affected: the default path (quality control, one normalisation, correlation or Skip, DA), a run after Reset, a run
+after a Revert into Quality Control, every replayed analysis record, the workbooks, and proteomics (KIT-182).
+
+**Code at the base (447ba678).** `R/mod_omic_norm.R:343-378` (`runOmicNormPipeline` reads the head with no state check),
+`:457-500` (`applyOmicNormCorrelation` checks only the tab's flags), `:507-537` (`skipOmicNormCorrelation`),
+`:558-604` (`exportOmicNormSession` checks only `normalization_complete`); `R/mod_omic_da.R:286-289`, `:299-309`
+(`runOmicDaAnalysis`: the head fallback needs only the status "complete"); `R/mod_omic_qc_tabs.R:174-207`, `:356-383`,
+`:758-799` (QC steps read the head unchecked); `R/mod_trx_qc_filter.R:52-86`; `R/utils_workflow_trx_norm.R:136-158`;
+`R/utils_workflow_omics_actions.R:249-266` (managed QC actions read the head when they start).
+
+**Code at the fix (09f05774).** The guards: `R/mod_omic_norm.R:821` (`assertOmicQcHeadNotNormalised`), `:835`
+(`omicNormRunStart`, the run rule: busy refusal, re-run from the previous run's start, refusal of a normalised or
+adopted input), `:863` (`omicNormApplyRunStart`), `:883` (`assertOmicNormHeadIsResult`); their calls at
+`R/mod_omic_norm.R:356` (run), `:472` (Apply), `:519` (Skip), `:589` (export); `R/utils_workflow_trx_norm.R:140`;
+`R/mod_omic_qc_tabs.R:183`, `:380`, `:782` (QC presses) and `:267` (`omicQcManagedFailed`);
+`R/utils_workflow_omics_actions.R:264` (managed QC judged when it starts); `R/mod_trx_qc_filter.R:61`, `:89`;
+`R/mod_omic_da.R:299` (`omicDaFallbackHeadNormalised`), `:315` (`omicDaLoadedStateRefused`), `:341` (their call).
+
+**What changed in results.** Only for sessions that took the routes above: the step is refused with a message naming
+what to press, or (a second run at the tab's own result) the run starts again from the table the first run started
+from, so its result equals a single run with the new settings. Every default-path result is unchanged (R2: 457 files
+`same`). Analysis records are unchanged and replay as recorded.
+
+**Evidence and its limits.**
+- G0 (run 45304509096) executed the defect on the base: four routes on both omics, the DA testing the QC table
+  (maximum 1,373,458.9 against 20.38 normalised), 514 rows, status "complete" (`fj-confirm.tsv`).
+- The new tests (R1 45307575111, R1c 45313963471): 280 failures at stated values on the base, none at the fix;
+  second-run maximum 4.33 on the base against 20.11 at the fix (`effect.tsv`).
+- R2 (45319721518): the full suite unchanged apart from the new file.
+- Limits: synthetic fixture F172 (520 features, two groups of six), a mechanism check, not an effect size on real
+  data; on F172 "ITSD by pattern" finds no standard, so the ITSD step was not exercised (feasibility.md, F3); managed
+  sessions were tested with an in-process runner (the real worker only through the unchanged worker journey); how often
+  users took these routes is not known. Earlier results can be checked from their analysis record (NEWS, the recipe).
