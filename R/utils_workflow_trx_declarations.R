@@ -947,8 +947,24 @@ trxWriteIntegrationExport <- function(manager, parameters, path) {
         abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
     }
     newY <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value$newY
+    # KIT-224 (OD-2): each gene keeps its TMM logCPM level in the file.
+    newY <- trxRuviiiExportRestoredValues(manager, export, newY)
     vroom::vroom_write(as.data.frame(newY) |> tibble::rownames_to_column("Run"), path)
     invisible(path)
+}
+
+#' The accepted RUVIII export's values with each gene's level restored (KIT-224, the owner's decision OD-2 of
+#' 2026-11-25): RUV-III estimates W from the controls' uncentred logCPM, so every gene is shifted by a constant; the
+#' export file and the integration input add it back (`restoreRuvFeatureLevels`), so that each gene's mean over the runs
+#' is its TMM logCPM mean there and differences between runs are RUV-III's. The reference is the logCPM the export read,
+#' from the export's own source state (the export records no `logcpm`). The product `newY` is not changed.
+#' @param export The accepted export (`snapshot$exports$trx_ruviii_export`).
+#' @param newY The export's `newY`, samples by genes.
+#' @return `newY` with each gene's level restored, samples by genes.
+#' @noRd
+trxRuviiiExportRestoredValues <- function(manager, export, newY) {
+    log_cpm <- trxSavedMatrix(manager, trxProductValue(manager, trxStateRuvs(manager, export$source)$logcpm)$log_cpm)
+    t(restoreRuvFeatureLevels(t(newY), log_cpm[colnames(newY), rownames(newY), drop = FALSE]))
 }
 
 #' The head lineage's RUVs state (KIT-136): its reference, record and product, and whether it applied RUV (the
@@ -1011,7 +1027,8 @@ trxIntegrationInputSource <- function(manager) {
             abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
         }
         export$value <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value
-        values <- t(export$value$newY)
+        # KIT-224 (OD-2): each gene keeps its TMM logCPM level (the manifest's `correction$levels`).
+        values <- t(trxRuviiiExportRestoredValues(manager, export, export$value$newY))
         product <- list(type = "trx.ruviii", entity_id = export$reference$entity_id, sha256 = export$reference$payload$sha256)
     } else {
         values <- trxSavedMatrix(manager, trxProductValue(manager, state$ruvs$logcpm)$log_cpm)
@@ -1078,7 +1095,7 @@ trxIntegrationInputCorrection <- function(manager, state, export, samples, techn
     correction <- list(id = "C3b", method = "RUVIII", m_source = value$m_source, k = value$k,
         control_count = value$control_count %||% sum(value$ctl_mask), control_source = value$control_source,
         replicate_structure = if (by_technical) "technical_replicates" else "group", grouping_variable = grouping,
-        matrix = "ruviii_export_values", da_tests = "counts_with_ruvs_factors_in_model")
+        matrix = "ruviii_export_values", levels = "restored_to_tmm_logcpm", da_tests = "counts_with_ruvs_factors_in_model")
     outcomes <- workflowRecordStepOutcomes(manager$.context, "trx_ruvs", "trx_ruvs", state$record, list())
     if (all(RUV_DESIGN_RECORD_FIELDS %in% names(outcomes))) correction <- c(correction, outcomes[RUV_DESIGN_RECORD_FIELDS])
     correction <- lapply(correction, function(value) if (is.null(value)) NA else value)

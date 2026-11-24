@@ -367,7 +367,9 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
                 percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_))
-        })
+        },
+        # KIT-224: the rule marker of the feature levels after the correction (`workflowReplayRuleMarkers`).
+        fixed = list(ruv_feature_levels = "restored"))
 }
 
 #' The new design's RUV parameters (KIT-129 integration item 1), by the names of KIT-129 section 1e: the design, the
