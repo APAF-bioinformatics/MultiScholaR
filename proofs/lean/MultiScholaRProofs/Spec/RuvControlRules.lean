@@ -6,18 +6,18 @@ public import Mathlib.Data.List.Sort
 public import Mathlib.Data.Rat.Floor
 
 /-!
-# Group R, R-N1: selection specifications (KIT-193 section 7.2; draft for its statements review)
-
-Not frozen. Written after the statements gate as its register (section 4) allows: this file is new, has its own line
-in `SPEC.sha256`, and goes through its own statements review before any proof (ticket 5.3 item 4). No other Spec
-file changes.
+# Group R, R-N1: selection specifications (KIT-193 section 7.2)
 
 Source: KIT-193 7.2 row R-N1 (audit U4); code read on `v0.9-staging` at 19997323:
 * the sweep's control selection, `getNegCtrlProtAnovaHelper` (`R/func_prot_norm_optimization_helpers.R:463` onward):
   missing p-values set to 1 (`:565`), q-values (`:570`, `:572`), `filtered_list <- aov[aov > ruv_qval_cutoff]`
-  (`:578`), `list_size <- min(num_neg_ctrl, length(filtered_list))` (`:580`),
-  `names(sort(filtered_list, decreasing = TRUE)[1:list_size])` (`:582`). With every q equal (VAL-82: the grouping
-  lost, every p and q 1) the selection is positional: the first rows.
+  (`:578`), `list_size <- ifelse(num_neg_ctrl > length(filtered_list), length(filtered_list), num_neg_ctrl)`
+  (`:580`: the smaller of the two), `names(sort(filtered_list, decreasing = TRUE)[1:list_size])` (`:582`). With every
+  q equal (VAL-82: the grouping lost, every p and q 1) the selection is positional: the first rows. This is the rule
+  of every caller at 19997323. KIT-190 (VAL-110, VAL-126) gives lipidomics and metabolomics another rule (ranked by
+  p-value, ties by feature identifier, features observed in one group left out), which this file does not model; the
+  rule modelled here stays for proteomics, and for the replay of lipidomics and metabolomics records made before
+  KIT-190.
 * the first-pass controls of proteomics, `protRuvFirstPassControls` (`:1380`):
   `rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))`, missing ranks `FALSE`; and of
   lipidomics and metabolomics, `omicsRuvFirstPassControls` (`R/func_omics_ruv_factors.R:54`, the same expression on
@@ -31,7 +31,8 @@ R's `rank(ties.method = "first", na.last = "keep")` is the count model `rankFirs
 index order) is `orderPos`. Two assumptions about R, checked by the paired test: `sort` and `order` on doubles are
 stable here (method `radix`, which `auto` chooses below 2^31 values); and `x[1:n]` for `0 ≤ n ≤ length(x)` is
 `rHead` (R's `1:0` is `c(1, 0)`, which selects the first element, so `list_size = 0` with a non-empty list selects
-one control).
+one control). Row names are distinct (the code returns `rownames(data_matrix) %in% control_genes`). A missing q-value
+is outside the model (the code sets missing p-values to 1 before `qvalue`, `:565`).
 -/
 
 @[expose] public section
@@ -56,6 +57,13 @@ def N1_stable_stmt : Prop :=
     sweepControls q cutoff num =
       rHead (min num ((List.finRange p).filter fun i => decide (cutoff < q i)).length)
         ((List.finRange p).filter fun i => decide (cutoff < q i))
+
+/-- R-N1 (a'): ties in general. The sweep's order is "larger q first, then earlier row", so inside a block of tied
+q-values the table's row order decides (VAL-126). No hypothesis. -/
+def N1_ties_stmt : Prop :=
+  ∀ (p : ℕ) (q : Fin p → ℚ) (cutoff : ℚ),
+    (((List.finRange p).filter fun i => decide (cutoff < q i)).mergeSort fun i j => decide (q j ≤ q i)).Pairwise
+      fun i j => q j < q i ∨ (q j = q i ∧ i < j)
 
 /-- The number of p-values present. -/
 def nPresent {F : ℕ} (pv : Fin F → Option ℚ) : ℕ := (univ.filter fun i => (pv i).isSome).card
@@ -108,11 +116,14 @@ def N1_trx_stmt : Prop :=
     (trxFirstPassControls pv).card = G - ⌈(1 / 4 : ℚ) * G⌉₊ ∧
       ∀ i j, i ∉ trxFirstPassControls pv → j ∈ trxFirstPassControls pv → orderBefore pv i j
 
-/-- R-N1 (d): the two rules differ (audit U4), already with five genes all with a p-value: the first leaves out
-`⌊5/4⌋ = 1`, the second `⌈5/4⌉ = 2`. Closed statement. -/
+/-- R-N1 (d): the two rules differ (audit U4) in two ways. With five genes all with a p-value the first leaves out
+`⌊5/4⌋ = 1` and the second `⌈5/4⌉ = 2`. With four genes of which the first has no p-value, that gene is a
+transcriptomics control and is not a first-pass control of the other omics. Closed statement. -/
 def N1_rules_differ_stmt : Prop :=
-  let pv : Fin 5 → Option ℚ := fun i => some ((i : ℕ) : ℚ)
-  firstPassControls pv ≠ trxFirstPassControls pv
+  (let pv : Fin 5 → Option ℚ := fun i => some ((i : ℕ) : ℚ)
+   firstPassControls pv ≠ trxFirstPassControls pv) ∧
+  (let pv : Fin 4 → Option ℚ := fun i => if (i : ℕ) = 0 then none else some ((i : ℕ) : ℚ)
+   (0 : Fin 4) ∈ trxFirstPassControls pv ∧ (0 : Fin 4) ∉ firstPassControls pv)
 
 /-! ## Witnesses (section 5.1) -/
 

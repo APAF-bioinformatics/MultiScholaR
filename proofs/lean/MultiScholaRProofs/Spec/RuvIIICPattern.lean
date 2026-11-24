@@ -3,11 +3,7 @@ module
 public import MultiScholaRProofs.Spec.RuvIIIC
 
 /-!
-# Group R, R-J3: RUV-III-C's missing-value pattern (KIT-193 section 7.2; draft for its statements review)
-
-Not frozen. Written after the statements gate as its register (section 4) allows: this file is new, has its own line
-in `SPEC.sha256`, and goes through its own statements review before any proof (ticket 5.3 item 4). No other Spec
-file changes.
+# Group R, R-J3: RUV-III-C's missing-value pattern (KIT-193 section 7.2)
 
 Source: KIT-193 7.2 row R-J3 and 5.3 item 1; the branch conditions as the statements register (section 4) read them
 in RUVIIIC 1.0.19 at the locked commit c534151f, `src/RUVIIIC_Varying.cpp`: every value of the target missing when
@@ -18,11 +14,14 @@ written on its observed runs and missing elsewhere (`:186-198`, `:286-301`). The
 left with no value (`R/func_prot_s4_norm_methods.R:264-265`; lipid and metabolite `R/func_lipid_s4_ruv_methods.R:713-715`),
 and the post-RUV clean-up applies KIT-187's count rule to the corrected matrix (`R/utils_workflow_dia_products.R:489-492`).
 
-Model. `RuvIIICBr` adds to `RuvIIIC` the residual dimension on a row set (`currentResidualDimensions`, abstract), a
-flag for the eigen step (at least `k` eigenvalues converged and no exception; abstract), and the closed-form branch's
-values (abstract here; R-K1 (ii) states them). Values are reals: a non-finite value (from the closed form's
-unchecked inverse of a singular `Y_C Y_C'`, audit U3, or from the eigen-solver) is outside the model, as is the
-percentile threshold the clean-up recomputes on the corrected values (not covered, ticket 7.2).
+Model. `RuvIIICBr` adds to `RuvIIIC` the residual dimension on a row set (`currentResidualDimensions`, abstract)
+(`:166`: the target's observed runs minus the replicate sets with an observed run; a whole number here, since the
+replicate matrix is an indicator of non-overlapping sets), a flag for the eigen step (at least `k` eigenvalues
+converged and no exception; abstract), and the closed-form branch's values (abstract here; R-K1 (ii) states them).
+Values are reals: a non-finite value (from the closed form's unchecked inverse of a singular `Y_C Y_C'`, audit U3, or
+from the eigen-solver) is outside the model, as is the percentile threshold the clean-up recomputes on the corrected
+values (not covered, ticket 7.2). Restoring levels (`restoreRuvFeatureLevels`; P1 to P3, L2) adds one finite number
+per feature and changes no pattern.
 -/
 
 @[expose] public section
@@ -64,18 +63,22 @@ def J3_pattern_stmt : Prop :=
     (r.correctable j = true → ∀ i, (r.out j i).isSome = r.obs i j) ∧
       (r.correctable j = false → ∀ i, r.out j i = none)
 
-/-- R-J3, the clean-up's counts: for every feature the caller keeps (one with a value at some run) and every set of
-runs `g` (a group, on the runs that remain), the number of missing values after RUV equals the number before. No
-hypothesis beyond the feature being kept. -/
+/-- R-J3, the missing values the clean-up meets: for every feature the caller keeps (one with a value at some run) and
+every set of runs `g` (a group, on the runs that remain), the number of missing values after RUV equals the number
+before. This is one of the two parts of the clean-up's count: `removeRowsWithMissingValuesPercentHelper` also counts a
+value at or below the intensity threshold it recomputes from the corrected matrix
+(`R/func_prot_qc_filtering_helpers.R:243-247`), which is not covered; the clean-up's decisions after RUV are not
+claimed equal to those before. No hypothesis beyond the feature being kept. -/
 def J3_counts_stmt : Prop :=
   ∀ (n p s k : ℕ) (r : RuvIIICBr n p s k) (j : Fin p) (g : Finset (Fin n)),
     (∃ i, (r.out j i).isSome = true) →
       (g.filter fun i => r.out j i = none).card = (g.filter fun i => r.obs i j = false).card
 
-/-- Witness for `J3_counts_stmt`: a corrected feature with a missing run (so a count is not trivially 0) and a
-feature that is not corrected. -/
+/-- Witness for `J3_counts_stmt`: `0 < k`, a feature corrected in the general branch (more than `k` residual
+dimensions) with a missing run (so a count is not trivially 0), and a feature that is not corrected. -/
 def J3_witness_stmt : Prop :=
   ∃ (n p s k : ℕ) (r : RuvIIICBr n p s k) (j j' : Fin p),
-    r.correctable j = true ∧ r.correctable j' = false ∧ (∃ i, r.obs i j = false) ∧ ∃ i, r.obs i j = true
+    0 < k ∧ r.correctable j = true ∧ k < r.resDim (r.rows j) ∧ r.correctable j' = false ∧
+      (∃ i, r.obs i j = false) ∧ ∃ i, r.obs i j = true
 
 end MultiScholaRProofs.Ruv
