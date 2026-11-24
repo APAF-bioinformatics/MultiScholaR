@@ -64,14 +64,25 @@ Observed:
   factors (`args$ruv_factors[[assay]]$W`) is 2.8e-12 and 6.9e-12: on this fixture, which has no missing value, the two
   spans coincide. How far they are apart with missing values was not measured (see "Not checked" in `outcome.md`).
 
-## G2: pending run R1b
+## G2 (run R1b, 45332543296, head 621a32b5): holds on the two RUV-III-C fixtures with missing values
 
-In R1 no fixture's written input held a feature with a missing run (63 of 63 proteins and 88 of 88 lipids complete),
-so G2 (the compiled RUV-III-C gives one W to every complete target while other features have missing values) was not
-yet shown on a route. The two fixtures at two factors were given missing values (commit 621a32b5; an instrument fix
-under VAL-54: no expected value changed) and run again as R1b. What R1 does show: on the fixture after the correlation
-filter the three proteins that were missing in the removed run raise the rank from 2 to 4, so RUV-III-C did correct
-them with factors of their own.
+In R1 no fixture's written input held a feature with a missing run (63 of 63 proteins and 88 of 88 lipids complete).
+The two fixtures at two factors were given missing values (commit 621a32b5: three otherwise complete proteins, and
+three lipids of one assay, made missing in one run each before the step; an instrument fix under VAL-54, no expected
+value changed) and run again (`r1b/g1-lines.txt`):
+
+| Fixture | Data set | Declared k | Rank | Features complete of rows | s_(k+1)/s_1 | Largest relative residual | Status |
+|---|---|---|---|---|---|---|---|
+| Proteomics classic, legacy RUV-III-C, two factors, missing values | proteomics | 2 | 2 | 60 of 63 | 4.3e-15 | 2.92e-09 | exact |
+| Lipidomics, legacy RUV-III-C, two factors, missing values | lipidomics_LCMS_Pos | 2 | 2 | 41 of 44 | 5.4e-15 | 2.99e-14 | exact |
+| The same, the assay without missing values | lipidomics_LCMS_Neg | 2 | 2 | 44 of 44 | 8.1e-15 | 3.52e-14 | exact |
+
+Observed: with features that have a missing run present in the data, the complete features' removed part is still
+confined to k directions (rank equal to k, s_(k+1)/s_1 at rounding level): the compiled RUV-III-C gives one W to every
+complete target, as its R reference was read (ticket 2.3). The three features with a missing run are left out of the
+factors (60 of 63, 41 of 44). Together with R1's fixture after the correlation filter (the three proteins that were
+missing in the removed run raise the rank from 2 to 4), this is the behaviour ticket 2.2 states: complete targets
+share one W, a target with a missing run has its own.
 
 ## G3 (run L1) and G4
 
