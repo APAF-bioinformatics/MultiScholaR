@@ -819,16 +819,16 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
 
 #' The proteins without a gene name per comparison on the g:Profiler route (KIT-208, VAL-147 (3))
 #'
-#' Rows of each comparison's DA table whose identifier (the route's `gene_name`) is NA or empty; they leave the lists
-#' and the background g:Profiler is sent.
+#' Tested rows of each comparison's DA table (`enrichmentTestedRows`, the background in force, KIT-205) whose identifier
+#' (the route's `gene_name`) is NA or empty; they leave the lists and the background g:Profiler is sent.
 #' @param da_results The run's `da_results_for_enrichment` (after the organism filter, when it applied).
 #' @param contrasts_tbl The contrasts table (display names).
 #' @param id_column The identifier column sent to g:Profiler.
-#' @return One string, "<comparison>: <unnamed> of <rows>" per comparison joined by "; ", or NULL when every protein
-#'   of every comparison has a name.
+#' @return One string, "<comparison>: <unnamed> of <tested rows>" per comparison joined by "; ", or NULL when every
+#'   tested protein of every comparison has a name.
 #' @noRd
 workflowEnrichmentUnnamedProteins <- function(da_results, contrasts_tbl, id_column) {
-    tables <- Filter(Negate(is.null), da_results@da_data)
+    tables <- lapply(Filter(Negate(is.null), da_results@da_data), function(table) enrichmentTestedRows(table)$rows)
     unnamed <- vapply(tables, function(table) {
         ids <- table[[id_column]]
         sum(is.na(ids) | !nzchar(as.character(ids)))

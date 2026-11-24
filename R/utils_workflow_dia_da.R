@@ -721,7 +721,8 @@ enrichmentContrastDisplayNames <- function(contrasts_tbl, ids) {
 
 #' The g:Profiler lists not sent for want of a named identifier (KIT-208, VAL-147 (1))
 #'
-#' A comparison whose background has no named protein refuses the run: nothing it could test would be tested. A list
+#' A comparison whose background (its tested rows, `enrichmentTestedRows`) has no named protein refuses the run: nothing
+#' it could test would be tested. A list
 #' whose proteins are all unnamed, in a comparison with named proteins, is not tested and returned.
 #' @param signals The `multischolar_enrichment_no_identifiers` conditions `perform_enrichment` signalled, in order.
 #' @param da_results The run's `da_results_for_enrichment` (its contrasts table and DA tables name and count).
@@ -738,9 +739,14 @@ diaEnrichmentNoIdentifiers <- function(signals, da_results) {
     empty <- vapply(signals, function(signal) identical(as.numeric(signal$background_ids), 0), NA)
     if (any(empty)) {
         refused <- unique(raw[empty])
-        sentences <- vapply(refused, function(name) sprintf(paste("g:Profiler tests gene names, and none of the",
-            "proteins of comparison %s has one (0 of %d proteins named), so nothing would be tested."),
-            enrichmentContrastDisplayNames(contrasts_tbl, name), NROW(if (!is.na(name)) tables[[name]])), "")
+        # KIT-205 alignment (KIT-208 audit I08): n counts the comparison's tested rows, the background in force.
+        tested <- function(name) {
+            table <- if (!is.na(name)) tables[[name]]
+            if (is.null(table)) 0L else NROW(enrichmentTestedRows(table)$rows)
+        }
+        sentences <- vapply(refused, function(name) sprintf(paste("g:Profiler tests gene names, and none of the tested",
+            "proteins of comparison %s has one (0 of %d tested proteins named), so nothing would be tested."),
+            enrichmentContrastDisplayNames(contrasts_tbl, name), tested(name)), "")
         rlang::abort(paste(c(sentences, "Check that the protein annotation was retrieved for this organism (save the",
             "design again). This happens when the annotation was not retrieved for these proteins, or when their",
             "identifiers are not UniProt accessions."), collapse = " "), class = "workflow_enrichment_no_identifiers")
