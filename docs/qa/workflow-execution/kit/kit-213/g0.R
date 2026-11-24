@@ -2,7 +2,7 @@
 # code. Runs on a GitHub-hosted runner (run-tests `scripts`) from the package root of the commit under test, which holds
 # the base's R/ unchanged.
 #
-# Usage: Rscript docs/qa/workflow-execution/kit/kit-213/g0.R <out dir> journeys|w1
+# Usage: Rscript docs/qa/workflow-execution/kit/kit-213/g0.R <out dir> journeys|w1 [case,case,...]
 #
 # journeys: for each omic's journey of ticket section 4, the analysis twice, each in its own fresh project root, then
 #   the Summary's Save (KIT-207's `k207Save`): lipidomics and metabolomics as KIT-207 G1 (run, Apply, DA); trx as KIT-207
@@ -21,7 +21,8 @@
 # Exit status 0 unless the setup itself fails; a journey or case that errors is written as such (an instrument result).
 
 args <- commandArgs(trailingOnly = TRUE)
-stopifnot(length(args) == 2L, args[[2L]] %in% c("journeys", "w1"))
+stopifnot(length(args) %in% 2:3, args[[2L]] %in% c("journeys", "w1"))
+w1Only <- if (length(args) == 3L) strsplit(args[[3L]], ",", fixed = TRUE)[[1L]] else character()
 dir.create(args[[1L]], showWarnings = FALSE, recursive = TRUE)
 out <- normalizePath(args[[1L]], mustWork = TRUE)
 part <- args[[2L]]
@@ -284,6 +285,10 @@ if (identical(part, "journeys")) evalq({
 if (identical(part, "w1")) k213Defs("test-omic-summary-module.R", env)
 if (identical(part, "w1")) evalq({
     real <- get("createWorkflowArgsFromConfig", envir = asNamespace("MultiScholaR"))
+    # Instrument rerun 2 (run 45473660748: the lipidomics and metabolomics cases stopped at testthat's `teardown_env()`
+    # outside a test file): with a third argument the listed cases run as the test file runs them (testthat::test_file,
+    # `desc` the case's test), the steps whose capture changed then not known (written "").
+    w1Desc <- "(b) %s: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's"
     w1Case <- function(case) {
         saved <- list()
         testthat::local_mocked_bindings(createWorkflowArgsFromConfig = function(...) {
@@ -291,13 +296,19 @@ if (identical(part, "w1")) evalq({
             saved[[length(saved) + 1L]] <<- readLines(path, warn = FALSE)
             path
         }, .package = "MultiScholaR")
+        if (length(w1Only)) {
+            withr::local_envvar(MULTISCHOLAR_KIT108_W1_CASES = case)
+            testthat::test_file(file.path("tests", "testthat", "test-omic-summary-module.R"), desc = sprintf(w1Desc, case),
+                reporter = "summary", stop_on_failure = FALSE)
+            return(list(saved = saved, changed = character(), values = character()))
+        }
         captures <- omicSummaryW1Case(case)
         changed <- names(captures)[vapply(captures, function(step) !isTRUE(step$study_parameters %in% c("<absent>",
             "<unchanged>")) && !is.null(step$study_parameters), logical(1))]
         list(saved = saved, changed = changed, values = vapply(changed, function(s) captures[[s]]$study_parameters, ""))
     }
     rows <- list()
-    for (case in omicSummaryW1Cases) {
+    for (case in if (length(w1Only)) w1Only else omicSummaryW1Cases) {
         result <- tryCatch(w1Case(case), error = function(e) list(error = paste(class(e)[[1L]], conditionMessage(e))))
         if (!is.null(result$error)) {
             rows[[length(rows) + 1L]] <- data.frame(case = case, write = NA, lines = NA, l_lines = NA,
