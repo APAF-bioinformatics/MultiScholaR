@@ -15,7 +15,7 @@ VAL-99). Authority VAL-48, VAL-91 (D1, D2), VAL-99. Branch `kit-182-normalisatio
 
 ## Runs (`runs.tsv`)
 
-Correction pass: R1b (45326674826) on the merge 5add430b against staging 0b926295 (KIT-177 merged first); it stopped at F1 (h) (mechanics), so R2 was not repeated.
+Correction pass: R1b (45326674826) on the merge 5add430b against staging 0b926295 (KIT-177 merged first); it stopped at F1 (h) (the fixture lacked a contrasts table), so R2 was not repeated then. Allowed by VAL-138: one test line (the fixture's `contrasts_tbl`), the merge with staging f6c86cfb (KIT-175 and KIT-199 in; ledger-only conflict), the R1b repeat (45334768790: as predicted, F1 (h) ran to its end) and R2 repeated (45343585018: as predicted; 459 `same`, the new file `only-on-head`, `test-prot-norm-worker-figures.R` `count-changed`). R2 repeated used 1,141.2 job-minutes (76.08 core-hours) against its row ceiling of 1,080 (72.0), 61.2 over, in the test jobs alone (no check, no lost shard; the suite has 461 files). The ticket's total is 224.3 of 324.0 core-hours.
 
 
 R1 (45294678011): fix against tests-only on the regression scope (31 files) with R CMD check. R1-2 (45302634386), R1-3 (45306612548) and R1-3b (45306797628): instrument runs 1, 2 and 3 of 3 (VAL-54 (iv)) on the two affected files. R1-3 stopped at plan (empty base field) and ran no test; R1-3b repeated it with the base filled. R1's instrument budget is spent: a further instrument defect on R1's scope stops for the owner. R2 (45310866571): full suite on the merge candidate against `v0.9-staging`.
@@ -87,18 +87,16 @@ R1 (45294678011): fix against tests-only on the regression scope (31 files) with
 |---|---|---|
 | A0 | met | ticket sections 14, 21 |
 | A1 | met | R1-3b `r1-3b-compare.tsv`, `r1-3b-failures-base.txt` |
-| A2 | partly met: F1 (h) as declared (export and reopen) not answered: in R1b the export and the archive's opening ran, the adoption into a new owner stopped on the fixture's missing contrasts table | `feasibility.md`, R1b |
+| A2 | met: F1 (h) as declared (export, reopen into a new owner, restore, refused click) in the R1b repeat (allowed by VAL-138) | `feasibility.md`, `r1b2-compare.tsv` |
 | A3 | met | `r1-compare.tsv`, `r1-3b-compare.tsv` |
 | A4 | met | `r1-check-compare.txt`, `r2-check-compare.txt` |
-| A5 | met | `r2-full-compare.tsv`, `r2-full-compare-failures.txt` |
+| A5 | met (R2 on 868c907e; repeated on the merge 1644014f) | `r2-full-compare.tsv`, `r2b-full-compare.tsv` |
 | A6 | met | `effect.tsv` |
 | A7 | met | the branch diff |
 | A8 | met | this file, `runs.tsv` |
 
 ## Not checked
 
-- A session export and its reopen into a new owner, then the lineage (F1 (h) as first written): the export stops on this
-  fixture on both commits.
 - The running application (no Save Design after normalisation pressed in a browser; S9 is tested by `saveState`).
 - The other omics (KIT-194, VAL-99 (1)).
 - Real data; any effect size.

@@ -15,7 +15,7 @@ Answered by the new test file on both commits of R1 and its instrument reruns (r
 | (f) | as (d) after `commitDIADaArguments` re-commits `correlation_filtered` | TRUE | TRUE | ii | equal |
 | (g) b | (b) with the QC step on the worker path | TRUE | TRUE | i, ii | equal |
 | (g) d | (d) with the QC step on the worker path | TRUE | TRUE | ii | equal |
-| (h) | (d) after the tab's restore (see limitation) | TRUE | TRUE | ii | equal |
+| (h) | (d) after a session export, a reopen into a new owner and the tab's restore (R1b repeat) | TRUE | TRUE | ii | equal |
 | (i) | QC from PRF1 after a normalisation and a Revert | FALSE | FALSE | none | equal |
 | (j) | adopted head saved while `ruv_corrected` is in the history | TRUE | TRUE | iii only | equal |
 | (k) | design re-saved after RUV, and a QC change on it | FALSE, FALSE | FALSE, FALSE | none | equal |
@@ -36,7 +36,12 @@ and the table row above for (h) is from that narrowed case (restore only, same o
 correction pass (R1b, 45326674826): with `fixture$paths$source_dir` the export and `openDIANativeSession` completed;
 `adoptDIANativeSession` then stopped in `validateProtDaFilteredSession` with "Filtered session data does not contain a
 valid contrasts table." (the fixture's workflow carries no `contrasts_tbl`; the application's design step sets one).
-F1 (h) as declared is therefore not answered; stopped for the coordinator.
+Stopped for the coordinator; the owner allowed one test line (VAL-138): the fixture's workflow carries a
+`contrasts_tbl` before the export, as `test-workflow-native-session.R` sets it. In the R1b repeat (45334768790) F1 (h)
+ran to its end on the merge 1644014f: export with the project's source folder, `openDIANativeSession`,
+`adoptDIANativeSession` into a new owner, `restoreProtNormTabState`, lineage TRUE (clause ii, shipped predicate equal),
+and "Run Normalization & RUV" on the reopened project refused with class `prot_norm_input_after_normalisation`.
+F1 (h) is answered as declared.
 
 ## F2: the QC change removes proteins
 
