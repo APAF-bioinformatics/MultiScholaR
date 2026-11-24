@@ -358,6 +358,34 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   22.9 CPU-seconds (labels `rP3-*`, `rP34-*`). Agent time 0.05 h (13:35 to 13:38), against R-F3 6/10, R-L2 8/14,
   R-M1 4/6.
 
+## Target 1's paired test (run P1a: P1 split, target 1 only; target 2's pair waits for KIT-190)
+
+- **Ticket 8.2's diff before the first run:** `git diff e6c42d1d d84b6dfd -- R/func_prot_qc_filtering_helpers.R
+  R/func_general_parameter_helpers.R R/utils_workflow_analysis_record.R` is empty: the lines `Spec/FilterCount.lean`
+  cites (read at e6c42d1d on `kit-187-filter-by-count`) are unchanged on `v0.9-staging` at d84b6dfd (KIT-187 merged at
+  6416dbd6). Nothing goes back to the auditor.
+- **Merge:** `v0.9-staging` (d84b6dfd) merged into `kit-193-lean-proofs` (147d498d, a true merge, clean), as ticket
+  11.1's P1 row says ("the branch merged with staging first").
+- **The test** `tests/testthat/test-kit193-pairs-filter.R` (moved from `pending/`): 6.1 (i) to (v) and the five gaps
+  of AUDIT-KIT-187-impl I10: (1) the marker's option `MultiScholaR.missing_filter_rule` unset by
+  `withr::local_options` in every test and asserted unset; (2) `removeRowsWithMissingValuesPercentHelper` driven on 52
+  oracle rows (n* in {3, 7, 20, 33, 60}, m in {1, ⌈n*/2⌉, n*}, n in {1, ⌈n*/3⌉, n* - 1, n*}; two groups, the larger
+  sets the cutoff, min_groups 2), each with rows k = 0..n missing in the group under test, kept set equal to
+  `k0..kmax`; (3) two-group designs a < b ≤ 60 (a in {1, b %/% 2, b - 1}, every m): the stored cutoff's P equals the
+  model's P of the larger group; (4) the grouping column `group` in `updateMissingValueParameters` and in the helper;
+  (5) the group level through the helper: G groups of one run (G = 1..20 and 40, every g), rows with f groups failing,
+  kept set equal to `f0..kmax(G, g, G)`. Planted defect (ticket 5.5): `roundedPercentNumerator` without the half step,
+  caught both in `exceedsRoundedPercent` and through the helper (`expect_failure`), after both comparisons are shown to
+  pass on the shipped code. P05 of the proofs register concerns targets 5 and R-G0's pairs only; none applies here.
+- **Bindings (8.2):** a script, `scripts/bindings-t1.R`, prints `digest::digest(deparse(body(fn)), "sha256")` of the
+  four T1 functions on the installed package; its values fill `bindings.tsv` rows T1 after the run.
+- **Declared before sending:** purpose: tie target 1's proved model to the shipped code (A8 for target 1). Commit: the
+  commit that adds the test (on `kit-193-lean-proofs`, after the merge). Ceiling: one test job of 60 minutes (P1's),
+  the file limited to 15 minutes (ticket 6.1); one scripts job, 30 minutes; at most 6.0 core-hours, expected about 3.5.
+  Decides: every comparison passing and the planted case caught → target 1's pair holds; any comparison failing on the
+  shipped code → a result: target 1's item stops, the owner and KIT-187's coordinator are told (5.5); the planted case
+  not caught, a timeout or a crash with no comparison judged → an instrument defect (VAL-54, at most three re-runs).
+
 ## Resume here
 
 Handed over at b404e62e+1 (context length; no stop rule, no statement problem). Done since the proofs audit: P01, P02,
