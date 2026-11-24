@@ -1,0 +1,15 @@
+check	pass	detail
+base capture ran the base code	TRUE	/home/runner/work/_temp/k205-replay/base-lib/MultiScholaR
+the base DA has an annotated untested row	TRUE	untested rows 6, annotated 6
+the base record has no enrichment_background	TRUE	
+replay states	TRUE	initial correlation_filtered enrichment_completed
+replayed provenance omits the marker	TRUE	
+replay: result tables identical to base (exact)	TRUE	
+replay: plot inputs identical	TRUE	
+replay: pathway file names	TRUE	groupB-groupA_down_enrichment_plot.html groupB-groupA_down_enrichment_plot.png groupB-groupA_down_enrichment_results.tsv groupB-groupA_up_enrichment_plot.html groupB-groupA_up_enrichment_plot.png groupB-groupA_up_enrichment_results.tsv
+replay: every TSV's SHA-256 (and each plot file's existence)	TRUE	
+fresh record carries the marker (fixed, tested)	TRUE	
+same input: DA tables' digests equal the base record's	TRUE	
+fresh head results differ from base's	TRUE	
+fresh head = the earlier rule on the tables without their untested rows (control C (b))	TRUE	rows left out per comparison: groupB-groupA 6
+the change, base record against fresh head (reported)	TRUE	groupB-groupA/up: 73 and 65 terms, 65 shared, largest |log10 p| change 1.37, BgRatio 25/69 -> 23/63 groupB-groupA/down: 53 and 53 terms, 53 shared, largest |log10 p| change 0.425, BgRatio 10/69 -> 10/63

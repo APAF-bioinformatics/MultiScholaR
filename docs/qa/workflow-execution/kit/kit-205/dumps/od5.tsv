@@ -1,0 +1,8 @@
+check	pass	detail
+base archive	TRUE	exit 0
+dump base	TRUE	exit 0 ;  | ══ DONE ════════════════════════════════════════════════════════════════════════ | TESTS 1 FAILED 0 ERROR 0 
+dump head_1	TRUE	exit 0 ;  | ══ DONE ════════════════════════════════════════════════════════════════════════ | TESTS 1 FAILED 3 ERROR 0 
+dump head_2	TRUE	exit 0 ;  | ══ DONE ════════════════════════════════════════════════════════════════════════ | TESTS 1 FAILED 3 ERROR 0 
+head dumps byte-identical	TRUE	
+base dump equals the base tree's stored block (precondition)	TRUE	
+head dump differs from the stored block	TRUE	

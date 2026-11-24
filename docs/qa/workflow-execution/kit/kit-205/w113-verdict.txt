@@ -1,0 +1,5 @@
+base 241914cb4461128efdd453002a17ab3744cad2ba, head cd5d590f9d269a4e7973bda3e0a1195525aaa435; archive 0; side exits base 0, head 0
+cases: base 11, head 11; cases with a completed state missing: none
+provenance: 106 leaves equal, 7 marker leaves, 0 other
+record: 468 leaves equal (head without its marker entry), 42 marker leaves, 0 other
+VERDICT: only the marker differs (provenance and record)
