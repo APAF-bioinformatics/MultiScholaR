@@ -440,7 +440,14 @@ test_that("KIT-184 K4: classic proteomics with two factors and missing values: t
     root <- withr::local_tempdir()
     manager <- integrationProteinOwner(root, "DIA")
     withr::defer(closeDIAStateAdapter(manager))
-    run <- integrationRuvStep(manager, makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), 2)
+    # The recipe's proteins that reach the input are complete (run 45325536775: 63 of 63), so three otherwise complete
+    # proteins are made missing in one run each before the step: RUV-III-C corrects them one by one.
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    samples <- setdiff(names(protein@protein_quant_table), protein@protein_id_column)
+    complete <- which(stats::complete.cases(protein@protein_quant_table[samples]))
+    expect_gte(length(complete), 6L)
+    for (i in 1:3) protein@protein_quant_table[complete[[i]], samples[[c(2L, 4L, 7L)[[i]]]]] <- NA_real_
+    run <- integrationRuvStep(manager, protein, 2)
     dir <- integrationSummarySave(manager, root)$dir
     input <- readIntegrationInput(dir)
     expect_equal(run$value$best_k, 2)

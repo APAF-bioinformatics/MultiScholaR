@@ -145,7 +145,13 @@ for (omic in c("lipidomics", "metabolomics")) local({
 
 test_that("KIT-184 K4: lipidomics with today's RUV at two factors: the written factors are what was removed", {
     root <- withr::local_tempdir()
-    fixture <- integrationOmicsOwner("lipidomics", file.path(root, "owner"))
+    # The fixture's intensities are dense (run 45325536775: 88 of 88 features complete), so three lipids of one assay are
+    # made missing in one run each before any step: RUV-III-C corrects them one by one.
+    object <- lipidDeclarationsObject()
+    runs <- object@design_matrix$Run
+    for (i in 1:3) object@lipid_data$LCMS_Pos[c(1L, 2L, 4L)[[i]], runs[[c(2L, 9L, 17L)[[i]]]]] <- NA_real_
+    fixture <- lipidDeclarationsOwner(file.path(root, "owner"), object)
+    withr::defer(closeDIAStateAdapter(fixture$owner))
     integrationOmicsQuiet(lipidDeclarationsJourney(fixture, ruv = utils::modifyList(lipidDeclarationsRuvParameters(),
         list(manual_k = 2L))))
     run <- integrationOmicsSummarySave("lipidomics", fixture, root)
