@@ -1,8 +1,14 @@
 {
-  "label": "probes-1",
-  "attempt": "probe",
+  "label": "counted-wave1",
+  "attempt": "counted",
   "jobs": [
-    {"name": "probe-ruv-base", "plan": "probe-ruv-base", "timeout": 120},
-    {"name": "g0p3", "plan": "g0p3", "timeout": 150}
+    {"name": "m1", "plan": "m1", "timeout": 240},
+    {"name": "j1", "plan": "j1", "timeout": 240},
+    {"name": "j2", "plan": "j2", "timeout": 240},
+    {"name": "j3", "plan": "j3", "timeout": 330},
+    {"name": "j4", "plan": "j4", "timeout": 330},
+    {"name": "j5", "plan": "j5", "timeout": 240},
+    {"name": "j6", "plan": "j6", "timeout": 240},
+    {"name": "d6", "plan": "d6", "timeout": 240}
   ]
 }

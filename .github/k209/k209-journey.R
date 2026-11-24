@@ -308,6 +308,10 @@ k209_omics_journey <- function(lane, corpus, settings) {
             click("summary-save_workflow_args")
             click("summary-copy_to_publication")
             click("summary-generate_report")
+            # Recorded, not judged: the report files the tab wrote (KIT-207's Summary refusal would leave none).
+            files <- list.files(file.path(lane$paths$base_dir %||% file.path(lane$work, "project", K209_OMICS_LABEL), "results_summary", omic),
+                pattern = "_report_.*[.](docx|html|pdf)$")
+            k209_rec$report <- list(files = files, rendered = length(files) > 0L)
             invisible(NULL)
         }
         steps <- if (trx) list(
