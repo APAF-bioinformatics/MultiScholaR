@@ -1,0 +1,2 @@
+run_id	commit	base	purpose	job_minutes	core_hours	result
+45491444529	f4a94eb0	none	G0 (preparation): inventory of the proteomics Summary calls in the R2 scope on staging f93dfd85 plus the script; ceiling 110 job-minutes	76.0	5.07	124 calls in 7 files; moves only where 6.2/6.4 already declare (prot_native SD-2; integration-input :481 SD-1; KIT-206 E11b I10); no contradiction; test-kit129-run-path.R killed at the probe's 15-minute file cap (not observed; read instead)
