@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REAUDIT2 line (2.31 left): G1(r) reader tests only at 6921d815, shown failing at the fault; file g1r; ceiling 20 min script; decides nothing else",
+  "label": "KIT-159 G1(r) tests first at 6921d815",
+  "package_commit": "6921d8159813fb6a38f534d928bb98c2e0ff5d4a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-g1rt-out",
+        "--files",
+        "g1r"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-g1rt-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
