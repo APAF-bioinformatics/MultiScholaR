@@ -1,0 +1,5 @@
+fixture	proteins	kept	n_kept	side
+prot_lfq/proteinGroups.txt	5	P00001,P00003,P00004,P00005	4	base
+prot_tmt/pd_tmt_peptides.tsv	5	P00001,P00003,P00004,P00005	4	base
+prot_lfq/proteinGroups.txt	5	P00001,P00003,P00004,P00005	4	head
+prot_tmt/pd_tmt_peptides.tsv	5	P00001,P00003,P00004,P00005	4	head
