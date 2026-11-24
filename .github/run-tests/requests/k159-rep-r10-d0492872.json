@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R10, the I10 re-pin of the pinned coverage table: repair2, repair3, coverage, coverage-table, coverage-rank, classify, intervals with --lint; ceiling 30 min, about 0.8 core-hours",
+  "label": "KIT-159 repair R10: re-pinned table at d0492872",
+  "package_commit": "d0492872cd0ff6f9870af8222c5e115374045122",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r10-out",
+        "--files",
+        "repair2,repair3,coverage,coverage-table,coverage-rank,classify,intervals",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r10-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
