@@ -138,6 +138,26 @@ Rows in `g0-stale.tsv` that are **not** workbook defects:
 
 Under stop rule 2, items 1 and 2 go to the coordinator for a scope ruling before R1. They are KIT-232 material unless ruled otherwise.
 
+## 6. Coordinator's ruling on G0 (2026-11-25) and hand-offs to KIT-232
+
+G0 is accepted as the gate's result: the workbooks stop as read. **After KIT-231 alone no DIA or metabolomics workbook is shown to run to the end.**
+
+The two stale calls outside sections 2.2 and 10 are ruled NOT KIT-231's; they go to KIT-232, with every other stale call G0 S counted that is outside KIT-231's outcome. Hand-offs, file:line (from `g0-out/g0-stale.tsv`):
+- `ProteinQuantitativeData` (unexported) called bare: `DIA_workflow_starter.rmd:789`, `DIA_workflow_limpa.rmd:1182`, `DIA_workflow_experienced.rmd:518`.
+- `conflict_prefer` / `conflicts_prefer` (package `conflicted` not attached): `DIA_workflow_limpa_experienced.rmd:69-86` (18 calls) and `DIA_workflow_limpa_starter.rmd:94-106` (13 calls; F6).
+- `updateProteinFiltering(publication_graphs_dir =)`, unused argument: `DIA_workflow_experienced.rmd:223`, `:247`, `:266`, `:311`, `:349`, `:393`, `:427`, `:554`, `:615`, `:675`, `:892`, `:974` (F2).
+- `RenderReport(suffix =)`, unused argument: `DIA_workflow_experienced.rmd:1239` (F2).
+- `peptideMissingValueImputationLimpa(dpc_method =)`, unused argument: `DIA_workflow_limpa.rmd:876` (F4).
+- The metabolomics design call `RunApplet("designMatrix")` without the required arguments: `metabolomics_workflow_starter.rmd:133`, `metabolomics_workflow_experienced.rmd:133` (F5; seen in F, not counted by S).
+- The free-symbol list `g0-out/g0-symbols.tsv` (58 rows, not judged) as KIT-232's starting list for objects read before assignment.
+
+KIT-231 repairs, of G0's counts, only the five `createDAResultsForEnrichment(de_output_dir =)` arguments, the ten directories reads, the experienced workbook's three bare folder names and `:1540`.
+
+**Part P facts for KIT-232 and KIT-230** (R 4.6.1, run 45511537888, identical in 45509141744):
+- `pdf(character(0))` writes a file named `NA` into the working directory, without error.
+- `ggsave(plot = NULL)` writes a file, without error (ggplot2 4.0.3).
+- `fs::dir_copy(overwrite = TRUE)` overwrites an edited workbook copy in place (the application's call, `R/app_server.R:544`): users' edits to a copied workbook are lost at the next session start (F11).
+
 ## Not checked
 
 - The design chunks of `DIA_workflow_limpa.rmd` (`:340`) and `DIA_workflow_limpa_starter.rmd` (`:298`). G0's environment lacked `omic_type`, so those rows show "object 'omic_type' not found", which is not the workbook's behaviour. This was not rerun; the direct `RunApplet(force = TRUE)` row stands for their `force = TRUE` call.
