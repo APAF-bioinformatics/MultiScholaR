@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-182 R1 instrument rerun 1 of 3 (VAL-54): test mechanics repaired in F1 (g), F1 (h), T4, T8 managed; the two affected files, head 922681df vs base 4a1de896 (tests-only with the same repair); within R1's 540 job-min ceiling",
+  "label": "KIT-182 R1-2 instrument rerun 922681df vs 4a1de896",
+  "package_commit": "922681df03dc67da4154d2e47f35223604d4f77a",
+  "base_commit": "4a1de896dd492025404064ceba1ce19c342826ca",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-worker-figures.R",
+    "test-prot-norm-input-current.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
