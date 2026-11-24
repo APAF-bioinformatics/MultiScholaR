@@ -1,0 +1,10 @@
+side	commit	cell	job	rep	exit	wall_seconds	unit_seconds	ns_path	error
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M168	deciding	401	0	1628.5	1628.3	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M168	deciding	402	0	1629.3	1629	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M168	deciding	403	0	1671.2	1671	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M168	ba	401	0	523.9	523.7	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M168	ba	402	0	649.7	649.4	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M168	ba	403	0	717.5	717.2	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M12	deciding	401	0	1167.6	1167.4	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M12	deciding	402	0	1171.9	1171.7	/tmp/Rtmp7JBrR8/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	M12	deciding	403	0	1140.9	1140.7	/tmp/Rtmp7JBrR8/kit196-s1-base	
