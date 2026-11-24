@@ -52,10 +52,10 @@ formatProtEnrichStatusText <- function(analysisComplete,
       sprintf("Contrast: %s\n", selectedContrast),
       sprintf("Up log2FC cutoff: %.1f\n", upCutoff),
       sprintf("Down log2FC cutoff: %.1f\n", downCutoff),
-      sprintf("Q-value cutoff: %.3f\n", qCutoff),
-      # KIT-203: the run's significance rule, on the clusterProfiler route only (the g:Profiler text is unchanged)
-      if (identical(methodInfo$method, "clusterprofiler"))
-        sprintf("Significance: %s\n", enrichmentSignificanceLabel(significanceRule)),
+      # KIT-203: the run's significance rule, on the clusterProfiler route only. It is joined to the cutoff's line
+      # (`paste` would turn a NULL argument into an empty line), so the g:Profiler text is unchanged.
+      paste0(sprintf("Q-value cutoff: %.3f\n", qCutoff), if (identical(methodInfo$method, "clusterprofiler"))
+        sprintf("\nSignificance: %s\n", enrichmentSignificanceLabel(significanceRule))),
       sprintf("Organism: %s\n", methodInfo$species_name),
       "",
       "Results Available:",

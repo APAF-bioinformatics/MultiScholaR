@@ -4317,9 +4317,11 @@ test_that("(R3, A107-03) a clusterProfiler run records the correction it applied
     expect_identical(omicEnrichR3Parameters(r3$step)[["correction_method"]], "provenance ; no_shipped_default ; BH")
     expect_identical(seen$run$product[["parameters$correction_method"]], "BH")
     expect_identical(r3$step$outcomes$correction_method_requested, "gSCS")
+    # KIT-203 (5.4, OD10): the notice opens with the default rule's sentence; the correction sentence follows.
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
-        paste("[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS,",
-            "applies to g:Profiler only and was not used."),
+        paste("[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value",
+            "over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only",
+            "and was not used."),
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
 })
 
