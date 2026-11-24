@@ -1,0 +1,11 @@
+run_id	commit	purpose	minutes	result
+45127082405	bf56a406	step 1 capture, job a (A0)	8.8	ok (feasibility.md)
+45127086068	bf56a406	step 1 capture, job b (A0)	12.0	ok; identical to job a (feasibility.md)
+45334031153	05a353d1	gate F2, first run	8	instrument defect: no PRIDE URL resolved for the KPC2 FASTA; no result (engine SHA-256 read)
+45334675816	b21337c7	tests first: five core test files, no R/ change	8	failing first: 50 tests, all errors (functions absent)
+45335506224	4f97dc12	gate F2, instrument run 1 of 3 (VAL-54)	25	instrument defect: PXD016672's PRIDE folder (2021/07) found, FASTA not in it; no result
+45335657533	f56db86d	core tests after the fix	11	185 passed, 0 failed
+45336217501	378271b2	tests first: workflow and enrichment files	11	failing first: 14 errors and 8 failures (functions absent)
+45336550337	278f30f5 vs d3909a30	targeted: 7 new files and 12 dependents, base against head	191 (job-minutes, 16 test jobs)	new files pass (288); 3 dependents new-failure (declaration names, return list); correction pass taken
+45338825064	c67490b5	gate F2, instrument run 2 of 3 (VAL-54)	24	F2 passed: 19.1 s and 18.5 s per direction, peak 173 MB, score an integer on every row; pins kept
+PENDING	af7a4843 vs d3909a30	correction pass and checkpoint: full suite base against head, R CMD check, gate-off script	PENDING	PENDING

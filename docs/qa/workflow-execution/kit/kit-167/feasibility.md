@@ -116,3 +116,48 @@ by role. No route lacks an owner at import, so no route's panel waits.
 
 - That the owned tables survive a session export and re-open on every route (no run; the gui-reference path is the
   one the imports already use).
+
+## Gate F2: size and time of one mapping (ticket revision 1.10, section 11)
+
+Script `gate-f2.R`. Purpose: one mapping, both directions, of KPC2 against MGH 78578 at the shipped settings, threads
+4; ceiling 30 minutes per job; decides the ranking key (5.2) and the determinism pins (5.1), or stops for the owner
+(over 10 minutes or 8 GB for one direction).
+
+| Run | Commit | Job minutes | Outcome |
+|---|---|---|---|
+| 45334031153 | 05a353d1 | 8 | instrument defect: the PRIDE API lookup returned no URL; no result |
+| 45335506224 | 4f97dc12 | 25 | instrument defect (fix 1: folder listing): PXD016672's folder (2021/07) holds no FASTA; no result |
+| 45338825064 | c67490b5 | 24 | ok (fix 2: also the DDA project PXD020839, where the file is) |
+
+Two instrument runs of the three VAL-54 allows; no expected value, threshold or stop rule changed.
+
+### Observed (run 45338825064, `scripts/1/out/f2/f2.tsv`)
+
+- Engine: `diamond-linux64.tar.gz` 10,221,459 B, SHA-256 `33a765d1…61fbc7` (as 2.2); one member `diamond`; executable
+  SHA-256 `d3d72578fa97e87cc0846a06d2f9d7dc481a2106265f9546bc91512972fcd1f1` (identical in all three runs, on AMD EPYC
+  9V45, 9V74 and 7763); `diamond version 2.2.8`. Committed in `inst/extdata/diamond-pin.tsv` (Linux row).
+- Strain FASTA: `https://ftp.pride.ebi.ac.uk/pride/data/archive/2021/07/PXD020839/BPA_SEP_KPC2_Contaminants.fasta`,
+  15,817,761 B (the size in 2.2), SHA-256 `3139e262c1131121ec91ec5980dfc3b117263ad88fe6b687703ebd103bd288ca`; 26,286
+  entries: 5,454 `>ref|` (all distinct sequences), 20,585 UniProt-style, 247 other.
+- Reference: UP000000265 (5,126 entries, SHA-256 as `hashes.tsv`).
+- Runner: AMD EPYC 7763, `avx512f` absent, 4 cores.
+- Times and memory (threads 4; `/usr/bin/time -v`): makedb 0.1 s and 0.0 s; forward 19.1 s, peak RSS 173.0 MB, 41,399
+  rows, 4,740 queries with a hit; reverse 18.5 s, peak RSS 168.4 MB, 41,403 rows, 4,798 queries with a hit; each
+  output 4.0 MB.
+- The raw `score` field is an integer on every row of both tables.
+
+### Outcome
+
+Pass: far below 10 minutes and 8 GB. Ranking key: the raw `score` (5.2). Pins kept as run: `--block-size 0.4
+--index-chunks 1 --algo 0` (chosen on time and memory only; both proteomes are one block). The counted run's about 122
+searches at about 20 s each are far inside its ceiling, so no job split.
+
+### Inferred, not observed
+
+- Section 4 and 2.2 cite PXD016672 for the KPC2 FASTA; the file is in the DDA project PXD020839 (as the research note's
+  DDA row says), with the size 2.2 gives. The same may hold for the other strains' FASTAs (DDA projects PXD020545,
+  PXD020791, PXD020863); for the coordinator to correct in the ticket's inputs.
+
+### Not checked
+
+- Run-to-run timing variation (one run); the `score` type under another strain or reference.
