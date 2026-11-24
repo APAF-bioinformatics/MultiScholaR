@@ -24,8 +24,8 @@ cover the same behaviour. Stop rule 1 not triggered (no failing-first row passed
 
 **R2, run 45506344960, 77ab881f against 09d92168, 23 files, 3 shards per side, check on both** (`r2/compare.tsv`):
 - fixed: `test-kit226-gprofiler-columns.R` (38 passed, 0 failed), `test-enrichment-significance.R` (191/0);
-- same: 18 files (all other R2 files, `test-workflow-class-declarations.R` added because it calls the plot builders);
-- new failures, every one at a stored reference awaiting its re-freeze (by case, step and field, from `failures.txt`):
+- same: 18 files (all other R2 files, `test-workflow-class-declarations.R` added because it calls the plot builders); 15 of them informative (`test-prot-11-enrichment-module-contracts.R` and `test-prot-11a-enrichment-module-characterization.R` run no test, quarantines Q-163 and Q-164; `test-e2e-proteomics-enrichment.R` skips both its tests without a browser);
+- new failures, every one at a stored reference awaiting its re-freeze (by case, step and field, from `r2/failures.txt`; base listing `r2/failures-base.txt`):
   - `test-omic-enrich-module.R` W1: `gprofiler` run values/bus/display/returned, filter_up/down/all values, download
     values and download; `organism_filter` no_mapping/run and mapped/run values/bus/display/returned; `restore` run
     values/bus/display/returned, restore values and restore; `kernel_gprofiler` run values (both plot leaves `:1842`,
@@ -70,14 +70,58 @@ them: coordinator to confirm). `tests/testdata/gui-entry/prot_dia.json`: 6 leave
 reads the W1 frozen values, so it follows that re-freeze with no edit of its own.
 `tests/testthat/helper-module-ci-prot-enrich.R:167-170` keeps its own fixture with the old mapping (left as is).
 
+## Attribution and re-freeze go leaf by leaf (audit K226-I04, I07)
+
+The fields are not disjoint in two places, so every difference is attributed, and every re-freeze edits, by leaf:
+- W1 `omicEnrichW1Frozen[["kernel_gprofiler"]]$run$files` holds KIT-220's NumSig `.tab` leaf (`:1914`) and this
+  ticket's two pathway TSV leaves (`:1923`, `:1926`); the W1 test compares field by field (`:3669`).
+- `tests/testdata/gui-entry/prot_dia.json` is compared step by step (`helper-gui-entry.R:414`): KIT-216's leaves
+  (`head`, `history`, `states`, `outputs$…da_status`) and this ticket's `outputs$…gprofiler_results_table` fail in one
+  expectation in the same six steps.
+
+Order (coordinator): KIT-215 merges first; control C, the re-freeze and the merge-check run follow on the
+coordinator's word. The three stored values VAL-196 (4) does not name (`:1923`, `:1926`,
+`test-enrichment-significance.R:497`) are allowed through the control (coordinator's ruling (a); ledger correction
+I01 is the coordinator's).
+
+**Control C must show exactly these 49 changed leaves** (base = staging's head when C runs; head = `kit-226` merged
+onto it; base dumps equal the stored value at each; two head dumps in separate processes identical):
+- W1 `test-omic-enrich-module.R`, 43 leaves:
+  - `gprofiler` 12: run `values[["gprofiler_results_table"]]`, `bus`, `display` ×2, `returned` ×2
+    (`all_enrichment_results`, `gprofiler_results`); `filter_up`, `filter_down`, `filter_all` `values`; `download`
+    `values`; `download` `gprofiler2_results.tsv` and `enrichment_analysis_summary.txt` (`:1259`, `:1260`);
+  - `organism_filter` 12: sessions `no_mapping` and `mapped`, the six run leaves each;
+  - `restore` 9: the six run leaves; `restore` step `values`; `restore` ×2;
+  - `kernel_gprofiler` 10: run `values` table and both plot leaves (`:1842`, `:1847`); `bus`; `display` ×2;
+    `returned` ×2; `files` ×2 (`:1923`, `:1926`).
+- `prot_dia.json`, 6 leaves: `outputs$proteomics_workflow-enrichment_analysis-gprofiler_results_table` in steps
+  enrichment, summary_refusal, summary_save, summary_copy, summary_report, summary_export.
+- Unchanged: `current_contrast_results`, every `history`, `states`, `product`, `notes` leaf, `omicEnrichW113Frozen`,
+  `omicEnrichW1FrozenUi`. Pre-existing differences (recorded in `kit-226/control/leaves.tsv`, left as they are):
+  `prot_dia`'s four integration `.tsv`/`.parquet` steps; the clusterProfiler, kernel_clusterprofiler and KIT-113 W1
+  failures.
+- R2's head values C should match: table `<text> 258d7618…`; bus `dcc3ee2f940bd0fa`; display
+  `10x23 8b713e2fe8c8dfa5`, `<saved> 10 542f2d5f5bec9ac4`; returned `37aa971ecab5066f`, `8b713e2fe8c8dfa5`; summary
+  `c5b5570d…`, archive TSV `71e8ee7c…`; kernel plots `e29b944a…` ×2, table `ef47d5f9…`, bus `e262161c5371ef44`,
+  display `10x22 cb4a9aea9d03ca0d`, `<saved> 10 b3c9a33ab15f1fd0`, returned `f49c6bf6d7f341f5`, `cb4a9aea9d03ca0d`,
+  pathway TSVs `a7a539d1…` ×2.
+- The merge-check run then holds R2's 23 files on the merge with staging plus any merged partner's new test file,
+  `check: true`: the new file 38/0, the three moved files back to staging's pre-existing failure lists, check
+  identical to base; then the shared R3 (ticket section 6).
+
 ## Core-hours
 
 R1 0.92, R2 11.13: 12.05 against 17.0 expected for R1 and R2 (ticket 23.0 with C), ceiling 304.67.
 
 ## Not checked
 
-- Whether today's live g:Profiler service states `significance_threshold_method`, and its spelling under `fdr` (no
-  service called; only the fixture strings are tested). If it does not, live tables read "not recorded".
+- A live g:Profiler answer was not observed: whether today's service states `significance_threshold_method`, and
+  whether it spells the default `gSCS` or `g_SCS` and BH `fdr` or otherwise (no service called; the stated values
+  in T3 are fixture strings). By the coordinator's ruling (d) there is no fallback to the requested method: the
+  column shows what the answer carries, and "not recorded" otherwise.
+- The enrichment workbook carrying the column (inferred from its reader,
+  `R/func_general_filemgmt_results_summary_helpers.R:689-698`); the Copy/CSV/Excel exports; the application in a
+  browser; the published files and report of a run made before the fix (not rebuilt; change report).
 - Leaf-by-leaf equality of the moved values with section 5 (control C).
 - The three declared expectations (quarantined file).
 - The shared full suite.
@@ -94,11 +138,20 @@ R1 0.92, R2 11.13: 12.05 against 17.0 expected for R1 and R2 (ticket 23.0 with C
   g:Profiler enrichment user since the legacy pipeline. No term, flag or order was wrong.
 - **Code.** Base: `R/utils_workflow_enrichment.R:154-161` (cf8af245; legacy `R/mod_prot_enrich.R:1450-1456` at
   744a2b27), `R/func_general_enrichment_engine_helpers.R:200`, `:228`, `:398-403`, `R/mod_omic_enrich_panels.R:596`.
-  Fix 77ab881f: the builder (`buildProtEnrichAllContrastResults`), `gprofilerAdjustmentMethod`, the figure, the
-  published TSV writer (`generate_enrichment_plots`) and the archive line.
+  Fix 77ab881f: `R/utils_workflow_enrichment.R:145`, `:159` (`p_adjust_method` per direction), `:168-174`
+  (`p.adjust` once, `Count` from `intersection_size`; `pvalue`/`qvalue` no longer made), roxygen `:104-115`;
+  `R/func_general_enrichment_engine_helpers.R:200`, `:228` (labels), `:233-244` (`gprofilerAdjustmentMethod`),
+  `:414-415` (published TSV); `R/mod_omic_enrich_panels.R:596` (archive line). Legacy figure labels: 744a2b27
+  `R/func_general_enrichment.R:3003`, `:3029`.
 - **What changed in results.** Tables: `pvalue` and `qvalue` removed, `p.adjust` = the service's value, new
   `p_adjust_method` (the answer's own statement, e.g. `g_SCS`, or "not recorded"), `Count` = `intersection_size`.
   Published TSV/xlsx: new `p_adjust_method` column. Figure: axis and hover text say "adjusted p-value"; points
-  unchanged. Projects saved before the fix show the corrected table on Open; files already downloaded keep the old
-  labels.
-- **Evidence.** R1 45504002943, R2 45506344960 (deterministic g:Profiler double; no live service).
+  unchanged. On Open, a project saved before the fix shows the corrected table and figure, and a 'Download results'
+  archive made after the fix is corrected (both are rebuilt from the stored g:Profiler answer; a project that stored
+  its figure, saved before KIT-119, keeps the old axis label in the tab). The published per-comparison TSVs, the
+  workbook, the PNG/HTML figures and the report of an enrichment run made before the fix keep the old labels until
+  the enrichment is run again (Summary copies the files the run wrote); files already downloaded keep them too.
+- **Evidence.** R1 45504002943, R2 45506344960 (deterministic g:Profiler double; no live service). Limits: the
+  package's g:Profiler doubles state no correction, so every tested table reads "not recorded" and the stated values
+  `g_SCS`/`fdr` are fixture strings (T3); whether today's service states the method (and spells the default `gSCS`
+  or `g_SCS`) was not observed; the stored references are re-frozen by control C; the shared full suite is pending.

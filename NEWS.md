@@ -191,8 +191,9 @@
    per-comparison enrichment tables and the enrichment workbook also carry p_adjust_method. The g:Profiler figure's
    axis and hover text, in the application, the published figures and the report, now say 'adjusted p-value' (the
    points do not move), and the archive's summary says 'Adjusted p-value cutoff'. No term, flag or order changes.
-   Projects saved before this change show the corrected table when opened; files already downloaded keep the old
-   labels. Present since the legacy pipeline (KIT-226).
+   Projects saved before this change show the corrected table when opened; files written or downloaded before it
+   (the published tables, figures and report included) keep the old labels until the enrichment is run again.
+   Present since the legacy pipeline (KIT-226).
 
 ### Scientific changes
 
