@@ -263,8 +263,10 @@ test_that("T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson
     cmp <- valRunLevel(decl, metrics, toyUnits(), regimes = regimeRows("paired_t", 5L),
                        phase = "counted", within = wide)
     run <- cmp[cmp$scope == "run_level", ]
-    expect_equal(run$ci_low[[1L]], -0.5)
-    expect_match(run$flags[[1L]], "widened_to_within_run", fixed = TRUE)
+    # O8 (VAL-109): over independent units the unit's within-run interval is reported beside
+    # the verdict, not used to widen it.
+    expect_false(isTRUE(all.equal(run$ci_low[[1L]], -0.5)))
+    expect_match(run$flags[[1L]], "within_run_reported=u01:[-0.5,0.5]", fixed = TRUE)
     cp <- toyDeclaration()
     cp$metrics[[1L]]$interval <- list(method = "clopper_pearson")
     cp$metrics[[1L]]$comparisons <- list(list("custom"))
