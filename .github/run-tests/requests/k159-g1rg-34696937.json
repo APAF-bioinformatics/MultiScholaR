@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-159 REAUDIT2 line (7; 1.74 left): G1(r) key errata (re-audit 3 R3.B3) and lint fixes, run branch run-k159-g1r at 34696937: g1r, g1a, chain with --lint; then val-g1r.R; ceiling 30 script min",
+  "label": "KIT-159 G1(r) errata and lints at 34696937",
+  "package_commit": "34696937165f34603c91252c88aec6e2991188a5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-g1rg-out",
+        "--files",
+        "g1r,g1a,chain",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-g1rg-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-g1r.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/g1rg2-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/g1rg2-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
