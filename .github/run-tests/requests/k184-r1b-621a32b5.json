@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-184 R1b (VAL-54, first further instrument run of R1): the two K4 fixtures at two factors given missing values; the two writer files on the head; ceiling 60 job-minutes; decides G1/G2 on the two RUV-III-C fixtures with missing values",
+  "label": "KIT-184 R1b 621a32b5 (K4 fixtures with missing values)",
+  "package_commit": "621a32b5bebc46586960e653c43dd77405f9325d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
