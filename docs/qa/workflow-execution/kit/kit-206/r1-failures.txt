@@ -1,0 +1,366 @@
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E1: after a Revert past normalisation (S1) the export is refused and nothing is written (fails before)
+kind: failure
+message:
+  Expected `log$notes` to be identical to `k206ExportNote`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - "[message 10] Filtered session data exported successfully!"
+  - "Saved as: filtered_session_20261124_083500_native-export-4ba030bda7c7.msdia.tar"
+  - "See summary file for details."
+  + "[error 10] Error exporting session: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press \"Run Normalization & RUV\" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."
+  
+  E1
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused("E1", log, fixture, norm, before) at test-kit206-prot-norm-export-guard.R:246:5
+   2.   └─testthat::expect_identical(log$notes, k206ExportNote, info = case) at test-kit206-prot-norm-export-guard.R:209:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E1: after a Revert past normalisation (S1) the export is refused and nothing is written (fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `before`.
+  Differences:
+  actual$archives vs expected$archives
+  - "/tmp/RtmpBa2bSj/file4ba04fc32a29/scripts/proteomics/filtered_session_20261124_083500_native-export-4ba030bda7c7.msdia.tar"
+  
+  `actual$latest` is a character vector ('{', '  "schema": "multischolar.dia_native_latest.v1",', '  "status": "complete",', '  "request_id": "native-export-4ba030bda7c7",', '  "generation": "3193629a17c19b7ed2fec0daf9f4406da461ab934a7c184e962c8154af70c92a",', ...)
+  `expected$latest` is NULL
+  
+  `actual$summary` is a character vector ('Filtered Session Data Export Summary', '=====================================', '', 'Export Timestamp: 2026-11-24 08:35:00', 'Session File: filtered_session_20261124_083500_native-export-4ba030bda7c7.msdia.tar', ...)
+  `expected$summary` is NULL
+  
+  E1
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused("E1", log, fixture, norm, before) at test-kit206-prot-norm-export-guard.R:246:5
+   2.   └─testthat::expect_identical(after, before, info = case) at test-kit206-prot-norm-export-guard.R:210:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E2: after a Revert and a QC step applied again (S2) the export is refused (fails before)
+kind: failure
+message:
+  Expected `log$notes` to be identical to `k206ExportNote`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - "[message 10] Filtered session data exported successfully!"
+  - "Saved as: filtered_session_20261124_083523_native-export-4ba039e38e41.msdia.tar"
+  - "See summary file for details."
+  + "[error 10] Error exporting session: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press \"Run Normalization & RUV\" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."
+  
+  E2
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused("E2", log, fixture, norm, before) at test-kit206-prot-norm-export-guard.R:258:5
+   2.   └─testthat::expect_identical(log$notes, k206ExportNote, info = case) at test-kit206-prot-norm-export-guard.R:209:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E2: after a Revert and a QC step applied again (S2) the export is refused (fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `before`.
+  Differences:
+  actual$archives vs expected$archives
+  - "/tmp/RtmpBa2bSj/file4ba048e1c50a/scripts/proteomics/filtered_session_20261124_083523_native-export-4ba039e38e41.msdia.tar"
+  
+  `actual$latest` is a character vector ('{', '  "schema": "multischolar.dia_native_latest.v1",', '  "status": "complete",', '  "request_id": "native-export-4ba039e38e41",', '  "generation": "b68fb3f8aa7fb3a1ed37f1995cdfe16812ba39dada6a5ffd0ace0732e0648d7d",', ...)
+  `expected$latest` is NULL
+  
+  `actual$summary` is a character vector ('Filtered Session Data Export Summary', '=====================================', '', 'Export Timestamp: 2026-11-24 08:35:23', 'Session File: filtered_session_20261124_083523_native-export-4ba039e38e41.msdia.tar', ...)
+  `expected$summary` is NULL
+  
+  E2
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused("E2", log, fixture, norm, before) at test-kit206-prot-norm-export-guard.R:258:5
+   2.   └─testthat::expect_identical(after, before, info = case) at test-kit206-prot-norm-export-guard.R:210:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E2b: S2, then a second normalisation without the correlation filter: the export is refused (fails before)
+kind: failure
+message:
+  Expected `log$notes` to be identical to `k206ExportNote`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - "[message 10] Filtered session data exported successfully!"
+  - "Saved as: filtered_session_20261124_083547_native-export-4ba07a6c967c.msdia.tar"
+  - "See summary file for details."
+  + "[error 10] Error exporting session: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press \"Run Normalization & RUV\" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."
+  
+  E2b
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused("E2b", log, fixture, norm, before) at test-kit206-prot-norm-export-guard.R:276:5
+   2.   └─testthat::expect_identical(log$notes, k206ExportNote, info = case) at test-kit206-prot-norm-export-guard.R:209:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E2b: S2, then a second normalisation without the correlation filter: the export is refused (fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `before`.
+  Differences:
+  actual$archives vs expected$archives
+  - "/tmp/RtmpBa2bSj/file4ba032619890/scripts/proteomics/filtered_session_20261124_083547_native-export-4ba07a6c967c.msdia.tar"
+  
+  `actual$latest` is a character vector ('{', '  "schema": "multischolar.dia_native_latest.v1",', '  "status": "complete",', '  "request_id": "native-export-4ba07a6c967c",', '  "generation": "2d2034966e70d5797578f1509a3e115246c3607377f0a65cd2385eebd828f70a",', ...)
+  `expected$latest` is NULL
+  
+  `actual$summary` is a character vector ('Filtered Session Data Export Summary', '=====================================', '', 'Export Timestamp: 2026-11-24 08:35:47', 'Session File: filtered_session_20261124_083547_native-export-4ba07a6c967c.msdia.tar', ...)
+  `expected$summary` is NULL
+  
+  E2b
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused("E2b", log, fixture, norm, before) at test-kit206-prot-norm-export-guard.R:276:5
+   2.   └─testthat::expect_identical(after, before, info = case) at test-kit206-prot-norm-export-guard.R:210:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E3: after RUV and two Reverts (head `normalized`, before RUV) the export is refused (fails before)
+kind: error
+message:
+  <saved_entity_missing/rlang_error/error/condition>
+  Error in `selectDIAStateReference(fixture$manager, state)`: state does not exist
+trace (first lines):
+      ▆
+   1. └─k206Revert(fixture, "normalized") at test-kit206-prot-norm-export-guard.R:284:5
+   2.   └─k206Scope(...) at test-kit206-prot-norm-export-guard.R:27:15
+   3.     └─MultiScholaR:::withDIAStateScope(fixture$manager, code) at test-kit206-prot-norm-export-guard.R:23:14
+   4.       ├─base::withVisible(operation()) at pkg/R/utils_workflow_dia_state.R:1996:5
+   5.       └─operation() at pkg/R/utils_workflow_dia_state.R:1996:5
+   6.         └─MultiScholaR:::selectDIAStateReference(fixture$manager, state) at test-kit206-prot-norm-export-guard.R:27:59
+   7.           └─cli::cli_abort("state does not exist", class = "saved_entity_missing") at pkg/R/utils_workflow_dia_state.R:1616:5
+   8.             └─rlang::abort(...)
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E7: the S4 compatibility download is refused after S1, before the export, with a notice (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E7: the S4 compatibility download is refused after S1, before the export, with a notice (fails before)
+kind: failure
+message:
+  Expected `seen$states` to be identical to `character()`.
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`:                             
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E7: the S4 compatibility download is refused after S1, before the export, with a notice (fails before)
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `k206ExportNote`.
+  Differences:
+  actual vs expected
+  + "[error 10] Error exporting session: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press \"Run Normalization & RUV\" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E9: an exported project reopened into a new owner exports again; after a Revert there it is refused (second part fails before)
+kind: failure
+message:
+  Expected `log$notes` to be identical to `k206ExportNote`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - "[message 10] Filtered session data exported successfully!"
+  - "Saved as: filtered_session_20261124_083736_native-export-4ba07d0b85cf.msdia.tar"
+  - "See summary file for details."
+  + "[error 10] Error exporting session: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press \"Run Normalization & RUV\" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."
+  
+  E9 reverted
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused(...) at test-kit206-prot-norm-export-guard.R:423:5
+   2.   └─testthat::expect_identical(log$notes, k206ExportNote, info = case) at test-kit206-prot-norm-export-guard.R:209:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E9: an exported project reopened into a new owner exports again; after a Revert there it is refused (second part fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `before`.
+  Differences:
+  actual$archives vs expected$archives
+    "/tmp/RtmpBa2bSj/file4ba058c24220/scripts/proteomics/filtered_session_20261124_083736_native-export-4ba060ba6b31.msdia.tar"
+  - "/tmp/RtmpBa2bSj/file4ba058c24220/scripts/proteomics/filtered_session_20261124_083736_native-export-4ba07d0b85cf.msdia.tar"
+  
+  actual$latest vs expected$latest
+    "{"
+    "  \"schema\": \"multischolar.dia_native_latest.v1\","
+    "  \"status\": \"complete\","
+  - "  \"request_id\": \"native-export-4ba07d0b85cf\","
+  + "  \"request_id\": \"native-export-4ba060ba6b31\","
+  - "  \"generation\": \"25e06117935507c274b3e39e1ccc503ba8212e616c64c970aceb67d25bb730e5\","
+  + "  \"generation\": \"8075c7d5078460df62f614a5086f45dacd8bdd0a35d83186817e4311ce8602b5\","
+  - "  \"archive\": \"filtered_session_20261124_083736_native-export-4ba07d0b85cf.msdia.tar\","
+  + "  \"archive\": \"filtered_session_20261124_083736_native-export-4ba060ba6b31.msdia.tar\","
+    "  \"bytes\": 1474560,"
+  - "  \"sha256\": \"27c06c612f57372ac541fd1d4245a46fa044c2ae4600558c26f0858f20c76106\""
+  + "  \"sha256\": \"f0fb9052935a8d1a49e42739cb1a1452fc10db39eae97f407e9fc21d5eb74a93\""
+    "}"
+  
+  actual$summary[2:8] vs expected$summary[2:8]
+    "====================================="
+    ""
+    "Export Timestamp: 2026-11-24 08:37:36"
+  - "Session File: filtered_session_20261124_083736_native-export-4ba07d0b85cf.msdia.tar"
+  + "Session File: filtered_session_20261124_083736_native-export-4ba060ba6b31.msdia.tar"
+    ""
+    "Data Summary:"
+    "- Proteins: 64"
+  
+  E9 reverted
+trace (first lines):
+      ▆
+   1. └─k206ExpectRefused(...) at test-kit206-prot-norm-export-guard.R:423:5
+   2.   └─testthat::expect_identical(after, before, info = case) at test-kit206-prot-norm-export-guard.R:210:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E11: the Summary's archive refresh is refused after a Revert past normalisation; without it, it writes (fails before)
+kind: failure
+message:
+  Expected `added` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─k206ExpectExported(...) at test-kit206-prot-norm-export-guard.R:462:5
+   2.   └─testthat::expect_length(added, 1L) at test-kit206-prot-norm-export-guard.R:224:5
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E11: the Summary's archive refresh is refused after a Revert past normalisation; without it, it writes (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E11: the Summary's archive refresh is refused after a Revert past normalisation; without it, it writes (fails before)
+kind: failure
+message:
+  Expected `after$archives` to be identical to `before$archives`.
+  Differences:
+  actual vs expected
+    "/tmp/RtmpBa2bSj/file4ba04496498e/scripts/proteomics/filtered_session_20261124_083804_native-export-4ba03e0a4e5a.msdia.tar"
+  - "/tmp/RtmpBa2bSj/file4ba04496498e/scripts/proteomics/filtered_session_20261124_083805_native-export-4ba0213566d0.msdia.tar"
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E11: the Summary's archive refresh is refused after a Revert past normalisation; without it, it writes (fails before)
+kind: failure
+message:
+  Expected `after$latest` to be identical to `before$latest`.
+  Differences:
+  actual vs expected
+    "{"
+    "  \"schema\": \"multischolar.dia_native_latest.v1\","
+    "  \"status\": \"complete\","
+  - "  \"request_id\": \"native-export-4ba0213566d0\","
+  + "  \"request_id\": \"native-export-4ba03e0a4e5a\","
+  - "  \"generation\": \"a4bedbce624d0ae95b4e87d156282b42e66fd5b41e4bf96fcdf35af6ef557c79\","
+  + "  \"generation\": \"33596195f9cb8a51d7abf9325352a9533e9977ed88f60662d220e74aa87ef9f6\","
+  - "  \"archive\": \"filtered_session_20261124_083805_native-export-4ba0213566d0.msdia.tar\","
+  + "  \"archive\": \"filtered_session_20261124_083804_native-export-4ba03e0a4e5a.msdia.tar\","
+    "  \"bytes\": 1474560,"
+  - "  \"sha256\": \"dfe1aac7cbcfda8053b0a54076935698306a878db6ddfb65bda44a895f21f6b4\""
+  + "  \"sha256\": \"faf9d8f47f53af9cfe2cf41833a56564a624b042dcc641aeb6744eec4909f79c\""
+    "}"
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E12: S3, the DA, then an enrichment result on the head: the export judges the table it was made from (fails before)
+kind: error
+message:
+  <saved_entity_missing/rlang_error/error/condition>
+  Error in `selectDIAStateReference(fixture$manager, state)`: state does not exist
+trace (first lines):
+      ▆
+   1. └─k206Revert(fixture, "normalized") at test-kit206-prot-norm-export-guard.R:499:5
+   2.   └─k206Scope(...) at test-kit206-prot-norm-export-guard.R:27:15
+   3.     └─MultiScholaR:::withDIAStateScope(fixture$manager, code) at test-kit206-prot-norm-export-guard.R:23:14
+   4.       ├─base::withVisible(operation()) at pkg/R/utils_workflow_dia_state.R:1996:5
+   5.       └─operation() at pkg/R/utils_workflow_dia_state.R:1996:5
+   6.         └─MultiScholaR:::selectDIAStateReference(fixture$manager, state) at test-kit206-prot-norm-export-guard.R:27:59
+   7.           └─cli::cli_abort("state does not exist", class = "saved_entity_missing") at pkg/R/utils_workflow_dia_state.R:1616:5
+   8.             └─rlang::abort(...)
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `log$errors` to have length 0.
+  Actual length: 1.
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `added` to have length 1.
+  Actual length: 0.
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `"protein_qc/normalised_results_cln_with_replicates.tsv" %in% archive$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `archive$ruv_applied` to be identical to FALSE.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (FALSE)
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `applied` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_outputs_pending/rlang_error/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `log$notes` to match string "[error 10] Error exporting session: the file normalised_results_cln_with_replicates.tsv that this export needs is missing from".
+  Actual text:
+  x | [error 10] Error exporting session: saved table changed during read
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `log$notes` to match string "; run the step that writes it, then export again.".
+  Actual text:
+  x | [error 10] Error exporting session: saved table changed during read
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `log$errors[[1L]]` to inherit from "workflow_export_dependency_missing".
+  Actual class: "saved_entity_corrupt"/"rlang_error"/"error"/"condition".
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `pending` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit206-prot-norm-export-guard.R
+test: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before)
+kind: failure
+message:
+  Expected `applied` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_outputs_pending/rlang_error/error/condition>, a list
+  `expected` is NULL
+
