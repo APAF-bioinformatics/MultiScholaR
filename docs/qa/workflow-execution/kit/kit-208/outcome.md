@@ -26,23 +26,65 @@ Ticket r1.3 (`tickets/kit/KIT-208.md`). Branch `kit-208-gprofiler-gene-names`, c
   - check: 0 errors, 3 warnings, 3 notes on both sides, identical;
   - **one `new-failure`: `test-omic-da-module.R`, test "(b) in process: prot_load"** (passed 28 to 27). The moved
     leaf: the stored SHA-256 of `da_output/da_proteins_groupB-groupA_long_annot.tsv` in the W1 (b) `prot_load` run
-    files, `fbe4b6a9...` (frozen, equal on base) to `180c3306...` on head (`r2/compare-failures.txt`).
+    files: stored `180c3306...` (`test-omic-da-module.R:3343`; base reproduces it), head `fbe4b6a9...`, which is the
+    value stored for `prot_main` (`:3464`) (`r2/compare-failures.txt`; in waldo's diff `-` is the value produced, `+`
+    the stored one; this file first had the direction reversed, corrected after C1).
 
-## Why the capture moved (by reading; no run beyond R2)
+## What moved: control C1 (run 45377688470, script commit 5728b7eb)
 
-The `prot_load` case loads a session file written by `module_ci_prot_da_write_session`
-(`tests/testthat/helper-module-ci-prot-da.R:156-167`): its `uniprot_dat_cln.RDS` is `Entry` plus `gene_names`, and
-the object's identifier table also carries `gene_names` (`:70`). That is case 4, the collision part (a) repairs: on
-base the TSV holds `gene_names.x`, `gene_names.y` and a blank `gene_name`; on head one `gene_names` and a filled
-`gene_name`. The move is therefore the intended effect of (a) on a fixture the plan audit's P03 reading did not list
-(it named the module-CI writer test `test-module-ci-prot-da.R:670-697`, not the W1 capture of
-`test-omic-da-module.R`). INFERRED; the TSV contents were not dumped.
+Declared before sending: one scripts job, ceiling 100 job-minutes, charged to the correction row's instrument
+allowance; no expected value changed. `control/control-k208.R` runs the `prot_load` case of `test-omic-da-module.R`
+in three separate processes (base 0a524465; head 9dc2bd64 twice), loading each tree as the test jobs do, and keeps
+the masked text of the DA table and the digest `guiEntryArtifacts` itself returns. Records in `control/`
+(`comparison.tsv`, `columns.tsv`, `status.tsv`, the three dumps and their `digests.tsv`). 12.7 job-minutes.
+
+| Check | Base | Head | Holds |
+|---|---|---|---|
+| precondition: base digest = stored prot_load (`:3343`) | 180c3306... | 180c3306... | yes |
+| head digest = stored prot_main (`:3464`) | fbe4b6a9... | fbe4b6a9... | yes |
+| head1 and head2 dumps byte-identical (md5) | f3f99496... | f3f99496... | yes |
+| row count | 6 | 6 | yes |
+| row order (`uniprot_acc` in order) | same | same | yes |
+| columns only on base | `gene_names.x`, `gene_names.y` | | |
+| columns only on head | | `gene_names` | |
+| the other 15 common columns (`uniprot_acc`, `fdr_qvalue`, `raw_pvalue`, `log2FC`, `comparison`, `numerator`, `denominator`, 4 `log2norm.*`, 4 `raw.*`) byte-identical | 15 | 15 | yes |
+| `gene_name` blank rows | 6 of 6 | 0 of 6 | |
+| head `gene_name` = first word of head `gene_names` | | | yes |
+
+Observed: the move is exactly the collision part (a) repairs and nothing else: base's two name columns become one,
+and `gene_name` goes from blank to `GENE<i>`. On head the session-load path's table is byte-identical to the main
+path's (`prot_main`'s stored digest). The comparison is of the masked text the test digests (`guiEntryMask` masks
+hexadecimal-looking digit runs in the numeric columns), not of unmasked numbers. Cause, by reading: the `prot_load`
+session file written by `module_ci_prot_da_write_session` (`tests/testthat/helper-module-ci-prot-da.R:156-167`) holds
+an annotation `Entry` plus `gene_names`, and the object's identifier table also carries `gene_names` (`:70`): case 4.
+The plan audit's P03 reading did not list this capture.
+
+## Fixtures part (a) can move (identifier table and annotation both carry `gene_names`; by reading)
+
+1. `tests/testthat/helper-module-ci-prot-da.R:70` with the session file of `:156-167`: `test-omic-da-module.R` W1
+   `prot_load` **moved in R2** (above); `prot_main` (stored value already the head's); `test-module-ci-prot-da.R:670-697`,
+   `test-omic-enrich-module.R`, `test-workflow-analysis-record.R`, `test-omics-enrich-core.R`,
+   `test-workflow-integration-input.R`: `same` in R2. `test-omic-summary-module.R` (via
+   `helper-module-ci-prot-summary.R`, which writes its proteomics DA table directly, not through the writer): **not
+   run**.
+2. `tests/testthat/helper-module-ci-prot-da.R:218` (`module_ci_prot_da_result_table`, a result table that already has
+   `gene_names`, written directly by its consumers, not through the join): consumers in R2 `same`; the summary
+   module's use not run.
+3. `tests/testthat/helper-go-propagation.R:134` (`goPropRunProject`) and its stored base capture
+   `tests/testdata/go-propagation/replay-base/` (record, capture, evidence, product made from the collision-shaped
+   table): `test-go-propagation.R` `same` in R2.
+4. `tests/testthat/test-enrichment-significance.R:196` and its stored base fixtures
+   `tests/testdata/enrichment-significance/` (`s3-*`, `s6-identity.rds`, `t7-*`; clusterProfiler route, no DA-table
+   digest): `same` in R2.
+5. `tests/testthat/test-prot-annotation-uniprot-empty.R:645` (`k175Project`): `same` in R2.
+6. `tests/testthat/helper-workflow-checkpoint-fixtures.R:228-231` (identifiers `gene_names = SYNTHETIC_<i>`): no test
+   found that publishes these with a UniProt annotation; **not run** (R3 would show it).
 
 ## Decision needed (stop rule 2, E-4)
 
-Stop rule 2 stops the ticket. Under E-4 the capture `omicDaW1Frozen[["prot_load"]]` (`test-omic-da-module.R:3254`)
-is re-frozen only on the owner's word, with a base-against-head control (dump the TSV on base and head and show the
-difference is only the gene-name columns). No capture was re-recorded here.
+Stop rule 2 stops the ticket. Under E-4 the capture `omicDaW1Frozen[["prot_load"]]` (`test-omic-da-module.R:3254`,
+the run step's leaf at `:3343`) is re-frozen only on the owner's word; the base-against-head control is C1 (above).
+No capture was re-recorded here.
 
 ## Acceptance criteria
 
@@ -79,7 +121,8 @@ Signal message (for callers): "g:Profiler was given no gene names to test: <list
 ## Not checked
 
 - R3 (full suite) not run; files outside R2's scope not compared.
-- The moved TSV's contents were not dumped; the cause is by reading.
+- C1 compares masked text (as the test digests it), not unmasked numbers; `test-omic-summary-module.R` and the
+  checkpoint fixtures were not run.
 - Real g:Profiler, real data, case 5's reach in the app, DIA-NN group keys (VAL-147 (4), hand-off).
 - KIT-205's background: T7 and T8 not aligned to it (whichever merges second runs R2b).
 
@@ -105,5 +148,6 @@ Signal message (for callers): "g:Profiler was given no gene names to test: <list
   (`enrichment_unnamed_proteins`). A record of a case-5 run made earlier no longer replays. Left unchanged (E-3): the
   legacy writer `.outputDaResultsAllContrastsProteomicsLegacy` and the workbooks' writer `outputDeAnalysisResults`
   keep the default-suffix join.
-- **Evidence.** R1 45367973598, R2 45370085901 (`r1/`, `r2/`); recorded `gost` stand-in, no service call. R2 also
-  showed the module-CI W1 `prot_load` DA TSV digest move (above): awaiting the owner's re-freeze decision.
+- **Evidence.** R1 45367973598, R2 45370085901, C1 45377688470 (`r1/`, `r2/`, `control/`); recorded `gost`
+  stand-in, no service call. R2 showed the module-CI W1 `prot_load` DA TSV digest move; C1 shows it is only the
+  name columns (above): awaiting the owner's re-freeze decision.
