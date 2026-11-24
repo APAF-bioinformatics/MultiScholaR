@@ -822,6 +822,27 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
     list(notice = paste(notices, collapse = " "), outcome = paste(outcomes, collapse = "; "))
 }
 
+#' The proteins without a gene name per comparison on the g:Profiler route (KIT-208, VAL-147 (3))
+#'
+#' Tested rows of each comparison's DA table (`enrichmentTestedRows`, the background in force, KIT-205) whose identifier
+#' (the route's `gene_name`) is NA or empty; they leave the lists and the background g:Profiler is sent.
+#' @param da_results The run's `da_results_for_enrichment` (after the organism filter, when it applied).
+#' @param contrasts_tbl The contrasts table (display names).
+#' @param id_column The identifier column sent to g:Profiler.
+#' @return One string, "<comparison>: <unnamed> of <tested rows>" per comparison joined by "; ", or NULL when every
+#'   tested protein of every comparison has a name.
+#' @noRd
+workflowEnrichmentUnnamedProteins <- function(da_results, contrasts_tbl, id_column) {
+    tables <- lapply(Filter(Negate(is.null), da_results@da_data), function(table) enrichmentTestedRows(table)$rows)
+    unnamed <- vapply(tables, function(table) {
+        ids <- table[[id_column]]
+        sum(is.na(ids) | !nzchar(as.character(ids)))
+    }, 0L)
+    if (!any(unnamed > 0L)) return(NULL)
+    paste(sprintf("%s: %d of %d", enrichmentContrastDisplayNames(contrasts_tbl, names(tables)), unnamed,
+        vapply(tables, nrow, 0L)), collapse = "; ")
+}
+
 #' Run the enrichment on an accepted DA manifest (KIT-107 D3)
 #'
 #' The module's manifest path at the start commit (`runProtEnrichAnalysisBody`, its setup, finalise and persist steps,
@@ -845,7 +866,8 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
 #' @param process_fn The kernel; NULL selects `config$kernel$select()` when called (the double in test mode).
 #' @param notify `function(message, type, duration)`: the organism filter's warning, and on the clusterProfiler route
 #'   the notice of the significance rule applied (KIT-203), with the sentence that the selected correction was not used
-#'   when the selection is not `fdr` or `BH` (A107-03; then a warning); NULL notifies nobody.
+#'   when the selection is not `fdr` or `BH` (A107-03; then a warning); on the g:Profiler route a warning naming the
+#'   lists not tested because none of their proteins has a gene name (KIT-208); NULL notifies nobody.
 #' @param progress `function(value, detail)`; NULL reports nothing.
 #' @param refuse_missing_da TRUE refuses a run whose DA table is missing for a contrast before anything is written
 #'   (class `workflow_enrichment_input`; F107-03). FALSE is the start commit's behaviour: the run continues on the
@@ -857,6 +879,10 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
 #'   contrast name; the contrasts table; the pathway directory; the annotation match (NULL when none); the
 #'   organism-filter metadata written to the bus; the service identity; the product reference; the declared values
 #'   the product's identity used (9, and the organism filter's 2 when it is on; P-28); and the state save's result.
+#'   KIT-208: a g:Profiler comparison without a named protein refuses the run (class
+#'   `workflow_enrichment_no_identifiers`, from the kernel) before anything is saved; the step's outcomes gain
+#'   `enrichment_lists_not_tested` when a list was not tested and `enrichment_unnamed_proteins` when a comparison has
+#'   proteins without a gene name.
 #' @noRd
 runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths, process_fn = NULL, notify = NULL,
     progress = NULL, refuse_missing_da = FALSE) {
@@ -1041,6 +1067,22 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     # KIT-203 (OD10): the rule applied, provenance only (not identity), last so positional reads keep their entries.
     if (!is.null(significance_rule)) outcomes <- c(outcomes, list(significance_rule = significance_rule))
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
+    # KIT-208 (VAL-147 (1), SD-1 (a)): a g:Profiler list whose proteins all lack a gene name was not sent; the run says
+    # so once and records it, so that its empty result is not read as "no term enriched". Absent otherwise.
+    not_tested <- declared$not_tested
+    if (NROW(not_tested) > 0L) {
+        notify(paste(sprintf(paste("Comparison %s, %s: none of its %d proteins has a gene name, so this list was not",
+            "sent to g:Profiler and was not tested (its empty result does not mean that no term is enriched)."),
+            not_tested$comparison, not_tested$direction, not_tested$proteins), collapse = " "), "warning", NULL)
+        outcomes$enrichment_lists_not_tested <- paste(not_tested$comparison, not_tested$direction, sep = ": ",
+            collapse = "; ")
+    }
+    # KIT-208 (VAL-147 (3), SD-3 (c)): on the g:Profiler route, the proteins of each comparison without a gene name,
+    # which leave its lists and its background; recorded only when there are some.
+    if (identical(method$method, "gprofiler2")) {
+        outcomes$enrichment_unnamed_proteins <- workflowEnrichmentUnnamedProteins(da_results, contrasts_tbl,
+            columns$idColumn)
+    }
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
     # KIT-018: each contrast's result tables are also saved display tables (content-addressed).

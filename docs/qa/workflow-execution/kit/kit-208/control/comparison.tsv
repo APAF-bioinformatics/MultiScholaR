@@ -1,0 +1,16 @@
+check	base	head	holds
+precondition: base digest equals the stored prot_load digest (:3343)	180c330673a89c3d58f1e830639d9011ddfc16f96aa8ee5ebdcbfc489d85c7c0	180c330673a89c3d58f1e830639d9011ddfc16f96aa8ee5ebdcbfc489d85c7c0	TRUE
+head digest	fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6		NA
+head digest equals the stored prot_main digest (:3464)	fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6	fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6	TRUE
+head1 and head2 dumps byte-identical	f3f9949601a4e1aedbaef505233e8623	f3f9949601a4e1aedbaef505233e8623	TRUE
+head1 and head2 digest sequences identical	fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6	fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6	TRUE
+row count	6	6	TRUE
+row order (first column, in order)	uniprot_acc	uniprot_acc	TRUE
+columns only on base	gene_names.x;gene_names.y		NA
+columns only on head		gene_names	NA
+common columns other than gene_name and gene_names	15	15	NA
+of those, byte-identical	15	15	TRUE
+of those, differing			TRUE
+gene_name blank rows	6	0	NA
+gene_names column count	0	1	NA
+head gene_name equals first word of head gene_names			TRUE

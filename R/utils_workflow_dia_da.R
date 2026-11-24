@@ -657,6 +657,11 @@ diaEnrichmentServiceIdentity <- function(results) {
 #' GUI audit R3, P-28: the organism filter is declared (`organism_filter_enabled`, `organism_filter_taxon`). A run
 #' with the filter off declares the first nine names only (`diaEnrichmentDeclaredNames`), so its identity, its product
 #' and its record are what they were before the filter was declared.
+#' KIT-208 (VAL-147 (1)): the lists `perform_enrichment` did not send to g:Profiler for want of a named identifier
+#' (`multischolar_enrichment_no_identifiers`) are collected beside the service failures and judged after the process
+#' returns (`diaEnrichmentNoIdentifiers`): a comparison whose background has no named protein refuses the run (class
+#' `workflow_enrichment_no_identifiers`) before any product or state is saved; otherwise the lists are returned as
+#' `not_tested`, absent when there are none. A service failure is reported first.
 #' @noRd
 diaEnrichmentOperation <- function() {
     newWorkflowOperation("enrichment", "ProteinQuantitativeData", fields = "design_matrix", unit = "whole_matrix",
@@ -682,17 +687,73 @@ diaEnrichmentOperation <- function() {
             # KIT-203: the significance rule, likewise.
             if (!is.null(parameters$significance_rule)) arguments$significance_rule <- parameters$significance_rule
             failures <- character()
+            unnamed <- list()
             results <- withCallingHandlers(do.call(process, arguments),
                 multischolar_enrichment_service_failure = function(condition)
-                    failures <<- c(failures, conditionMessage(condition)))
+                    failures <<- c(failures, conditionMessage(condition)),
+                multischolar_enrichment_no_identifiers = function(condition)
+                    unnamed[[length(unnamed) + 1L]] <<- condition)
             if (length(failures)) {
                 rlang::abort(paste("The enrichment service did not answer, so nothing was saved.",
                     paste(unique(failures), collapse = "; ")), class = "workflow_enrichment_service")
             }
+            not_tested <- diaEnrichmentNoIdentifiers(unnamed, parameters$da_results)
             if (!methods::is(results, "EnrichmentResults"))
                 cli::cli_abort("enrichment kernel returned no EnrichmentResults", class = "workflow_operation_output")
-            list(results = results, service = diaEnrichmentServiceIdentity(results))
+            value <- list(results = results, service = diaEnrichmentServiceIdentity(results))
+            value$not_tested <- not_tested
+            value
         })
+}
+
+#' The display name of each DA table name (KIT-208): the contrasts table's `friendly_names` where its `contrasts`
+#' column holds the name, otherwise the name itself.
+#' @param contrasts_tbl The contrasts table (`da_results@contrasts`, or the run's), or NULL.
+#' @param ids The `da_data` names.
+#' @return A character vector as long as `ids`.
+#' @noRd
+enrichmentContrastDisplayNames <- function(contrasts_tbl, ids) {
+    ids <- as.character(ids)
+    if (!is.data.frame(contrasts_tbl) || !all(c("contrasts", "friendly_names") %in% names(contrasts_tbl))) return(ids)
+    shown <- as.character(contrasts_tbl$friendly_names)[match(ids, as.character(contrasts_tbl$contrasts))]
+    ifelse(is.na(shown) | !nzchar(shown), ids, shown)
+}
+
+#' The g:Profiler lists not sent for want of a named identifier (KIT-208, VAL-147 (1))
+#'
+#' A comparison whose background (its tested rows, `enrichmentTestedRows`) has no named protein refuses the run: nothing
+#' it could test would be tested. A list
+#' whose proteins are all unnamed, in a comparison with named proteins, is not tested and returned.
+#' @param signals The `multischolar_enrichment_no_identifiers` conditions `perform_enrichment` signalled, in order.
+#' @param da_results The run's `da_results_for_enrichment` (its contrasts table and DA tables name and count).
+#' @return NULL when nothing was signalled; otherwise a data frame, one row per list in signal order: `comparison`
+#'   (display name), `direction` ("up" or "down"), `proteins` (the list's size). A background without a named protein
+#'   is refused (class `workflow_enrichment_no_identifiers`).
+#' @noRd
+diaEnrichmentNoIdentifiers <- function(signals, da_results) {
+    if (!length(signals)) return(NULL)
+    contrasts_tbl <- tryCatch(da_results@contrasts, error = function(e) NULL)
+    tables <- tryCatch(da_results@da_data, error = function(e) list())
+    label <- function(signal, field) as.character(signal[[field]] %||% NA_character_)[[1L]]
+    raw <- vapply(signals, label, "", field = "contrast")
+    empty <- vapply(signals, function(signal) identical(as.numeric(signal$background_ids), 0), NA)
+    if (any(empty)) {
+        refused <- unique(raw[empty])
+        # KIT-205 alignment (KIT-208 audit I08): n counts the comparison's tested rows, the background in force.
+        tested <- function(name) {
+            table <- if (!is.na(name)) tables[[name]]
+            if (is.null(table)) 0L else NROW(enrichmentTestedRows(table)$rows)
+        }
+        sentences <- vapply(refused, function(name) sprintf(paste("g:Profiler tests gene names, and none of the tested",
+            "proteins of comparison %s has one (0 of %d tested proteins named), so nothing would be tested."),
+            enrichmentContrastDisplayNames(contrasts_tbl, name), tested(name)), "")
+        rlang::abort(paste(c(sentences, "Check that the protein annotation was retrieved for this organism (save the",
+            "design again). This happens when the annotation was not retrieved for these proteins, or when their",
+            "identifiers are not UniProt accessions."), collapse = " "), class = "workflow_enrichment_no_identifiers")
+    }
+    data.frame(comparison = enrichmentContrastDisplayNames(contrasts_tbl, raw),
+        direction = vapply(signals, label, "", field = "direction"),
+        proteins = vapply(signals, function(signal) as.integer(signal$list_size), 1L), stringsAsFactors = FALSE)
 }
 
 #' The declared parameter names one enrichment run uses (GUI audit R3, P-28): the organism filter's two only when the
@@ -731,9 +792,11 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
 #'   only) is declared when it is not `"none"`; otherwise the kernel receives it as an undeclared extra, so a record
 #'   made before KIT-173 replays with the sets it was made with and the same identity.
 #' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
-#' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
+#' @return `list(results, service, reference, parameters)`: the `EnrichmentResults`, the reported service identity,
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
-#'   parameters and the service identity; rooted on the source and the result tables).
+#'   parameters and the service identity; rooted on the source and the result tables) and the declared values; and
+#'   `not_tested` (KIT-208) when g:Profiler lists were not sent for want of a named identifier
+#'   (`diaEnrichmentNoIdentifiers`).
 #' @noRd
 runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn = NULL) {
     manager <- workflow$state_manager
@@ -773,8 +836,10 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
             if (identical(parts[[1L]], "clusterProfiler")) "package_version" else "database_version",
             query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
     }
-    list(results = value$results, service = value$service, reference = reference,
+    out <- list(results = value$results, service = value$service, reference = reference,
         parameters = declared_values) # KIT-107 D4 (F-16): the declared values the identity used
+    out$not_tested <- value$not_tested # KIT-208: absent when every list was sent; neither identity nor product
+    out
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's

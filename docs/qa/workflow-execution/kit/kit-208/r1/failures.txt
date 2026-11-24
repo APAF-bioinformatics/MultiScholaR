@@ -1,0 +1,338 @@
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T1: both tables carry gene names; the DA table keeps the annotation's
+kind: failure
+message:
+  Expected `k208Blank(da$gene_name)` to be identical to 0L.
+  Differences:
+    `actual`: 70
+  `expected`:  0
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T1: both tables carry gene names; the DA table keeps the annotation's
+kind: failure
+message:
+  Expected `sum(names(da) == "gene_names")` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T1: both tables carry gene names; the DA table keeps the annotation's
+kind: failure
+message:
+  Expected `any(grepl("^gene_names\\.(x|y|input)$", names(da)))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T1: both tables carry gene names; the DA table keeps the annotation's
+kind: failure
+message:
+  Expected `as.character(da$gene_name)` to be identical to `k208FirstName(full, da$uniprot_acc)`.
+  Differences:
+       actual | expected     
+   [1] NA     - "b1716"  [1] 
+   [2] NA     - "b3305"  [2] 
+   [3] NA     - "b3985"  [3] 
+   [4] NA     - "b3309"  [4] 
+   [5] NA     - "b3315"  [5] 
+   [6] NA     - "b3983"  [6] 
+   [7] NA     - "b2606"  [7] 
+   [8] NA     - "b3231"  [8] 
+   [9] NA     - "b3310"  [9] 
+  [10] NA     - "b4203"  [10]
+  [11] NA     - "b0003"  [11]
+  [12] NA     - "b0031"  [12]
+  [13] NA     - "b4054"  [13]
+  [14] NA     - "b0166"  [14]
+  [15] NA     - "b2472"  [15]
+  [16] NA     - "b3941"  [16]
+  [17] NA     - "b0002"  [17]
+  [18] NA     - "b4013"  [18]
+  [19] NA     - "b2319"  [19]
+  [20] NA     - "b2478"  [20]
+  [21] NA     - "b0674"  [21]
+  [22] NA     - "b3940"  [22]
+  [23] NA     - "b0004"  [23]
+  [24] NA     - "b4024"  [24]
+  [25] NA     - "b3809"  [25]
+  [26] NA     - "b3770"  [26]
+  [27] NA     - "b4019"  [27]
+  [28] NA     - "b2838"  [28]
+  [29] NA     - "b2839"  [29]
+  [30] NA     - "b3772"  [30]
+  [31] NA     - "b3433"  [31]
+  [32] NA     - "b0001"  [32]
+  [33] NA     - "b3829"  [33]
+  [34] NA     - "b0261"  [34]
+  [35] NA     - "b3744"  [35]
+  [36] NA     - "b3902"  [36]
+  [37] NA     - "b0698"  [37]
+  [38] NA     - "b0440"  [38]
+  [39] NA     - "b3028"  [39]
+  [40] NA     - "b1642"  [40]
+  [41] NA     - "b3701"  [41]
+  [42] NA     - "b3366"  [42]
+  [43] NA     - "b3292"  [43]
+  [44] NA     - "b1833"  [44]
+  [45] NA     - "b0493"  [45]
+  [46] NA     - "b1637"  [46]
+  [47] NA     - "b1132"  [47]
+  [48] NA     - "b1639"  [48]
+  [49] NA     - "b3350"  [49]
+  [50] NA     - "b3319"  [50]
+  [51] NA     - "b1006"  [51]
+  [52] NA     - "b2353"  [52]
+  [53] NA     - "b3342"  [53]
+  [54] NA     - "b1823"  [54]
+  [55] NA     - "b3782"  [55]
+  [56] NA     - "b3880"  [56]
+  [57] NA     - "b1352"  [57]
+  [58] NA     - "b2004"  [58]
+  [59] NA     - "b3865"  [59]
+  [60] NA     - "b1627"  [60]
+  [61] NA     - "b0970"  [61]
+  [62] NA     - "b3738"  [62]
+  [63] NA     - "b3005"  [63]
+  [64] NA     - "b3868"  [64]
+  [65] NA     - "b2209"  [65]
+  [66] NA     - "b2174"  [66]
+  [67] NA     - "b0531"  [67]
+  [68] NA     - "b0513"  [68]
+  [69] NA     - "b4558"  [69]
+  [70] NA     - "b3486"  [70]
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T2: an annotation lacking 25 accessions; the identifier table fills those 25 (SD-2)
+kind: failure
+message:
+  Expected `k208Blank(da$gene_name)` to be identical to 0L.
+  Differences:
+    `actual`: 70
+  `expected`:  0
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T2: an annotation lacking 25 accessions; the identifier table fills those 25 (SD-2)
+kind: failure
+message:
+  Expected `as.character(da$gene_name[from_annotation])` to be identical to `k208FirstName(lacks25, da$uniprot_acc[from_annotation])`.
+  Differences:
+       actual | expected     
+   [1] NA     - "b3305"  [1] 
+   [2] NA     - "b3309"  [2] 
+   [3] NA     - "b3315"  [3] 
+   [4] NA     - "b3310"  [4] 
+   [5] NA     - "b0003"  [5] 
+   [6] NA     - "b2472"  [6] 
+   [7] NA     - "b3941"  [7] 
+   [8] NA     - "b2319"  [8] 
+   [9] NA     - "b0674"  [9] 
+  [10] NA     - "b0004"  [10]
+  [11] NA     - "b4019"  [11]
+  [12] NA     - "b2839"  [12]
+  [13] NA     - "b0001"  [13]
+  [14] NA     - "b3829"  [14]
+  [15] NA     - "b0261"  [15]
+  [16] NA     - "b3902"  [16]
+  [17] NA     - "b0440"  [17]
+  [18] NA     - "b3028"  [18]
+  [19] NA     - "b1642"  [19]
+  [20] NA     - "b3366"  [20]
+  [21] NA     - "b3292"  [21]
+  [22] NA     - "b1833"  [22]
+  [23] NA     - "b0493"  [23]
+  [24] NA     - "b1637"  [24]
+  [25] NA     - "b1132"  [25]
+  [26] NA     - "b1639"  [26]
+  [27] NA     - "b3350"  [27]
+  [28] NA     - "b3319"  [28]
+  [29] NA     - "b1006"  [29]
+  [30] NA     - "b2353"  [30]
+  [31] NA     - "b3782"  [31]
+  [32] NA     - "b3880"  [32]
+  [33] NA     - "b1352"  [33]
+  [34] NA     - "b2004"  [34]
+  [35] NA     - "b3865"  [35]
+  [36] NA     - "b1627"  [36]
+  [37] NA     - "b3738"  [37]
+  [38] NA     - "b3005"  [38]
+  [39] NA     - "b3868"  [39]
+  [40] NA     - "b2209"  [40]
+  [41] NA     - "b2174"  [41]
+  [42] NA     - "b0531"  [42]
+  [43] NA     - "b0513"  [43]
+  [44] NA     - "b4558"  [44]
+  [45] NA     - "b3486"  [45]
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T2: an annotation lacking 25 accessions; the identifier table fills those 25 (SD-2)
+kind: failure
+message:
+  Expected `as.character(da$gene_name[!from_annotation])` to be identical to `paste0("GENE", match(da$uniprot_acc[!from_annotation], entries))`.
+  Differences:
+       actual | expected     
+   [1] NA     - "GENE22" [1] 
+   [2] NA     - "GENE19" [2] 
+   [3] NA     - "GENE20" [3] 
+   [4] NA     - "GENE21" [4] 
+   [5] NA     - "GENE31" [5] 
+   [6] NA     - "GENE23" [6] 
+   [7] NA     - "GENE9"  [7] 
+   [8] NA     - "GENE10" [8] 
+   [9] NA     - "GENE27" [9] 
+  [10] NA     - "GENE2"  [10]
+  [11] NA     - "GENE12" [11]
+  [12] NA     - "GENE16" [12]
+  [13] NA     - "GENE3"  [13]
+  [14] NA     - "GENE14" [14]
+  [15] NA     - "GENE15" [15]
+  [16] NA     - "GENE33" [16]
+  [17] NA     - "GENE4"  [17]
+  [18] NA     - "GENE11" [18]
+  [19] NA     - "GENE29" [19]
+  [20] NA     - "GENE6"  [20]
+  [21] NA     - "GENE8"  [21]
+  [22] NA     - "GENE26" [22]
+  [23] NA     - "GENE24" [23]
+  [24] NA     - "GENE30" [24]
+  [25] NA     - "GENE32" [25]
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T5: T1's project through g:Profiler sends the names
+kind: failure
+message:
+  Expected `project$gost` to be identical to `c(rep("25,70", 5L), rep("10,70", 5L))`.
+  Differences:
+       actual | expected     
+   [1] "0,0"  - "25,70"  [1] 
+   [2] "0,0"  - "25,70"  [2] 
+   [3] "0,0"  - "25,70"  [3] 
+   [4] "0,0"  - "25,70"  [4] 
+   [5] "0,0"  - "25,70"  [5] 
+   [6] "0,0"  - "10,70"  [6] 
+   [7] "0,0"  - "10,70"  [7] 
+   [8] "0,0"  - "10,70"  [8] 
+   [9] "0,0"  - "10,70"  [9] 
+  [10] "0,0"  - "10,70"  [10]
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T6: no DA protein has a gene name (case 5); the run is refused before g:Profiler is asked
+kind: failure
+message:
+  Expected `project$gost` to be identical to `character()`.
+  Differences:
+  `actual`:   "0,0" "0,0" "0,0" "0,0" "0,0" "0,0" "0,0" "0,0" "0,0" "0,0"
+  `expected`:                                                            
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T6: no DA protein has a gene name (case 5); the run is refused before g:Profiler is asked
+kind: failure
+message:
+  Expected `inherits(project$error, "workflow_enrichment_no_identifiers")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T6: no DA protein has a gene name (case 5); the run is refused before g:Profiler is asked
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(conditionMessage(project$error), k208Refusal) at test-kit208-gprofiler-identifiers.R:218:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(project$error)
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T7: the up list has no named protein (case 6); it is not tested, reported and recorded
+kind: failure
+message:
+  Expected `project$gost` to be identical to `rep("10,45", 5L)`.
+  Differences:
+  `actual[1:8]`:   "0,45" "0,45" "0,45" "0,45" "0,45" "10,45" "10,45" "10,45"
+  `expected[1:3]`:                                    "10,45" "10,45" "10,45"
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T7: the up list has no named protein (case 6); it is not tested, reported and recorded
+kind: failure
+message:
+  Expected `sum(texts == k208NotTestedUp)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T7: the up list has no named protein (case 6); it is not tested, reported and recorded
+kind: failure
+message:
+  Expected `project$notes[[match(k208NotTestedUp, texts)]]$type` to be identical to "warning".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('warning')
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T7: the up list has no named protein (case 6); it is not tested, reported and recorded
+kind: failure
+message:
+  Expected `sum(grepl("was not tested", texts, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T7: the up list has no named protein (case 6); it is not tested, reported and recorded
+kind: failure
+message:
+  Expected `project$outcomes$enrichment_lists_not_tested` to be identical to "B_vs_A: up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_vs_A: up')
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T7: the up list has no named protein (case 6); it is not tested, reported and recorded
+kind: failure
+message:
+  Expected `project$outcomes$enrichment_unnamed_proteins` to be identical to "B_vs_A: 25 of 70".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_vs_A: 25 of 70')
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T9: perform_enrichment called directly with no identifier does not call g:Profiler
+kind: failure
+message:
+  Expected `log$calls` to be identical to `character()`.
+  Differences:
+  `actual`:   "0,0" "0,0" "0,0" "0,0" "0,0"
+  `expected`:                              
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T9: perform_enrichment called directly with no identifier does not call g:Profiler
+kind: failure
+message:
+  Expected `inherits(caught, "multischolar_enrichment_no_identifiers")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T9: perform_enrichment called directly with no identifier does not call g:Profiler
+kind: failure
+message:
+  Expected `caught$list_size` to be identical to 3L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (3)
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T9: perform_enrichment called directly with no identifier does not call g:Profiler
+kind: failure
+message:
+  Expected `caught$query_ids` to be identical to 0L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (0)
+
