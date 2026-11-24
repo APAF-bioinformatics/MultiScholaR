@@ -1,9 +1,14 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 2
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 4
 
-Revision 2 (2026-11-25) applies the declaration audit (`tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`,
+**Revision 4 (2026-11-25):** B04 decided by the owner (methods ledger VAL-185): option C, with one blinded re-estimation
+of the number of data sets (section 8); ceiling 100 core-hours; 8 deciding cells, E1-T1b reported; margins 0.10 (null
+cells) and 0.05 (effect cells). Every former "[B04 OPEN]" value is filled from option C below. Revision 3 is commit
+d7c5ef98 (option C added; SHA-256 cd1acd5b...0c55); revision 2 is ae8e85af.
+
+Revision 2 (2026-11-25) applied the declaration audit (`tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`,
 "Declaration audit") B01 to B03 and B05 to B10 with its exact texts. **B04 is OPEN**: the margins, R per cell, whether
-E1-T1b decides, and the ceiling are the owner's; every such value below is marked **[B04 OPEN]**, and the two options
-put to the owner are worked out in the appendix. Revision 1 is commit fe1eeb49 (SHA-256 31f453e7ca78...cd97cd).
+E1-T1b decides, and the ceiling were the owner's (decided in revision 4); the options put to the owner are in the
+appendix. Revision 1 is commit fe1eeb49 (SHA-256 31f453e7ca78...cd97cd).
 
 Written before any code or run of this measurement, to be audited before the lifecycle run is sent. Authority: methods
 ledger VAL-182 (2026-11-25); audit `tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`, "The smallest further
@@ -46,9 +51,9 @@ many journeys' percentage or k differ from this emulation.
 
 | Cell | Effects | Factor's sample pattern | Row order | R | Seed |
 |---|---|---|---|---|---|
-| N-r, N-s, E-r, E-s, E-p, E-g | as `effect.R` | balanced within groups (unchanged) | as `effect.R` | **[B04 OPEN]** (50 in the null cells; 50 or 100 in the effect cells) | `190000000 + 10000 × cell + r`, cells 1 to 6 (unchanged) |
-| **N-w** | none | random (below) | as generated | **[B04 OPEN]** (150 in both options) | cell 7 |
-| **E-w** | 10 % ±1 log2 | random (below) | as generated | **[B04 OPEN]** (150 in both options) | cell 8 |
+| N-r, N-s, E-r, E-s, E-p, E-g | as `effect.R` | balanced within groups (unchanged) | as `effect.R` | at least 100 (N-r, N-s) and 200 (E-r, E-s, E-p, E-g); final R by section 8 | `190000000 + 10000 × cell + r`, cells 1 to 6 (unchanged) |
+| **N-w** | none | random (below) | as generated | at least 250; final R by section 8 | cell 7 |
+| **E-w** | 10 % ±1 log2 | random (below) | as generated | at least 200; final R by section 8 | cell 8 |
 | E1 | T1b's 42 journeys (lipid seeds 172101 to 172120, with and without missing cells; seed 172101 metab excluded as metab); T11 concentration and F172 (lipid) | as KIT-172 | as KIT-172 | 1 each | KIT-172's |
 
 - **The generator change, exactly.** One added argument to `e2Values` (the declared copy of `kit172Values`),
@@ -62,17 +67,21 @@ many journeys' percentage or k differ from this emulation.
   Its correlation with the group indicator over 12 samples has standard deviation 0.30 (r² ~ Beta(1/2, 5)); mean |r|
   0.25, median 0.22, |r| > 0.5 in about 10 % of data sets; the realised
   correlation is recorded per journey and reported (quartiles; and the endpoints split at |r| > 0.5, descriptively).
-- **R and power [B04 OPEN].** R per cell is the owner's choice between the appendix's options A and B (for replicates
-  beyond 50 in the balanced cells, the unbounded F and D journeys are run, not reused). **Power, stated before the run.**
-  With arms truly equal, the probability that D+B passes every decisive cell is **[B04 OPEN: the chosen option's figure
-  from the appendix]**; a true FDP excess of 0.05 passes with probability at most α per cell.
+- **R and power.** Option C (VAL-185) gives each cell's minimum R: N-r, N-s 100; E-r, E-s, E-p, E-g 200; N-w 250;
+  E-w 200. The final R per cell is set once, by section 8's fixed formula, from the first 50 seeds of the capped arms;
+  it is never below option C's. For replicates beyond 50 in the balanced cells, the unbounded F and D journeys are run,
+  not reused. **Power, stated before the run.** At option C's R, with arms truly equal, the probability that D+B passes
+  every decisive cell is 0.80 (paired SD 0.20, N-w discordance 0.25) to 0.86 (discordance 0.12), and 0.93 to 0.995 at
+  SD 0.10; section 8 raises R to keep it at 0.80 or more if the observed spread is larger, within the ceiling. A true
+  excess equal to the margin passes its cell with probability at most α (section 8 gives the two-stage procedure's
+  simulated size).
 
 ## 4. Endpoints
 
 | Cells | Primary (decides) | Secondary (reported, decides nothing) |
 |---|---|---|
 | N-r, N-s, N-w | **family-wise error**: the data set has any call at q < 0.05 (yes/no per journey) | calls per data set; k; mean \|log2 FC − 0\| |
-| E-r, E-s, E-p, E-g, E-w; E1-T1b **[B04 OPEN: decisive or reported; reported in both options]** | **false discovery proportion** per journey (0 with no calls) | power over all planted features; k; mean \|log2 FC − truth\| over tested features; calls |
+| E-r, E-s, E-p, E-g, E-w (deciding); E1-T1b (reported, VAL-185) | **false discovery proportion** per journey (0 with no calls) | power over all planted features; k; mean \|log2 FC − truth\| over tested features; calls |
 | E1-T11 (two fixtures) | none (n = 1 each): false calls, k reported | |
 
 Also recorded per journey (instrumentation, VAL-182; turns the audit's M05 and M06 into shown or not shown): the k
@@ -92,24 +101,22 @@ Per cell c, pairs are the same data set under D+B and F+B.
   √(n(2q̂ + 0.10·0.90)), with q̂ the restricted maximum-likelihood estimate of p01 under Δ = 0.10. No worse if Z < −z_{1−α},
   α as in 'Multiplicity'. This test is asymptotic. Beside it is reported the Berger–Boos exact unconditional p-value
   (statistic b − c′, nuisance p10 + p01 restricted to its 1 − α/10 Clopper–Pearson interval, plus α/10); if the two
-  disagree, that is reported to the owner, and the Tango verdict stands as declared. (Margin 0.10: **[B04 OPEN]**, 0.10
-  in both options.)
+  disagree, that is reported to the owner, and the Tango verdict stands as declared. (Margin 0.10, VAL-185.)
 - **Effect cells (FDP).** d_i = FDP(D+B)_i − FDP(F+B)_i. Test of H0: mean(d) ≥ 0.05 against H1: mean(d) < 0.05 by a
   one-sided sign-flip test of the studentised mean of e_i = d_i − 0.05: statistic t = mean(e)/(sd(e)/√n), reference
   distribution of t over 100,000 random sign vectors (seed 19001) plus the observed one. p = the share of sign vectors
   with t* ≤ t. No worse if p ≤ α. The test is asymptotically valid without symmetry and exact under symmetry; the Monte
   Carlo error of p is reported. The paired t bound is reported beside it. **E1-T1b:** the unit is the seed (21 seeds); e
-  is the mean of a seed's two journeys. (Margin 0.05: **[B04 OPEN]**, 0.05 in option A, 0.10 in option B; the text's
-  "0.05" is replaced by the chosen margin throughout this bullet.)
+  is the mean of a seed's two journeys. (Margin 0.05, VAL-185.) E1-T1b is
+  reported with this test, not deciding (VAL-185).
 - **Multiplicity.** The decision is an intersection–union test: D+B ships only if every decisive cell rejects its H0. Each
   cell is tested at one-sided α = 0.05; the probability of shipping D+B when it is worse by at least the margin in any
   cell is then at most 0.05 (Berger 1982, Technometrics 24:295). Per-cell confidence bounds are reported at the same
   level, labelled non-simultaneous.
 - **Direction.** Only "D+B worse" is tested (one-sided); D+B better is reported but changes nothing (the rule is
   "no worse").
-- **Margins [B04 OPEN].** The owner's choice (appendix): FDP margin 0.05 (twice the precision cost) or 0.10 (twice the
-  nominal FDR, well under the earlier differences of +0.23 to +0.39); null-cell FWER margin 0.10 (about 5 data sets in
-  50, against earlier differences of 0.40 to 0.52). Fixed before the run and not changed after.
+- **Margins (VAL-185).** FDP 0.05 (the route's nominal FDR); null-cell family-wise rate 0.10 (about 5 data sets in 50,
+  against earlier differences of 0.40 to 0.52). Fixed before the run and not changed after.
 - Power is not part of "no worse" (VAL-182 (3) speaks of the rule being no worse; the error endpoints are the owner's
   concern in X168). Power and k differences are reported with paired 95 % intervals (sign-flip), unadjusted, labelled
   descriptive.
@@ -142,9 +149,10 @@ Per cell c, pairs are the same data set under D+B and F+B.
   the projection exceeds the ceiling, the counted run is split by cell, never reduced in R. Ceiling 30 job-minutes. A failed lifecycle is an instrument defect (VAL-54, at most three further runs).
 - **Counted run.** Job 1 (old cells, E1): trees d6d67efe and a1c12d28 at once, 2 workers each; job 2 (N-w, E-w, metab
   check): trees d4e2eb2c, d6d67efe and a1c12d28, unbounded arms first and bounded after, 1 worker per tree or as the
-  lifecycle's timing allows. Further jobs split by cell if a job would pass 300 minutes. Expected core-hours and
-  **ceiling: [B04 OPEN]** (appendix: option A about 26 expected, ceiling 35; option B about 20 expected, ceiling 30;
-  lifecycle included).
+  lifecycle's timing allows. Further jobs split by cell if a job would pass 300 minutes. Stage 1 (seeds 1 to 50 of the
+  capped arms in every cell; with the unbounded arms in N-w and E-w) runs first, then the re-estimation (section 8), then
+  stage 2 (the remaining seeds). About 48 core-hours expected at option C's R; **ceiling 100 core-hours** in all,
+  lifecycle, stage 1, re-estimation and stage 2 included (VAL-185).
 - **Stop rules.** A falsifier ((ii) or (iii) above failing in any counted journey) stops the run with a classed error
   after writing what it has; reported, not re-run except under VAL-54 when the run's own log shows a mechanics failure
   with no result produced.
@@ -231,3 +239,77 @@ These are for the **unbounded** arms, whose k differ widely (D 5 to 6 on average
 known. The pairs with both k ≤ 2 are too few to estimate it. Unbounded, the observed paired SD (0.35 to 0.42) is above
 both assumptions (0.10, 0.20); the null discordance between two low-k arms (F against B: 0.02 to 0.04) is near the 0.02
 assumed for N-r and N-s.
+
+## 8. One blinded re-estimation of R (VAL-185)
+
+**Stage 1.** Seeds 1 to 50 of the capped arms (F+B, D+B) in every cell, in N-w and E-w together with their unbounded
+arms (B, F, D, B+B), lipid. The stage-1 job returns **only** the re-estimation table and its provenance: its
+`out_pattern` matches `reestimate.tsv` and `provenance.json` alone, so no journey row, endpoint or rate of stage 1 leaves
+the runner.
+
+**The re-estimation script** (`docs/qa/workflow-execution/kit/kit-190/reestimate.R`, committed and hashed with
+`effect.R` before the lifecycle, checked by the auditor). It reads the stage-1 journey rows of the two capped arms on the
+runner and writes one file, `reestimate.tsv`, with exactly four columns: `cell`, `endpoint`, `n_pairs`, `value`, where
+`endpoint` is `fdp_difference_sd` (effect cells: the sample SD of d_i = FDP(D+B)_i − FDP(F+B)_i, from `stats::sd`, which
+is invariant to a shift of every d_i) or `any_call_discordant_share` (null cells: (b + c′) / n, which is invariant to
+exchanging b and c′). It computes no mean difference, test statistic or per-arm rate; it prints only this table.
+- **Enforced** by the script itself: before writing it stops unless `names(out)` is exactly the four columns and
+  `endpoint` takes only those two values; no other object is saved; the console shows only the table.
+- **Checked** in the lifecycle (item (viii)): the script run on planted inputs must give byte-identical files for (a) an
+  effect cell whose d_i are all shifted by +0.30 and the same cell unshifted, and (b) a null cell with (b, c′) = (10, 0),
+  (0, 10) and (5, 5) on 50 pairs; and the auditor reads the script against this section before the lifecycle.
+
+**The formula, fixed now.** α = 0.05 one-sided, z = z_0.95 = 1.6449, per-cell target t = 0.80^(1/8) = 0.97250 (so the
+product over the 8 deciding cells is 0.80 when every cell meets it).
+- Effect cell c with stage-1 SD ŝ_c: P_c(R) = Φ(0.05·√R / ŝ_c − z).
+- Null cell c with stage-1 discordant share δ̂_c: P_c(R) = Φ(0.10·√R / √δ̂_c − z) (the normal approximation to Tango's
+  test when the arms are equal: b − c′ has variance n·δ).
+- R_c = the smallest multiple of 50 that is at least option C's R for that cell and gives P_c(R_c) ≥ t, at most 1,000
+  per cell. If ŝ_c or δ̂_c is 0, R_c = option C's R.
+- **Ceiling.** Projected cost = spent so far (lifecycle and stage 1, from the runs) + stage 2's journeys (seeds 1 to R_c,
+  see "Stage 2") × the stage-1 median seconds per journey of each arm type × 1.25. If it exceeds 100 core-hours, t is
+  lowered for all cells together in steps of 0.0005 until it fits; R_c never goes below option C's R. The achieved joint
+  probability Π P_c(R_c) under equality is reported with the final R. (Option C's own R costs about 48; it cannot bind.)
+- The final R per cell is written to `runs.tsv` and `outcome.md` before stage 2 is sent, and is not changed after.
+
+**Stage 2.** Seeds 1 to R_c in every cell. Seeds 1 to 50 are run again (their rows were not returned): they are
+deterministic, and stage 2 checks that re-running `reestimate.R` on its own seeds 1 to 50 reproduces the stage-1
+`reestimate.tsv` byte for byte (a falsifier if not). **The final tests use all R_c seeds.** The stage-1 re-run costs
+about 8 core-hours, inside the ceiling.
+
+**Why the error rate is kept, and its limits.**
+- R is set from a nuisance parameter only (the spread of the paired differences; the share of discordant pairs), never
+  from the observed difference. For normally distributed paired differences the sample SD is independent of the sample
+  mean, so a rule that uses only the SD cannot steer R toward a favourable mean; the remaining effect is the use of the
+  stage-1 SD in the final statistic, which the simulation below finds negligible.
+- The FDP differences are bounded and may be skewed, so the independence is only approximate; and the studentised test
+  itself is anticonservative in the lower tail when the differences are right-skewed, at any fixed R (B02 accepted it as
+  asymptotically valid).
+- **Paired binary endpoint: the known limit.** The discordant share δ = p10 + p01 and the difference Δ = p10 − p01 are not
+  separable: δ ≥ |Δ|, and at a given p01 a larger Δ means a larger δ. So δ̂ carries information on Δ, and the rule's R
+  depends weakly on the difference. Its effect on the size is shown only by the simulation below; I know of no general
+  result that bounds it, and none is claimed.
+
+**Simulated size of the whole two-stage procedure at the margin** (`size2stage.py`, committed beside this file; stdlib
+Python; the final test approximated by Tango's statistic for null cells and by the studentised t reference for effect
+cells; one cell at a time, option C's minimum R, the formula above, per-cell maximum 1,000):
+
+| Endpoint | Setting | Simulated cells | Size (nominal 0.05) | Mean final R | Same test at a fixed R |
+|---|---|---|---|---|---|
+| null (Tango, margin 0.10) | discordance 0.12 at the margin | 6,000 | 0.043 | 194 | |
+| | discordance 0.25 | 6,000 | 0.051 | 350 | |
+| | discordance 0.40 | 6,000 | 0.055 | 539 | |
+| effect (margin 0.05), normal differences | SD 0.20 | 2 × 20,000 | 0.049, 0.053 | 232 | 0.049 (R = 200) |
+| | SD 0.40 | 2 × 20,000 | 0.053, 0.048 | 822 | |
+| effect, right-skewed differences (centred exponential, skewness 2) | SD 0.20 | 2 × 20,000 | 0.069, 0.070 | 244 | 0.066 (R = 240) |
+| | SD 0.40 | 2 × 20,000 | 0.062, 0.064 | 768 | 0.056 (R = 770) |
+
+Monte Carlo SE about 0.0015 (20,000) and 0.003 (6,000). Read: the re-estimation keeps the size near 0.05 for normal
+differences and for the binary endpoint at the discordances considered (at most 0.055); the excess seen with strongly
+right-skewed differences comes mostly from the studentised test at a fixed R (0.066 against 0.069 at SD 0.20), with the
+re-estimation adding up to about 0.007 at SD 0.40. The skew of the real FDP differences is unknown; stage 1 does not look
+at it (blinding), and the final analysis reports the observed skewness of d beside each effect cell's verdict.
+
+**Lifecycle additions.** Item (viii) above (planted inputs to `reestimate.R`); item (ix): the stage-1 job's returned
+files are exactly `reestimate.tsv` and `provenance.json` (checked on the lifecycle's own run with R = 2). The lifecycle
+stays at R = 2 per cell, after the auditor's script check.
