@@ -12,8 +12,16 @@
    when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
    differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
    model only when the normalisation added them. The report then states that no correction for unwanted variation was
-   applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
-   and figures are written; this is fixed separately (KIT-192).
+   applied.
+
+ * Transcriptomics: on runs of the RUV design panel (the option 'No removal of unwanted variation', an RUV design whose
+   rule finds no unwanted factor, or any RUV design that adds factors), the Differential Analysis tab no longer reports
+   'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
+   figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
+   search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
 
 ### Scientific changes
 
