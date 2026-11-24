@@ -229,13 +229,15 @@ Built by builder B (RB1, SM1): the G1(a) entry script `val-g1a.R` (part (1), par
 it refuses part (2) without `--reference <g1a-reference.tsv>`, class `val_spec_invalid`); the job's
 environment recorder for D7 (`valJobEnvironment`, derived as KIT-199's `writeEnvironment`;
 `valLockfileUnchanged`); the reader of L1's committed DA tables for G13 with its SHA-256 check
-(`valParityL1Tables`). Not built: G1(r)'s `g1a-reference.tsv` (decisions listed in `outcome.md`,
-builder B section).
+(`valParityL1Tables`). Not built: G1(r)'s `g1a-reference.tsv` (who builds its rows, and with what reader,
+is open: the question is in `outcome.md`, builder B section). Its source is committed:
+`g1a-reference-source.txt` (69 blocks) with `g1a-reference-source-prov.txt`.
 
-**L1's DA tables for G13 (open, with the owner; ticket r1.18 section 33 (b)).** Whether L1 may write
-its driver DA tables (generated inputs) given 5.2's feature-blind lifecycle rule is not decided.
-Until it is, G13 has no committed L1 table, so P1 can establish browser-against-driver parity on the
-bundle but not its last link, the bundle driver against the L1 driver on `run-tests`.
+**L1's DA tables for G13 (owner's decision VAL-141, 2026-11-24; ticket r1.19, 5.2 and G13).** The
+harness's own lifecycle run L1 may commit its per-route DA tables for the generated corpus only,
+for G13's last link (the bundle driver against the L1 driver on `run-tests`). The feature-blind
+rule stays for every validation ticket's lifecycle: a consumer's lifecycle never commits a
+feature-level table.
 
 ## Replay (G5): what is compared (ticket r1.18, section 33 (a), 7.3)
 

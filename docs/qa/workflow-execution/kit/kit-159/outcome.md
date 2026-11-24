@@ -258,14 +258,37 @@ correction (layout, no behaviour change); RM shows no lints.
   text exists. At least as strict as 7.3's masked digest then value. `identical` = every state
   fingerprint and the DA result's fingerprint agree; `differs` names what differs and carries no
   largest value difference.
-- (b) NOT decided, with the owner: whether L1 may write its driver DA tables (keys, q and fold-change
-  per route on generated inputs) for G13, given 5.2's rule that no feature-level table leaves a
-  lifecycle job. Nothing more is built for it; the reader and its SHA-256 check (`valParityL1Tables`)
-  stay. **Until it is ruled, G13 cannot take its last link** (the bundle driver's DA table against the
-  L1 driver's on `run-tests`, digest then 10-digit fingerprints): there is no committed L1 table to
-  read, so P1 can establish browser-against-driver parity on the bundle, but not bundle-against-L1.
+- (b) DECIDED by the owner, VAL-141 (2026-11-24; ticket r1.19, 5.2 and G13): the harness's own
+  lifecycle run L1 may commit its per-route DA tables for the generated corpus only, for G13's last
+  link (the bundle driver's DA table against the L1 driver's on `run-tests`); the feature-blind rule
+  stays for every validation ticket's lifecycle. Nothing new is built or run for it beyond what L1a
+  already specifies; the reader and its SHA-256 check (`valParityL1Tables`) are what G13 uses.
 
-**G1(r)'s `g1a-reference.tsv`: not built (its content is not fixed unambiguously).** The row form
+**G1(r)'s `g1a-reference.tsv`: not built.** Rulings of 2026-11-24 (ticket r1.19, section 34): point
+1 decided (`prot_dia_limpa` from `da` on takes KIT-199's committed class `declared_change (KIT-199)`,
+two rows per summary step, VAL-136); point 3 done (`g1a-reference-source.txt`, 69 blocks, 4, 30, 22,
+13 per file as in the KIT-156 record; its SHA-256 167f9052… and the source's 1b918062… in
+`g1a-reference-source-prov.txt`); point 2 NOT ruled, the question for the re-audit:
+
+> **Question (G1(r) point 2).** Who builds G1(r)'s own reference rows for all ten GUI-entry lanes,
+> and with what reader? *Input:* `kit-159/g1a-reference-source.txt` (the 69 failure blocks of run
+> 44953187101, base 12d68ca7; each names the lane and step in its `info` line, "`<lane>` at step
+> '`<step>`' (oracle …)", and prints testthat's comparison of `steps[[id]]` against the oracle,
+> sometimes truncated, e.g. `names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]`).
+> *Reader:* none exists in `msrval` (`valReadReferenceRows` reads finished rows, not failure
+> blocks); either a reader is written (tests first) and run on a runner, or the rows are read by
+> hand and recorded as hand-read. *Each row must contain:* `lane`, `step`, `class` (by the bounds of
+> G1(a)'s pass column: `integration_artifacts`, `kit128_technical_replicates`, `metab_fixture_4`,
+> or, on `prot_dia_limpa` from `da` on, `declared_change (KIT-199)`; a lane-range class takes
+> precedence; two rows where a summary step carries two classes, as KIT-199's file does), `fields`
+> and `keys` (as `compareLane` names them, `field/key`), `names_list_truncated` (`yes` where the
+> printed comparison lists only part of the names), `oracle_sha`, `source` and `source_sha256`
+> (the columns of KIT-172's `k156-gui-entry-failures.tsv`). G1(r) then checks KIT-172's, KIT-180's
+> and KIT-199's committed rows against its own (same (lane, step), class, fields and keys; a
+> disagreement stops) and adopts them unchanged. Open sub-question for the same ruling: how a
+> truncated names list is compared with a committed row's full key list.
+
+The original points as written before the rulings: The row form
 (lane, step, class, fields, keys; reader `valReadReferenceRows`) and the source (run 44953187101's
 `failures.txt`, SHA-256 1b918062…) are fixed, and re-freezing tickets have committed rows for eight
 lanes (KIT-172: `lipid_canonical`, `metab_*`; KIT-180: `prot_tmt`, `prot_lfq`,
