@@ -298,3 +298,15 @@ example : Ruv.M1_witness_stmt := Ruv.M1_witness
 
 #print axioms Ruv.M1
 #print axioms Ruv.M1_witness
+
+/-! ## Target 4d-ii (`Proof/KeptFamily.lean`) -/
+
+example : QvalueBh.kept_family_unit_a_counterexample_stmt := QvalueBh.kept_family_unit_a_counterexample
+example : QvalueBh.kept_family_formula_stmt := QvalueBh.kept_family_formula
+example : QvalueBh.kept_family_instance_stmt := QvalueBh.kept_family_instance
+example : QvalueBh.kept_family_witness_stmt := QvalueBh.kept_family_witness
+
+#print axioms QvalueBh.kept_family_unit_a_counterexample
+#print axioms QvalueBh.kept_family_formula
+#print axioms QvalueBh.kept_family_instance
+#print axioms QvalueBh.kept_family_witness

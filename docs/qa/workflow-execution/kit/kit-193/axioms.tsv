@@ -119,3 +119,7 @@ Ruv.L2	Ruv.L2_stmt	propext, Classical.choice, Quot.sound
 Ruv.L2_witness	Ruv.L2_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.M1	Ruv.M1_stmt	propext, Classical.choice, Quot.sound
 Ruv.M1_witness	Ruv.M1_witness_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.kept_family_unit_a_counterexample	QvalueBh.kept_family_unit_a_counterexample_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.kept_family_formula	QvalueBh.kept_family_formula_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.kept_family_instance	QvalueBh.kept_family_instance_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.kept_family_witness	QvalueBh.kept_family_witness_stmt	propext, Classical.choice, Quot.sound

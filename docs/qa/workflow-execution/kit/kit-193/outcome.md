@@ -198,7 +198,23 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   (here `p ≥ 0` is used); conversely, for `j` with `p j ≥ p i` and `c = #{l : p l ≤ p j}`, position `m - c` is at most
   `r` and carries a value at most `p j`, so its sorted term is at most `bhTerm p j`. Laptop: 5 Lean calls, 72.9
   CPU-seconds (67.4 user + 5.5 system), 40.2 s wall (labels `t4-sorted-*`). Agent time 0.07 h (12:52 to 12:56).
-- Not yet: 4d-ii (`kept_family_formula`, `kept_family_instance`, `kept_family_witness`; second to last by D4).
+- **4d-ii proved; target 4 complete** (`Proof/KeptFamily.lean`: `kept_family_unit_a_counterexample`,
+  `kept_family_formula`, `kept_family_instance`, `kept_family_witness`; each on `propext`, `Classical.choice`,
+  `Quot.sound`). How: (1) `kept_event_iff`: BH over the terms with `p < 1` calls a term exactly when some `r ≥ 1` has
+  at least `r` kept values at most `r q / K` (`bh_stepup_gen` on the kept list; list counts turned into counts over
+  `Fin m`). (2) `simes_grid`, Simes' equality on a grid, proved for any finite index type by strong induction on the
+  number of values: `n` values uniform on `1..G`, thresholds `λ r` whole wherever at most `G`: the number of outcomes
+  with some `r` having at least `r` values at most `λ r` is `min(λ n, G) G^(n-1)`; when `g = λ n < G` the outcomes
+  split by the set `S` of values above `g` (`freeze_set` takes out the `(G - g)^|S|` choices the event does not read),
+  the rest is the same problem on `T \ S` with `G = g`, and `Σ_k C(n,k) x^k (n - k) y^(n-k-1) = n (x + y)^(n-1)`
+  (`binom_deriv`) closes the sum. (3) The false discovery rate splits by the set of kept terms; a set of size `k ≥ 1`
+  contributes `a^k (1 - a)^(m - k) min(q/a, 1)` (`GridFine` gives the whole-number thresholds), and the binomial
+  theorem sums these to `min(q/a, 1)(1 - (1 - a)^m)`. The instance: every `K ≤ 150` divides `lcmUpTo 150`, so the
+  thresholds `(5/27)(i/K)` are the grid points `5 i (L/K) / (27 L)`; `(73/100)^150 ≤ (73/100)^30 < 1/1000` gives
+  `> 0.185`. The `a = 1` counterexample by direct evaluation of the 25 outcomes (`m = 2`, `N = 4`, `q = 1/2`).
+  Laptop: 12 Lean calls, 52.1 CPU-seconds (labels `t4dii-*`; one, `t4dii-decide-probe`, a probe file in the session
+  scratchpad, not in the project, showing `decide` cannot evaluate `callsKept`). Agent time 0.23 h (13:38 to 13:52),
+  against 30 expected and 45 ceiling.
 - Laptop time for target 4 so far: 156.2 CPU-seconds over 24 Lean calls, 103.5 s of Lean wall time (labels `t4-*`, the counterexample's included).
 
 ## Target 5 (permutation p-value): proved (5a, 5a', 5b, 5c, 5c')
@@ -277,7 +293,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 

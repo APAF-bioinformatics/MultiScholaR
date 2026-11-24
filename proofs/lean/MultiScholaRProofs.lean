@@ -23,6 +23,7 @@ public import MultiScholaRProofs.Proof.SharperWitnesses
 public import MultiScholaRProofs.Proof.RuvAlgebra2
 public import MultiScholaRProofs.Proof.RuvDownstream2
 public import MultiScholaRProofs.Proof.RuvIIIC
+public import MultiScholaRProofs.Proof.KeptFamily
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods
