@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-177 R3: full suite base 55710a87 against head d7a04a08cef80f19d167ecb00c3e3af87699c460 (fix and re-frozen files), 20 shards per side, R CMD check; ceiling 72 core-hours",
+  "label": "KIT-177 R3 full suite d7a04a08 vs 55710a87",
+  "package_commit": "d7a04a08cef80f19d167ecb00c3e3af87699c460",
+  "base_commit": "55710a87eb7d8e0e7f1ce8f5dcb608bc0a641668",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {"test-gui-entry-proteomics.R": 120},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
