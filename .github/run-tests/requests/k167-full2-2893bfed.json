@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-167 end of pass 2: the one full suite, base against head, on the merge with current staging (2893bfed vs a1b397b1), R CMD check both sides, the gate-off script; queue checked clear (0 queued); ceiling 72 core-hours; decides the pass-2 regression verdict and A11",
+  "label": "KIT-167 pass 2 full suite, check, gate-off 2893bfed vs a1b397b1",
+  "package_commit": "2893bfeda4e76b4107c215934a8b9615a0dde0e0",
+  "base_commit": "a1b397b19a32062597d91ceda9e937034a4d1485",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 10,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/gate-off-identity.R",
+      "args": [
+        "a1b397b19a32062597d91ceda9e937034a4d1485",
+        "gate-off-out"
+      ],
+      "out": "gate-off-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
