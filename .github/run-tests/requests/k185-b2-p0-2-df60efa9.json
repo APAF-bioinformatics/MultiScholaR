@@ -1,0 +1,38 @@
+{
+  "requested_by": "KIT-185 VAL-98 (1): part-B proteomics re-run with the reference DA fix (P0 51-100); declaration section 9; S' reserve",
+  "label": "KIT-185 part B re-run P0 51-100 df60efa9",
+  "package_commit": "df60efa99ce77a313d527d243c0b098b4206b510",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "B",
+        "P0",
+        "51",
+        "100",
+        "k185-b2-p0-2"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "b2-p0-2"
+      },
+      "out": "k185-b2-p0-2",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 205
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
