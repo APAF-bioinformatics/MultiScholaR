@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-213 R2: fix a68fd69c against the tests-only commit 67631c03, the ticket's 38 files (3 shards per side) and check; script: control C (trx_main, trx_managed); decides stop rule 3; ceiling 540 job-minutes (R2) + 60 (C)",
+  "label": "KIT-213 R2 a68fd69c vs 67631c03 with control C",
+  "package_commit": "a68fd69cb65b9688f5d420e3463771c426d353aa",
+  "base_commit": "67631c030719354df95b47ac22318d1a166d66b6",
+  "tools_ref": "",
+  "tests": ["test-e2e-lipidomics-canonical.R","test-e2e-metabolomics-lc-gc.R","test-e2e-proteomics-dia-limpa.R","test-e2e-proteomics-dia.R","test-e2e-proteomics-enrichment.R","test-e2e-proteomics-tmt-lfq.R","test-general-filemgmt-config-direct-shared.R","test-general-filemgmt-config-roundtrip-contracts.R","test-general-filemgmt-report-helpers-shared.R","test-general-filemgmt-s4-contracts.R","test-integration-input-lipid-metab.R","test-integration-input-transcriptomics.R","test-integration-record-mofa.R","test-integration-record.R","test-integration-workbook-mofa.R","test-kit172-downstream.R","test-kit206-prot-norm-export-guard.R","test-kit207-summary-head-guard.R","test-kit213-study-parameters-labels.R","test-lipid-14a-summary-module-characterization.R","test-lipid-15-summary-module-seams.R","test-metab-05-summary-module-characterization.R","test-module-ci-lipid-summary.R","test-module-ci-metab-da.R","test-module-ci-metab-summary.R","test-module-ci-prot-summary.R","test-module-ci-trx-summary.R","test-omic-enrich-module.R","test-omics-summary-core.R","test-omic-summary-module.R","test-prot-12a-summary-module-characterization.R","test-prot-12-summary-module-contracts.R","test-workflow-analysis-record.R","test-workflow-figure-paths.R","test-workflow-integration-input.R","test-workflow-memory-mechanism-member.R","test-workflow-native-session.R","test-workflow-omics-application-reads.R"],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-213/control-w1.R", "args": ["docs/qa/workflow-execution/kit/kit-213/control", "67631c030719354df95b47ac22318d1a166d66b6", "trx_main,trx_managed"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-213/control", "out_pattern": "\\.(tsv|txt|R)$", "timeout_minutes": 55}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
