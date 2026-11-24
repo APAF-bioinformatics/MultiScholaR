@@ -608,18 +608,46 @@ evaluates the Spec's own `callsKept` and `callsWhole` on `[gridVal N j₁, gridV
 these computably (no classical instance; the interpreter evaluates them), which is 5.5's first kind of oracle. Their
 remaining code builds the cases and formats the rows (p-values in eighths, the generator), as in the earlier oracles.
 
+## P0c: target 4 (ii) on the merged route, row T4, the binding tripwire (run 45367239786)
+
+Fifth implementer session's continuation, 2026-11-24. Branch merged with `v0.9-staging` at 241914cb (ee90e346, a true
+merge, no conflict: KIT-182, KIT-203, ledger to VAL-157). **Ticket 8.2's check over the merge (observed, function
+bodies by `awk` at ea93d948 against 241914cb):** of every package function and constant in `bindings.tsv`, only
+`processEnrichments` changed (KIT-203, expected; `models.md` 3b). KIT-182's files (proteomics QC and normalisation
+modules, `R/utils_workflow_dia_products.R`, `R/utils_workflow_operations.R`, ...) hold no bound object; the bound
+`ruvIII_C_Varying` method's file is unchanged. Target 2's bound functions in `R/utils_workflow_analysis_record.R`
+(changed by the merge) are byte-identical.
+
+- **Target 4 (ii)** (`test-kit193-pairs-qvalue.R`, 173 expectations, 31.3 s, 0 failed): KIT-173's T7 effect project
+  re-run through `processEnrichments` with `significance_rule = "qvalue"` (KIT-203 hand-off: the Lean `flag` models
+  that option). On the 2 stored `@result` tables: BH calls present; q <= BH on every term with both values (4a); every
+  term with `p.adjust < 0.05` has `qvalue < 0.05`. On the 2 written tables: no `p_adjust_family` column, and
+  `significant` is TRUE exactly where the model's flag holds (q present and below 0.05). Planted defect (ticket's
+  proposal, through `addEnrichmentFamilyAdjustment`, applied to each result before it is stored): q = min(1, 2 BH)
+  fails q <= BH: caught.
+- **Row T4:** `processEnrichments` digest `aab7fffb…` on the merged code (`p0c/bindings-t4.tsv`), with `models.md` 3b
+  (what changed, why the model still transcribes it). **Not done, by the freeze:** the docstrings
+  `Spec/QvalueBh.lean:15`, `:65`, `:136` still cite `:544` and "the route's flag"; their correction is a Spec text
+  change under 5.3 item 4 (no statement changes), which only the owner can allow. No Spec file was edited.
+- **Tripwire** `test-kit193-bindings.R` (34 expectations, 6.7 s): the table names exactly the bound objects; only
+  target 2's rows (and, in this run, T4's) were pending; all 31 filled rows' digests and versions reproduce under
+  `load_all` (source references removed before deparsing); planted (a wrong recorded digest) caught. After the run
+  T4 was filled and removed from the test's pending list (that one-line edit runs next at P3).
+- Core-hours: 29.5 job minutes, about 1.96. No Lean call.
+
 ## Resume here
 
 State after the fourth implementer session (2026-11-24): all 142 frozen statements proved; 142 theorems listed in
 `axioms.tsv` (and, since the fifth session, the six bridge lemmas of target 5's oracle); audited sound (proofs audit 3; the last three Proof modules were `Proof/RemovedFactors.lean`,
 `Proof/RuvIIICPattern.lean`, `Proof/RuvControlRules.lean`). Pairs passed: target 3 (P0a), target 1 (P1a), and in run
 45335802998 target 5 (P2), target 4's library parts and group R on merged code (P0b), each with its planted defect
-caught. The owed digests job is done: `bindings.tsv` has 6 rows `pending` (target 2's five, KIT-190; T4
-`processEnrichments`, KIT-203). Shipped P at (320, 137) = 57188 (`p2-p0b/p-320-137.tsv`): the first counterexample
+caught; target 4 (ii) and the tripwire in P0c (run 45367239786). `bindings.tsv` has 5 rows `pending` (target 2's,
+KIT-190). Shipped P at (320, 137) = 57188 (`p2-p0b/p-320-137.tsv`): the first counterexample
 of 6.1 (g) is live in the shipped arithmetic.
 
 Next, each waiting on what is named:
-1. After KIT-203 merges: target 4 (ii) and the `processEnrichments` flag binding (ticket 8.1).
+1. Done (P0c): target 4 (ii), row T4 and the tripwire. Open for the owner: the three stale `Spec/QvalueBh.lean`
+   docstrings (models.md 3b).
 2. After KIT-190 merges: target 2's pair (`pending/test-kit193-pairs-replay.R`, with the builder comparison still to
    write), the L1 cases (the lipid method in R-G0 and L1's control selection), R-N1's sweep-helper cases with
    `getNegCtrlProtAnovaHelper`'s binding row; O1 (a statement for the lipid and metabolite rule) is the
@@ -627,7 +655,7 @@ Next, each waiting on what is named:
 3. After KIT-184 merges: R-I1's pair and its bindings (P3), with ticket 8.2's diff of the merged writer.
 4. Done (fifth session): the Permutation oracle's bridge, `Proof/PermutationOracle.lean` (section above); it awaits
    the proofs auditor.
-5. The tripwire `test-kit193-bindings.R` (not written); R CMD check base against head (A7) at P3; the record job L1 at
+5. R CMD check base against head (A7) at P3; the record job L1 at
    the final commit.
 Lean calls: `lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
 /home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time.

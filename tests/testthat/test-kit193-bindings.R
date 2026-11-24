@@ -16,9 +16,9 @@ kit193BoundNames <- c(
     "ruvIII_C_Varying,ProteinQuantitativeData", "protRuvFirstPassControls", "omicsRuvFirstPassControls",
     "trxRuvDesignControls", "OMICS_RUV_FIRST_PASS_DROPPED_SHARE", "TRX_FIRST_PASS_DROPPED_SHARE")
 
-#' Rows not yet recorded: target 2's (KIT-190); T4's processEnrichments (recorded by run P0c, then removed here)
+#' Rows not yet recorded: target 2's (KIT-190)
 kit193PendingNames <- c("workflowReplayRuleMarkers", "workflowReplayRule", "workflowFixedInForce",
-    "workflowReplayRuleOptions", "buildWorkflowAnalysisRecord", "processEnrichments")
+    "workflowReplayRuleOptions", "buildWorkflowAnalysisRecord")
 
 kit193Bindings <- function() {
     utils::read.delim(testthat::test_path("..", "testdata", "kit193", "bindings.tsv"), sep = "\t", quote = "",

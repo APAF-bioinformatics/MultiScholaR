@@ -126,6 +126,20 @@ definition, not stated), the row text, or the interpreter. The `bh-counterexampl
 oracles evaluate the Spec's own computable definitions (`callsKept`, `callsWhole`; `firstPassControls`,
 `trxFirstPassControls`) and need no bridge.
 
+## 3b. Row T4 after KIT-203 (ticket 8.2; recorded 2026-11-24 with the row's first digest)
+
+What changed: KIT-203 (merged at 241914cb, VAL-157) made the route's significance rule an option of
+`processEnrichments`. The flag line moved from `R/func_general_enrichment_orchestration.R:544` to `:669`; under
+`significance_rule = "qvalue"` it is `significant = qvalue < q_cutoff`, unchanged; under the new default
+`"bh_whole_family"` it is `p_adjust_family < q_cutoff`, `p_adjust_family = p.adjust(p, "BH", n = m)`. Why the Lean
+model still transcribes it: `QvalueBh.flag` (with `qv`) is the q-value option's flag exactly, and the default's flag is
+BH over a whole family with the strict comparison, `callsWhole true` (the 4d-i definitions); no statement depends on
+which rule is the default. Target 4 (ii) re-runs the route with `significance_rule = "qvalue"` (run 45367239786). Not
+changed: the frozen docstrings `Spec/QvalueBh.lean:15`, `:65`, `:136` still cite `:544` and say "the route's flag"
+where they now describe the q-value option. Correcting them is a Spec text change (no statement changes) under ticket
+5.3 item 4, which moves `SPEC.sha256`: the owner's freeze; not made. Ticket 8.2's other route (this line) clears the
+row without it.
+
 ## 4. The gate's own reads (ticket 2.3 and 14): done at the gate
 
 - RUVIIIC at the locked commit c534151f and `ruv` 0.9.7.1 were read by the statements gate
@@ -133,4 +147,4 @@ oracles evaluate the Spec's own computable definitions (`callsKept`, `callsWhole
 - RUVSeq: no statement depends on it; R-M1 is linear algebra about any W.
 - `bindings.tsv` rows are written when each pair first runs on merged code (8.2). Filled: T1's four (P1a's script);
   T1's helper, target 3's five, target 5's, target 4's libraries and group R's (run 45335802998, `bindings-t3.R` and
-  `bindings-p.R`). Pending: target 2's five (KIT-190) and T4 `processEnrichments` (KIT-203).
+  `bindings-p.R`). T4 `processEnrichments` (run 45367239786, after KIT-203). Pending: target 2's five (KIT-190).

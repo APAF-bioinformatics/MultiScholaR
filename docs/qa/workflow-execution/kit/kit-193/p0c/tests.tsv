@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit193-pairs-qvalue.R	173	0	0	0	0	31.3	ok
+test-kit193-bindings.R	34	0	0	0	0	6.7	ok
