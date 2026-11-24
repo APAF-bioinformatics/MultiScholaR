@@ -28,6 +28,115 @@ sortEnrichmentGeneIds <- function(result) {
   result
 }
 
+#' The shipped significance rule of the clusterProfiler route (KIT-203; VAL-123, VAL-128)
+#' @noRd
+enrichmentSignificanceShipped <- "bh_whole_family"
+
+#' The significance rules of the clusterProfiler route and what the user is shown of each (KIT-203 5.4)
+#'
+#' One row per rule: `label` (the tab's selector), `note` (shown beside the selector), `notice` (the run's notice),
+#' `methods` (the report paragraph's rule-specific sentences; `{cutoff}` is the run's cutoff) and `source` (where the
+#' figures come from; options-k203.R regenerates every figure). Proposed wording (VAL-41): the owner edits before release.
+#' @noRd
+ENRICHMENT_SIGNIFICANCE_RULES <- data.frame(
+  rule = c("bh_whole_family", "qvalue"),
+  label = c("Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)",
+    "Storey q-value over the terms with at least one listed protein (as in earlier versions)"),
+  note = c(paste("Each term's p-value is adjusted together with every Gene Ontology term (biological process, molecular",
+    "function and cellular component together) that has 10 to 500 of your measured proteins, including terms with none",
+    "of the listed proteins (they count as p = 1). In a check on simulated protein lists at a cutoff of 0.05 (reviewed",
+    "E. coli and yeast annotations; lists of 25, 126 and 400 proteins drawn at random; with and without parent terms;",
+    "2,000 random lists per setting), lists with no real signal had at least one significant term in 1.0 % to 2.5 % of",
+    "cases (nominal 5 %). On lists of 126 proteins built around one process, the average share of a list's significant",
+    "terms that were false (0 when nothing was called) was 0.1 % to 1.7 % (counted over all significant terms of those",
+    "lists together, at most 3.0 %), and the process's own term was found in 74.8 % to 100.0 % of the lists in which it",
+    "was tested: up to 5.8 percentage points less often than with the q-value with parent terms and up to 8.8 points",
+    "less often without them, never more often. Not simulated: down lists, other organisms, and lists of proteins that",
+    "change together as in real data. Its error guarantee assumes that the terms' tests are independent or tend to",
+    "agree; overlapping Gene Ontology terms do not ensure this, so the check measured it instead, in the settings named",
+    "only."),
+    paste("Terms with none of your listed proteins are left out before the adjustment. This breaks the q-value's",
+    "assumption (p-values of terms with no real change spread evenly between 0 and 1), so the q-value can estimate that",
+    "most terms are real. In the same check, lists with no real signal had at least one significant term in 1.7 % to",
+    "42.9 % of cases: clearly above 7.5 %, the tolerance allowed for a nominal 5 % (lower confidence limit above it), in",
+    "6 of 18 settings and above it without certainty in 2 more; with parent terms the clear cases were lists of 25",
+    "proteins (E. coli full proteome 22.9 %, its 2,000-protein subset 16.7 %). Up to 23.6 % of such lists had 10 or more",
+    "significant terms. On lists of 126 proteins built around one process, the average share of a list's significant",
+    "terms that were false (0 when nothing was called) was up to 35.7 %, clearly above 7.5 % in 3 of 18 settings, all",
+    "without parent terms; counted over all significant terms of those lists together it was up to 82.1 %. On lists of",
+    "25 with parent terms the average was 10.7 %. It found the process's own term up to 5.8 percentage points more often",
+    "than the default with parent terms and up to 8.8 points more often without.")),
+  notice = c(paste("For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every",
+    "term of 10 to 500 measured proteins."),
+    paste("For this organism, terms are called significant by the Storey q-value over the terms with at least one listed",
+    "protein (Benjamini-Hochberg adjusted p-values over the same terms are also given).")),
+  methods = c(paste("A term was called significant when its Benjamini-Hochberg adjusted p-value over that family was below",
+    "{cutoff}; Storey's q-value and the Benjamini-Hochberg value over the terms with at least one listed protein are",
+    "also given in the results table. In simulations through this route at a cutoff of 0.05 (lists drawn at random from",
+    "the reviewed UniProt proteomes of E. coli K-12, a 2,000-protein subset of it, and S. cerevisiae, the last run",
+    "through this route as a stand-in; lists of 25, 126 and 400 proteins; with parent terms over the five relations and",
+    "without them; 2,000 random lists per setting), 1.0 % to 2.5 % of random lists had any significant term, and on",
+    "lists of 126 built around one process the mean false discovery proportion was at most 1.7 % (in a design where the",
+    "other listed proteins avoid that process, which tends to lower false calls). Not simulated: down lists, other",
+    "cutoffs, lists of proteins that change together as in real data, other organisms or annotation sources, and parent",
+    "terms over is a and part of only. Transcriptomics tests sets of 5 to 500 genes; this route 10 to 500 proteins."),
+    paste("Because terms without a list protein are left out before the adjustment, the estimated share of true null",
+    "terms falls far below 1 on many random lists; on simulated random lists at a cutoff of 0.05 the share of lists",
+    "with any significant term was 1.7 % to 42.9 % depending on the proteome, list size and parent terms (failing a",
+    "7.5 % line in 6 of 18 settings, two of them with parent terms, both with lists of 25 proteins), against 1.6 % to",
+    "8.2 % for Benjamini-Hochberg over the same terms.")),
+  source = c(paste("KIT-189 simulation, score run 45311934798, results/options.tsv and classifications.tsv; the paired",
+    "comparison with the q-value and the share over all significant terms computed after scoring (results.md section 5)"),
+    paste("KIT-189 simulation, score run 45311934798, results/options.tsv and classifications.tsv; the paired comparison",
+    "with the default, the share over all significant terms and the lists of 25 computed after scoring (results.md",
+    "section 5)")),
+  stringsAsFactors = FALSE
+)
+
+#' Check a significance rule of the clusterProfiler route (KIT-203)
+#' @param significance_rule One of `ENRICHMENT_SIGNIFICANCE_RULES$rule`.
+#' @return `significance_rule`, invisibly; otherwise an error of class `enrichment_significance_rule_invalid`.
+#' @noRd
+checkEnrichmentSignificanceRule <- function(significance_rule) {
+  if (!is.character(significance_rule) || length(significance_rule) != 1L || is.na(significance_rule) ||
+      !significance_rule %in% ENRICHMENT_SIGNIFICANCE_RULES$rule) {
+    cli::cli_abort(c("{.arg significance_rule} must be one of {.val {ENRICHMENT_SIGNIFICANCE_RULES$rule}}",
+      x = "got {.val {format(significance_rule)}}"), class = "enrichment_significance_rule_invalid")
+  }
+  invisible(significance_rule)
+}
+
+#' Benjamini-Hochberg over the whole size-filtered family of one enricher call (KIT-203 5.1)
+#'
+#' enrichit keeps in `@geneSets` every term of 10 to 500 members in the universe (m terms) and in `@result` only the m'
+#' terms with at least one list protein. The family value adjusts each kept term's p-value together with the m - m'
+#' terms of count 0, which enter with p = 1 (the exact p-value of a count of 0):
+#' `p.adjust(c(p, rep(1, m - m')), "BH")[seq_len(m')]`, in `@result`'s own row order. `@geneSets` is read directly: no
+#' accessor of the class returns the size-filtered family (a recorded divergence from the accessor rule).
+#' @param result An `enrichResult`, or NULL (no list in that direction, or `enricher` returned NULL).
+#' @param significance_rule The run's rule; only `"bh_whole_family"` adds the columns.
+#' @return `result` with `p_adjust_family` and `family_size` (m) appended to `@result`; NULL, a result with no rows and
+#'   any result under `"qvalue"` unchanged. A result without `pvalue`, with an NA p-value, without `geneSets`, or with
+#'   m < m' is refused (class `enrichment_family_unavailable`).
+#' @noRd
+addEnrichmentFamilyAdjustment <- function(result, significance_rule) {
+  if (is.null(result) || !identical(significance_rule, "bh_whole_family")) return(result)
+  refuse <- function(why) cli::cli_abort(paste("the whole-family adjustment cannot be formed:", why),
+    class = "enrichment_family_unavailable")
+  if (!isS4(result) || !"result" %in% methods::slotNames(result) || !is.data.frame(result@result)) {
+    refuse("the result has no result table")
+  }
+  if (!nrow(result@result)) return(result)
+  if (!"geneSets" %in% methods::slotNames(result)) refuse("the result has no gene sets")
+  p <- result@result$pvalue
+  if (!is.numeric(p) || anyNA(p)) refuse("the result has no p-value for every term")
+  m <- length(result@geneSets)
+  if (m < length(p)) refuse(sprintf("%d gene sets for %d tested terms", m, length(p)))
+  result@result$p_adjust_family <- stats::p.adjust(c(p, rep(1, m - length(p))), method = "BH")[seq_along(p)]
+  result@result$family_size <- m
+  result
+}
+
 # processEnrichments
 # ----------------------------------------------------------------------------
 #' Process Enrichments
@@ -36,7 +145,8 @@ sortEnrichmentGeneIds <- function(result) {
 #' @param taxon_id NCBI taxonomy ID for the organism
 #' @param up_cutoff Log2 fold change cutoff for up-regulated proteins (default: 0)
 #' @param down_cutoff Log2 fold change cutoff for down-regulated proteins (default: 0)
-#' @param q_cutoff FDR q-value threshold for enrichment significance (default: 0.05)
+#' @param q_cutoff Cutoff for the differential-abundance q-value that forms the lists and for the term's significance
+#'   value (default: 0.05)
 #' @param pathway_dir Directory for saving pathway results
 #' @param go_annotations UniProt GO annotations (required for unsupported organisms)
 #' @param exclude_iea Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE). It applies to
@@ -54,6 +164,12 @@ sortEnrichmentGeneIds <- function(result) {
 #'   GO Consortium calls safe for grouping annotations; `"none"` uses the direct annotations only (the sets before
 #'   KIT-173). On a propagating value the three aspect roots are not tested, so proteins annotated only to them leave
 #'   the background, and the GO release is that of the installed GO.db. Not used on the g:Profiler route.
+#' @param significance_rule For organisms outside the 13 served by g:Profiler, how a term is called significant
+#'   (KIT-203): `"bh_whole_family"` (the default) by its Benjamini-Hochberg adjusted p-value over every term of 10 to
+#'   500 measured proteins, terms without a listed protein entering with p = 1 (columns `p_adjust_family` and
+#'   `family_size` added to the result); `"qvalue"` by Storey's q-value over the terms with at least one listed protein,
+#'   as in earlier versions (in simulations it called terms on up to 42.9 % of random protein lists). Not used on the
+#'   g:Profiler route.
 #'
 #' @return S4 EnrichmentResults object containing enrichment data and summaries. Its plot slots are left empty: the
 #'   plots are written to `pathway_dir` and rebuilt from the enrichment data when shown.
@@ -70,7 +186,8 @@ processEnrichments <- function(da_results,
                                protein_id_column = "Protein.IDs",
                                contrast_names = NULL,
                                correction_method = "gSCS",
-                               go_propagation = goPropagationShipped) {
+                               go_propagation = goPropagationShipped,
+                               significance_rule = enrichmentSignificanceShipped) {
 
   message("--- RUNNING processEnrichments VERSION [Timestamp: ", Sys.time(), "] ---")
 
@@ -375,6 +492,7 @@ processEnrichments <- function(da_results,
 
     message(sprintf("Using custom GO annotations for taxon ID %s", taxon_id))
     checkGoPropagation(go_propagation) # KIT-173
+    checkEnrichmentSignificanceRule(significance_rule) # KIT-203
     if (isTRUE(exclude_iea)) {
       cli::cli_warn(paste("Electronic annotations cannot be excluded for this organism: the UniProt annotations used",
         "here carry no evidence codes. They are included."), class = "multischolar_enrichment_iea_not_excludable")
@@ -471,6 +589,11 @@ processEnrichments <- function(da_results,
           NULL
         })
 
+        # KIT-203: the whole-family value, formed after each call and outside the calls' tryCatch, so a result it
+        # cannot be formed for is refused, not turned into "no result".
+        up_enrich <- addEnrichmentFamilyAdjustment(up_enrich, significance_rule)
+        down_enrich <- addEnrichmentFamilyAdjustment(down_enrich, significance_rule)
+
         # Return results for this contrast
         list(up = up_enrich, down = down_enrich)
     }) |> purrr::set_names(internal_contrast_names)
@@ -519,6 +642,7 @@ processEnrichments <- function(da_results,
       )
 
     # --- Step 3: Generate Plots using SHORT names ---
+    family <- identical(significance_rule, "bh_whole_family") # KIT-203
     message("--- Starting Plot Generation Loop ---")
     plot_results_list <- purrr::map(contrast_names_to_use, function(contrast) {
         message(paste("Generating plots for contrast:", contrast))
@@ -541,11 +665,16 @@ processEnrichments <- function(da_results,
                     source = factor(.data$source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
                     neg_log10_q = -log10(.data$qvalue),  # Using qvalue directly from clusterProfiler output
                     gene_count = .data$Count,
-                    significant = .data$qvalue < q_cutoff  # Add significance flag based on q_cutoff
+                    # KIT-203: the flag by the run's rule (the q-value's is the earlier versions' flag)
+                    significant = if (family) .data$p_adjust_family < q_cutoff else .data$qvalue < q_cutoff
                   ) |>
                   dplyr::mutate(
                     term = dplyr::coalesce(.data$term, .data$Description)
                   )
+                if (family) {
+                  plot_data$significance_rule <- significance_rule
+                  plot_data <- dplyr::relocate(plot_data, "significance_rule", .after = "significant")
+                }
 
                 # Save results table
                 readr::write_tsv(
@@ -556,7 +685,8 @@ processEnrichments <- function(da_results,
 
                 # KIT-119: the stored result carries its terms' GO category and name and the cutoff, and the plot
                 # is built from that stored result by the builder the tab uses at render time.
-                result_data <- setEnrichmentPlotInputs(result_data, plot_data, q_cutoff)
+                result_data <- setEnrichmentPlotInputs(result_data, plot_data, q_cutoff,
+                  significance_rule = if (family) significance_rule)
                 c(buildEnrichmentPlot(result_data, contrast, direction), list(result = result_data))
             } else {
                 NULL # Return NULL if no results

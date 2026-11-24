@@ -1,0 +1,16 @@
+omic-enrich-module: W1
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. (a) the enrichment UI keeps its HTML, ids, test ids, tab titles, labels, help texts, choices and defaults ('test-omic-enrich-module.R:198:5') - cannot open file 'k203-od5/dump-base.R': No such file or directory
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-omic-enrich-module.R:198:5'): (a) the enrichment UI keeps its
+Error in `file(file, ifelse(append, "a", "w"))`: cannot open the connection
+Backtrace:
+    ▆
+ 1. └─omicEnrichW1Dump("omicEnrichW1FrozenUi", actual) at test-omic-enrich-module.R:198:5
+ 2.   └─base::cat(...) at test-omic-enrich-module.R:78:5
+ 3.     └─base::file(file, ifelse(append, "a", "w"))
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+TESTS 1 FAILED 0 ERROR 1 

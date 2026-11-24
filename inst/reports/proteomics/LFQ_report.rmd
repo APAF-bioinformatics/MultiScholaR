@@ -779,13 +779,37 @@ FormatGOEnrichment <- function(numbers) {
     }
     background_clause <- if (propagated) " (on a run with parent terms, at least one below the three top-level terms)" else ""
     parameter_bullets <- lfc_text
+    # KIT-203: the significance rule the run recorded (declared, else the rule it recorded as applied); a record
+    # carrying neither was made with the q-value.
+    family_rule <- identical(numbers$enrichment_significance_rule %||% NA, "bh_whole_family")
+    family_text <- if (family_rule) paste0("terms with 10 to 500 annotated measured proteins, whether or not a listed ",
+      "protein falls in them (terms without one enter with p = 1).") else paste0("terms with 10 to 500 ",
+      "annotated measured proteins and at least one protein in the list.")
+    flag_text <- if (family_rule) glue::glue("A term was called significant when its Benjamini-Hochberg adjusted ",
+      "p-value over that family was below {q_val_cutoff_val}; Storey's q-value and the Benjamini-Hochberg value over ",
+      "the terms with at least one listed protein are also given in the results table.") else
+      glue::glue("A term was called significant when its q-value (Storey, 2002) was below {q_val_cutoff_val}; ",
+      "Benjamini-Hochberg adjusted p-values are also given in the results table.")
+    # The measured limits: after the flag sentence under the default, after the paragraph for the q-value.
+    limits_text <- if (family_rule) paste0(" In simulations through this route at a cutoff of 0.05 (lists drawn at ",
+      "random from the reviewed UniProt proteomes of E. coli K-12, a 2,000-protein subset of it, and S. cerevisiae, ",
+      "the last run through this route as a stand-in; lists of 25, 126 and 400 proteins; with parent terms over the ",
+      "five relations and without them; 2,000 random lists per setting), 1.0 % to 2.5 % of random lists had any ",
+      "significant term, and on lists of 126 built around one process the mean false discovery proportion was at ",
+      "most 1.7 % (in a design where the other listed proteins avoid that process, which tends to lower false calls). ",
+      "Not simulated: down lists, other cutoffs, lists of proteins that change together as in real data, other ",
+      "organisms or annotation sources, and parent terms over is a and part of only. Transcriptomics tests sets of 5 ",
+      "to 500 genes; this route 10 to 500 proteins.") else paste0(" Because terms without a list protein are left ",
+      "out before the adjustment, the estimated share of true null terms falls far below 1 on many random lists; on ",
+      "simulated random lists at a cutoff of 0.05 the share of lists with any significant term was 1.7 % to 42.9 % ",
+      "depending on the proteome, list size and parent terms (failing a 7.5 % line in 6 of 18 settings, two of them ",
+      "with parent terms, both with lists of 25 proteins), against 1.6 % to 8.2 % for Benjamini-Hochberg over the ",
+      "same terms.")
     enrichment_tool_text <- glue::glue("{go_sets_text}Over-representation was tested with clusterProfiler (Yu et al., ",
       "2012) against Gene Ontology annotations from UniProt. Biological process, molecular function and cellular ",
-      "component terms were tested together as one family per comparison and direction: terms with 10 to 500 ",
-      "annotated measured proteins and at least one protein in the list. A term was called significant when its ",
-      "q-value (Storey, 2002) was below {q_val_cutoff_val}; Benjamini-Hochberg adjusted p-values are also given in the ",
-      "results table. The background was the measured proteins with at least one Gene Ontology ",
-      "annotation{background_clause}.")
+      "component terms were tested together as one family per comparison and direction: {family_text} {flag_text}",
+      "{if (family_rule) limits_text else ''} The background was the measured proteins with at least one Gene Ontology ",
+      "annotation{background_clause}.{if (family_rule) '' else limits_text}")
   } else if (is_gprofiler) {
     # KIT-173: the corrected g:Profiler paragraph; the correction is named from the analysis record when there is one.
     correction_val <- numbers$enrichment_correction_method %||% NA
