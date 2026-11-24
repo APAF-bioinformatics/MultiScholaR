@@ -3,9 +3,9 @@
 #
 # Usage: Rscript docs/qa/workflow-execution/kit/kit-213/control-w1.R <out dir> <base commit> <case,case,...>
 #
-# Three separate processes, each pkgload::load_all() of a source tree and, per listed case, the case's W1 test of that
-# tree's tests/testthat/test-omic-summary-module.R (testthat::test_file, `desc` the case's test, MULTISCHOLAR_KIT108_W1_CASES
-# the case, MULTISCHOLAR_KIT108_W1_DUMP the side's dump): once on the base commit's tree (git archive), twice on head.
+# Three separate processes, each pkgload::load_all() of a source tree and one testthat::test_file() of that tree's
+# tests/testthat/test-omic-summary-module.R with MULTISCHOLAR_KIT108_W1_CASES the listed cases and
+# MULTISCHOLAR_KIT108_W1_DUMP the side's dump (the file's other tests run too): once on the base commit's tree (git archive), twice on head.
 # In each process the package's createWorkflowArgsFromConfig is wrapped (the test's recorder calls the wrapper, which
 # calls the real writer) to keep every study_parameters.txt the case writes, masked as the W1 capture masks it
 # (omicSummaryW1MaskVersion, then the entry suite's guiEntryMask). The script then checks:
@@ -22,7 +22,6 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 L_PATTERN <- "^  ([^ ]+\\.)?(pairs|logcpm|grid|results) \\[input\\] = "
-W1_DESC <- "(b) %s: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's"
 
 # --- one side (a separate process) -----------------------------------------------------------------------------------
 if (length(args) && identical(args[[1L]], "--side")) {
@@ -49,16 +48,15 @@ if (length(args) && identical(args[[1L]], "--side")) {
             lines <- c(lines[seq_len(start - 1L)], "Version Information: <masked>", lines[-seq_len(end)])
         }
         masked <- strsplit(mask(lines), "\n", fixed = TRUE)[[1L]]
-        writeLines(masked, file.path(side_out, sprintf("%s-%02d.txt", written$case, written$n)))
+        writeLines(masked, file.path(side_out, sprintf("%s-%02d-%s.txt", written$case, written$n, basename(dirname(path)))))
         path
     }, .package = "MultiScholaR", .env = globalenv())
-    for (case in cases) {
-        written$case <- case
-        written$n <- 0L
-        Sys.setenv(MULTISCHOLAR_KIT108_W1_CASES = case, MULTISCHOLAR_KIT108_W1_DUMP = dump, NOT_CRAN = "true")
-        testthat::test_file(file.path(tree, "tests", "testthat", "test-omic-summary-module.R"), desc = sprintf(W1_DESC, case),
-            reporter = "summary", stop_on_failure = FALSE)
-    }
+    # One test_file of the whole file with the listed cases (`desc` cannot select the W1 tests: their names are computed,
+    # G0 run 45476410635); the file's other tests run too, and every write is kept in order (`write-NN-<source dir>`).
+    Sys.setenv(MULTISCHOLAR_KIT108_W1_CASES = paste(cases, collapse = ","), MULTISCHOLAR_KIT108_W1_DUMP = dump, NOT_CRAN = "true")
+    written$case <- "write"
+    testthat::test_file(file.path(tree, "tests", "testthat", "test-omic-summary-module.R"), reporter = "summary",
+        stop_on_failure = FALSE)
     quit(save = "no", status = 0L)
 }
 
