@@ -2,7 +2,10 @@
 # metabolomics journeys NO and OR on data sets 401 to 403, base against head. Evidence code under docs/qa; no package code.
 #
 # Usage, from the package root of the commit under test on a run-tests runner (full git history, the KIT-188 branch fetched):
-#   Rscript docs/qa/workflow-execution/kit/kit-196/da-sparse-control.R <part L|M> <base commit> [--base-only] [<out dir>]
+#   Rscript docs/qa/workflow-execution/kit/kit-196/da-sparse-control.R <part L|M> <base commit> [--base-only]
+#       [--base-records=<dir>] [<out dir>]
+#   --base-records=<dir>  the base side is not run again: its records are read from <dir>/s1-<part>-base.tsv, written by
+#       this script's base side on the same <base commit> (R2 reuses R1's; the base side's code is unchanged)
 #   part L: cells L12 (deciding) and L64 (deciding, ba); part M: M12 (deciding) and M168 (deciding, ba)
 #   <out dir>  default docs/qa/workflow-execution/kit/kit-196/s1 (made absolute)
 # Child process (started by the parent):
@@ -547,16 +550,27 @@ s1Main <- function(a) {
     }
     unlink(file.path(out, sprintf("summary-%s.txt", part)))
     say("head %s, base %s, base only %s, copy SHA-256 %s", head_commit, base_commit, base_only, s1Sha(file.path(s1_dir, S1_COPY)))
+    records <- sub("^--base-records=", "", flags[startsWith(flags, "--base-records=")])
     base_tree <- file.path(tempdir(), "kit196-s1-base")
-    invisible(system2("git", c("worktree", "add", "--detach", shQuote(base_tree), base_commit), stdout = TRUE, stderr = TRUE))
-    if (!dir.exists(file.path(base_tree, "R"))) stop("the base worktree could not be made")
-    base_tree <- normalizePath(base_tree)
+    if (!length(records)) {
+        invisible(system2("git", c("worktree", "add", "--detach", shQuote(base_tree), base_commit), stdout = TRUE, stderr = TRUE))
+        if (!dir.exists(file.path(base_tree, "R"))) stop("the base worktree could not be made")
+        base_tree <- normalizePath(base_tree)
+    }
     say("git diff --name-only 98df468b %s -- R/: %s", base_commit,
         paste(system2("git", c("diff", "--name-only", "98df468b", base_commit, "--", "R/"), stdout = TRUE), collapse = " "))
     sides <- list(base = list(tree = base_tree, commit = base_commit))
     if (!base_only) sides$head <- list(tree = head_root, commit = head_commit)
     results <- list()
     failed <- character()
+    if (length(records)) {
+        path <- file.path(records[[1L]], sprintf("s1-%s-base.tsv", part))
+        base_rows <- utils::read.delim(path, quote = "", comment.char = "", na.strings = "NA", stringsAsFactors = FALSE)
+        if (!all(base_rows$commit == base_commit)) stop("the base records were not made on ", base_commit)
+        results$base <- list(rows = base_rows, failed = character(), timing = data.frame())
+        sides$base <- NULL
+        say("base side read from %s (SHA-256 %s): %d journeys", path, s1Sha(path), nrow(s1Journeys(base_rows)))
+    }
     for (side in names(sides)) {
         t0 <- Sys.time()
         prepared <- s1Prepare(sides[[side]]$tree)
@@ -613,7 +627,7 @@ s1Main <- function(a) {
         say("D6: %d rows, %d with an error (descriptive only)", nrow(results$head$d6),
             sum(!is.na(results$head$d6$error) & nzchar(results$head$d6$error)))
     }
-    invisible(system2("git", c("worktree", "remove", "--force", shQuote(base_tree)), stdout = TRUE, stderr = TRUE))
+    if (!length(records)) invisible(system2("git", c("worktree", "remove", "--force", shQuote(base_tree)), stdout = TRUE, stderr = TRUE))
     say("R %s, limma %s, BLAS %s; wall %.1f min; exit %d", R.version.string, as.character(utils::packageVersion("limma")),
         extSoftVersion()[["BLAS"]], as.numeric(difftime(Sys.time(), started, units = "mins")), as.integer(length(failed) > 0L))
     quit(save = "no", status = if (length(failed)) 1L else 0L)

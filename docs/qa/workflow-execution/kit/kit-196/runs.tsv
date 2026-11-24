@@ -1,0 +1,6 @@
+run_id	commit	purpose	minutes	result
+45316123488	8d095b41	R1a: failing-first tests (2 files) and S1 part L base side (gate G0)	tests 3; scripts 63.5 (job ~75 with set-up)	S1 L: A2 (i) holds (10 = 10 OR stops; n_T, miss_share 204/204); A2 (iv) base holds (66 assays, all with features without values, all 'prior.weights contain NA values'). Tests: T1, T2, T5, T6, T6 (b), T8 fail at stated values; T3, T4, T9 (a), T10 pass; T7 instrument defect (no manifest either side)
+45316126666	8d095b41	R1b: S1 part M base side (gate G0)	scripts 60.2 (job ~72)	S1 M: A2 (i) holds (27 = 27; 102/102); A2 (iv) base holds (54 assays)
+45325563956	bf5ed69f	R1c: instrument run 1 of 3 (T7 driver: executeOmicDaRun)	tests 2	T7 still no manifest on either side (actions not all dispatched); other tests as R1a; T6, T6 (b) messages now shown as text
+45327425477	648a44f0	R1d: instrument run 2 of 3 (T7 advances the poll)	tests 2	all T7 actions delivered; manifest read with the wrong reader (instrument defect)
+45329105038	52343cca	R1e: instrument run 3 of 3 (T7 reads the manifest as a state value)	tests 3	T7 fails at its stated value (errors pos = 'prior.weights contain NA values' per contrast); A1 met on the tests-only commit
