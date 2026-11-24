@@ -88,3 +88,32 @@ test_that("R-K199: no admission path; the DIA-with-limpa link is a declared chan
     # with no link, a declared change is not certified by the reference alone
     expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = cl)$status, "stop")
 })
+
+test_that("R-K199b: counts are per (step, class), not per difference row: several keys in one step", {
+    # G1(a): g1a-reference.tsv has one row per lane and differing step, with its class; a step
+    # with 7 changed integration keys is one (step, class) unit (KIT-199 re-check 1, Q01)
+    keys <- sprintf("integration/proteomics/k%d.parquet", 1:7)
+    ref <- data.frame(lane = "prot_dia_limpa", step = c("int", "summary"),
+                      class = "integration_artifacts", fields = "artifacts",
+                      keys = paste(keys, collapse = ";"))
+    rows <- function(step) {
+        data.frame(step = step, field = "artifacts", key = keys, class = "integration_artifacts")
+    }
+    base <- rbind(rows("int"), rows("summary"),
+                  data.frame(step = "summary", field = "artifacts", key = LIMPA_KEY,
+                             class = "declared_change (KIT-199)"))
+    none <- data.frame(step = character(), field = character(), key = character(),
+                       class = character(), head_value = character())
+    link <- list(ticket = "KIT-199", changed_step = "da", base_diffs = base,
+                 before_diffs = none, after_diffs = none[, 1:4],
+                 declared = data.frame(key = LIMPA_KEY, step = "summary", expected = "x"),
+                 change_classes = "declared_change (KIT-199)")
+    expect_identical(valReadChain("prot_dia_limpa", list(link), ref)$status, "certified")
+    live <- cbind(lane = "prot_dia_limpa", rbind(rows("int"), rows("summary")))
+    expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live)$status,
+                     "certified")
+    # a third step with that class is a different count
+    extra <- rbind(live, cbind(lane = "prot_dia_limpa", rows("da")))
+    expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = extra)$status,
+                     "stop")
+})
