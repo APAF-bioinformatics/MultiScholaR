@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-167 audit I09 test first at a88fd562: the 2 x 2 test shown failing before the repair (no R/ change); ceiling 20 job-minutes; decides the failing-first record",
+  "label": "KIT-167 I09 failing first a88fd562",
+  "package_commit": "a88fd5627578f8ec7b682846f32cc281c1fb83be",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-enrichment.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 20,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

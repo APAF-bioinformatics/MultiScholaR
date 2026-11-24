@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-167 after the merge with staging 9f3b7c49 and the I09 repair (8044b332): the KIT-167 enrichment tests and the enrichment dependents, base against head (the register's scope); ceiling 150 job-minutes; decides readiness for the auditor's re-check",
+  "label": "KIT-167 merged 8044b332 vs 9f3b7c49 enrichment scope",
+  "package_commit": "8044b332f2f0ec334451a5a81f32c8c0ed53bb54",
+  "base_commit": "9f3b7c49d21f8c9d9511aa56c6617b517202ebff",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-enrichment.R",
+    "test-reference-mapping-gui.R",
+    "test-reference-mapping-workflow.R",
+    "test-enrichment-significance.R",
+    "test-kit205-enrichment-background.R",
+    "test-go-propagation.R",
+    "test-general-enrichment-shared.R",
+    "test-module-ci-prot-enrich.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-prot-annotation-uniprot-empty.R",
+    "test-prot-11a-enrichment-module-characterization.R",
+    "test-omic-enrich-module.R",
+    "test-workflow-analysis-record.R",
+    "test-omics-enrich-core.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
