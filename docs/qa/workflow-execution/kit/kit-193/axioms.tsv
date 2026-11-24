@@ -87,3 +87,5 @@ Ruv.G2_sign	Ruv.G2_sign_stmt	propext, Classical.choice, Quot.sound
 Ruv.H1	Ruv.H1_stmt	propext, Classical.choice, Quot.sound
 Ruv.H1_weighted	Ruv.H1_weighted_stmt	propext, Classical.choice, Quot.sound
 Ruv.H1_witness	Ruv.H1_witness_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_measure_moving_witness	Permutation.perm_measure_moving_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.G0_interior_witness	Ruv.G0_interior_witness_stmt	propext, Classical.choice, Quot.sound

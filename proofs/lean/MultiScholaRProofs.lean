@@ -19,6 +19,7 @@ public import MultiScholaRProofs.Proof.QvalueBh
 public import MultiScholaRProofs.Proof.Permutation
 public import MultiScholaRProofs.Proof.RuvAlgebra
 public import MultiScholaRProofs.Proof.RuvDownstream
+public import MultiScholaRProofs.Proof.SharperWitnesses
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

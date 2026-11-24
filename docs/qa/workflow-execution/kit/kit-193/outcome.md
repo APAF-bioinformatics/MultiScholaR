@@ -279,6 +279,20 @@ P05 and P06 concern the paired tests.
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
 system, row 39's user time not recorded) at the P01 commit; updated at each later commit below.
 
+## P03: two sharper witnesses (new Spec file; proved)
+
+`Spec/SharperWitnesses.lean` (b8a62ed3, committed alone with its own `SPEC.sha256` line; the two definitions as the
+proofs register writes them; the auditor confirms the file at the next statements review). Proved in
+`Proof/SharperWitnesses.lean`, each on `propext`, `Classical.choice`, `Quot.sound`:
+- `Permutation.perm_measure_moving_witness`: the uniform law on the four unit vectors of `ℝ^4` (invariant because a
+  relabelling permutes the unit vectors: `e_i ∘ σ = e_{σ⁻¹ i}`), `T f = f 0`, the atom `e_0` and the swap of samples 0
+  and 1 (it moves `e_0` to `e_1` and changes `T` from 1 to 0).
+- `Ruv.G0_interior_witness`: three runs in one set, `X = M = (1, 1, 1)'`, `U = (1, -1, 0)'`, two features, the first
+  the only control; `n = 3 > g + k = 2`; the corrected second feature is `(0, 0, 1)` and its residual on `X` is
+  `(-1/3, -1/3, 2/3) ≠ 0`.
+One style linter (`linter.unusedSimpArgs`) is off in that file (simp arguments not needed in every `fin_cases`
+branch); no bearing on what is proved. Laptop: 7 Lean calls (labels `p03-*`). Agent time 0.15 h.
+
 ## Resume here
 
 Coordinator's order after the proofs audit (2026-11-24): P03's two witness statements (new Spec file, committed

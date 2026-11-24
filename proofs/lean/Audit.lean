@@ -214,3 +214,11 @@ example : Ruv.H1_witness_stmt := Ruv.H1_witness
 #print axioms Ruv.H1
 #print axioms Ruv.H1_weighted
 #print axioms Ruv.H1_witness
+
+/-! ## Sharper witnesses (proofs audit P03; `Spec/SharperWitnesses.lean`) -/
+
+example : Permutation.perm_measure_moving_witness_stmt := Permutation.perm_measure_moving_witness
+example : Ruv.G0_interior_witness_stmt := Ruv.G0_interior_witness
+
+#print axioms Permutation.perm_measure_moving_witness
+#print axioms Ruv.G0_interior_witness
