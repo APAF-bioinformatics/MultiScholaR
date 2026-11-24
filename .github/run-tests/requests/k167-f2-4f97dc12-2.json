@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-167 gate F2, instrument run 2 of at most 3 (VAL-54): run 45334031153 failed in the mechanics (no PRIDE URL found), no result; same purpose, ceiling 30 min, decides the ranking key and pins",
+  "label": "KIT-167 F2 4f97dc12 instrument 2",
+  "package_commit": "4f97dc12ef8ff15830b42b0a44efcb92762315e7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/gate-f2.R",
+      "args": [],
+      "out": "capture-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
