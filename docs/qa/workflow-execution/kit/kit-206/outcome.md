@@ -18,7 +18,10 @@ to E-5 of 2026-11-24. Branch `kit-206-prot-export-summary` from `v0.9-staging` f
 
 R1 (45355924669) and R1-2 (45358649081, instrument run 1 of 3 on R1's item) on the tests-only side; R2 (45361342951): section 10's
 scope, 26 files, fix against tests-only, with R CMD check; R2-2 (45372827072) and R2-3 (45376336123): instrument runs 1 and 2 of 3 on
-R2's new file. R3 (the full suite on the merge with staging) is declared below and not yet sent.
+R2's new file. R1 to R2-3 ran on the pre-merge tree (branch base fe5c9273). R3 (45380286045) ran once on the merge 75360c69 of
+this branch with `v0.9-staging` 91e3cdcb (KIT-207 merged, 2ead4fec), against that staging head: the full suite, 20 shards per side,
+no check (R2 checked the fix's `R/`; the merge adds only the hand-merged `summaryFailed` condition). Attempt 1 lost head shard 8 in
+the library install step (no test ran there); `gh run rerun --failed` repeated it (attempt 2).
 
 ## Observed
 
@@ -51,6 +54,11 @@ R2's new file. R3 (the full suite on the merge with staging) is declared below a
   `test-workflow-ruv-pearson-diagnostic.R` (2 errors): stored laptop references, as recorded before (KIT-156). The new file was
   `message-changed` in R2 only for the E11 setup defect; R2-2 and R2-3 repaired it (instrument runs, VAL-54), and R2-3 is `fixed`.
 - **Check (A2).** R2: 0 ERROR, 3 WARNING, 3 NOTE on both sides; nothing only on head (`r2-check-compare.txt`).
+- **Full suite (A3).** R3 on the merge 75360c69: 464 files `same`, the new file `only-on-head` (90 passed, 0 failed); no
+  `new-failure`, no `message-changed`. The files KIT-207's audit names for the second merge are `same`:
+  `test-kit207-summary-head-guard.R`, `test-integration-input-lipid-metab.R`, `test-prot-12-summary-module-contracts.R` (ok on both),
+  `test-omics-summary-core.R`, `test-omic-summary-module.R`, `test-gui-entry-proteomics.R` (identical stored-reference failures on
+  both). `r3-full-compare.tsv`.
 - **A4.** NEWS under the one unreleased heading; ledger row `VAL-<merge>` after VAL-155; no `DESCRIPTION`, `NAMESPACE`, `man/`,
   lock or version change; `helper-workflow-checkpoint-fixtures.R` and `tools/profiling/` untouched.
 
@@ -76,7 +84,10 @@ This branch changes only the named-classes condition of `summaryFailed` to
 `c("workflow_figure_unwritten", "prot_norm_correlation_input_stale", "workflow_export_dependency_missing")`. KIT-207 changes the same
 line (adding `integration_input_invalid`) and adds its early-return block for `omic_norm_correlation_input_stale`. The second to merge
 writes the union of KIT-207 r1.2 section 3 item 2 (KIT-207's block first, then the four-class condition under "# KIT-052, KIT-206;
-KIT-207 (SD-4): a file the save could not write, or refused, is named to the user."). The classes do not overlap.
+KIT-207 (SD-4): a file the save could not write, or refused, is named to the user."). The classes do not overlap. Done in the merge
+commit 75360c69 (KIT-207 merged first): KIT-207's refusal block, then the KIT-052 comment, the union comment and the four-class
+condition. Since KIT-207, a proteomics Save refused for `integration_input_invalid` also names its reason (KIT-207 I02); no test of this
+branch drives a proteomics Save to that refusal.
 
 ## Acceptance criteria
 
@@ -84,7 +95,7 @@ KIT-207 (SD-4): a file the save could not write, or refused, is named to the use
 |---|---|---|
 | A1 | met | R1-2 (`r1-2-failures.txt`); R2-3 `r2-3-compare.tsv`, `r2-3-failures-base.txt`, `r2-3-evidence-*.txt` |
 | A2 | met | `r2-compare.tsv`, `r2-check-compare.txt`; the new file per R2-3 |
-| A3 | pending: R3 on the merge with staging after KIT-207 lands | |
+| A3 | met | R3 45380286045 (attempt 2), `r3-full-compare.tsv` |
 | A4 | met | the branch diff; this file |
 
 ## Not checked
@@ -125,4 +136,11 @@ KIT-207 (SD-4): a file the save could not write, or refused, is named to the use
   file's metadata records the run's results file and RUV mode (on DIA with limpa `covariates` or `correction` instead of the setting
   shown); a missing file is refused before anything is pending.
 - **Evidence.** R1-2 45358649081 (before), R2-3 45376336123 (before and after, new file), R2 45361342951 (26 files base against head,
-  check). Synthetic 64-protein fixture only; mechanism, not effect size.
+  check), R3 45380286045 (full suite on the merge with staging). Synthetic 64-protein fixture only; mechanism, not effect size.
+
+## Budget
+
+Core-hours (job minutes x 4 / 60): R1 0.96, R1-2 0.93, R2 23.25, R2-2 1.91, R2-3 2.17, R3 79.24 (attempt 1 1,148.2 job-minutes with the
+lost shard's 8 minutes, attempt 2 40.4). Total 108.46 against the ticket's expected 86.8 and ceiling 449.4. Rows: R1 with its instrument
+run 1.89 of 4.0; R2 with its two instrument runs 27.33 of 36.0; R3 79.24 of 186.7. Instrument runs used: one of three on R1's item,
+two of three on R2's item (VAL-54).
