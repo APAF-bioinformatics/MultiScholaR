@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-213 G0 instrument rerun 2 of 3 (VAL-54): the 13 lipidomics and metabolomics W1 cases through test_file (run 45473660748 stopped them at teardown_env before any case ran); ceiling 60 job-minutes",
+  "label": "KIT-213 G0 w1 lipid and metab cases at 00583734 (R/ = e305fab3)",
+  "package_commit": "005837341e8c4661e1e549f6e23dd6a3951fa971",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-213/g0.R", "args": ["docs/qa/workflow-execution/kit/kit-213/g0-w1", "w1", "lipid_refusals,lipid_main,lipid_variants,lipid_required_missing,lipid_github_fallback,lipid_managed,lipid_global_another,metab_refusals,metab_main,metab_variants,metab_required_missing,metab_github_fallback,metab_managed"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-213/g0-w1", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 50}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
