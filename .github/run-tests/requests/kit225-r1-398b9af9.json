@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-225 R1 failing-first: tests-only commit 398b9af9 (R/ = base cf8af245); new file E1-E8, G1, G2 and the declared 05b edit; ceiling 45 job-minutes (3.0 core-hours); decides stop rule 1",
+  "label": "KIT-225 R1 tests-only at 398b9af9",
+  "package_commit": "398b9af9dc4ffd7ace7b291aee7169a14d0626f4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit225-prot-norm-reset-source.R",
+    "test-prot-05b-norm-module-contracts.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 20,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
