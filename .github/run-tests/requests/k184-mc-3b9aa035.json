@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-184 merge-condition check (coordinator's ruling after audit re-check 1; not a correction pass): the merge 3b9aa035 against staging d048898d: test-gui-entry-proteomics.R (the re-frozen lane with KIT-208's DA join) and test-integration-removed-factors.R; ceiling 180 job-minutes",
+  "label": "KIT-184 merge-condition check 3b9aa035 vs staging d048898d",
+  "package_commit": "3b9aa035160dcd7ccdd16720143ee26a802579a9",
+  "base_commit": "d048898dfcb9c580a1a4b5d65d6ac09a15efdc0a",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R",
+    "test-integration-removed-factors.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
