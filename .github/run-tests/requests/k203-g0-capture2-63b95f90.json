@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-203 G0 capture, instrument run 1 of 3 (VAL-54): run 45326277295's capture stopped on its own plot-file stub; fix: stubs lifted before the project capture",
+  "label": "KIT-203 G0 base fixtures on 63b95f90 (R/ = v0.9-staging 9453e79b)",
+  "package_commit": "63b95f90c754a80c7195812f2d0d540137cd450f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/capture-k203.R",
+      "args": [
+        "tests/testdata/enrichment-significance/e0-accessions.tsv",
+        "k203-capture"
+      ],
+      "out": "k203-capture",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
