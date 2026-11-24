@@ -342,8 +342,10 @@ integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts(), e
     r <- value$ranking_counts
     m <- value$mapping_counts
     d <- value$direction
-    correlated <- isTRUE(value$test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)
-    permutation <- identical(value$test, "permutation")
+    # AUDIT-KIT-191-impl I04: exactly `test` (a pre-ranked product has `tests`, the count, and no `test`).
+    test <- value[["test", exact = TRUE]]
+    correlated <- isTRUE(test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)
+    permutation <- identical(test, "permutation")
     pathways <- !identical(value$database, "string")
     counts <- value$test_counts
     c(sprintf(texts[["enrich_done"]], value$factor, value$view, integrationEnrichmentDatabaseName(value$database), release),
@@ -368,18 +370,35 @@ integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts(), e
 }
 
 #' KIT-191 (5.2 steps 7 and 8, corrected by AUDIT-KIT-193 A05): the permutation test's floor. With d reorderings that
-#' left the factor unchanged no p-value is below p_min = (1 + d) / (1 + B); with m terms tested, BH at 5 % calls none
-#' unless it calls at least k_min = ceiling(m p_min / 0.05) together (it calls k* terms with p_(k*) <= 0.05 k* / m, and
-#' p_(k*) >= p_min).
-#' @param permutation The product's `permutation` (`permutations`, `identity_draws`, `min_p`, `samples`).
+#' left the factor unchanged no p-value is below p_min = (1 + d) / (1 + B), printed exactly as a fraction
+#' (`integrationEnrichmentFloorFraction()`; AUDIT-KIT-191-impl I01: a decimal rounded to nearest can exceed it); with m
+#' terms tested, BH at 5 % calls none unless it calls at least k_min = ceiling(m p_min / 0.05) together (it calls k*
+#' terms with p_(k*) <= 0.05 k* / m, and p_(k*) >= p_min), k_min computed in whole numbers as
+#' ceiling(20 m (1 + d) / (1 + B)).
+#' @param permutation The product's `permutation` (`permutations`, `identity_draws`, `samples`).
 #' @param terms The number of terms tested (m).
-#' @return The sentence (`enrich_test_permutation_floor`), or NULL without terms.
+#' @return `enrich_test_permutation_floor`, or `enrich_test_permutation_floor_none` when p_min > 0.05 (no term can be
+#'   called); NULL without terms.
 #' @noRd
 integrationEnrichmentPermutationFloorText <- function(permutation, terms, texts = integrationGuiTexts()) {
-    if (is.null(permutation) || !isTRUE(terms > 0L) || is.na(permutation$min_p)) return(NULL)
-    p_min <- as.numeric(permutation$min_p)
-    k_min <- as.integer(ceiling(terms * p_min / 0.05 - 1e-9))
-    number <- function(x) format(signif(x, 3), scientific = FALSE, trim = TRUE)
-    sprintf(texts[["enrich_test_permutation_floor"]], as.integer(permutation$permutations), as.integer(permutation$samples),
-        number(p_min), terms, k_min)
+    if (is.null(permutation) || !isTRUE(terms > 0L) || is.na(permutation$identity_draws)) return(NULL)
+    reorderings <- as.numeric(permutation$permutations)
+    unchanged <- as.numeric(permutation$identity_draws)
+    floor_text <- integrationEnrichmentFloorFraction(unchanged, reorderings)
+    if (20 * (1 + unchanged) > 1 + reorderings) {
+        return(sprintf(texts[["enrich_test_permutation_floor_none"]], as.integer(reorderings),
+            as.integer(permutation$samples), floor_text))
+    }
+    numerator <- 20 * as.numeric(terms) * (1 + unchanged)
+    k_min <- as.integer((numerator + reorderings) %/% (1 + reorderings))
+    sprintf(texts[["enrich_test_permutation_floor"]], as.integer(reorderings), as.integer(permutation$samples), floor_text,
+        as.integer(terms), k_min)
+}
+
+#' KIT-191 (I01; the form is the owner's to confirm, O1): the smallest attainable p-value (1 + d) / (1 + B) as printed,
+#' the exact fraction with thousands separated ("1/1,001"). The one place the form is set.
+#' @noRd
+integrationEnrichmentFloorFraction <- function(identity_draws, permutations) {
+    paste0(format(1 + as.numeric(identity_draws), big.mark = ",", scientific = FALSE, trim = TRUE), "/",
+        format(1 + as.numeric(permutations), big.mark = ",", scientific = FALSE, trim = TRUE))
 }

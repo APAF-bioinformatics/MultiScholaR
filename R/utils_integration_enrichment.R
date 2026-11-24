@@ -83,11 +83,11 @@ INTEGRATION_ENRICHMENT_REFUSALS <- c(
     ),
     # KIT-183: the correlation-adjusted test (%d and %s are filled by the refusal's `values`).
     integration_enrichment_too_few_complete = paste(
-        "Too few features have a value in every biological sample for the correlation-adjusted test: at least 10 are",
-        "needed. The pre-ranked test can use features with missing values."
+        "Too few features have a value in every biological sample for the correlation-adjusted and permutation tests:",
+        "at least 10 are needed. The pre-ranked test can use features with missing values."
     ),
     integration_enrichment_too_few_samples_for_test = paste(
-        "The correlation-adjusted test needs at least %d biological samples in this data set."
+        "The chosen test (correlation-adjusted or permutation) needs at least %d biological samples in this data set."
     ),
     integration_enrichment_test_not_offered = "This test is not offered here: %s.",
     # KIT-191 (D4 (c); %s: minutes; %d: features, biological samples, terms, reorderings).
@@ -876,9 +876,9 @@ INTEGRATION_ENRICHMENT_PERMUTATION_COST <- list(a = 5.12e-9, c = 2.13e-7, s = 5.
 #' set, shown also for lipids, which were not simulated; `genes_proteins`: its proteomics and transcriptomics data
 #' sets), number of biological samples and measure. Error rates are shares of null sets with an unadjusted p-value of
 #' 0.05 or less (`sprintf("%.1f", 100 * x)`); power is the share of planted sets called at BH <= 0.05 within the call
-#' in the right direction (`"%.2f"`, or `"%.3f"` when below 0.1). Measures: A unrelated sets against values unrelated
-#' to the data; B sets of the model's most variable unrelated features, same values; C unrelated sets, main factor; D
-#' correlated unrelated sets (0.3), main factor; E weaker factors, largest; F at least one false call in a result; C3
+#' in the right direction (`"%.2f"`, or `"%.3f"` when the largest of the range is below 0.1). Measures: A unrelated
+#' sets against values unrelated to the data; B sets of the model's most variable unrelated features, same values; C
+#' unrelated sets, main factor; D correlated unrelated sets (0.3), main factor; E weaker factors, largest; F at least one false call in a result; C3
 #' identifiers carrying 2 or 3 unrelated features; G, H, I power. Regenerated from the committed tables by
 #' `docs/qa/workflow-execution/kit/kit-191/evidence-k191.R` (U14).
 #' @noRd
@@ -2215,7 +2215,7 @@ integrationRecordEnrichmentRanking <- function(entry, texts = integrationRecordT
         if (isTRUE(as.logical(s(entry$settings$test_ignored)))) ranking <- paste0(ranking, "; ", texts[["enrich_string_test_note"]])
         return(ranking)
     }
-    test <- s(entry$test)
+    test <- s(entry[["test", exact = TRUE]])
     if (!isTRUE(test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)) return(ranking)
     sprintf(texts[[paste0("enrich_ranking_value_", test)]], as.integer(s(entry$test_counts$samples)),
         as.integer(s(entry$test_counts$universe)))
@@ -2240,6 +2240,7 @@ integrationEnrichmentStrengthText <- function(entry, texts) {
     if (identical(s(entry$database), "string") || is.na(own) || is.na(largest)) return("")
     # KIT-191: the figure of the entry's own test and the data set's kind (row E of the evidence table).
     test <- integrationEnrichmentEntryTest(entry)
+    if (is.na(test)) return("")
     omic <- s(entry$omic)
     if (is.na(omic)) omic <- s(entry$settings$omic)
     kind <- integrationEnrichmentEvidenceKind(omic)
@@ -2249,15 +2250,17 @@ integrationEnrichmentStrengthText <- function(entry, texts) {
         texts[[paste0("enrich_test_phrase_", test)]])
 }
 
-#' KIT-191: an entry's test among the offered ones, from the record's block (`test`) or the head (`settings$test`); an
-#' entry without one (made before KIT-183) is the pre-ranked test.
+#' KIT-191: an entry's test among the offered ones: the declared test first (the head's `settings$test`, which the
+#' record's block carries too), then the block's `test`; an entry without one (made before KIT-183) is the pre-ranked
+#' test. AUDIT-KIT-191-impl I03: a block made by KIT-183's merged code holds the pre-ranked product's count of tests in
+#' `test`, and a value that is none of the offered tests gives NA (no figure is shown for it), never camera's.
 #' @noRd
 integrationEnrichmentEntryTest <- function(entry) {
     s <- integrationRecordScalar
-    test <- s(entry$test)
-    if (is.na(test)) test <- s(entry$settings$test)
+    test <- s(entry$settings[["test", exact = TRUE]])
+    if (is.na(test)) test <- s(entry[["test", exact = TRUE]])
     if (is.na(test)) return("gsea")
-    if (!test %in% INTEGRATION_ENRICHMENT_TESTS_OFFERED) return("camera")
+    if (!test %in% INTEGRATION_ENRICHMENT_TESTS_OFFERED) return(NA_character_)
     test
 }
 
@@ -2325,7 +2328,7 @@ integrationMethodsEnrichment <- function(block, texts = integrationRecordTexts()
     for (entry in entries) {
         service <- entry$service
         database <- s(entry$database)
-        test <- s(entry$test)
+        test <- s(entry[["test", exact = TRUE]])
         pathways <- pathways || !identical(database, "string")
         sentences <- c(sentences, if (identical(database, "string")) sprintf(texts[["methods_enrich_string"]], s(entry$factor),
             s(entry$view), as.integer(s(entry$mapping_counts$mapped)), as.character(s(service$version$string_version)),
@@ -2368,6 +2371,8 @@ integrationMethodsEnrichment <- function(block, texts = integrationRecordTexts()
 integrationMethodsEnrichmentLimits <- function(entries, texts = integrationRecordTexts()) {
     s <- integrationRecordScalar
     pathway <- Filter(function(entry) !identical(s(entry$database), "string"), entries)
+    pathway <- Filter(function(entry) !is.na(integrationEnrichmentEntryTest(entry)), pathway)
+    if (!length(pathway)) return(character())
     pairs <- unique(do.call(rbind, lapply(pathway, function(entry) {
         omic <- s(entry$omic)
         data.frame(test = integrationEnrichmentEntryTest(entry), kind = integrationEnrichmentEvidenceKind(omic),
@@ -2381,7 +2386,7 @@ integrationMethodsEnrichmentLimits <- function(entries, texts = integrationRecor
         figure <- function(measure) integrationEnrichmentEvidenceValue(kind, test, measure, short = TRUE)
         sprintf(texts[["methods_enrich_limits_clause"]], texts[[paste0("enrich_test_phrase_", test)]],
             texts[[paste0("enrich_strength_kind_", if (pairs$lipids[[i]]) "lipids" else kind)]], figure("A"), figure("B"),
-            figure("E"))
+            texts[[paste0("enrich_strength_terms_", kind)]], figure("E"))
     }, character(1))
     paste0(texts[["methods_enrich_limits_tests"]], " ", paste(clauses, collapse = "; "), ". ",
         texts[["methods_enrich_limits_end"]])
@@ -2398,6 +2403,7 @@ integrationMethodsSeveralTests <- function(entries, texts = integrationRecordTex
     for (k in unique(key)) {
         group <- pathway[key == k]
         tests <- unique(vapply(group, integrationEnrichmentEntryTest, character(1)))
+        tests <- tests[!is.na(tests)]
         if (length(tests) < 2L) next
         tests <- tests[order(match(tests, INTEGRATION_ENRICHMENT_TESTS_OFFERED))]
         first <- group[[1L]]

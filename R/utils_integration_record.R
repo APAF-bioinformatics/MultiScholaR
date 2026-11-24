@@ -414,7 +414,8 @@ integrationRecordTexts <- function() {
         methods_enrich_permutation = paste("%s in %s: %s pathways were tested with %s, %s, %s, organism %s, pathways",
             "with %d to %d of these identifiers (%d pathways), every pathway kept."),
         # KIT-191 (5.4): the limits paragraph, its opening, one clause per test used and kind of data set (%s: the test,
-        # the kind of simulated data, its rows A, B and E of the evidence table), its closing.
+        # the kind of simulated data, its rows A and B of the evidence table, the kind's terms of row E (AUDIT-KIT-191-impl
+        # I02: gsea's gene-and-protein figure is of block members the model did not use), row E), its closing.
         methods_enrich_limits_tests = paste("The factor was learned from these same data, which none of the tests used",
             "allows for, so the enrichment results are exploratory: features the model was trained on shaped the factor",
             "and tend to be more strongly associated with it than other features even without a biological link, the more",
@@ -422,7 +423,7 @@ integrationRecordTexts <- function() {
             "simulated studies per data set; KIT-183), at the 5 % level:"),
         methods_enrich_limits_clause = paste("the %s, on %s data, called terms with no link to the factor in %s of cases",
             "against values unrelated to the data, terms made only of the most variable features, those the model",
-            "selects, in %s, and, on factors weaker than the main effect, terms of features the model used in up to %s"),
+            "selects, in %s, and, on factors weaker than the main effect, %s in up to %s"),
         methods_enrich_limits_end = paste("The correlation-adjusted and permutation tests use only features measured in",
             "every biological sample, which favours abundant features and leaves out features that fall below detection",
             "in some samples, often those that change most. The tests used read each data set's normalised values before",

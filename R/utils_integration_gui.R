@@ -820,6 +820,9 @@ integrationGuiTexts <- function() {
         enrich_test_permutation_floor = paste("With %d reorderings of %d biological samples no p-value can be below %s;",
             "among the %d terms tested, none can be called at a 5 %% false discovery rate unless at least %d are called",
             "together."),
+        # %d: reorderings, biological samples; %s: the smallest p-value, above 0.05 (AUDIT-KIT-191-impl I01).
+        enrich_test_permutation_floor_none = paste("With %d reorderings of %d biological samples no p-value can be below",
+            "%s, which is above 0.05, so no term can be called at a 5 %% false discovery rate."),
         # %s: seconds; %d: features, biological samples, terms, reorderings (the scripted run, D4 (c)).
         enrich_test_permutation_time = paste("The permutation test is predicted to take about %s seconds (%d features, %d",
             "biological samples, %d terms, %d reorderings); the prediction was measured on a test computer, and this",
