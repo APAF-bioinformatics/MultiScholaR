@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-202 S1 instrument rerun 1 of 3 (VAL-54): R2 45469464049's S1 died on a variable name in the script, no result; same base as R2; ceiling 75 min; decides A2",
+  "label": "KIT-202 S1 rerun 5d322d9c vs e305fab3",
+  "package_commit": "5d322d9cf1a5cb983a04bab1800d9ecd79d4b9d9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-202/filter-samples-control.R",
+      "args": [
+        "e305fab399bde1cb04efc35be915e9a95e813c12",
+        "docs/qa/workflow-execution/kit/kit-202/s1"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-202/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
