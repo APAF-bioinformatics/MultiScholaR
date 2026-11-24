@@ -17,7 +17,9 @@ and Part B, the lanes of sections 7.9 and 7.10).
 | Coverage regimes T-COV (T2) | yes | yes (offered regimes below) |
 | `val-run.R` phases that run cells (`lifecycle`, `counted`, `score`, `determinism`, `correction`, `amended`), `val-parity.R`, the `distributable.yml` stage `parity` | yes (2b18b1e3; repaired after the 2026-11-24 audit, I01 to I20) | the cell-to-verdict path, yes: `test-e2e.R` drives `valRunPhase` and `valScorePhase` from cells to verdicts on `prot_dia`, `metab_combined` and `trx_screen` (R4d, run 45323093762 at 89094e2a); the entry script `val-run.R`'s cell and score branches, no (no test runs the script; re-audit E2) |
 | Ticket coverage regimes (`val-tests.R --ticket <dir> --declaration <json>`, pinned in the declaration as `ticket_coverage: {path, sha256}`) | yes (8f37e3e1) | no |
-| Replay of declared cells (`replay`) inside a cell phase | no (recorded `not_built` in provenance) | no |
+| Replay of declared cells (`replay`) inside a cell phase | yes (`R/replay.R`, builder B, 27059497 and 1080f82a; statuses `identical`, `differs`, `unsupported`, `not_declared`, `not_run`) | yes (RB1, run 45336692179: T-REP-1 to 4; a real `metab_combined` cell replayed `identical`) |
+| `val-run.R` driven itself (E2): `lifecycle`, `counted`, `score` and its refusals (class, exit 3) | yes | yes (RB1: T-RUN-E2, 21 of 21, toy ticket in a temporary repository) |
+| G1(a) entry script `val-g1a.R` (environment, part (1), part (2), `gates.md`) | yes | part (1) on one real lane (SM1, run 45336907144: `lipid_canonical` identical); part (2) not run (needs `g1a-reference.tsv`, not built) |
 | Known pending change: KIT-202 (lipid and metabolite intensity filter counts the design's samples only) | the five metabolomics corpora are MS-DIAL tables whose integer `Alignment ID` is counted as a sample by today's filter, so every stored metabolomics value after the filter step moves when KIT-202 merges: S0's committed `s0/s0r1/` metabolomics rows (`routes.tsv`, `steps.tsv`, `alternatives.tsv`, ledgers of `metab_lc`, `metab_gc`, `metab_combined`, `metab_lc-export_load`) (the ledgers hold the settings each step saw, so they move only where a default is read from the data; the row counts in `routes.tsv` and `steps.tsv` move); the harness stores no `bindings.json` (the `bindings.json` files under `docs/qa/workflow-execution/` belong to other tickets); lipidomics (LipidSearch) is unaffected unless its tables carry a numeric id. No gate compares a new run against them (S0 gates nothing; G1(a) compares against the product's GUI-entry oracles, not these; parity and the lifecycle run fresh); no test reads them. After KIT-202 merges: re-run S0's three metabolomics routes and the `metab_lc` export-then-load alternative (S0 run 1 took 2,425 s for nine routes; about 1 core-hour) and the T-TAB metabolomics cases in the next whole-suite run | no |
 
 ## A ticket's evidence folder
@@ -223,9 +225,28 @@ Two readings of the G1(a) value path, confirmed by the coordinator (2026-11-24):
   part carries the ticket's tag, for example `(KIT-199)` (`valTicketClasses`; a ticket does not list
   its classes separately in the record); a caller may pass `change_classes` instead.
 
-Not built yet: the G1(a) entry script that chains part (1), part (2) and `gates.md`; the job's
-environment recorder for D7 (KIT-199 `control.R` `writeEnvironment` is the template); L1's committed
-DA tables for G13 (`valCheckParityL1` does not yet check a table's hash).
+Built by builder B (RB1, SM1): the G1(a) entry script `val-g1a.R` (part (1), part (2), `gates.md`;
+it refuses part (2) without `--reference <g1a-reference.tsv>`, class `val_spec_invalid`); the job's
+environment recorder for D7 (`valJobEnvironment`, derived as KIT-199's `writeEnvironment`;
+`valLockfileUnchanged`); the reader of L1's committed DA tables for G13 with its SHA-256 check
+(`valParityL1Tables`). Not built: G1(r)'s `g1a-reference.tsv` (decisions listed in `outcome.md`,
+builder B section).
+
+**L1's DA tables for G13 (open, with the owner; ticket r1.18 section 33 (b)).** Whether L1 may write
+its driver DA tables (generated inputs) given 5.2's feature-blind lifecycle rule is not decided.
+Until it is, G13 has no committed L1 table, so P1 can establish browser-against-driver parity on the
+bundle but not its last link, the bundle driver against the L1 driver on `run-tests`.
+
+## Replay (G5): what is compared (ticket r1.18, section 33 (a), 7.3)
+
+The replay re-runs the DA without publishing its tables, so there is no replayed DA table text to
+read. `valReplay` compares the package's own content fingerprints of every state and of the head's
+DA result (`snapshot$da_results`) between the cell's store and the replayed store (KIT-028's
+`kitReplayJourney` comparison); accepted as at least as strict as a masked digest of the DA table
+followed by a value comparison. `identical` means every state fingerprint and the DA result's
+fingerprint agree; `differs` names the states and `da_results` whose fingerprints differ and carries
+no largest value difference; `unsupported` carries the class the package refused with. Cells not
+declared for replay are `not_declared`; declared cells that did not complete are `not_run`.
 
 ## Transcriptomics RUV grid summary (KIT-192)
 

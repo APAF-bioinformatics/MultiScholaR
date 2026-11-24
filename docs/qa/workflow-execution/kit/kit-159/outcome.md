@@ -59,7 +59,8 @@ DI10b generator are shown in run A1 (below); E6 is a strengthening of passing te
 - A1 (k159-rep-a1-d1c8d4e6, run 45334780977, tests only at d1c8d4e6): sent; purpose: show each new
   test failing at its fault; ceiling 25 min; decides nothing else.
 - A2 (fix at 647706dd, same files with `--lint`): to send after A1.
-- DI10b (fixed_onedir C4e-147, at 647706dd, line DI10b): to send after A2 shows R-DI10b passing.
+- A2 (45336510695 at 647706dd): 49 of 50 pass, lint 0; R-V137-2 failed on a fixture defect (corrected in the test at 820f3207; re-run owed). 0.71 core-hours.
+- DI10b (45336507597 at 647706dd, line DI10b; sent with A2): **valid; by its declared reading, conditioning suffices for C4e g = 5.** N1 (bias target -0.234) and N2 (rejection target 0.428) hold, so the one-directional shift is present; every statistic passes at every level (95 %: mae 0.9575, bias 0.960, rej 0.9485; no zero-width intervals). Compared with D (fixed_symmetric) coverage is lower but within the band (rej at 95 %: 0.9485 against 0.9835). Reported to the owner; it decides nothing by itself. 1.10 core-hours of 1.5. Tables `t2/di10b-*`.
 
 
 Ticket r1.16 (main checkout; section 31). Rulings: VAL-109; KIT-199 plan audit ruling C1 (a); KIT-199
@@ -187,6 +188,65 @@ re-run (about 1 core-hour). Do not repeat R1 for later product merges until the 
 VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d). Item 1 (G1(a)
 remainder): one correction used (R12 -> R13).
 Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb).
+
+## Builder B (branch `kit-159-replay`): replay, `val-run.R` driven, G1(a)'s job pieces, E4
+
+Branch `kit-159-replay` from `kit-159-validation-harness` at b8683b3d, worktree
+`MultiScholaR-kit-159-b`; merged with builder A's heads 67594694 (f4a3152d) and 69bb2e4f (this
+merge). This section replaces builder B's `outcome-b.md`, and B's runs are rows RB0, RB1, SM0, SM1
+of `runs.tsv` (formerly `runs-b.tsv`).
+
+| Item | Register | What was built | Tests | State (observed) |
+|---|---|---|---|---|
+| 1. Replay of declared cells (G5) | I07, E5 | `R/replay.R`: the cell writes its analysis record inside its session (`writeWorkflowAnalysisRecord`, inside the owner's state scope, 1080f82a); after the session a copy of its store is pruned to the record's import and design states by the package's `kitPrepareReplayProject` (extracted from `tools/profiling/workflow_kit.R` with its closure, never edited), the record replayed there with `replayWorkflowAnalysisRecord` on fresh experiment paths, under the cell's thread variables and seed; the two stores compared by the package's own fingerprints (every state, as KIT-028's `kitReplayJourney`, and the head's DA result). Statuses `identical`, `differs` (differing states and `da_results` named), `unsupported` (class); `not_declared`, `not_run`. `replay = not_built` removed; `valCheckProvenance` refuses a cell without such a status and a `differs` without its differences | T-REP-1 to T-REP-4, T-PROV-2 | RB0: each failed at its fault. RB1: all pass; **T-REP-4, a real `metab_combined` cell replayed: `identical`** |
+| 2. `val-run.R` driven itself | E2 | The cell and score phases read the committed declaration through `valCheckDeclaration` first (not the working tree); any `val_error` ends the job with one template line (class) and exit 3 | T-RUN-E2 | RB0: lifecycle, counted, score ran to completion on the toy ticket in a temporary repository; the refusals failed (exit 1, no line). RB1: 21 of 21 |
+| 3. G1(a)'s job pieces | I15 remainder, VAL-120 (2), VAL-133 (1) | `R/g1a-entry.R`: `valJobEnvironment` (CPU model, image, the ten D7 keys, lockfile SHA-256; derived as KIT-199's `writeEnvironment`), `valLockfileUnchanged`, `valG1aDaInputs`, `valG1aGatesMd`, `valParityL1Tables` (L1's DA tables for G13 read by path and checked by SHA-256); the entry script `val-g1a.R` (environment, part (1), part (2), `gates.md`) | T-G1A-ENV-1, -ENV-2, -GATES, -ENTRY, T-PAR-5; the smoke run | RB1: all pass. SM1 (real lane): `lipid_canonical` part (1) `identical`, installed against `load_all`, each in its own R process; environment and `gates.md` written (`g1a-smoke/`) |
+| 4. E4 | E4 | `helpers_extracted` filled by `valRunPhase` when `val-run.R` passes none (GUI-entry helpers for workflow cells, the replay kit where it replays). Per-unit truths: builder A's `truth.per_unit` kept at the merge, B's duplicate removed | in T-REP-4, T-PROV-2 | RB1: pass |
+
+**Lint (RB1).** `replay.R` 186 and 200, indentation only; corrected after this merge as item 1's one
+correction (layout, no behaviour change); shown by the merge run below.
+
+**Coordinator's rulings on builder B's two points (ticket r1.18, section 33; `USAGE.md`).**
+- (a) ACCEPTED: G5 compares the package's content fingerprints of every state and of the head's DA
+  result between the cell's store and the replayed store, because the replay re-runs the DA without
+  publishing tables (proteomics `publish = FALSE`; the omics DA writes no files), so no replayed table
+  text exists. At least as strict as 7.3's masked digest then value. `identical` = every state
+  fingerprint and the DA result's fingerprint agree; `differs` names what differs and carries no
+  largest value difference.
+- (b) NOT decided, with the owner: whether L1 may write its driver DA tables (keys, q and fold-change
+  per route on generated inputs) for G13, given 5.2's rule that no feature-level table leaves a
+  lifecycle job. Nothing more is built for it; the reader and its SHA-256 check (`valParityL1Tables`)
+  stay. **Until it is ruled, G13 cannot take its last link** (the bundle driver's DA table against the
+  L1 driver's on `run-tests`, digest then 10-digit fingerprints): there is no committed L1 table to
+  read, so P1 can establish browser-against-driver parity on the bundle, but not bundle-against-L1.
+
+**G1(r)'s `g1a-reference.tsv`: not built (its content is not fixed unambiguously).** The row form
+(lane, step, class, fields, keys; reader `valReadReferenceRows`) and the source (run 44953187101's
+`failures.txt`, SHA-256 1b918062…) are fixed, and re-freezing tickets have committed rows for eight
+lanes (KIT-172: `lipid_canonical`, `metab_*`; KIT-180: `prot_tmt`, `prot_lfq`,
+`prot_lfq_fragpipe`; KIT-199: `prot_dia_limpa`). To be decided before it is built:
+1. the class of `prot_dia_limpa`'s reference steps from `da` on: r1.16 withdrew
+   `limpa_da_last_digits`, so by G1(r)'s text the step "fits no class" and G1(r) stops, while
+   KIT-199's committed rows class the same reference-run steps `declared_change (KIT-199)` (a
+   ticket's change class for a difference measured at 12d68ca7, before that ticket) and give two
+   rows per summary step (`declared_change (KIT-199)` and `integration_artifacts`). G1(r) adopts a
+   committed file only if it equals G1(r)'s own rows, so which class G1(r)'s own row carries decides
+   whether it stops;
+2. who builds G1(r)'s own rows for all ten lanes from the 69 blocks, and how: the harness has no
+   `failures.txt` reader, so either a reader is written and run on a runner, or the rows are read by
+   hand and recorded as such;
+3. `g1a-reference-source.txt` (the 69 GUI-entry blocks with the source's hash) is still to be
+   committed before the artifact expires (about 2026-12-21; the file is also kept in
+   `tickets/kit/evidence-run-44953187101/`).
+`val-g1a.R` refuses part (2) without the table (T-G1A-ENTRY), so part (2) cannot run until it exists.
+
+**Builder B's runs** (REPAIR line; rows in `runs.tsv`): RB0 0.91, RB1 1.13, SM0 0.01 (refused at
+plan: `requested_by` over 300 characters; VAL-54 instrument defect, 1 of 3), SM1 0.86 (SM0 re-sent
+unchanged but for that line). The merge run: below.
+
+**Not checked (builder B).** Part (2) of G1(a) on a real lane (needs `g1a-reference.tsv`); part (1)
+on the nine other lanes; replay on any route other than `metab_combined`; G13's last link (ruling
+(b)); the whole suite and covr (last, on the coordinator's word).
 
 ## Earlier resume record (state 2026-11-24, pre-release repair written, UNRUN)
 
