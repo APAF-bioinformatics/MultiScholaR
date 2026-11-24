@@ -1125,8 +1125,10 @@ runReplicate184 <- function(cell_label, r) {
     long$sig <- long$pvalue <= K$alpha
     long$bh <- long$padj <= K$alpha
     long$rho_key <- ifelse(is.na(long$rho), "", as.character(long$rho))
-    err <- stats::aggregate(cbind(sets = 1L, sig = as.integer(sig)) ~ view + kind + arm + test + class + rho_key, data = long,
-        FUN = sum)
+    # One row per set size (`nominal`) as well: the scorer sums the sizes before every declared estimand, and makes any
+    # redefinition of a class there (declaration audit K184-D03). Nothing drawn or tested depends on this line.
+    err <- stats::aggregate(cbind(sets = 1L, sig = as.integer(sig)) ~ view + kind + arm + test + class + rho_key + nominal,
+        data = long, FUN = sum)
     planted_rows <- long[long$class %in% c("Pup", "Pdown"), , drop = FALSE]
     power <- if (nrow(planted_rows)) stats::aggregate(cbind(sets = 1L, called = as.integer(bh),
         called_up = as.integer(bh & direction %in% "Up"), called_down = as.integer(bh & direction %in% "Down")) ~
@@ -1149,7 +1151,9 @@ runReplicate184 <- function(cell_label, r) {
         raw_cor_main_z1 = stats::cor(scores[[f_main]], sim$z1[match(scores$biological_sample, sim$samples)]),
         warnings = gsub("[\t\r\n]+", " ", paste(unique(unlist(lapply(fits, `[[`, "warnings"))), collapse = " | ")),
         stringsAsFactors = FALSE)), "orientation")
-    if (r == 1L) append(data.frame(cell = cell_label, package = c("ruv", "RUVIIIC", "limma", "MOFA2"),
+    # Every replicate writes the versions it ran with (declaration audit K184-R01: the counted run starts at replicate
+    # 6); the scorer keeps the unique rows, so more than one row for a package would show a mixed library. Output only.
+    append(data.frame(cell = cell_label, package = c("ruv", "RUVIIIC", "limma", "MOFA2"),
         version = vapply(c("ruv", "RUVIIIC", "limma", "MOFA2"), function(p) as.character(utils::packageVersion(p)),
             character(1)), stringsAsFactors = FALSE), "versions")
     data.frame(train_seconds = train_seconds, total_seconds = as.numeric(difftime(Sys.time(), started, units = "secs")))

@@ -13,14 +13,24 @@ name: "MOFA2 evidence k184 (integration enrichment, the removed RUV factors in t
 #                of KIT-183's 12-sample cell through simulate-k184.R (blocks off) and through KIT-183's own
 #                simulate-k183.R, whose tables must be identical (parity); one replicate with a declared invalid
 #                argument (7 biological samples); then the scorer
-#   counted      8 jobs of 250 replicates (cells A and B 800 each, D 400; 4 single-thread workers each) and the
-#                determinism job (replicates 1 to 10 of cell A again), then the scorer
-#   correction   as counted (S', only after an instrumentation failure of counted)
+#   blind        one job (L1b, the blind lifecycle extension; declaration audit K184-D05, re-check K184-R02): cell A
+#                replicates 1 to 5, then cell D replicates 1 to 5, dealt as in the counted run, no replicate starting
+#                later than 210 seconds after the simulate step starts; then cell A replicates 1 and 2 again (the
+#                determinism pass), the scorer and its scale test, all inside the job. ONLY the staging folder filled
+#                by name in the step "L1b" is uploaded; no score job runs; nothing is written to the step summary; no
+#                rate is printed. The scorer's switch K184_BLIND alone would not do this: it still writes its tables.
+#   counted      16 jobs of 125 replicates (S; cells A and B 800 each, replicates 6 to 805; cell D 400, replicates 6
+#                to 405; each job 100 replicates of A or B and then 25 of D; 4 single-thread workers at a time) and the
+#                determinism job (replicates 6 to 15 of cell A again), then the scorer in the score job. Replicates 1
+#                to 5 of every cell were seen in the lifecycle runs and enter nothing.
+#   S' (one correction of instrumentation) re-runs the affected jobs only (ticket section 11, revisions 1.5 and 1.7):
+#   its job list is written into this file when it is needed; there is no standing `correction` run.
 # Start: change .github/mofa-smoke/k184-params.json in a commit and push it to run-mofa-evidence-k184.
-#   run             lifecycle | counted | correction
+#   run             lifecycle | blind | counted
 #   package_commit  40-digit commit of MultiScholaR under test
 # Token rules (as the package lane): the token goes only to the library action; no cache of any kind; nothing built
-# with it and no install or build output is uploaded (only the result tables under RUNNER_TEMP/result, scanned first).
+# with it and no install or build output is uploaded (only the result tables under RUNNER_TEMP/result, or for a blind
+# run the staging folder RUNNER_TEMP/staged, scanned first). Artifacts are kept 90 days (re-check K184-R03).
 
 on:
   push:
@@ -53,23 +63,33 @@ jobs:
       - id: plan
         run: |
           p=.github/mofa-smoke/k184-params.json
-          jq -e '(.run | IN("lifecycle", "counted", "correction")) and
+          jq -e '(.run | IN("lifecycle", "blind", "counted")) and
             (.package_commit | type == "string" and test("^[0-9a-f]{40}$"))' "$p" > /dev/null \
             || { echo "::error::k184-params.json is not valid"; exit 1; }
           run="$(jq -r .run "$p")"
           if [ "$run" = lifecycle ]; then
             jobs='[{"id":"life","timeout":75,"segments":"ruv:A:1:5;ruv:B:1:5;ruv:D:1:5","extra":"parity ruvfail"}]'
+          elif [ "$run" = blind ]; then
+            jobs='[{"id":"lifeb","timeout":50,"segments":"ruv:A:1:5;ruv:D:1:5","extra":""}]'
           else
             jobs='[
-              {"id":"s01","timeout":85,"segments":"ruv:A:1:250","extra":""},
-              {"id":"s02","timeout":85,"segments":"ruv:A:251:500","extra":""},
-              {"id":"s03","timeout":85,"segments":"ruv:A:501:750","extra":""},
-              {"id":"s04","timeout":85,"segments":"ruv:A:751:800;ruv:B:1:200","extra":""},
-              {"id":"s05","timeout":85,"segments":"ruv:B:201:450","extra":""},
-              {"id":"s06","timeout":85,"segments":"ruv:B:451:700","extra":""},
-              {"id":"s07","timeout":85,"segments":"ruv:B:701:800;ruv:D:1:150","extra":""},
-              {"id":"s08","timeout":85,"segments":"ruv:D:151:400","extra":""},
-              {"id":"det","timeout":25,"segments":"ruv:A:1:10","extra":""}]'
+              {"id":"s01","timeout":85,"segments":"ruv:A:6:105;ruv:D:6:30","extra":""},
+              {"id":"s02","timeout":85,"segments":"ruv:A:106:205;ruv:D:31:55","extra":""},
+              {"id":"s03","timeout":85,"segments":"ruv:A:206:305;ruv:D:56:80","extra":""},
+              {"id":"s04","timeout":85,"segments":"ruv:A:306:405;ruv:D:81:105","extra":""},
+              {"id":"s05","timeout":85,"segments":"ruv:A:406:505;ruv:D:106:130","extra":""},
+              {"id":"s06","timeout":85,"segments":"ruv:A:506:605;ruv:D:131:155","extra":""},
+              {"id":"s07","timeout":85,"segments":"ruv:A:606:705;ruv:D:156:180","extra":""},
+              {"id":"s08","timeout":85,"segments":"ruv:A:706:805;ruv:D:181:205","extra":""},
+              {"id":"s09","timeout":85,"segments":"ruv:B:6:105;ruv:D:206:230","extra":""},
+              {"id":"s10","timeout":85,"segments":"ruv:B:106:205;ruv:D:231:255","extra":""},
+              {"id":"s11","timeout":85,"segments":"ruv:B:206:305;ruv:D:256:280","extra":""},
+              {"id":"s12","timeout":85,"segments":"ruv:B:306:405;ruv:D:281:305","extra":""},
+              {"id":"s13","timeout":85,"segments":"ruv:B:406:505;ruv:D:306:330","extra":""},
+              {"id":"s14","timeout":85,"segments":"ruv:B:506:605;ruv:D:331:355","extra":""},
+              {"id":"s15","timeout":85,"segments":"ruv:B:606:705;ruv:D:356:380","extra":""},
+              {"id":"s16","timeout":85,"segments":"ruv:B:706:805;ruv:D:381:405","extra":""},
+              {"id":"det","timeout":25,"segments":"ruv:A:6:15","extra":""}]'
           fi
           {
             echo "commit=$(jq -r .package_commit "$p")"
@@ -160,11 +180,15 @@ jobs:
           SEGMENTS: ${{ matrix.job.segments }}
           EXTRA: ${{ matrix.job.extra }}
           TIMEOUT_MIN: ${{ matrix.job.timeout }}
+          RUN_KIND: ${{ needs.plan.outputs.run }}
         run: |
           set -o pipefail
           export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
           # No replicate starts after this time (6 minutes before the job's limit, so the results are uploaded).
           export K184_DEADLINE=$((JOB_STARTED + (TIMEOUT_MIN - 6) * 60))
+          # L1b only: 210 seconds after this step starts, whatever the set-up took, so that the last cell D replicates
+          # are recorded as not started while every cell A replicate has started (re-check K184-R02).
+          if [ "$RUN_KIND" = blind ]; then export K184_DEADLINE=$(( $(date +%s) + 210 )); fi
           export K183_DEADLINE="$K184_DEADLINE"
           sim="$GITHUB_WORKSPACE/docs/qa/workflow-execution/kit/kit-184/simulate-k184.R"
           sim183="$GITHUB_WORKSPACE/docs/qa/workflow-execution/kit/kit-183/simulate-k183.R"
@@ -225,29 +249,147 @@ jobs:
           cat "$RES"/w*/status.tsv 2>/dev/null | awk -F'\t' 'NR > 1 && $1 != "cell" { s[$3]++ } END { for (k in s) print k, s[k] }' \
             | tee -a "$RES/plan.txt"
 
+      - name: "L1b: the determinism pass, the scorer, the scale test; the staging folder filled by name"
+        if: ${{ needs.plan.outputs.run == 'blind' }}
+        run: |
+          set -o pipefail
+          export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+          kit="$GITHUB_WORKSPACE/docs/qa/workflow-execution/kit/kit-184"
+          sim="$kit/simulate-k184.R"
+          scorer="$kit/score-k184.R"
+          rscript="/opt/R/$R_VERSION/bin/Rscript"
+          JOBS="$RUNNER_TEMP/jobs"; SCORE="$RUNNER_TEMP/score"; SCALE="$RUNNER_TEMP/scale"; STAGED="$RUNNER_TEMP/staged"
+          mkdir -p "$JOBS/k184-det" "$SCORE" "$SCALE/k184-scale" "$STAGED"
+          ln -s "$RES" "$JOBS/k184-lifeb"
+          tables="caught counts errors exact factors feature floor formed identity orientation power status versions"
+          # Only R's error message of a failed scorer is printed (no result is ever written to its standard error).
+          errorLines() { grep -A 4 '^Error' "$1" | head -n 12 || true; }
+
+          # (2) The determinism pass: cell A replicates 1 and 2 again, no deadline, into a folder named k184-det.
+          for r in 1 2; do
+            ( "$BUNDLE/bin/Rscript" --vanilla "$sim" "$JOBS/k184-det/w$r" ruv A "$r" "$r" > "$JOBS/k184-det/w$r.log" 2>&1
+              echo "determinism worker $r (ruv:A:$r:$r) exit $?" >> "$RES/plan.txt" ) &
+          done
+          wait
+
+          # (3) The scorer, blind: its output folder is never uploaded and its summary is not printed.
+          score_status=0
+          K184_SCORE=ruv K184_BLIND=1 K184_DETERMINISM_SELFTEST=1 K184_L1_REFERENCE="$kit/l1/error-rates.tsv" \
+            "$rscript" --vanilla "$scorer" "$JOBS" "$SCORE" > "$RUNNER_TEMP/score.log" 2>&1 || score_status=$?
+          echo "scorer exit $score_status" | tee -a "$RES/plan.txt"
+          [ "$score_status" -eq 0 ] || errorLines "$RUNNER_TEMP/score.log"
+
+          # (4) The scale test: the counted workers' tables copied 250 times with the replicate number shifted by 10
+          # per copy (one worker folder per copy, as the counted run has many), the determinism folder as it is; scored
+          # blind under a limit of 25 minutes; its output deleted; kept: wall seconds, peak resident memory, exit status.
+          copies=250
+          for table in $tables; do
+            awk 'FNR == 1 && NR != 1 { next } { print }' "$RES"/w*/"$table".tsv > "$RUNNER_TEMP/one-$table.tsv" 2> /dev/null || true
+          done
+          for ((j = 0; j < copies; j++)); do
+            d="$SCALE/k184-scale/w$j"
+            mkdir -p "$d"
+            for table in $tables; do
+              f="$RUNNER_TEMP/one-$table.tsv"
+              [ -s "$f" ] || continue
+              if [ "$table" = versions ]; then
+                cp "$f" "$d/$table.tsv"
+              else
+                awk -F'\t' -v OFS='\t' -v add="$((10 * j))" 'NR > 1 { $2 += add } { print }' "$f" > "$d/$table.tsv"
+              fi
+            done
+          done
+          mkdir -p "$SCALE/k184-det"
+          for r in 1 2; do [ -d "$JOBS/k184-det/w$r" ] && cp -r "$JOBS/k184-det/w$r" "$SCALE/k184-det/"; done
+          scale_replicates=$( { cat "$SCALE"/k184-scale/w*/status.tsv 2> /dev/null || true; } | awk -F'\t' '$3 == "completed"' | wc -l)
+          scale_rows=$( { cat "$SCALE"/k184-scale/w*/errors.tsv 2> /dev/null || true; } | wc -l)
+          scale_status=0
+          scale_started=$(date +%s)
+          if [ -x /usr/bin/time ]; then
+            /usr/bin/time -f '%M' -o "$RUNNER_TEMP/scale-peak.txt" timeout 25m env K184_SCORE=ruv K184_BLIND=1 \
+              "$rscript" --vanilla "$scorer" "$SCALE" "$RUNNER_TEMP/scale-out" > "$RUNNER_TEMP/scale.log" 2>&1 || scale_status=$?
+            scale_peak="$(tail -n 1 "$RUNNER_TEMP/scale-peak.txt")"
+          else
+            # No GNU time on the image: the same figure (the largest resident set of a waited-for child) from Python.
+            python3 -c 'import resource, subprocess, sys; code = subprocess.call(sys.argv[2:]); open(sys.argv[1], "w").write(str(resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss) + "\n"); sys.exit(code)' \
+              "$RUNNER_TEMP/scale-peak.txt" timeout 25m env K184_SCORE=ruv K184_BLIND=1 \
+              "$rscript" --vanilla "$scorer" "$SCALE" "$RUNNER_TEMP/scale-out" > "$RUNNER_TEMP/scale.log" 2>&1 || scale_status=$?
+            scale_peak="$(tail -n 1 "$RUNNER_TEMP/scale-peak.txt" 2> /dev/null || echo "not measured")"
+          fi
+          scale_seconds=$(( $(date +%s) - scale_started ))
+          rm -rf "$RUNNER_TEMP/scale-out"
+          echo "scale test: $copies copies; completed replicates $scale_replicates; error-table lines $scale_rows; wall seconds $scale_seconds; peak resident KiB $scale_peak; exit status $scale_status (124 = stopped at 25 minutes)" \
+            | tee "$STAGED/scale-test.txt"
+          [ "$scale_status" -eq 0 ] || errorLines "$RUNNER_TEMP/scale.log"
+
+          # (5) The staging folder, filled by name. Nothing else of this job is uploaded.
+          cp "$RES/runner.txt" "$RES/script-sha256.txt" "$STAGED/"
+          awk 'FNR == 1 && NR != 1 { next } { print }' "$RES"/w*/status.tsv > "$STAGED/status.tsv"
+          awk 'FNR == 1 && NR != 1 { next } { print }' "$RES"/w*/formed.tsv > "$STAGED/formed.tsv"
+          for name in completion not-completed pools versions determinism determinism-selftest l1-reference-check; do
+            if [ -f "$SCORE/$name.tsv" ]; then cp "$SCORE/$name.tsv" "$STAGED/"; fi
+          done
+          for f in "$RES"/w*.log; do cp "$f" "$STAGED/"; done
+          for f in "$JOBS"/k184-det/w*.log; do cp "$f" "$STAGED/det-$(basename "$f")"; done
+          {
+            printf 'table\trows\trows_by_cell\tcolumns\tsha256\n'
+            for f in "$RES"/w*/*.tsv "$JOBS"/k184-det/w*/*.tsv "$SCORE"/*.tsv; do
+              [ -f "$f" ] || continue
+              case "$f" in
+                "$SCORE"/*) name="score/$(basename "$f")" ;;
+                "$JOBS"/k184-det/*) name="det/$(basename "$(dirname "$f")")/$(basename "$f")" ;;
+                *) name="$(basename "$(dirname "$f")")/$(basename "$f")" ;;
+              esac
+              rows=$(( $(wc -l < "$f") - 1 ))
+              by_cell="$(awk -F'\t' 'NR == 1 { if ($1 != "cell") exit; next } { n[$1]++ } END { s = ""; for (k in n) s = s (s == "" ? "" : ";") k "=" n[k]; print s }' "$f")"
+              printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$rows" "$by_cell" "$(head -n 1 "$f" | tr '\t' ',')" "$(sha256sum "$f" | cut -d' ' -f1)"
+            done
+          } > "$STAGED/tables.tsv"
+          echo "L1b steps done after $(( $(date +%s) - JOB_STARTED )) s" >> "$RES/plan.txt"
+          cp "$RES/plan.txt" "$STAGED/"
+          echo "staged files:"
+          ls -1 "$STAGED"
+          [ "$score_status" -eq 0 ] && [ "$scale_status" -eq 0 ]
+
       - name: Nothing token-like in the upload; files naming the internal packages withheld
         if: ${{ !cancelled() }}
+        env:
+          RUN_KIND: ${{ needs.plan.outputs.run }}
         run: |
-          if grep -rlE 'ghp_|github_pat_|gho_|Bearer ' "$RES"; then
+          target="$RES"
+          if [ "$RUN_KIND" = blind ]; then target="$RUNNER_TEMP/staged"; mkdir -p "$target"; fi
+          if grep -rlE 'ghp_|github_pat_|gho_|Bearer ' "$target"; then
             echo "::error::token-like text in the result"; exit 1
           fi
-          grep -rlE 'fast_duckdb|fast_limpa_dpc|fastduckdb|fastlimpadpc' "$RES" | while read -r f; do
-            rm -f "$f"; echo "withheld: ${f#"$RES"/}" | tee -a "$RES/withheld.txt"
+          grep -rlE 'fast_duckdb|fast_limpa_dpc|fastduckdb|fastlimpadpc' "$target" | while read -r f; do
+            rm -f "$f"; echo "withheld: ${f#"$target"/}" | tee -a "$target/withheld.txt"
           done
-          du -sh "$RES"
+          du -sh "$target"
 
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.plan.outputs.run != 'blind' }}
         with:
           name: k184-${{ matrix.job.id }}
           path: ${{ runner.temp }}/result
-          retention-days: 30
+          retention-days: 90
+
+      - name: "L1b: only the staging folder leaves the job"
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && needs.plan.outputs.run == 'blind' }}
+        with:
+          name: k184-${{ matrix.job.id }}-staged
+          path: ${{ runner.temp }}/staged
+          retention-days: 90
 
   score:
     name: Score once
     needs: [plan, evidence]
-    if: ${{ !cancelled() }}
+    # Not for a blind run: its scorer ran inside the job and nothing of its result may leave it.
+    if: ${{ !cancelled() && needs.plan.outputs.run != 'blind' }}
     runs-on: ubuntu-22.04
+    # PLACEHOLDER (re-check K184-R03): three times the scale test's measured time, at least 30 and at most 90 minutes;
+    # set from L1b before the declaration is frozen.
+    timeout-minutes: 90
     steps:
       - name: This lane (R's installer)
         uses: actions/checkout@v4
@@ -280,4 +422,4 @@ jobs:
         with:
           name: score
           path: ${{ runner.temp }}/score
-          retention-days: 30
+          retention-days: 90
