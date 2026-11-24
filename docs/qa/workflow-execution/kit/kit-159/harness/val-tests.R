@@ -83,7 +83,7 @@ runTests <- function(test_path, package, tsv_name, failures_name) {
         bad <- Filter(function(e) inherits(e, c("expectation_failure", "expectation_error")),
                       r$results)
         if (length(bad) == 0L) next
-        first <- substr(conditionMessage(bad[[1L]]), 1L, 600L)
+        first <- substr(conditionMessage(bad[[1L]]), 1L, 4000L)
         msgs <- c(msgs, sprintf("== %s :: %s (%d not passed)\n%s\n", r$file, r$test,
                                 length(bad), first))
     }

@@ -98,6 +98,12 @@ scoreFolder <- function(root, label, commit, units, arms = c("a1", "a2")) {
                                           harness = list(tree = strrep("c", 40)),
                                           declaration = list(commit = strrep("d", 40)))),
                          file.path(d, "provenance.json"), auto_unbox = TRUE)
+    # 5.7: every run folder holds comparisons.tsv (phase score reads its within-run rows, I06);
+    # R1 showed the fixture without it (test mechanics, VAL-54)
+    cmp <- as.data.frame(stats::setNames(rep(list(character()), length(
+        msrval:::EVIDENCE_COLUMNS[["comparisons.tsv"]])), msrval:::EVIDENCE_COLUMNS[["comparisons.tsv"]]))
+    utils::write.table(cmp, file.path(d, "comparisons.tsv"), sep = "\t", quote = FALSE,
+                       row.names = FALSE)
     valWriteOutputsSha(d)
     d
 }
