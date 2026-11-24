@@ -1,0 +1,751 @@
+journey	field	base	head	equal	criterion
+L64|deciding|N0|none|401|NO	da_sha	5ed155004be9651c49c68a6ea97f6f81bf644f879bf5121a586ade9333071ff5	5ed155004be9651c49c68a6ea97f6f81bf644f879bf5121a586ade9333071ff5	TRUE	A2 (ii): identical
+L64|deciding|N0|none|401|NO	long_sha	24fc39a8779340fbe546dae291f18ddf57d06b908fa1cf121f5801bf200efefd	24fc39a8779340fbe546dae291f18ddf57d06b908fa1cf121f5801bf200efefd	TRUE	A2 (ii): identical
+L64|deciding|N0|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|none|401|OR	da_sha	e344efafee5727b7d2e280cdcafb3ca1c4df99cad015d25fd9e76342996d233c	e344efafee5727b7d2e280cdcafb3ca1c4df99cad015d25fd9e76342996d233c	TRUE	A2 (ii): identical
+L64|deciding|N0|none|401|OR	long_sha	ba822fe2a179afe3f5544ff6c402de4857ad4cb594bbba7841db3bfa4a4a6626	ba822fe2a179afe3f5544ff6c402de4857ad4cb594bbba7841db3bfa4a4a6626	TRUE	A2 (ii): identical
+L64|deciding|N0|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd5|401|NO	da_sha	00516e6848a842183c994c218f3e9ecdddba05d505bb93b8a013f0759c430236	00516e6848a842183c994c218f3e9ecdddba05d505bb93b8a013f0759c430236	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|401|NO	long_sha	8f5a22acb8bb223b34d6be0f87e21f873f240f5f5efd0a4fa2c9ce86d3c46c45	8f5a22acb8bb223b34d6be0f87e21f873f240f5f5efd0a4fa2c9ce86d3c46c45	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd5|401|OR	da_sha	0e7bfeb485871c4a62a64df669ce87ca094a72d8f1321d98621b39a2641bf044	0e7bfeb485871c4a62a64df669ce87ca094a72d8f1321d98621b39a2641bf044	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|401|OR	long_sha	f2a0b586348b2f5cffa15c12b382768a5af08eaf9d71dada7b6cf21cd182fe88	f2a0b586348b2f5cffa15c12b382768a5af08eaf9d71dada7b6cf21cd182fe88	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd20|401|NO	da_sha	781186fc89e713521f0dfa2aa9fc97aafbb3fe00286a56ab7deabc8be0d868ae	781186fc89e713521f0dfa2aa9fc97aafbb3fe00286a56ab7deabc8be0d868ae	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|401|NO	long_sha	b411e2e52280df29fda87c46a9fea63c3f926521352b26eb199b459a56845165	b411e2e52280df29fda87c46a9fea63c3f926521352b26eb199b459a56845165	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd20|401|OR	da_sha	e0713ec5ef6fa3b5c6d6f4719a54a7ef41d01e8d0d154d835a052f0f3f43af56	e0713ec5ef6fa3b5c6d6f4719a54a7ef41d01e8d0d154d835a052f0f3f43af56	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|401|OR	long_sha	193d1dccc87beb19cf67266372b416321f12adccfc8ab6fa1a1ccdf244815b5c	193d1dccc87beb19cf67266372b416321f12adccfc8ab6fa1a1ccdf244815b5c	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|none|401|NO	da_sha	9b4db391cd1dbf88d39491f905805fe4eb82b7b1fef38da4a1e1f573fa5c65dd	9b4db391cd1dbf88d39491f905805fe4eb82b7b1fef38da4a1e1f573fa5c65dd	TRUE	A2 (ii): identical
+L64|deciding|N1|none|401|NO	long_sha	cbcbedc1aefef60bfe3bee6973d79f97361829788e78ecf3750240cc3d1ff448	cbcbedc1aefef60bfe3bee6973d79f97361829788e78ecf3750240cc3d1ff448	TRUE	A2 (ii): identical
+L64|deciding|N1|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|none|401|OR	da_sha	85f5efdaabbcdc7a9718ba72dbe1de067150553ce694128ab67ac32f885231b6	85f5efdaabbcdc7a9718ba72dbe1de067150553ce694128ab67ac32f885231b6	TRUE	A2 (ii): identical
+L64|deciding|N1|none|401|OR	long_sha	ada567f8443088b0f3e94e57490be2d178487c1e34812caa0e7621522f81ead3	ada567f8443088b0f3e94e57490be2d178487c1e34812caa0e7621522f81ead3	TRUE	A2 (ii): identical
+L64|deciding|N1|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd5|401|NO	da_sha	77f28447ee1222918f70fa0e7965714aeed176b890ea8731a7ddf37d4afe6ac3	77f28447ee1222918f70fa0e7965714aeed176b890ea8731a7ddf37d4afe6ac3	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|401|NO	long_sha	704723591602f8e2c2bf5c08411f9eb2bd450aed2484c6c145f69ea684c45234	704723591602f8e2c2bf5c08411f9eb2bd450aed2484c6c145f69ea684c45234	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd5|401|OR	da_sha	cb2d96e2ac7d0d51341ce0a6b061ff80856218d95638303dd54519eed296adfc	cb2d96e2ac7d0d51341ce0a6b061ff80856218d95638303dd54519eed296adfc	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|401|OR	long_sha	348030f1160e7d891b2ac40dd6799d7e030bd16d62483ec30b4c1c789e28c174	348030f1160e7d891b2ac40dd6799d7e030bd16d62483ec30b4c1c789e28c174	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd20|401|NO	da_sha	a68ccdeb53d5a63856bd28bb42e70d5a178f8e17e667b787158275a5397871db	a68ccdeb53d5a63856bd28bb42e70d5a178f8e17e667b787158275a5397871db	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|401|NO	long_sha	6f2139bd15eba818bda90177b67139671c29ed08eaf8d6ba49297998d913cc4e	6f2139bd15eba818bda90177b67139671c29ed08eaf8d6ba49297998d913cc4e	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd20|401|OR	da_sha	48c4faa6f269ec5d7e68cc667100315d72bae0a5fe99846e176584924db0c48a	48c4faa6f269ec5d7e68cc667100315d72bae0a5fe99846e176584924db0c48a	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|401|OR	long_sha	d244cece5dfc9d0fba7c0872f5192f79470a6793918e4f71a1e134f0ee161a9c	d244cece5dfc9d0fba7c0872f5192f79470a6793918e4f71a1e134f0ee161a9c	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|none|401|NO	da_sha	aac273ee7e3bb67ce0847c7dffe868e1ec9df186f012aa7189ffd607a18be2d7	aac273ee7e3bb67ce0847c7dffe868e1ec9df186f012aa7189ffd607a18be2d7	TRUE	A2 (ii): identical
+L64|deciding|E0|none|401|NO	long_sha	04e6543461aad7fca5d2fb3c11caa7d2d64f232fc47ea65887af9c89489ff2bd	04e6543461aad7fca5d2fb3c11caa7d2d64f232fc47ea65887af9c89489ff2bd	TRUE	A2 (ii): identical
+L64|deciding|E0|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|none|401|OR	da_sha	4105dfbaecb87050dab8ccce77f8beda6135bfe459e463cdb924f049b3f4b058	4105dfbaecb87050dab8ccce77f8beda6135bfe459e463cdb924f049b3f4b058	TRUE	A2 (ii): identical
+L64|deciding|E0|none|401|OR	long_sha	33cdfe90f63716c8cd1452947ba28b4f4d105fa36dcb6f8584d3622d89713a8a	33cdfe90f63716c8cd1452947ba28b4f4d105fa36dcb6f8584d3622d89713a8a	TRUE	A2 (ii): identical
+L64|deciding|E0|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd5|401|NO	da_sha	f4de1bd8148c22b99e9609c870c39315f755afd93b2a6125bdd22d1b8b173c28	f4de1bd8148c22b99e9609c870c39315f755afd93b2a6125bdd22d1b8b173c28	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|401|NO	long_sha	ca17b3ca4b2698debbef8b1ccdf4716b91efdc8f7008768da967725ca6814d49	ca17b3ca4b2698debbef8b1ccdf4716b91efdc8f7008768da967725ca6814d49	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd5|401|OR	da_sha	91cc23c77bca3bb28c17f65e17b2a682eecc0a635123d0d9aec4cbdb9dc81737	91cc23c77bca3bb28c17f65e17b2a682eecc0a635123d0d9aec4cbdb9dc81737	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|401|OR	long_sha	b7e7b291ec51d3e57897f0451134c50c50042825fd4ffa65fe84176feda86951	b7e7b291ec51d3e57897f0451134c50c50042825fd4ffa65fe84176feda86951	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd20|401|NO	da_sha	776992d3d643a57dc5cba375421ef47fcf520a466e42df024cf5bbf9587105b7	776992d3d643a57dc5cba375421ef47fcf520a466e42df024cf5bbf9587105b7	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|401|NO	long_sha	dfa52b659889b3a9c0cb67563e2c5710990401c3e49b1c56e7ca37c550f374b3	dfa52b659889b3a9c0cb67563e2c5710990401c3e49b1c56e7ca37c550f374b3	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd20|401|OR	da_sha	190e4f4f896600c0163b5165df11244b55f8f6ab07cfcd8cf2f453ad811600f1	190e4f4f896600c0163b5165df11244b55f8f6ab07cfcd8cf2f453ad811600f1	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|401|OR	long_sha	a127d4f989c4f48b6a0d8d38ec966189ce489ad44bb5a9a730edfa428c4ae8e5	a127d4f989c4f48b6a0d8d38ec966189ce489ad44bb5a9a730edfa428c4ae8e5	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|none|401|NO	da_sha	f70381be9e550860a94f4edfd3ba89fb24e7a874edfdb7cfff73cacf4cd81f0a	f70381be9e550860a94f4edfd3ba89fb24e7a874edfdb7cfff73cacf4cd81f0a	TRUE	A2 (ii): identical
+L64|deciding|E1|none|401|NO	long_sha	b46ad0a69094792b2a0df0922effb41e588665ca20c296c1bb19ab93a47cf2f7	b46ad0a69094792b2a0df0922effb41e588665ca20c296c1bb19ab93a47cf2f7	TRUE	A2 (ii): identical
+L64|deciding|E1|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|none|401|OR	da_sha	fa1ad163b7d39cbafc3d50f7e4c0ba0cb07033d416c7ca9346f68366832db964	fa1ad163b7d39cbafc3d50f7e4c0ba0cb07033d416c7ca9346f68366832db964	TRUE	A2 (ii): identical
+L64|deciding|E1|none|401|OR	long_sha	d6fe4a350fc58e6ee0f76ac0f294fd391df78dc91c52edfa2a084dc1f08a5a74	d6fe4a350fc58e6ee0f76ac0f294fd391df78dc91c52edfa2a084dc1f08a5a74	TRUE	A2 (ii): identical
+L64|deciding|E1|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd5|401|NO	da_sha	83a3f5b7881a79767362ac607d7c272b2beb5a0e039c37b26b5a5389bbc317b1	83a3f5b7881a79767362ac607d7c272b2beb5a0e039c37b26b5a5389bbc317b1	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|401|NO	long_sha	c2baf5651702ad656cb90a4ae468703c568f52c7447557033d8fa3fc0f4b7f67	c2baf5651702ad656cb90a4ae468703c568f52c7447557033d8fa3fc0f4b7f67	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd5|401|OR	da_sha	31cedf009eed3aa7c0dbc9f2d03afd4fd8ea52a2a4611333d87518b143ce58e0	31cedf009eed3aa7c0dbc9f2d03afd4fd8ea52a2a4611333d87518b143ce58e0	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|401|OR	long_sha	2c79552e89033629afc7f7ab9acadcbaeb0ebb31881c157d8bb94c1eaeebc111	2c79552e89033629afc7f7ab9acadcbaeb0ebb31881c157d8bb94c1eaeebc111	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd20|401|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|deciding|E1|vd20|401|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|401|NO LCMS_Neg	untested_rows	F0077	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|401|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|401|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd20|401|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|deciding|E1|vd20|401|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|401|OR LCMS_Neg	untested_rows	F0077	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|401|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|401|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|none|402|NO	da_sha	51f16246b0538f0f7267bab9f9fd655f22ba309c6e6a6f2b4c3f9c09fd3907b2	51f16246b0538f0f7267bab9f9fd655f22ba309c6e6a6f2b4c3f9c09fd3907b2	TRUE	A2 (ii): identical
+L64|deciding|N0|none|402|NO	long_sha	a4ecad3580058525849e02f440f65ad6c45aa9bd702a85596b2a9a13de36ede4	a4ecad3580058525849e02f440f65ad6c45aa9bd702a85596b2a9a13de36ede4	TRUE	A2 (ii): identical
+L64|deciding|N0|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|none|402|OR	da_sha	e9e2dc70d8d94ec864d0030da7574e06a64c205b83647941a632b772d5396b48	e9e2dc70d8d94ec864d0030da7574e06a64c205b83647941a632b772d5396b48	TRUE	A2 (ii): identical
+L64|deciding|N0|none|402|OR	long_sha	44a25fb9b4a4a10be4f01fe879138bb55999fb84c625580af105749843512ed7	44a25fb9b4a4a10be4f01fe879138bb55999fb84c625580af105749843512ed7	TRUE	A2 (ii): identical
+L64|deciding|N0|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd5|402|NO	da_sha	fff6ce5dbbdfbceb5cf72722e013c809bc6fed6025eb3a99c70b42ba306f334c	fff6ce5dbbdfbceb5cf72722e013c809bc6fed6025eb3a99c70b42ba306f334c	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|402|NO	long_sha	b2df188bdf688ede37c8b4fe2fdc9f5b91e0c5123633d42ac4d80bb97c563538	b2df188bdf688ede37c8b4fe2fdc9f5b91e0c5123633d42ac4d80bb97c563538	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd5|402|OR	da_sha	4356fa90ed034b4db4058bbfc0f5f2a4da4665f18ecc5454771e3cc2ad04ff5c	4356fa90ed034b4db4058bbfc0f5f2a4da4665f18ecc5454771e3cc2ad04ff5c	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|402|OR	long_sha	e0a2d02c04a632be51d3215987173033a5fa3632ca749baf1dedb332048106cb	e0a2d02c04a632be51d3215987173033a5fa3632ca749baf1dedb332048106cb	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd20|402|NO	da_sha	d77c1969b055c4e67f40e926c5ed5d9a38fb5e7e6b2ec875721a5cd3dd7a82f2	d77c1969b055c4e67f40e926c5ed5d9a38fb5e7e6b2ec875721a5cd3dd7a82f2	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|402|NO	long_sha	45b3f58106263d9f08a428ce211eb8b434bb4ffa2af025c879523d8364a70bde	45b3f58106263d9f08a428ce211eb8b434bb4ffa2af025c879523d8364a70bde	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd20|402|OR	da_sha	8d7f7d40aeb139cb5260191662a753abb5f1cf9548bf7bc7c779ae235471f78a	8d7f7d40aeb139cb5260191662a753abb5f1cf9548bf7bc7c779ae235471f78a	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|402|OR	long_sha	abb45345ca049769d29a0682a89e5606a3e7b5b6980a65f9365edcabe2d4449f	abb45345ca049769d29a0682a89e5606a3e7b5b6980a65f9365edcabe2d4449f	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|none|402|NO	da_sha	206f4c9e818711fe5638b52a7c2cd4f267dc07c8b7c20c363739650d20e98abc	206f4c9e818711fe5638b52a7c2cd4f267dc07c8b7c20c363739650d20e98abc	TRUE	A2 (ii): identical
+L64|deciding|N1|none|402|NO	long_sha	18293382474e8d8dd42c44a7da655a9809ed1831e4ab0de9bfbd715370ae3f60	18293382474e8d8dd42c44a7da655a9809ed1831e4ab0de9bfbd715370ae3f60	TRUE	A2 (ii): identical
+L64|deciding|N1|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|none|402|OR	da_sha	dcae75086d2bacb84d295de8603c1a18c61f70926d986f3cbd4f57b6663bcfc4	dcae75086d2bacb84d295de8603c1a18c61f70926d986f3cbd4f57b6663bcfc4	TRUE	A2 (ii): identical
+L64|deciding|N1|none|402|OR	long_sha	b1c4bc5cf3be06f94314a1233109815d7e343566aa50eb53079a9a47e2076888	b1c4bc5cf3be06f94314a1233109815d7e343566aa50eb53079a9a47e2076888	TRUE	A2 (ii): identical
+L64|deciding|N1|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd5|402|NO	da_sha	d41b5efadfddc42c53c097750c189fd749931bbb1cd672a9b2552a3c4cf880ed	d41b5efadfddc42c53c097750c189fd749931bbb1cd672a9b2552a3c4cf880ed	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|402|NO	long_sha	67981760b2a07ee15d9e17f4675a2fac6c0ace06e14646440ee230dc79bafed4	67981760b2a07ee15d9e17f4675a2fac6c0ace06e14646440ee230dc79bafed4	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd5|402|OR	da_sha	ac7a2e327c64c3a69993bf85ba13b3700afed1e84daaf6694b743a07b96caa49	ac7a2e327c64c3a69993bf85ba13b3700afed1e84daaf6694b743a07b96caa49	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|402|OR	long_sha	c4dd46b5676c89c36b4e96317dfda4ab386ae8916aff541d14b8653819e304f3	c4dd46b5676c89c36b4e96317dfda4ab386ae8916aff541d14b8653819e304f3	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd20|402|NO	da_sha	be1d47065b3c02c697897865968753510d5cb85488f877486c8d7cd681f382db	be1d47065b3c02c697897865968753510d5cb85488f877486c8d7cd681f382db	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|402|NO	long_sha	80163a27db2863194deae912659ba5d10c2f9e937f939621497c1d6d89960652	80163a27db2863194deae912659ba5d10c2f9e937f939621497c1d6d89960652	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd20|402|OR	da_sha	582e7dc95d60c61110cd681587fdf2a9e7f706510568e0d18a514201ec8751ad	582e7dc95d60c61110cd681587fdf2a9e7f706510568e0d18a514201ec8751ad	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|402|OR	long_sha	80c5f63f195e9b2b09b8185d6b613918e56b65ccf3aed752a953ffd21185eefb	80c5f63f195e9b2b09b8185d6b613918e56b65ccf3aed752a953ffd21185eefb	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|none|402|NO	da_sha	31206c004f6c1554e90e56c418a487fe44e59fcf8f03af8326889fa6bd6a7aab	31206c004f6c1554e90e56c418a487fe44e59fcf8f03af8326889fa6bd6a7aab	TRUE	A2 (ii): identical
+L64|deciding|E0|none|402|NO	long_sha	f38f646d6fb727d107eaa87d58aa89ffd98ff47188b8a367cda547bafa09c7d8	f38f646d6fb727d107eaa87d58aa89ffd98ff47188b8a367cda547bafa09c7d8	TRUE	A2 (ii): identical
+L64|deciding|E0|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|none|402|OR	da_sha	5c493e7d4d4966c2295412ec590f6c044476bd0c6f75f3df7d2b0dbfa711a0a5	5c493e7d4d4966c2295412ec590f6c044476bd0c6f75f3df7d2b0dbfa711a0a5	TRUE	A2 (ii): identical
+L64|deciding|E0|none|402|OR	long_sha	d3796f175062878c40ced955e0f5e8419c401f84e252b5a5f0d938ff65e34e25	d3796f175062878c40ced955e0f5e8419c401f84e252b5a5f0d938ff65e34e25	TRUE	A2 (ii): identical
+L64|deciding|E0|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd5|402|NO	da_sha	f4bb818c9f2a57a2de1cea67f1fb7aa7886d08a0805e26b5e300770a5c37b707	f4bb818c9f2a57a2de1cea67f1fb7aa7886d08a0805e26b5e300770a5c37b707	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|402|NO	long_sha	d1583b8a0cadba1a311080ada50df8e9160caa445c8c0221bad71566e10af8ad	d1583b8a0cadba1a311080ada50df8e9160caa445c8c0221bad71566e10af8ad	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd5|402|OR	da_sha	e563beb5ce910c63f6a17a76c97b616da3c8161f1f3499943408157bd7534796	e563beb5ce910c63f6a17a76c97b616da3c8161f1f3499943408157bd7534796	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|402|OR	long_sha	40869d0df24a6defe2877a9347c89f097fd4dc5705e179c98a01319b98d3b2fe	40869d0df24a6defe2877a9347c89f097fd4dc5705e179c98a01319b98d3b2fe	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd20|402|NO	da_sha	27fcb9802d847d73984c58d929487b8103d6cf26c26930b7fafa96118dc7b2c1	27fcb9802d847d73984c58d929487b8103d6cf26c26930b7fafa96118dc7b2c1	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|402|NO	long_sha	b225e80a3acab647b4ed7d30dd361a0ca929aa3c258f9d5ced64d979146502a3	b225e80a3acab647b4ed7d30dd361a0ca929aa3c258f9d5ced64d979146502a3	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd20|402|OR	da_sha	ba991dac85d586635044a0ce6dd7567e82b9ee7241b170e889884753c59fb50a	ba991dac85d586635044a0ce6dd7567e82b9ee7241b170e889884753c59fb50a	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|402|OR	long_sha	b39d3af28e5c909ecd11c8abf9ff8e1802c62879bc99246712af1d14881701c3	b39d3af28e5c909ecd11c8abf9ff8e1802c62879bc99246712af1d14881701c3	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|none|402|NO	da_sha	e2f10ea2e123d4c68b243afb6746ba4091c65d6909cb1e33f3ced2daaf800b55	e2f10ea2e123d4c68b243afb6746ba4091c65d6909cb1e33f3ced2daaf800b55	TRUE	A2 (ii): identical
+L64|deciding|E1|none|402|NO	long_sha	46452f1306f23355b06a5bd3a27898c9da6fb2e5f9cf2250018a8671a4186cc0	46452f1306f23355b06a5bd3a27898c9da6fb2e5f9cf2250018a8671a4186cc0	TRUE	A2 (ii): identical
+L64|deciding|E1|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|none|402|OR	da_sha	56956e1ddd1ea019c68ef822ee648932c499df681c2cfdc7c9f0bd10d64e7af9	56956e1ddd1ea019c68ef822ee648932c499df681c2cfdc7c9f0bd10d64e7af9	TRUE	A2 (ii): identical
+L64|deciding|E1|none|402|OR	long_sha	5c8c54a0acfeb8457170cf2f1577ccd606ed98f9205e2d588dc63bf34953dfe7	5c8c54a0acfeb8457170cf2f1577ccd606ed98f9205e2d588dc63bf34953dfe7	TRUE	A2 (ii): identical
+L64|deciding|E1|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd5|402|NO	da_sha	14d963bd4c69d7108cd6e8b07405c873c142f8a67c9ab474ab3f094d931a2329	14d963bd4c69d7108cd6e8b07405c873c142f8a67c9ab474ab3f094d931a2329	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|402|NO	long_sha	8f4e087ebbd9c321efc5e4149d4bd7472e159f0f08e183364e1798d34429129f	8f4e087ebbd9c321efc5e4149d4bd7472e159f0f08e183364e1798d34429129f	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd5|402|OR	da_sha	4b8461d12eaa60544753013fef6b64d1cfdb48bb00fe78d83f9c1bb34c4bf548	4b8461d12eaa60544753013fef6b64d1cfdb48bb00fe78d83f9c1bb34c4bf548	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|402|OR	long_sha	c5b6d1cd6487a166325c3d8590ba16fbe97c3c3c8d766997a1c4db6d6c399fb0	c5b6d1cd6487a166325c3d8590ba16fbe97c3c3c8d766997a1c4db6d6c399fb0	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd20|402|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|deciding|E1|vd20|402|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|402|NO LCMS_Neg	untested_rows	F0050	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|402|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|402|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd20|402|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|deciding|E1|vd20|402|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|402|OR LCMS_Neg	untested_rows	F0050	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|402|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|deciding|E1|vd20|402|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|deciding|E1|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|none|403|NO	da_sha	8cc7d650a26c849bbcfd0267566708f7633a46b6360edb3b095a9fb18f2f8f58	8cc7d650a26c849bbcfd0267566708f7633a46b6360edb3b095a9fb18f2f8f58	TRUE	A2 (ii): identical
+L64|deciding|N0|none|403|NO	long_sha	af19956e495fe5edf75d0cbbc50db1db412d3672469ffde0fea902fddc17f775	af19956e495fe5edf75d0cbbc50db1db412d3672469ffde0fea902fddc17f775	TRUE	A2 (ii): identical
+L64|deciding|N0|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|none|403|OR	da_sha	996668c1bbbe08166acd7d8615f7a0534869d8a41511f37f4785ba49c1458afb	996668c1bbbe08166acd7d8615f7a0534869d8a41511f37f4785ba49c1458afb	TRUE	A2 (ii): identical
+L64|deciding|N0|none|403|OR	long_sha	ae872fafdaa1706b73b507fc52fcd4a9be5b4cbcf914a6938f8550b6a3b0b7c5	ae872fafdaa1706b73b507fc52fcd4a9be5b4cbcf914a6938f8550b6a3b0b7c5	TRUE	A2 (ii): identical
+L64|deciding|N0|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd5|403|NO	da_sha	f111bd4bf3a092c9a88ee844bd4f13e5f011d965571ccec4dffa29117a521a17	f111bd4bf3a092c9a88ee844bd4f13e5f011d965571ccec4dffa29117a521a17	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|403|NO	long_sha	4cc676c34b0c2976c21096103f25cf99c6d43495e3794373900269594d69833f	4cc676c34b0c2976c21096103f25cf99c6d43495e3794373900269594d69833f	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd5|403|OR	da_sha	b2e687b2af2c7d06324c020c4d88a29db1da033da113248699559838f688285b	b2e687b2af2c7d06324c020c4d88a29db1da033da113248699559838f688285b	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|403|OR	long_sha	17995c084fb309f8294799f55ccb6ff899863df885f10d063dba742d0a439732	17995c084fb309f8294799f55ccb6ff899863df885f10d063dba742d0a439732	TRUE	A2 (ii): identical
+L64|deciding|N0|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd20|403|NO	da_sha	dd284e7e7de06da32fde7b0f9fab7cceb2553e382a545a56bb5a0b59eca50388	dd284e7e7de06da32fde7b0f9fab7cceb2553e382a545a56bb5a0b59eca50388	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|403|NO	long_sha	4ca0b33053fca8666917ea802adce0b1417743743afeb96473cf417d81a86e31	4ca0b33053fca8666917ea802adce0b1417743743afeb96473cf417d81a86e31	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N0|vd20|403|OR	da_sha	5ba4bf03a6585c5a978245401b7f5a851d020b5883f30e8f4e811254811f50b4	5ba4bf03a6585c5a978245401b7f5a851d020b5883f30e8f4e811254811f50b4	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|403|OR	long_sha	b397a284e245fc8f444ad494c99b578c1f3d2b0041b8b6ff9dda4bb3a7940267	b397a284e245fc8f444ad494c99b578c1f3d2b0041b8b6ff9dda4bb3a7940267	TRUE	A2 (ii): identical
+L64|deciding|N0|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|none|403|NO	da_sha	064a65d5c037e8486161b9f80beb5e9bfab17674fe3e2385d236a98cf0f0c78e	064a65d5c037e8486161b9f80beb5e9bfab17674fe3e2385d236a98cf0f0c78e	TRUE	A2 (ii): identical
+L64|deciding|N1|none|403|NO	long_sha	919c35d943ac523407e4bf3cc4b8d71637f94902443bbb2ec06bd3b889c2c476	919c35d943ac523407e4bf3cc4b8d71637f94902443bbb2ec06bd3b889c2c476	TRUE	A2 (ii): identical
+L64|deciding|N1|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|none|403|OR	da_sha	7c36eb8601a6794c668b605f4187a6068047171b3470b419f9da0ac7fc77fb1e	7c36eb8601a6794c668b605f4187a6068047171b3470b419f9da0ac7fc77fb1e	TRUE	A2 (ii): identical
+L64|deciding|N1|none|403|OR	long_sha	a8736a53c79d7d3c9dc7699f45396cb89889c00ce75568fafd4b6e1cad4b6165	a8736a53c79d7d3c9dc7699f45396cb89889c00ce75568fafd4b6e1cad4b6165	TRUE	A2 (ii): identical
+L64|deciding|N1|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd5|403|NO	da_sha	8fe260d2bffd9ebd4744a55ca6c48df332916bda2654c8aeea5044388833831a	8fe260d2bffd9ebd4744a55ca6c48df332916bda2654c8aeea5044388833831a	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|403|NO	long_sha	773ba4949788f2e8450f75ddeb019969961adb32d707d0039e0ba2d7ad969e78	773ba4949788f2e8450f75ddeb019969961adb32d707d0039e0ba2d7ad969e78	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd5|403|OR	da_sha	63af257665e17cf0cac3906330c5b4c05ce4bf1d5e80ba793b35541e9e61343d	63af257665e17cf0cac3906330c5b4c05ce4bf1d5e80ba793b35541e9e61343d	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|403|OR	long_sha	5f6af8a2266aec972b78a5e9eb97f2616bb20759b86559562ec9a4b5b6a667b1	5f6af8a2266aec972b78a5e9eb97f2616bb20759b86559562ec9a4b5b6a667b1	TRUE	A2 (ii): identical
+L64|deciding|N1|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd20|403|NO	da_sha	d32635b42dee056887c957bcbcd6acb7579a44029b3c25352ee03e9bdc3be3e5	d32635b42dee056887c957bcbcd6acb7579a44029b3c25352ee03e9bdc3be3e5	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|403|NO	long_sha	aa6a76b61888dc46d16fdc6a055eb030ae76be2eb0985d18ef75f6a01bed02b1	aa6a76b61888dc46d16fdc6a055eb030ae76be2eb0985d18ef75f6a01bed02b1	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|N1|vd20|403|OR	da_sha	3b6645bc34482d397da2813d4032ae3740c3c746f5cc7eaea059b3c1614df325	3b6645bc34482d397da2813d4032ae3740c3c746f5cc7eaea059b3c1614df325	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|403|OR	long_sha	2739c50a55fd846d86ff070b5e8c9f696c13ee66ac0a44c9ef1fe4dbcc7f79c2	2739c50a55fd846d86ff070b5e8c9f696c13ee66ac0a44c9ef1fe4dbcc7f79c2	TRUE	A2 (ii): identical
+L64|deciding|N1|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|none|403|NO	da_sha	9d6420307a3bcc7e844cb588f504ed2497d6d062066c916200eb6396f8a490a6	9d6420307a3bcc7e844cb588f504ed2497d6d062066c916200eb6396f8a490a6	TRUE	A2 (ii): identical
+L64|deciding|E0|none|403|NO	long_sha	6bd0684d4ca8c52eda54cc62db86338b18080f2b6a76dc53873f1590bbdd4d65	6bd0684d4ca8c52eda54cc62db86338b18080f2b6a76dc53873f1590bbdd4d65	TRUE	A2 (ii): identical
+L64|deciding|E0|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|none|403|OR	da_sha	e27e51f40296a48727e54e6eba9e7d750370e1cb5f9e525a7c7aab83df6f0990	e27e51f40296a48727e54e6eba9e7d750370e1cb5f9e525a7c7aab83df6f0990	TRUE	A2 (ii): identical
+L64|deciding|E0|none|403|OR	long_sha	3e37f458667b0251e0a516e693235ec299cd079b74d14f08a693b139426ae9d3	3e37f458667b0251e0a516e693235ec299cd079b74d14f08a693b139426ae9d3	TRUE	A2 (ii): identical
+L64|deciding|E0|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd5|403|NO	da_sha	d1e7fd3ec327a3b3192895daa4984424ccbbee05e3d3da0d5152440d2c1af2e8	d1e7fd3ec327a3b3192895daa4984424ccbbee05e3d3da0d5152440d2c1af2e8	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|403|NO	long_sha	4d45a0fee575f34168c1a47b98b6cfee3e5e0894ff408e117749d647df8d8edb	4d45a0fee575f34168c1a47b98b6cfee3e5e0894ff408e117749d647df8d8edb	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd5|403|OR	da_sha	aca8bfe6d7200e5a77583afcf0ad9f4a287cc3d373be4f46339bd845ccb782c6	aca8bfe6d7200e5a77583afcf0ad9f4a287cc3d373be4f46339bd845ccb782c6	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|403|OR	long_sha	c39a3d010cd4d4c019ad9600d5b207d60007f6c0d67dbfedbe93a469e37dfd35	c39a3d010cd4d4c019ad9600d5b207d60007f6c0d67dbfedbe93a469e37dfd35	TRUE	A2 (ii): identical
+L64|deciding|E0|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd20|403|NO	da_sha	97d19573d75bfe331643ca1706115ccc63e85aa5c1e7f55d8f47ff70263dfa63	97d19573d75bfe331643ca1706115ccc63e85aa5c1e7f55d8f47ff70263dfa63	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|403|NO	long_sha	dee35fa2f0ab80f0b346acbe34ddacd2a0c117f28d0df1828f59c715b6dad4ff	dee35fa2f0ab80f0b346acbe34ddacd2a0c117f28d0df1828f59c715b6dad4ff	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E0|vd20|403|OR	da_sha	e6b0be9e175201842e92421001cb2e63e39b4abd95950b419bbf321fa5be0981	e6b0be9e175201842e92421001cb2e63e39b4abd95950b419bbf321fa5be0981	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|403|OR	long_sha	54c53fc7108dadefd2cacc52510d5b806688f01e15d2e37d28fb12e03d12fe5c	54c53fc7108dadefd2cacc52510d5b806688f01e15d2e37d28fb12e03d12fe5c	TRUE	A2 (ii): identical
+L64|deciding|E0|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|none|403|NO	da_sha	4c2a7aa4983b5fa7b3db4f357045d92edad8bde889600aa877303607712f690e	4c2a7aa4983b5fa7b3db4f357045d92edad8bde889600aa877303607712f690e	TRUE	A2 (ii): identical
+L64|deciding|E1|none|403|NO	long_sha	45b1f6bbf0426afb31cd97d5fa65821e7eae2410ca200421d15add62b5bf1368	45b1f6bbf0426afb31cd97d5fa65821e7eae2410ca200421d15add62b5bf1368	TRUE	A2 (ii): identical
+L64|deciding|E1|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|none|403|OR	da_sha	497938ef0cfd29a02347686725f3fc47f7cf27387889b4adae7c64c34b98e845	497938ef0cfd29a02347686725f3fc47f7cf27387889b4adae7c64c34b98e845	TRUE	A2 (ii): identical
+L64|deciding|E1|none|403|OR	long_sha	9a671da05770f32f8c2c87d5a557c88c6734fea3bfdcc030e774fbf12e6d0a20	9a671da05770f32f8c2c87d5a557c88c6734fea3bfdcc030e774fbf12e6d0a20	TRUE	A2 (ii): identical
+L64|deciding|E1|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd5|403|NO	da_sha	621c86ded5e9178b3502abce99aed0ba8ebb2d647027614c31d521842491bf9b	621c86ded5e9178b3502abce99aed0ba8ebb2d647027614c31d521842491bf9b	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|403|NO	long_sha	e686f194692f44a2300a3dd0f53ccfe70d74d86ea29f86c355e701caad054998	e686f194692f44a2300a3dd0f53ccfe70d74d86ea29f86c355e701caad054998	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd5|403|OR	da_sha	3d896eaf9f85495b5ae456fd5de5eb65b127d84e0a626d6a4f3a3d88a65ed1a8	3d896eaf9f85495b5ae456fd5de5eb65b127d84e0a626d6a4f3a3d88a65ed1a8	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|403|OR	long_sha	91e1a7fa2e106376832bc64ce33d21cb7ebc77ac5f9dead4817d3842570133dd	91e1a7fa2e106376832bc64ce33d21cb7ebc77ac5f9dead4817d3842570133dd	TRUE	A2 (ii): identical
+L64|deciding|E1|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd20|403|NO	da_sha	dec02261d3a1d6e97d6196d86ea38154a9a0eb0fa05a68187e46cfee75453e20	dec02261d3a1d6e97d6196d86ea38154a9a0eb0fa05a68187e46cfee75453e20	TRUE	A2 (ii): identical
+L64|deciding|E1|vd20|403|NO	long_sha	b495fba690693b2d6c9286a7c2f2d1dd496e62ead5566783a8a4f757a16b3880	b495fba690693b2d6c9286a7c2f2d1dd496e62ead5566783a8a4f757a16b3880	TRUE	A2 (ii): identical
+L64|deciding|E1|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|deciding|E1|vd20|403|OR	da_sha	dd8431fec05b8420d2a3cc434d4695fe4bcd219cad2a0527f62ab856912f0a85	dd8431fec05b8420d2a3cc434d4695fe4bcd219cad2a0527f62ab856912f0a85	TRUE	A2 (ii): identical
+L64|deciding|E1|vd20|403|OR	long_sha	5f142a39024ca245a0e297b2c17910eb16e34ba6afb21a0b45134fbcaa257d3e	5f142a39024ca245a0e297b2c17910eb16e34ba6afb21a0b45134fbcaa257d3e	TRUE	A2 (ii): identical
+L64|deciding|E1|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|none|401|NO	da_sha	e545f49e1d43668719dd954f10c38dabe05d5d847e6edad7a791f17a43533c0a	e545f49e1d43668719dd954f10c38dabe05d5d847e6edad7a791f17a43533c0a	TRUE	A2 (ii): identical
+L12|deciding|N0|none|401|NO	long_sha	56e0e4f3fb825f45c51fd453c23e9beacbcd3113dcc316a43efc56939241d926	56e0e4f3fb825f45c51fd453c23e9beacbcd3113dcc316a43efc56939241d926	TRUE	A2 (ii): identical
+L12|deciding|N0|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|none|401|OR	da_sha	5b4008c0d7ec5d1b1b4db63ac7965668c712d427b58e1a78b96643298a705fa8	5b4008c0d7ec5d1b1b4db63ac7965668c712d427b58e1a78b96643298a705fa8	TRUE	A2 (ii): identical
+L12|deciding|N0|none|401|OR	long_sha	32b21d988d08f8f1aa0feae766e204e9fa5fe52362fe20e65454c06eac5b31e8	32b21d988d08f8f1aa0feae766e204e9fa5fe52362fe20e65454c06eac5b31e8	TRUE	A2 (ii): identical
+L12|deciding|N0|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd5|401|NO	da_sha	38b758d9748063d69caaa9ecd188ef37e206994704449a569ec21a7827a3578a	38b758d9748063d69caaa9ecd188ef37e206994704449a569ec21a7827a3578a	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|401|NO	long_sha	a6138db95c19c881270f63c7e9b3e79a0925c3c5d7273e1ee852095b4e405d82	a6138db95c19c881270f63c7e9b3e79a0925c3c5d7273e1ee852095b4e405d82	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd5|401|OR	da_sha	5aefbbbfaa623f92a8b8945d857f8e6374a72cf4fc652f48064d08dd4352837f	5aefbbbfaa623f92a8b8945d857f8e6374a72cf4fc652f48064d08dd4352837f	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|401|OR	long_sha	36317e5989df03c4b122069ad301032686b0ca06485e7021a049ecde3bfc4069	36317e5989df03c4b122069ad301032686b0ca06485e7021a049ecde3bfc4069	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd20|401|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N0|vd20|401|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|401|NO LCMS_Neg	untested_rows	F0151 F0205	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|401|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|401|NO LCMS_Pos	untested_rows	F0316	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd20|401|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N0|vd20|401|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|401|OR LCMS_Neg	untested_rows	F0151 F0205	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|401|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|401|OR LCMS_Pos	untested_rows	F0316	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|none|401|NO	da_sha	de34aff4625864606a088494f2cb1415e68f92e7006a8d92f2bdd8773ddff21e	de34aff4625864606a088494f2cb1415e68f92e7006a8d92f2bdd8773ddff21e	TRUE	A2 (ii): identical
+L12|deciding|N1|none|401|NO	long_sha	84e522917f5165dcf2373784926ea603fbf2c683719f0e256c90f1e706a4795f	84e522917f5165dcf2373784926ea603fbf2c683719f0e256c90f1e706a4795f	TRUE	A2 (ii): identical
+L12|deciding|N1|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|none|401|OR	da_sha	28baa020a09b53a75457d8fa7b684842352efa8d55a6a54a784ab2708272d827	28baa020a09b53a75457d8fa7b684842352efa8d55a6a54a784ab2708272d827	TRUE	A2 (ii): identical
+L12|deciding|N1|none|401|OR	long_sha	114b93efef6e9f9c1f7f4b98a820fd47af281a58950ca3db36e3aa9789c6de21	114b93efef6e9f9c1f7f4b98a820fd47af281a58950ca3db36e3aa9789c6de21	TRUE	A2 (ii): identical
+L12|deciding|N1|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd5|401|NO	da_sha	3fef286134c2fcd9fb61a149da6af70b5e61869db0d6f37d25becefca7f71754	3fef286134c2fcd9fb61a149da6af70b5e61869db0d6f37d25becefca7f71754	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|401|NO	long_sha	2392e50486f9cf2268fc6432359b29064aea4c0b980738c164d385722651c2ca	2392e50486f9cf2268fc6432359b29064aea4c0b980738c164d385722651c2ca	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd5|401|OR	da_sha	bdfe6fc211a8e69294af1c08fb0351401f818c25bbe8dd88206f1808ef5dc3f1	bdfe6fc211a8e69294af1c08fb0351401f818c25bbe8dd88206f1808ef5dc3f1	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|401|OR	long_sha	3b1f37adb65039eea2d65a8825d8e89d4b2f1005e93d78b0b7d8e4e316671457	3b1f37adb65039eea2d65a8825d8e89d4b2f1005e93d78b0b7d8e4e316671457	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd20|401|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N1|vd20|401|NO LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|401|NO LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|401|NO LCMS_Pos	tested_rows	without values 4	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|401|NO LCMS_Pos	untested_rows	F0283 F0293 F0467 F0277	TRUE (per contrast 4)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd20|401|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N1|vd20|401|OR LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|401|OR LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|401|OR LCMS_Pos	tested_rows	without values 4	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|401|OR LCMS_Pos	untested_rows	F0283 F0293 F0467 F0277	TRUE (per contrast 4)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|none|401|NO	da_sha	089b902d16ffa8ac5f058ba9fc721be7d93ad09b6a6ac38f323ed020c525e6d5	089b902d16ffa8ac5f058ba9fc721be7d93ad09b6a6ac38f323ed020c525e6d5	TRUE	A2 (ii): identical
+L12|deciding|E0|none|401|NO	long_sha	895ee5c90c2554a6fc2182389b7b891608cfd91aef24e54ad997d81518d7afe2	895ee5c90c2554a6fc2182389b7b891608cfd91aef24e54ad997d81518d7afe2	TRUE	A2 (ii): identical
+L12|deciding|E0|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|none|401|OR	da_sha	9ce15a322f7636008298292bb9510c76c0b6ba71e38b5ce65b9f595de8511b2e	9ce15a322f7636008298292bb9510c76c0b6ba71e38b5ce65b9f595de8511b2e	TRUE	A2 (ii): identical
+L12|deciding|E0|none|401|OR	long_sha	265a4e723ce940d7c37a5941a86ae65fc43c0c49869955a6c2511edb96bd1182	265a4e723ce940d7c37a5941a86ae65fc43c0c49869955a6c2511edb96bd1182	TRUE	A2 (ii): identical
+L12|deciding|E0|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd5|401|NO	da_sha	9c8689470e6edc1e46526faa4f5940958a0ae5eb7853d5715782a3c0167f8e36	9c8689470e6edc1e46526faa4f5940958a0ae5eb7853d5715782a3c0167f8e36	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|401|NO	long_sha	7e7d4900517f3ad2d85b4d40d9cb4f36851269a0a0359bc8eec4ef91cc697467	7e7d4900517f3ad2d85b4d40d9cb4f36851269a0a0359bc8eec4ef91cc697467	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd5|401|OR	da_sha	f87390af8872e94bb60f6ae8f26fead8c7c34d74b43b8b4bb165e05af73665f4	f87390af8872e94bb60f6ae8f26fead8c7c34d74b43b8b4bb165e05af73665f4	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|401|OR	long_sha	785db5dbc81278942d7169a98ef60da1b818fafd89998d32b05afa89e613b97d	785db5dbc81278942d7169a98ef60da1b818fafd89998d32b05afa89e613b97d	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd20|401|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E0|vd20|401|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|401|NO LCMS_Neg	untested_rows	F0106 F0228	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|401|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|401|NO LCMS_Pos	untested_rows	F0254	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd20|401|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E0|vd20|401|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|401|OR LCMS_Neg	untested_rows	F0106 F0228	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|401|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|401|OR LCMS_Pos	untested_rows	F0254	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|none|401|NO	da_sha	d739f7abc25dfad276f542e298d81237691e63f3501e5d07b871abde4e569817	d739f7abc25dfad276f542e298d81237691e63f3501e5d07b871abde4e569817	TRUE	A2 (ii): identical
+L12|deciding|E1|none|401|NO	long_sha	412857eef873f2780504e35a9829c15e4f73d47034fc10c25b12fb0b2c23572d	412857eef873f2780504e35a9829c15e4f73d47034fc10c25b12fb0b2c23572d	TRUE	A2 (ii): identical
+L12|deciding|E1|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|none|401|OR	da_sha	227737c70b5d9dde1fccafeea5f1430d362bdce11595bfd4354c2df897315976	227737c70b5d9dde1fccafeea5f1430d362bdce11595bfd4354c2df897315976	TRUE	A2 (ii): identical
+L12|deciding|E1|none|401|OR	long_sha	1f5d5ee5206976a058ee1f3302209f6395896157b9175f588b6d2d0cb6f3fc76	1f5d5ee5206976a058ee1f3302209f6395896157b9175f588b6d2d0cb6f3fc76	TRUE	A2 (ii): identical
+L12|deciding|E1|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd5|401|NO	da_sha	88b2f376db223854b3cbd62bbb6315ff277bac9e018e3627f6ba21311649b0ca	88b2f376db223854b3cbd62bbb6315ff277bac9e018e3627f6ba21311649b0ca	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|401|NO	long_sha	f6a44cc4d4417e0546010adb8f2057059227692f1cb80cc5807eba5dc6170fd8	f6a44cc4d4417e0546010adb8f2057059227692f1cb80cc5807eba5dc6170fd8	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd5|401|OR	da_sha	cd15f6af67ea7a69998bafaddcd0870ae3877f0b935166b8e7f71508f668b7cb	cd15f6af67ea7a69998bafaddcd0870ae3877f0b935166b8e7f71508f668b7cb	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|401|OR	long_sha	d1bd849d3489d5b575ba206765d3327bda5216080700f6982330d2739a401de5	d1bd849d3489d5b575ba206765d3327bda5216080700f6982330d2739a401de5	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd20|401|NO	da_sha	6d1e5f1c22463be0b2c4c53229994b01a120a8b6236775cd1103a0d7c59daec2	6d1e5f1c22463be0b2c4c53229994b01a120a8b6236775cd1103a0d7c59daec2	TRUE	A2 (ii): identical
+L12|deciding|E1|vd20|401|NO	long_sha	6030d49fe89f7c816085d35aaba8a58bd94a85af13fa624887b84bd8f005a4ae	6030d49fe89f7c816085d35aaba8a58bd94a85af13fa624887b84bd8f005a4ae	TRUE	A2 (ii): identical
+L12|deciding|E1|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd20|401|OR	da_sha	d72f6cd84018715548dcc4f2de170cadbe2c5ff15c18759b14d18d23624e5668	d72f6cd84018715548dcc4f2de170cadbe2c5ff15c18759b14d18d23624e5668	TRUE	A2 (ii): identical
+L12|deciding|E1|vd20|401|OR	long_sha	8db82eaa1b81e6d8fc8a9f4c947cbc65818bbeccfb9ecf57f752905e8fbd4baa	8db82eaa1b81e6d8fc8a9f4c947cbc65818bbeccfb9ecf57f752905e8fbd4baa	TRUE	A2 (ii): identical
+L12|deciding|E1|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|none|401|NO	da_sha	5cc31a60c2f5567ae53da16e7082412cdefe177d720a19f28903f9b6352523a3	5cc31a60c2f5567ae53da16e7082412cdefe177d720a19f28903f9b6352523a3	TRUE	A2 (ii): identical
+L12|deciding|N2|none|401|NO	long_sha	1f24a48789711f1af1406197b4f74e678796e784cf84f2498a24f96621f0e2c5	1f24a48789711f1af1406197b4f74e678796e784cf84f2498a24f96621f0e2c5	TRUE	A2 (ii): identical
+L12|deciding|N2|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|none|401|OR	da_sha	4b1c83a9af7a1827c11b3168c2215bcaa430c37ee4931d7fc9eaee2f9037c223	4b1c83a9af7a1827c11b3168c2215bcaa430c37ee4931d7fc9eaee2f9037c223	TRUE	A2 (ii): identical
+L12|deciding|N2|none|401|OR	long_sha	32beb5d11693f59598fccb7a83cf213100f909fb123252fe1669bbe1eb50140e	32beb5d11693f59598fccb7a83cf213100f909fb123252fe1669bbe1eb50140e	TRUE	A2 (ii): identical
+L12|deciding|N2|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd5|401|NO	da_sha	500d421c339a31c04e9b4dc5b893047b28fa051403e0f3bb13eccaa947d7ab13	500d421c339a31c04e9b4dc5b893047b28fa051403e0f3bb13eccaa947d7ab13	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|401|NO	long_sha	ba1bf3d42b4a23498894fdff9bd2ec1bf2967269716fb2de0e3250dd1ab91752	ba1bf3d42b4a23498894fdff9bd2ec1bf2967269716fb2de0e3250dd1ab91752	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd5|401|OR	da_sha	f4421a071859810d64d1248cec3c666678075ddaf6f2f9c77a3d5e4c0323ae96	f4421a071859810d64d1248cec3c666678075ddaf6f2f9c77a3d5e4c0323ae96	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|401|OR	long_sha	56566c614170bdb7850666948246a0deba1a4465d9e0b7977259fe87119d0e7f	56566c614170bdb7850666948246a0deba1a4465d9e0b7977259fe87119d0e7f	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd20|401|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N2|vd20|401|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|401|NO LCMS_Neg	untested_rows	F0026 F0047	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|401|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|401|NO LCMS_Pos	untested_rows	F0448	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd20|401|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N2|vd20|401|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|401|OR LCMS_Neg	untested_rows	F0026 F0047	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|401|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|401|OR LCMS_Pos	untested_rows	F0448	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|none|401|NO	da_sha	f917e09539c27ef165134accd6d9dc61e981d814d4652e066869279ff1e635a8	f917e09539c27ef165134accd6d9dc61e981d814d4652e066869279ff1e635a8	TRUE	A2 (ii): identical
+L12|deciding|E2|none|401|NO	long_sha	7a6beae159a21ace9090ecd5ef2f8dba06a59acbf64763e3ec4b12c1afe1ad00	7a6beae159a21ace9090ecd5ef2f8dba06a59acbf64763e3ec4b12c1afe1ad00	TRUE	A2 (ii): identical
+L12|deciding|E2|none|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|none|401|OR	da_sha	1fc0f69deb72a1a9583b73547c646bc3fc5082b1f6ec8a88c71bf27719f1cac9	1fc0f69deb72a1a9583b73547c646bc3fc5082b1f6ec8a88c71bf27719f1cac9	TRUE	A2 (ii): identical
+L12|deciding|E2|none|401|OR	long_sha	d2f177dc51e2c3830029dc4a597f0d467ef0cbde814469e9719b1b26a15b6c01	d2f177dc51e2c3830029dc4a597f0d467ef0cbde814469e9719b1b26a15b6c01	TRUE	A2 (ii): identical
+L12|deciding|E2|none|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd5|401|NO	da_sha	60d4d221f117793f933026969cf58705f3bd0d4b0cb96b2f9c6fa967188363eb	60d4d221f117793f933026969cf58705f3bd0d4b0cb96b2f9c6fa967188363eb	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|401|NO	long_sha	5c8f6b31ba7df295d3b581d33af307d6b56d717879eb670cff110210dd1f40a7	5c8f6b31ba7df295d3b581d33af307d6b56d717879eb670cff110210dd1f40a7	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd5|401|OR	da_sha	a9f0538e2757c15258efddf363c1da1c2c47048cdcb8be02ef2e6883ff20273c	a9f0538e2757c15258efddf363c1da1c2c47048cdcb8be02ef2e6883ff20273c	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|401|OR	long_sha	607628ffda55b4995ea9c51cbfe6bf19ec0800b9f0a134c788da487fabb0b957	607628ffda55b4995ea9c51cbfe6bf19ec0800b9f0a134c788da487fabb0b957	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd20|401|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E2|vd20|401|NO LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|401|NO LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|401|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|401|NO LCMS_Pos	untested_rows	F0451	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd20|401|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E2|vd20|401|OR LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|401|OR LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|401|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|401|OR LCMS_Pos	untested_rows	F0451	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|none|402|NO	da_sha	61ef596bd95694854d981ed34e4c42f328041037b059cb55c1f3928329bf6ffa	61ef596bd95694854d981ed34e4c42f328041037b059cb55c1f3928329bf6ffa	TRUE	A2 (ii): identical
+L12|deciding|N0|none|402|NO	long_sha	4148db8879be600a124dde43540abfb052fc07a6610f812a4c440d61b850b0f9	4148db8879be600a124dde43540abfb052fc07a6610f812a4c440d61b850b0f9	TRUE	A2 (ii): identical
+L12|deciding|N0|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|none|402|OR	da_sha	7a4ac3fd234117f8c732966d0170e1dfc716116b3bd293f28e5f1280f50e49b7	7a4ac3fd234117f8c732966d0170e1dfc716116b3bd293f28e5f1280f50e49b7	TRUE	A2 (ii): identical
+L12|deciding|N0|none|402|OR	long_sha	ebb706f0ea17b513fb88aa583468ed83dae5e3a21b8e444e1274c609540c7581	ebb706f0ea17b513fb88aa583468ed83dae5e3a21b8e444e1274c609540c7581	TRUE	A2 (ii): identical
+L12|deciding|N0|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd5|402|NO	da_sha	b35b1d93c4fd1e19182e283b3d2a8d55eebc353fdf8ca2f696c6641779f8907f	b35b1d93c4fd1e19182e283b3d2a8d55eebc353fdf8ca2f696c6641779f8907f	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|402|NO	long_sha	ee1979f9b8f57224588086661b48d2703c712966621b1aad2982595d3a41124a	ee1979f9b8f57224588086661b48d2703c712966621b1aad2982595d3a41124a	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd5|402|OR	da_sha	6707c49b4f444435dd40939f846775c5c1e47de72229dc84d66688541f0cd02f	6707c49b4f444435dd40939f846775c5c1e47de72229dc84d66688541f0cd02f	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|402|OR	long_sha	d29eeb0103eed337fba34695ff77d1ed0b5ee5572912d2fc81ec579050c79cfd	d29eeb0103eed337fba34695ff77d1ed0b5ee5572912d2fc81ec579050c79cfd	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd20|402|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N0|vd20|402|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|402|NO LCMS_Neg	untested_rows	F0084	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|402|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|402|NO LCMS_Pos	untested_rows	F0292	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd20|402|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N0|vd20|402|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|402|OR LCMS_Neg	untested_rows	F0084	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|402|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|402|OR LCMS_Pos	untested_rows	F0292	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|none|402|NO	da_sha	3d03dabeb488a4e040fe051a15b5b35a2b5ee101bdd721e30fad108eb67f09e2	3d03dabeb488a4e040fe051a15b5b35a2b5ee101bdd721e30fad108eb67f09e2	TRUE	A2 (ii): identical
+L12|deciding|N1|none|402|NO	long_sha	e88d0414bf4a1ff1ce658bc260620455598ccc4bae738e9483f042b72ffac38f	e88d0414bf4a1ff1ce658bc260620455598ccc4bae738e9483f042b72ffac38f	TRUE	A2 (ii): identical
+L12|deciding|N1|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|none|402|OR	da_sha	e9e987178bab47cbf52235e844d02ded2e40f803b58d1951399f89063a836fac	e9e987178bab47cbf52235e844d02ded2e40f803b58d1951399f89063a836fac	TRUE	A2 (ii): identical
+L12|deciding|N1|none|402|OR	long_sha	d743ccdddbfdc45547d01eb868df370c2f54b521999de9e08f8e1029c7cf541c	d743ccdddbfdc45547d01eb868df370c2f54b521999de9e08f8e1029c7cf541c	TRUE	A2 (ii): identical
+L12|deciding|N1|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd5|402|NO	da_sha	a34b8bff0cb6a3fdf300a53e19ffb0527f96cd946ea9caf0012a49e4bb777dfc	a34b8bff0cb6a3fdf300a53e19ffb0527f96cd946ea9caf0012a49e4bb777dfc	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|402|NO	long_sha	7d9bd4c07af6b74d59cb4a6321e2b5472a055b67b31e9c3592446f3732fc4013	7d9bd4c07af6b74d59cb4a6321e2b5472a055b67b31e9c3592446f3732fc4013	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd5|402|OR	da_sha	aad6cdb1c7fbf20f1d216d702e96483b7d2203329200a56803f52046685acdfe	aad6cdb1c7fbf20f1d216d702e96483b7d2203329200a56803f52046685acdfe	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|402|OR	long_sha	df529277d91e6159dcb331577b8b8506278f63e491832b321ebc6386bfdb1eb1	df529277d91e6159dcb331577b8b8506278f63e491832b321ebc6386bfdb1eb1	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd20|402|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N1|vd20|402|NO LCMS_Neg	tested_rows	without values 4	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|402|NO LCMS_Neg	untested_rows	F0145 F0104 F0250 F0101	TRUE (per contrast 4)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|402|NO LCMS_Pos	tested_rows	without values 3	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|402|NO LCMS_Pos	untested_rows	F0306 F0382 F0351	TRUE (per contrast 3)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd20|402|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N1|vd20|402|OR LCMS_Neg	tested_rows	without values 4	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|402|OR LCMS_Neg	untested_rows	F0145 F0104 F0250 F0101	TRUE (per contrast 4)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|402|OR LCMS_Pos	tested_rows	without values 3	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|402|OR LCMS_Pos	untested_rows	F0306 F0382 F0351	TRUE (per contrast 3)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|none|402|NO	da_sha	63d1b8561c6cb203ff5b27e6f65cdae95b82e0e90101b4a3f991f141361ccf2f	63d1b8561c6cb203ff5b27e6f65cdae95b82e0e90101b4a3f991f141361ccf2f	TRUE	A2 (ii): identical
+L12|deciding|E0|none|402|NO	long_sha	c6b2896a28f7841c0c980e9e9989fe1b5a1a6f1ecd1ac237152b52ca2fc0293f	c6b2896a28f7841c0c980e9e9989fe1b5a1a6f1ecd1ac237152b52ca2fc0293f	TRUE	A2 (ii): identical
+L12|deciding|E0|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|none|402|OR	da_sha	ae6542c10cdc38154fd58fbfc04dc0c8c8e43b6ff3285d41abd0aca5a5bad538	ae6542c10cdc38154fd58fbfc04dc0c8c8e43b6ff3285d41abd0aca5a5bad538	TRUE	A2 (ii): identical
+L12|deciding|E0|none|402|OR	long_sha	0333ab71f36ac3df191a6d9b29510ad5ca820e37c67ecf8f1bf34db95dea5cf2	0333ab71f36ac3df191a6d9b29510ad5ca820e37c67ecf8f1bf34db95dea5cf2	TRUE	A2 (ii): identical
+L12|deciding|E0|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd5|402|NO	da_sha	1f54b6769d2258c53a398deac63a7460bcb9972aa7f80b4688c661bc3fda2e91	1f54b6769d2258c53a398deac63a7460bcb9972aa7f80b4688c661bc3fda2e91	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|402|NO	long_sha	5a129b0723ac191c8c8e9ac2432c83edeff0f65bd5c99d36a36086beab8f236e	5a129b0723ac191c8c8e9ac2432c83edeff0f65bd5c99d36a36086beab8f236e	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd5|402|OR	da_sha	ba58822aa1e95ba7e90d263015dafe330eefbe52cb80b5a744e79860e4ecabbd	ba58822aa1e95ba7e90d263015dafe330eefbe52cb80b5a744e79860e4ecabbd	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|402|OR	long_sha	e6761bfe613efba0d8d49314fb5993bb395d417a617dcea85f7b423ae57fa17b	e6761bfe613efba0d8d49314fb5993bb395d417a617dcea85f7b423ae57fa17b	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd20|402|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E0|vd20|402|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|402|NO LCMS_Neg	untested_rows	F0163	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|402|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|402|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd20|402|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E0|vd20|402|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|402|OR LCMS_Neg	untested_rows	F0163	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|402|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E0|vd20|402|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E0|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|none|402|NO	da_sha	bbf0a8b94b30081e21eb2ef15b4a296a52529e34f1fb7056bec04204fd9b6c5a	bbf0a8b94b30081e21eb2ef15b4a296a52529e34f1fb7056bec04204fd9b6c5a	TRUE	A2 (ii): identical
+L12|deciding|E1|none|402|NO	long_sha	28a4a63f4f6db2753d9df0630a8a807131f47145ce58c893ee2ba6ebbdc5423b	28a4a63f4f6db2753d9df0630a8a807131f47145ce58c893ee2ba6ebbdc5423b	TRUE	A2 (ii): identical
+L12|deciding|E1|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|none|402|OR	da_sha	34b01e7c73d6b4cfeb6293adbb1d6f0d8cf16acb09a003b1b0abf612d41fdfc8	34b01e7c73d6b4cfeb6293adbb1d6f0d8cf16acb09a003b1b0abf612d41fdfc8	TRUE	A2 (ii): identical
+L12|deciding|E1|none|402|OR	long_sha	1eacdc2fb12ba7905ca397e7caf674e70044b8e034d8002cee63cfb38d38d68b	1eacdc2fb12ba7905ca397e7caf674e70044b8e034d8002cee63cfb38d38d68b	TRUE	A2 (ii): identical
+L12|deciding|E1|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd5|402|NO	da_sha	6873beaae677a953657cb27aefbc81c6c48f63fa1a517d17b5c8efd0abe8235f	6873beaae677a953657cb27aefbc81c6c48f63fa1a517d17b5c8efd0abe8235f	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|402|NO	long_sha	999c234cdd7663db02115eb74408f77cdedd715d64d72f72d56f4e1fa05e4354	999c234cdd7663db02115eb74408f77cdedd715d64d72f72d56f4e1fa05e4354	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd5|402|OR	da_sha	bb1da50268a1dc5252659f5919ffd936e399e8311b10c8bfb90acaf539c1a192	bb1da50268a1dc5252659f5919ffd936e399e8311b10c8bfb90acaf539c1a192	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|402|OR	long_sha	124304049ef91cc847e77a32f2ed3fc2ae35a7c96306756924a19b157bf86c35	124304049ef91cc847e77a32f2ed3fc2ae35a7c96306756924a19b157bf86c35	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd20|402|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E1|vd20|402|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|402|NO LCMS_Neg	untested_rows	F0228 F0050	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|402|NO LCMS_Pos	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|402|NO LCMS_Pos	untested_rows	F0376 F0472	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd20|402|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E1|vd20|402|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|402|OR LCMS_Neg	untested_rows	F0228 F0050	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|402|OR LCMS_Pos	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|402|OR LCMS_Pos	untested_rows	F0376 F0472	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|none|402|NO	da_sha	5be9f69ec3178acdc96b44bd0c9d9060e2e90f6c6f4ff696bdbae92467f1e6c9	5be9f69ec3178acdc96b44bd0c9d9060e2e90f6c6f4ff696bdbae92467f1e6c9	TRUE	A2 (ii): identical
+L12|deciding|N2|none|402|NO	long_sha	9da5a7baae7da701c96ba98d49fa96079131e0c4de90c0163c56cb74687fdef7	9da5a7baae7da701c96ba98d49fa96079131e0c4de90c0163c56cb74687fdef7	TRUE	A2 (ii): identical
+L12|deciding|N2|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|none|402|OR	da_sha	931dd1e97aa07435bc730e0d10ad649beb2c78bb773dc3299cccc1aee77d990c	931dd1e97aa07435bc730e0d10ad649beb2c78bb773dc3299cccc1aee77d990c	TRUE	A2 (ii): identical
+L12|deciding|N2|none|402|OR	long_sha	c3f0c531f53d83028676885274576febdd6c354e375d6048a0c75f38e1b73f8e	c3f0c531f53d83028676885274576febdd6c354e375d6048a0c75f38e1b73f8e	TRUE	A2 (ii): identical
+L12|deciding|N2|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd5|402|NO	da_sha	74742a5c147efe4f9f5c5459b704a9daf48487134810f07353e1a6f85dac5db8	74742a5c147efe4f9f5c5459b704a9daf48487134810f07353e1a6f85dac5db8	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|402|NO	long_sha	7bb974614b301d79851b272913c2fcb93c6a53c9e2a8746dd40c3e0dac5f15e8	7bb974614b301d79851b272913c2fcb93c6a53c9e2a8746dd40c3e0dac5f15e8	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd5|402|OR	da_sha	ecca0fd5db699d2e4fc0dbe2b204fb565b0e77a736b0c309a975578203966ccc	ecca0fd5db699d2e4fc0dbe2b204fb565b0e77a736b0c309a975578203966ccc	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|402|OR	long_sha	a3b51459a8e0370ccafca17065d9ef1aa6590b008f0091f8a721bfd00ffdb917	a3b51459a8e0370ccafca17065d9ef1aa6590b008f0091f8a721bfd00ffdb917	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd20|402|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N2|vd20|402|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|402|NO LCMS_Neg	untested_rows	F0232 F0146	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|402|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|402|NO LCMS_Pos	untested_rows	F0363	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd20|402|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N2|vd20|402|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|402|OR LCMS_Neg	untested_rows	F0232 F0146	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|402|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N2|vd20|402|OR LCMS_Pos	untested_rows	F0363	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N2|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|none|402|NO	da_sha	301401de8627a0583896ae6f9a323606ddac00934d76f64653dbb26d1c90c500	301401de8627a0583896ae6f9a323606ddac00934d76f64653dbb26d1c90c500	TRUE	A2 (ii): identical
+L12|deciding|E2|none|402|NO	long_sha	afa0a438598c23db38b0e34673c218f60cfd0d7a9a9e23681aebf45f770b2bd0	afa0a438598c23db38b0e34673c218f60cfd0d7a9a9e23681aebf45f770b2bd0	TRUE	A2 (ii): identical
+L12|deciding|E2|none|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|none|402|OR	da_sha	b6272b4e82d2b122f1871adc958942e44315a1f4ad8f9972fbc9f985e70c0d15	b6272b4e82d2b122f1871adc958942e44315a1f4ad8f9972fbc9f985e70c0d15	TRUE	A2 (ii): identical
+L12|deciding|E2|none|402|OR	long_sha	4b03067e418c9d360317f46f38ad6fc4c1bcde614d479ae587e75ca5d2a3aba0	4b03067e418c9d360317f46f38ad6fc4c1bcde614d479ae587e75ca5d2a3aba0	TRUE	A2 (ii): identical
+L12|deciding|E2|none|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd5|402|NO	da_sha	5de45a189bd14503aec9edeccbe26ad6595d2845f4a51267f97b377f7079c536	5de45a189bd14503aec9edeccbe26ad6595d2845f4a51267f97b377f7079c536	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|402|NO	long_sha	e4bfaa3fd9a96b848d0fbacde9c93d46e54016cb09ea1cf86854441dc934002d	e4bfaa3fd9a96b848d0fbacde9c93d46e54016cb09ea1cf86854441dc934002d	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd5|402|OR	da_sha	79c2af9e8faebb3ea1c2ac356e89a5363596aa586eb05f3d4cb2c5b467dfe9a0	79c2af9e8faebb3ea1c2ac356e89a5363596aa586eb05f3d4cb2c5b467dfe9a0	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|402|OR	long_sha	9275dd9f2ae896c56e12ef68bdd1aed1071a8a633bec0a27572a93bec7143b5f	9275dd9f2ae896c56e12ef68bdd1aed1071a8a633bec0a27572a93bec7143b5f	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd20|402|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E2|vd20|402|NO LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|402|NO LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|402|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|402|NO LCMS_Pos	untested_rows	F0389	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd20|402|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E2|vd20|402|OR LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|402|OR LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|402|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|402|OR LCMS_Pos	untested_rows	F0389	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|none|403|NO	da_sha	f3df21f3601570cda7952298a666336da4cbad16bfec848903b64e52279f61aa	f3df21f3601570cda7952298a666336da4cbad16bfec848903b64e52279f61aa	TRUE	A2 (ii): identical
+L12|deciding|N0|none|403|NO	long_sha	19221a5d044290e528de757108f68484cdb2714faafd66179689225ec987fcbe	19221a5d044290e528de757108f68484cdb2714faafd66179689225ec987fcbe	TRUE	A2 (ii): identical
+L12|deciding|N0|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|none|403|OR	da_sha	6aa2e3b4c5f413c9e774f269a6f87293ba0d348aef8d9ee2d590f9394b77d9c8	6aa2e3b4c5f413c9e774f269a6f87293ba0d348aef8d9ee2d590f9394b77d9c8	TRUE	A2 (ii): identical
+L12|deciding|N0|none|403|OR	long_sha	2cf4b9cda1aaf09e157c0770f56ae667fa3e50237c75c2d9f3c524685c8044ae	2cf4b9cda1aaf09e157c0770f56ae667fa3e50237c75c2d9f3c524685c8044ae	TRUE	A2 (ii): identical
+L12|deciding|N0|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd5|403|NO	da_sha	18ffbc4fff1201ed5c1ec95d7aac51536a09c891f7f81c7d0e9168d65ea32287	18ffbc4fff1201ed5c1ec95d7aac51536a09c891f7f81c7d0e9168d65ea32287	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|403|NO	long_sha	78b80ff3bcf2341579465f827840332b22c41b38241e7a8a5f831964c27d059f	78b80ff3bcf2341579465f827840332b22c41b38241e7a8a5f831964c27d059f	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd5|403|OR	da_sha	27a4ad18159092c40e720e5989ade17784594e843eb18f4f99b0af8d45093da2	27a4ad18159092c40e720e5989ade17784594e843eb18f4f99b0af8d45093da2	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|403|OR	long_sha	c1a8f0b442916e819076a4249114ad144feff4f8593bf1bbc5efc34211a24248	c1a8f0b442916e819076a4249114ad144feff4f8593bf1bbc5efc34211a24248	TRUE	A2 (ii): identical
+L12|deciding|N0|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd20|403|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N0|vd20|403|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|403|NO LCMS_Neg	untested_rows	F0114 F0089	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|403|NO LCMS_Pos	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|403|NO LCMS_Pos	untested_rows	F0252 F0464	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N0|vd20|403|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N0|vd20|403|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|403|OR LCMS_Neg	untested_rows	F0114 F0089	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|403|OR LCMS_Pos	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N0|vd20|403|OR LCMS_Pos	untested_rows	F0252 F0464	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N0|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|none|403|NO	da_sha	d900a3800af5284562410affad5475a9a0b0cd0baecc3cf946a4527bd639c830	d900a3800af5284562410affad5475a9a0b0cd0baecc3cf946a4527bd639c830	TRUE	A2 (ii): identical
+L12|deciding|N1|none|403|NO	long_sha	02f1d99d58528f53e2b888dc5aefd55939c6f99846f3709598e0e262abb5faae	02f1d99d58528f53e2b888dc5aefd55939c6f99846f3709598e0e262abb5faae	TRUE	A2 (ii): identical
+L12|deciding|N1|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|none|403|OR	da_sha	1816d015a8199f64360a9b43788c8dbd5020cb5d434461eafdf890c7daabb3de	1816d015a8199f64360a9b43788c8dbd5020cb5d434461eafdf890c7daabb3de	TRUE	A2 (ii): identical
+L12|deciding|N1|none|403|OR	long_sha	aee566e5f7bdbbcb290b47bd3ac536b97936431a572508dfe1a7f853da7fbd37	aee566e5f7bdbbcb290b47bd3ac536b97936431a572508dfe1a7f853da7fbd37	TRUE	A2 (ii): identical
+L12|deciding|N1|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd5|403|NO	da_sha	0e14afd6588ff6eaf7c7c6190adcf1a14b79af55d6c094ac3b5c62f416a141e6	0e14afd6588ff6eaf7c7c6190adcf1a14b79af55d6c094ac3b5c62f416a141e6	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|403|NO	long_sha	8079ce0e0510cb591d635908ccf757f7a96ef9112a3c28bc680505892d39007c	8079ce0e0510cb591d635908ccf757f7a96ef9112a3c28bc680505892d39007c	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd5|403|OR	da_sha	ff20d91cf7b9be755bb9f7aa4c507c0cfaf0b2ab33a62bdf17087939c34d4d1e	ff20d91cf7b9be755bb9f7aa4c507c0cfaf0b2ab33a62bdf17087939c34d4d1e	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|403|OR	long_sha	ab228641196377a571615eecd600e22a165054e477b2a66fecccdd206a279744	ab228641196377a571615eecd600e22a165054e477b2a66fecccdd206a279744	TRUE	A2 (ii): identical
+L12|deciding|N1|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd20|403|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N1|vd20|403|NO LCMS_Neg	tested_rows	without values 3	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|403|NO LCMS_Neg	untested_rows	F0076 F0065 F0035	TRUE (per contrast 3)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|403|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|403|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N1|vd20|403|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|N1|vd20|403|OR LCMS_Neg	tested_rows	without values 3	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|403|OR LCMS_Neg	untested_rows	F0076 F0065 F0035	TRUE (per contrast 3)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|403|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|N1|vd20|403|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|N1|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|none|403|NO	da_sha	9491d023518ec266cfc1f384e3709ed6f103b32e18636d733ca09121f730cfd6	9491d023518ec266cfc1f384e3709ed6f103b32e18636d733ca09121f730cfd6	TRUE	A2 (ii): identical
+L12|deciding|E0|none|403|NO	long_sha	6ef64aee1e099f3058bf19efbe925d79c0dba8ea2d2464da441591c3e279ae02	6ef64aee1e099f3058bf19efbe925d79c0dba8ea2d2464da441591c3e279ae02	TRUE	A2 (ii): identical
+L12|deciding|E0|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|none|403|OR	da_sha	5b6036364ae033df303fc53abb6e3be6defdd67682d969e60cfd7267b21ed4f9	5b6036364ae033df303fc53abb6e3be6defdd67682d969e60cfd7267b21ed4f9	TRUE	A2 (ii): identical
+L12|deciding|E0|none|403|OR	long_sha	56f70e80b0226e796619df87177525e25ed80035336741b02c40003946ff55ae	56f70e80b0226e796619df87177525e25ed80035336741b02c40003946ff55ae	TRUE	A2 (ii): identical
+L12|deciding|E0|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd5|403|NO	da_sha	0e47b5d3910a691098463f8cce14228607debd6d0dbb82668985444421be7ae2	0e47b5d3910a691098463f8cce14228607debd6d0dbb82668985444421be7ae2	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|403|NO	long_sha	0ad3fca56540d44e08b8787f2c1d92f89ceb42224261473400e080afcb33ff57	0ad3fca56540d44e08b8787f2c1d92f89ceb42224261473400e080afcb33ff57	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd5|403|OR	da_sha	3e881039127f4d321968169880d71779a1cd4a43864fee7ed815623e9013f400	3e881039127f4d321968169880d71779a1cd4a43864fee7ed815623e9013f400	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|403|OR	long_sha	13a39e718463b64f8279e6c9eecbf17373f021763e2cc0cfc4aa9efdc055620e	13a39e718463b64f8279e6c9eecbf17373f021763e2cc0cfc4aa9efdc055620e	TRUE	A2 (ii): identical
+L12|deciding|E0|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd20|403|NO	da_sha	a9211fa99922abcae72845db09c03fd1ac8994591c5743d6678e8df0b9c81080	a9211fa99922abcae72845db09c03fd1ac8994591c5743d6678e8df0b9c81080	TRUE	A2 (ii): identical
+L12|deciding|E0|vd20|403|NO	long_sha	b23973226a3a1b162e54dac649de58965657fbd11ea18c7ab121291efb5c24f7	b23973226a3a1b162e54dac649de58965657fbd11ea18c7ab121291efb5c24f7	TRUE	A2 (ii): identical
+L12|deciding|E0|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E0|vd20|403|OR	da_sha	a1c333609424ca438674e370fba6b30cab7d6eb0b144befc574d17c88c2dbffc	a1c333609424ca438674e370fba6b30cab7d6eb0b144befc574d17c88c2dbffc	TRUE	A2 (ii): identical
+L12|deciding|E0|vd20|403|OR	long_sha	d74c6dbebfa3841e1b76be23a575470144b5f1cdd7bff8111ae21bbdd0609fc4	d74c6dbebfa3841e1b76be23a575470144b5f1cdd7bff8111ae21bbdd0609fc4	TRUE	A2 (ii): identical
+L12|deciding|E0|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|none|403|NO	da_sha	669ff674b5a0f83e0baacce3de030025a06bc7aa0f8f3f9f4327c3baf0a6bb7f	669ff674b5a0f83e0baacce3de030025a06bc7aa0f8f3f9f4327c3baf0a6bb7f	TRUE	A2 (ii): identical
+L12|deciding|E1|none|403|NO	long_sha	1ffb7cd3dc88598308fc3268b04cd3815687c6d22417aaf34c3c3000c352c484	1ffb7cd3dc88598308fc3268b04cd3815687c6d22417aaf34c3c3000c352c484	TRUE	A2 (ii): identical
+L12|deciding|E1|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|none|403|OR	da_sha	d50c77002c750fd3c01dc42e1fa39bf5d8129a34ef3f835ae74f89f7c7ac83cc	d50c77002c750fd3c01dc42e1fa39bf5d8129a34ef3f835ae74f89f7c7ac83cc	TRUE	A2 (ii): identical
+L12|deciding|E1|none|403|OR	long_sha	ba1d7dd19250d40d1498a2ca039d51d562b2100bc5d77578c6818fef994ba657	ba1d7dd19250d40d1498a2ca039d51d562b2100bc5d77578c6818fef994ba657	TRUE	A2 (ii): identical
+L12|deciding|E1|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd5|403|NO	da_sha	1a470605437b0f2bab4c327be47b4dac0bbe5f3da9c83e949cb0402f4ddceeee	1a470605437b0f2bab4c327be47b4dac0bbe5f3da9c83e949cb0402f4ddceeee	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|403|NO	long_sha	aef1da3fb604343c70f4ecb8cb023e037c8a204a3a02ff66d1e45cd492ed4211	aef1da3fb604343c70f4ecb8cb023e037c8a204a3a02ff66d1e45cd492ed4211	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd5|403|OR	da_sha	4d403e0b76e322ee9c10902979387172e23ef8b1f34f228d20945051e66d0f14	4d403e0b76e322ee9c10902979387172e23ef8b1f34f228d20945051e66d0f14	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|403|OR	long_sha	7c47d3c4ededc23aa9a98798d35a859face4c13ba085b8c4411706634448aa5d	7c47d3c4ededc23aa9a98798d35a859face4c13ba085b8c4411706634448aa5d	TRUE	A2 (ii): identical
+L12|deciding|E1|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd20|403|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E1|vd20|403|NO LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|403|NO LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|403|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|403|NO LCMS_Pos	untested_rows	F0482	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E1|vd20|403|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E1|vd20|403|OR LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|403|OR LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|403|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E1|vd20|403|OR LCMS_Pos	untested_rows	F0482	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E1|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|none|403|NO	da_sha	82094a349f4f057a0264da091609649e0ba4cc50c847dd46731bc995b24be8ce	82094a349f4f057a0264da091609649e0ba4cc50c847dd46731bc995b24be8ce	TRUE	A2 (ii): identical
+L12|deciding|N2|none|403|NO	long_sha	e958068adc58424df01a4f92bdca62240dcd24f3bd37a0b6342a65a950cd74fb	e958068adc58424df01a4f92bdca62240dcd24f3bd37a0b6342a65a950cd74fb	TRUE	A2 (ii): identical
+L12|deciding|N2|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|none|403|OR	da_sha	cbdf28a19aa8c9cc95abdf89a45d45d274d228547db86d69732a92317cb85941	cbdf28a19aa8c9cc95abdf89a45d45d274d228547db86d69732a92317cb85941	TRUE	A2 (ii): identical
+L12|deciding|N2|none|403|OR	long_sha	8250c1e37e5a2381d2a8b1ed08c5ae43eb80b6717118045440d1529942b6ff2e	8250c1e37e5a2381d2a8b1ed08c5ae43eb80b6717118045440d1529942b6ff2e	TRUE	A2 (ii): identical
+L12|deciding|N2|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd5|403|NO	da_sha	d97ba38d552af256ef037b92853384b135bf2f4e87187cdc104bf450311a9d48	d97ba38d552af256ef037b92853384b135bf2f4e87187cdc104bf450311a9d48	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|403|NO	long_sha	d92cdc69e19573eb2e33d435f52e302f1ed933a17fdb07be144b3b089a47e838	d92cdc69e19573eb2e33d435f52e302f1ed933a17fdb07be144b3b089a47e838	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd5|403|OR	da_sha	41235df4bfbf395e9cfc2c8e9629bb1badf5f98ae86d98ad7ad9354453d2e52e	41235df4bfbf395e9cfc2c8e9629bb1badf5f98ae86d98ad7ad9354453d2e52e	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|403|OR	long_sha	6f4a4f9254d23ec897491d47a66525cf20a6c5d7a732f616c6aec38ab75a75b9	6f4a4f9254d23ec897491d47a66525cf20a6c5d7a732f616c6aec38ab75a75b9	TRUE	A2 (ii): identical
+L12|deciding|N2|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd20|403|NO	da_sha	67c0533c6667f7bb9d8bf65311ffaa0c358b80024b73079e47da5b69f1689b76	67c0533c6667f7bb9d8bf65311ffaa0c358b80024b73079e47da5b69f1689b76	TRUE	A2 (ii): identical
+L12|deciding|N2|vd20|403|NO	long_sha	ae732cb44dd40d2e76e944b9aacb8809305420a9ecc180d8f44e2adf31ea295c	ae732cb44dd40d2e76e944b9aacb8809305420a9ecc180d8f44e2adf31ea295c	TRUE	A2 (ii): identical
+L12|deciding|N2|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|N2|vd20|403|OR	da_sha	4569e4916922bce074d2d341ca229aea97a160e7beec74402a7fab5452398e70	4569e4916922bce074d2d341ca229aea97a160e7beec74402a7fab5452398e70	TRUE	A2 (ii): identical
+L12|deciding|N2|vd20|403|OR	long_sha	c69b841cc216a20ce4bdbcd3d3e1f9dfcae65c67fce6b3c56bdea31351bbae7a	c69b841cc216a20ce4bdbcd3d3e1f9dfcae65c67fce6b3c56bdea31351bbae7a	TRUE	A2 (ii): identical
+L12|deciding|N2|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|none|403|NO	da_sha	3db30f8059914a3e087980cd8c85caa1e5d504996eecbc192240d380a582d5fb	3db30f8059914a3e087980cd8c85caa1e5d504996eecbc192240d380a582d5fb	TRUE	A2 (ii): identical
+L12|deciding|E2|none|403|NO	long_sha	5fc102dd1acb6a00917fbb3b2a9b0e902489bc6778205bf1d54cc17a5c4afaaf	5fc102dd1acb6a00917fbb3b2a9b0e902489bc6778205bf1d54cc17a5c4afaaf	TRUE	A2 (ii): identical
+L12|deciding|E2|none|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|none|403|OR	da_sha	fbfe3509a3d2fe93c60e8a2bd667b4ef0d689f16e732e3f8c5df7dc86c670627	fbfe3509a3d2fe93c60e8a2bd667b4ef0d689f16e732e3f8c5df7dc86c670627	TRUE	A2 (ii): identical
+L12|deciding|E2|none|403|OR	long_sha	aae6fd74af850e9197dcad87bcf18d1a66f812edab91aeeb8677cd3ab45f6d91	aae6fd74af850e9197dcad87bcf18d1a66f812edab91aeeb8677cd3ab45f6d91	TRUE	A2 (ii): identical
+L12|deciding|E2|none|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd5|403|NO	da_sha	85373006e9fb4d63c30639dd398463c00b838de886541dc1b66348d2d9facf17	85373006e9fb4d63c30639dd398463c00b838de886541dc1b66348d2d9facf17	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|403|NO	long_sha	79c0d8e56c11c7c634569fb24f5f94641d84e227de39f956631ba9da3c9b7007	79c0d8e56c11c7c634569fb24f5f94641d84e227de39f956631ba9da3c9b7007	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd5|403|OR	da_sha	4fab34ef619644612971e63dcc3b6ee8603bd1e738b0e8fcda8ee284e147f3f3	4fab34ef619644612971e63dcc3b6ee8603bd1e738b0e8fcda8ee284e147f3f3	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|403|OR	long_sha	1fef572ce909d46d606beeda5f4e17c06d129dcf99edc9963f28aa613cc63d35	1fef572ce909d46d606beeda5f4e17c06d129dcf99edc9963f28aa613cc63d35	TRUE	A2 (ii): identical
+L12|deciding|E2|vd5|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd20|403|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E2|vd20|403|NO LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|403|NO LCMS_Neg	untested_rows	F0055 F0059	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|403|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|403|NO LCMS_Pos	untested_rows	F0272	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L12|deciding|E2|vd20|403|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L12|deciding|E2|vd20|403|OR LCMS_Neg	tested_rows	without values 2	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|403|OR LCMS_Neg	untested_rows	F0055 F0059	TRUE (per contrast 2)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|403|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L12|deciding|E2|vd20|403|OR LCMS_Pos	untested_rows	F0272	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L12|deciding|E2|vd20|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N0|ba|401|NO	da_sha	27bb30747e41babb8d3155b2556eeee4d01cb4ba4d24f5fa9bad3bd26f43405a	27bb30747e41babb8d3155b2556eeee4d01cb4ba4d24f5fa9bad3bd26f43405a	TRUE	A2 (ii): identical
+L64|ba|N0|ba|401|NO	long_sha	dde266211d1b27fe5ed3fa0223ef5ac4265db49e3226aa34cd4f6c4b8104f1dd	dde266211d1b27fe5ed3fa0223ef5ac4265db49e3226aa34cd4f6c4b8104f1dd	TRUE	A2 (ii): identical
+L64|ba|N0|ba|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N0|ba|401|OR	da_sha	4d5c175fcf33b10a1047d5f6f6a29ee2068c0a023f2841b5efbcb28b343ac3a7	4d5c175fcf33b10a1047d5f6f6a29ee2068c0a023f2841b5efbcb28b343ac3a7	TRUE	A2 (ii): identical
+L64|ba|N0|ba|401|OR	long_sha	91c5a08fff2b90d2a29abd26cf719d4ee79aae9b824da8ef4664aee35119e363	91c5a08fff2b90d2a29abd26cf719d4ee79aae9b824da8ef4664aee35119e363	TRUE	A2 (ii): identical
+L64|ba|N0|ba|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N1|ba|401|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|N1|ba|401|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|401|NO LCMS_Neg	untested_rows	F0128	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|401|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|401|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N1|ba|401|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|N1|ba|401|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|401|OR LCMS_Neg	untested_rows	F0128	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|401|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|401|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E0|ba|401|NO	da_sha	58000793d3bc97e737268ed7bd2f5cf2a2487c0ebdc9b4cc02a2ce827ec51fdf	58000793d3bc97e737268ed7bd2f5cf2a2487c0ebdc9b4cc02a2ce827ec51fdf	TRUE	A2 (ii): identical
+L64|ba|E0|ba|401|NO	long_sha	07b6a3965915cd1604735686226df2dc4a5bb767b7c02b63cd67ff15df62f512	07b6a3965915cd1604735686226df2dc4a5bb767b7c02b63cd67ff15df62f512	TRUE	A2 (ii): identical
+L64|ba|E0|ba|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E0|ba|401|OR	da_sha	f734df4f852b43395f499832f709423cf361f2c041006534edc5140d00585c58	f734df4f852b43395f499832f709423cf361f2c041006534edc5140d00585c58	TRUE	A2 (ii): identical
+L64|ba|E0|ba|401|OR	long_sha	ccd846c3f00cc49e22d7c6dbaf8e1173a2362f5d4028b95d10db09d253df7ae6	ccd846c3f00cc49e22d7c6dbaf8e1173a2362f5d4028b95d10db09d253df7ae6	TRUE	A2 (ii): identical
+L64|ba|E0|ba|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E1|ba|401|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|E1|ba|401|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|401|NO LCMS_Neg	untested_rows	F0077	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|401|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|401|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|401|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E1|ba|401|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|E1|ba|401|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|401|OR LCMS_Neg	untested_rows	F0077	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|401|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|401|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|401|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N0|ba|402|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|N0|ba|402|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N0|ba|402|NO LCMS_Neg	untested_rows	F0124	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N0|ba|402|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N0|ba|402|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N0|ba|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N0|ba|402|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|N0|ba|402|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N0|ba|402|OR LCMS_Neg	untested_rows	F0124	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N0|ba|402|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N0|ba|402|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N0|ba|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N1|ba|402|NO	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|N1|ba|402|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|402|NO LCMS_Neg	untested_rows	F0037	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|402|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|402|NO LCMS_Pos	untested_rows	F0344	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N1|ba|402|OR	completes	crashed; errors 2	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|N1|ba|402|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|402|OR LCMS_Neg	untested_rows	F0037	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|402|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|N1|ba|402|OR LCMS_Pos	untested_rows	F0344	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|N1|ba|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E0|ba|402|NO	da_sha	8fa6999a24e75c3a0e64543e9f6cee5cc26b15b27a31f28b72941c3e14ae1bef	8fa6999a24e75c3a0e64543e9f6cee5cc26b15b27a31f28b72941c3e14ae1bef	TRUE	A2 (ii): identical
+L64|ba|E0|ba|402|NO	long_sha	852c2ef20a9f2c622a16cfa90763159c1282e78c3f51f916028bcbe9022af0a8	852c2ef20a9f2c622a16cfa90763159c1282e78c3f51f916028bcbe9022af0a8	TRUE	A2 (ii): identical
+L64|ba|E0|ba|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E0|ba|402|OR	da_sha	a2eeaf59d5a658cb58f66c57e55eeaf2587f8cdbdd5d6f4d3c1770309d41323b	a2eeaf59d5a658cb58f66c57e55eeaf2587f8cdbdd5d6f4d3c1770309d41323b	TRUE	A2 (ii): identical
+L64|ba|E0|ba|402|OR	long_sha	2618fddeb0474379ae50a627c8a6684bed59a40d51eedb8866e88beb60f9f46d	2618fddeb0474379ae50a627c8a6684bed59a40d51eedb8866e88beb60f9f46d	TRUE	A2 (ii): identical
+L64|ba|E0|ba|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E1|ba|402|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|E1|ba|402|NO LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|402|NO LCMS_Neg	untested_rows	F0050	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|402|NO LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|402|NO LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|402|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E1|ba|402|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|E1|ba|402|OR LCMS_Neg	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|402|OR LCMS_Neg	untested_rows	F0050	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|402|OR LCMS_Pos	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E1|ba|402|OR LCMS_Pos	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E1|ba|402|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N0|ba|403|NO	da_sha	0f7edc5314be7143d27a282d178e989e8465d083ee310d8cddaf61d7ab651383	0f7edc5314be7143d27a282d178e989e8465d083ee310d8cddaf61d7ab651383	TRUE	A2 (ii): identical
+L64|ba|N0|ba|403|NO	long_sha	4ff4ff0371a0e6bcf0635e25084976c80cb7302a822ef78484970a56b9d192c8	4ff4ff0371a0e6bcf0635e25084976c80cb7302a822ef78484970a56b9d192c8	TRUE	A2 (ii): identical
+L64|ba|N0|ba|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N0|ba|403|OR	da_sha	2723514127f500b1705f5bdbaf1f25135ff78664861c02c53ef210326ae7bc79	2723514127f500b1705f5bdbaf1f25135ff78664861c02c53ef210326ae7bc79	TRUE	A2 (ii): identical
+L64|ba|N0|ba|403|OR	long_sha	ca72a0f388641b16a9cc315c7db16f3f9c8dcf33359bcbdee80efd4ec60f84c8	ca72a0f388641b16a9cc315c7db16f3f9c8dcf33359bcbdee80efd4ec60f84c8	TRUE	A2 (ii): identical
+L64|ba|N0|ba|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N1|ba|403|NO	da_sha	692197e62decb4d3bd5bb7f7d52076f6c9b83f598dd3f562882e12a63835204b	692197e62decb4d3bd5bb7f7d52076f6c9b83f598dd3f562882e12a63835204b	TRUE	A2 (ii): identical
+L64|ba|N1|ba|403|NO	long_sha	e2058e1229703608bb5fde8cce5bb6619521a5ee32fe5d583979b747549f6d5f	e2058e1229703608bb5fde8cce5bb6619521a5ee32fe5d583979b747549f6d5f	TRUE	A2 (ii): identical
+L64|ba|N1|ba|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|N1|ba|403|OR	da_sha	0366cc4b95f3d8a0a6fbfa3595fd1e7734d646723dac834b778c2191de6b04e0	0366cc4b95f3d8a0a6fbfa3595fd1e7734d646723dac834b778c2191de6b04e0	TRUE	A2 (ii): identical
+L64|ba|N1|ba|403|OR	long_sha	1a267d389d286d8f908c3b42c6f552ae7edd3f22855e193ff28650d119895fa1	1a267d389d286d8f908c3b42c6f552ae7edd3f22855e193ff28650d119895fa1	TRUE	A2 (ii): identical
+L64|ba|N1|ba|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E0|ba|403|NO	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|E0|ba|403|NO LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E0|ba|403|NO LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E0|ba|403|NO LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E0|ba|403|NO LCMS_Pos	untested_rows	F0315	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E0|ba|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E0|ba|403|OR	completes	ok; errors 1	ok; errors 0	TRUE	A2 (iii): completes on head
+L64|ba|E0|ba|403|OR LCMS_Neg	tested_rows	without values 0	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E0|ba|403|OR LCMS_Neg	untested_rows		TRUE (per contrast 0)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E0|ba|403|OR LCMS_Pos	tested_rows	without values 1	identical; max relative 0; reduced input has a missing value TRUE	TRUE	A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12
+L64|ba|E0|ba|403|OR LCMS_Pos	untested_rows	F0315	TRUE (per contrast 1)	TRUE	A2 (iii): rows with AveExpr missing are the features without values
+L64|ba|E0|ba|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E1|ba|403|NO	da_sha	841068a34172498947cf209af067b660b50763ea73507d8ab223b335f93e5bd1	841068a34172498947cf209af067b660b50763ea73507d8ab223b335f93e5bd1	TRUE	A2 (ii): identical
+L64|ba|E1|ba|403|NO	long_sha	bbb3cc2f8d0115ccc6a8396ea3f4fcb21c910c74d634200c28d3e41b96221797	bbb3cc2f8d0115ccc6a8396ea3f4fcb21c910c74d634200c28d3e41b96221797	TRUE	A2 (ii): identical
+L64|ba|E1|ba|403|NO	head_messages		   	TRUE	A2 (iv): no head failure with either message
+L64|ba|E1|ba|403|OR	da_sha	e1ff8df9a293a95bb41949434985188f51c7892f607dbf41c0489a6895a7a8b4	e1ff8df9a293a95bb41949434985188f51c7892f607dbf41c0489a6895a7a8b4	TRUE	A2 (ii): identical
+L64|ba|E1|ba|403|OR	long_sha	bbc74bc77ff8c23cc5b61c3f98c85ec7c512ad3403936e33d71c905ab061f124	bbc74bc77ff8c23cc5b61c3f98c85ec7c512ad3403936e33d71c905ab061f124	TRUE	A2 (ii): identical
+L64|ba|E1|ba|403|OR	head_messages		   	TRUE	A2 (iv): no head failure with either message

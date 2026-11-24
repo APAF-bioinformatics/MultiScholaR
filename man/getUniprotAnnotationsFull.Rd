@@ -31,3 +31,8 @@ Data frame with UniProt annotations.
 Retrieves comprehensive protein information from UniProt, including Cross-references,
 Gene Ontology, and functional data.
 }
+\details{
+When the retrieval fails, a warning of class \code{prot_annotation_uniprot_empty} with its \code{reason} (\code{request_failed},
+\code{processing_failed}, or \code{id_conversion_failed} when the Ensembl conversion failed) is signalled and an empty
+annotation table is returned. Requests carry a time-out and up to three attempts (see \code{directUniprotDownload}).
+}

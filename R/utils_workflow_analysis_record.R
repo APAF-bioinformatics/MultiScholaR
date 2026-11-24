@@ -1155,7 +1155,11 @@ workflowRecordReportSources <- list(
     enrichment_go_pairs_propagated = list(record = c("outcomes", "enrichment", "go_pairs_propagated")),
     enrichment_go_root_only_proteins = list(record = c("outcomes", "enrichment", "go_root_only_proteins")),
     enrichment_go_unreviewed_share = list(record = c("outcomes", "enrichment", "go_unreviewed_share")),
-    enrichment_correction_method = list(record = c("enrichment", "correction_method")))
+    enrichment_correction_method = list(record = c("enrichment", "correction_method")),
+    # KIT-203: the significance rule of a clusterProfiler run: declared (any rule but the q-value), else the rule the
+    # run recorded as applied; a record carrying neither was made with the q-value.
+    enrichment_significance_rule = list(record = list(c("enrichment", "significance_rule"),
+        c("outcomes", "enrichment", "significance_rule"))))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the

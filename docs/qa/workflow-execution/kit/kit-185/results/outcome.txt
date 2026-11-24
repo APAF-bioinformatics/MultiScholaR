@@ -1,0 +1,9 @@
+outcome O3
+deciding cells scored: L1, L1b, L2, M1, M1b, M2, P0, P0r, P1, P2, P3, P4, P4b, P5
+deciding cells held (not in these rows): none
+deciding classifications 456 (family 456)
+material: 53
+no material effect: 312
+not determined: 18
+refused by the route: 28
+serious: 45

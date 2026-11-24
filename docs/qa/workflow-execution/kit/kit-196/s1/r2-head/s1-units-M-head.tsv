@@ -1,0 +1,10 @@
+side	commit	cell	job	rep	exit	wall_seconds	unit_seconds	ns_path	error
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M168	deciding	401	0	2420.7	2420.3	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M168	deciding	402	0	2443	2442.5	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M168	deciding	403	0	2386.5	2386.1	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M168	ba	401	0	858.1	857.6	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M168	ba	402	0	975.5	975.1	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M168	ba	403	0	1019.2	1018.7	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M12	deciding	401	0	1449.5	1449.1	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M12	deciding	402	0	1425.7	1425.3	/home/runner/work/MultiScholaR/MultiScholaR/pkg	
+head	fef003c64454c8a276576797fb0621e608d9e1b8	M12	deciding	403	0	1430	1429.6	/home/runner/work/MultiScholaR/MultiScholaR/pkg	

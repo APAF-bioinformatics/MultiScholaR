@@ -1,0 +1,30 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit207-summary-head-guard.R	155	101	0	2	failed	264	0	0	0	ok	fixed	fixed: KIT-207 E1, E2, E3: lipid a Save after a Revert to QC complete, into the normalisation, or earlier is refused; fixed: KIT-207 E4, E5: lipid a Save after Reset, and on a session loaded under a QC state's name, is refused; fixed: KIT-207 E7: lipid a managed Save after a Revert to QC complete queues nothing; fixed: KIT-207 E8: lipid Generate Report and Export Session State refuse after a Revert to QC complete; fixed: KIT-207 E1, E2, E3: metab a Save after a Revert to QC complete, into the normalisation, or earlier is refused; fixed: KIT-207 E4, E5: metab a Save after Reset, and on a session loaded under a QC state's name, is refused; fixed: KIT-207 E7: metab a managed Save after a Revert to QC complete queues nothing; fixed: KIT-207 E8: metab Generate Report and Export Session State refuse after a Revert to QC complete; fixed: KIT-207 E6: transcriptomics, a Save after a Revert to trx_qc_complete is refused and writes no integration file; fixed: KIT-207 E9: transcriptomics, a second run without a new RUVIII export refuses the earlier export and says so; fixed: KIT-207 E11: lipid, the Summary tab mounted: a refused Save, then Copy stops at the missing study parameters; counts: KIT-207 E1, E2, E3: lipid a Save after a Revert to QC complete, into the normalisation, or earlier is refused (passed 13 -> 33, skipped 0 -> 0); counts: KIT-207 E1, E2, E3: metab a Save after a Revert to QC complete, into the normalisation, or earlier is refused (passed 13 -> 33, skipped 0 -> 0); counts: KIT-207 E11: lipid, the Summary tab mounted: a refused Save, then Copy stops at the missing study parameters (passed 4 -> 7, skipped 0 -> 0); counts: KIT-207 E4, E5: lipid a Save after Reset, and on a session loaded under a QC state's name, is refused (passed 6 -> 20, skipped 0 -> 0); counts: KIT-207 E4, E5: metab a Save after Reset, and on a session loaded under a QC state's name, is refused (passed 6 -> 20, skipped 0 -> 0); counts: KIT-207 E6: transcriptomics, a Save after a Revert to trx_qc_complete is refused and writes no integration file (passed 5 -> 11, skipped 0 -> 0); counts: KIT-207 E7: lipid a managed Save after a Revert to QC complete queues nothing (passed 7 -> 13, skipped 0 -> 0); counts: KIT-207 E7: metab a managed Save after a Revert to QC complete queues nothing (passed 7 -> 13, skipped 0 -> 0); counts: KIT-207 E8: lipid Generate Report and Export Session State refuse after a Revert to QC complete (passed 4 -> 9, skipped 0 -> 0); counts: KIT-207 E8: metab Generate Report and Export Session State refuse after a Revert to QC complete (passed 4 -> 9, skipped 0 -> 0); counts: KIT-207 E9: transcriptomics, a second run without a new RUVIII export refuses the earlier export and says so (passed 5 -> 7, skipped 0 -> 0); counts: KIT-207 G7: the guard passes proteomics and a manager that is not a session owner (head only) (passed 0 -> 4, skipped 1 -> 0); counts: KIT-207 G8: the module-CI Summary owners pass the guard, with the default configuration and with RUV skipped (head only) (passed 0 -> 4, skipped 1 -> 0)	
+test-integration-input-lipid-metab.R	130	2	0	0	failed	132	0	0	0	ok	fixed	fixed: KIT-135: without RUV the normalised matrix is written; with no final state nothing is, and an earlier input is removed; counts: KIT-135: without RUV the normalised matrix is written; with no final state nothing is, and an earlier input is removed (passed 6 -> 8, skipped 0 -> 0)	
+test-integration-input-transcriptomics.R	45	3	0	0	failed	45	3	0	0	failed	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-module-ci-trx-summary.R	82	3	0	0	failed	82	3	0	0	failed	same		
+test-kit172-downstream.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-workflow-omics-sessions.R	150	0	0	0	ok	150	0	0	0	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-15-summary-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-module-ui-wrapper-direct-shared.R	45	0	0	0	ok	45	0	0	0	ok	same		
+test-omic-design-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-workflow-checkpoint-harness.R	628	0	1	8	failed	628	0	1	8	failed	same		
+test-workflow-figure-paths.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-integration-input.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-server-shared.R	226	0	0	0	ok	226	0	0	0	ok	same		
+test-omics-norm-state-guards.R	647	0	0	0	ok	647	0	0	0	ok	same		
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		

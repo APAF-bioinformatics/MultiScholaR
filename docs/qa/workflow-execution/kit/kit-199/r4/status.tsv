@@ -1,0 +1,9 @@
+stage	side	outcome	detail	seconds
+worktree	measure	ok		0.8
+head_commit	measure	ok	ef38bf2b557f303a72110e2742e377e12a663f36	0.0
+native	measure	ok		0.8
+load	measure	ok		8.6
+lane	measure	ok	lane record 227.0 s	227.3
+child	measure	ok	the child exited 0	236.5
+record	measure	ok	24 step ids	
+copy	measure	ok	copy present: TRUE; its masked digest equals the record's at da: TRUE	

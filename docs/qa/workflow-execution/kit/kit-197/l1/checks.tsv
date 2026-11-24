@@ -1,0 +1,10 @@
+id	pass	detail
+E1	TRUE	48 of 48 units pass; base tree 604ec4dd49f6eba3c842df09fdd0a057a7c83658, exit 0
+E2a	TRUE	48 of 48 units pass; max |logFC - observed mean difference| 3.5527136788005009e-14
+E2b	TRUE	48 of 48 units pass; id, p, q of the modified daTable identical to S2's daTable
+E3	TRUE	48 of 48 units pass; O subset of H
+DET	TRUE	determinism pass (K197_DETERMINISM=1) on cell A r = 9001, 9002: 2 of 2 identical
+E4	TRUE	estimates_pool ok; estimates_settings ok; jack_pool ok; jack_setting ok; pooled_label ok; setting_labels ok; attribution ok; outcome ok
+E5	TRUE	two runs exit 0, 0; 11 files each; all identical: TRUE
+G1m	TRUE	descriptive mode on r = 9001, 9002: exit 1, stopped at G1: TRUE, 96 comparisons written, no estimand written: TRUE
+E6	TRUE	killed while running: TRUE; complete tasks after the kill: 1 of 4; continued with 3 task(s), exit 0; uninterrupted exit 0; assembled rows identical: TRUE; metrics identical (seconds excluded): TRUE; each replicate once with six masks: TRUE

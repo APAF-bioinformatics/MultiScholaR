@@ -1,0 +1,103 @@
+key	k188_status	s1_status	k188_class	s1_class	stop_equal	k188_n_T	s1_n_T	n_T_equal	k188_miss_share	s1_miss_share	miss_equal	s1_n_without_values	s1_err_contrasts
+M12|deciding|N0|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0	0	TRUE	0	0
+M12|deciding|N0|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0.04555556	0.04555556	TRUE	0	0
+M12|deciding|N0|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	148	148	TRUE	0.2083333	0.2083333	TRUE	5	3
+M12|deciding|N1|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|N1|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	144	144	TRUE	0.04722222	0.04722222	TRUE	0	0
+M12|deciding|N1|vd20|401|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.1966667	0.1966667	TRUE	0	0
+M12|deciding|E0|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|E0|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0.04555556	0.04555556	TRUE	0	0
+M12|deciding|E0|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	146	146	TRUE	0.1988889	0.1988889	TRUE	7	3
+M12|deciding|E1|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	143	143	TRUE	0	0	TRUE	0	0
+M12|deciding|E1|vd5|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	142	142	TRUE	0.045	0.045	TRUE	1	3
+M12|deciding|E1|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	150	150	TRUE	0.2055556	0.2055556	TRUE	6	3
+M12|deciding|N2|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	137	137	TRUE	0	0	TRUE	0	0
+M12|deciding|N2|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0.05166667	0.05166667	TRUE	0	0
+M12|deciding|N2|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	152	152	TRUE	0.2005556	0.2005556	TRUE	3	3
+M12|deciding|E2|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|E2|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0.04555556	0.04555556	TRUE	0	0
+M12|deciding|E2|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	151	151	TRUE	0.2016667	0.2016667	TRUE	3	3
+M12|deciding|N0|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0	0	TRUE	0	0
+M12|deciding|N0|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	137	137	TRUE	0.05	0.05	TRUE	0	0
+M12|deciding|N0|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	145	145	TRUE	0.2011111	0.2011111	TRUE	5	3
+M12|deciding|N1|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|N1|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0.04666667	0.04666667	TRUE	0	0
+M12|deciding|N1|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	151	151	TRUE	0.2066667	0.2066667	TRUE	3	3
+M12|deciding|E0|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	142	142	TRUE	0	0	TRUE	0	0
+M12|deciding|E0|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0.04722222	0.04722222	TRUE	0	0
+M12|deciding|E0|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	153	153	TRUE	0.2144444	0.2144444	TRUE	3	3
+M12|deciding|E1|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	143	143	TRUE	0	0	TRUE	0	0
+M12|deciding|E1|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	142	142	TRUE	0.05777778	0.05777778	TRUE	0	0
+M12|deciding|E1|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	151	151	TRUE	0.2038889	0.2038889	TRUE	2	3
+M12|deciding|N2|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0	0	TRUE	0	0
+M12|deciding|N2|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	143	143	TRUE	0.04777778	0.04777778	TRUE	0	0
+M12|deciding|N2|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	153	153	TRUE	0.2016667	0.2016667	TRUE	4	3
+M12|deciding|E2|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	142	142	TRUE	0	0	TRUE	0	0
+M12|deciding|E2|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	143	143	TRUE	0.04388889	0.04388889	TRUE	0	0
+M12|deciding|E2|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	153	153	TRUE	0.1966667	0.1966667	TRUE	5	3
+M12|deciding|N0|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|N0|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0.05111111	0.05111111	TRUE	0	0
+M12|deciding|N0|vd20|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	150	150	TRUE	0.2005556	0.2005556	TRUE	7	3
+M12|deciding|N1|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0	0	TRUE	0	0
+M12|deciding|N1|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	144	144	TRUE	0.05388889	0.05388889	TRUE	0	0
+M12|deciding|N1|vd20|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	150	150	TRUE	0.1938889	0.1938889	TRUE	2	3
+M12|deciding|E0|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|E0|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0.04777778	0.04777778	TRUE	0	0
+M12|deciding|E0|vd20|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	148	148	TRUE	0.2033333	0.2033333	TRUE	5	3
+M12|deciding|E1|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M12|deciding|E1|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0.04944444	0.04944444	TRUE	0	0
+M12|deciding|E1|vd20|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	152	152	TRUE	0.2066667	0.2066667	TRUE	2	3
+M12|deciding|N2|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0	0	TRUE	0	0
+M12|deciding|N2|vd5|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	141	141	TRUE	0.05	0.05	TRUE	1	3
+M12|deciding|N2|vd20|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	151	151	TRUE	0.1955556	0.1955556	TRUE	4	3
+M12|deciding|E2|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0	0	TRUE	0	0
+M12|deciding|E2|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	143	143	TRUE	0.04777778	0.04777778	TRUE	0	0
+M12|deciding|E2|vd20|403|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	150	150	TRUE	0.2044444	0.2044444	TRUE	4	3
+M168|ba|N0|ba|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	153	153	TRUE	0.2125563	0.2125563	TRUE	1	3
+M168|ba|N1|ba|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	151	151	TRUE	0.211028	0.211028	TRUE	1	3
+M168|ba|E0|ba|401|LCMS_Pos	ok	ok	NA	NA	TRUE	153	153	TRUE	0.2163369	0.2163369	TRUE	0	0
+M168|ba|E1|ba|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	150	150	TRUE	0.2150499	0.2150499	TRUE	2	3
+M168|ba|N0|ba|402|LCMS_Pos	ok	ok	NA	NA	TRUE	151	151	TRUE	0.2161358	0.2161358	TRUE	0	0
+M168|ba|N1|ba|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	152	152	TRUE	0.2140042	0.2140042	TRUE	1	3
+M168|ba|E0|ba|402|LCMS_Pos	ok	ok	NA	NA	TRUE	150	150	TRUE	0.2166184	0.2166184	TRUE	0	0
+M168|ba|E1|ba|402|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.2186293	0.2186293	TRUE	0	0
+M168|ba|N0|ba|403|LCMS_Pos	ok	ok	NA	NA	TRUE	153	153	TRUE	0.2138031	0.2138031	TRUE	0	0
+M168|ba|N1|ba|403|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.2149292	0.2149292	TRUE	0	0
+M168|ba|E0|ba|403|LCMS_Pos	ok	ok	NA	NA	TRUE	151	151	TRUE	0.2182674	0.2182674	TRUE	0	0
+M168|ba|E1|ba|403|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.2171412	0.2171412	TRUE	0	0
+M168|deciding|N0|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	137	137	TRUE	0	0	TRUE	0	0
+M168|deciding|N0|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0.05043436	0.05043436	TRUE	0	0
+M168|deciding|N0|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	153	153	TRUE	0.1970721	0.1970721	TRUE	1	3
+M168|deciding|N1|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	142	142	TRUE	0	0	TRUE	0	0
+M168|deciding|N1|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0.05027349	0.05027349	TRUE	0	0
+M168|deciding|N1|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	151	151	TRUE	0.1959459	0.1959459	TRUE	1	3
+M168|deciding|E0|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0	0	TRUE	0	0
+M168|deciding|E0|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	137	137	TRUE	0.04983108	0.04983108	TRUE	0	0
+M168|deciding|E0|vd20|401|LCMS_Pos	ok	ok	NA	NA	TRUE	153	153	TRUE	0.204231	0.204231	TRUE	0	0
+M168|deciding|E1|none|401|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0	0	TRUE	0	0
+M168|deciding|E1|vd5|401|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0.05079633	0.05079633	TRUE	0	0
+M168|deciding|E1|vd20|401|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	150	150	TRUE	0.2005309	0.2005309	TRUE	2	3
+M168|deciding|N0|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0	0	TRUE	0	0
+M168|deciding|N0|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	137	137	TRUE	0.05043436	0.05043436	TRUE	0	0
+M168|deciding|N0|vd20|402|LCMS_Pos	ok	ok	NA	NA	TRUE	151	151	TRUE	0.2007722	0.2007722	TRUE	0	0
+M168|deciding|N1|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0	0	TRUE	0	0
+M168|deciding|N1|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0.04946911	0.04946911	TRUE	0	0
+M168|deciding|N1|vd20|402|LCMS_Pos	crashed	crashed	simpleError: prior.weights contain NA values	simpleError: prior.weights contain NA values	TRUE	152	152	TRUE	0.1979569	0.1979569	TRUE	1	3
+M168|deciding|E0|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0	0	TRUE	0	0
+M168|deciding|E0|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0.05232465	0.05232465	TRUE	0	0
+M168|deciding|E0|vd20|402|LCMS_Pos	ok	ok	NA	NA	TRUE	150	150	TRUE	0.2012548	0.2012548	TRUE	0	0
+M168|deciding|E1|none|402|LCMS_Pos	ok	ok	NA	NA	TRUE	139	139	TRUE	0	0	TRUE	0	0
+M168|deciding|E1|vd5|402|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0.04934846	0.04934846	TRUE	0	0
+M168|deciding|E1|vd20|402|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.2028636	0.2028636	TRUE	0	0
+M168|deciding|N0|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0	0	TRUE	0	0
+M168|deciding|N0|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	136	136	TRUE	0.04826255	0.04826255	TRUE	0	0
+M168|deciding|N0|vd20|403|LCMS_Pos	ok	ok	NA	NA	TRUE	153	153	TRUE	0.2006918	0.2006918	TRUE	0	0
+M168|deciding|N1|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	140	140	TRUE	0	0	TRUE	0	0
+M168|deciding|N1|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0.05027349	0.05027349	TRUE	0	0
+M168|deciding|N1|vd20|403|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.2001689	0.2001689	TRUE	0	0
+M168|deciding|E0|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0	0	TRUE	0	0
+M168|deciding|E0|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	138	138	TRUE	0.05027349	0.05027349	TRUE	0	0
+M168|deciding|E0|vd20|403|LCMS_Pos	ok	ok	NA	NA	TRUE	151	151	TRUE	0.202944	0.202944	TRUE	0	0
+M168|deciding|E1|none|403|LCMS_Pos	ok	ok	NA	NA	TRUE	141	141	TRUE	0	0	TRUE	0	0
+M168|deciding|E1|vd5|403|LCMS_Pos	ok	ok	NA	NA	TRUE	142	142	TRUE	0.05131918	0.05131918	TRUE	0	0
+M168|deciding|E1|vd20|403|LCMS_Pos	ok	ok	NA	NA	TRUE	152	152	TRUE	0.2004907	0.2004907	TRUE	0	0

@@ -1,0 +1,28 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-design-log2.R	0	0	0	0	absent	226	0	0	0	ok	only-on-head		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-analysis-record.R	307	0	0	0	ok	351	0	0	0	ok	count-changed	counts: KIT-177 T5: an LFQ record made with log2(x + 1) replays state by state and still reads log2(x + 1) (passed NA -> 44, skipped NA -> 0)	
+test-gui-entry-proteomics.R	183	10	0	0	failed	183	10	0	0	failed	same		
+test-prot-design-core.R	37	0	0	0	ok	37	0	0	0	ok	same		
+test-prot-04a-design-module-characterization.R	109	0	0	18	ok	109	0	0	18	ok	same		
+test-prot-04-design.R	488	0	0	118	ok	488	0	0	118	ok	same		
+test-prot-04b-design-server-shared.R	47	0	0	0	ok	47	0	0	0	ok	same		
+test-prot-design-save-preflight.R	8	0	0	0	ok	8	0	0	0	ok	same		
+test-omic-design-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-e2e-proteomics-tmt-lfq.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-module-ci-prot-design.R	11	0	0	5	ok	11	0	0	5	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-module-ci-prot-protein-qc.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-prot-05b-norm-module-contracts.R	439	0	0	22	ok	439	0	0	22	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-workflow-saved-qc.R	120	0	0	0	ok	120	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-prot-missing-value-counts.R	67	0	0	0	ok	67	0	0	0	ok	same		

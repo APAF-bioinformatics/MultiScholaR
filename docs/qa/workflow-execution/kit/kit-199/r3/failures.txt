@@ -1,0 +1,172 @@
+file: test-gui-entry-proteomics.R
+test: KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles
+kind: failure
+message:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+trace (first lines):
+      ▆
+   1. └─guiEntryExpectLane("prot_dia") at test-gui-entry-proteomics.R:6:3
+   2.   └─testthat::expect_identical(...) at ./helper-gui-entry.R:414:5
+
+file: test-gui-entry-proteomics.R
+test: KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles
+kind: failure
+message:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+trace (first lines):
+      ▆
+   1. └─guiEntryExpectLane("prot_dia") at test-gui-entry-proteomics.R:6:3
+   2.   └─testthat::expect_identical(...) at ./helper-gui-entry.R:414:5
+
+file: test-gui-entry-proteomics.R
+test: KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles
+kind: failure
+message:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+trace (first lines):
+      ▆
+   1. └─guiEntryExpectLane("prot_dia") at test-gui-entry-proteomics.R:6:3
+   2.   └─testthat::expect_identical(...) at ./helper-gui-entry.R:414:5
+
+file: test-gui-entry-proteomics.R
+test: KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles
+kind: failure
+message:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+trace (first lines):
+      ▆
+   1. └─guiEntryExpectLane("prot_dia") at test-gui-entry-proteomics.R:6:3
+   2.   └─testthat::expect_identical(...) at ./helper-gui-entry.R:414:5
+
