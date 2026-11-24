@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-196 R1 instrument run 3 of 3: T7 reads the manifest as a state value; failing-first tests on tests-only commit 52343cca",
+  "label": "KIT-196 R1e tests-only 52343cca (T7 instrument repair 3)",
+  "package_commit": "52343cca469e70a96ec495b759a869e6a22bade8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit196-da-no-value-features.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
