@@ -44,6 +44,16 @@ integrationTrxExpected <- function(values, runs) {
         row.names = NULL)
 }
 
+#' KIT-224 (OD-2): the accepted export's newY (genes by runs) with each gene's level restored: plus, per gene, the mean
+#' over the runs of the logCPM the export read (its source state's) minus newY.
+integrationTrxRestored <- function(owner, export) {
+    log_cpm <- withWorkflowStateScope(owner, function() {
+        trxSavedMatrix(owner, trxProductValue(owner, trxStateRuvs(owner, owner$.context$snapshot$exports$trx_ruviii_export$source)$logcpm)$log_cpm)
+    })
+    values <- t(export$value$newY)
+    values + rowMeans(log_cpm[rownames(values), colnames(values), drop = FALSE] - values)
+}
+
 test_that("KIT-136: with RUV applied the input is the accepted RUVIII export (INT-1), corrected, beside today's TSV", {
     fixture <- integrationTrxOwner()
     owner <- fixture$owner
@@ -77,8 +87,9 @@ test_that("KIT-136: with RUV applied the input is the accepted RUVIII export (IN
     expect_identical(unlist(correction$grouping_levels), unique(as.character(input$samples$group)))
     # Today's grid names no new-design field.
     expect_false("ruv_design" %in% names(correction))
-    expect_equal(input$views$transcriptomics$corrected_matrix, integrationTrxExpected(t(export$value$newY), input$samples$Run),
-        tolerance = 1e-12, ignore_attr = TRUE)
+    expect_equal(input$views$transcriptomics$corrected_matrix, integrationTrxExpected(integrationTrxRestored(owner, export),
+        input$samples$Run), tolerance = 1e-12, ignore_attr = TRUE)
+    expect_identical(correction$levels, "restored_to_tmm_logcpm")
     # KIT-153: the data set's own matrix is the TMM logCPM the export's RUV-III read; RUV-III with the export's
     # replicate matrix, controls and k, run again on it, gives the corrected matrix.
     log_cpm <- withWorkflowStateScope(owner, function() trxSavedMatrix(owner, ruvs$logcpm$value$log_cpm))
@@ -117,8 +128,8 @@ test_that("KIT-136: a new design names its RUV record fields; an export from an 
     expect_true(all(RUV_DESIGN_RECORD_FIELDS %in% names(correction)))
     expect_identical(correction[c("k", "ruv_design", "ruv_k_rule", "ruv_k", "ruv_da_method")], list(k = 2L,
         ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k = 2L, ruv_da_method = "edger_qlf_factors_in_model"))
-    expect_equal(input$views$transcriptomics$corrected_matrix, integrationTrxExpected(t(export$value$newY), input$samples$Run),
-        tolerance = 1e-12, ignore_attr = TRUE)
+    expect_equal(input$views$transcriptomics$corrected_matrix, integrationTrxExpected(integrationTrxRestored(owner, export),
+        input$samples$Run), tolerance = 1e-12, ignore_attr = TRUE)
 })
 
 test_that("KIT-136: with RUV off (design none) the TMM logCPM is written, normalised, without a RUVIII export; the worker writes the same", {
