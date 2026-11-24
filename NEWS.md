@@ -29,10 +29,13 @@
    instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
    changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
    unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
-   were false; in a follow-up simulation on new draws this higher share came from fewer truly changed proteins
-   being found among them (power 0.61 against 0.80 among the proteins kept under both rules), not from unchanged
-   proteins among them reaching p below 0.05 more often (5.1 % against 5.0 %, within the declared 10 % margin), and it
-   also appears, at about half the size, when the same share of values is missing at random (KIT-197)); these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   were false; a follow-up simulation on new draws, pooled over 2, 4 and 5 groups of 3 and 3 groups of 4, traced this
+   higher share to lower power among them (truly changed proteins found 0.61 against 0.80 among the proteins kept under
+   both rules), while unchanged proteins among them reached p below 0.05 about as often (5.1 % against 5.0 %, at most
+   3.4 % more often), except the few that hold a value at or below the intensity threshold, which the filter counts as
+   missing but the test uses (2.5 times as often; about 2 % of them, 15 % with four groups of three and 5 % of values
+   missing); it also appears, at about half the size, when the same share of values is missing at random (KIT-197));
+   these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
    sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
    Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
    version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis

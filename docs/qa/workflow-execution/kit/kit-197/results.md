@@ -30,17 +30,29 @@ Deciding settings whose own label differs from the pooled one: A vd5 (not determ
 just above the margin) and B vd5 (both: ρ_O 1.167, lower limit 1.045; E_comp 0.0149). D at vd5 (not deciding) reads
 bias with E_comp negative (−0.020): there the added set holds more true calls per null than O.
 
-## Sentence for the Methods (5.7, O2; filled by `score-k197.R`, `sb/results/sentence.md`; the owner edits, VAL-41)
+## Sentence for the Methods (5.7, O2; the owner edits, VAL-41)
 
-> In simulation, the proteins the count rule newly keeps carry a higher share of false calls (about 6.4 % against
-> 4.9 % among the proteins kept under both rules) because fewer truly changed proteins are found among them (power
-> 0.612 against 0.802; 0.0139 of the excess, 0.0137 in the other order) and more of them are unchanged (0.804 against
-> 0.802; -0.0008); unchanged proteins among them reach p below 0.05 in 5.08 % of cases against 4.99 %, within the
-> declared 10 % margin; the excess also appears when the same share of values is missing at random. The estimated
-> fold change of truly changed proteins among them is shrunk toward 0 by 0.021 log2 on average (0.006 among the
-> proteins kept under both rules). Deciding settings whose own label differs from the pooled one: A vd5 (not
-> determined), B vd5 (both). (simulated data, KIT-185's generator with no unwanted variation; groups of 3 or 4; 100
-> new draws per setting; the size on real data is not measured)
+The template as `score-k197.R` filled it stays in `sb/results/sentence.md`; the text below replaces it after the
+implementation audit (`AUDIT-KIT-197-impl-20261124.md`, I01 and I02).
+
+> In simulation (KIT-185's generator with no unwanted variation; 100 new data sets per setting, pooled over the ten
+> settings in which the excess had been seen: 2, 4 or 5 groups of 3 with 5 %, 10 % or 25 % of values missing, more
+> often at low intensity, and 3 groups of 4 with 25 %), the proteins that the count rule newly keeps carried a higher
+> share of false calls than the proteins kept under both rules (6.4 % against 4.9 %). Lower power accounted for nearly
+> all of the difference (1.3 of 1.5 percentage points). Truly changed proteins among them were found less often (0.61
+> against 0.80), the share of unchanged proteins among them was the same (80.4 % against 80.2 %), and unchanged
+> proteins among them reached p below 0.05 about as often (5.08 % against 4.99 %; at most 3.4 % more often, within the
+> declared 10 % margin). The exception was the unchanged proteins that hold a value at or below the filter's intensity
+> threshold, which the filter counts as missing while the test uses it. These reached p below 0.05 2.5 times as often
+> (2.4 to 2.7). They were 2 % of the newly kept unchanged proteins overall, but 15 % with four groups of three and 5 %
+> of values missing, where unchanged newly kept proteins as a whole reached p below 0.05 1.17 times as often (lower
+> limit 1.05). With the same share of values missing at random the difference was about half as large (0.7 against 1.5
+> percentage points). The estimated fold change of truly changed proteins among them was shrunk toward 0 by 0.021 log2
+> on average (0.006 among the proteins kept under both rules); the lower power is also seen when values are missing at
+> random (0.63 against 0.78), where fold changes are not shrunk. The size on real data was not measured.
+
+(Figures marked as the exception come from the declared strata (R7) aggregated over strata, computed in the
+implementation audit; reported, not deciding.)
 
 Reading notes (inferred, for the owner's edit): the excess FDR_Δ − FDR_O is 0.0146 [0.0121, 0.0172]; E_comp 0.0131
 of it and E_cal 0.0015 [−0.0009, 0.0040]. The null-share part is negative (−0.0008 [−0.0014, −0.0002]) although
@@ -52,9 +64,17 @@ practical size. "Also appears at random" refers to E_comp under mcar (0.0065, ab
 
 - m6_NA (pooled vd) −0.00022 [−0.00202, 0.00151]; mcar 0.00005: the missing value itself does not shift an unchanged
   protein's fold change, as 2.2 derives. F4 not triggered in any of the 24 settings (`sb/results/f4-m6na.tsv`).
-- m6_ℓ 0.120 [0.097, 0.144] (mcar 0.084): where a finite value at or below the threshold sits in a compared group,
-  the group holding the NA appears higher, the B1 shift 2.2 predicts; it does not carry a calibration excess in the
-  pool (ρ_O absent).
+- m6_ℓ 0.120 [0.097, 0.144] (mcar 0.084): where a finite value at or below the threshold sits in a compared group, the
+  group holding the NA appears higher, the B1 shift 2.2 predicts. These proteins do carry a calibration excess.
+  Unchanged proteins of Δ with ℓ = 1 reach p < 0.05 2.54 times as often as O's [2.37, 2.71] (mcar 1.55 [1.40, 1.71];
+  every stratum with ℓ = 1 is above 1 in `strata.tsv`), and those with ℓ = 0 0.98 times [0.96, 1.00] (aggregate over
+  strata computed from the committed rows with the declared resampling, implementation audit; reported, not deciding).
+  They are 2.1 % of Δ's tested unchanged proteins in the pool, so the pooled ρ_O stays within the margin. Their share
+  rises as the missing share falls (B vd5 15 %, C vd5 26 %, D vd5 36 %; at most 1.3 % at vd25), and they carry B vd5's
+  label "both" (ρ_O 1.167 = 0.152 × 2.42 + 0.848 × 0.94; channel share 1.30 [0.88, 2.55], `labels.tsv`; on S2's draws
+  ρ_O 1.10 [1.00, 1.20]). The split is an accounting one: B1's shift and the variance these values add are not
+  separated. The pooled channel share (1.93 [−10.1, 15.4]) is undefined in practice, because its denominator, Δ's
+  pooled excess of p < 0.05 over O's rate, is close to 0.
 - Direction share D among null calls with a one-sided NA: 0.493 [0.467, 0.520] (ℓ = 0: 0.489).
 
 ### Pooled estimates, deciding draws (R = 400 cell-replicates; estimate [2.5 %, 97.5 %] (jackknife SE))
