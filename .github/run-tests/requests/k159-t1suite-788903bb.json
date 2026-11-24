@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 T1 (coordinator ruling 2026-11-24): whole msrval suite with --lint at 788903bb, regression check after the S0 harness changes; T1 1.91 of 21 left, estimate 1.55, script capped at 17 min",
+  "label": "KIT-159 whole msrval suite at 788903bb",
+  "package_commit": "788903bb102fa4f2f1a2e92cf8e9983c44b7628d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1suite-out",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1suite-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 17
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
