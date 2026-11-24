@@ -27,8 +27,11 @@
    steps applied to a normalised table, normalisation now stops with a message naming the step to go back to, instead
    of normalising an earlier table or normalising the data twice. "Apply Correlation Filter" and "Skip Filtering &
    Proceed to DE" now stop with a message when quality control has changed since normalisation, instead of filtering
-   the earlier normalisation's result. Saved projects and analysis records are not changed; replaying a record repeats
-   the steps it recorded (KIT-182).
+   the earlier normalisation's result. Saved projects and analysis records are not changed; in a project saved before this release in which
+   normalisation was run again after a quality-control step was reverted or applied again, that run used the earlier
+   table, and its analysis record names the quality-control result as the step's input; to recompute such a project,
+   press Revert in the Quality Control tab back to the step you changed, apply the steps again and press "Run
+   Normalization & RUV"; replaying a record repeats the steps it recorded (KIT-182).
 
 ### Scientific changes
 

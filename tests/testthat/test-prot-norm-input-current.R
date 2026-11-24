@@ -264,19 +264,47 @@ test_that("KIT-182 F1 (g): the QC step on the worker path carries the same linea
     }
 })
 
-test_that("KIT-182 F1 (h): after the tab's restore, the state keeps its lineage", {
+test_that("KIT-182 F1 (h): after a session export, a reopen into a new owner and the tab's restore, the state keeps its lineage and normalisation is refused", {
+    # The correction pass (audit KIT-182-I01): the case as the ticket declares it, (d) after a session export and
+    # `restoreProtNormTabState`, with the export given the project's own source folder (the application's), the archive
+    # opened into a new owner by the package's own path (`openDIANativeSession`, `adoptDIANativeSession`, as the DA tab's
+    # Load Filtered Session does) and the tab restored there.
     fixture <- protNormCoreOwner()
     norm <- new.env(parent = emptyenv())
     k182Click(fixture, norm, "manual")
     k182Correlation(fixture, norm, 0.5)
-    # R1 instrument repairs (VAL-54, runs 45294678011 and 45302634386): the session export stopped on this fixture on
-    # both commits, before and after the QC change ("saved table changed during read" from describeDIANativeFile: a dependency source that is not a
-    # regular file), so no export runs here; the case checks the lineage after the tab's restore only, and
-    # the export and reopen are recorded as not checked.
     k182QcChange(fixture)
+    exported <- protNormCoreQuiet(runProtNormExportSessionWorkflow(fixture$workflow, norm, k182Settings("manual"),
+        fixture$paths$source_dir, withProgressFn = function(message, value, expr) force(expr),
+        incProgressFn = function(...) NULL))
+    archive <- exported$exportArtifacts$sessionFilepath
+    expect_true(isTRUE(file.exists(archive)))
+    root <- withr::local_tempdir()
+    paths <- list(source_dir = file.path(root, "scripts", "proteomics"),
+        protein_qc_dir = file.path(root, "results", "proteomics", "protein_qc"),
+        peptide_qc_dir = file.path(root, "results", "proteomics", "peptide_qc"))
+    paths$publication_graphs_dir <- file.path(root, "results", "proteomics", "publication_graphs")
+    paths$time_dir <- file.path(paths$publication_graphs_dir, "filtering_qc")
+    for (path in unlist(paths)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    session <- new.env(parent = emptyenv())
+    session$userData <- new.env(parent = emptyenv())
+    session$onFlush <- session$onFlushed <- session$onSessionEnded <- function(...) function() invisible(NULL)
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    workflow$qc_params <- list()
+    imported <- protNormCoreQuiet(openDIANativeSession(archive, paths$source_dir))
+    protNormCoreQuiet(adoptDIANativeSession(imported, workflow, session, paths$source_dir, paths))
+    withr::defer(closeDIAStateAdapter(workflow$state_manager))
+    reopened <- list(manager = workflow$state_manager, workflow = workflow, paths = paths)
+    expect_false(identical(reopened$manager$.context$store$directory, fixture$manager$.context$store$directory))
+    expect_identical(reopened$manager$current_state, "protein_intensity_filtered")
     restored <- new.env(parent = emptyenv())
-    protNormCoreQuiet(restoreProtNormTabState(NULL, fixture$workflow, restored))
-    k182F1(fixture, "h", TRUE)
+    testthat::local_mocked_bindings(updateSelectInput = function(...) invisible(NULL), .package = "shiny")
+    protNormCoreQuiet(restoreProtNormTabState(NULL, workflow, restored))
+    k182F1(reopened, "h", TRUE)
+    # On the reopened project, "Run Normalization & RUV" is refused (the guard VAL-91 D1 adds for saved projects).
+    error <- k182Error(k182Click(reopened, restored, "skip"))
+    expect_s3_class(error, "prot_norm_input_after_normalisation")
 })
 
 test_that("KIT-182 F1 (j), (k): an adopted legacy head after RUV has normalisation in its lineage; a re-saved design has not", {
@@ -409,8 +437,9 @@ test_that("KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refus
         # In process.
         error <- k182Error(k182Click(fixture, norm, "skip"))
         expect_s3_class(error, "prot_norm_input_after_normalisation")
-        # (c) re-commits `protein_replicate_filtered` itself, so the last table before normalisation by that name is the
-        # QC-on-normalised one; the walk names the step before it.
+        # (c) re-commits `protein_replicate_filtered`, overwriting PRF1 under its own name; the walk then names the last
+        # state before it with no normalisation in its lineage (Duplicate Removal in a full session; on this fixture,
+        # whose history is `initial`, PRF, `normalized`, the generic peptide-steps name), so (c) checks the class only.
         if (!identical(case, "c") && inherits(error, "condition")) expect_identical(conditionMessage(error),
             k182RunText("Protein Replicate Filter"), info = case)
         expect_identical(k182Head(fixture), head, info = case)

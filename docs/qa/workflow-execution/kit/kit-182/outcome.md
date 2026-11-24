@@ -15,9 +15,7 @@ VAL-99). Authority VAL-48, VAL-91 (D1, D2), VAL-99. Branch `kit-182-normalisatio
 
 ## Runs (`runs.tsv`)
 
-R1 (45294678011): fix against tests-only on the regression scope (31 files) with R CMD check. R1-2 (45302634386) and
-R1-3b (45306797628): instrument reruns 1 and 2 of 3 on the two affected files. R1-3 (45306612548) stopped at plan
-(empty base field) and ran nothing. R2 (45310866571): full suite on the merge candidate against `v0.9-staging`.
+R1 (45294678011): fix against tests-only on the regression scope (31 files) with R CMD check. R1-2 (45302634386), R1-3 (45306612548) and R1-3b (45306797628): instrument runs 1, 2 and 3 of 3 (VAL-54 (iv)) on the two affected files. R1-3 stopped at plan (empty base field) and ran no test; R1-3b repeated it with the base filled. R1's instrument budget is spent: a further instrument defect on R1's scope stops for the owner. R2 (45310866571): full suite on the merge candidate against `v0.9-staging`.
 
 ## Observed
 
@@ -41,8 +39,10 @@ R1-3b (45306797628): instrument reruns 1 and 2 of 3 on the two affected files. R
   `message-changed`; `test-gui-entry-proteomics.R` fails identically on both (10). One head shard of attempt 1 was lost in
   the library install step; `gh run rerun --failed` repeated it.
 - **Effect (A6).** `effect.tsv`: per route, the stale re-run normalised 64 proteins on the tests-only commit and 58 on the
-  fix (k = 6); the managed action's input was PRF1 and then the current QC result. A mechanism check on a synthetic
+  fix (k = 6); managed: the table sent only; the managed action's input was PRF1 and then the current QC result. A mechanism check on a synthetic
   fixture, not an effect size on real data.
+- On the merge with KIT-187 (R2, 868c907e) the effect lines are unchanged: k = 6, 64 to 58 proteins (R2's head log of
+  `test-prot-norm-input-current.R`).
 - **A7.** NEWS under `## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)`; ledger row
   `VAL-<merge>` after the last VAL row; `DESCRIPTION`, `NAMESPACE`, `man/`, lock files and `packaging/` unchanged.
 
@@ -50,8 +50,17 @@ R1-3b (45306797628): instrument reruns 1 and 2 of 3 on the two affected files. R
 
 - Replay is unchanged: no guard is on its path (the guards sit in the module steps, `diaNormalizationRequest`,
   `diaCorrelationSource` and the tab), and `test-workflow-analysis-record.R` is `same`.
-- KIT-187's change of the intensity filter did not change k on this fixture: R2 on the merge shows the new file passing
-  (its expectations are written against the head's own Q, not a fixed k).
+
+## Unrelated discoveries (candidates; none changed here)
+
+- (a) Test harness: `omicsManagedChainMocks` mocks `readWorkflowExecutionComponents(manager, reference, fields = NULL,
+  ...)` (`tests/testthat/helper-workflow-omics-worker.R:166-168`) while the package default is the three assay tables, so a
+  caller relying on the default reads zero-row prototypes under the mock. Test fidelity, not a product defect.
+- (b) Product, read only: the native export declares `<ruv_>normalised_results_cln_with_replicates.tsv` and
+  `filtered_session_summary.txt` unconditionally (`R/utils_workflow_dia_sessions.R:1630-1632`, `:1647`), the stub following
+  the current RUV radio; a missing dependency fails with the misleading "saved table changed during read".
+- (c) Helper limit: F1 (g)'s "selective tables require readSavedWorkflowTable" comes from the helper's display read
+  (`helper-prot-norm-core.R:115`, `readManagedOmicsResult(..., NULL)`), not from the product's managed QC path.
 
 ## Divergences from the ticket text (recorded)
 
@@ -61,14 +70,13 @@ R1-3b (45306797628): instrument reruns 1 and 2 of 3 on the two affected files. R
    `test-prot-05b-norm-module-contracts.R:3100` passes a delegate without that formal (it would fail with "unused
    argument"); the observer's call is unchanged.
 3. T4 (c): the replicate filter re-commits `protein_replicate_filtered`, which overwrites PRF1 by name; the step-name walk
-   then names the step before it, not "Protein Replicate Filter". The test checks the class only in (c).
+   then names the step before it, not "Protein Replicate Filter". The test checks the class only in (c). The (c) message is shown by reading only.
 4. T8's managed block also needed one optional return field (`inputs`) in `protNormK122Drive`; its existing blocks are
    unchanged.
 5. F1 (h) checks the lineage after `restoreProtNormTabState` without a session export (see `feasibility.md`).
 6. `rlang::abort` (not `cli::cli_abort`) for the four refusals, so the message text is not reformatted; the texts are the
    ticket's 7.4 texts as proposed (VAL-41; Revert, not Reset, VAL-99 (2)).
-7. R2 ran with `check: true` (the merged `R/` holds KIT-187, which R1's check did not cover): 29.1 job-minutes above
-   the row's test ceiling.
+7. R2 ran with `check: true` (the merged `R/` holds KIT-187, which R1's check did not cover), which the request did not price: R2 used 1,115.2 job-minutes (74.35 core-hours) against its row ceiling of 1,080 (72.0), 35.2 over: 29.1 for the check, 5.6 for the shard lost in library install and the failed results job of attempt 1, 0.5 in the test jobs. The ticket's total stays within its ceiling (105.6 of 324.0 core-hours).
 
 ## Acceptance criteria
 
@@ -91,4 +99,5 @@ R1-3b (45306797628): instrument reruns 1 and 2 of 3 on the two affected files. R
 - The running application (no Save Design after normalisation pressed in a browser; S9 is tested by `saveState`).
 - The other omics (KIT-194, VAL-99 (1)).
 - Real data; any effect size.
-- Whether KIT-177 changes anything here: it had not merged by R2.
+- Whether KIT-177 changes anything here: it had not merged by R2; R1b covers it if KIT-177 merges first (section 5 of the implementation audit).
+- If the pre-normalisation figures' redraw fails (in process `pre_qc()` raises, or on the worker the leading `normalization-qc-figures` action fails or is cancelled), `qc_sources$pre_normalization` already names the new source, so the next run does not redraw and its publication copies the earlier table's `pre_norm_*.png` (read, not run; the tab entry has the same order, `R/mod_prot_norm_qc_generation_helpers.R:8-11`).
