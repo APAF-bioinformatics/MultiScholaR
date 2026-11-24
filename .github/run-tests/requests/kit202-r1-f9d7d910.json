@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-202 R1: the new tests fail first on the tests-only commit at the ticket's stated values (A1); ceiling 45 job-minutes; a different base value stops the ticket",
+  "label": "KIT-202 R1 tests-only f9d7d910",
+  "package_commit": "f9d7d910e7b499c92f4ec11792c3af9fac53b250",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit202-intensity-filter-samples.R", "test-metab-qc-shared.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
