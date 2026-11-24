@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-192 R1b: instrument re-run (VAL-54) of T7b's file on the corrected tests-only commit (TRE repeat limit in the printed paragraph); ceiling 45 min",
+  "label": "KIT-192 R1b tests-only e8f78773",
+  "package_commit": "e8f78773a6dbf48cdc98a37b129c6adb95880329",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-module-ci-trx-summary.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
