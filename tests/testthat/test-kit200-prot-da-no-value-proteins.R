@@ -110,7 +110,15 @@ kit200Object <- function(x, design) {
     rownames(design) <- NULL
     ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x), x, row.names = NULL,
         check.names = FALSE, stringsAsFactors = FALSE), design_matrix = design, sample_id = "Run", group_id = "group",
-        technical_replicate_id = "replicates", protein_id_column = "Protein.Ids", args = list())
+        technical_replicate_id = "replicates", protein_id_column = "Protein.Ids",
+        protein_id_table = data.frame(Protein.Ids = rownames(x), gene_names = paste0("GENE_", rownames(x)),
+            stringsAsFactors = FALSE), args = list())
+}
+
+# A state read back from one store, made savable in another: the record of the store it came from is dropped.
+kit200Detach <- function(object) {
+    attr(object, "dia_component_source") <- NULL
+    object
 }
 
 # An owner with the paths the steps and the DA publication write to (savedDaW1Owner's shape, copied), holding `object`
@@ -491,7 +499,7 @@ test_that("KIT-200 T6 (d): the default QC chain, normalisation with RUV skipped,
     reduced <- chain$qc$input
     reduced@protein_quant_table <- reduced@protein_quant_table[reduced@protein_quant_table$Protein.Ids != "P_four", ,
         drop = FALSE]
-    reference <- kit200Da(kit200Owner(reduced, state = "correlation_filtered"))
+    reference <- kit200Da(kit200Owner(kit200Detach(reduced), state = "correlation_filtered"))
     expect_null(reference$error)
     kit200ExpectChainEqual(chain$da$tables, reference$tables, "P_four")
     kit200ExpectFits(chain$da, "P_four")
@@ -652,7 +660,7 @@ test_that("KIT-200 T8: the declared designs (factors in the model, and none) com
     if (kit200Completed(run, "T8 (b) error")) {
         reduced <- declared$state
         reduced@protein_quant_table <- input[input$Protein.Group != "P_empty", , drop = FALSE]
-        reference_manager <- kit200ProtStore(reduced)
+        reference_manager <- kit200ProtStore(kit200Detach(reduced))
         ref <- kit200Quiet(withDIAStateScope(reference_manager, function() kit200ProtDa(reference_manager,
             getDIAStateReference(reference_manager))))
         kit200ExpectDeclaredEqual(run$value, ref, "Protein.Group", "P_empty")
@@ -667,7 +675,8 @@ test_that("KIT-200 T9: the scripted wrapper daAnalysisWrapperFunction completes 
     x <- kit200AddRow(kit200SetScatter(kit200Matrix()), "P_empty")
     object <- kit200Object(x, kit200Design())
     run <- tryCatch(list(value = kit200Quiet(daAnalysisWrapperFunction(object,
-        contrasts_tbl = data.frame(contrasts = "groupB-groupA", stringsAsFactors = FALSE), formula_string = "~ 0 + group",
+        contrasts_tbl = data.frame(contrasts = "groupB-groupA", full_format = "B_vs_A=groupB-groupA", stringsAsFactors = FALSE),
+        formula_string = "~ 0 + group",
         treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Ids"))),
         error = function(e) list(error = conditionMessage(e)))
     if (!kit200Completed(run, "T9 error")) return(invisible())
