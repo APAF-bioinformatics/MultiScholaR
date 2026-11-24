@@ -16,6 +16,8 @@ public import MultiScholaRProofs.Proof.ReplayRule
 public import MultiScholaRProofs.Proof.FilterCount
 public import MultiScholaRProofs.Proof.QvalueBh
 public import MultiScholaRProofs.Proof.Permutation
+public import MultiScholaRProofs.Proof.RuvAlgebra
+public import MultiScholaRProofs.Proof.RuvDownstream
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

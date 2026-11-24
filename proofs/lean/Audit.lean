@@ -182,3 +182,35 @@ example : Permutation.perm_measure_witness_stmt := Permutation.perm_measure_witn
 #print axioms Permutation.perm_witness
 #print axioms Permutation.perm_measure
 #print axioms Permutation.perm_measure_witness
+
+/-! ## Group R priority 1 (`Spec/RuvAlgebra.lean`, `Spec/RuvDownstream.lean`) -/
+
+example : Ruv.A1_stmt := Ruv.A1
+example : Ruv.A2_stmt := Ruv.A2
+example : Ruv.A3_stmt := Ruv.A3
+example : Ruv.C1_stmt := Ruv.C1
+example : Ruv.A2_witness_stmt := Ruv.A2_witness
+example : Ruv.F1_stmt := Ruv.F1
+example : Ruv.F_witness_stmt := Ruv.F_witness
+example : Ruv.G0_stmt := Ruv.G0
+example : Ruv.G0_witness_stmt := Ruv.G0_witness
+example : Ruv.G2_stmt := Ruv.G2
+example : Ruv.G2_sign_stmt := Ruv.G2_sign
+example : Ruv.H1_stmt := Ruv.H1
+example : Ruv.H1_weighted_stmt := Ruv.H1_weighted
+example : Ruv.H1_witness_stmt := Ruv.H1_witness
+
+#print axioms Ruv.A1
+#print axioms Ruv.A2
+#print axioms Ruv.A3
+#print axioms Ruv.C1
+#print axioms Ruv.A2_witness
+#print axioms Ruv.F1
+#print axioms Ruv.F_witness
+#print axioms Ruv.G0
+#print axioms Ruv.G0_witness
+#print axioms Ruv.G2
+#print axioms Ruv.G2_sign
+#print axioms Ruv.H1
+#print axioms Ruv.H1_weighted
+#print axioms Ruv.H1_witness

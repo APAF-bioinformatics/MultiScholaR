@@ -1,4 +1,4 @@
-# KIT-193 outcome (in progress: statements gate passed with corrections S01-S07 applied; waiting for its closure check)
+# KIT-193 outcome (in progress: targets 1, 2, 3, 5, target 4 except 4d-ii, and group R priority 1 proved; at the proofs audit)
 
 Ticket `tickets/kit/KIT-193.md` r1.2. Branch `kit-193-lean-proofs` from `v0.9-staging` at 51959495. Lean runs on the
 laptop by the owner's exception (VAL-95, VAL-103); no R was run anywhere for this stage.
@@ -228,15 +228,53 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   it, an editing slip, not a proof attempt). Agent time 0.07 h (12:48 to 12:52), against 14 expected and 24 ceiling.
 - Laptop time for target 5 so far: 31.1 CPU-seconds over 8 Lean calls, 23.5 s of Lean wall time (labels `t5-*`).
 
+## Group R priority 1: proved (R-A1, R-A2, R-A3, R-C1, R-F1, R-G0, R-G2, R-H1)
+
+Proof files `MultiScholaRProofs/Proof/RuvAlgebra.lean` and `Proof/RuvDownstream.lean` (both added to the root module).
+Every statement of the eight items and their witnesses proved, each on `propext`, `Classical.choice`, `Quot.sound`
+(`axioms.tsv`; `Audit.lean`'s `example` lines compile):
+
+| Item | Theorems (statement `<name>_stmt`) | Witness |
+|---|---|---|
+| R-A1 | `Ruv.A1` | none needed (no hypothesis) |
+| R-A2 | `Ruv.A2` | `Ruv.A2_witness` (2 runs, 1 feature, 1 set, `k = 1`, `U = e_1`) |
+| R-A3 | `Ruv.A3` | none needed |
+| R-C1 | `Ruv.C1` | `Ruv.A2_witness` (shared, as `models.md` lists) |
+| R-F1 | `Ruv.F1` | `Ruv.F_witness` (`X1 = e_1`, `X2 = e_2` in `ℝ^3`) |
+| R-G0 | `Ruv.G0` | `Ruv.G0_witness` (2 runs in one set, `U = (1, -1)`, `X = M = (1, 1)`, every hypothesis together) |
+| R-G2 | `Ruv.G2`, `Ruv.G2_sign` (the two-case instance: `X = e_1`, `C = e_2`, `y = e_3` in `ℝ^4`; ratios 4/3 and 2/3) | `Ruv.F_witness` (shared) |
+| R-H1 | `Ruv.H1`, `Ruv.H1_weighted` | `Ruv.H1_witness` (`X = I_2`, first row of `T` = `c = (1, -1)`, weights `(2, 1)`) |
+
+How the two non-routine ones are proved:
+- R-C1: with `D = a_c'(a_c a_c')⁻¹ α`, `Wα = Y_c D` and `W_c α = centre(Y_c) D`; column means are linear
+  (`colMean_mul`: the mean of `AB` is the mean of `A` times `B`), so restoring adds back exactly the column means of
+  `Y_c D`, which is what centring `Y_c` removes. The second centring is the identity because the column means of a
+  centred matrix are 0 (also at `n = 0`, where both sides are empty sums).
+- R-G0: `U'X = 0` (from `R_M U = U`, `R_M X = 0` and the symmetry of `R_M`), so `U'(Y* - XB) = U'Y* = 0` (R-A2). For the
+  rank bound (`rank_bound`): the residuals `R_X V` of any `V` with `U'V = 0` are annihilated by `[X, U]'`; `[X, U]` has
+  rank `g + k` because `[(X'X)⁻¹X'; W'R_X]` is a left inverse (`U'W = I`); Sylvester's inequality
+  (`Matrix.rank_mul_ge`) then gives `rank(R_X V) + g + k ≤ n`. For the adjusted values, `U'1 = 0` (from `Hone`) gives
+  `U'W_c = I` and `U'(Y - W_c α) = 0`, and the same bound.
+
+Two notes for the auditor: R-C1's hypothesis `Hac` and R-G2's `X'X` invertibility are in the frozen statements but not
+used by the proofs (both conclusions hold without them; nothing is weakened). In `Ruv.G2_sign` one style linter
+(`linter.unusedSimpArgs`, a simp argument not needed in every `fin_cases` branch) is off for that theorem only; it
+has no bearing on what is proved.
+
+- Laptop: 11 Lean calls, 67.4 CPU-seconds (57.1 user + 10.3 system), 47.2 s wall (labels `rP1-*`). Agent time 0.13 h
+  (12:56 to 13:04) for the eight items together, against 38 expected and 62 ceiling (priority 1); not timed per item.
+
 ## Resume here
 
-Order (coordinator, 2026-11-24): target 5 and the corrected `bh_sorted_eq_stmt` are complete; next group R priority 1
-(R-A1, R-A2, R-A3, R-C1, R-F1, R-G0, R-G2, R-H1); then stop for the proofs audit (not priority 2, 4d-ii or
-`kept_family_witness`). Lean calls go through `taskset -c 0-3` with `LEAN_NUM_THREADS=4`, one at a time, each logged in
+Stopped for the proofs audit (coordinator's order, 2026-11-24): target 5, the corrected `bh_sorted_eq_stmt` and group
+R priority 1 are complete. Not started, by that order: group R priority 2 (R-F2 first), 4d-ii, `kept_family_witness`,
+priorities 3 and 4, and the three statements not yet frozen (R-I1, R-J3, R-N1). Lean calls go through `taskset -c 0-3` with `LEAN_NUM_THREADS=4`, one at a time, each logged in
 `cpu-time.tsv`.
 
 ## Not checked
 
-- Targets 4, 5 and group R are not proved yet; nothing was run in R.
-- The gate's own reads (RUVIIIC at c534151f, `ruv` 0.9.7.1 as locked, RUVSeq) were not done.
-- The CI workflow (4.4) and the lifecycle L0 are not written.
+- 4d-ii and group R priorities 2 to 4 are not proved yet; nothing was run in R.
+- The proofs are checked on the laptop only (`lake build --wfail`, `Audit.lean`); the record job L1 runs once, at the
+  final commit. (Two earlier lines here, on the gate's reads and on the CI workflow, were stale: the statements register
+  records the gate's reads, and the workflow and L0 are above.)
+- No paired R test of group R or of targets 4 and 5 has run (P0, P2 to come).
