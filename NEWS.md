@@ -19,7 +19,9 @@
    'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
    figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
    search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
-   Runs that used the RUV grid are unchanged. The RUV design panel is off by default.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
 
 ### Scientific changes
 

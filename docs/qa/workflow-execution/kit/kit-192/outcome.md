@@ -91,10 +91,14 @@ No stored reference moved.
 ## After R3: staging gained code
 
 Between R2 and the end of R3, `v0.9-staging` moved from 51959495 by KIT-187's merge (proteomics `R/` files, three
-proteomics report templates, one `man/` page, three proteomics test files, its records), `NEWS.md` and the ledger. None
-is a file of 7.3 or `tests/testthat/helper-module-ci-trx-tabs.R`. By the merger's rule (6.4): R2b (R2's tests and
+proteomics report templates, one `man/` page, three proteomics test files, its records), `NEWS.md` and the ledger. Of these,
+only `NEWS.md` and the ledger are files of 7.3 (text); no code file of 7.3 changed, nor `tests/testthat/helper-module-ci-trx-tabs.R`. By the merger's rule (6.4): R2b (R2's tests and
 check on the merge) is due; S1 is not repeated; R3b is not due if the only hand-resolved conflicts are in `NEWS.md` and
 the ledger and R2b shows 6.2's verdicts. The merge and R2b were left to the coordinator (not run here).
+
+## Budget
+
+1,270.1 job-minutes (tests, check and scripts jobs; the orchestration jobs, about 2.8 min, not counted): R1 12.8, R1b 13.7 (the VAL-54 instrument run, inside the ceiling), R2 234.2, R3 1,009.4 = 84.67 core-hours against 83.7 expected and 456.4 ceiling. Longest jobs: R2 tests 35.5 min (ceiling 60), check 11.8 and 14.9 (90), S1 15.2 (60); R3 53.8 (70). No overrun.
 
 ## Acceptance criteria
 
@@ -116,9 +120,9 @@ the ledger and R2b shows 6.2's verdicts. The merge and R2b were left to the coor
 ## Not checked
 
 - The branch merged with the current `v0.9-staging` (R2b, the coordinator's merge).
-
 - Figure bytes (PNG, PDF) base against head; the figure code is above the changed line.
 - Windows (no platform code touched); real data (none used; no number changes).
 - F1 (a legacy-style state without a RUVs product reaching the export), F3, F4 (earlier-run outputs left in place):
   recorded in the ticket, not run.
 - The runner's Pandoc version (T7b matched with `squash`, so either way).
+- Shown by reading only, not by a test or S1: the gate on with the legacy grid chosen; the design `supplied_controls` and the k rule `sweep_bounded`; an export after a replay; the managed worker as a separate process (the tests run its entry point in this process, with the service layer doubled). Each reads the same product field, `ruv_design`, which only `trxChooseRuvDesign` sets (`R/utils_workflow_trx_declarations.R:476-480`).
