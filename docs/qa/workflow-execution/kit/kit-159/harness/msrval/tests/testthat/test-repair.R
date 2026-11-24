@@ -210,7 +210,7 @@ test_that("R-I08: the guard in production: a universe key as a label, a lifecycl
     dir <- withr::local_tempdir()
     code <- writeRepairTicket(dir, extra = c(
         "LABEL_KEY <- TRUE",
-        "callsMetric <- function(scored) list(value = sum(scored$called_own %in% TRUE))"))
+        "callsMetric <- function(scored, ...) list(value = sum(scored$called_own %in% TRUE))"))
     body <- readLines(code)
     body[grepl("^    list\\(units = stats::setNames", body)] <- paste(
         "    list(result_tables = list('ticket/keys.tsv' = data.frame(label = '7', n = 1)),",
@@ -234,7 +234,7 @@ test_that("R-I08: the guard in production: a universe key as a label, a lifecycl
     life$metrics[[2L]]$`function` <- "callsMetric"
     life$primary_family$fam$members$b$all_of <- list("calls:good-null")
     dir.create(file.path(dir, "t2"))
-    code2 <- writeRepairTicket(file.path(dir, "t2"), extra = "callsMetric <- function(scored) {
+    code2 <- writeRepairTicket(file.path(dir, "t2"), extra = "callsMetric <- function(scored, ...) {
         list(value = sum(scored$called_own %in% TRUE)) }")
     expect_error(valRunPhase(phase = "lifecycle", decl = life, dataset = "d1",
                              units = repairUnits(), label = "l", code_files = code2,
