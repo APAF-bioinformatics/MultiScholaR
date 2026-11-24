@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-184 F (A17): the one full suite base against head with check, on the merge 0a511795 of kit-184-ruv-factors-in-integration with v0.9-staging 8cb536cc (head) against staging (base); row ceiling 1,080 job-minutes, may be exceeded (declared in kit-184/lifecycle.md)",
+  "label": "KIT-184 F full suite merge 0a511795 vs staging 8cb536cc",
+  "package_commit": "0a51179569e2cf1d9c0774af038497a963b05f0d",
+  "base_commit": "8cb536cc3bc09591ec1bfb6fef0cb15437a5ad4a",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
