@@ -110,7 +110,8 @@ Every planted defect above was built and caught, except as follows (mechanics; n
 "`Y - 2 * W alpha`" uses the uncentred `RuvIII.W` (with `W_c` the defect stays in col(W_c) and cannot fail); R-M1's
 rank-1 map is one column `W q` (a two-column rank-1 design is refused by edgeR); 4 (i) adds a planted
 `qvalue::qvalue` ignoring pi0 (4 (ii), with `processEnrichments`, waits for KIT-203); R-N1's first-pass planted
-defect is `protRuvFirstPassControls` with `ties.method = "last"`. The target 5 oracle (`Oracle/Permutation.lean`)
+defect is `protRuvFirstPassControls` with `ties.method = "last"`. R-J2's upstream equality is checked to relative
+1e-8, not the default 1e-10 (the compiled eigen-solver's own tolerance is 1e-10). The target 5 oracle (`Oracle/Permutation.lean`)
 counts over lists with decidable equality; its bridge to the Spec's classical `unchangedDraws` and
 `reflectedDraws` is `Proof/PermutationOracle.lean` (ticket 5.5; fifth session, listed in `Audit.lean`). In plain
 words: for any rational factor and any draws, written as the oracle writes them (a permutation as its list of
@@ -118,7 +119,9 @@ words: for any rational factor and any draws, written as the oracle writes them 
 the Spec's `reflectedDraws` of the same factor cast to ℝ (`reflected_eq_reflectedDraws`); a table row's `d`, `r`
 and `(1 + d)/3` are those counts and `perm_floor_stmt`'s floor at B = 2 (`row_counts`); the oracle's 24 orderings
 are exactly the permutations of 4 samples, once each (`orderings_sound`, `orderings_complete`,
-`orderings_nodup`). It does not cover the fixtures' literal lists being `List.ofFn` of their values (true by
+`orderings_nodup`); and `d` does not depend on reading the rational factor as a real one, so the oracle's `d` is
+also the count `perm_floor_reflect_stmt` takes at the real factor, as fixture C's check needs
+(`unchangedDraws_cast`, proofs audit 4 T02). It does not cover the fixtures' literal lists being `List.ofFn` of their values (true by
 definition, not stated), the row text, or the interpreter. The `bh-counterexample.tsv` and `first-pass.tsv`
 oracles evaluate the Spec's own computable definitions (`callsKept`, `callsWhole`; `firstPassControls`,
 `trxFirstPassControls`) and need no bridge.

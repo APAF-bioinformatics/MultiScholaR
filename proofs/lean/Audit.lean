@@ -196,6 +196,19 @@ example : ∀ {n B : ℕ} (f : Fin n → ℚ) (π : Fin B → Equiv.Perm (Fin n)
     Oracle.Permutation.reflected (List.ofFn f) (Permutation.encDraws π) =
       Permutation.reflectedDraws (fun i => (f i : ℝ)) π :=
   Permutation.reflected_eq_reflectedDraws
+example : ∀ {n B : ℕ} (f : Fin n → ℚ) (π : Fin B → Equiv.Perm (Fin n)),
+    Permutation.unchangedDraws (fun i => (f i : ℝ)) π = Permutation.unchangedDraws f π :=
+  Permutation.unchangedDraws_cast
+example : ∀ {n : ℕ} (g : Fin n → ℚ) (τ π₁ π₂ : Equiv.Perm (Fin n)),
+    Oracle.Permutation.unchanged (Oracle.Permutation.compose (List.ofFn g) (Permutation.encPerm τ))
+        [Permutation.encPerm π₁, Permutation.encPerm π₂] = Permutation.unchangedDraws (g ∘ τ) ![π₁, π₂] ∧
+    Oracle.Permutation.reflected (Oracle.Permutation.compose (List.ofFn g) (Permutation.encPerm τ))
+        [Permutation.encPerm π₁, Permutation.encPerm π₂] =
+      Permutation.reflectedDraws (fun i => ((g ∘ τ) i : ℝ)) ![π₁, π₂] ∧
+    (((1 + Oracle.Permutation.unchanged (Oracle.Permutation.compose (List.ofFn g) (Permutation.encPerm τ))
+        [Permutation.encPerm π₁, Permutation.encPerm π₂] : ℚ) / 3 : ℚ) : ℝ) =
+      (1 + (Permutation.unchangedDraws (g ∘ τ) ![π₁, π₂] : ℝ)) / (1 + (2 : ℕ)) :=
+  Permutation.row_counts
 example : ∀ l ∈ Oracle.Permutation.orderings, ∃ σ : Equiv.Perm (Fin 4), Permutation.encPerm σ = l :=
   Permutation.orderings_sound
 example : ∀ σ : Equiv.Perm (Fin 4), Permutation.encPerm σ ∈ Oracle.Permutation.orderings :=
@@ -205,6 +218,7 @@ example : Oracle.Permutation.orderings.Nodup ∧ Oracle.Permutation.orderings.le
 
 #print axioms Permutation.unchanged_eq_unchangedDraws
 #print axioms Permutation.reflected_eq_reflectedDraws
+#print axioms Permutation.unchangedDraws_cast
 #print axioms Permutation.row_counts
 #print axioms Permutation.orderings_sound
 #print axioms Permutation.orderings_complete

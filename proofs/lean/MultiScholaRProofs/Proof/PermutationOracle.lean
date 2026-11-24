@@ -97,6 +97,18 @@ theorem reflected_eq_reflectedDraws {n B : ℕ} (f : Fin n → ℚ) (π : Fin B 
   -- the Spec's instance and the synthesized one agree here (equality on `ℝ` is decided classically in both)
   rw [h]
 
+/-- `d` does not depend on reading the rational factor as a real one (the cast is injective): the count
+`perm_floor_reflect_stmt` takes at the real factor is the oracle's `d`. -/
+theorem unchangedDraws_cast {n B : ℕ} (f : Fin n → ℚ) (π : Fin B → Equiv.Perm (Fin n)) :
+    unchangedDraws (fun i => (f i : ℝ)) π = unchangedDraws f π := by
+  classical
+  have hinj : Function.Injective (fun g : Fin n → ℚ => fun i => (g i : ℝ)) := Rat.cast_injective.comp_left
+  unfold unchangedDraws
+  refine congrArg Finset.card ?_
+  ext b
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+  exact (hinj.eq_iff (a := f ∘ π b) (b := f))
+
 /-- One row of `perm-floor.tsv` as `row` computes it, `f = g ∘ τ` and the draws `π₁, π₂`: its `d`, its `r` and its
 `(1 + d) / 3` are the Spec's `unchangedDraws`, `reflectedDraws` and the floor of `perm_floor_stmt` at `B = 2`. -/
 theorem row_counts {n : ℕ} (g : Fin n → ℚ) (τ π₁ π₂ : Equiv.Perm (Fin n)) :

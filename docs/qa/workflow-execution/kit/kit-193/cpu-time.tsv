@@ -198,3 +198,5 @@ bridge-5	2026-11-24T17:12:26+11:00	2.404	0.782	2.608	0	LEAN_NUM_THREADS=4 taskse
 bridge-build-root	2026-11-24T17:13:14+11:00	5.898	1.678	5.905	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
 bridge-audit	2026-11-24T17:13:25+11:00	2.372	0.942	2.966	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean Audit.lean
 bridge-oracle-run	2026-11-24T17:13:34+11:00	3.469	0.880	4.343	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean --run Kit193Oracles.lean /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/k193/oracle-bridge
+t02-build-root	2026-11-24T17:25:21+11:00	4.769	1.284	4.774	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
+t02-audit	2026-11-24T17:25:25+11:00	2.154	0.889	2.703	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean Audit.lean

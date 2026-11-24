@@ -147,3 +147,4 @@ Permutation.row_counts	bridge (5.5): one perm-floor.tsv row	propext, Classical.c
 Permutation.orderings_sound	bridge (5.5): each ordering is a permutation	propext, Classical.choice, Quot.sound
 Permutation.orderings_complete	bridge (5.5): each permutation is an ordering	propext, Classical.choice, Quot.sound
 Permutation.orderings_nodup	bridge (5.5): 24 orderings, no repeat	propext, Classical.choice, Quot.sound
+Permutation.unchangedDraws_cast	bridge (5.5): unchangedDraws at the real factor = at the rational one	propext, Classical.choice, Quot.sound

@@ -562,6 +562,9 @@ directly. Laptop: 3 Lean calls, 15.5 CPU-seconds (labels `p2-oracle-*`).
   planted design is `[X, W q]`, one column (the same rank-1 map).
 - R-B1, R-B2, R-E1 and R-L1 take `alpha` from `computeRuvCovariates()$alpha` (ruv's); the quantities used are
   invariant under a change of basis of U, and RUV-III-C's U spans the same space on complete data (R-J1).
+- R-J2's upstream equality is checked to relative 1e-8, not the default 1e-10 (the compiled eigen-solver's own
+  tolerance is 1e-10). Set when the test was written, before its only run (45335802998); no test changed (proofs
+  audit 4, T03).
 
 Core-hours: 40.8 job minutes, about 2.72 (job minutes x 4 / 60; set-up included in the job time).
 
@@ -589,6 +592,13 @@ What the lemmas state, in plain words (encoding as the oracle's: a permutation �
 - `orderings_sound`, `orderings_complete`, `orderings_nodup`: the oracle's 24 orderings (`List.permutations
   [0, 1, 2, 3]`) are each the encoding of a permutation of 4 samples, every permutation's encoding is among them,
   and none is repeated; so each fixture's 13,824 rows are exactly the cases (τ, π₁, π₂), once each.
+- `unchangedDraws_cast` (added after proofs audit 4, T02): `d` does not depend on reading the rational factor as a
+  real one, so the oracle's `d` is also the count `perm_floor_reflect_stmt` takes at the real factor (fixture C).
+
+After proofs audit 4 (bridge sound; T01 to T03 minors applied): `row_counts` and `unchangedDraws_cast` have their
+`example` in `Audit.lean` with the types written out (the auditor's texts); `lake build --wfail` passes; `Audit.lean`
+prints 149 axiom lists, all three standard axioms (`axioms.tsv`, seven `bridge (5.5)` rows); `SPEC.sha256` twelve OK.
+No table and no test changed. Laptop: 2 Lean calls, 9.1 CPU-seconds (labels `t02-*`).
 
 Not covered: that each fixture's literal list is `List.ofFn` of its four values (true by `List.ofFn_get`, not stated
 as a lemma); the one-based labels and the text of each row (string formatting); Lean's interpreter that evaluates
