@@ -51,6 +51,14 @@ passed on both. R CMD check: findings identical, none only on head (`r1c-check-c
 **R2 (run 45319721518), full suite, 8290ddb8 against 19997323.** 457 files `same`, 1 `only-on-head`
 (`test-omics-norm-state-guards.R`, 647 passed, 0 failed); no new failure, no changed message; 35 files fail identically on base and head (920 failed expectations and 13 errors on each side) (known laptop-recorded references); no timeout or crash; longest job 50.5 minutes (`r2-compare.tsv`).
 
+**After the implementation audit (register `AUDIT-KIT-194-impl-20261124.md`).** Text repairs I01, I03, I04, I05, I10
+(b9079e3d, no code); `v0.9-staging` 0b926295 merged (4295b497; ledger conflict only, staging's rows to VAL-134 kept and
+this ticket's `VAL-<merge>` after them; NEWS merged without conflict; none of this ticket's `R/` files changed on
+staging). **R1b (run 45328973335)**, 4295b497 against staging 0b926295 plus the ticket's tests (branch
+`run-k194-r1b-base`, 4e8bc055): the new file `fixed` (as R1c), the 46 other files `same` (`test-module-ci-trx-summary.R`,
+added for KIT-192, 82 passed and 3 failed identically on both sides), check findings identical (`r1b-compare.tsv`,
+`r1b-check-compare.txt`). R2 is not repeated (6.3: only NEWS and the ledger were hand-resolved).
+
 **Fixtures building a lineage-free normalisation-named start (surveyed for the ruling; none changed).** Each passes
 because it does not press Run (or QC) at that state:
 - `test-lipid-12a-norm-module-characterization.R:118` (owner at `lipid_normalized`): the lipid twin; its live blocks
@@ -107,7 +115,7 @@ because it does not press Run (or QC) at that state:
 
 - The real worker's busy refusal and start-time QC check under a press that actually waits (stubs only; the worker
   journey presses at idle and stayed `same`).
-- Staging moved after the merge (to 67d38df3: KIT-192, KIT-189, KIT-191 merged); R2 is against 19997323. The merger's rule (6.3) applies.
+- R2 is against staging 19997323; the merge with 0b926295 is covered by R1b under 6.3, not by a second full suite.
 - Enrichment downstream of an affected DA; the report text of an affected record; F-m, F-p, F-q, F-r (candidates).
 - Lipid's recorded log2 argument (D4 (b2)) and the state names older builds wrote.
 
