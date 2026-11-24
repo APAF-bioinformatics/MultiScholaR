@@ -1,0 +1,4 @@
+item	start	end	hours	state
+step0-ticket-minors	2026-11-24T10:46	2026-11-24T10:48	0.04	done
+S0-setup	2026-11-24T10:48	2026-11-24T10:58	0.17	done
+statements-all	2026-11-24T10:58	2026-11-24T11:16	0.30	written; awaiting gate

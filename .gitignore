@@ -98,3 +98,6 @@ tests/testthat/_problems/
 
 # Local copies of public benchmark data (never committed; see docs and tickets for sources and checksums)
 data/benchmark/
+
+# KIT-193: Lean build products and Mathlib cache (proofs/lean)
+proofs/lean/.lake/

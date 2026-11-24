@@ -1,0 +1,20 @@
+label	started	user_s	sys_s	elapsed_s	exit	command
+s0-toolchain-fetch	2026-11-24T10:48:29+11:00	8.093	4.448	60.103	0	taskset -c 0-3 lake --version
+s0-lake-help	2026-11-24T10:49:32+11:00	0.048	0.017	0.065	0	taskset -c 0-3 lake --help
+s0-lean-help	2026-11-24T10:49:40+11:00	0.044	0.013	0.058	0	taskset -c 0-3 lean --help
+s0-lake-update	2026-11-24T10:49:53+11:00	105.087	31.395	98.553	0	taskset -c 0-3 lake update
+s0-cache-get	2026-11-24T10:55:06+11:00	3.294	1.448	4.869	0	taskset -c 0-3 lake exe cache get
+s0-mathlib-nobuild-check	2026-11-24T10:55:14+11:00	5.916	1.623	4.514	0	taskset -c 0-3 lake build --no-build Mathlib
+s0-trivial-build	2026-11-24T10:55:22+11:00	0.781	0.493	1.369	1	taskset -c 0-3 lake build --wfail
+s0-trivial-build-2	2026-11-24T10:55:46+11:00	1.129	0.656	1.747	1	taskset -c 0-3 lake build --wfail
+s0-trivial-build-3	2026-11-24T10:55:52+11:00	1.135	0.638	1.728	0	taskset -c 0-3 lake build --wfail
+s1-spec-filtercount	2026-11-24T11:00:03+11:00	1.847	0.801	2.450	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.FilterCount
+s1-spec-replayrule	2026-11-24T11:01:22+11:00	1.974	0.791	2.393	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.ReplayRule
+s1-spec-goclosure	2026-11-24T11:02:39+11:00	2.019	0.792	2.451	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.GoClosure
+s1-spec-qvaluebh	2026-11-24T11:04:22+11:00	2.610	0.847	2.875	1	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.QvalueBh
+s1-spec-qvaluebh-2	2026-11-24T11:04:32+11:00	2.514	0.888	2.813	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.QvalueBh
+s1-spec-permutation	2026-11-24T11:06:00+11:00	5.546	1.393	4.893	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.Permutation
+s1-spec-ruvalgebra	2026-11-24T11:08:21+11:00	3.518	1.252	4.017	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.RuvAlgebra
+s1-spec-ruvdownstream	2026-11-24T11:09:44+11:00	3.387	1.247	3.897	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.RuvDownstream
+s1-spec-ruviiic	2026-11-24T11:10:43+11:00	3.196	1.046	3.521	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.RuvIIIC
+s1-spec-all	2026-11-24T11:11:08+11:00	3.306	1.171	3.787	0	taskset -c 0-3 lake build --wfail

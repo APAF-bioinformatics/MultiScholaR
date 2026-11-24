@@ -1,0 +1,29 @@
+item	spec_name	kind	name	file	digest_or_version	paired_test
+T1	FilterCount.failsRule	package function	exceedsRoundedPercent	R/func_prot_qc_filtering_helpers.R	pending	test-kit193-pairs-filter.R
+T1	FilterCount.failsRule	package function	roundedPercentNumerator	R/func_prot_qc_filtering_helpers.R	pending	test-kit193-pairs-filter.R
+T1	FilterCount.peptide_floor_stmt	package function	allowedByRoundedPercent	R/func_prot_qc_filtering_helpers.R	pending	test-kit193-pairs-filter.R
+T1	FilterCount.allowedShare	package function	updateMissingValueParameters	R/func_general_parameter_helpers.R	pending	test-kit193-pairs-filter.R
+T2	ReplayRule.TableOK	package constant	workflowReplayRuleMarkers	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
+T2	ReplayRule.ruleLoop	package function	workflowReplayRule	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
+T2	ReplayRule.inForce	package function	workflowFixedInForce	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
+T2	ReplayRule.replayOptions	package function	workflowReplayRuleOptions	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
+T2	ReplayRule.build	package function	buildWorkflowAnalysisRecord	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
+T3	GoClosure.bfs	package function	goAncestorPairs	R/func_general_geneset_kernel.R	pending	test-kit193-pairs-go.R
+T3	GoClosure.propagateFin	package function	propagateGoAnnotations	R/func_general_geneset_kernel.R	pending	test-kit193-pairs-go.R
+T3	GoClosure.build	package function	buildUniprotGoGeneSets	R/func_general_geneset_kernel.R	pending	test-kit193-pairs-go.R
+T3	GoClosure.parentRel	package constant	goPropagationRelations	R/func_general_geneset_kernel.R	pending	test-kit193-pairs-go.R
+T3	GoClosure.build	package constant	goAspectRoots	R/func_general_geneset_kernel.R	pending	test-kit193-pairs-go.R
+T4	QvalueBh.flag	package function	processEnrichments	R/func_general_enrichment_orchestration.R	pending	test-kit193-pairs-qvalue.R
+T4	QvalueBh.qv	library	qvalue	qvalue	pending	test-kit193-pairs-qvalue.R
+T4	QvalueBh.bhSorted	library	stats	stats	pending	test-kit193-pairs-qvalue.R
+T5	Permutation.pval	package function	integrationEnrichmentPermutation	R/utils_integration_enrichment.R	pending	test-kit193-pairs-permutation.R
+T5	Permutation.pval	package constant	INTEGRATION_ENRICHMENT_PERMUTATION_TIE	R/utils_integration_enrichment.R	pending	test-kit193-pairs-permutation.R
+R-A1;R-A2;R-K1	Ruv.RuvIII	library	ruv	ruv	pending	test-kit193-pairs-ruv.R
+R-B1;R-J1;R-J2;R-K1;R-L1	Ruv.RuvIIIC	library	RUVIIIC	RUVIIIC	pending	test-kit193-pairs-ruv.R
+R-C1;R-B2;R-E1	Ruv.restore	package function	restoreRuvFeatureLevels	R/func_prot_norm_optimization_helpers.R	pending	test-kit193-pairs-ruv.R
+R-C1;R-D1;R-D2;R-F1;R-G0	Ruv.RuvIII.adjusted	package function	computeRuvCovariates	R/func_prot_norm_optimization_helpers.R	pending	test-kit193-pairs-ruv.R
+R-C1;R-G0	Ruv.RuvIII.Wc	package function	computeOmicsRuvAssayFactors	R/func_omics_ruv_factors.R	pending	test-kit193-pairs-ruv.R
+R-A3;R-F1	Ruv.A3_stmt	package function	computeProtRuvModelFactors	R/func_prot_norm_optimization_helpers.R	pending	test-kit193-pairs-ruv.R
+R-H1	Ruv.H1_stmt	package function	ruvExactContrastsFit	R/func_general_ruv_factor_count.R	pending	test-kit193-pairs-ruv.R
+R-F1;R-G1;R-G2;R-H1	Ruv.betaHat	library	limma	limma	pending	test-kit193-pairs-ruv.R
+R-M1	Ruv.M1_stmt	library	edgeR	edgeR	pending	test-kit193-pairs-ruv.R
