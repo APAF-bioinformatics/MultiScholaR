@@ -142,6 +142,8 @@ mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes 
   message(sprintf("--- Entering mod_prot_design_server ---"))
   
   shiny::moduleServer(id, function(input, output, session) {
+    # KIT-177 outcome 4: an owner already holding a label-free or TMT design state saved by an earlier version.
+    notifyProtDesignEarlierTransform(shiny::isolate(workflow_data$state_manager))
 
     registerProtDesignServerShells(
       input = input,
