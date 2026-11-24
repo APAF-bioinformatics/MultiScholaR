@@ -1,0 +1,4 @@
+rule	failures
+E1 (oracle equals the package's S)	0
+F1 (subset identities)	0
+determinism (L2)	0
