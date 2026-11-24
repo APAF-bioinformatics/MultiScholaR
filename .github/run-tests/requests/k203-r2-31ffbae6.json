@@ -1,0 +1,84 @@
+{
+  "requested_by": "KIT-203 R2: fix on the staging merge, 10.2 files + dependents + KIT-175's two test files (replaces R2b), base vs head with check; scripts G1, S5, KIT-173 T7, S13, OD5",
+  "label": "KIT-203 R2 at merge 31ffbae6 against staging f6c86cfb",
+  "package_commit": "31ffbae66fcbaf3bac67b35e79bd6f3dcd83b252",
+  "base_commit": "f6c86cfb58fb58dcf73c66671601ad2ed6376618",
+  "tools_ref": "",
+  "tests": [
+    "test-enrichment-significance.R",
+    "test-go-propagation.R",
+    "test-general-enrichment-shared.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-module-ci-prot-enrich.R",
+    "test-e2e-enrichment-doubles.R",
+    "test-e2e-fixture-integrity.R",
+    "test-e2e-transcriptomics-screen.R",
+    "test-omic-enrich-module.R",
+    "test-omics-enrich-core.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-prot-11a-enrichment-module-characterization.R",
+    "test-omic-gui-config.R",
+    "test-workflow-class-declarations.R",
+    "test-workflow-dia-products.R",
+    "test-prot-annotation-uniprot-empty.R",
+    "test-prot-annotation-uniprot-direct-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/gate-k203.R",
+      "args": [
+        "g1",
+        "k203-g1"
+      ],
+      "env": {
+        "K203_WORKERS": "4"
+      },
+      "out": "k203-g1",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/replay-k203.R",
+      "args": [
+        "k203-s5",
+        "f6c86cfb58fb58dcf73c66671601ad2ed6376618"
+      ],
+      "out": "k203-s5",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-replay.R",
+      "args": [
+        "k173-t7"
+      ],
+      "out": "k173-t7",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/options-k203.R",
+      "args": [
+        "k203-s13"
+      ],
+      "out": "k203-s13",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/od5-k203.R",
+      "args": [
+        "k203-od5",
+        "f6c86cfb58fb58dcf73c66671601ad2ed6376618"
+      ],
+      "out": "k203-od5",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
