@@ -1,4 +1,9 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 4
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 5
+
+**Revision 5 (2026-11-25):** the audit's "Declaration audit, revision 4" (`tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`)
+applied with its exact texts: R4-01 (skewness check with Johnson's statistic; owner's word pending, section 5), R4-02
+(stage 1's console and provenance; item (ix)), R4-03 (R_c computed by `reestimate.R`; stage 2 always runs), R4-04
+(`size2stage.py` reproduces the table; the appendix's ceiling). Revision 4 is commit 2c78be95 (SHA-256 516447008754...93e0).
 
 **Revision 4 (2026-11-25):** B04 decided by the owner (methods ledger VAL-185): option C, with one blinded re-estimation
 of the number of data sets (section 8); ceiling 100 core-hours; 8 deciding cells, E1-T1b reported; margins 0.10 (null
@@ -109,6 +114,15 @@ Per cell c, pairs are the same data set under D+B and F+B.
   Carlo error of p is reported. The paired t bound is reported beside it. **E1-T1b:** the unit is the seed (21 seeds); e
   is the mean of a seed's two journeys. (Margin 0.05, VAL-185.) E1-T1b is
   reported with this test, not deciding (VAL-185).
+  **Skewness check, fixed now (owner's word pending: R4-01; the run is not sent until it is given).** In each effect
+  cell, on all R_c pairs, the sample skewness g of e is computed (third central moment over the cubed SD, both with
+  divisor n). If |g| ≤ 1, the cell is decided as above. If |g| > 1, it is decided by Johnson's skewness-corrected
+  statistic (Johnson 1978, JASA 73:536), t_J = [ē + μ̂₃/(6s²n) + μ̂₃ē²/(3s⁴)] / (s/√n), with μ̂₃ the third central moment
+  (divisor n) and s the SD (divisor n − 1). The cell is no worse if t_J < −z_{0.95}. The sign-flip result and g are
+  reported beside it. Simulated size with the re-estimation (audit, revision 4): normal 0.054; exponential (g ≈ 2)
+  0.053–0.058; zero-inflated (80 % zeros, g ≈ 4) 0.053, where the studentised test alone gives 0.099. g is computed in
+  the final analysis, on all R_c seeds, from the paired differences only; it is not computed in stage 1 and does not
+  feed the re-estimation (`reestimate.R` computes only the SD and the discordant share).
 - **Multiplicity.** The decision is an intersection–union test: D+B ships only if every decisive cell rejects its H0. Each
   cell is tested at one-sided α = 0.05; the probability of shipping D+B when it is worse by at least the margin in any
   cell is then at most 0.05 (Berger 1982, Technometrics 24:295). Per-cell confidence bounds are reported at the same
@@ -208,7 +222,7 @@ SD 0.20 and N-w discordance 0.25.
 | R: N-w, E-w | 250, 200 |
 | Journey-seconds (estimate) | about 132,700 s |
 | Expected core-hours (lifecycle included) | about 48 |
-| Ceiling | 65 |
+| Ceiling | 100 (VAL-185) |
 | P(pass all), arms equal, SD 0.20, N-w discordance 0.25 / 0.12 | 0.80 / 0.86 |
 | same, SD 0.10 | 0.93 / 0.995 |
 | P(pass all), first measurement's differences | below 1e-9 |
@@ -243,9 +257,12 @@ assumed for N-r and N-s.
 ## 8. One blinded re-estimation of R (VAL-185)
 
 **Stage 1.** Seeds 1 to 50 of the capped arms (F+B, D+B) in every cell, in N-w and E-w together with their unbounded
-arms (B, F, D, B+B), lipid. The stage-1 job returns **only** the re-estimation table and its provenance: its
-`out_pattern` matches `reestimate.tsv` and `provenance.json` alone, so no journey row, endpoint or rate of stage 1 leaves
-the runner.
+arms (B, F, D, B+B), lipid. The stage-1 job writes every journey row, side log and intermediate file to a directory
+outside `out`, which is discarded with the runner. Its console prints only fixed lines: the number of journeys per cell
+and arm, the counts of the mechanics falsifiers (the k and percentage read-back and the oracle), seconds, and the
+`reestimate.tsv` table. `out` holds only `reestimate.tsv` and `provenance.json`. `provenance.json`'s fields are commits,
+script hashes, seeds, journey counts, falsifier counts, and the median seconds per journey of each arm type; no field
+derives from calls, FDP, power, fold changes or a per-arm rate.
 
 **The re-estimation script** (`docs/qa/workflow-execution/kit/kit-190/reestimate.R`, committed and hashed with
 `effect.R` before the lifecycle, checked by the auditor). It reads the stage-1 journey rows of the two capped arms on the
@@ -271,6 +288,10 @@ product over the 8 deciding cells is 0.80 when every cell meets it).
   lowered for all cells together in steps of 0.0005 until it fits; R_c never goes below option C's R. The achieved joint
   probability Π P_c(R_c) under equality is reported with the final R. (Option C's own R costs about 48; it cannot bind.)
 - The final R per cell is written to `runs.tsv` and `outcome.md` before stage 2 is sent, and is not changed after.
+- R_c is computed by `reestimate.R`, from `reestimate.tsv`, the core-hours recorded in `runs.tsv` for the lifecycle and
+  stage 1, and the stage-1 median seconds in `provenance.json`. Its output (R_c per cell, the target t used, the achieved
+  Π P_c(R_c)) is committed before stage 2 is sent. If P_c(1,000) < t, then R_c = 1,000. Stage 2 runs at these R_c
+  whatever stage 1 showed: no early stop, and no change of cells, arms, margins or tests.
 
 **Stage 2.** Seeds 1 to R_c in every cell. Seeds 1 to 50 are run again (their rows were not returned): they are
 deterministic, and stage 2 checks that re-running `reestimate.R` on its own seeds 1 to 50 reproduces the stage-1
@@ -291,25 +312,30 @@ about 8 core-hours, inside the ceiling.
   result that bounds it, and none is claimed.
 
 **Simulated size of the whole two-stage procedure at the margin** (`size2stage.py`, committed beside this file; stdlib
-Python; the final test approximated by Tango's statistic for null cells and by the studentised t reference for effect
-cells; one cell at a time, option C's minimum R, the formula above, per-cell maximum 1,000):
+Python; run `python3 -I size2stage.py`, which prints these rows with their seeds; floors are option C's R (null 100 for
+N-r and N-s, 250 for N-w; effect 200); the formula above, per-cell maximum 1,000; the final test is Tango's statistic in
+null cells and, in effect cells, the studentised t with the R4-01 skewness check (Johnson's statistic when |g| > 1), the t
+reference standing in for the sign-flip test; one cell at a time):
 
-| Endpoint | Setting | Simulated cells | Size (nominal 0.05) | Mean final R | Same test at a fixed R |
-|---|---|---|---|---|---|
-| null (Tango, margin 0.10) | discordance 0.12 at the margin | 6,000 | 0.043 | 194 | |
-| | discordance 0.25 | 6,000 | 0.051 | 350 | |
-| | discordance 0.40 | 6,000 | 0.055 | 539 | |
-| effect (margin 0.05), normal differences | SD 0.20 | 2 × 20,000 | 0.049, 0.053 | 232 | 0.049 (R = 200) |
-| | SD 0.40 | 2 × 20,000 | 0.053, 0.048 | 822 | |
-| effect, right-skewed differences (centred exponential, skewness 2) | SD 0.20 | 2 × 20,000 | 0.069, 0.070 | 244 | 0.066 (R = 240) |
-| | SD 0.40 | 2 × 20,000 | 0.062, 0.064 | 768 | 0.056 (R = 770) |
+| Endpoint | Setting | Simulated cells | Size (nominal 0.05) | Mean final R |
+|---|---|---|---|---|
+| null (Tango, margin 0.10), floor 100 | discordance 0.10 / 0.25 | 6,000 each | 0.059 / 0.046 | 163 / 350 |
+| null, floor 250 | discordance 0.12 / 0.25 / 0.40 | 6,000 each | 0.049 / 0.049 / 0.051 | 254 / 353 / 539 |
+| effect (margin 0.05), normal | SD 0.20 / 0.40 | 20,000 each | 0.051 / 0.050 | 232 / 821 |
+| effect, right-skewed (centred exponential, skewness 2) | SD 0.20 / 0.40 | 20,000 each | 0.057 / 0.055 | 245 / 769 |
+| effect, zero-inflated (80 % zeros, else exponential; skewness about 4) | SD 0.20 / 0.40 | 20,000 each | 0.052 / 0.057 | 267 / 672 |
+| audit re-simulation (revision 4), 5,000 cells each | null, discordance 0.10 to 0.40 | | 0.047 to 0.055 (floors 100, 250) | |
+| | effect with the R4-01 rule: normal / exponential / zero-inflated | | 0.054 / 0.053 to 0.058 / 0.053 (studentised alone: 0.099 zero-inflated) | |
 
-Monte Carlo SE about 0.0015 (20,000) and 0.003 (6,000). Read: the re-estimation keeps the size near 0.05 for normal
-differences and for the binary endpoint at the discordances considered (at most 0.055); the excess seen with strongly
-right-skewed differences comes mostly from the studentised test at a fixed R (0.066 against 0.069 at SD 0.20), with the
-re-estimation adding up to about 0.007 at SD 0.40. The skew of the real FDP differences is unknown; stage 1 does not look
-at it (blinding), and the final analysis reports the observed skewness of d beside each effect cell's verdict.
+Monte Carlo SE about 0.0015 (20,000) and 0.003 (6,000). At the margin the discordance cannot be below 0.10 (δ ≥ |Δ|), so
+lower discordances are not size settings. Read: with the R4-01 rule in place the whole two-stage procedure keeps its size
+within 0.046 to 0.059 in every setting simulated; the largest, 0.059, is the asymptotic Tango test at discordance 0.10
+with the floor of 100.
 
-**Lifecycle additions.** Item (viii) above (planted inputs to `reestimate.R`); item (ix): the stage-1 job's returned
-files are exactly `reestimate.tsv` and `provenance.json` (checked on the lifecycle's own run with R = 2). The lifecycle
+**Lifecycle additions.** Item (viii) above (planted inputs to `reestimate.R`); and (ix): on the lifecycle's own stage-1 run: the artifact holds the infrastructure's files
+(`scripts.tsv`, `library.tsv`, `cpu.txt`, `blas.txt`, `r-version.txt`, `console.log`) and, under `out/`, exactly
+`reestimate.tsv` and `provenance.json`; `console.log` contains only the fixed lines above; and a second stage-1
+lifecycle run, with the D+B FDP rows of one cell shifted by +0.30 and the any-call flags of one null cell swapped
+between arms (a planted switch of the bound mode, lifecycle only), gives an artifact identical to the first after
+removing the seconds fields. The lifecycle
 stays at R = 2 per cell, after the auditor's script check.
