@@ -22,6 +22,8 @@ paired test). An option state is `O → Option V`, `none` for unset. `withr::wit
 end of each step, error or not (modelled as per-step scope); a single process (KIT-190 7.4). The marker table is a
 list constant, bound by its own digest (section 8.2). That every operation whose kernel reads a marker's option
 also declares that marker is a property of the code, not of this model (KIT-187 2.4 and T8, KIT-190 T7 (iv), (v)).
+That a new-design step's kernel does not read a marker's option is a property of the code (KIT-190 T7 (v)); no
+statement here depends on it.
 -/
 
 @[expose] public section
@@ -104,7 +106,7 @@ def computeManagedNewDesign (tbl : List (Marker N O V)) (dropped : List N) (decl
 /-- The record builder's fixed entries (`:421-432`): the provenance's fixed constants with source `fixed` when there
 are any; otherwise the registry declaration's fixed constants minus every table marker, with source `registry`
 (a marker is never back-filled). Only these entries can have source `fixed` or `registry`; `others` are the step's
-declared parameters and arguments, recorded before them. -/
+other entries, whatever their place: `rule` does not depend on order. -/
 def build (tbl : List (Marker N O V)) (others : Step N V) (prov decl : Fixed N V) : Step N V :=
   others ++
     if prov ≠ [] then prov.map fun x => ⟨x.1, Source.fixed, x.2⟩
@@ -121,7 +123,8 @@ def replayOptions (tbl : List (Marker N O V)) (step : Step N V) (decl : Fixed N 
   (markersFixed tbl decl).map fun μ => (μ.option, rule step μ)
 
 /-- `withr::with_options(list, …)` over an ambient option state: the listed options set, every other one as it
-was. -/
+was. R's `options[[key]] <- value` keeps the last value for a repeated key and `List.lookup` the first; under
+`TableOK` no key repeats. -/
 def withOpts (ambient : Opts O V) (set : List (O × V)) : Opts O V :=
   fun o => match set.lookup o with
     | some v => some v
@@ -163,35 +166,23 @@ def faithful_stmt : Prop :=
 
 /-- (2b, legacy steps) and (2e, new-design steps): a step whose provenance carries no fixed entry named `μ` (a step
 made before the marker existed, or a new-design step) records the earlier rule, whether the builder lists the
-provenance or falls back to the registry. Hypotheses: `μ ∈ tbl` (the fallback removes table markers); the provenance
-has no entry named `μ`; `others` as in `faithful_stmt`. -/
+provenance or falls back to the registry (whose entries have source `registry`, which the rule never counts).
+Hypotheses: the provenance has no entry named `μ`; `others` as in `faithful_stmt`. -/
 def without_marker_stmt : Prop :=
   ∀ (N O V : Type) [DecidableEq N] [DecidableEq O] [DecidableEq V] (tbl : List (Marker N O V))
     (μ : Marker N O V) (others : Step N V) (prov decl : Fixed N V),
-    μ ∈ tbl → μ.name ∉ prov.map Prod.fst →
+    μ.name ∉ prov.map Prod.fst →
     (∀ e ∈ others, e.source ≠ Source.fixed ∧ e.source ≠ Source.registry) →
       rule (build tbl others prov decl) μ = μ.earlier
 
 /-- (2e) The managed writer's new-design step records no marker named in `dropped`, so replays under the earlier
-token, whatever the option state. Hypotheses: `μ ∈ tbl`; `μ.name ∈ dropped`; `others` as above. -/
+token, whatever the option state. Hypotheses: `μ.name ∈ dropped`; `others` as above. -/
 def managed_new_design_stmt : Prop :=
   ∀ (N O V : Type) [DecidableEq N] [DecidableEq O] [DecidableEq V] (tbl : List (Marker N O V))
     (μ : Marker N O V) (dropped : List N) (others : Step N V) (decl : Fixed N V) (o : Opts O V),
-    μ ∈ tbl → μ.name ∈ dropped →
+    μ.name ∈ dropped →
     (∀ e ∈ others, e.source ≠ Source.fixed ∧ e.source ≠ Source.registry) →
       rule (build tbl others (computeManagedNewDesign tbl dropped decl o) decl) μ = μ.earlier
-
-/-- (2e) If a step's kernel does not read marker `μ`'s option (a hypothesis about the kernel, which KIT-190 T7 (v)
-checks by spies), its output is the same under either token. The kernel is an abstract function of the option
-state. The conclusion is the hypothesis at two particular values; it is stated so that the record carries the exact
-form of the sentence, not because it is deep. -/
-def kernel_ignores_stmt : Prop :=
-  ∀ (N O V α : Type) [DecidableEq N] [DecidableEq O] [DecidableEq V] (μ : Marker N O V)
-    (kernel : Opts O V → α) (o : Opts O V),
-    (∀ (o' : Opts O V) (v w : Option V),
-      kernel (Function.update o' μ.option v) = kernel (Function.update o' μ.option w)) →
-      kernel (Function.update o μ.option (some μ.current)) =
-        kernel (Function.update o μ.option (some μ.earlier))
 
 /-- (2c) Round trip: a step replayed under its replay options records a step whose rule equals the original's, for
 every marker the declaration fixes with its current token, every ambient option state, and every writer of
@@ -247,13 +238,6 @@ def without_marker_witness_stmt : Prop :=
 def managed_new_design_witness_stmt : Prop :=
   ∃ (tbl : List (Marker String String String)) (μ : Marker String String String) (dropped : List String),
     TwoRowTable tbl ∧ μ ∈ tbl ∧ μ.name ∈ dropped
-
-/-- Witness for `kernel_ignores_stmt`: a kernel that does not read `μ`'s option but reads another. -/
-def kernel_ignores_witness_stmt : Prop :=
-  ∃ (μ : Marker String String String) (kernel : Opts String String → Option String) (o' : String),
-    o' ≠ μ.option ∧ μ.current ≠ μ.earlier ∧ (∀ o, kernel o = o o') ∧
-    ∀ (o : Opts String String) (v w : Option String),
-      kernel (Function.update o μ.option v) = kernel (Function.update o μ.option w)
 
 /-- Witness for `unfixed_default_stmt`. -/
 def unfixed_default_witness_stmt : Prop :=

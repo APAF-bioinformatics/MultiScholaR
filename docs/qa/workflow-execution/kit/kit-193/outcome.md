@@ -1,4 +1,4 @@
-# KIT-193 outcome (in progress: statements written, waiting for the statements gate)
+# KIT-193 outcome (in progress: statements gate passed with corrections S01-S07 applied; waiting for its closure check)
 
 Ticket `tickets/kit/KIT-193.md` r1.2. Branch `kit-193-lean-proofs` from `v0.9-staging` at 51959495. Lean runs on the
 laptop by the owner's exception (VAL-95, VAL-103); no R was run anywhere for this stage.
@@ -43,16 +43,21 @@ root (`lake build --wfail`, 6,136 jobs, all from the cache except the project's 
 | File | Statements |
 |---|---|
 | `Spec/FilterCount.lean` | 8 statements, 6 witnesses |
-| `Spec/ReplayRule.lean` | 9 statements, 5 witnesses |
+| `Spec/ReplayRule.lean` | 8 statements, 4 witnesses |
 | `Spec/GoClosure.lean` | 12 statements, 4 witnesses |
-| `Spec/QvalueBh.lean` | 15 statements, 5 witnesses |
+| `Spec/QvalueBh.lean` | 16 statements, 5 witnesses |
 | `Spec/Permutation.lean` | 9 statements, 4 witnesses |
 | `Spec/RuvAlgebra.lean` | 12 statements (R-A1 to R-E2, R-K1), 5 witnesses |
 | `Spec/RuvDownstream.lean` | 11 statements (R-F1 to R-H1, R-M1), 6 witnesses |
 | `Spec/RuvIIIC.lean` | 6 statements (R-J1, R-J2, R-L1, R-L2), 4 witnesses |
 
-`models.md` holds the model-to-code table, each pair's kind and planted defect, and the items specified later
-(R-I1, R-J3, R-N1). `tests/testdata/kit193/bindings.tsv` lists the bound objects; every digest is `pending` until
+Statements gate: `tickets/kit/audits/AUDIT-KIT-193-statements-20261124.md` (Fable). Its corrections S01 to S07
+are applied as written (82 statements, 38 witnesses after them). One is a result: the ticket's 4d-ii formula is false
+at a = 1 (`kept_family_unit_a_counterexample_stmt`; the formula is now stated for 0 < a < 1).
+
+**Statement not yet frozen:** R-I1, R-J3, R-N1. Each gets its own Spec file and statements review before its proof.
+
+`models.md` holds the model-to-code table and each pair's kind and planted defect. `tests/testdata/kit193/bindings.tsv` lists the bound objects; every digest is `pending` until
 its pair first runs on merged code (8.2). `SPEC.sha256` is not written: it follows the gate.
 
 ## Not checked

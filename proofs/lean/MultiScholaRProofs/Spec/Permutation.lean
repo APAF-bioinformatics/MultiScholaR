@@ -127,10 +127,13 @@ def bh_floor_sentence_counterexample_stmt : Prop :=
 
 /-! ## Witnesses (section 5.1) -/
 
-/-- Witness for `perm_finite_core_stmt`, `identity_clause_stmt`, `perm_tolerance_mono_stmt`: the hypotheses hold
-with `0 < α < 1` and the code's `ε = 10⁻⁹`. -/
+open scoped Classical in
+/-- Witness for `perm_finite_core_stmt`, `identity_clause_stmt`, `perm_tolerance_mono_stmt`: two samples, one draw,
+the code's tolerance, `0 < α < 1`, and a pair `(τ, π)` that the bound counts. -/
 def perm_witness_stmt : Prop :=
-  ∃ α ε : ℝ, 0 ≤ α ∧ 0 < α ∧ α < 1 ∧ 0 ≤ ε ∧ ε = 1 / 10 ^ 9
+  ∃ (g : Fin 2 → ℝ) (T : (Fin 2 → ℝ) → ℝ) (α ε : ℝ), 0 < α ∧ α < 1 ∧ ε = 1 / 10 ^ 9 ∧
+    0 < (univ.filter fun x : Equiv.Perm (Fin 2) × (Fin 1 → Equiv.Perm (Fin 2)) =>
+      pval T ε (g ∘ x.1) x.2 ≤ α).card
 
 /-- Witness for `perm_measure_stmt`: a permutation-invariant probability law on `Fin 4 → ℝ` that is not a point mass,
 with a measurable statistic. -/

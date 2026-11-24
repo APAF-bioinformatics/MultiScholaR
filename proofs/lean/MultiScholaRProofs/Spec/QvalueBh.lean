@@ -98,10 +98,10 @@ def bh_ge_p_stmt : Prop :=
 def bh_mono_stmt : Prop :=
   ∀ (m : ℕ) (p p' : Fin m → ℝ) (i : Fin m), UnitP p → UnitP p' → (∀ j, p j ≤ p' j) → bh p i ≤ bh p' i
 
-/-- (4c) Ties get equal adjusted values. Hypothesis `UnitP p` (the range of the ticket's 4c; not needed for this
-item, kept as the ticket states 4c's range once for all four facts). -/
+/-- (4c) Ties get equal adjusted values. Hypothesis `p i = p j` only (the ticket's range `0 ≤ p ≤ 1` is not needed
+for this item and is not assumed). -/
 def bh_ties_stmt : Prop :=
-  ∀ (m : ℕ) (p : Fin m → ℝ) (i j : Fin m), UnitP p → p i = p j → bh p i = bh p j
+  ∀ (m : ℕ) (p : Fin m → ℝ) (i j : Fin m), p i = p j → bh p i = bh p j
 
 /-- (4c) The step-up characterisation: `bh p i ≤ α` iff for some `k ≥ 1`, `p_i ≤ k α / m` and at least `k` p-values
 are `≤ k α / m`. Hypothesis `UnitP p`. The division by `m` is real: the term `i` exists, so `m ≥ 1`. -/
@@ -167,7 +167,7 @@ def fdr_n25_stmt : Prop :=
 /-- The p-value of outcome `j` under the law "1 with probability `1 - a`, else uniform on `{a j / N}`". -/
 def mixVal (a : ℚ) (N : ℕ) (j : Fin (N + 1)) : ℚ := if (j : ℕ) = 0 then 1 else a * j / N
 
-/-- The probability of outcome `j` (used with `0 < N`, `0 < a ≤ 1`). -/
+/-- The probability of outcome `j` (used with `0 < N`, `0 < a < 1`). -/
 def mixWt (a : ℚ) (N : ℕ) (j : Fin (N + 1)) : ℚ := if (j : ℕ) = 0 then 1 - a else a / N
 
 /-- The false discovery rate under the complete null of `m` independent p-values with the mixture law, BH (standard
@@ -187,10 +187,17 @@ def lcmUpTo (n : ℕ) : ℕ := (List.range' 1 n).foldl Nat.lcm 1
 
 /-- (4d-ii) On a grid fine enough that every threshold is a grid point, BH (at most `q`) over the terms with `p < 1`
 has false discovery rate exactly `min(q/a, 1) (1 - (1 - a)^m)` under the complete null. Hypotheses: `0 < m`, `0 < N`,
-`0 < a ≤ 1` (a probability that a p-value is below 1), `0 < q`, `GridFine`. -/
+`0 < a < 1` (at `a = 1` the uniform part's top value is 1 and the kept family drops it:
+`kept_family_unit_a_counterexample_stmt`), `0 < q`, `GridFine`. -/
 def kept_family_formula_stmt : Prop :=
-  ∀ (m N : ℕ) (a q : ℚ), 0 < m → 0 < N → 0 < a → a ≤ 1 → 0 < q → GridFine m N a q →
+  ∀ (m N : ℕ) (a q : ℚ), 0 < m → 0 < N → 0 < a → a < 1 → 0 < q → GridFine m N a q →
     fdrKeptMix m N a q false = min (q / a) 1 * (1 - (1 - a) ^ m)
+
+/-- The formula fails at `a = 1`: a result of the statements gate (`m = 2`, `N = 4`, `q = 1/2`: `5/8` against
+`1/2`). Closed statement. -/
+def kept_family_unit_a_counterexample_stmt : Prop :=
+  GridFine 2 4 1 (1 / 2) ∧ fdrKeptMix 2 4 1 (1 / 2) false = 5 / 8 ∧
+    min ((1 / 2 : ℚ) / 1) 1 * (1 - (1 - 1) ^ 2) = 1 / 2
 
 /-- (4d-ii) KIT-189's figure: at `a = 27/100`, `q = 1/20`, `m = 150`, `N = 27 lcm(1..150)`, the kept family's false
 discovery rate is `(5/27)(1 - (73/100)^150)`, which exceeds 0.185. Closed statement. -/
@@ -217,7 +224,7 @@ def grid_witness_stmt : Prop := 0 < (20 : ℕ) ∧ 0 < (25 : ℕ)
 
 /-- Witness for `kept_family_formula_stmt`: KIT-189's instance satisfies every hypothesis. -/
 def kept_family_witness_stmt : Prop :=
-  0 < (150 : ℕ) ∧ 0 < 27 * lcmUpTo 150 ∧ (0 : ℚ) < 27 / 100 ∧ (27 / 100 : ℚ) ≤ 1 ∧ (0 : ℚ) < 1 / 20 ∧
+  0 < (150 : ℕ) ∧ 0 < 27 * lcmUpTo 150 ∧ (0 : ℚ) < 27 / 100 ∧ (27 / 100 : ℚ) < 1 ∧ (0 : ℚ) < 1 / 20 ∧
     GridFine 150 (27 * lcmUpTo 150) (27 / 100) (1 / 20)
 
 end MultiScholaRProofs.QvalueBh

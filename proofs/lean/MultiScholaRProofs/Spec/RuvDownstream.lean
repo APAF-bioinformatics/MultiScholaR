@@ -183,8 +183,6 @@ def M1_stmt : Prop :=
     IsUnit Q.det →
       LinearMap.range (fromCols X W).mulVecLin = LinearMap.range (fromCols X (W * Q)).mulVecLin ∧
       (fromCols X W).rank = (fromCols X (W * Q)).rank ∧
-      (∀ (α : Type) (fit : Submodule ℝ (Fin n → ℝ) → α),
-        fit (LinearMap.range (fromCols X W).mulVecLin) = fit (LinearMap.range (fromCols X (W * Q)).mulVecLin)) ∧
       ∀ (βX : Fin a → ℝ) (βW : Fin k → ℝ),
         fromCols X W *ᵥ Sum.elim βX βW = fromCols X (W * Q) *ᵥ Sum.elim βX (Q⁻¹ *ᵥ βW)
 

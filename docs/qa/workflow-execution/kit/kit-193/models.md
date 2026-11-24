@@ -24,7 +24,7 @@ the ticket are marked (ticket); the others are proposals for the gate.
 | ReplayRule | `ruleLoop`; `rule` (existential) | `workflowReplayRule` (`:657-664`) | value decoding (`decodeWorkflowRecordValue`): values compared after decoding |
 | ReplayRule | `inForce`, `compute` | `workflowFixedInForce` (`:686-693`) through `setWorkflowStepProvenance` (`R/utils_workflow_dia_state.R:729`), every writer | R's `NULL` for an empty list |
 | ReplayRule | `computeManagedNewDesign` | KIT-190 7.4: the managed writer removes `ruv_control_grouping` (`R/utils_workflow_execution.R:3327-3332` as cited) | read as ticket text |
-| ReplayRule | `build` | the builder's fixed entries and registry fallback (`:421-432`) | other entries (`others`) abstract, source not `fixed`/`registry` |
+| ReplayRule | `build` | the builder's fixed entries and registry fallback (`:421-432`) | other entries (`others`) abstract, any place, source not `fixed`/`registry` (`rule` does not depend on order) |
 | ReplayRule | `markersFixed`, `replayOptions`, `withOpts` | `workflowReplayRuleOptions` (`:675-680`), `withr::with_options` at the wrapper (`:785`) | per-step option scope (R's `on.exit`) |
 | ReplayRule | `helperRule` | the helpers' `getOption(option, current)` with only the earlier token selecting the earlier rule (KIT-187 7.3) | the kernels themselves |
 | GoClosure | `parentRel`, `keptEdges` | `goAncestorPairs` edge filter (`R/func_general_geneset_kernel.R:79`) | GO.db's parent map as a given list |
@@ -38,14 +38,14 @@ the ticket are marked (ticket); the others are proposals for the gate.
 | Permutation | `pval`, `unchangedDraws` | `integrationEnrichmentPermutation` (`kit-191:R/utils_integration_enrichment.R:1631-1656`) | `T` abstract; exact arithmetic; RNG uniform |
 | Permutation | `reflect`, `reflectedDraws` | fixture C's reflection count | none |
 | Permutation | `uniformDraws` | `vapply(seq_len(B), function(i) sample(n))` | Mersenne-Twister as uniform (idealisation) |
-| RuvAlgebra | `RuvIII`, `alpha`, `Yc`, `ac`, `W`, `Ystar` | `ruv::RUVIII` (`R/RUVIII.R:35-42`, ruv 0.9.7.2 as KIT-184 read it) | `U` abstract (svd's output), constrained by named hypotheses |
+| RuvAlgebra | `RuvIII`, `alpha`, `Yc`, `ac`, `W`, `Ystar` | `ruv::RUVIII` (ruv 0.9.7.1, the locked version, `R/RUVIII.R:35-42`, read at the statements gate) | `U` abstract (svd's output), constrained by named hypotheses |
 | RuvAlgebra | `centre`, `Wc`, `adjusted` | `computeRuvCovariates` (`R/func_prot_norm_optimization_helpers.R:1179-1183`); `computeOmicsRuvAssayFactors` (`R/func_omics_ruv_factors.R:170-173`) | none |
 | RuvAlgebra | `restore` | `restoreRuvFeatureLevels` (`R/func_prot_norm_optimization_helpers.R:1133-1140`) on complete data | missing values |
 | RuvAlgebra | `residop` | `ruv::residop` | none |
 | RuvDownstream | `betaHat`, `resid`, `rss`, `tStat` | `lm.fit`/`lmFit` normal equations | limma's empirical Bayes |
 | RuvDownstream | `betaHatW`, `residW` | `dpcDE` weights (`R/func_prot_da_model_methods.R:316-380`); `duplicateCorrelation` (`R/func_prot_da_model_stats.R:259-261`) with a fixed correlation | the correlation's estimation |
 | RuvDownstream | `H1_stmt`'s `X * T⁻¹` | `ruvExactContrastsFit` (`R/func_general_ruv_factor_count.R:383-397`, `limma::contrastAsCoef`) | limma's `T` (any invertible `T` with first row `c`) |
-| RuvIIIC | `RuvIIIC`, `Y0`, `rows`, `Uon`, `ctlOn`, `aOn`, `WOn`, `ystar` | RUV-III-C per target (KIT-185 2.1; RUVIIIC 1.0.19) | `P_R` and the eigen-solver abstract; closed-form and all-missing branches |
+| RuvIIIC | `RuvIIIC`, `Y0`, `rows`, `Uon`, `ctlOn`, `aOn`, `WOn`, `ystar` | RUV-III-C per target (KIT-185 2.1; RUVIIIC at c534151f, `src/RUVIIIC_Varying.cpp:151-165`, `:229-303`) | `P_R` and the eigen-solver abstract (no statement uses their form); closed-form and all-missing branches |
 | RuvIIIC | `ystarT`, `foldErr` | KIT-188 2.4 item 1's error | none |
 
 ## 2. Items: statements, pairs, planted defects
@@ -53,11 +53,11 @@ the ticket are marked (ticket); the others are proposals for the gate.
 | Item | Spec statements (witness) | Pair file | Kind; calls | Planted defect |
 |---|---|---|---|---|
 | T1 | `never_stricter`, `exact_lcm`, `exact_316`, `balanced`, `share_mono`, `peptide_floor`, `counterexample`, `counterexample_any_rounding` (witness each) | `test-kit193-pairs-filter.R` | package: `exceedsRoundedPercent`, `roundedPercentNumerator`, `allowedByRoundedPercent`, `updateMissingValueParameters` | (ticket) `roundedPercentNumerator <- function(cutoff_percent) 2 * round(1000 * cutoff_percent)`: the table differs at n* = 3, m = 2, n = 3, k = 1 |
-| T2 | `rule_first_match`, `totality`, `faithful`, `without_marker`, `managed_new_design`, `kernel_ignores`, `round_trip`, `locality`, `unfixed_default` (witnesses) | `test-kit193-pairs-replay.R` | package: `workflowReplayRule`, `workflowFixedInForce`, `workflowReplayRuleOptions`, `buildWorkflowAnalysisRecord`; constant `workflowReplayRuleMarkers` | (ticket) `workflowReplayRule` returning the current token for an entry of source `registry` |
+| T2 | `rule_first_match`, `totality`, `faithful`, `without_marker`, `managed_new_design`, `round_trip`, `locality`, `unfixed_default` (witnesses) | `test-kit193-pairs-replay.R` | package: `workflowReplayRule`, `workflowFixedInForce`, `workflowReplayRuleOptions`, `buildWorkflowAnalysisRecord`; constant `workflowReplayRuleMarkers` | (ticket) `workflowReplayRule` returning the current token for an entry of source `registry` |
 | T3 | `bfs_terminates`, `bfs_correct`, `propagate_fin`, `idempotent`, `monotone`, `extensive_kept`, `not_extensive`, `labels_mono`, `root_removed`, `all_absent`, `bfs_all`, `aspect_closed` (witnesses) | `test-kit193-pairs-go.R` | package: `goAncestorPairs`, `propagateGoAnnotations`, `buildUniprotGoGeneSets`; constants `goPropagationRelations`, `goAspectRoots` | proposed: `goAncestorPairs <- function(terms, parents, relations) data.frame(term = terms, node = terms)` (no closure): the chain graph's rows differ |
 | T4 a-c | `bh_sorted_eq`, `qflag_contains_bh`, `flag_none`, `qflag_extra`, `bh_ge_p`, `bh_mono`, `bh_ties`, `bh_stepup` (witnesses) | `test-kit193-pairs-qvalue.R` | library: `qvalue::qvalue`, `stats::p.adjust`; package: `processEnrichments` (the flag, `:544`) | proposed: the route's stored q-values replaced by `pmin(1, 2 * p.adjust)` (pi0 = 2) through a mock of the package function that builds the `@result` table; the nesting assertion (ii) must fail |
 | T4 d-i | `grid_mass`, `grid_superuniform`, `fdr_n20`, `fdr_n20_strict`, `fdr_n25` | same file | library: `stats::p.adjust` (table `bh-counterexample.tsv` from the model) | proposed: the R enumeration applies BH to the whole family where the kept family is asked (a planted helper inside the test file, since base `p.adjust` cannot be mocked); the 0.075 check must fail |
-| T4 d-ii | `kept_family_formula`, `kept_family_instance` (witness: the paper's instance) | none (no R object; the figure is KIT-189's) | none | none |
+| T4 d-ii | `kept_family_formula` (0 < a < 1), `kept_family_unit_a_counterexample`, `kept_family_instance` (witness: the paper's instance) | none (no R object; the figure is KIT-189's) | none | none |
 | T5 | `perm_finite_core`, `identity_clause`, `perm_tolerance_mono`, `perm_measure`, `perm_floor`, `perm_floor_reflect`, `bh_floor`, `bh_floor_strict`, `bh_floor_sentence_counterexample` (witnesses) | `test-kit193-pairs-permutation.R` | package: `integrationEnrichmentPermutation` (through its exported caller), `integrationEnrichmentSetT`; library: `stats::p.adjust` (5c') | proposed: `integrationEnrichmentSetT` wrapped so that permuted columns' t is scaled by 1e-6 (only unchanged draws counted): fixture A's `#{p ≤ 1/3} ≤ 4608` must fail |
 | R-A1, R-A2 | `A1`, `A2` (witness `A2_witness`) | `test-kit193-pairs-ruv.R` | library: `ruv::RUVIII` | proposed: `ruv::RUVIII` mocked (`.package = "ruv"`) to return `newY = Y`; `Y - newY = Wα` must fail. If testthat cannot mock it there, the gate decides the replacement |
 | R-A3 | `A3` | same | package: `computeProtRuvModelFactors`, `computeOmicsRuvAssayFactors` | proposed: `computeOmicsRuvAssayFactors` mocked to return status `ok` with a zero W at `k = 0` |
@@ -73,17 +73,20 @@ the ticket are marked (ticket); the others are proposals for the gate.
 | R-L1, R-L2 | `L1`, `L1_invariance` (witness), `L2` (witness) | same | library: `RUVIIIC::RUVIII_C_Varying`; package: the shipped corrected values | proposed: `e_j` compared with the change of a contrast whose weights do not sum to 0 |
 | R-M1 | `M1` (witness) | same | library: `edgeR::glmQLFit` | proposed: `W Q` replaced by a non-invertible `Q` (rank 1); equal fitted values must fail |
 
-## 3. Specified later, before their proofs
+## 3. Statements not yet frozen (departure from ticket 5.3 item 1, recorded in r1.3)
+
+Each gets its own new Spec file and its own statements review before its proof; the files frozen now keep their
+hashes. None is listed as proved anywhere until then.
 
 | Item | Why not in this pass |
 |---|---|
 | R-I1 (priority 3, last of the ticket) | KIT-184's removed factors (5.4) are not written; the model (`D_c`, the rank rule at `1e-8 · s_1`, the averaging map) is stated from KIT-184's merged code, before its proof starts |
-| R-J3 (priority 3) | needs RUVIIIC's all-missing branch (fewer than `k` dimensions or controls), not read for this pass |
+| R-J3 (priority 3) | not written in this pass; the gate read the branch conditions at c534151f: all missing when `min(residual dimensions, controls complete on the target's runs) < k` (`:168-171`), when fewer than k eigenvalues converge (`:252-263`), and on any exception in the eigen step (`:304` onward); otherwise finite exactly on the target's observed runs (`:186-198`, `:286-301`) |
 | R-N1 (priority 4) | needs R's `rank(…, ties = "first")` and `order()` semantics on the three first-pass functions read and transcribed; not cheap in this pass |
 
-## 4. Not yet done for the gate (the gate's own reads, ticket 2.3 and 14)
+## 4. The gate's own reads (ticket 2.3 and 14): done at the gate
 
-- RUVIIIC's closed-form branch at the locked commit c534151f and `ruv::RUVIII` at the locked 0.9.7.1 are not
-  re-read here (R-K1's docstring cites the auditor's reading of 1.0.19).
-- RUVSeq's `RUVs` and `RUVg` are not read; R-M1 is abstract.
+- RUVIIIC at the locked commit c534151f and `ruv` 0.9.7.1 were read by the statements gate
+  (`AUDIT-KIT-193-statements-20261124.md` section 5); the docstrings cite those lines (S07).
+- RUVSeq: no statement depends on it; R-M1 is linear algebra about any W.
 - No digest in `bindings.tsv` is filled: rows are written when each pair first runs on merged code (8.2).

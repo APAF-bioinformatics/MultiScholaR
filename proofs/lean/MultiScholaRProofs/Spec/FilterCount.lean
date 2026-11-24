@@ -84,7 +84,8 @@ def balanced_stmt : Prop :=
     RoundedOK P (allowedShare n m) → (failsRule P n k ↔ n - min n m < k)
 
 /-- (6.1 (d)) The allowed share grows with group size, so the `max` over groups at
-`R/func_general_parameter_helpers.R:263` is the largest group's share.
+`R/func_general_parameter_helpers.R:263` is the largest group's share (the code takes the `max` of the rounded
+percentages; that R's `round` is monotone is not modelled).
 Hypotheses: `0 < a` (non-empty group; the smaller size's share is a real quotient); `a ≤ b`. -/
 def share_mono_stmt : Prop :=
   ∀ (m a b : ℕ), 0 < a → a ≤ b → allowedShare a m ≤ allowedShare b m

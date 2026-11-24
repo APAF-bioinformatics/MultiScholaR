@@ -14,8 +14,9 @@ with `Y0` the matrix with every missing value set to 0, `a = U_j' Y0[R_j,]`, `C_
 Called at `R/func_prot_s4_norm_methods.R:248-254` (P1-P3) and `R/func_lipid_s4_ruv_methods.R:691-697` (L1).
 
 Model. Row restriction to `R` is the diagonal 0/1 mask `mask R` on full-size matrices. The projection `P_R` and the
-eigen-solver are abstract fields (how RUVIIIC builds `P_R` when a set has no run in `R` was not read; the statements
-below need `P_R` only through the solver's input); the solver is a function of its input matrix only. The
+eigen-solver are abstract fields (`P_R = I − M_r (M_r'M_r)⁻¹ M_r'`, `M_r` restricted to the rows of R and to the
+replicate sets with a run in R, `src/RUVIIIC_Varying.cpp:151-165`, `:239` at the locked commit c534151f; kept
+abstract here because no statement uses its form); the solver is a function of its input matrix only. The
 closed-form branch (residual dimension on `R_j` equal to `k`; R-K1 (ii)) and the all-missing branch (fewer than `k`
 dimensions or controls; R-J3) are not in this model.
 -/
@@ -85,7 +86,10 @@ noncomputable def mean {m : ℕ} (v : Fin m → ℝ) : ℝ := (∑ i, v i) / m
 /-- R-J1 (kinds S + E). RUV-III-C on complete features: for every two features observed in every run, `W` is the
 same (so all such features share one `W`), and each one's corrected values are those of the single RUV-III
 computation `complete` (so R-A to R-E apply to them with that `W`); a feature with a missing run has its own
-`W_j` on `R_j` (by the definition). Hypotheses: features `j`, `j'` observed in every run. Covers P1-P3, L1, L2. -/
+`W_j` on `R_j` (by the definition). Stated for the general branch (`:229-303`): more than k residual dimensions and
+at least k controls complete in every run; at exactly k the code takes the closed form (R-K1 (ii)), below k it
+returns all missing (`:168-171`), and it also returns all missing when the eigen-solver does not converge
+(`:252-263`, `:304`). Hypotheses: features `j`, `j'` observed in every run. Covers P1-P3, L1, L2. -/
 def J1_stmt : Prop :=
   ∀ (n p s k : ℕ) (r : RuvIIIC n p s k) (j j' : Fin p), (∀ i, r.obs i j = true) → (∀ i, r.obs i j' = true) →
     r.WOn (r.rows j) = r.WOn (r.rows j') ∧

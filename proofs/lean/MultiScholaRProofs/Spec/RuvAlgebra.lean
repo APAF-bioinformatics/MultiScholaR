@@ -8,8 +8,8 @@ public import Mathlib.Basic.Real.Basic
 # Group R, the RUV-III algebra (KIT-193 sections 7.1, 7.2)
 
 Notation of section 7: `Y` runs × features (as `ruv` takes it); `M` the runs × replicate-sets matrix;
-`R_M = I - M (M'M)⁻¹ M'`; `ctl` the control columns; `k` the number of factors. RUV-III (`ruv::RUVIII`, ruv 0.9.7.2
-`R/RUVIII.R:35-42` as KIT-184 2.3 and its audit `:185` read it): `Y0 = R_M Y`; `U` the first `k` left singular
+`R_M = I - M (M'M)⁻¹ M'`; `ctl` the control columns; `k` the number of factors. RUV-III (`ruv::RUVIII`, ruv 0.9.7.1
+(the locked version), `R/RUVIII.R:35-42`, read at the statements gate: the lines are the model's): `Y0 = R_M Y`; `U` the first `k` left singular
 vectors of `Y0` (the solver's output, abstracted: a field of the structure, constrained only by the hypotheses each
 statement names); `α = U'Y`; `a_c = α[, ctl]`; `W = Y[, ctl] a_c'(a_c a_c')⁻¹`; `Y* = Y - Wα`. The package's centred
 form (`computeRuvCovariates`, `R/func_prot_norm_optimization_helpers.R:1172-1183`; `computeOmicsRuvAssayFactors`,
@@ -195,9 +195,10 @@ def K1_stmt : Prop :=
     residop r.M * r.Ystar = 0
 
 /-- R-K1 (ii). If also `S = Y_c Y_c'` is invertible (at least as many controls as runs), `Y* = M(M'S⁻¹M)⁻¹M'S⁻¹Y`,
-the closed form RUVIIIC computes in its `currentResidualDimensions == k` branch (RUVIIIC 1.0.19
-`src/RUVIIIC_Varying.cpp`; the statements gate re-reads it at the locked commit c534151f) and `ruv::RUVIII` at
-`k = NULL`. Hypotheses `Hset`; `U U' = R_M`; `IsUnit S.det` (the branch inverts `S` and does not check it, audit
+the closed form RUVIIIC computes in its `currentResidualDimensions == k` branch, read at the locked commit c534151f,
+`src/RUVIIIC_Varying.cpp:173-184`: `productControls = Y_C Y_C'` (`:182`), `.inverse()` with no rank check (`:183`),
+`M_r (M_r' S⁻¹ M_r)⁻¹ M_r' S⁻¹ y` (`:184`), `M_r` the rows of R and the replicate-set columns with a run in R
+(`:151-165`); and `ruv::RUVIII` at `k = NULL`. Hypotheses `Hset`; `U U' = R_M`; `IsUnit S.det` (the branch inverts `S` and does not check it, audit
 U3); `IsUnit (M'S⁻¹M).det` and `Hac`, which follow from the first three (kept explicit unless a lemma in `Audit.lean`
 derives them). -/
 def K1_gls_stmt : Prop :=

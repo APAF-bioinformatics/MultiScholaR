@@ -17,7 +17,7 @@ aspect root removed, `:204-208`, then pooled, distinct, sorted). `goDbTermAspect
 `all` has no aspect.
 
 Model. Terms `T`, genes `G`, relation labels `L` and aspects `Asp` are abstract types with decidable equality
-(identifiers). Data-frame operations are finite sets: `unique`, `merge` and sorting are not modelled; order is not
+(identifiers; identifiers contain no space: the code keys a pair as `paste(term, node)`, `:81`, `:86`). Data-frame operations are finite sets: `unique`, `merge` and sorting are not modelled; order is not
 part of any claim. GO.db's parent map is the given edge list; `goDbTermAspects` is the given function `aspectOf`.
 That GO.db's `GO*ANCESTOR` maps equal this closure on the real graph is KIT-173 T2's executed check, not claimed.
 -/

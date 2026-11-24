@@ -18,3 +18,4 @@ s1-spec-ruvalgebra	2026-11-24T11:08:21+11:00	3.518	1.252	4.017	0	taskset -c 0-3 
 s1-spec-ruvdownstream	2026-11-24T11:09:44+11:00	3.387	1.247	3.897	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.RuvDownstream
 s1-spec-ruviiic	2026-11-24T11:10:43+11:00	3.196	1.046	3.521	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Spec.RuvIIIC
 s1-spec-all	2026-11-24T11:11:08+11:00	3.306	1.171	3.787	0	taskset -c 0-3 lake build --wfail
+s2-gate-corrections-all	2026-11-24T11:31:46+11:00	13.951	3.448	8.216	0	taskset -c 0-3 lake build --wfail
