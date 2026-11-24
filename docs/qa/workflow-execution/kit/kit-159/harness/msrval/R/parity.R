@@ -85,24 +85,62 @@ valCompareLedgers <- function(driver, browser, exclusions) {
     cmp
 }
 
-#' The bundle driver's DA table against L1's for the same input (7.9 (e); A32): masked digest,
-#' then the fingerprint's hash at 10 significant digits
+#' The bundle driver's DA table against L1's for the same input (7.9 (e); A32; VAL-133 (1))
+#'
+#' Equal masked digests: `identical`. Otherwise the values against L1's table under SWD-083
+#' ([valCompareDaValues()]: keys, order, missing values, calls and text columns exactly; numbers
+#' within 1e-6 relative or 1e-9 absolute): `within_tolerance`, else `differs`. Rounding to 10
+#' significant digits no longer decides (VAL-133: it does not absorb the measured DIA-with-limpa
+#' difference between the two maths libraries); `sha256_10` is still reported.
 #'
 #' @param da The bundle driver's DA table.
-#' @param l1 L1's committed `list(digest, fingerprint)` for that input.
-#' @return A list: `status` (`identical`, `within_rounding`, `differs`), `digest`, `sha256_10`.
+#' @param l1 L1's committed `list(digest, fingerprint, table, keys, q_col, fc_col)` for that input.
+#' @return A list: `status` (`identical`, `within_tolerance`, `differs`), `digest`, `sha256_10`,
+#'   `comparison`.
 #' @export
 valCompareParityDa <- function(da, l1) {
     d <- valMaskedDigest(da)
     f <- valFingerprint(da)
-    status <- if (identical(d, l1$digest)) {
-        "identical"
-    } else if (identical(f$sha256_10, l1$fingerprint$sha256_10)) {
-        "within_rounding"
-    } else {
-        "differs"
+    if (identical(d, l1$digest)) {
+        return(list(status = "identical", digest = d, sha256_10 = f$sha256_10, comparison = NULL))
     }
-    list(status = status, digest = d, sha256_10 = f$sha256_10)
+    if (is.null(l1$table) || is.null(l1$keys) || is.null(l1$q_col) || is.null(l1$fc_col)) {
+        valAbort("L1's table, keys, q and fold-change columns are needed to compare values",
+                 "val_spec_invalid")
+    }
+    cmp <- valCompareDaValues(da, l1$table, keys = l1$keys, q_col = l1$q_col,
+                              fc_col = l1$fc_col, mode = "swd083")
+    list(status = if (identical(cmp$verdict, "outside")) "differs" else "within_tolerance",
+         digest = d, sha256_10 = f$sha256_10, comparison = cmp)
+}
+
+#' The Linux bundle's GUI-entry lane steps excluded by name from any installer acceptance
+#' (VAL-133; KIT-199 implementation audit O4): the DIA-with-limpa DA table is written with one
+#' value in another notation under OpenBLAS, so these six steps stay red on the bundle permanently
+#' @noRd
+PARITY_INSTALLER_EXCLUDED <- data.frame(
+    lane = "prot_dia_limpa",
+    step = c("da", "summary_refusal", "summary_save", "summary_copy", "summary_report",
+             "summary_export"),
+    reason = paste("VAL-133: the bundle's DIA-with-limpa DA table differs in one value's",
+                   "notation (OpenBLAS); excluded by name from installer acceptance"),
+    stringsAsFactors = FALSE)
+
+#' Rows of a bundle GUI-entry lane summary that an installer acceptance may read (VAL-133)
+#'
+#' @param rows The lane summary (`lane`, `step`, ...).
+#' @return A list: `kept` (rows outside the exclusion), `excluded` (the excluded rows with their
+#'   `reason`).
+#' @export
+valInstallerAcceptanceRows <- function(rows) {
+    k <- match(paste(rows$lane, rows$step, sep = "\r"),
+               paste(PARITY_INSTALLER_EXCLUDED$lane, PARITY_INSTALLER_EXCLUDED$step, sep = "\r"))
+    excluded <- rows[!is.na(k), , drop = FALSE]
+    excluded$reason <- PARITY_INSTALLER_EXCLUDED$reason[k[!is.na(k)]]
+    kept <- rows[is.na(k), , drop = FALSE]
+    rownames(kept) <- NULL
+    rownames(excluded) <- NULL
+    list(kept = kept, excluded = excluded)
 }
 
 PARITY_TWO_SPECIES <- "prot_dia_two_species"

@@ -155,7 +155,10 @@ valReadChain <- function(lane, links, reference, live_diffs = NULL) {
             paste(link$declared$step, link$declared$key, sep = "\r")
         rest <- bd[!own, , drop = FALSE]
         base_counts <- ref_counts[!startsWith(names(ref_counts), "declared_change")]
-        ok_base <- all(listed[own]) && if (i == 1L) {
+        # KIT-199 12.3: each declared row's stored and live values equal `declared-keys.tsv`'s
+        # `frozen` and `expected` (the KIT-199 implementation audit's owed item)
+        valued <- valDeclaredValuesOk(bd[own, , drop = FALSE], link$declared)
+        ok_base <- valued && all(listed[own]) && if (i == 1L) {
             all(rest$class %in% classes) &&
                 valSameCounts(valStepClassCounts(rest), base_counts)
         } else {
@@ -179,18 +182,51 @@ valReadChain <- function(lane, links, reference, live_diffs = NULL) {
     list(status = "certified", failed_link = NA_integer_, reason = "")
 }
 
+#' Link (i)'s value check of a link's own declared rows (KIT-199 12.3)
+#' @noRd
+valDeclaredValuesOk <- function(rows, declared) {
+    if (nrow(rows) == 0L) return(TRUE)
+    if (is.null(rows$base) || is.null(rows$live) || is.null(declared$frozen) ||
+            is.null(declared$expected)) {
+        return(FALSE)
+    }
+    k <- match(paste(rows$step, rows$key, sep = "\r"),
+               paste(declared$step, declared$key, sep = "\r"))
+    !anyNA(k) && !anyNA(rows$base) &&
+        identical(as.character(rows$base), as.character(declared$frozen[k])) &&
+        identical(as.character(rows$live), as.character(declared$expected[k]))
+}
+
 #' Adopt reference rows a re-freezing ticket committed earlier, when they agree with G1(r)'s own
-#' rows for its lanes (r1.5; N2 of the KIT-172 re-check)
+#' rows for its lanes (r1.5; N2 of the KIT-172 re-check; KIT-199 12.3)
+#'
+#' Compared by (lane, step, class) and by key sets (`field/key`), in either committed column form
+#' (`fields`/`keys` or `differing_fields_and_keys`), never by the free text or the column names. A
+#' row whose source listed only part of the names (`names_list_truncated`, KIT-172) must have its
+#' keys among G1(r)'s own.
 #'
 #' @param own G1(r)'s own rows (lane, step, class, fields, keys).
-#' @param earlier The ticket's committed rows.
+#' @param earlier The ticket's committed rows (read by [valReadReferenceRows()], or raw).
 #' @return `own`, or `val_spec_invalid` on any disagreement (neither file is edited to agree).
 #' @export
 valAdoptReferenceRows <- function(own, earlier) {
-    cols <- c("lane", "step", "class", "fields", "keys")
-    key <- function(x) sort(do.call(paste, c(x[cols], sep = "\r")))
-    mine <- own[own$lane %in% earlier$lane, , drop = FALSE]
-    if (!identical(key(mine), key(earlier))) {
+    sets <- function(x) {
+        if (is.null(x$keyset)) {
+            x$keyset <- lapply(seq_len(nrow(x)), function(i) valReferenceKeys(x[i, , drop = FALSE]))
+        }
+        x$truncated <- x$truncated %||% (x$names_list_truncated %||% rep("", nrow(x))) %in% "yes"
+        g <- paste(x$lane, x$step, x$class, sep = "\r")
+        list(keys = lapply(split(x$keyset, g), function(k) sort(unique(unlist(k)))),
+             truncated = vapply(split(x$truncated, g), any, logical(1)))
+    }
+    a <- sets(own[own$lane %in% earlier$lane, , drop = FALSE])
+    b <- sets(earlier)
+    same <- identical(sort(names(a$keys)), sort(names(b$keys))) &&
+        all(vapply(names(b$keys), function(g) {
+            if (b$truncated[[g]]) all(b$keys[[g]] %in% a$keys[[g]]) else
+                identical(a$keys[[g]], b$keys[[g]])
+        }, logical(1)))
+    if (!same) {
         valAbort("a ticket's committed reference rows disagree with G1(r)'s own rows",
                  "val_spec_invalid")
     }
