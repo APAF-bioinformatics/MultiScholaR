@@ -4,6 +4,24 @@
 
 ### Fixes
 
+ * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
+   Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
+   differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
+   normalisation), and reported the analysis complete. They now stop with a message asking to run the normalisation
+   again. Lipidomics, metabolomics and transcriptomics: pressing 'Run Normalization Pipeline' a second time without
+   Reset normalised the already normalised table (log2 applied twice), and in transcriptomics could keep factors of the
+   earlier run in the model; it now runs again from the table the first run started from, and it is refused on a table
+   loaded from a session file and while a step is still running. Quality-control steps can no longer be applied to a
+   normalised table; the message names the step to Revert to. The differential analysis no longer runs on a session file
+   named after a quality-control, reset, internal-standard or log2 state (such a file was exported after Quality Control
+   was reverted past the normalisation). Results change only for sessions that took these routes; analysis records are
+   not changed, and replaying one repeats the steps it recorded. To check an earlier lipidomics or metabolomics result:
+   open its analysis record (analysis_record.xlsx, exported with the results). If no log2 and no normalisation step
+   stands before the differential analysis, the analysis tested values that were not normalised. If a log2 step's input
+   was already a normalised table, or the normalisation steps were run twice without Reset, the data were normalised
+   twice. Run the analysis again with this version. A session file exported after Quality Control was reverted past the
+   normalisation holds data that were not normalised and should not be loaded for differential analysis (KIT-194).
+
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
    model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
