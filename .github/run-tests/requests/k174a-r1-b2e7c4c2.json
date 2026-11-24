@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-174 R1a: failing-first run of part (a)'s tests on the tests-only commit b2e7c4c2 (T1, T10 expected red; T2, T9 expected green); ceiling 60 job-minutes",
+  "label": "KIT-174 R1a tests-only b2e7c4c2",
+  "package_commit": "b2e7c4c2721f582615f11924a08f5a72142f1cf3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit174-ruv-grouping.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
