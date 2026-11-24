@@ -117,3 +117,13 @@ Done as the auditor's "Correction pass, reading 1" states, nothing more.
 Correction row use: 1.56 (diagnosis) + 15.39 (R2c) + 16.37 (R2d) + 71.56 (R3d) = 104.9 core-hours of 230.
 
 - D1 premise (implementation audit I02): ruled by the owner, VAL-107. The refusal stays; a follow-up before KIT-179 fixes the join that blanks gene names when both tables carry `gene_names` (I05) and makes g:Profiler refuse when it would send no identifiers.
+
+## R2b (merge check, not a correction pass)
+
+Merge da1b32db of staging aa82a849 (KIT-177 merged; `R/utils_workflow_dia_state.R` auto-merged, only the ledger
+conflicted: staging's rows kept, this ticket's row after VAL-125). Run 45323634915, the 29 files plus KIT-177's
+`test-prot-design-log2.R`, base aa82a849, check; 17.84 core-hours. Verdicts: the new file only-on-head (327/0);
+`test-prot-annotation-uniprot-direct-shared.R` count-changed (20/0 to 21/0: this ticket's added `expect_false` of
+6ebf3618, as in R2d and R3d; outside the predicted "same"); `test-omic-enrich-module.R` fixed by one base-side failure,
+the recorded `gprofiler_plot` placeholder flake (refusals q_cutoff/run_q_cutoff, 5e2f3b55... against d4fb7d73...),
+not counted; 27 files same, `test-prot-design-log2.R` among them; check identical (0 findings only on head).
