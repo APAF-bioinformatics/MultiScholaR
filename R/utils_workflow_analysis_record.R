@@ -649,7 +649,10 @@ validateWorkflowAnalysisRecord <- function(record) {
 #' @noRd
 workflowReplayRuleMarkers <- list(
     missing_value_comparison = list(option = "MultiScholaR.missing_filter_rule", current = "counts",
-        earlier = "rounded_percentage"))
+        earlier = "rounded_percentage"),
+    # KIT-190 (VAL-82): lipidomics and metabolomics legacy RUV choose controls by the ANOVA on the grouping column
+    # ("kept"); records made before chose the first rows ("dropped").
+    ruv_control_grouping = list(option = "MultiScholaR.ruv_control_grouping", current = "kept", earlier = "dropped"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).

@@ -17,6 +17,36 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics, RUV-III (Automatic and Manual, the default design): the negative-control features are
+   now chosen by the one-way analysis of variance on the RUV grouping column that this step was designed to run. Before
+   this version the grouping column was removed before that analysis, so no feature was tested and the controls were
+   simply the first rows of each table (for example the first 10 % of the features with at least two values, at 10 %),
+   in the order the table held them. Proteomics was not affected.
+
+   The selection keeps the features whose Benjamini-Hochberg q-value is above 0.05, highest q-value first. Features with
+   equal q-values are taken in the order of the table, and a feature measured in only one group cannot be tested and
+   counts as showing no difference (q = 1). Equal q-values are common, so most of the selection still follows the
+   table's row order: in simulated data (KIT-172's generator, 2 groups of 6, one unwanted factor not tied to the groups,
+   50 data sets per scenario) 85 % to 100 % of the controls were chosen by row order among features with equal
+   q-values, and with no real differences the controls were still mostly the first rows (93 % to 96 %). With 10 % of
+   features truly changed, the share of truly changed features among the controls fell from 10.3 % to 3.2 % (random row
+   order) and from 86.8 % to 42.2 % when the changed features came first in the table; the number of factors chosen
+   rose (1.7 to 2.5 on average); false discoveries (15.6 % to 18.0 %) and power (50 % to 56 %) did not change
+   measurably. The size on real data is shown by later validation, and calibration by its own measurement.
+
+   Runs whose design names a group with 'pool' now leave those samples out of this analysis, as proteomics does. A
+   grouping column missing from the design is now refused with a message instead of the assay being skipped silently;
+   scripts that call `getNegCtrlProtAnovaHelper()`, or the peptide percentage search, with a design lacking the grouping
+   column now get an error instead of row-order controls. The Automatic search now runs an analysis of variance for
+   every feature at each of its 20 percentages, so it takes longer: 3.4 minutes at 5,000 features in each of two
+   assays and 13.2 minutes at 20,000 (22 seconds before). Analysis records made before this version replay with the
+   controls they used.
+
+   The simulation figures shown for this design in the RUV design panel (for example 47.0% false discoveries in the
+   reference scenario) were measured with the earlier selection on tables whose rows were in random order, so they
+   describe RUV-III with randomly chosen controls, not the current selection; the panel now says so, and the current
+   selection is being measured (KIT-188).
+
  * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
    after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
    percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
