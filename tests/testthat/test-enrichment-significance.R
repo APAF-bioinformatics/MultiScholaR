@@ -19,7 +19,7 @@ if (!methods::isClass("k203EnrichResultNoSets")) {
     methods::setClass("k203EnrichResultNoSets", slots = c(result = "data.frame"))
 }
 k203Result <- function(pvalue, sets) {
-    methods::new("k203EnrichResult", result = data.frame(ID = paste0("GO:", seq_along(pvalue)), pvalue = pvalue,
+    methods::new("k203EnrichResult", result = data.frame(ID = paste0("GO:", seq_along(pvalue))[seq_along(pvalue)], pvalue = pvalue,
         stringsAsFactors = FALSE), geneSets = stats::setNames(rep(list("P1"), sets), paste0("GO:", seq_len(sets))))
 }
 
@@ -72,7 +72,7 @@ k203Read <- function(path) utils::read.delim(path, colClasses = "character", na.
 test_that("KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly", {
     got <- addEnrichmentFamilyAdjustment(k203Result(c(0.001, 0.01, 0.2), 10L), "bh_whole_family")@result
     expect_identical(got$p_adjust_family, c(0.01, 0.05, 0.6666666666666667))
-    expect_identical(got$family_size, 10L)
+    expect_identical(got$family_size, rep(10L, 3L)) # m on every row of the result
     expect_identical(got$p_adjust_family < 0.05, c(TRUE, FALSE, FALSE))
     # BH over the kept terms (enrichit's p.adjust) on the same vector, for contrast
     kept <- stats::p.adjust(c(0.001, 0.01, 0.2), "BH")

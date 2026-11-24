@@ -15,8 +15,10 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) == 1L)
-out <- normalizePath(args[[1L]], mustWork = FALSE)
-dir.create(out, showWarnings = FALSE, recursive = TRUE)
+# The out dir is created before it is made absolute (normalizePath leaves a missing path relative, and
+# test_file runs from tests/testthat; R2's OD5 dumps failed on that, VAL-54).
+dir.create(args[[1L]], showWarnings = FALSE, recursive = TRUE)
+out <- normalizePath(args[[1L]], mustWork = TRUE)
 work <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "k203-x")
 dir.create(work, recursive = TRUE, showWarnings = FALSE)
 rscript <- file.path(R.home("bin"), "Rscript")
