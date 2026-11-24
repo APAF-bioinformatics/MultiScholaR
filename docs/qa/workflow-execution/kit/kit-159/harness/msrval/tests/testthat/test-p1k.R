@@ -136,3 +136,49 @@ test_that("P1K: a plan naming the cell runs it with the plan's generator in the 
     expect_true(all(det$generator == "fixed_onedir"))
     expect_equal(unique(det$effect), 0.4)
 })
+
+# R-P1 (harness auditor, P1K check): KIT-162 6.7 computes its stated false rates from C4e's
+# one-sided misses (KIT-159 C66), so the detail records, per statistic and level, the misses at the
+# lower bound (`miss_low`: the target below the interval) and at the upper bound (`miss_high`: the
+# target above it), as counts of simulations. The regime table does not carry them, so the pinned
+# table's rows are unchanged.
+missesOf <- function(part, target, k) {
+    lo <- matrix(part$lo[, , k], nrow = length(part$sims))
+    hi <- matrix(part$hi[, , k], nrow = length(part$sims))
+    list(low = as.integer(colSums((lo > target) %in% TRUE & !is.na(lo))),
+         high = as.integer(colSums((hi < target) %in% TRUE & !is.na(hi))))
+}
+
+test_that("R-P1: the detail records the misses at the lower and at the upper bound per level", {
+    cells <- valCoverageCells()
+    cell <- cells[cells$cell == "C4-143", ]
+    part <- valCoverageRange(cell, 1:6, 1:3)
+    det <- valCombineCoverage(cell, list(part), 6L, 3L)
+    expect_true(all(c("miss_low", "miss_high") %in% names(det)))
+    for (st in unique(det$statistic)) {
+        r <- det[det$statistic == st, ]
+        k <- match(st, unique(det$statistic))
+        want <- missesOf(part, r$target[[1L]], k)
+        expect_identical(r$miss_low, want$low)
+        expect_identical(r$miss_high, want$high)
+        # without undefined intervals, a miss is on exactly one side
+        expect_equal(r$miss_low + r$miss_high, round((1 - r$coverage) * 6))
+    }
+})
+
+test_that("R-P1: the P1 cell's detail carries one-sided misses; the regime table does not", {
+    local_mocked_bindings(valRankEffect = function(form, g, nsim = 50L, contrast = NULL) {
+        list(effect = if (is.null(contrast)) 0.35 else 0.4, mean_pauc = NA_real_)
+    }, .package = "msrval")
+    cell <- p1Cell()
+    part <- valCoverageRange(cell, 1:2, 1:2)
+    det <- valCombineCoverage(cell, list(part), 2L, 2L)
+    want <- missesOf(part, det$target[[1L]], 1L)
+    expect_identical(det$miss_low, want$low)
+    expect_identical(det$miss_high, want$high)
+    tab <- valSummariseCoverage(det)
+    expect_false(any(c("miss_low", "miss_high") %in% names(tab)))
+    pinned <- utils::read.delim(system.file("extdata", "coverage-table.tsv", package = "msrval"),
+                                nrows = 1L)
+    expect_false(any(c("miss_low", "miss_high") %in% names(pinned)))
+})
