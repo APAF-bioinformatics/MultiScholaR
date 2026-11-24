@@ -1,0 +1,43 @@
+{
+  "requested_by": "KIT-197 R1-01: post-hoc aggregate by ell over the declared strata with the declared resampling, sb and sa, from the committed rows; self-check against committed pooled limits; ceiling 30 job-minutes; decides nothing (reported, not deciding)",
+  "label": "KIT-197 ell aggregate at 20e17c20",
+  "package_commit": "20e17c20285ef0bed81e1e9e2efe9e0321b4345d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-197/ell-aggregate-k197.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-197",
+        "sb",
+        "docs/qa/workflow-execution/kit/kit-197/audit/ell-aggregate-sb.tsv"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-197/audit",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 15
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-197/ell-aggregate-k197.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-197",
+        "sa",
+        "docs/qa/workflow-execution/kit/kit-197/audit/ell-aggregate-sa.tsv"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-197/audit",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
