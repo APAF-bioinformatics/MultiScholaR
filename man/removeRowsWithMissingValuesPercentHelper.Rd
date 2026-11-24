@@ -30,9 +30,11 @@ removeRowsWithMissingValuesPercentHelper(
 
 \item{grouping_variable}{The name of the column in design_matrix table that has the experimental group.}
 
-\item{groupwise_percentage_cutoff}{The maximum percentage of values below threshold allow in each group for a protein .}
+\item{groupwise_percentage_cutoff}{The share of a group's values, in percent, that may be missing; a group with
+more missing values fails. One finite number from 0 to 100, read as rounded to three decimals.}
 
-\item{max_groups_percentage_cutoff}{The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.}
+\item{max_groups_percentage_cutoff}{The share of the groups, in percent, that a protein may fail; a protein failing
+more groups is removed. One finite number from 0 to 100, read as rounded to three decimals.}
 
 \item{proteins_intensity_cutoff_percentile}{The percentile of the protein intensity values to be used as the minimum threshold for protein intensity.}
 
@@ -42,5 +44,14 @@ removeRowsWithMissingValuesPercentHelper(
 A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 }
 \description{
-Remove rows with missing values
+Removes the proteins that fail too many groups. Within a group, a value is missing when it is not
+finite or not strictly above the intensity threshold (the \code{proteins_intensity_cutoff_percentile} quantile of
+every finite value in the table). A group fails when its count of missing values exceeds the share its cutoff
+stands for, and a protein is removed when its count of failing groups exceeds the share the group cutoff stands
+for. Each cutoff is read as rounded to three decimals, as \code{updateMissingValueParameters()} stores it, and the
+comparison is made in whole numbers: a group of n samples with k missing values fails when
+200000 k > n (2 P + 1), P being the cutoff in thousandths of a percent. This is exact whenever every group has
+at most 316 samples. Before KIT-187 the share itself was compared with the rounded percentage, so that one
+missing value of three (33.3333 percent) failed a cutoff of 33.333 percent; a replayed analysis step made
+before that change keeps that comparison.
 }
