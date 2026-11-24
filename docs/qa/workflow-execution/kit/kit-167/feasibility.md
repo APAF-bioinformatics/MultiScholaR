@@ -230,3 +230,46 @@ Outcome: F6 passes on all four, so V9 carries its criterion on every strain (D1)
 ### Not checked
 
 - F3: whether the authors' `sseqid` and `Uniprot` columns ever disagree for one protein (both were taken).
+
+## Pass 2 inputs: where the search FASTAs are (ruling (a)), gate F4, the GEO cut, the demo tables (run 45386584323)
+
+`pass2-inputs.R`; runs 45352823145 (F3, F6 produced; A and CUT failed in the script's mechanics), 45372182412
+(instrument run 2: timed out in A's per-file HEAD requests, no result), 45386584323 (instrument run 3: complete).
+
+### Observed
+
+- Projects listed (`gates/A-project-files.tsv`): the DIA projects PXD016840, PXD016672, PXD016504, PXD016913 hold the
+  `Results<strain>.xlsx`; the DDA projects PXD020839, PXD020791, PXD020863 hold the `BPA_SEP_<strain>_Contaminants.fasta`
+  files; PXD020545 (B36) holds `Ecoli_B36_MQtxt.zip` and no FASTA. Downloaded (`gates/A-strain-fasta.tsv`): KPC2
+  15,817,761 B `3139e262c1131121ec91ec5980dfc3b117263ad88fe6b687703ebd103bd288ca`; BPH2900 14,666,884 B
+  `0ab6a83cd0f15bb201c807df28a85088fd0860fbea1dfdcc6b1e81dc4b8b9abe`; HKU419 14,375,644 B
+  `a21bd43f56e151da34ae8b36247a9f8358b78ef956ad2aa8271fcc3345c21ab2` (sizes as 2.2).
+- F4: the zip central directory of `Ecoli_B36_MQtxt.zip`, read by an HTTP range request, lists 19 entries, all
+  `txt/*.txt` (`gates/F4-b36-zip-entries.tsv`), no FASTA; B36's protein FASTA built with NCBI efetch from the 4,922
+  distinct WP_ accessions of its GEO GFF, all returned (1,950,215 B, `8faeed71d51b4b19c9fefc56e474b35c4b16e7a644748e6f3fe18cdeecffd776`;
+  `inputs/B36-efetch.fasta`, the versions in `inputs/B36-efetch-versions.tsv`). The four GEO annotations
+  (`gates/F4-geo-annotation.tsv`, `gates/F4-geo-attributes.tsv`): GFF3 with `protein_id` on most CDS rows (B36 4,995 of
+  5,194); the four GTF files carry no `protein_id` on any CDS row, so the parser refuses them (`reference_annotation_no_protein_id`,
+  5.5) and the GFF3 is the file to use.
+- CUT: 54 B36 loci, 113 feature lines, expectations by awk (`tests/testdata/reference-mapping/`); no GTF cut.
+- DEMO, the real-engine lane (`gates/DEMO-summary.tsv`), DIAMOND v2.2.8 from the pin, threads 4:
+
+| Strain | Reference | Seconds | Proteins | one_to_one | many_to_one | one_way | tie | below_threshold | no_hit | Median identity |
+|---|---|---|---|---|---|---|---|---|---|---|
+| B36 | UP000000625 | 34.9 | 4,922 | 3,664 | 269 | 22 | 6 | 230 | 731 | 99.3 |
+| KPC2 | UP000000265 | 43.2 | 5,454 | 4,456 | 106 | 4 | 4 | 170 | 714 | 100.0 |
+| BPH2900 | UP000008816 | 21.1 | 2,711 | 2,447 | 34 | 6 | 0 | 88 | 136 | 99.5 |
+| HKU419 | UP000000750 | 13.9 | 1,861 | 1,574 | 35 | 4 | 1 | 55 | 192 | 100.0 |
+
+  KPC2 mapped again at threads 1: the same mapping SHA-256 and decision-table SHA-256 as at threads 4.
+
+### Outcome
+
+F4 gives B36's FASTA by its second route (every WP_ accession of the GEO GFF returned by efetch) and the GTF attributes. Not checked here: that every DDA/DIA-measured B36 WP_ is among them (F4's stop rule; V4 counts it). The demo
+tables are committed as `inst/extdata/reference_mapping/demo/<strain>.tsv.gz` (gzip without a time stamp). These are
+descriptive outputs of the shipped configuration (V6's territory), not validation results.
+
+### Not checked
+
+- That the B36 efetch FASTA equals the FASTA the authors searched (that file was not deposited); it is RefSeq's current
+  version of each accession.
