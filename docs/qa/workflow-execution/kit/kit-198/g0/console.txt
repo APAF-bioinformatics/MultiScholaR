@@ -1,0 +1,138 @@
+KIT-198 G0 at b0e913b84a9c31cc9b2f8af05aace7b1a160cfa8 out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-198/g0 
+input lipid_canonical 
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+input metab_lc 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_pos_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_neg_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+input metab_gc 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_gc/gcms_features.tsv
+::notice title=INFO::Read 3 rows and 9 columns
+::notice title=INFO::Detected 8 sample columns and 1 annotation columns
+input metab_combined 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_combined/combined_lcms_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_combined/combined_gcms_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+input msdial_lipid_module_ci 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/RtmpRLfj9Q/kit198-g0-lipid-4c2055b656d6/msdial_lipid_pos.csv
+::notice title=INFO::Read 3 rows and 13 columns
+::notice title=INFO::Detected 4 sample columns and 9 annotation columns
+input msdial_metab_seed_lcms_pos 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/seed_lcms_pos.csv
+::notice title=INFO::Read 8 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+commit b0e913b84a9c31cc9b2f8af05aace7b1a160cfa8
+inputs run: lipid_canonical, metab_lc, metab_gc, metab_combined, msdial_lipid_module_ci, msdial_metab_seed_lcms_pos
+inputs failed: none
+found: a non-sample numeric column reaches the filter on msdial_lipid_module_ci, msdial_metab_seed_lcms_pos
+                       input         omic detected_format    assay    id_column
+1            lipid_canonical   lipidomics     lipidsearch LCMS_Pos    LipidName
+2            lipid_canonical   lipidomics     lipidsearch LCMS_Neg    LipidName
+3                   metab_lc metabolomics         unknown LCMS_Pos Feature.Name
+4                   metab_lc metabolomics         unknown LCMS_Neg Feature.Name
+5                   metab_gc metabolomics         unknown     GCMS Feature.Name
+6             metab_combined metabolomics         unknown LCMS_Pos Feature.Name
+7             metab_combined metabolomics         unknown     GCMS Feature.Name
+8     msdial_lipid_module_ci   lipidomics          msdial LCMS_Pos      Peak ID
+9 msdial_metab_seed_lcms_pos metabolomics          msdial LCMS_Pos Alignment ID
+   id_class annotation_column annotation_class n_features
+1 character        LipidClass        character         10
+2 character        LipidClass        character         10
+3 character                             absent          3
+4 character                             absent          3
+5 character                             absent          3
+6 character                             absent          3
+7 character                             absent          3
+8   numeric              Name        character          3
+9   numeric              Name        character          8
+           panel_sample_columns                design_samples
+1 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+2 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+4 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+5 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+6 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+7 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3 WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+8           wt_1;wt_2;ko_1;ko_2           wt_1;wt_2;ko_1;ko_2
+9 ctrl_1;ctrl_2;treat_1;treat_2 ctrl_1;ctrl_2;treat_1;treat_2
+                             counted_columns n_counted n_samples
+1              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+2              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+3              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+4              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+5              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+6              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+7              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3         6         6
+8                Peak ID;wt_1;wt_2;ko_1;ko_2         5         4
+9 Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2         5         4
+  non_sample_numeric object_counts_same
+1               none               TRUE
+2               none               TRUE
+3               none               TRUE
+4               none               TRUE
+5               none               TRUE
+6               none               TRUE
+7               none               TRUE
+8            Peak ID               TRUE
+9       Alignment ID               TRUE
+                       input    assay
+1            lipid_canonical LCMS_Pos
+2            lipid_canonical LCMS_Neg
+3                   metab_lc LCMS_Pos
+4                   metab_lc LCMS_Neg
+5                   metab_gc     GCMS
+6             metab_combined LCMS_Pos
+7             metab_combined     GCMS
+8     msdial_lipid_module_ci LCMS_Pos
+9 msdial_metab_seed_lcms_pos LCMS_Pos
+                             counted_columns non_sample_numeric n_features
+1              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none         10
+2              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none         10
+3              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none          3
+4              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none          3
+5              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none          3
+6              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none          3
+7              WT_1;WT_2;WT_3;KO_1;KO_2;KO_3               none          3
+8                Peak ID;wt_1;wt_2;ko_1;ko_2            Peak ID          3
+9 Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2       Alignment ID          8
+  threshold_p1_counted threshold_p1_samples_only threshold_p10_counted
+1            20568.170                 20568.170             30111.800
+2            18526.800                 18526.800             25782.000
+3             2439.358                  2439.358              2583.500
+4             2439.358                  2439.358              2583.500
+5             4927.253                  4927.253              5100.240
+6             6499.901                  6499.901              6697.865
+7             6499.901                  6499.901              6697.865
+8                1.120                   100.090                 2.200
+9                1.390                  9731.000                 4.900
+  threshold_p10_samples_only removed_p10_prop0.5_counted
+1                  30111.800                           1
+2                  25782.000                           2
+3                   2583.500                           0
+4                   2583.500                           0
+5                   5100.240                           0
+6                   6697.865                           0
+7                   6697.865                           0
+8                    100.900                           0
+9                  16410.000                           0
+  removed_p10_prop0.5_samples_only
+1                                1
+2                                2
+3                                0
+4                                0
+5                                0
+6                                0
+7                                0
+8                                0
+9                                2

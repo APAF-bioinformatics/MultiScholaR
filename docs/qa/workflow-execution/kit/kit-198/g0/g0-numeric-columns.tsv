@@ -1,0 +1,10 @@
+input	omic	detected_format	assay	id_column	id_class	annotation_column	annotation_class	n_features	panel_sample_columns	design_samples	counted_columns	n_counted	n_samples	non_sample_numeric	object_counts_same
+lipid_canonical	lipidomics	lipidsearch	LCMS_Pos	LipidName	character	LipidClass	character	10	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+lipid_canonical	lipidomics	lipidsearch	LCMS_Neg	LipidName	character	LipidClass	character	10	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+metab_lc	metabolomics	unknown	LCMS_Pos	Feature.Name	character		absent	3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+metab_lc	metabolomics	unknown	LCMS_Neg	Feature.Name	character		absent	3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+metab_gc	metabolomics	unknown	GCMS	Feature.Name	character		absent	3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+metab_combined	metabolomics	unknown	LCMS_Pos	Feature.Name	character		absent	3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+metab_combined	metabolomics	unknown	GCMS	Feature.Name	character		absent	3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	6	6	none	TRUE
+msdial_lipid_module_ci	lipidomics	msdial	LCMS_Pos	Peak ID	numeric	Name	character	3	wt_1;wt_2;ko_1;ko_2	wt_1;wt_2;ko_1;ko_2	Peak ID;wt_1;wt_2;ko_1;ko_2	5	4	Peak ID	TRUE
+msdial_metab_seed_lcms_pos	metabolomics	msdial	LCMS_Pos	Alignment ID	numeric	Name	character	8	ctrl_1;ctrl_2;treat_1;treat_2	ctrl_1;ctrl_2;treat_1;treat_2	Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2	5	4	Alignment ID	TRUE

@@ -1,0 +1,10 @@
+input	assay	counted_columns	non_sample_numeric	n_features	threshold_p1_counted	threshold_p1_samples_only	threshold_p10_counted	threshold_p10_samples_only	removed_p10_prop0.5_counted	removed_p10_prop0.5_samples_only
+lipid_canonical	LCMS_Pos	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	10	20568.17	20568.17	30111.8	30111.8	1	1
+lipid_canonical	LCMS_Neg	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	10	18526.8	18526.8	25782	25782	2	2
+metab_lc	LCMS_Pos	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	3	2439.358	2439.358	2583.5	2583.5	0	0
+metab_lc	LCMS_Neg	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	3	2439.358	2439.358	2583.5	2583.5	0	0
+metab_gc	GCMS	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	3	4927.253	4927.253	5100.24	5100.24	0	0
+metab_combined	LCMS_Pos	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	3	6499.901	6499.901	6697.865	6697.865	0	0
+metab_combined	GCMS	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3	none	3	6499.901	6499.901	6697.865	6697.865	0	0
+msdial_lipid_module_ci	LCMS_Pos	Peak ID;wt_1;wt_2;ko_1;ko_2	Peak ID	3	1.12	100.09	2.2	100.9	0	0
+msdial_metab_seed_lcms_pos	LCMS_Pos	Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2	Alignment ID	8	1.39	9731	4.9	16410	0	2

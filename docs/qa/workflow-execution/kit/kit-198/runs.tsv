@@ -1,0 +1,2 @@
+run_id	request	commit	base	purpose	job_minutes	core_hours	result
+45314460795	kit198-g0-b0e913b8	b0e913b84a9c31cc9b2f8af05aace7b1a160cfa8	none	G0 gate (one scripts job): non-sample numeric columns reaching the intensity filter on the app import path	10.8	0.72	found: the integer MS-DIAL ids 'Peak ID' (lipid) and 'Alignment ID' (metab) reach the filter as samples; the four GUI-entry lanes are clean; ticket stopped before the fix commit (D8)
