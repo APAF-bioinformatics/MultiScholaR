@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-190 observation (audit 20261125): do KIT-172 T7 and the cancor-once assertion fail on the first repair (1ea2e784 merged with staging e305fab3), and with which k; ceiling 60 job-minutes; decides nothing by itself",
+  "label": "KIT-190 first-repair split check c68c2975",
+  "package_commit": "c68c2975642c1e7a314ba4d4b7b37a9a3cbe0a2f",
+  "base_commit": "e305fab399bde1cb04efc35be915e9a95e813c12",
+  "tools_ref": "",
+  "tests": [
+    "test-kit172-downstream.R",
+    "test-workflow-omics-ruv-cancor-once.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 13,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
