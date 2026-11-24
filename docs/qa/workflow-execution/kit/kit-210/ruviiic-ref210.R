@@ -26,9 +26,13 @@
 #       (`src/RUVIIIC_Varying.cpp:166-171`); the rule left is upstream's `min(residualDimensions, controls) < k`.
 #   (3) [KIT-210] `directions = "subset"` (candidate C4a): for the target's observed rows, S is the cross-product over
 #       F(rows) = the features observed on every one of those rows, Y[rows, F] %*% t(Y[rows, F]); no zero enters.
-#   (4) [KIT-210] `directions = "nipals"` (candidate C7): S is the cross-product of `nipals(Y, ncomp)` (the package's
-#       `imputeNipalsMatrix`, passed in as `nipals`), in place of the zero-filled Y; targets, controls, alpha and W are
-#       taken from the observed values as upstream (they are observed on the target's rows by construction).
+#   (4) [KIT-210] `directions = "nipals"` (candidate C7): S is the cross-product of `nipals(Y[, keep], ncomp)` (the
+#       package's `imputeNipalsMatrix`, passed in as `nipals`), in place of the zero-filled Y; `keep` = the features
+#       with at least one observed value. Features with no observed value are left out of the NIPALS input (the
+#       package's NIPALS stops on such a column, R/func_general_nipals.R:22-24); they add nothing to the cross-product,
+#       as in the zero-filled form (Re-check 1, R1-01). Their number is the attribute `nipals_left_out`. Targets,
+#       controls, alpha and W are taken from the observed values as upstream (they are observed on the target's rows by
+#       construction).
 #   Guard (KIT-210 section 5, D7): with `guard = g`, `"complete"` stops with class `candidate_too_few_complete` when
 #       fewer than g features are observed in every run, and `"subset"` leaves a target NA when |F(rows)| < g (counted in
 #       the attribute `guard_targets`). `guard = NULL` (the default) applies no guard.
@@ -74,7 +78,9 @@ ruviiicRef <- function(k, Y, M, toCorrect, potentialControls, directions = c("ze
     } else if (identical(directions, "nipals")) {
         # MARKED CHANGE (4): the cross-product of the NIPALS-imputed matrix.
         stopifnot(is.function(nipals), !is.null(ncomp))
-        Yn <- nipals(Y, ncomp)
+        keep <- colSums(!missing) > 0L
+        nipals_left_out <- sum(!keep)
+        Yn <- nipals(Y[, keep, drop = FALSE], ncomp)
         Yn %*% t(Yn)
     } else NULL # MARKED CHANGE (3): formed per pattern below
     control_index <- match(potentialControls, colnames(Y))
@@ -85,6 +91,7 @@ ruviiicRef <- function(k, Y, M, toCorrect, potentialControls, directions = c("ze
     keys <- apply(observed, 2L, function(v) paste(which(v), collapse = ","))
     errors <- 0L
     guard_targets <- 0L
+    if (!exists("nipals_left_out", inherits = FALSE)) nipals_left_out <- NA_integer_
     gap_ratio <- numeric()
     for (key in unique(keys)) {
         cols <- which(keys == key)
@@ -136,5 +143,6 @@ ruviiicRef <- function(k, Y, M, toCorrect, potentialControls, directions = c("ze
     attr(out, "pattern_errors") <- errors
     attr(out, "gap_ratio") <- gap_ratio
     attr(out, "guard_targets") <- guard_targets
+    if (identical(directions, "nipals")) attr(out, "nipals_left_out") <- nipals_left_out
     out
 }

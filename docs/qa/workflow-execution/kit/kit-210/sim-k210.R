@@ -1,6 +1,7 @@
 # KIT-210 (VAL-144, VAL-152): RUV-III-C and missing values, the candidate remedies measured on KIT-185's design. Evidence
 # code under docs/qa: no package code. Runs on a GitHub-hosted runner with MultiScholaR installed from the bound commit
-# (run-tests `scripts`). A copy of `kit-185/sim-k185.R` (SHA-256 3ee4aac433a694ca633975479835bf3a1b0daca368d611886f4b6c572c5895e7)
+# (run-tests `scripts`). A copy of `kit-185/sim-k185.R` as merged (SHA-256 5ffc96049efbcba0c7c465c78201465aa7a6cc13490b20afa6e705524aa234ce,
+# with the VAL-98 (1) row-name fix; the declaration's 3ee4aac4... is the pre-fix file; Re-check 1, R1-15)
 # with the MARKED CHANGES listed below; every function KIT-210 6.1 names is otherwise unchanged.
 #
 # Usage (from the package root):
@@ -435,15 +436,18 @@ fitReference <- function(sim, arm, k, sets, directions, controls = NULL, raw = F
         attr(m, "gap_ratio") <- attr(out, "gap_ratio")
         attr(m, "pattern_errors") <- attr(out, "pattern_errors")
         attr(m, "guard_targets") <- attr(out, "guard_targets")
+        attr(m, "nipals_left_out") <- attr(out, "nipals_left_out")
         m
     })
     corrected <- do.call(rbind, pieces)
     gap <- unlist(lapply(pieces, attr, "gap_ratio"))
     errors <- sum(unlist(lapply(pieces, attr, "pattern_errors")))
     guarded <- sum(unlist(lapply(pieces, attr, "guard_targets")))
-    if (raw) return(structure(corrected, gap_ratio = gap, pattern_errors = errors, guard_targets = guarded))
+    left_out <- unlist(lapply(pieces, attr, "nipals_left_out"))
+    left_out <- if (length(left_out)) sum(left_out) else NA_integer_
+    if (raw) return(structure(corrected, gap_ratio = gap, pattern_errors = errors, guard_targets = guarded, nipals_left_out = left_out))
     out <- postProcess(sim, arm, corrected)
-    structure(out, gap_ratio = gap, pattern_errors = errors, guard_targets = guarded)
+    structure(out, gap_ratio = gap, pattern_errors = errors, guard_targets = guarded, nipals_left_out = left_out)
 }
 # the route's post-processing of a corrected matrix (as the S4 method and the route do to S's)
 postProcess <- function(sim, arm, corrected, restore = identical(sim$p$omic, "prot")) {
@@ -728,7 +732,8 @@ COLUMNS <- c("cell", "part", "variant", "rep", "mask", "mech", "rate", "corr", "
     "n_tested", "n_true", "n_called", "fdp", "power", "null_rate", "qmethod", "da_warn", "da_failed", "lost",
     "lost_planted", "lost_null", "k_chosen", "n_controls", "percentage", "seconds",
     # M3, M4: the candidate and admission columns
-    "fset", "assay", "kappa_hat", "kappa_norm", "kappa_gap", "angle_sin", "guard_targets", "jaccard_S", "mad_S", "ncomp")
+    "fset", "assay", "kappa_hat", "kappa_norm", "kappa_gap", "angle_sin", "guard_targets", "jaccard_S", "mad_S", "ncomp",
+    "nipals_left_out")
 BLIND_KEEP <- c("cell", "part", "variant", "rep", "mask", "mech", "rate", "corr", "stratum", "status", "class", "k", "n_filt",
     "removed", "miss_share", "miss_run_min", "miss_run_med", "miss_run_max", "n_rd_lt", "n_rd_eq", "n_rd_gt", "block_share",
     "qmethod", "da_warn", "da_failed", "seconds")
@@ -810,6 +815,7 @@ scoreArm <- function(sim, arm, fits, F_set, F_filt, k, common, Z, G, b_names = N
             row <- do.call(newRow, c(base, list(stratum = stratum, n_set = length(set), qmethod = attr(fit$da, "qmethod") %||% NA,
                 da_warn = attr(fit$da, "warnings") %||% NA, da_failed = attr(fit$da, "failed") %||% NA,
                 guard_targets = if (identical(stratum, "filt")) fit$guard_targets %||% NA else NA,
+                nipals_left_out = if (identical(stratum, "filt")) fit$nipals_left_out %||% NA else NA,
                 jaccard_S = if (identical(stratum, "filt")) fit$jaccard_S %||% NA else NA,
                 mad_S = if (identical(stratum, "filt")) fit$mad_S %||% NA else NA)))
             if (!is.null(fit$da) && length(set)) {
@@ -1099,7 +1105,7 @@ unitA210 <- function(cellname, r, part, variant) {
         for (name in cands) {
             f <- fit[[name]]
             fits[[name]] <- entry("X", f$value, f$status, f$class, f$seconds, arm$Y, "O", "N", obs,
-                list(guard_targets = attr(f$value, "guard_targets") %||% NA,
+                list(guard_targets = attr(f$value, "guard_targets") %||% NA, nipals_left_out = attr(f$value, "nipals_left_out") %||% NA,
                     ncomp = if (name %in% c("C7", "C7r5")) (if (identical(name, "C7r5")) 5L else c7Components(sim, arm$object)) else NA))
         }
         fits$O <- entry("O", fit$O, "ok", NA_character_, NA, arm$Y, "O", "N", obs)
@@ -1240,8 +1246,10 @@ lifecycleChecks210 <- function(sim, arms, rows, k, sets, variant, da_errors, can
                 f$C4b$value[intersect(complete, rownames(f$C4b$value)), , drop = FALSE])
             addCheck("E4''_C3=C4b", cellname, r, mask, d$max, tolerance, isTRUE(d$max <= tolerance), variant)
         }
-        # E4': C4b's W equals the declared route's W on the same data (cells whose replicate sets are the groups)
-        if (identical(variant, "base") && !isTRUE(sim$p$dup) && sim$p$batches == 0L) {
+        # E4': C4b's W equals the declared route's W on the same data, in every cell whose replicate sets are the groups,
+        # the D5 cells included (Re-check 1, R1-12); not P5, whose replicate sets are the units while the declared route's
+        # groups_all_features design uses the groups
+        if (identical(variant, "base") && !isTRUE(sim$p$dup)) {
             for (mask in intersect(c("none", "vd10"), names(arms))) {
                 arm <- arms[[mask]]
                 e4 <- tryCatch({
@@ -1779,17 +1787,17 @@ if (lifecycle) {
     checkE4()
     checkE6()
 }
-# M5: the lifecycle's status of every arm: completed, or crashed with its error class, and seconds (KIT-210 6.9 (i), (ii))
+# M5: the lifecycle's status of every arm: completed, or crashed with its error class (KIT-210 6.9 (i)). No seconds per
+# arm and mask: a refused arm returns in about 0 s, so they would reveal refusals (Re-check 1, R1-02); seconds per unit
+# and component stay in timing-<job>.tsv (6.9 (ii))
 statusTable <- function(rows) {
     keys <- unique(rows[, c("cell", "part", "variant", "rep", "mask", "corr")])
     do.call(rbind, lapply(seq_len(nrow(keys)), function(j) {
         key <- keys[j, ]
         x <- rows[rows$mask == key$mask & rows$corr == key$corr, , drop = FALSE]
         crashed <- any(x$status %in% "crashed")
-        seconds <- suppressWarnings(max(as.numeric(x$seconds), na.rm = TRUE))
         data.frame(key, status = if (crashed) "crashed" else "completed",
-            class = if (crashed) x$class[x$status %in% "crashed"][[1L]] else NA_character_,
-            seconds = if (is.finite(seconds)) seconds else NA_real_, stringsAsFactors = FALSE)
+            class = if (crashed) x$class[x$status %in% "crashed"][[1L]] else NA_character_, stringsAsFactors = FALSE)
     }))
 }
 runUnit <- function(i) {
@@ -1828,7 +1836,7 @@ for (i in seq_along(results)) if (!is.list(results[[i]])) {
     utils::write.table(rows, file.path(rows_dir, sprintf("part-%s-%s-%d.tsv", u$cell, u$variant, u$rep)), sep = "\t", quote = FALSE,
         row.names = FALSE, na = "NA")
     results[[i]] <- list(timing = NULL, checks = NULL, status = data.frame(cell = u$cell, part = part, variant = u$variant,
-        rep = u$rep, mask = "all", corr = "unit", status = "crashed", class = "worker failed", seconds = NA, stringsAsFactors = FALSE))
+        rep = u$rep, mask = "all", corr = "unit", status = "crashed", class = "worker failed", stringsAsFactors = FALSE))
 }
 # assemble: one table per cell (and part), the parts removed after
 for (cellname in cells_wanted) {

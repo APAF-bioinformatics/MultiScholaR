@@ -53,3 +53,7 @@ fills; the scripts' hashes provisional). The blind lane's three request drafts a
 E1's bound commit (KIT-190, KIT-196, KIT-201 are not merged on 53713252). Ticket revision 1.3 records C7's component
 count per route (the coordinator's ruling), the reported arm C7r5 (about +8 expected / +14 ceiling core-hours), the CRAN
 Archive URL and the branch name.
+
+Revised the same day for the auditor's Re-check 1 (R1-01 to R1-16), the coordinator's rulings C-1 to C-5 and the
+owner's VAL-156 (the hold or warning per data set): scripts, draft and ticket revision 1.4; the L1 drafts split into
+seven requests. No run.

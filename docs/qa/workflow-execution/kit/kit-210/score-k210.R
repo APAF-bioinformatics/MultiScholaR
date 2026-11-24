@@ -1,7 +1,7 @@
 # KIT-210: scoring of the candidate remedies (contrasts, classifications, J, safe rates, the decision rules, H-rate,
 # kappa*'s fit and validation, the decision table, the terminal outcomes) and the comparison modes of the lifecycle.
 # Evidence code under docs/qa, not package code. A copy of `kit-185/score-k185.R` (SHA-256
-# 5a708c6e3e34feecec60b36836eaa4d090b32ded35ef315a79eea4a0593f71eb) whose helpers `summarise`, `classify`, `clopper` are
+# 6847852cc8f4032fb41b96d0e89fa14b9c5d8dec2d45e0a27f22935d85e62554, the merged file; Re-check 1, R1-15) whose helpers `summarise`, `classify`, `clopper` are
 # kept (with the limits passed in) and whose `pairedContrasts` gains the feature-set tag; everything else is new and
 # follows KIT-210 revision 1.3, sections 6.3 to 6.10. Run once on a runner after the counted rows are committed.
 #
@@ -190,34 +190,55 @@ if (identical(mode, "--compare-e1")) {
     quit(save = "no")
 }
 
-# ---- mode --compare-e10: E10 ------------------------------------------------------------------------------------------
+# ---- mode --compare-e10: E10 with the candidates on (Re-check 1, R1-03, R1-04; the coordinator's C-4) ---------------
+# The counted path (unitA210, K210_CANDIDATES on) run with KIT-185's seed base on replicates 1-3 of the 14 part-A cells.
+# Compared with KIT-185's committed rows: the filter counts (mask rows); B, C* and A1 of S, O, N, S0, O0, N0 on fset
+# "C3" and of C3 against KIT-185's C, on the replicate-mask pairs where C3 returned (there C3 is KIT-185's C, so the
+# feature sets agree); the DA columns of S, O, N, S0, O0 (and C3 against C where C3 returned). The DA columns decide for
+# lipidomics and metabolomics (KIT-201 changes nothing there at cutoff 0) and are listed as expected differences for
+# proteomics (KIT-201's TREAT).
 if (identical(mode, "--compare-e10")) {
     a <- readAll(args[[2L]])
     k185 <- args[[3L]]
     check_dir <- args[[4L]]
     dir.create(check_dir, recursive = TRUE, showWarnings = FALSE)
-    deciding_columns <- c("n_filt", "removed", "B", "Cstar", "A1")
-    expected_columns <- c("fdp", "power", "n_called", "null_rate", "qmethod")
+    keys <- c("cell", "variant", "rep", "mask", "corr", "stratum")
+    pair <- function(x) paste(x$cell, x$variant, x$rep, x$mask)
+    da_columns <- c("fdp", "power", "n_called", "null_rate", "qmethod")
     rows <- list()
     for (cellname in sort(unique(a$cell))) {
         files <- list.files(file.path(k185, "rows"), pattern = sprintf("^a-%s-[0-9]+-[0-9]+\\.tsv\\.gz$", cellname), full.names = TRUE)
         if (!length(files)) {
-            rows[[length(rows) + 1L]] <- data.frame(check = "E10", cell = cellname, rows_matched = 0L, rows_bound = NA, rows_k185 = 0L,
+            rows[[length(rows) + 1L]] <- data.frame(check = "E10", cell = cellname, rows_compared = 0L, rows_k185_unmatched = NA,
                 pass = NA, differing = "no KIT-185 rows for this cell", differing_expected_kit201 = "", stringsAsFactors = FALSE)
             next
         }
         b <- do.call(rbind, lapply(files, function(f) utils::read.delim(gzfile(f), colClasses = "character", na.strings = "NA")))
         x <- a[a$cell == cellname & a$variant == "base", , drop = FALSE]
         b <- b[b$variant == "base" & b$rep %in% unique(x$rep), , drop = FALSE]
-        keys <- c("cell", "variant", "rep", "mask", "corr", "stratum")
-        m <- merge(x[, c(keys, deciding_columns, expected_columns)], b[, c(keys, deciding_columns, expected_columns)], by = keys,
-            suffixes = c(".bound", ".k185"))
-        same <- function(cn) identical(m[[paste0(cn, ".bound")]], m[[paste0(cn, ".k185")]])
-        differing <- deciding_columns[!vapply(deciding_columns, same, logical(1L))]
-        expected <- expected_columns[!vapply(expected_columns, same, logical(1L))]
-        rows[[length(rows) + 1L]] <- data.frame(check = "E10", cell = cellname, rows_matched = nrow(m), rows_bound = nrow(x),
-            rows_k185 = nrow(b), pass = nrow(m) == nrow(x) && nrow(m) == nrow(b) && !length(differing),
-            differing = paste(differing, collapse = ","), differing_expected_kit201 = paste(expected, collapse = ","), stringsAsFactors = FALSE)
+        c3_ok <- pair(x[x$corr == "C3" & x$stratum == "all" & x$fset %in% "C3" & x$status %in% "ok", , drop = FALSE])
+        x <- x[x$corr == "mask" | (x$fset %in% "C3" & x$corr %in% c("S", "O", "N", "S0", "O0", "N0", "C3")), , drop = FALSE]
+        x$corr[x$corr == "C3"] <- "C"
+        b <- b[b$corr %in% c("mask", "S", "O", "N", "S0", "O0", "N0", "C"), , drop = FALSE]
+        # B-strata rows and C's rows only where C3 returned
+        restrict <- function(y) y[y$corr == "mask" | (y$stratum == "filt" & y$corr != "C") | pair(y) %in% c3_ok, , drop = FALSE]
+        x <- restrict(x)
+        b <- restrict(b)
+        m <- merge(x, b, by = keys, suffixes = c(".bound", ".k185"))
+        same <- function(cn, sel) identical(m[[paste0(cn, ".bound")]][sel], m[[paste0(cn, ".k185")]][sel])
+        is_mask <- m$corr == "mask"
+        is_b <- m$stratum %in% c("all", "comp", "inc")
+        is_da <- m$stratum == "filt" & !is_mask
+        checks <- list(n_filt = is_mask, removed = is_mask, B = is_b, Cstar = is_b, A1 = is_b & m$stratum == "comp")
+        prot <- startsWith(cellname, "P")
+        da_checks <- stats::setNames(rep(list(is_da), length(da_columns)), da_columns)
+        deciding <- c(checks, if (!prot) da_checks)
+        differing <- names(deciding)[!vapply(names(deciding), function(cn) same(cn, deciding[[cn]]), logical(1L))]
+        expected <- if (prot) names(da_checks)[!vapply(names(da_checks), function(cn) same(cn, da_checks[[cn]]), logical(1L))] else character()
+        unmatched <- sum(!paste(b$cell, b$variant, b$rep, b$mask, b$corr, b$stratum) %in% paste(m$cell, m$variant, m$rep, m$mask, m$corr, m$stratum))
+        rows[[length(rows) + 1L]] <- data.frame(check = "E10", cell = cellname, rows_compared = nrow(m), rows_k185_unmatched = unmatched,
+            pass = nrow(m) > 0 && unmatched == 0 && !length(differing), differing = paste(differing, collapse = ","),
+            differing_expected_kit201 = paste(expected, collapse = ","), stringsAsFactors = FALSE)
     }
     writeTsv(do.call(rbind, rows), file.path(check_dir, "check-e10.tsv"))
     quit(save = "no")
@@ -245,6 +266,12 @@ classifyRows <- function(sm) {
         edge <- edgeOf(sm$estimand[[i]])
         classify(unlist(sm[i, c("n", "mean", "sd", "mcse", "upper95", "lower_bonf", "lower95_2s", "upper95_2s")]), edge$material, edge$serious)
     }, character(1L))
+}
+# The more severe mechanism of a cell: the lower safe rate; on a tie the lower realised share at the safe rate
+# (Re-check 1, R1-11; the coordinator's C-5). `x`: rows of one (candidate, route class, cell) or of one KIT-185 cell.
+moreSevere <- function(safe_tab) {
+    key <- paste(safe_tab$candidate %||% "", safe_tab$route_class %||% "", safe_tab$cell)
+    do.call(rbind, lapply(split(safe_tab, key), function(x) x[order(x$safe_rate, x$realised_at_safe), , drop = FALSE][1L, , drop = FALSE]))
 }
 isDecidingUnit <- function(cell, mask) cell %in% DECIDING & ifelse(cell %in% D5_CELLS, mask %in% D5_MASKS, mask %in% BASE_MASKS)
 
@@ -286,9 +313,10 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
             if (!identical(c, "S")) D[[c]] <- rbind(D[[c]], excess)
         }
 
-        # per unit classifications and J per route class (6.4); refusals: S by the route, a candidate by its guard
-        J <- list()
-        cells_out <- list()
+        # per unit classifications and J per route class (6.4); refusals: S by the route, a candidate by its guard.
+        # Built twice (Re-check 1, R1-08): at KIT-185's limits, and at the across-candidate limits of 6.5 (one-sided
+        # 1 - 0.05/K for "no material effect", 0.05/(456 K) for "material" and "serious"), from which the robust rule 1,
+        # rule 2 (d), rule 3 (a) and the outcome's S and T3 conditions are read.
         refusalShare <- function(c) {
             st <- if (identical(c, "S")) statusOf(base, "S", "all") else statusOf(base, c, "filt")
             route <- statusOf(base, "S", "all")
@@ -297,57 +325,65 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
             st$incomplete <- !st$refused & !(st$status.s == "ok" & (identical(c, "S") | st$status.c %in% "ok"))
             stats::aggregate(cbind(refused, incomplete) ~ cell + variant + mask, data = st, FUN = mean)
         }
-        for (c in c("S", CANDIDATES)) {
-            sm <- summariseByUnit(delta[[c]])
-            sm$classification <- classifyRows(sm)
-            ref <- refusalShare(c)
-            sm <- merge(sm, ref, by = c("cell", "variant", "mask"), all.x = TRUE)
-            sm$classification[sm$incomplete %in% NA | sm$incomplete > 0.05] <- "not determined"
-            sm$candidate <- c
-            sm$deciding <- isDecidingUnit(sm$cell, sm$mask) & sm$variant == "base"
-            sm <- merge(sm, realised, by = c("cell", "mask"), all.x = TRUE)
-            cells_out[[c]] <- sm
-            for (rho in names(ROUTE_CLASSES)) {
-                x <- sm[sm$estimand %in% ROUTE_CLASSES[[rho]] & sm$variant == "base", , drop = FALSE]
-                units <- unique(x[, c("cell", "mask", "refused", "miss_share")])
-                j <- vapply(seq_len(nrow(units)), function(i) {
-                    y <- x[x$cell == units$cell[[i]] & x$mask == units$mask[[i]], , drop = FALSE]
-                    if (isTRUE(units$refused[[i]] > 0.05)) return("refused")
-                    if (any(y$classification == "serious")) return("harmful")
-                    if (length(y$classification) == length(ROUTE_CLASSES[[rho]]) && all(y$classification == "no material effect")) return("safe")
-                    "not safe"
-                }, character(1L))
-                J[[paste(c, rho)]] <- data.frame(candidate = c, route_class = rho, cell = units$cell, mask = units$mask,
-                    mech = sub("[0-9.]+$", "", units$mask), rate = as.numeric(sub("^[a-z]+", "", units$mask)) / 100,
-                    realised_share = units$miss_share, J = j, deciding = isDecidingUnit(units$cell, units$mask), stringsAsFactors = FALSE)
+        refusals <- lapply(stats::setNames(c("S", CANDIDATES), c("S", CANDIDATES)), refusalShare)
+        buildJ <- function(upper_alpha, bonf_divisor) {
+            J <- list()
+            cells_out <- list()
+            for (c in c("S", CANDIDATES)) {
+                sm <- summariseByUnit(delta[[c]], upper_alpha, bonf_divisor)
+                sm$classification <- classifyRows(sm)
+                sm <- merge(sm, refusals[[c]], by = c("cell", "variant", "mask"), all.x = TRUE)
+                sm$classification[sm$incomplete %in% NA | sm$incomplete > 0.05] <- "not determined"
+                sm$candidate <- c
+                sm$deciding <- isDecidingUnit(sm$cell, sm$mask) & sm$variant == "base"
+                sm <- merge(sm, realised, by = c("cell", "mask"), all.x = TRUE)
+                cells_out[[c]] <- sm
+                for (rho in names(ROUTE_CLASSES)) {
+                    x <- sm[sm$estimand %in% ROUTE_CLASSES[[rho]] & sm$variant == "base", , drop = FALSE]
+                    units <- unique(x[, c("cell", "mask", "refused", "miss_share")])
+                    j <- vapply(seq_len(nrow(units)), function(i) {
+                        y <- x[x$cell == units$cell[[i]] & x$mask == units$mask[[i]], , drop = FALSE]
+                        if (isTRUE(units$refused[[i]] > 0.05)) return("refused")
+                        if (any(y$classification == "serious")) return("harmful")
+                        if (length(y$classification) == length(ROUTE_CLASSES[[rho]]) && all(y$classification == "no material effect")) return("safe")
+                        "not safe"
+                    }, character(1L))
+                    J[[paste(c, rho)]] <- data.frame(candidate = c, route_class = rho, cell = units$cell, mask = units$mask,
+                        mech = sub("[0-9.]+$", "", units$mask), rate = as.numeric(sub("^[a-z]+", "", units$mask)) / 100,
+                        realised_share = units$miss_share, J = j, deciding = isDecidingUnit(units$cell, units$mask), stringsAsFactors = FALSE)
+                }
             }
+            J_tab <- do.call(rbind, J)
+            # safe rates per (candidate, route class, cell, mechanism) and the more severe mechanism (6.4, VAL-143)
+            safe <- list()
+            for (key in unique(paste(J_tab$candidate, J_tab$route_class, J_tab$cell, sep = "|"))) {
+                parts <- strsplit(key, "|", fixed = TRUE)[[1L]]
+                x <- J_tab[J_tab$candidate == parts[[1L]] & J_tab$route_class == parts[[2L]] & J_tab$cell == parts[[3L]] & J_tab$deciding, , drop = FALSE]
+                for (mech in unique(x$mech)) {
+                    y <- x[x$mech == mech, , drop = FALSE]
+                    y <- y[order(y$rate), , drop = FALSE]
+                    ok <- y$J == "safe"
+                    safe_rate <- if (!length(ok) || !ok[[1L]]) 0 else y$rate[max(which(cumprod(ok) == 1))]
+                    safe[[length(safe) + 1L]] <- data.frame(candidate = parts[[1L]], route_class = parts[[2L]], cell = parts[[3L]], mech = mech,
+                        safe_rate = safe_rate, realised_at_safe = if (safe_rate > 0) y$realised_share[y$rate == safe_rate][[1L]] else 0,
+                        stringsAsFactors = FALSE)
+                }
+            }
+            safe_tab <- do.call(rbind, safe)
+            list(cells = do.call(rbind, cells_out), J = J_tab, safe = safe_tab, severe = moreSevere(safe_tab))
         }
-        cells_tab <- do.call(rbind, cells_out)
-        J_tab <- do.call(rbind, J)
+        standard <- buildJ(ALPHA, FAMILY)
+        robust <- buildJ(ALPHA / K_FAMILIES, FAMILY * K_FAMILIES)
+        cells_tab <- standard$cells
+        J_tab <- standard$J
+        safe_tab <- standard$safe
+        severe <- standard$severe
         writeTsv(cells_tab, file.path(out_dir, "cells.tsv"))
         writeTsv(J_tab, file.path(out_dir, "J.tsv"))
-
-        # safe rates per (candidate, route class, cell, mechanism) and the more severe mechanism (6.4, VAL-143)
-        safe <- list()
-        for (key in unique(paste(J_tab$candidate, J_tab$route_class, J_tab$cell, sep = "|"))) {
-            parts <- strsplit(key, "|", fixed = TRUE)[[1L]]
-            x <- J_tab[J_tab$candidate == parts[[1L]] & J_tab$route_class == parts[[2L]] & J_tab$cell == parts[[3L]] & J_tab$deciding, , drop = FALSE]
-            for (mech in unique(x$mech)) {
-                y <- x[x$mech == mech, , drop = FALSE]
-                y <- y[order(y$rate), , drop = FALSE]
-                ok <- y$J == "safe"
-                safe_rate <- if (!length(ok) || !ok[[1L]]) 0 else y$rate[max(which(cumprod(ok) == 1))]
-                safe[[length(safe) + 1L]] <- data.frame(candidate = parts[[1L]], route_class = parts[[2L]], cell = parts[[3L]], mech = mech,
-                    safe_rate = safe_rate, realised_at_safe = if (safe_rate > 0) y$realised_share[y$rate == safe_rate][[1L]] else 0,
-                    stringsAsFactors = FALSE)
-            }
-        }
-        safe_tab <- do.call(rbind, safe)
-        severe <- do.call(rbind, lapply(split(safe_tab, paste(safe_tab$candidate, safe_tab$route_class, safe_tab$cell)), function(x) {
-            x[which.min(x$safe_rate), , drop = FALSE]
-        }))
         writeTsv(safe_tab, file.path(out_dir, "safe-rate.tsv"))
         writeTsv(severe, file.path(out_dir, "safe-rate-severe.tsv"))
+        writeTsv(robust$J, file.path(out_dir, "J-robust.tsv"))
+        writeTsv(robust$severe, file.path(out_dir, "safe-rate-severe-robust.tsv"))
 
         # complete-data departure (6.3, rule 3 (b)): e(c, none) - e(S, none), family 56
         departure <- list()
@@ -373,11 +409,12 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
         }))
         writeTsv(dep_tab, file.path(out_dir, "departure.tsv"))
 
-        # the decision rules (6.4), unadjusted and with the across-candidate adjustment (6.5)
-        verdictOf <- function(c, rho, upper_alpha, bonf_divisor) {
+        # the decision rules (6.4), unadjusted and with the across-candidate adjustment (6.5); `sets` is `standard` or
+        # `robust` (R1-08)
+        verdictOf <- function(c, rho, upper_alpha, bonf_divisor, sets) {
             est <- ROUTE_CLASSES[[rho]]
-            js <- J_tab[J_tab$route_class == rho & J_tab$deciding, , drop = FALSE]
-            sev <- severe[severe$route_class == rho & severe$cell %in% DECIDING, , drop = FALSE]
+            js <- sets$J[sets$J$route_class == rho & sets$J$deciding, , drop = FALSE]
+            sev <- sets$severe[sets$severe$route_class == rho & sets$severe$cell %in% DECIDING, , drop = FALSE]
             rule1 <- function(x) any(sev$safe_rate[sev$candidate == x] > 0)
             if (identical(c, "S")) return(list(rule1 = rule1("S"), verdict = if (rule1("S")) "safe under stated conditions" else "not safe under stated conditions"))
             d <- D[[c]][D[[c]]$estimand %in% est & isDecidingUnit(D[[c]]$cell, D[[c]]$mask) & D[[c]]$variant == "base", , drop = FALSE]
@@ -394,7 +431,8 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
             sev_c <- sev[sev$candidate == c, , drop = FALSE]
             sev_s <- sev[sev$candidate == "S", , drop = FALSE]
             m <- merge(sev_c, sev_s, by = "cell", suffixes = c(".c", ".s"))
-            rate_ok <- nrow(m) > 0 && all(m$safe_rate.c >= m$safe_rate.s)
+            # R1-10: every deciding cell scored for S must be present for the candidate, or 2 (d) fails
+            rate_ok <- nrow(sev_s) > 0 && setequal(sev_c$cell, sev_s$cell) && nrow(m) == nrow(sev_s) && all(m$safe_rate.c >= m$safe_rate.s)
             r2 <- c(a = !nrow(worse), b = non_inferior, c = nrow(better) > 0, d = rate_ok)
             jc <- js[js$candidate == c, c("cell", "mask", "J")]
             js_s <- js[js$candidate == "S", c("cell", "mask", "J")]
@@ -410,11 +448,13 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
         }
         rules <- list()
         for (rho in names(ROUTE_CLASSES)) for (c in c("S", CANDIDATES)) {
-            v <- verdictOf(c, rho, ALPHA, FAMILY)
-            vk <- verdictOf(c, rho, ALPHA / K_FAMILIES, FAMILY * K_FAMILIES)
+            v <- verdictOf(c, rho, ALPHA, FAMILY, standard)
+            vk <- verdictOf(c, rho, ALPHA / K_FAMILIES, FAMILY * K_FAMILIES, robust)
             rules[[length(rules) + 1L]] <- data.frame(candidate = c, route_class = rho, rule1 = v$rule1, rule1_robust = vk$rule1,
                 rule2 = paste(names(v$rule2 %||% NULL), v$rule2 %||% NULL, sep = "=", collapse = ","),
-                rule3 = paste(names(v$rule3 %||% NULL), v$rule3 %||% NULL, sep = "=", collapse = ","), verdict = v$verdict,
+                rule2_robust = paste(names(vk$rule2 %||% NULL), vk$rule2 %||% NULL, sep = "=", collapse = ","),
+                rule3 = paste(names(v$rule3 %||% NULL), v$rule3 %||% NULL, sep = "=", collapse = ","),
+                rule3_robust = paste(names(vk$rule3 %||% NULL), vk$rule3 %||% NULL, sep = "=", collapse = ","), verdict = v$verdict,
                 verdict_robust = vk$verdict, robust = identical(v$verdict, vk$verdict) && identical(v$rule1, vk$rule1),
                 materially_better = v$better %||% NA, materially_worse = v$worse %||% NA, stringsAsFactors = FALSE)
         }
@@ -432,26 +472,28 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
             if (!is.null(reps)) x <- x[x$rep %in% reps, , drop = FALSE]
             if (!nrow(x)) return(list(validated = NA, units = 0L, units_failing = 0L, failing = "", pooled_units = 0L, pooled_ok = NA,
                 admitted = 0L))
-            counts <- stats::aggregate(rep ~ cell + mask, data = unique(x[, c("cell", "mask", "rep")]), FUN = length)
-            big <- counts[counts$rep >= MIN_ADMITTED, c("cell", "mask")]
-            small <- counts[counts$rep < MIN_ADMITTED, c("cell", "mask")]
+            # R1-09: a unit is cell, variant and mask (the sensitivity variants are not pooled)
+            counts <- stats::aggregate(rep ~ cell + variant + mask, data = unique(x[, c("cell", "variant", "mask", "rep")]), FUN = length)
+            big <- counts[counts$rep >= MIN_ADMITTED, c("cell", "variant", "mask")]
+            small <- counts[counts$rep < MIN_ADMITTED, c("cell", "variant", "mask")]
             perUnit <- function(y) {
                 vapply(est, function(e) {
                     sm <- summarise(y$delta[y$estimand == e], upper_alpha = upper_alpha)
                     is.finite(sm[["upper95"]]) && sm[["upper95"]] < edgeOf(e)$material
                 }, logical(1L))
             }
-            unit_ok <- vapply(seq_len(nrow(big)), function(i) all(perUnit(x[x$cell == big$cell[[i]] & x$mask == big$mask[[i]], ])), logical(1L))
-            pooled <- x[paste(x$cell, x$mask) %in% paste(small$cell, small$mask), , drop = FALSE]
+            unit_ok <- vapply(seq_len(nrow(big)), function(i) all(perUnit(x[x$cell == big$cell[[i]] & x$variant == big$variant[[i]] &
+                x$mask == big$mask[[i]], ])), logical(1L))
+            pooled <- x[paste(x$cell, x$variant, x$mask) %in% paste(small$cell, small$variant, small$mask), , drop = FALSE]
             pooled_ok <- if (nrow(pooled)) all(perUnit(pooled)) else TRUE
             list(validated = all(unit_ok) && pooled_ok, units = nrow(big), units_failing = sum(!unit_ok),
-                failing = paste(paste(big$cell, big$mask)[!unit_ok], collapse = "; "), pooled_units = nrow(small), pooled_ok = pooled_ok,
+                failing = paste(paste(big$cell, big$variant, big$mask)[!unit_ok], collapse = "; "), pooled_units = nrow(small), pooled_ok = pooled_ok,
                 admitted = nrow(unique(x[, c("cell", "variant", "rep", "mask")])))
         }
         total_sets <- nrow(unique(admission[isDecidingUnit(admission$cell, admission$mask), c("cell", "variant", "rep", "mask")]))
         # H-rate: the matched cell's realised share at its KIT-185 safe rate at the more severe mechanism
         k185_safe <- utils::read.delim(safe_rate_file, stringsAsFactors = FALSE)
-        thresholds <- do.call(rbind, lapply(split(k185_safe, k185_safe$cell), function(x) x[which.min(x$safe_rate), c("cell", "realised_at_safe")]))
+        thresholds <- do.call(rbind, lapply(split(k185_safe, k185_safe$cell), function(x) moreSevere(x)[, c("cell", "realised_at_safe")]))
         adm_rate <- merge(admission, thresholds, by = "cell")
         adm_rate <- adm_rate[isDecidingUnit(adm_rate$cell, adm_rate$mask) & adm_rate$miss_share <= adm_rate$realised_at_safe, c("cell", "variant", "rep", "mask")]
         h <- list()
@@ -472,10 +514,10 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
                 est <- ROUTE_CLASSES[[rho]]
                 x <- merge(delta_S[delta_S$estimand %in% est, ], adm, by = c("cell", "variant", "rep", "mask"))
                 if (!nrow(x)) next
-                counts <- stats::aggregate(rep ~ cell + mask, data = unique(x[, c("cell", "mask", "rep")]), FUN = length)
+                counts <- stats::aggregate(rep ~ cell + variant + mask, data = unique(x[, c("cell", "variant", "mask", "rep")]), FUN = length)
                 big <- counts[counts$rep >= MIN_ADMITTED, ]
                 ok <- all(vapply(seq_len(nrow(big)), function(i) {
-                    y <- x[x$cell == big$cell[[i]] & x$mask == big$mask[[i]], ]
+                    y <- x[x$cell == big$cell[[i]] & x$variant == big$variant[[i]] & x$mask == big$mask[[i]], ]
                     all(vapply(est, function(e) {
                         sm <- summarise(y$delta[y$estimand == e], upper_alpha = ALPHA / K_FAMILIES)
                         is.finite(sm[["upper95"]]) && sm[["upper95"]] < edgeOf(e)$material
@@ -643,7 +685,7 @@ if (identical(mode, "score") || identical(mode, "--scale")) {
                 if (any(cand$verdict_robust == "better than the shipped")) "T1" else
                     if (any(cand$verdict %in% c("trade-off", "better than the shipped"))) "T2" else "T4a"
             } else {
-                if (any(cand$rule1 & cand$verdict != "not adoptable")) "T3" else "T4"
+                if (any(cand$rule1_robust & cand$verdict_robust != "not adoptable")) "T3" else "T4"
             }
             outcome <- c(outcome, sprintf("%s: %s", rho, t_out))
         }
@@ -686,7 +728,7 @@ syntheticRows <- function(dir, reps = 400L) {
         "n_rd_gt", "block_share", "rank", "rho", "rho_min", "A1", "inc_share", "L", "B", "RSS", "B2", "slope", "Cstar",
         "n_tested", "n_true", "n_called", "fdp", "power", "null_rate", "qmethod", "da_warn", "da_failed", "lost",
         "lost_planted", "lost_null", "k_chosen", "n_controls", "percentage", "seconds", "fset", "assay", "kappa_hat",
-        "kappa_norm", "kappa_gap", "angle_sin", "guard_targets", "jaccard_S", "mad_S", "ncomp")
+        "kappa_norm", "kappa_gap", "angle_sin", "guard_targets", "jaccard_S", "mad_S", "ncomp", "nipals_left_out")
     for (cellname in c(DECIDING, "P0lo", "P0hi")) {
         masks <- c("none", if (cellname %in% D5_CELLS) D5_MASKS else BASE_MASKS)
         refs_masked <- c("O", "N", "S0", "O0", "N0")
