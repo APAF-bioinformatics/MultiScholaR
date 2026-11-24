@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-190 lifecycle instrument rerun (VAL-54): stated-count mechanics repaired; tests-only tree 4ec3e7c8 with effect.R of d6d67efe",
+  "label": "KIT-190 R1 E lifecycle rerun bb3d10d8",
+  "package_commit": "bb3d10d87a0c5bd46e7bdf069b9ee5a82334633b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "self",
+        "k190-lc3/e-lc"
+      ],
+      "env": {
+        "K190_LIFECYCLE": "1"
+      },
+      "out": "k190-lc3",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 14
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
