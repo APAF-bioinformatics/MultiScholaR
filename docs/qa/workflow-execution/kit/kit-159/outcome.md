@@ -1328,6 +1328,160 @@ family (T2 is sized on these).
 - The 1.8 additions marked "not yet" above.
 
 
+## DI10K: the confirmatory cell in KIT-162's composition (VAL-163 (3); branch `kit-159-di10d`)
+
+**Why a generator change.** By parameters alone the harness could not run C4e g = 5 at 4,840
+features with 40 changed for the statistics DI10b licensed. A plan selects a catalogue cell by id
+and overrides only `generator`. The feature count comes from the family string. And
+`n_feat == 4840L` set three things at once in `coverage.R` at 8cb536cc: the number changed (40,
+l.651 and l.678), the statistic (the rank statistic only, l.329-336 and l.726) and the effect scale
+(rank-calibrated, l.321). The coordinator's ruling of 2026-11-25: build the smallest change, with
+tests first. KIT-162's level structure, `Norm` group and pairwise contrasts are not built.
+Budget line DI10K, 6 core-hours (ticket r1.24, section 39).
+
+**The change** (`harness/msrval/R/coverage.R`, 58a6f598 to 9adab5fe; T-COV unchanged):
+- `valCoverageCells(confirmatory = FALSE)`: by default the 169 cells of T-COV, as before. With
+  `TRUE` it adds one cell after them: C4e-170, regime C4e, family `c4e:4840acc`, n = 5, condition
+  `matrix4840acc_block`. That is its own index (seeds 1,017,000,000 + s, 1,517,000,000 + t, and
+  baseline seed 2,100,000,170).
+- `valCovSpec`'s C4e branch reads `4840acc` as 4,840 features with `rank = FALSE`.
+  `valSpecMatrix(..., rank = n_feat == 4840L)` and `valCovStats(..., rank = n_feat == 4840L)`: the
+  default reproduces the old test exactly for every existing family (c4:500, c4:4840, c4e:500,
+  c4e:4840).
+- `valCoverageTasks` and `valRunCoverage` look plan cells up in the catalogue with the
+  confirmatory cell. `valTimeRegime`, T-COV's plan and the pinned table do not use it.
+
+**Observed.**
+- DI10K-t (run 45400680535 at 58a6f598, tests only): the unchanged-catalogue test passed (5
+  expectations: the 169 cells equal `tests/testthat/cov-cells-base.tsv`, their simulation and target
+  seeds, and the pinned table's SHA-256 894e42e5...). The four new-cell tests errored with `unused
+  argument (confirmatory = TRUE)`: the cell did not exist.
+- DI10K-f (run 45403024967 at 9adab5fe): `test-di10k.R` 5 of 5 (35 expectations).
+  `test-coverage`, `test-coverage-rank`, `test-coverage-table`, `test-repair2` and `test-repair4`
+  all pass (31 tests, 214 expectations in all, 0 failed, 0 skipped). `lintr`: no lints.
+- The cell's path, as the tests check it: 4,840 features; exactly 40 changed, all +1 at scale 1
+  (truth 0.5, 1, 1.5, 2 for groups B to E against A); 50 samples, 2 per group per block over 5
+  blocks; statistics `mae`, `bias`, `rej`, computed as C4e's on 19,200 null contrasts; a plan's
+  `fixed_onedir` reaches the tasks and `valRunCoverage`'s detail (one simulation, one target: a
+  wiring test, not a coverage simulation).
+- Timing from the tests: one simulation plus one target plus one fit took 0.995 s in one process.
+
+**Inferred.** The likely cost of the declared run is 1.1 to 2.2 process-hours, or 1.9 to 3.0
+core-hours on 4 chunks (derivation in `t2/di10k-declaration-draft.md`).
+
+**Draft declaration:** `t2/di10k-declaration-draft.md`, not frozen, for the harness auditor with
+the change. It contains:
+- the cell beside DI10b and KIT-162, with where it differs (levels, `Norm` group, contrasts,
+  feature-wise variance, normalisation, statistics);
+- mechanism checks N1k (`bias` target <= -0.0035) and N2k (`rej` target in [0.045, 0.060]), with
+  their normal-theory derivation, which reproduces T2's g = 5 values at 20 %, and what each check
+  can and cannot show;
+- the pass rule, the readings, and what is reported beside the rule.
+
+The probe plan `t2/di10k-probe-plan.tsv` is not sent; the draft recommends no separate probe.
+
+**Not checked.** No coverage simulation of C4e-170 has been run. The cell's three statistics do not
+count true positives, so the coverage of intervals over the 40 changed features (what KIT-162
+scores on the spiked proteins) is not addressed by this cell. That is for the auditor and the
+owner. The ticket-level arithmetic: DI10K's 6 core-hours exceed the 0.72 left unallocated at r1.23
+(ticket section 39).
+
+Spend on line DI10K: 0.77 + 0.84 = **1.61 of 6** core-hours.
+
+### DI10K: the declared run (declared before the send)
+
+**Re-audit 4** (`AUDIT-KIT-159-impl-recheck-20261124.md`, "Re-audit 4"): the generator change is sound
+and isolated and may merge on the six-file evidence. The draft's derivations reproduce. Repairs R1
+to R10 are applied in the final declaration `t2/di10k-declaration.md`, and the audited draft
+`t2/di10k-declaration-draft.md` is kept unchanged. The repairs: the expected reading; the checks
+renamed configuration checks, with N1k's robustness figure; `bias` matches the frame guard, `rej`
+G-cal, `mae` nothing KIT-162 decides; Pass narrowed to those two guards; Fail names the ticket
+regime; P1 not covered; no probe; R8's significance statement; R10, the pinned table untouched.
+The optional mocked rank-dispatch test was not added. Not built: a P1-form rank cell (the owner's
+decision).
+
+**Declared:** the declaration and plan were committed alone at 9dbb7b1e (`t2/di10k-declaration.md`,
+`t2/di10k-plan.tsv`) and pushed before the request. The request is `k159-di10k-9dbb7b1e`:
+`val-tests.R di10k-out --files metrics --coverage-plan t2/di10k-plan.tsv --request DK --nsim 2000
+--target-sims 20000 --chunks 4`, script limit 50 minutes, ceiling 4.13 core-hours (line DI10K,
+4.39 left).
+- Configuration checks: N1k (`bias` target <= -0.0035) and N2k (`rej` target in [0.045, 0.060]).
+- Pass rule: no coverage below level - 0.02 for `mae`, `bias` and `rej` at the 8 levels.
+- Readings: pass = the C4e g = 5 rows license KIT-162's frame guard and G-cal intervals at its
+  composition; fail = KIT-162 needs a ticket regime for the failing guard; checks not met = the run
+  does not test the question.
+
+One run; the result is recorded whatever it shows; VAL-54 for mechanics.
+
+**Budget (ticket r1.25):** DI10K's 5.28 core-hours beyond the allocations are taken from P1's cap,
+80.9 -> 75.6 (P1 expected 63.9).
+
+### DI10K: result (run 45407487281 at 9dbb7b1e)
+
+**Outcome by the declared reading: PASS.** Both configuration checks hold, and no coverage is below
+level - 0.02. The C4e g = 5 `accuracy` (bias) and `threshold_count` (null share) rows license
+KIT-162's frame guard and G-cal intervals at its composition (feature count, proportion,
+direction), under the differences listed in `t2/di10k-declaration.md`. `mae`'s result is reported
+and licenses nothing KIT-162 decides. No pinned row changes, and `t2/di10k-coverage-table.tsv`
+(same row key as the pinned C4e g = 5 rows) is never merged into the pinned table or read in its
+place. P1 (KIT-162's primary rank endpoint) is not covered; that is with the owner.
+
+**Observed.**
+- Script exit 0, 754 s. Chunks exit 0,0,0,0, no cell missing, wall 750 s. Process 2,974 s:
+  1,064 s of simulations and 1,910 s of targets (`t2/di10k-coverage-run.txt`, `-tasks.tsv`).
+  `metrics` tests: 17, 0 failed.
+- N1k (`bias` target <= -0.0035): **-0.01117**, holds. It is more negative than predicted
+  (-0.0077 ± 0.0011 over random draws; the predicted 1st percentile is -0.0101), but on the
+  declared side.
+- N2k (`rej` target in [0.045, 0.060]): **0.05082**, holds (predicted about 0.051).
+- `mae` target 0.09087 (predicted 0.0907).
+
+Coverage at the 8 levels: DI10K (`fixed_onedir`, 40 of 4,840) beside DI10b (`fixed_onedir`,
+100 of 500). The fail line is level - 0.02.
+
+| statistic | 0.95 | 0.975 | 0.9833 | 0.9875 | 0.9917 | 0.9938 | 0.9958 | 0.9967 |
+|---|---|---|---|---|---|---|---|---|
+| `bias` DI10K | 0.9555 | 0.9775 | 0.9855 | 0.9885 | 0.993 | 0.994 | 0.996 | 0.996 |
+| `bias` DI10b | 0.960 | 0.983 | 0.9885 | 0.991 | 0.9925 | 0.995 | 0.9965 | 0.9975 |
+| `rej` DI10K | 0.9825 | 0.9875 | 0.9895 | 0.992 | 0.995 | 0.9955 | 0.9965 | 0.9965 |
+| `rej` DI10b | 0.9485 | 0.975 | 0.984 | 0.9875 | 0.9905 | 0.992 | 0.995 | 0.9955 |
+| `mae` DI10K | 0.988 | 0.9955 | 0.9965 | 0.9975 | 0.998 | 0.998 | 0.999 | 0.999 |
+| `mae` DI10b | 0.9575 | 0.9815 | 0.9885 | 0.99 | 0.994 | 0.9965 | 0.9965 | 0.998 |
+
+- **Lowest-covering statistic:** `bias` at every level (tied with `rej` at 99.67 %). At 95 %: 89
+  misses of 2,000, coverage 0.9555, exact 95 % interval 0.9455 to 0.9641 (`t2/di10k-exact.tsv`
+  has every level).
+- **Misses above nominal (R8):**
+  - `bias` at 99.67 %: 8 misses against 6.7 nominal, P(X >= 8) = 0.35, coverage 0.996, exact
+    interval 0.9921 to 0.9983.
+  - `rej` at 99.67 %: 7 against 6.7, P = 0.50, coverage 0.9965, exact interval 0.9928 to 0.9986.
+  - No statistic is below nominal at p < 0.01, so none is called anti-conservative.
+- **`se_inflation`:**
+
+  | | `mae` | `bias` | `rej` |
+  |---|---|---|---|
+  | DI10K | 1.508 | 0.990 | 1.311 |
+  | DI10b | 0.979 | 0.996 | 0.900 |
+
+  Status labels: `mae` `conservative` at 6 levels; `bias` and `rej` `pass`.
+- **Event counts:** `rej` over 19,200 null contrasts per simulation, about 976 rejections at the
+  target share 0.0508. `mae` and `bias` are medians over 19,360 entries (160 changed). No
+  statistic counts true positives.
+
+**Inferred.**
+- At 0.8 % changed the `bias` interval covers as it did under DI10b's large shift: a near-zero
+  margin at 95 %, close to nominal elsewhere, `se_inflation` 0.99.
+- The `rej` interval is wider at 4,840 features (`se_inflation` 1.31 against 0.90), so its 95 %
+  coverage rises from 0.9485 to 0.9825.
+- As the declaration expected, the one-directional question is nearly moot at this composition.
+
+**Spend:** 21.1 job-minutes, 1.40 core-hours. Line DI10K: 0.77 + 0.84 + 1.40 = **3.01 of 6**.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).
+
+
+## Merge record for DI10K (coordinator)
+
+The confirmatory cell's branch `kit-159-di10d` (head ccba1f33) was merged into `v0.9-staging` on 2026-11-25 after the harness auditor's re-audits 4 (the generator change: sound and isolated) and 5 (the result: valid, the declared reading correct). The ledger row is VAL-166. Correction to the frozen declaration's header, which says "no P1-form rank cell (the owner's decision)": that decision has NOT been made; whether KIT-162's primary endpoint gets its own confirmatory cell is open with the owner (decisions pool X165). The configuration check N1k came out beyond its prediction (-0.0112 against -0.0077 with standard deviation 0.0009 over feature draws); the likely cause is the one seeded feature draw (seed 2,100,000,170) and it is not confirmed: to be computed in the next scheduled test run of the harness. The optional mocked test that the existing rank cells still dispatch to the rank statistic was not added.

@@ -11,9 +11,12 @@ TARGET_SIMS <- 20000L
 #' One row per simulation cell: the regime, its method, form, unit count, the data condition and
 #' the family of generator. Statistic classes are set per statistic inside a family.
 #'
+#' @param confirmatory Also the confirmatory cell DI10K (VAL-163 (3)), after T-COV's cells and
+#'   outside T-COV: C4e at g = 5 on 4,840 features with 40 changed at effect scale 1 and C4e's
+#'   `accuracy` and `threshold_count` statistics (family `c4e:4840acc`), with its own index.
 #' @return A data frame of cells with a stable `cell` id.
 #' @export
-valCoverageCells <- function() {
+valCoverageCells <- function(confirmatory = FALSE) {
     cells <- list()
     add <- function(...) cells[[length(cells) + 1L]] <<- data.frame(..., stringsAsFactors = FALSE)  # nolint
     for (n in c(6L, 7L, 8L, 9L, 10L, 13L, 21L)) for (shape in c("normal", "skewed")) {
@@ -53,6 +56,12 @@ valCoverageCells <- function() {
     }
     out <- do.call(rbind, cells)
     out$cell <- sprintf("%s-%03d", out$regime, seq_len(nrow(out)))
+    if (isTRUE(confirmatory)) {
+        out <- rbind(out, data.frame(regime = "C4e", family = "c4e:4840acc", n = 5L,
+                                     condition = "matrix4840acc_block",
+                                     cell = sprintf("C4e-%03d", nrow(out) + 1L),
+                                     stringsAsFactors = FALSE))
+    }
     out
 }
 
@@ -203,7 +212,8 @@ valCovSpec <- function(cell) {
            newcombe_paired = valSpecNewcombe(cell),
            c3 = valSpecC3(cell, fam),
            c4 = valSpecMatrix(cell, "replicate", as.integer(fam[[2L]])),
-           c4e = valSpecMatrix(cell, "block", as.integer(fam[[2L]])),
+           c4e = valSpecMatrix(cell, "block", as.integer(sub("acc$", "", fam[[2L]])),
+                               rank = identical(fam[[2L]], "4840")),
            c7 = valSpecBootstrap(cell, fam[[2L]]),
            valAbort("unknown coverage family {cell$family}", "val_spec_invalid"))
 }
@@ -312,21 +322,25 @@ valSpecC3 <- function(cell, fam) {
          })
 }
 
-#' C4 and C4e: jackknife forms (ii) and (iii) on simulated feature matrices
+#' C4 and C4e: jackknife forms (ii) and (iii) on simulated feature matrices; `rank` the rank
+#' statistic at the calibrated scale (the 4,840-feature families), otherwise `accuracy` and
+#' `threshold_count` at scale 1 (DI10K's `c4e:4840acc` too)
 #' @noRd
-valSpecMatrix <- function(cell, form, n_feat) {
+valSpecMatrix <- function(cell, form, n_feat, rank = n_feat == 4840L) {
     g <- cell$n
     lay <- valCovLayout(form, g)
     # r1.13 (VAL-69): the rank cells' effect is calibrated per g into the declared pAUC band
-    scale <- if (n_feat == 4840L) valRankEffect(form, g)$effect else 1
+    scale <- if (rank) valRankEffect(form, g)$effect else 1
     # I10 diagnostic (VAL-109): `fixed_symmetric` draws the feature baselines once per cell and
     # splits the changed features +1 and -1; `fixed_onedir` (DI10b, VAL-137 (1)) keeps that draw
     # with every change +1, as T2's; `redraw` (T2) draws them in every simulation
     fixed <- if (isTRUE(cell[["generator"]] %in% c("fixed_symmetric", "fixed_onedir"))) {
         valCovFixedFeatures(cell, n_feat)
     }
-    statsOf <- function(x, l, truth) valCovStats(valCovFit(x, l, form), truth, n_feat, form)
-    names_s <- if (n_feat == 4840L) {
+    statsOf <- function(x, l, truth) {
+        valCovStats(valCovFit(x, l, form), truth, n_feat, form, rank = rank)
+    }
+    names_s <- if (rank) {
         "rank.pauc_diff"
     } else if (form == "replicate") {
         c("accuracy.mae", "accuracy.mae_diff", "threshold_count.sens",
@@ -337,8 +351,8 @@ valSpecMatrix <- function(cell, form, n_feat) {
     parts <- strsplit(names_s, ".", fixed = TRUE)
     list(stats = data.frame(statistic = vapply(parts, `[`, "", 2L),
                             class = vapply(parts, `[`, "", 1L), kind = "approx_run"),
-         range = if (n_feat == 4840L) c(-1, 1),
-         effect = if (n_feat == 4840L) scale else NA_real_,
+         range = if (rank) c(-1, 1),
+         effect = if (rank) scale else NA_real_,
          target_one = function() {
              dat <- valCovMatrixData(lay, n_feat, form, scale, fixed = fixed)
              unname(statsOf(dat$x, lay, dat$truth))
@@ -715,7 +729,7 @@ valCovFit <- function(x, lay, form) {
 
 #' The statistics of C4 (accuracy, threshold_count on 500 features; rank on 4,840) and C4e
 #' @noRd
-valCovStats <- function(fit, truth, n_feat, form) {
+valCovStats <- function(fit, truth, n_feat, form, rank = n_feat == 4840L) {
     bh <- function(p) apply(p, 2L, stats::p.adjust, method = "BH")
     pauc <- function(p) {
         s <- data.frame(key = seq_along(truth), expected = as.vector(truth),
@@ -723,7 +737,7 @@ valCovStats <- function(fit, truth, n_feat, form) {
                         truth_status = "scored", key_status = "ok", stringsAsFactors = FALSE)
         valPartialAuc(s, fpr_max = 0.01)$value
     }
-    if (n_feat == 4840L) return(c(rank.pauc_diff = pauc(fit$p) - pauc(fit$p_ord)))
+    if (rank) return(c(rank.pauc_diff = pauc(fit$p) - pauc(fit$p_ord)))
     pos <- truth != 0
     callp <- bh(fit$p) < 0.05
     callo <- bh(fit$p_ord) < 0.05
@@ -859,7 +873,7 @@ valCoveragePlan <- function(cells, ranges, nsim = 2000L, target_sims = TARGET_SI
 #' @export
 valCoverageTasks <- function(plan_file, tasks, out_dir) {
     plan <- utils::read.delim(plan_file, stringsAsFactors = FALSE)
-    cells <- valCoverageCells()
+    cells <- valCoverageCells(confirmatory = TRUE)
     for (id in tasks) {
         p <- plan[plan$task == id, ]
         cell <- valPlanCell(cells, p)
@@ -920,7 +934,7 @@ valRunCoverage <- function(plan_file, request = "all", nsim = 2000L, target_sims
     started <- Sys.time()
     status <- valRunTaskChunks(groups, normalizePath(plan_file), work_dir)
     wall <- as.numeric(difftime(Sys.time(), started, units = "secs"))
-    cells <- valCoverageCells()
+    cells <- valCoverageCells(confirmatory = TRUE)
     detail <- list()
     tasks_out <- list()
     missing <- character()

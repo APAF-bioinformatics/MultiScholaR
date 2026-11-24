@@ -1,0 +1,6 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-di10k.R	DI10K: T-COV's catalogue, its seeds and the pinned coverage table are unchanged	5	5	0	0	0	0	0.217
+test-di10k.R	DI10K: the confirmatory cell has its own index; T-COV's catalogue does not hold it	0	0	0	0	1	0	0.073
+test-di10k.R	DI10K: 4,840 features, exactly 40 changed, all up at scale 1, C4e's g = 5 layout	0	0	0	0	1	0	0.018
+test-di10k.R	DI10K: the cell computes C4e's mae, bias and rej on the simulated matrix	0	0	0	0	1	0	0.007
+test-di10k.R	DI10K: a plan naming the cell runs it with the plan's generator, in tasks and runs	0	0	0	0	1	0	0.006
