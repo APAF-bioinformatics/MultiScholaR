@@ -285,30 +285,33 @@ if (identical(part, "journeys")) evalq({
 if (identical(part, "w1")) k213Defs("test-omic-summary-module.R", env)
 if (identical(part, "w1")) evalq({
     real <- get("createWorkflowArgsFromConfig", envir = asNamespace("MultiScholaR"))
-    # Instrument rerun 2 (run 45473660748: the lipidomics and metabolomics cases stopped at testthat's `teardown_env()`
-    # outside a test file): with a third argument the listed cases run as the test file runs them (testthat::test_file,
-    # `desc` the case's test), the steps whose capture changed then not known (written "").
-    w1Desc <- "(b) %s: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's"
+    # Instrument reruns (VAL-54): run 45473660748's lipidomics and metabolomics cases stopped at testthat's
+    # `teardown_env()` outside a test file; run 45476410635's `desc` filter cannot find the W1 tests (their names are
+    # computed, and `desc` matches literal names only). With a third argument the listed cases run in ONE
+    # testthat::test_file() of the whole file (MULTISCHOLAR_KIT108_W1_CASES the listed cases; the file's other tests run
+    # too), and each write is attributed to the project's omic by its source directory (row `case` = that omic).
     w1Case <- function(case) {
         saved <- list()
+        where <- character()
         testthat::local_mocked_bindings(createWorkflowArgsFromConfig = function(...) {
             path <- real(...)
             saved[[length(saved) + 1L]] <<- readLines(path, warn = FALSE)
+            where[[length(where) + 1L]] <<- basename(dirname(path))
             path
         }, .package = "MultiScholaR")
         if (length(w1Only)) {
-            withr::local_envvar(MULTISCHOLAR_KIT108_W1_CASES = case)
-            testthat::test_file(file.path("tests", "testthat", "test-omic-summary-module.R"), desc = sprintf(w1Desc, case),
-                reporter = "summary", stop_on_failure = FALSE)
-            return(list(saved = saved, changed = character(), values = character()))
+            withr::local_envvar(MULTISCHOLAR_KIT108_W1_CASES = paste(w1Only, collapse = ","))
+            testthat::test_file(file.path("tests", "testthat", "test-omic-summary-module.R"), reporter = "summary",
+                stop_on_failure = FALSE)
+            return(list(saved = saved, where = where, changed = character(), values = character()))
         }
         captures <- omicSummaryW1Case(case)
         changed <- names(captures)[vapply(captures, function(step) !isTRUE(step$study_parameters %in% c("<absent>",
             "<unchanged>")) && !is.null(step$study_parameters), logical(1))]
-        list(saved = saved, changed = changed, values = vapply(changed, function(s) captures[[s]]$study_parameters, ""))
+        list(saved = saved, where = where, changed = changed, values = vapply(changed, function(s) captures[[s]]$study_parameters, ""))
     }
     rows <- list()
-    for (case in if (length(w1Only)) w1Only else omicSummaryW1Cases) {
+    for (case in if (length(w1Only)) "listed" else omicSummaryW1Cases) {
         result <- tryCatch(w1Case(case), error = function(e) list(error = paste(class(e)[[1L]], conditionMessage(e))))
         if (!is.null(result$error)) {
             rows[[length(rows) + 1L]] <- data.frame(case = case, write = NA, lines = NA, l_lines = NA,
@@ -324,7 +327,7 @@ if (identical(part, "w1")) evalq({
         for (w in seq_along(result$saved)) {
             lines <- result$saved[[w]]
             l <- grep(L_PATTERN, lines, value = TRUE)
-            rows[[length(rows) + 1L]] <- data.frame(case = case, write = w, lines = length(lines), l_lines = length(l),
+            rows[[length(rows) + 1L]] <- data.frame(case = if (length(w1Only)) result$where[[w]] else case, write = w, lines = length(lines), l_lines = length(l),
                 steps_changed = steps, captures = values,
                 l_text = tab(paste(gsub("[0-9a-f]{64}", "<HEX>", l), collapse = " || ")))
         }
