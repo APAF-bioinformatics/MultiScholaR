@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-188 L1p blind lifecycle and timing, cell P1 (data set 401; 402, 403 in P0 and P2); timeout 45; its times recompute Part P's budget for the owner (D4b, VAL-84)",
+  "label": "KIT-188 l1p-p1 ef66c8f8",
+  "package_commit": "ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "P",
+        "P1",
+        "401",
+        "403",
+        "k188-l1p-p1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOB": "l1p-p1"
+      },
+      "out": "k188-l1p-p1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

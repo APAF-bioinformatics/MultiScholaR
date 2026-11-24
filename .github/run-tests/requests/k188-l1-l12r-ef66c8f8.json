@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-188 L1 VAL-54 instrument rerun 1 of 3: L12 reported units (L1-L run 45273944113 stopped them, script subscript defect); no declared value changed; timeout 60",
+  "label": "KIT-188 l1-l12r ef66c8f8",
+  "package_commit": "ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "403",
+        "k188-l1-l12r"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "reported",
+        "K188_FAULT": "1",
+        "K188_JOB": "l1-l12r"
+      },
+      "out": "k188-l1-l12r",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
