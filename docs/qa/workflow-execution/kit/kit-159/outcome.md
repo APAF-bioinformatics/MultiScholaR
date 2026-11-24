@@ -68,7 +68,25 @@ hold; no row fails; all 11 rows failing at 95 % in T2 rise, lowest now 0.9605); 
 half-width ratios 1.4 to 5.3 (D) and 2.0 to 3.2 (consumer rank rows, H). R10 (d0492872): 48 tests
 pass, lint 0.
 
-**Lines:** REPAIR 12.50 of 15 (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6 0.68, R7
+**HANDED OVER at 5b8f38b4 + this records commit (context long). Next, in this order, each tests
+first (a tests-only commit shown failing AT the fault, then the fix), on the REPAIR line (raised to
+25 by the coordinator's ruling; 12.50 used, 12.50 left):**
+1. I15 remaining G1(a): loader for `gui-entry-control.tsv` and `declared-keys.tsv` against the real
+   records (KIT-199's on branch `kit-199-limpa-reference-refreeze`, `docs/qa/workflow-execution/kit/
+   kit-199/`; KIT-172's, 177's, 180's on staging) as fixtures; link (i) checking the declared rows'
+   digest values; reference-row adoption by key sets (not column names); the release-commit value
+   comparison (VAL-120 (2) with VAL-133's fallback: identical masked captures first; else keys,
+   order, missing values and calls exactly, numbers under SWD-083: certified with the difference
+   printed, or not certified; hand-off text KIT-199.md 12.3); the part (1)/(2) runners.
+2. VAL-133's G13 under SWD-083 (today `parity.R` rounds to 10 significant digits).
+3. I07 replay of declared cells (a prepared store holding only the import and design states;
+   `replayWorkflowAnalysisRecord(record, project_root, inputs, paths, scratch)`).
+4. I19 (4) covr LAST, only if the line has room: state its cost first (estimate: the whole suite
+   took 25 min plain; covr instruments it, likely 2 to 3 times, so 3 to 5 core-hours).
+Owed after KIT-202 merges (not now): S0's three metabolomics routes and `metab_lc` export-then-load
+re-run (about 1 core-hour). Do not repeat R1 for later product merges until the coordinator says.
+
+**Lines:** REPAIR 12.50 of 25 (raised from 15) (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6 0.68, R7
 0.57, R8 0.78, R4b 0.87, R9 0.81, R4c 0.88, R4d 2.27, R10 0.77); T2 29.00 of 39 (DI10 2.07).
 VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d).
 Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb; every changed file has
