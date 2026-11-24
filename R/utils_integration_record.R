@@ -322,7 +322,8 @@ integrationRecordTexts <- function() {
         col_enrich_term = "Term or pathway",
         col_enrich_description = "Description",
         col_enrich_category = "Category",
-        col_enrich_score = "Enrichment score (NES) or effect (camera)",
+        col_enrich_score = paste("Enrichment score (NES), or effect: the difference in mean z-score (correlation-adjusted",
+            "tests) or in mean Fisher-transformed correlation (permutation) between the term and the other features"),
         col_enrich_fdr = "False discovery rate (adjusted p-value)",
         # %s: STRING's version, its address.
         enrich_string_release = "STRING %s (%s)",
@@ -360,6 +361,29 @@ integrationRecordTexts <- function() {
             "(features measured in all of them: %d); correlation-adjusted test (camera, correlation estimated)"),
         enrich_ranking_value_camera_pr = paste("regression of each feature on the factor over %d biological samples",
             "(features measured in all of them: %d); pre-ranked test with an assumed correlation of 0.01 (cameraPR)"),
+        # KIT-191 (VAL-85 (2); proposed wording, VAL-41). %d: biological samples, features used.
+        enrich_ranking_value_camera_floor = paste("regression of each feature on the factor over %d biological samples",
+            "(features measured in all of them: %d); correlation-adjusted test, negative correlations counted as zero",
+            "(camera, correlation estimated, allow.neg.cor = FALSE)"),
+        enrich_ranking_value_permutation = paste("correlation of each feature with the factor over %d biological samples",
+            "(features measured in all of them: %d); permutation test of the factor's values (PCGSE)"),
+        methods_test_name_camera_floor = paste("a competitive gene-set test that allows for the correlation between a",
+            "term's features, negative estimates counted as zero (limma camera with allow.neg.cor = FALSE; Wu and Smyth",
+            "2012), applied to the regression of each feature's values on the oriented factor"),
+        # %d: the number of reorderings, twice.
+        methods_test_name_permutation = paste("a competitive gene-set test of each term's mean Fisher-transformed",
+            "correlation with the oriented factor against the other features, its p-value from %d random reorderings of",
+            "the factor's values across the biological samples (PCGSE's permutation test, Frost et al. 2015; p = (1 + b) /",
+            "(1 + %d), reorderings that leave the factor unchanged counted)"),
+        # %d: biological samples, identifiers used, matched identifiers.
+        methods_test_settings_camera_floor = paste("the correlation estimated for each term (negative estimates counted",
+            "as zero), moderated variances with an abundance trend, an intercept and no other covariate, features",
+            "measured in every one of %d biological samples (%d of %d matched identifiers; several features on one",
+            "identifier: the one with the largest mean value kept)"),
+        # %d: the seed, biological samples, identifiers used, matched identifiers.
+        methods_test_settings_permutation = paste("seed %d, the factor's values reordered with the model unchanged,",
+            "features measured in every one of %d biological samples (%d of %d matched identifiers; several features on",
+            "one identifier: the one with the largest mean value kept)"),
         methods_test_name_camera = paste("a competitive gene-set test that allows for the correlation between a term's",
             "features (limma camera, the correlation estimated for each term from the residuals; Wu and Smyth 2012),",
             "applied to the regression of each feature's values on the oriented factor"),
@@ -385,23 +409,47 @@ integrationRecordTexts <- function() {
             "to %d of these identifiers (%d pathways), every pathway kept."),
         methods_enrich_camera_pr = paste("%s in %s: %s pathways were tested with %s, %s, %s, organism %s, pathways with",
             "%d to %d of these identifiers (%d pathways), every pathway kept."),
-        methods_enrich_limits_tests = paste("The factor was learned from these same data, which neither test allows for,",
-            "so the enrichment results are exploratory: features the model was trained on shaped the factor and tend to be",
-            "more strongly associated with it than other features even without a biological link, the more so for factors",
-            "weaker than the main effect. In a check on simulated data shaped like this study (12 biological samples, 800",
-            "simulated studies), the correlation-adjusted test called sets with no link to the factor at the 5 % level in",
-            "0.4 to 6.6 % of cases, depending on the kind of set, on the main factor and on values unrelated to the data",
-            "(largest: sets of low-abundance proteins against values unrelated to the data, 6.6 %, 95 % interval 5.8 to",
-            "7.4 %, above the nominal 5 %), within the programme's tolerance of an upper 95 % limit of at most 7.5 %; sets",
-            "made only of the most variable features, those the model selects, were called in up to 10.1 % (95 % interval",
-            "9.5 to 10.7 %) even against values unrelated to the data. On the main factor, sets with no link whose features",
-            "were correlated at 0.3 were called by the pre-ranked test in 13.5 % (sets of 5 to 10 metabolites) to 43.0 %",
-            "(sets of 10 to 100 genes; 95 % interval 41.9 to 44.1 %) of cases. The correlation-adjusted test uses only features measured in every",
-            "biological sample, which favours abundant features and leaves out features that fall below detection in",
-            "some samples, often those that change most. Both tests use each data set's normalised values before RUV",
-            "correction, the values the model is trained on by default; for a model trained on RUV-corrected values,",
+        methods_enrich_camera_floor = paste("%s in %s: %s pathways were tested with %s, %s, %s, organism %s, pathways",
+            "with %d to %d of these identifiers (%d pathways), every pathway kept."),
+        methods_enrich_permutation = paste("%s in %s: %s pathways were tested with %s, %s, %s, organism %s, pathways",
+            "with %d to %d of these identifiers (%d pathways), every pathway kept."),
+        # KIT-191 (5.4): the limits paragraph, its opening, one clause per test used and kind of data set (%s: the test,
+        # the kind of simulated data, its rows A and B of the evidence table, the kind's terms of row E (AUDIT-KIT-191-impl
+        # I02: gsea's gene-and-protein figure is of block members the model did not use), row E), its closing.
+        methods_enrich_limits_tests = paste("The factor was learned from these same data, which none of the tests used",
+            "allows for, so the enrichment results are exploratory: features the model was trained on shaped the factor",
+            "and tend to be more strongly associated with it than other features even without a biological link, the more",
+            "so for factors weaker than the main effect. In a check on simulated data with 12 biological samples (800",
+            "simulated studies per data set; KIT-183), at the 5 % level:"),
+        methods_enrich_limits_clause = paste("the %s, on %s, called terms with no link to the factor in %s of cases",
+            "against values unrelated to the data, terms made only of the most variable features, those the model",
+            "selects, in %s, and, on factors weaker than the main effect, %s in up to %s"),
+        methods_enrich_limits_end = paste("The correlation-adjusted and permutation tests use only features measured in",
+            "every biological sample, which favours abundant features and leaves out features that fall below detection",
+            "in some samples, often those that change most. The tests used read each data set's normalised values before",
+            "RUV correction, the values the model is trained on by default; for a model trained on RUV-corrected values,",
             "variation the correction removed stays in the values tested. P-values were adjusted within each factor, data",
-            "set and database (and Gene Ontology aspect), not across them.")
+            "set and database (and Gene Ontology aspect), not across them."),
+        # VAL-115 (3): the permutation's floor in its Methods sentence (%s: the exact fraction (1 + d)/(1 + B); %d: the
+        # pathways tested, the smallest number BH can call together); the _none form when the floor is above 0.05.
+        methods_enrich_permutation_floor = paste("The smallest attainable p-value was %s ((1 + d)/(1 + B), d the",
+            "reorderings that left the factor unchanged); of the %d pathways tested, none could be called at a 5 %% false",
+            "discovery rate unless at least %d were called together."),
+        methods_enrich_permutation_floor_none = paste("The smallest attainable p-value was %s ((1 + d)/(1 + B)), above",
+            "0.05, so no pathway could be called at a 5 %% false discovery rate."),
+        # %s: factor, data set, database; %d: the number of tests; %s: the tests.
+        methods_enrich_several_tests = paste("For %s in %s (%s), %d tests were run (%s); each result is reported, the",
+            "tests were not combined, and no adjustment was made across tests."),
+        # KIT-191: the evidence sheet's headers.
+        col_evidence_kind = "Kind of simulated data",
+        col_evidence_test = "Test",
+        col_evidence_samples = "Biological samples",
+        col_evidence_measure = "Kind of term",
+        col_evidence_value = "Measured (5 % level; power as a share)",
+        col_evidence_applies = "What the figure applies to",
+        col_evidence_source = "Source",
+        # KIT-191: the factor-strength sentence's parts and the tests' and evidence rows' names, as the tab words them.
+        integrationGuiTexts()[grepl("^enrich_(strength_|test_phrase_|evidence_)", names(integrationGuiTexts()))]
     )
 }
 
@@ -410,6 +458,11 @@ integrationRecordTexts <- function() {
 INTEGRATION_RECORD_SHEETS <- c("integration_inputs", "integration_matching", "integration_samples",
     "integration_settings", "integration_model", "integration_variance", "integration_results", "integration_outputs",
     "integration_notes", "integration_enrichment", "integration_enrichment_terms")
+
+#' KIT-191 (5.4): the sheet of the evidence table, written after the others only when the record holds a KEGG,
+#' Reactome or Gene Ontology entry.
+#' @noRd
+INTEGRATION_RECORD_EVIDENCE_SHEET <- "integration_enrichment_tests"
 
 # ------------------------------------------------------------------------------------------------
 # Small readers that take the record as built (lists, data frames) or as read back from JSON
@@ -760,7 +813,12 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
         integration_results = files, integration_outputs = integrationRecordOutputsTable(block, texts),
         integration_notes = notes, integration_enrichment = enrichment$summary,
         integration_enrichment_terms = enrichment$terms)
-    out[INTEGRATION_RECORD_SHEETS]
+    out <- out[INTEGRATION_RECORD_SHEETS]
+    # KIT-191 (5.4): with a KEGG, Reactome or Gene Ontology entry, how each offered test behaved in KIT-183's check.
+    pathway <- Filter(function(entry) isTRUE(as.logical(s(entry$complete))) && !identical(s(entry$database), "string"),
+        block$enrichment %||% list())
+    if (length(pathway)) out[[INTEGRATION_RECORD_EVIDENCE_SHEET]] <- integrationRecordEvidenceTable(texts)
+    out
 }
 
 #' Which values an input gave the model, as the key of its words (KIT-153): `values_corrected` (the RUV-corrected

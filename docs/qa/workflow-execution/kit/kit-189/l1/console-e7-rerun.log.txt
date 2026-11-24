@@ -1,0 +1,2 @@
+check E7: TRUE
+limit 178 s; killed run exit 124 after 178 s: 20 complete parts, 0 .tmp parts left (not read), 0 assembled files; continuation of 20 replicates exit 0 (174 s); uninterrupted exit 0 (323 s); union holds each of the 40 replicates once: TRUE; union rows 560; rows equal to the uninterrupted run's without part and seconds: TRUE

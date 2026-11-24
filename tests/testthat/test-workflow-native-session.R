@@ -1253,14 +1253,15 @@ test_that("KIT-020: a MaxQuant import on an owner records its inputs and metadat
     expect_identical(record$data$class, "ProteinQuantitativeData")
     provenance <- manager$.context$snapshot$step_provenance$protein_s4_initial
     expect_identical(provenance$operation, "design_builder")
-    expect_identical(provenance$fixed$transform, "log2(x + 1)")
+    # KIT-177 (contract rewritten): plain log2, the counts of values set to missing recorded.
+    expect_identical(provenance$fixed$transform, "log2(x); 0 missing")
     inputs <- manager$.context$snapshot$file_dependencies
     expect_true(any(vapply(inputs, function(d) identical(d$role, "maxquant_report"), logical(1))))
     # The hydrated object equals the in-memory construction on the same table.
     restored <- manager$getState("protein_s4_initial")
     expect_s4_class(restored, "ProteinQuantitativeData")
     expect_identical(sort(setdiff(names(restored@protein_quant_table), "Protein.Ids")), sort(design$Run))
-    expect_equal(restored@protein_quant_table$`WT_1`[restored@protein_quant_table$Protein.Ids == "P00001"], log2(1019.8 + 1))
+    expect_equal(restored@protein_quant_table$`WT_1`[restored@protein_quant_table$Protein.Ids == "P00001"], log2(1019.8))
     analysis <- buildWorkflowAnalysisRecord(manager)
     check <- validateWorkflowAnalysisRecord(analysis)
     expect_true(check$valid)

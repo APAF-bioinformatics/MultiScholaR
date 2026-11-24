@@ -1,0 +1,3 @@
+lane	state	slot	entry	path_bearing
+prot_lfq_maxquant	correlation_filtered	args	daAnalysisUI	FALSE
+prot_tmt_pd	correlation_filtered	args	daAnalysisUI	FALSE
