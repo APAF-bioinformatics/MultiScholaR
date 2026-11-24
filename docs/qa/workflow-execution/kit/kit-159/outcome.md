@@ -59,7 +59,8 @@ DI10b generator are shown in run A1 (below); E6 is a strengthening of passing te
 - A1 (k159-rep-a1-d1c8d4e6, run 45334780977, tests only at d1c8d4e6): sent; purpose: show each new
   test failing at its fault; ceiling 25 min; decides nothing else.
 - A2 (fix at 647706dd, same files with `--lint`): to send after A1.
-- DI10b (fixed_onedir C4e-147, at 647706dd, line DI10b): to send after A2 shows R-DI10b passing.
+- A2 (45336510695 at 647706dd): 49 of 50 pass, lint 0; R-V137-2 failed on a fixture defect (corrected in the test at 820f3207; re-run owed). 0.71 core-hours.
+- DI10b (45336507597 at 647706dd, line DI10b; sent with A2): **valid; by its declared reading, conditioning suffices for C4e g = 5.** N1 (bias target -0.234) and N2 (rejection target 0.428) hold, so the one-directional shift is present; every statistic passes at every level (95 %: mae 0.9575, bias 0.960, rej 0.9485; no zero-width intervals). Compared with D (fixed_symmetric) coverage is lower but within the band (rej at 95 %: 0.9485 against 0.9835). Reported to the owner; it decides nothing by itself. 1.10 core-hours of 1.5. Tables `t2/di10b-*`.
 
 
 Ticket r1.16 (main checkout; section 31). Rulings: VAL-109; KIT-199 plan audit ruling C1 (a); KIT-199
