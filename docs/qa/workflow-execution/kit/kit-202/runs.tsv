@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45326839837	f9d7d910e7b499c92f4ec11792c3af9fac53b250	R1: new tests fail first on the tests-only commit (A1 base side); 1 job; ceiling 45	10.8	as stated: kit202 file 123 pass 32 fail 0 error; test-metab-qc-shared.R 18 pass 2 fail (T8); every failing assertion at its stated base value; guards T4, T5 (b), T6 (ii) pass
