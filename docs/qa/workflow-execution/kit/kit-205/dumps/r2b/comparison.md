@@ -11,6 +11,7 @@
 
 Instrument note: `dumps-k205.R`'s UI row in `dumps.tsv` reads FALSE because MULTISCHOLAR_KIT107_W1_DUMP also receives the
 W1 (b) captures the W113 test drives (9 objects in the file), so the script compared whole files. The UI row above is
-computed from the same artifact files, comparing the `omicEnrichW1FrozenUi` assignment only (no rerun). The two head UI
-files differ only outside that block, at `omicEnrichW1Frozen[["kernel_gprofiler"]]`'s `gprofiler_plot` digest (line 2009),
-a capture this control does not cover. The W113 dump files are byte-identical as wholes.
+computed from the same artifact files, comparing the `omicEnrichW1FrozenUi` assignment only (no rerun). The two head UI files differ only outside that block, in `omicEnrichW1Frozen[["refusals"]]`'s
+`gprofiler_plot` digest in its sessions `pre_da/run_before_da`, `pre_da/da` and `pre_da/open` (lines 2009, 2043, 2113;
+head-1 `3b182f4c…`, head-2, base and the stored file `d4fb7d73…`): the known placeholder-plot flake of plan section 13,
+not counted; the refusal sessions do not run the enrichment kernel. (Corrected per audit K205-R1-01.) The W113 dump files are byte-identical as wholes.
