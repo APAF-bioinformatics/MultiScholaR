@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-213 R1: failing-first on the tests-only commit (E1 to E4 and G5 fail at their base values; G3, G4 pass); decides stop rule 1; ceiling 60 job-minutes",
+  "label": "KIT-213 R1 tests-only 67631c03",
+  "package_commit": "67631c030719354df95b47ac22318d1a166d66b6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit213-study-parameters-labels.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
