@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 whole msrval suite with --lint at 4e76758d, charged to S0 (coordinator ruling): VAL-54 resend after run 45294023250 timed out at a 17-min limit set from a wrong estimate; limit 35 min",
+  "label": "KIT-159 whole msrval suite at 4e76758d",
+  "package_commit": "4e76758d71d53642b56d93fcef0fd7a93940b7fe",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/suite-out",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/suite-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 35
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
