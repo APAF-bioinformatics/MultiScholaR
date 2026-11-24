@@ -1,4 +1,7 @@
-# KIT-177 outcome: stopped at gate F3 (outcome 3), before R1
+# KIT-177 outcome: plain log2 at the label-free and TMT protein design step
+
+Done and ready for its implementation audit (final section). The first part of this file is the record as it stood at
+the F3 stop; the owner's decisions VAL-79 and VAL-80 then let the work continue.
 
 Ticket revision 1.6 (step 0 applied 2026-11-24 in the main checkout). Branch `kit-177-prot-plain-log2` from
 `v0.9-staging` fc48b6ec (KIT-180 merged). Runs on `run-tests` (R 4.6.1, reference BLAS, ubuntu-22.04); ids, commits and
@@ -49,7 +52,7 @@ ones in the lowest third, consistent with the unmodelled variance at low signal 
 m = 150 on the two transforms agree to within the seed range. With RUV automatic the FDP is about 0.11 at every scale
 for both transforms (the legacy RUV route's own behaviour, not this ticket's).
 
-## Acceptance criteria (status at the stop)
+## Acceptance criteria at the F3 stop (superseded by the final table below)
 
 | # | Status | Evidence |
 |---|---|---|
@@ -201,3 +204,47 @@ Binding: head c06568f3 (the fix and the re-frozen files) against base 55710a87, 
 `sva` on both, `check` true, `test-gui-entry-proteomics.R` 120 minutes. Expected 62.3 core-hours, ceiling 72. Decides
 A3: every difference is a new test, a contract rewrite named in section 6, the re-frozen GUI-entry references (expected
 `fixed` on the three lanes), or a TMT/LFQ stored reference listed for the re-record with its size; check findings equal.
+
+
+**R3, run 45303214444** (head d7a04a08 against base 55710a87, 20 shards per side, `sva` on both; `r3/compare.tsv`,
+`check-compare.txt`; 987.4 job-minutes = 65.83 core-hours, expected 62.3, ceiling 72). 454 files: 452 `same`, among
+them `test-gui-entry-proteomics.R` 183 passed / 10 failed on both sides (the three re-frozen lanes pass on head; the
+10 are `prot_dia` 4 and `prot_dia_limpa` 6, unchanged), the contract rewrites in `test-workflow-native-session.R`, and
+KIT-172's four files; 1 `only-on-head` (`test-prot-design-log2.R`, 226/0); 1 `count-changed` (T5 in
+`test-workflow-analysis-record.R`, 351/0); 0 `new-failure`, 0 `message-changed`. R CMD check: 0 ERROR, 3 WARNING, 3 NOTE
+on both; none only on head. No stored reference outside the re-frozen files moved, so there is no re-record row for plan
+section 11 beyond the ticket's own (the two contract rewrites; the three GUI-entry files re-frozen here, D2).
+
+## Final: acceptance criteria
+
+| # | Status | Evidence |
+|---|---|---|
+| A1 | met: F1 and F2 by reading, F3 outcome (3) then the VAL-79 diagnostic (only the DA settings' timestamp differs), F4 yes | `feasibility.md`, `r0/`, `f3d/`, `f3d2/` |
+| A2 | met: T1a, T2, T3, T3b, T4, T8, T9 and the contract rewrites fail on base (R1, R1b) and pass on head (R2, R3); T5 and T7's steps pass on both; T6's bounds delivered; no T1a exceedance in t or p | `r1/`, `r1b/`, `r2/compare.tsv`, `r3/compare.tsv`, `t6.tsv` |
+| A3 | met: targeted and dependents (R2) and full suite (R3) base against head: every difference is a new test, T5, or (R2 only, before the re-freeze) the three lanes from `design` on; check findings identical | `r2/`, `r3/`, `check-compare.txt` |
+| A5 | met: NEWS under the unnumbered heading with 9.1's numbers (VAL-80) and F2's "some exports"; Methods sentences in `wording.md`; no version change | `NEWS.md`, `wording.md` |
+| A6 | met: T8 (the design tab's start and the notifier the load-session handler calls; raised once for `log2(x + 1)` and for no transform; none for a head, DIA or other string); no output id added (R4 step 2 and 3: no `outputs` key on one side only) | R2, R3, `gui-entry-control.tsv` |
+| A7 | met: 9.1's table shown and accepted (VAL-80); T1b's table with the rules applied | `r0/effect.tsv`, `t1b.tsv` |
+| A8 | met: R4 passed before the three files were committed | `gui-entry-control.tsv`, `control/` |
+| A9 | met: T9 (in process and through the finishing function the managed path uses): one warning and one log line with the count when `scale` runs on log2 values below 0; none for cyclic loess or for `prot_lfq_maxquant`; the result identical to a run without the warning code | R2, R3 |
+
+**Core-hours** (`runs.tsv`): 109.87 used: R0 8.19, F3 diagnostic 0.78 and its mechanics rerun 0.83, R1 3.21, R1b 1.55,
+R2 21.85, T1b instrument run 6.23, R4 1.40, R3 65.83. Expected 100.2 (revision 1.6), ceiling 245.4; every row inside
+its ceiling (targeted 15.35 of 24; T1b 12.66 of 14; R4 1.40 of 8.7; R3 65.83 of 72).
+
+**T1b's rules** (for the owner): `scale` changes a call in 14 of 20 seeds, so by D6's rule it is its own ticket
+(removal or repair of the option); legacy RUV `automatic` (20 of 20) and `manual` (20 of 20) reach their own ticket by
+KIT-172 D8's rule (VAL-81 widens KIT-188 to proteomics legacy RUV Automatic); the new designs are unit-invariant here.
+
+**Gate-off and bundle lane.** The ticket defines no gate and no retained path (section 7: "No gate and no retained
+path") and no bundle-lane run; neither was run.
+
+## Not checked
+
+- GUI-made label-free and TMT records' replay: not claimed (KIT-180 R0d); T5 and F3 are in-process records.
+- The load-session site of outcome 4 is shown by T8 structurally (the handler calls the notifier on the restored
+  owner); the handler itself was not driven with a saved session.
+- T9's managed path is exercised through `finishProtNormNormalization`, the function the managed dispatch finishes
+  through, not through a worker.
+- Proteome Discoverer's default "Reporter Abundance Based On" setting (F2: not found in the pages read).
+- Windows and the installed application: not run (no bundle lane in this ticket).
