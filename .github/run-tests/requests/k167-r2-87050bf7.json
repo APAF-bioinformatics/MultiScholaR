@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-167 instrument run 1 of 3 (VAL-54) at 87050bf7 (R/ identical to af7a4843): the gate-off script with Shiny's random tabset ids masked, and test-gui-entry-proteomics.R base against head, whose new failure in run 45339028522 was a random export id escaping the oracle's mask; ceiling 90 job-minutes",
+  "label": "KIT-167 R2 gate-off and GUI-entry rerun 87050bf7",
+  "package_commit": "87050bf7417896d84ac77d0e99150c5c1cb922bd",
+  "base_commit": "d3909a3041667e7b0ce1eddb0e8c9e1514ea4100",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 120,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/gate-off-identity.R",
+      "args": [
+        "d3909a3041667e7b0ce1eddb0e8c9e1514ea4100",
+        "gate-off-out"
+      ],
+      "out": "gate-off-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
