@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-203 audit repairs: K203-I02's file on head (one process) and X2 (K203-I03: m5, m6, m7 and the control must make S7, S8, S9 fail); ceiling about 30 job-minutes",
+  "label": "KIT-203 X2 and I02 at 27d9e5cd",
+  "package_commit": "27d9e5cd6935606deaf86560210cc450dab439d0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-general-enrichment-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/mutate-k203.R",
+      "args": [
+        "k203-x2",
+        "none",
+        "m5",
+        "m6",
+        "m7"
+      ],
+      "out": "k203-x2",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
