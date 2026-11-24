@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-212 R1h: the new file and KIT-207's (E14) on the fix commit before R2 (ceiling 75 job-minutes, from R2's row; decides whether R2 is sent)",
+  "label": "KIT-212 R1h fix 3db806a4",
+  "package_commit": "3db806a414857fc5caa06991b3692322dd84fc23",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit212-da-current.R",
+    "test-kit207-summary-head-guard.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 65,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
