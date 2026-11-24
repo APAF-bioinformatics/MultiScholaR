@@ -1,0 +1,1886 @@
+file: test-go-propagation.R
+test: KIT-173 T1: a hand-built 8-term graph propagates to the hand-computed closure under each relation set
+kind: error
+message:
+  Error in `testthat::local_mocked_bindings(goParentTable = function(ontology) parents, goDbTermAspects = function() stats::setNames(rep("BP", 8L), ids), goDbRelease = function() list(version = "toy", date = "toy"))`: Can't find binding for `goParentTable`, `goDbTermAspects`, and `goDbRelease`
+trace (first lines):
+      ▆
+   1. └─testthat::local_mocked_bindings(...) at test-go-propagation.R:56:5
+   2.   └─cli::cli_abort("Can't find binding for {.arg {missing}}")
+   3.     └─rlang::abort(...)
+
+file: test-go-propagation.R
+test: KIT-173 T2(a): over five relations the function's ancestors of every GO term equal GO.db's GO*ANCESTOR
+kind: error
+message:
+  Error in `propagateGoAnnotations(data.frame(TERM = terms, GENE = terms, stringsAsFactors = FALSE), aspect, goPropFive)`: could not find function "propagateGoAnnotations"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T2(b): over is a and part of the term-ancestor pairs per aspect equal a recursive SQL count
+kind: error
+message:
+  Error in `propagateGoAnnotations(data.frame(TERM = terms, GENE = terms, stringsAsFactors = FALSE), aspect, goPropTwo)`: could not find function "propagateGoAnnotations"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T2(c, d): three proteins on GO:0006110 reach exactly 19 terms over two relations and 76 over five
+kind: error
+message:
+  Error in `propagateGoAnnotations(direct, "BP", case$relations)`: could not find function "propagateGoAnnotations"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T3(a): ids GO.db does not hold, or of another aspect, are dropped and counted by the function
+kind: error
+message:
+  Error in `propagateGoAnnotations(direct, "BP", goPropFive)`: could not find function "propagateGoAnnotations"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: failure
+message:
+  Expected `lost[c("obsolete", "secondary", "unknown", "total")]` to be identical to `list(obsolete = 1L, secondary = 1L, unknown = 1L, total = 3L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: failure
+message:
+  Expected `lost$go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('3.23.1')
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: failure
+message:
+  Expected `lost$go_source_date` to be identical to `info$value[match("GOSOURCEDATE", info$name)]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('2026-01-23')
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: failure
+message:
+  Expected `unlist(outcomes$go_ids_not_in_go_db)` to equal `c(obsolete = 1, secondary = 1, unknown = 1)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (1, 1, 1)
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: failure
+message:
+  Expected `outcomes$go_ids_not_in_go_db_total` to equal 3.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (3)
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: failure
+message:
+  Expected `outcomes$go_annotation_go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('3.23.1')
+
+file: test-go-propagation.R
+test: KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+kind: error
+message:
+  Error in `workflowEnrichmentGoOutcomes(plain, "is_a_part_of_regulates", da, "uniprot_acc")`: could not find function "workflowEnrichmentGoOutcomes"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T4: shuffled annotation rows give identical TERM2GENE and identical enricher p-values
+kind: error
+message:
+  Error in `buildUniprotGoGeneSets(annotations, value)`: could not find function "buildUniprotGoGeneSets"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T5: yeast sets agree with g:Profiler's propagated sets (median C and P >= 0.90; C gains >= 0.20)
+kind: failure
+message:
+  Expected `shipped_c` >= 0.9.
+  Actual comparison: 0.29 < 0.90
+  Difference: -0.61 < 0
+
+file: test-go-propagation.R
+test: KIT-173 T5: yeast sets agree with g:Profiler's propagated sets (median C and P >= 0.90; C gains >= 0.20)
+kind: failure
+message:
+  Expected `shipped_c - none_c` >= 0.2.
+  Actual comparison: 0.00 < 0.20
+  Difference: -0.20 < 0
+
+file: test-go-propagation.R
+test: KIT-173 T6: the yeast gene-set build stays under 200 MB of added peak RSS and 30 s
+kind: error
+message:
+  Error in `buildUniprotGoGeneSets(annotations[1:10, ], "is_a_part_of_regulates")`: could not find function "buildUniprotGoGeneSets"
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets
+kind: failure
+message:
+  Expected `names` to be identical to `c(utils::head(diaEnrichmentOperation()$parameters, 9L), "go_propagation")`.
+  Differences:
+      actual              | expected                
+  [7] "protein_id_column" | "protein_id_column" [7] 
+  [8] "contrast_names"    | "contrast_names"    [8] 
+  [9] "results"           | "results"           [9] 
+                          - "go_propagation"    [10]
+
+file: test-go-propagation.R
+test: KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `Filter(function(p) identical(p$name, "go_propagation"), step$parameters)[[1L]]`: subscript out of bounds
+trace (first lines):
+  ▆
+
+file: test-go-propagation.R
+test: KIT-173 T8: a propagated run labels parent terms from GO.db, tests no root, and drops the root-only protein from the background
+kind: failure
+message:
+  Expected `any(!saved$ID %in% direct_terms)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-go-propagation.R
+test: KIT-173 T8: a propagated run labels parent terms from GO.db, tests no root, and drops the root-only protein from the background
+kind: error
+message:
+  Error in `processEnrichments(da, "999999", q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), go_annotations = direct, exclude_iea = FALSE, protein_id_column = "Protein.IDs", contrast_names = "t8", go_propagation = value)`: unused argument (go_propagation = value)
+trace (first lines):
+      ▆
+   1. └─base::vapply(...) at test-go-propagation.R:355:5
+   2.   └─FUN(X[[i]], ...)
+   3.     ├─utils::capture.output(...) at test-go-propagation.R:357:9
+   4.     │ └─base::withVisible(...elt(i))
+   5.     ├─base::suppressMessages(...)
+   6.     │ └─base::withCallingHandlers(...)
+   7.     └─base::suppressWarnings(...)
+   8.       └─base::withCallingHandlers(...)
+
+file: test-go-propagation.R
+test: KIT-173 T9: a 9606 run declares the nine names and passes no go_propagation; a clusterProfiler record declares it with its outcomes
+kind: failure
+message:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-go-propagation.R
+test: KIT-173 T9: a 9606 run declares the nine names and passes no go_propagation; a clusterProfiler record declares it with its outcomes
+kind: failure
+message:
+  Expected `unlist(outcomes$go_relations)` to be identical to `c("is a", "part of", "regulates", "positively regulates", "negatively regulates")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('is a', 'part of', 'regulates', 'positively regulates', 'negatively regulates')
+
+file: test-go-propagation.R
+test: KIT-173 T9: a 9606 run declares the nine names and passes no go_propagation; a clusterProfiler record declares it with its outcomes
+kind: failure
+message:
+  Expected `outcomes$go_unreviewed_share` to equal 0.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0)
+
+file: test-go-propagation.R
+test: KIT-173 T9: a 9606 run declares the nine names and passes no go_propagation; a clusterProfiler record declares it with its outcomes
+kind: failure
+message:
+  Expected `outcomes$go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('3.23.1')
+
+file: test-go-propagation.R
+test: KIT-173 T9: a replay under another GO.db release warns with class workflow_replay_resource
+kind: error
+message:
+  Error in `testthat::local_mocked_bindings(goDbRelease = function() list(version = "0.0.0", date = "2000-01-01"))`: Can't find binding for `goDbRelease`
+trace (first lines):
+      ▆
+   1. └─testthat::local_mocked_bindings(goDbRelease = function() list(version = "0.0.0", date = "2000-01-01")) at test-go-propagation.R:392:5
+   2.   └─cli::cli_abort("Can't find binding for {.arg {missing}}")
+   3.     └─rlang::abort(...)
+
+file: test-go-propagation.R
+test: KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates; the workbooks pass the value
+kind: error
+message:
+  Error in `data.frame(..., check.names = FALSE)`: arguments imply differing number of rows: 0, 1
+trace (first lines):
+       ▆
+    1. ├─utils::capture.output(...) at test-go-propagation.R:419:5
+    2. │ └─base::withVisible(...elt(i))
+    3. ├─base::suppressMessages(...)
+    4. │ └─base::withCallingHandlers(...)
+    5. ├─base::withCallingHandlers(...)
+    6. └─MultiScholaR::processEnrichments(...)
+    7.   ├─base::rbind(...) at pkg/R/func_general_enrichment_orchestration.R:370:5
+    8.   │ └─base::rbind(deparse.level, ...)
+    9.   └─base::cbind(mf_terms, ONTOLOGY = "MF") at pkg/R/func_general_enrichment_orchestration.R:370:5
+   10.     └─base::cbind(deparse.level, ...)
+   11.       └─base::data.frame(..., check.names = FALSE)
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `params$enrichment_correction_method` to be identical to "BH".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd clusterprofiler
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gprofiler2
+
+file: test-go-propagation.R
+test: KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+kind: failure
+message:
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gprofiler2
+

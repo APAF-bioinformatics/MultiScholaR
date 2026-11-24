@@ -725,6 +725,8 @@ setWorkflowStepProvenance <- function(manager, operation, variant = NA_character
     values = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
     previous <- manager$.context$pending_provenance
+    # KIT-187: a step computed under an earlier rule (a replay of a step made before the change) records no marker.
+    fixed <- workflowFixedInForce(fixed)
     pending <- list(operation = operation, variant = variant, parameter_names = as.character(parameter_names), fixed = fixed,
         values = boundDIAProvenanceValues(values, parameter_names))
     # KIT-027 audit PH-02: a second operation before the same commit (correlation's pairs, then its selection) keeps

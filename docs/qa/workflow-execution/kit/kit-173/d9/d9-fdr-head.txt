@@ -1,0 +1,28 @@
+
+GO ENRICHMENT ANALYSIS
+
+Gene Ontology (GO) enrichment analysis was performed on the differentially 
+expressed proteins to identify significantly enriched biological processes, 
+molecular functions, and cellular components. The analysis was conducted using the 
+following parameters:
+• Up- and down-regulated proteins were those with a positive or negative log2 fold-change among proteins with a differential-abundance q-value below 0.05; no fold-change cutoff was applied.
+• A term was called significant when its adjusted p-value was below 0.05.
+• The background was the identifiers of each comparison's differential-abundance table (gene names where the table has them, otherwise protein accessions) that g:Profiler recognises (a custom background).
+
+The enrichment analysis was performed with g:Profiler (Kolberg et al., 2023) through the gprofiler2 R package (Kolberg et al., 2020). Gene Ontology biological process, molecular function and cellular component terms, KEGG pathways and Reactome pathways were tested, each data source as its own family, with Benjamini-Hochberg false discovery rate correction of the p-values.
+
+Key findings from the GO enrichment analysis are summarised below for each 
+comparison:
+
+Biological Process:
+
+
+Molecular Function:
+
+
+Cellular Component:
+
+
+The complete list of enriched GO terms with statistics is provided in the 
+supplementary file 'Pathway_enrichment_results.xlsx' within the Publication_tables 
+folder.

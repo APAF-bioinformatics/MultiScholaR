@@ -1,0 +1,2228 @@
+file: test-kit172-log2-rule.R
+test: KIT-172 T3: lipid direct callers at offset 0: non-positive and non-finite cells missing, counted, one warning
+kind: error
+message:
+  Error in `logTransformAssays(object, offset = 0)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─base::withCallingHandlers(...) at test-kit172-log2-rule.R:31:5
+   2. ├─base::suppressMessages(logTransformAssays(object, offset = 0))
+   3. │ └─base::withCallingHandlers(...)
+   4. ├─MultiScholaR::logTransformAssays(object, offset = 0)
+   5. └─MultiScholaR::logTransformAssays(object, offset = 0) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T3: lipid an invalid offset is refused and a failed transform stops
+kind: error
+message:
+  Error in `logTransformAssays(object, offset = offset)`: `offset` must be a single positive numeric value.
+trace (first lines):
+       ▆
+    1. ├─testthat::expect_error(...) at test-kit172-log2-rule.R:60:7
+    2. │ └─testthat:::expect_condition_matching_(...)
+    3. │   └─testthat:::quasi_capture(...)
+    4. │     ├─testthat (local) .capture(...)
+    5. │     │ └─base::withCallingHandlers(...)
+    6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+    7. ├─base::suppressMessages(logTransformAssays(object, offset = offset))
+    8. │ └─base::withCallingHandlers(...)
+    9. ├─MultiScholaR::logTransformAssays(object, offset = offset)
+   10. └─MultiScholaR::logTransformAssays(object, offset = offset) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T4: lipid the declared operation replays an offset above 0 and is the same in both variants at 0
+kind: error
+message:
+  Error in `logTransformAssaysFn(theObject = object, offset = parameters$offset)`: `offset` must be a single positive numeric value.
+trace (first lines):
+       ▆
+    1. └─run(0, "whole") at test-kit172-log2-rule.R:127:5
+    2.   ├─kit172Quiet(...) at test-kit172-log2-rule.R:109:7
+    3.   │ ├─base::suppressWarnings(suppressMessages(expr)) at ./helper-kit172.R:105:16
+    4.   │ │ └─base::withCallingHandlers(...)
+    5.   │ └─base::suppressMessages(expr)
+    6.   │   └─base::withCallingHandlers(...)
+    7.   └─MultiScholaR:::runWorkflowOmicsReferenceStep(...) at test-kit172-log2-rule.R:109:7
+    8.     └─MultiScholaR:::runWorkflowOmicsReferenceOperation(...) at pkg/R/utils_workflow_omics_declarations.R:1400:5
+    9.       └─MultiScholaR:::withWorkflowStateScope(...) at pkg/R/utils_workflow_omics_declarations.R:1073:5
+   10.         ├─base::withVisible(operation()) at pkg/R/utils_workflow_dia_state.R:1916:5
+   11.         └─MultiScholaR (local) operation() at pkg/R/utils_workflow_dia_state.R:1916:5
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `formals(method)$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `formals(methods::getGeneric("logTransformAssays"))$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `config$panels$log2$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `grepl("norm-log_offset", html, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `grepl("norm-log2_recorded_offset", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `settings_of(list(norm_method = "cyclicloess", ruv_mode = "skip"))$log_offset` to be identical to 0.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0)
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid the defaults are plain log2 and the tab offers no offset
+kind: error
+message:
+  Error in `omicNormRunSettings(input, list(color_var = "group", shape_var = "group"), list(assay_names = "LCMS_Pos"), list(qc = tempdir()), list(qc_dir_role = "qc"), ...)`: unused argument (logOffset = 1)
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(...) at test-kit172-log2-rule.R:151:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─settings_of(...)
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid a default run's record holds offset 0
+kind: failure
+message:
+  Expected `overlay$log_transform_offset` to equal 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: lipid a default run's record holds offset 0
+kind: failure
+message:
+  Expected `provenance$values$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T6: lipid on intensity-scale data plain log2 moves each value by log2(1 + 1/x), at most 1.4427e-4
+kind: failure
+message:
+  Expected `max(abs(difference - log2(1 + 1/values[, runs])))` <= 1e-12.
+  Actual comparison: 0.000142467508 > 0.000000000001
+  Difference: 0.000142467507 > 0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T3: metab direct callers at offset 0: non-positive and non-finite cells missing, counted, one warning
+kind: error
+message:
+  Error in `logTransformAssays(object, offset = 0)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─base::withCallingHandlers(...) at test-kit172-log2-rule.R:31:5
+   2. ├─base::suppressMessages(logTransformAssays(object, offset = 0))
+   3. │ └─base::withCallingHandlers(...)
+   4. ├─MultiScholaR::logTransformAssays(object, offset = 0)
+   5. └─MultiScholaR::logTransformAssays(object, offset = 0) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T3: metab an invalid offset is refused and a failed transform stops
+kind: error
+message:
+  Error in `logTransformAssays(object, offset = offset)`: `offset` must be a single positive numeric value.
+trace (first lines):
+       ▆
+    1. ├─testthat::expect_error(...) at test-kit172-log2-rule.R:60:7
+    2. │ └─testthat:::expect_condition_matching_(...)
+    3. │   └─testthat:::quasi_capture(...)
+    4. │     ├─testthat (local) .capture(...)
+    5. │     │ └─base::withCallingHandlers(...)
+    6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+    7. ├─base::suppressMessages(logTransformAssays(object, offset = offset))
+    8. │ └─base::withCallingHandlers(...)
+    9. ├─MultiScholaR::logTransformAssays(object, offset = offset)
+   10. └─MultiScholaR::logTransformAssays(object, offset = offset) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T4: metab the declared operation replays an offset above 0 and is the same in both variants at 0
+kind: error
+message:
+  Error in `logTransformAssaysFn(theObject = object, offset = parameters$offset)`: `offset` must be a single positive numeric value.
+trace (first lines):
+       ▆
+    1. └─run(0, "whole") at test-kit172-log2-rule.R:127:5
+    2.   ├─kit172Quiet(...) at test-kit172-log2-rule.R:109:7
+    3.   │ ├─base::suppressWarnings(suppressMessages(expr)) at ./helper-kit172.R:105:16
+    4.   │ │ └─base::withCallingHandlers(...)
+    5.   │ └─base::suppressMessages(expr)
+    6.   │   └─base::withCallingHandlers(...)
+    7.   └─MultiScholaR:::runWorkflowOmicsReferenceStep(...)
+    8.     └─MultiScholaR:::runWorkflowOmicsReferenceOperation(...) at pkg/R/utils_workflow_omics_declarations.R:1400:5
+    9.       └─MultiScholaR:::withWorkflowStateScope(...) at pkg/R/utils_workflow_omics_declarations.R:1073:5
+   10.         ├─base::withVisible(operation()) at pkg/R/utils_workflow_dia_state.R:1916:5
+   11.         └─MultiScholaR (local) operation() at pkg/R/utils_workflow_dia_state.R:1916:5
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `formals(method)$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `formals(methods::getGeneric("logTransformAssays"))$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `config$panels$log2$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `grepl("norm-log_offset", html, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `grepl("norm-log2_recorded_offset", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: failure
+message:
+  Expected `settings_of(list(norm_method = "cyclicloess", ruv_mode = "skip"))$log_offset` to be identical to 0.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0)
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab the defaults are plain log2 and the tab offers no offset
+kind: error
+message:
+  Error in `omicNormRunSettings(input, list(color_var = "group", shape_var = "group"), list(assay_names = "LCMS_Pos"), list(qc = tempdir()), list(qc_dir_role = "qc"), ...)`: unused argument (logOffset = 1)
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(...) at test-kit172-log2-rule.R:151:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─settings_of(...)
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab a default run's record holds offset 0
+kind: failure
+message:
+  Expected `overlay$log_transform_offset` to equal 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T5: metab a default run's record holds offset 0
+kind: failure
+message:
+  Expected `provenance$values$offset` to be identical to 0.
+  Differences:
+    `actual`: 1.0
+  `expected`: 0.0
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T6: metab on intensity-scale data plain log2 moves each value by log2(1 + 1/x), at most 1.4427e-4
+kind: failure
+message:
+  Expected `max(abs(difference - log2(1 + 1/values[, runs])))` <= 1e-12.
+  Actual comparison: 0.000142467508 > 0.000000000001
+  Difference: 0.000142467507 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.987920238 > 0.000000001
+  Difference: 9.987920237 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.996139909 > 0.000000001
+  Difference: 2.996139908 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.746281293 > 0.000000001
+  Difference: 6.746281292 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.298076993 > 0.000000001
+  Difference: 1.298076992 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.953704807 > 0.000000001
+  Difference: 9.953704806 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.984847075 > 0.000000001
+  Difference: 2.984847074 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.742685972 > 0.000000001
+  Difference: 6.742685971 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-none s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.297764331 > 0.000000001
+  Difference: 1.297764330 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.962361894 > 0.000000001
+  Difference: 9.962361893 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 3.024077328 > 0.000000001
+  Difference: 3.024077327 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.483077348 > 0.000000001
+  Difference: 6.483077347 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.281808317 > 0.000000001
+  Difference: 1.281808316 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.928155417 > 0.000000001
+  Difference: 9.928155416 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.013844108 > 0.000000001
+  Difference: 3.013844107 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.479804368 > 0.000000001
+  Difference: 6.479804367 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-cyclicloess s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.281521127 > 0.000000001
+  Difference: 1.281521126 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.984911719 > 0.000000001
+  Difference: 9.984911718 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.990735113 > 0.000000001
+  Difference: 2.990735112 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.464730648 > 0.000000001
+  Difference: 6.464730647 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.322553862 > 0.000000001
+  Difference: 1.322553861 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.950696360 > 0.000000001
+  Difference: 9.950696359 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.979453124 > 0.000000001
+  Difference: 2.979453123 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.461762435 > 0.000000001
+  Difference: 6.461762434 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-itsd-quantile s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.322226998 > 0.000000001
+  Difference: 1.322226997 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.987920238 > 0.000000001
+  Difference: 9.987920237 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.996139909 > 0.000000001
+  Difference: 2.996139908 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.746281293 > 0.000000001
+  Difference: 6.746281292 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.298076993 > 0.000000001
+  Difference: 1.298076992 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.953704807 > 0.000000001
+  Difference: 9.953704806 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.984847075 > 0.000000001
+  Difference: 2.984847074 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.742685972 > 0.000000001
+  Difference: 6.742685971 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-none s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.297764331 > 0.000000001
+  Difference: 1.297764330 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.962361894 > 0.000000001
+  Difference: 9.962361893 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 3.024077328 > 0.000000001
+  Difference: 3.024077327 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.483077348 > 0.000000001
+  Difference: 6.483077347 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.281808317 > 0.000000001
+  Difference: 1.281808316 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.928155417 > 0.000000001
+  Difference: 9.928155416 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.013844108 > 0.000000001
+  Difference: 3.013844107 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.479804368 > 0.000000001
+  Difference: 6.479804367 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-cyclicloess s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.281521127 > 0.000000001
+  Difference: 1.281521126 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.984911719 > 0.000000001
+  Difference: 9.984911718 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.990735113 > 0.000000001
+  Difference: 2.990735112 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.464730648 > 0.000000001
+  Difference: 6.464730647 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.322553862 > 0.000000001
+  Difference: 1.322553861 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.950696360 > 0.000000001
+  Difference: 9.950696359 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.979453124 > 0.000000001
+  Difference: 2.979453123 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.461762435 > 0.000000001
+  Difference: 6.461762434 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: lipid plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected lipid-noitsd-quantile s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.322226998 > 0.000000001
+  Difference: 1.322226997 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.987920238 > 0.000000001
+  Difference: 9.987920237 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.996139909 > 0.000000001
+  Difference: 2.996139908 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.746281293 > 0.000000001
+  Difference: 6.746281292 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.298076993 > 0.000000001
+  Difference: 1.298076992 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.953704807 > 0.000000001
+  Difference: 9.953704806 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.984847075 > 0.000000001
+  Difference: 2.984847074 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.742685972 > 0.000000001
+  Difference: 6.742685971 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-none s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.297764331 > 0.000000001
+  Difference: 1.297764330 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.962361894 > 0.000000001
+  Difference: 9.962361893 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 3.024077328 > 0.000000001
+  Difference: 3.024077327 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.483077348 > 0.000000001
+  Difference: 6.483077347 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.281808317 > 0.000000001
+  Difference: 1.281808316 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.928155417 > 0.000000001
+  Difference: 9.928155416 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.013844108 > 0.000000001
+  Difference: 3.013844107 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.479804368 > 0.000000001
+  Difference: 6.479804367 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-cyclicloess s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.281521127 > 0.000000001
+  Difference: 1.281521126 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.984911719 > 0.000000001
+  Difference: 9.984911718 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.990735113 > 0.000000001
+  Difference: 2.990735112 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.464730648 > 0.000000001
+  Difference: 6.464730647 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.322553862 > 0.000000001
+  Difference: 1.322553861 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.950696360 > 0.000000001
+  Difference: 9.950696359 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.979453124 > 0.000000001
+  Difference: 2.979453123 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.461762435 > 0.000000001
+  Difference: 6.461762434 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-itsd-quantile s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.322226998 > 0.000000001
+  Difference: 1.322226997 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.987920238 > 0.000000001
+  Difference: 9.987920237 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.996139909 > 0.000000001
+  Difference: 2.996139908 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.746281293 > 0.000000001
+  Difference: 6.746281292 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.298076993 > 0.000000001
+  Difference: 1.298076992 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.953704807 > 0.000000001
+  Difference: 9.953704806 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.984847075 > 0.000000001
+  Difference: 2.984847074 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.742685972 > 0.000000001
+  Difference: 6.742685971 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-none s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.297764331 > 0.000000001
+  Difference: 1.297764330 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.962361894 > 0.000000001
+  Difference: 9.962361893 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 3.024077328 > 0.000000001
+  Difference: 3.024077327 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.483077348 > 0.000000001
+  Difference: 6.483077347 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.281808317 > 0.000000001
+  Difference: 1.281808316 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.928155417 > 0.000000001
+  Difference: 9.928155416 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.013844108 > 0.000000001
+  Difference: 3.013844107 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.479804368 > 0.000000001
+  Difference: 6.479804367 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-cyclicloess s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.281521127 > 0.000000001
+  Difference: 1.281521126 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 2^-10 (1) log2 <= `tolerance`.
+  Actual comparison: 9.987920237793 > 0.000000000001
+  Difference: 9.987920237792 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 2^-10 (2) normalised <= `tolerance`.
+  Actual comparison: 9.984911719 > 0.000000001
+  Difference: 9.984911718 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 2^-10 (3) logFC <= 1e-09.
+  Actual comparison: 2.990735113 > 0.000000001
+  Difference: 2.990735112 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 2^10 (1) log2 <= `tolerance`.
+  Actual comparison: 6.746281293225 > 0.000000000001
+  Difference: 6.746281293224 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 2^10 (2) normalised <= `tolerance`.
+  Actual comparison: 6.464730648 > 0.000000001
+  Difference: 6.464730647 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 2^10 (3) logFC <= 1e-09.
+  Actual comparison: 1.322553862 > 0.000000001
+  Difference: 1.322553861 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 0.001 (1) log2 <= `tolerance`.
+  Actual comparison: 9.953704807041 > 0.000000000001
+  Difference: 9.953704807040 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 0.001 (2) normalised <= `tolerance`.
+  Actual comparison: 9.950696360 > 0.000000001
+  Difference: 9.950696359 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 0.001 (3) logFC <= 1e-09.
+  Actual comparison: 2.979453124 > 0.000000001
+  Difference: 2.979453123 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 1000 (1) log2 <= `tolerance`.
+  Actual comparison: 6.742685972402 > 0.000000000001
+  Difference: 6.742685972401 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:47:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 1000 (2) normalised <= `tolerance`.
+  Actual comparison: 6.461762435 > 0.000000001
+  Difference: 6.461762434 > 0
+trace (first lines):
+      ▆
+   1. └─kit172Compare(...) at test-kit172-unit-equivariance.R:48:9
+   2.   └─testthat::expect_lte(...) at test-kit172-unit-equivariance.R:13:3
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T1a: metab plain log2 is unit-equivariant through ITSD, between-sample normalisation and DA
+kind: failure
+message:
+  Expected metab-noitsd-quantile s = 1000 (3) logFC <= 1e-09.
+  Actual comparison: 1.322226998 > 0.000000001
+  Difference: 1.322226997 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T2: a feature at 0.1 against 0.2 has logFC 1 (ITSD off, no between-sample normalisation, no RUV)
+kind: failure
+message:
+  Expected lipid logFC of F001 <= 1e-12.
+  Actual comparison: 0.874527776407 > 0.000000000001
+  Difference: 0.874527776406 > 0
+
+file: test-kit172-unit-equivariance.R
+test: KIT-172 T2: a feature at 0.1 against 0.2 has logFC 1 (ITSD off, no between-sample normalisation, no RUV)
+kind: failure
+message:
+  Expected metab logFC of F001 <= 1e-12.
+  Actual comparison: 0.874527776407 > 0.000000000001
+  Difference: 0.874527776406 > 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: lipid every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `unobserved` >= 1L.
+  Actual comparison: 0 < 1
+  Difference: -1 < 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: lipid every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `line` to have length 1.
+  Actual length: 0.
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: lipid every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `as.integer(sub(".*: ", "", line))` to be identical to `as.integer(unobserved)`.
+  Differences:
+    `actual`:  
+  `expected`: 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `...$n_detected` to be identical to `c(2L, 3L)`.
+  Differences:
+    `actual`: 2  
+  `expected`: 2 3
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `calculateLipidMissingness(...)` to equal `100/6`.
+  Differences:
+    `actual`: 33.3
+  `expected`: 16.7
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `frame$Missingness` to equal `round(100/36, 1)`.
+  Differences:
+    `actual`: 5.6
+  `expected`: 2.8
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `sum(...)` > 0L.
+  Actual comparison: 0 <= 0
+  Difference: 0 <= 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `is.null(widget)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: error
+message:
+  Error in `omicGuiLog2Texts()`: could not find function "omicGuiLog2Texts"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_true(...) at test-kit172-downstream.R:102:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::grepl(...)
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: metab every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `unobserved` >= 1L.
+  Actual comparison: 0 < 1
+  Difference: -1 < 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: metab every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `line` to have length 1.
+  Actual length: 0.
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: metab every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `as.integer(sub(".*: ", "", line))` to be identical to `as.integer(unobserved)`.
+  Differences:
+    `actual`:  
+  `expected`: 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `...$n_detected` to be identical to `c(2L, 3L)`.
+  Differences:
+    `actual`: 2  
+  `expected`: 2 3
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `calculateMissingness(...)` to equal `100/6`.
+  Differences:
+    `actual`: 33.3
+  `expected`: 16.7
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `frame$Missingness` to equal `round(100/36, 1)`.
+  Differences:
+    `actual`: 5.6
+  `expected`: 2.8
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `sum(...)` > 0L.
+  Actual comparison: 0 <= 0
+  Difference: 0 <= 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `is.null(widget)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: error
+message:
+  Error in `omicGuiLog2Texts()`: could not find function "omicGuiLog2Texts"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_true(...) at test-kit172-downstream.R:102:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::grepl(...)
+
+file: test-kit172-downstream.R
+test: KIT-172 T10: lipid scale on log2 values below 0 is warned once in the log and once as a notification
+kind: failure
+message:
+  Expected `below` > 0L.
+  Actual comparison: 0 <= 0
+  Difference: 0 <= 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T10: lipid scale on log2 values below 0 is warned once in the log and once as a notification
+kind: error
+message:
+  Error in `omicGuiLog2Texts()`: could not find function "omicGuiLog2Texts"
+trace (first lines):
+      ▆
+   1. └─base::sprintf(omicGuiLog2Texts()[["scale_warning"]], omicsLog2CountWords(list(LCMS_Pos = below))) at test-kit172-downstream.R:189:7
+
+file: test-kit172-downstream.R
+test: KIT-172 T10: metab scale on log2 values below 0 is warned once in the log and once as a notification
+kind: failure
+message:
+  Expected `below` > 0L.
+  Actual comparison: 0 <= 0
+  Difference: 0 <= 0
+
+file: test-kit172-downstream.R
+test: KIT-172 T10: metab scale on log2 values below 0 is warned once in the log and once as a notification
+kind: error
+message:
+  Error in `omicGuiLog2Texts()`: could not find function "omicGuiLog2Texts"
+trace (first lines):
+      ▆
+   1. └─base::sprintf(omicGuiLog2Texts()[["scale_warning"]], omicsLog2CountWords(list(LCMS_Pos = below))) at test-kit172-downstream.R:189:7
+
+file: test-kit172-downstream.R
+test: KIT-172 T9: lipid a stored import holding zeros, normalised again at offset 0, gives missing cells and the counts in the log
+kind: failure
+message:
+  Expected `any(startsWith(run$log, "ERROR"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Post-filtering state captured | Pre-normalization QC plots generated | Applying ITSD normalization (aggregation: median ) | ITSD normalization complete | Applying log2 transformation (offset: 0 ) | ERROR: `offset` must be a single positive numeric value.
+
+file: test-kit172-downstream.R
+test: KIT-172 T9: lipid a stored import holding zeros, normalised again at offset 0, gives missing cells and the counts in the log
+kind: error
+message:
+  Error in `methods::slot(logged, run$binding$data_slot)`: cannot get a slot ("lipid_data") from an object of type "NULL"
+trace (first lines):
+      ▆
+   1. ├─base::as.data.frame(methods::slot(logged, run$binding$data_slot)$LCMS_Pos) at test-kit172-downstream.R:239:5
+   2. └─methods::slot(logged, run$binding$data_slot)
+
+file: test-kit172-downstream.R
+test: KIT-172 T9: metab a stored import holding zeros, normalised again at offset 0, gives missing cells and the counts in the log
+kind: failure
+message:
+  Expected `any(startsWith(run$log, "ERROR"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Post-filtering state captured | Pre-normalization QC plots generated | Applying ITSD normalization (aggregation: median ) | ITSD normalization complete | Applying log2 transformation (offset: 0 ) | ERROR: `offset` must be a single positive numeric value.
+
+file: test-kit172-downstream.R
+test: KIT-172 T9: metab a stored import holding zeros, normalised again at offset 0, gives missing cells and the counts in the log
+kind: error
+message:
+  Error in `methods::slot(logged, run$binding$data_slot)`: cannot get a slot ("metabolite_data") from an object of type "NULL"
+trace (first lines):
+      ▆
+   1. ├─base::as.data.frame(methods::slot(logged, run$binding$data_slot)$LCMS_Pos) at test-kit172-downstream.R:239:5
+   2. └─methods::slot(logged, run$binding$data_slot)
+
+file: test-kit172-reopen.R
+test: KIT-172 T9: lipid a project saved by the base commit reopens, replays exactly and shows its recorded offset
+kind: failure
+message:
+  Expected `file.exists(archive)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit172-reopen.R
+test: KIT-172 T9: lipid a project saved by the base commit reopens, replays exactly and shows its recorded offset
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. ├─base::dirname(...) at test-kit172-reopen.R:36:5
+   2. └─base::dirname(...)
+
+file: test-kit172-reopen.R
+test: KIT-172 T9: lipid a new project records offset 0 and shows no recorded-offset sentence
+kind: error
+message:
+  Error in `omicNormRecordedLog2Offset(journey$owner, journey$prefix)`: could not find function "omicNormRecordedLog2Offset"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(...) at test-kit172-reopen.R:66:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit172-reopen.R
+test: KIT-172 T9: metab a project saved by the base commit reopens, replays exactly and shows its recorded offset
+kind: failure
+message:
+  Expected `file.exists(archive)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit172-reopen.R
+test: KIT-172 T9: metab a project saved by the base commit reopens, replays exactly and shows its recorded offset
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. ├─base::dirname(...) at test-kit172-reopen.R:36:5
+   2. └─base::dirname(...)
+
+file: test-kit172-reopen.R
+test: KIT-172 T9: metab a new project records offset 0 and shows no recorded-offset sentence
+kind: error
+message:
+  Error in `omicNormRecordedLog2Offset(journey$owner, journey$prefix)`: could not find function "omicNormRecordedLog2Offset"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(...) at test-kit172-reopen.R:66:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-lipid-09b-s4-log-transform-assays-characterization.R
+test: lipidomics S4 log-transform method accepts offset 0 and rejects negative offsets
+kind: error
+message:
+  Error in `logTransformAssays(newLipidLogTransformObject(), offset = 0)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_s4_class(...) at test-lipid-09b-s4-log-transform-assays-characterization.R:47:3
+   2. │ └─testthat::quasi_label(enquo(object))
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. ├─base::suppressWarnings(...)
+   5. │ └─base::withCallingHandlers(...)
+   6. ├─base::suppressMessages(...)
+   7. │ └─base::withCallingHandlers(...)
+   8. ├─MultiScholaR::logTransformAssays(...)
+   9. └─MultiScholaR::logTransformAssays(...) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-metab-02r-log-transform-assays-characterization.R
+test: metabolomics S4 log-transform method accepts offset 0 and rejects negative offsets
+kind: error
+message:
+  Error in `logTransformAssays(newMetabLogTransformObject(), offset = 0)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_s4_class(...) at test-metab-02r-log-transform-assays-characterization.R:139:3
+   2. │ └─testthat::quasi_label(enquo(object))
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. ├─base::suppressWarnings(...)
+   5. │ └─base::withCallingHandlers(...)
+   6. ├─base::suppressMessages(...)
+   7. │ └─base::withCallingHandlers(...)
+   8. ├─MultiScholaR::logTransformAssays(...)
+   9. └─MultiScholaR::logTransformAssays(...) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-metab-02r-log-transform-assays-characterization.R
+test: metabolomics S4 log-transform method keeps the negative-value clamp above offset 0 and reads non-positive values as missing at 0
+kind: error
+message:
+  Error in `logTransformAssays(newMetabLogTransformObject(), offset = 0)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─base::suppressWarnings(...) at test-metab-02r-log-transform-assays-characterization.R:154:3
+   2. │ └─base::withCallingHandlers(...)
+   3. ├─MultiScholaR::logTransformAssays(...)
+   4. └─MultiScholaR::logTransformAssays(...) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-metab-s4-norm-core-shared.R
+test: logTransformAssays preserves negative-value cleanup, unnamed assays, and validation branches
+kind: error
+message:
+  Error in `logTransformAssays(the_object, offset = -1)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_error(...) at test-metab-s4-norm-core-shared.R:162:3
+   2. │ └─testthat:::expect_condition_matching_(...)
+   3. │   └─testthat:::quasi_capture(...)
+   4. │     ├─testthat (local) .capture(...)
+   5. │     │ └─base::withCallingHandlers(...)
+   6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+   7. ├─MultiScholaR::logTransformAssays(the_object, offset = -1)
+   8. └─MultiScholaR::logTransformAssays(the_object, offset = -1) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-module-ci-lipid-norm.R
+test: MCI-021.1 normalization method matrix preserves assay names, samples, and edge values
+kind: error
+message:
+  Error in `logTransformAssays(raw_object, offset = -1)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_error(...) at test-module-ci-lipid-norm.R:16:3
+   2. │ └─testthat:::expect_condition_matching_(...)
+   3. │   └─testthat:::quasi_capture(...)
+   4. │     ├─testthat (local) .capture(...)
+   5. │     │ └─base::withCallingHandlers(...)
+   6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+   7. ├─MultiScholaR::logTransformAssays(raw_object, offset = -1)
+   8. └─MultiScholaR::logTransformAssays(raw_object, offset = -1) at pkg/R/func_general_s4_generics.R:426:14
+
+file: test-module-ci-metab-norm.R
+test: MCI-015.1 normalization method matrix preserves assay names, samples, and edge values
+kind: error
+message:
+  Error in `logTransformAssays(raw_object, offset = -1)`: `offset` must be a single positive numeric value.
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_error(...) at test-module-ci-metab-norm.R:14:3
+   2. │ └─testthat:::expect_condition_matching_(...)
+   3. │   └─testthat:::quasi_capture(...)
+   4. │     ├─testthat (local) .capture(...)
+   5. │     │ └─base::withCallingHandlers(...)
+   6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+   7. ├─MultiScholaR::logTransformAssays(raw_object, offset = -1)
+   8. └─MultiScholaR::logTransformAssays(raw_object, offset = -1) at pkg/R/func_general_s4_generics.R:426:14
+

@@ -1,0 +1,40 @@
+as.pairlist(alist(ranked = , term2gene = , term2name = , seed = , settings = integrationGseaSettings()))
+{
+    requireOptionalPackage("clusterProfiler", "pathway enrichment")
+    integrationEnrichmentCheckRanked(ranked)
+    integrationGseaCheckSettings(seed, settings)
+    if (!is.data.frame(term2gene) || !all(c("term", "gene") %in% 
+        names(term2gene)) || !is.data.frame(term2name) || !all(c("term", 
+        "name") %in% names(term2name))) {
+        integrationEnrichmentRefuse("integration_enrichment_parameters_invalid", 
+            "the pathway tables need term and gene, and term and name, columns")
+    }
+    values <- stats::setNames(ranked$value, ranked$identifier)
+    outcome <- withr::with_seed(seed, {
+        values <- sort(values, decreasing = TRUE)
+        if (settings$tie_jitter > 0) {
+            values <- values + stats::runif(length(values), min = -settings$tie_jitter, 
+                max = settings$tie_jitter)
+            values <- sort(values, decreasing = TRUE)
+        }
+        tryCatch(clusterProfiler::GSEA(geneList = values, TERM2GENE = term2gene[, 
+            c("term", "gene")], TERM2NAME = term2name[, c("term", 
+            "name")], minGSSize = settings$min_size, maxGSSize = settings$max_size, 
+            pvalueCutoff = settings$p_cutoff, pAdjustMethod = settings$p_adjust_method, 
+            verbose = FALSE), error = function(e) e)
+    })
+    if (inherits(outcome, "error")) {
+        integrationEnrichmentRefuse("integration_enrichment_method_failed", 
+            conditionMessage(outcome), engine_message = conditionMessage(outcome))
+    }
+    terms <- if (is.null(outcome)) 
+        integrationEnrichmentEmptyTerms()
+    else methods::slot(outcome, "result")
+    rownames(terms) <- NULL
+    engine <- list(clusterProfiler = as.character(utils::packageVersion("clusterProfiler")), 
+        enrichit = tryCatch(as.character(utils::packageVersion("enrichit")), 
+            error = function(e) NA_character_))
+    list(method = "gsea", engine = engine, seed = seed, settings = settings, 
+        ranked = data.frame(identifier = ranked$identifier, value = ranked$value, 
+            stringsAsFactors = FALSE), terms = terms)
+}

@@ -1,0 +1,3 @@
+variant	process	collation	package_has_propagateGoAnnotations
+a	capture (base)	C	FALSE
+a	replay (head)	C	TRUE

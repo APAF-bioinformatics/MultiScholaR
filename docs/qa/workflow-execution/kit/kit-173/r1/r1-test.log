@@ -1,0 +1,98 @@
+go-propagation: ...................
+123..45::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 6 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 70 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 70 proteins and 6 samples
+::notice title=INFO::   Glimma: Highlighting 35 significant genes (25 up, 10 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::=== Starting protein annotation matching ===
+::notice title=INFO::Using protein ID column: uniprot_acc
+::notice title=INFO::UniProt annotations: 70 entries
+::notice title=INFO::UniProt ID column: Entry
+::notice title=INFO::Gene names column: gene_names
+::notice title=INFO::Detected da_results_for_enrichment S4 object
+::notice title=INFO::Available DE contrasts: groupB-groupA
+::notice title=INFO::Extracted protein IDs from DE contrast: groupB-groupA
+::notice title=INFO::Found 70 unique protein IDs in DE results
+::notice title=INFO::Performing exact matching...
+::notice title=INFO::Exact matches found: 70
+::notice title=INFO::Proteins requiring fuzzy matching: 0
+::notice title=INFO::=== Annotation matching completed ===
+::notice title=INFO::Total proteins: 70
+::notice title=INFO::Matched proteins: 70 (100.0%)
+::notice title=INFO::Exact matches: 70 (100.0%)
+::notice title=INFO::Fuzzy matches: 0 (0.0%)
+::notice title=INFO::Unmatched proteins: 0 (0.0%)
+6789abcd.e.fgShij.....k...lmnopqrstuvwxyz..A.BCDEFGHI..J.KLMNOPQR..S.TUVWXYZF..F.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.FFFFFF.............FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. KIT-173 T7(b): a record made on the base commit replays with the same names, sets, tables and files (regression) ('test-go-propagation.R:287:5') - Reason: replay-base not captured yet (R1 makes it)
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-go-propagation.R:56:5'): KIT-173 T1: a hand-built 8-term grap
+Error in `testthat::local_mocked_bindings(goParentTable = function(ontology) parents, goDbTermAspects = function() stats::setNames(rep("BP", 8L), ids), goDbRelease = function() list(version = "toy", date = "toy"))`: Can't find binding for `goParentTable`, `goDbTermAspects`, and `goDbRelease`
+Backtrace:
+    ▆
+ 1. └─testthat::local_mocked_bindings(...) at test-go-propagation.R:56:5
+ 2.   └─cli::cli_abort("Can't find binding for {.arg {missing}}")
+ 3.     └─rlang::abort(...)
+
+── 2. Error ('test-go-propagation.R:99:9'): KIT-173 T2(a): over five relations t
+Error in `propagateGoAnnotations(data.frame(TERM = terms, GENE = terms, stringsAsFactors = FALSE), aspect, goPropFive)`: could not find function "propagateGoAnnotations"
+
+── 3. Error ('test-go-propagation.R:115:9'): KIT-173 T2(b): over is a and part o
+Error in `propagateGoAnnotations(data.frame(TERM = terms, GENE = terms, stringsAsFactors = FALSE), aspect, goPropTwo)`: could not find function "propagateGoAnnotations"
+
+── 4. Error ('test-go-propagation.R:133:9'): KIT-173 T2(c, d): three proteins on
+Error in `propagateGoAnnotations(direct, "BP", case$relations)`: could not find function "propagateGoAnnotations"
+
+── 5. Error ('test-go-propagation.R:159:5'): KIT-173 T3(a): ids GO.db does not h
+Error in `propagateGoAnnotations(direct, "BP", goPropFive)`: could not find function "propagateGoAnnotations"
+
+── 6. Failure ('test-go-propagation.R:193:5'): KIT-173 T3(b): getUniprotAnnotati
+Expected `lost[c("obsolete", "secondary", "unknown", "total")]` to be identical to `list(obsolete = 1L, secondary = 1L, unknown = 1L, total = 3L)`.
+Differences:
+`actual` is NULL
+`expected` is a list
+
+
+── 7. Failure ('test-go-propagation.R:195:5'): KIT-173 T3(b): getUniprotAnnotati
+Expected `lost$go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('3.23.1')
+
+
+── 8. Failure ('test-go-propagation.R:197:5'): KIT-173 T3(b): getUniprotAnnotati
+Expected `lost$go_source_date` to be identical to `info$value[match("GOSOURCEDATE", info$name)]`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('2026-01-23')
+
+
+── 9. Failure ('test-go-propagation.R:199:5'): KIT-173 T3(b): getUniprotAnnotati
+Expected `unlist(outcomes$go_ids_not_in_go_db)` to equal `c(obsolete = 1, secondary = 1, unknown = 1)`.
+Differences:
+`actual` is NULL
+`expected` is a double vector (1, 1, 1)
+
+
+── 10. Failure ('test-go-propagation.R:200:5'): KIT-173 T3(b): getUniprotAnnotat
+Expected `outcomes$go_ids_not_in_go_db_total` to equal 3.
+Differences:
+`actual` is NULL
+`expected` is a double vector (3)
+
+  ... and 165 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Frustration is a natural part of programming :)
+
+COUNTS test-go-propagation.R pass 67 fail 163 error 12 skip 1 warn 0

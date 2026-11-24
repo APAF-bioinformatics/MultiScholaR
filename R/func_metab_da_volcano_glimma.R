@@ -199,7 +199,9 @@ generateMetabDAVolcanoPlotGlimma <- function(
     rownames(counts_mat) <- assay_data[[theObject@metabolite_id_column]]
 
     # Protect Glimma Javascript from crashing due to NA/NaN/Inf in counts matrix
-    if (any(is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat))) {
+    # KIT-172: on log2 values a 0 is a measured value of 1, so the page says where these cells are drawn.
+    missing_drawn_at_zero <- any(is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat))
+    if (missing_drawn_at_zero) {
         logger::log_info("   Sanitizing counts_mat for Glimma by replacing NA/NaN/Inf with 0")
         counts_mat[is.na(counts_mat) | is.nan(counts_mat) | is.infinite(counts_mat)] <- 0
     }
@@ -275,6 +277,10 @@ generateMetabDAVolcanoPlotGlimma <- function(
             # CRITICAL: Inject CSS fix to re-unify the split DataTables layout
             css_fix <- "<style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !important; width: auto !important; min-width: 100% !important; } .dataTables_scrollHead, .dataTables_scrollBody, .dataTables_scrollHeadInner, .dataTables_scrollHeadInner > table, .dataTables_scrollBody > table { display: contents !important; } .dataTables_scrollBody thead { display: none !important; } .dataTable th, .dataTable td { white-space: nowrap !important; } </style>"
             glimma_widget <- htmlwidgets::prependContent(glimma_widget, htmltools::HTML(css_fix))
+            if (missing_drawn_at_zero) {
+                glimma_widget <- htmlwidgets::prependContent(glimma_widget,
+                    htmltools::tags$p(class = "help-block", omicGuiLog2Texts()[["volcano_missing"]]))
+            }
 
             logger::log_info("--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---")
             return(glimma_widget)

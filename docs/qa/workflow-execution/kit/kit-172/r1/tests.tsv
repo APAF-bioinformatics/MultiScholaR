@@ -1,0 +1,10 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit172-log2-rule.R	138	18	8	0	0	34.8	failed
+test-kit172-unit-equivariance.R	204	146	0	0	0	292.5	failed
+test-kit172-downstream.R	34	20	6	0	0	97	failed
+test-kit172-reopen.R	0	2	4	0	2	12.9	failed
+test-lipid-09b-s4-log-transform-assays-characterization.R	18	0	1	0	0	7.5	failed
+test-metab-02r-log-transform-assays-characterization.R	11	0	2	0	0	7.1	failed
+test-metab-s4-norm-core-shared.R	24	0	1	0	0	7.1	failed
+test-module-ci-lipid-norm.R	118	0	1	0	0	31.8	failed
+test-module-ci-metab-norm.R	118	0	1	0	0	49	failed
