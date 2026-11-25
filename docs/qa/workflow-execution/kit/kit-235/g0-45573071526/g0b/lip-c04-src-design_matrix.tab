@@ -1,0 +1,7 @@
+Run	group	factor1	factor2	factor3	batch	replicates	tech_reps	tech_rep_group
+KO_1	KO	KO		NA	NA	1	NA	KO_1
+KO_2	KO	KO		NA	NA	2	NA	KO_2
+KO_3	KO	KO		NA	NA	3	NA	KO_3
+WT_1	WT	WT		NA	NA	1	NA	WT_1
+WT_2	WT	WT		NA	NA	2	NA	WT_2
+WT_3	WT	WT		NA	NA	3	NA	WT_3

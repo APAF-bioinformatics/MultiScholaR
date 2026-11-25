@@ -1,0 +1,96 @@
+== chunk evaluation errors
+none
+== sample_details
+
+SAMPLE DETAILS
+
+There are 3 samples in total which consists of:
+• 3 biological samples with no technical replicates.
+• Sample identification (eg client #, sample name, Salesforce ID etc)
+• Sample conditions upon receipt
+• Comments about any noncompliance with sample conditions or suitability for
+  testing including client instruction to proceed/not proceed with work  
+== method_details
+
+METHOD DETAILS
+
+Data analyses were performed based on SOP xxx.
+• SOP number(s) and name(s)
+• Brief summary of method(s):
+
+Multi-Assay Data Structure
+The dataset contains a single assay: assay_main.
+
+Data Preprocessing and Normalization
+Data were analyzed on the original intensity scale without log transformation. Missing values (zeros or non-detects) were coded as NA to distinguish
+true absence from missing measurements.
+
+ITSD Normalization
+Internal standard normalization was not applied.
+
+Between-sample normalization was performed using the 'median' method from
+the 'limma' R package (Ritchie et al., 2015) to account for systematic technical
+variation across samples.
+
+Batch Effect Correction
+To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative control lipids, which are features with little or no changes in abundance between different samples. RUV correction was applied independently to each assay using the 'group' variable to preserve biological signal. For assay_main, 4 unwanted components were removed using 2 empirical negative control lipids.
+
+Quality Control
+At each stage of data normalization, samples were checked for batch effects using:
+• Principal component analysis (PCA) to visualize sample clustering
+• Density boxplots to assess distribution consistency
+• Relative log-expression (RLE) plots to detect systematic biases
+• Pearson correlation matrices to evaluate replicate consistency
+
+Per-Assay Quality Metrics
+Quality control metrics were evaluated separately for each assay to ensure data
+quality before integration. Each assay underwent independent QC assessment
+following the same protocol, with cross-assay consistency verified in the
+combined analysis.
+
+• Comments on test specific conditions information (e.g. temperature), where
+  relevant
+• Comments on deviations, modifications, additions, or exclusions to the method(s)
+  including the acceptance from the client to proceed with them
+• Critical reagent details where relevant  
+== results (first 400 characters)
+
+Quality Control
+
+Quality Control Analysis
+Figure 1 shows the QC metrics across three stages of data processing:
+• Log2 normalization (leftmost column, a, d, g, j)
+• Cyclic loess normalization (centre column, b, e, h, k)
+• RUVIII-C normalization (rightmost column, c, f, i, l)
+
+Principal Component Analysis
+The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:
+• Initial
+== length(results_data$numbers)
+46
+== parsed sections and keys
+  [Basic Information] keys: 'Workflow Name', 'Description', 'Timestamp'
+  [Version Information] keys: 'Repository', 'Branch', 'Commit', 'Commit Timestamp', 'Package Version', 'Source'
+  [Assay Information] keys: 'Number of Assays', 'Assay Names', 'Total Lipids'
+  [Lipids per Assay] keys: 'assay_main'
+  [ITSD Normalization] keys: 'Applied'
+  [Log Transformation] keys: 'Applied'
+  [Between-Sample Normalization] keys: 'Method'
+  [Lipidomics Metadata] keys: 'Lipid ID Column', 'Annotation ID Column', 'Database Identifier Type', 'Sample ID Column', 'Group ID Column', 'Number of Samples', 'Number of Groups', 'Group Names', 'Internal Standard Regex'
+  [RUV-III Batch Correction] keys: 'Status', 'Grouping Variable'
+  [Per-Assay Parameters] keys: 'assay_main'
+  [Workflow Parameters] keys: 'Parameters from Final S4 Object'
+  [Additional Configuration Parameters] keys: ''
+  [Contrasts] keys: ''
+== extractor called alone: length
+41
+== extractor error
+<NULL>
+== AnalyzeSamples: length(numbers)
+46
+== error AnalyzeSamples would swallow
+none
+== fields from the extractor (no record overlay)
+{"num_assays":"1","assay_names":"assay_main","itsd_applied":false,"itsd_method_type":"NA","itsd_aggregation":"NA","itsd_removed":false,"itsd_features_per_assay":"NA","log_transform_applied":false,"log_transform_offset":0,"normalisation_method":"median","ruv_applied":true,"ruv_grouping_variable":"group","ruv_assay_list":{"assay_main":{"k":4,"controls":2}},"best_k":4,"num_neg_ctrl":2,"best_percentage":"NA","ruv_number_k":4,"ruv_per_assay_details":"assay_main: k=4, controls=2","total_metabolites":"NA","ruv_design_methods":"<absent>"}
+== fields after AnalyzeSamples (record overlay when a record is present)
+{"num_assays":"1","assay_names":"assay_main","itsd_applied":false,"itsd_method_type":"NA","itsd_aggregation":"NA","itsd_removed":false,"itsd_features_per_assay":"NA","log_transform_applied":false,"log_transform_offset":0,"normalisation_method":"median","ruv_applied":true,"ruv_grouping_variable":"group","ruv_assay_list":{"assay_main":{"k":4,"controls":2}},"best_k":4,"num_neg_ctrl":2,"best_percentage":"NA","ruv_number_k":4,"ruv_per_assay_details":"assay_main: k=4, controls=2","total_metabolites":"NA","ruv_design_methods":"<absent>"}
