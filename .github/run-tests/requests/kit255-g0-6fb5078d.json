@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-255 G0: base observation of the lipid/metab correlation filter with a sample failing in one assay only (phase 0 managed lifecycle, o1-o5, K1 K2 K0); staging 7327607f + script only, branch kit-255-g0; 1 job, ceiling 75 job-minutes",
+  "label": "KIT-255 G0 base observation 6fb5078d (staging 7327607f + tools/kit255/g0.R)",
+  "package_commit": "6fb5078d202d16d99c3856f4bd4d2140de22fc07",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit255/g0.R",
+      "args": ["kit255-g0"],
+      "env": {},
+      "out": "kit255-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
