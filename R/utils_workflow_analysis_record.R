@@ -670,7 +670,12 @@ workflowReplayRuleMarkers <- list(
     # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
     # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
     # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
-    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"))
+    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"),
+    # KIT-242 (OD-4 (c)) and KIT-260 (VAL-276): one marker for both tickets' internal-standard fields. A step recorded with
+    # it ("per_assay") writes the per-assay fields (KIT-260: the rows used, their identifier column and the rows matched
+    # through the removed alternatives, in the ITSD product); a record made before replays with the earlier ITSD product
+    # ("applied_flag": none of these fields), so that it replays exactly. Same name, option and tokens as KIT-242's row.
+    itsd_outcome = list(option = "MultiScholaR.itsd_outcome", current = "per_assay", earlier = "applied_flag"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).

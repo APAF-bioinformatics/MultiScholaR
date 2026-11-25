@@ -551,13 +551,18 @@ omicsItsdNormalisationOperation <- function(binding) {
         parameters = c("itsd_aggregation", "itsd_feature_ids"), product_type = paste0(binding$prefix, ".itsd_normalisation_result"),
         global_statistics = c(mean_standard_factor =
             "the mean over all samples of each assay's per-sample aggregate standard signal, computed once before any sample is scaled"),
-        fixed = list(method = "ITSD"),
+        # KIT-260 (VAL-276): a record made before replays with the earlier ITSD product (`workflowReplayRuleMarkers$itsd_outcome`,
+        # the marker KIT-242 declares too).
+        fixed = list(method = "ITSD", itsd_outcome = "per_assay"),
         kernel = function(object, parameters, store) {
             omicsAssertManualItsdPresent(binding, object, parameters$itsd_feature_ids)
             normaliseUntransformedDataFn <- normaliseUntransformedData
             normalised <- normaliseUntransformedDataFn(theObject = object, method = "ITSD",
                 itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids)
-            used <- omicsItsdRowsUsed(binding, object, normalised, parameters$itsd_feature_ids)
+            # Under the earlier token (an older record's replay) the value is as it was, so the replay is exact (VAL-276).
+            marker <- workflowReplayRuleMarkers$itsd_outcome
+            used <- if (identical(getOption(marker$option), marker$earlier)) list() else
+                omicsItsdRowsUsed(binding, object, normalised, parameters$itsd_feature_ids)
             object <- NULL
             c(list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised"))), used)
         })
