@@ -1,6 +1,6 @@
 # KIT-234 outcome: the R Markdown workbooks no longer ship
 
-Ticket `tickets/kit/KIT-234.md` r1.2 (Re-check 1's R1-01 to R1-06 applied, with the coordinator's rulings). Owner's
+Ticket `tickets/kit/KIT-234.md` r1.3 (Re-check 1's R1-01 to R1-06 applied, with the coordinator's rulings; the owner's answers of 2026-11-25, VAL-217, VAL-218, VAL-224). Owner's
 decision: methods ledger VAL-209. Branch `kit-234` from `v0.9-staging` 67569959.
 
 ## Commits
@@ -39,8 +39,8 @@ and no instrument rerun used.
 | A9 | the twelve functions exported, documented, present | the KIT-154 (KIT-234) test, 36 passed in R2 | met |
 | A10 | the twelve functions end to end with real MOFA2 and pandoc | L: the ported test passed, not skipped | met |
 | A11 | "Push to GitHub" as section 2.5 | W8 passes in R2 | met |
-| A12 | INT-28's limitations in `?integrationTrainModel`, pointed to from `?integrationFindInputs` | W9 passed in R2 on 652c962b (workbook sentences); the replacing text (a8f0d846) not yet run | met on 652c962b; a8f0d846 to ride in the next run |
-| A13 | texts as the owner words them | `wording.md`: every text is a draft | open: owner's wording (OD-1, OD-2) |
+| A12 | INT-28's limitations in `?integrationTrainModel`, pointed to from `?integrationFindInputs` | W9 in R2 and R3 | met on 51d53171 (R3); d1fade06 and the I01 repair by reading, their Rd parse in the train's check |
+| A13 | texts as the owner words them | `wording.md` | texts as decided by VAL-217 (as corrected by VAL-224) and VAL-218; final polish the owner's |
 
 ## Inferred, not observed
 
@@ -82,7 +82,18 @@ HTML render of the integration workbook. Kept: the twelve functions end to end w
 (L), the module's chain on the lane (`test-integration-record-mofa.R`, `test-integration-enrichment-mofa.R`), and the
 wrappers on the corpus with a stand-in trainer (`test-integration-workbook-api.R`).
 
-**Evidence.** R1 45522636588, R2 45524570691, L 45524568014 (tables in `r1/`, `r2/`, `l/`); synthetic corpus only.
+**Also withdrawn or changed with them.**
+
+- `project_setup.R`, the script that set up a project from R (it downloaded the workbooks, the report templates, the
+  central `config.ini` and optional tutorial data), is archived with them and its download link is removed from the
+  README; a copy downloaded earlier still sets up folders, `config.ini`, report templates and tutorial data, but its
+  workbook downloads return 404 once this reaches `main` (a warning each).
+- The README's link to the June 2025 Multiomics Masterclass (MultiScholaR 0.2 used from R) is removed.
+- The limitation sentences shown to integration users changed: the workbook's sentences overstated the evidence (for
+  example "not recovered by any setting", where KIT-151 measured at most 2 of 10); `?integrationTrainModel` now states
+  VAL-217's sentences as corrected by VAL-224.
+
+**Evidence.** R1 45522636588, R2 45524570691, L 45524568014, R3 45573868468 (tables in `r1/`, `r2/`, `l/`, `r3/`); synthetic corpus only.
 
 ## R3, declared before it is sent (2026-11-25)
 

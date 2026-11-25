@@ -55,8 +55,8 @@ sample's runs because it was too low to measure, the average of the other runs i
 low-abundance features most.
 \item The model treats all samples as one group (the groups are not given to it, and MOFA2's option for several
 groups of samples is not used), assumes normally distributed (Gaussian) variation in every data set, and takes one
-input per omic (one input can hold several data sets, such as positive and negative ion mode); values that an omic's
-own workflow estimated before saving are treated as measured.
+input per omic (one input can hold several data sets, such as positive and negative ion mode). The integration fills
+in no missing value itself; values that an omic's own workflow estimated before saving are treated as measured.
 \item Given the settings of the analysis script it was adapted from, this software trains the identical model; this
 was checked on simulated data only, because the script's own data were not available. The check is about the
 software, not about any biological result, and this software's default settings differ from the script's. The
