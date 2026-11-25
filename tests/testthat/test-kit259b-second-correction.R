@@ -267,7 +267,10 @@ for (managed in c(FALSE, TRUE)) {
             run = k259bFailingRun(state, click),
             redraw = function(session) {
                 state$fail <- FALSE
-                session$setInputs(color_variable = "batch")
+                # The redraw finds its owner through getDIAActiveManager(); the fixture's owner sits on its own session,
+                # not testServer's, so it is given here (as C01-E5 does; closure check 2, D.4).
+                testthat::with_mocked_bindings(session$setInputs(color_variable = "batch"),
+                    getDIAActiveManager = function() fixture$manager, .package = "MultiScholaR")
             }), managed = managed)
         expect_identical(lists[[1L]], "h\tpost_norm_correlation")
         expect_identical(lists[[2L]], "h\tpost_norm_correlation")
@@ -284,7 +287,9 @@ test_that("KIT-259 C01-E2: a redraw that fails after a run whose figures drew wr
         run = k259bFailingRun(state, click, fail = FALSE),
         redraw = function(session) {
             state$fail <- TRUE
-            session$setInputs(color_variable = "batch")
+            # As in C01-E1: the redraw is given the fixture's owner (closure check 2, D.4).
+            testthat::with_mocked_bindings(session$setInputs(color_variable = "batch"),
+                getDIAActiveManager = function() fixture$manager, .package = "MultiScholaR")
         }))
     expect_null(lists[[1L]])
     expect_null(lists[[2L]])
