@@ -313,8 +313,11 @@ k271Export <- function(fixture, norm, ruv_mode, export = FALSE, stored_results_f
         if (export) {
             source_dir <- fixture$paths$source_dir
             result <- runDIANativeSessionExport(fixture$manager, metadata, source_dir, extra_references = collected$references,
-                dependencies = files, prepare_outputs = function(metadata, request) writeLines("kit271",
-                    file.path(source_dir, "filtered_session_summary.txt")))
+                dependencies = files, prepare_outputs = function(metadata, request) {
+                    # As the app's export writes them: the metadata files the file list names, then the summary.
+                    saveProtNormExportMetadataFiles(metadata, source_dir, messageFn = k271Noop, strict = TRUE)
+                    writeLines("kit271", file.path(source_dir, "filtered_session_summary.txt"))
+                })
             out$archive <<- result$publication$archive_path
         }
     })), error = function(e) out$error <<- paste0(class(e)[[1L]], ": ", conditionMessage(e)))
