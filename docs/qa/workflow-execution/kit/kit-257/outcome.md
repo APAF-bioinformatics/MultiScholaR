@@ -288,6 +288,12 @@ Observed (`r2p-compare.tsv`, `r2p-compare-failures.txt`, `r2p-check-compare.txt`
   removes nothing at all, so its files stay; E8b's failing-first value against the unconditional removal of the first
   fix (413d739a) was not observed by any run. Head: in process and managed, at `correlation_filtered` and at
   `ruv_covariates`, the table and the four figures present, no error.
+  Its value against the first fix is established by reading from observed parts (AUDIT-KIT-257-impl, closure check):
+  413d739a removes unconditionally at both limpa sites; E8 shows the same entry removing through this harness; R2'
+  shows E8b's presses completing at `correlation_filtered` and `ruv_covariates` with the files present beforehand; so
+  on 413d739a E8b fails at the table (both cases) and at the table and figures at `ruv_covariates`. Not run (the
+  correction pass is spent); the optional one-job observation is described in the audit's closure check. The
+  coordinator's ruling (2026-11-26): no extra run.
 - `test-prot-norm-core.R` `message-changed`, 1548/306 both sides, as predicted: W1 (a)'s and W2's
   `dia_normalization_refused` and `dia_normalization_retry` `files` move from bbfad929 (base) to 53f7545d and
   b51063f4 (head); W2 now equals W1 on head (I03 closed). Nothing else in the file differs.
@@ -297,4 +303,54 @@ Observed (`r2p-compare.tsv`, `r2p-compare-failures.txt`, `r2p-check-compare.txt`
   `test-kit196-da-no-value-features.R` 540/0, `test-module-ci-trx-da.R` 52/1.
 - R CMD check: 0 errors, 3 warnings, 3 notes both sides; findings identical.
 
-Core-hours: R1 1.06 + R2 32.46 + R2' 18.94 = 52.46 of 113.67 (expected 30.0; the correction pass was used).
+Core-hours: R1 1.06 + R2 32.46 + R2' 18.94 = 52.46 of 113.67 (`runs.tsv`'s minutes, 786.6 job-minutes, give 52.44; rounding) (expected 30.0; the correction pass was used).
+
+## Closure check (AUDIT-KIT-257-impl-20261126, 2026-11-26): READY FOR A MERGE TRAIN
+
+- C3: the ledger row's evidence cell gains R2' 45644271493 and M1. Core-hours 52.44 from `runs.tsv` (786.6
+  job-minutes).
+- **C1 (OPEN, wording defect of the I05 notice):** the notice always says "The earlier RUV figures and normalised
+  table of this analysis were removed", but the removed paths vary: E10 itself removed only the table, and a
+  correlation start never removes figures. The removed paths are on the condition (`removed_own_files`), so the text
+  can follow them. Drafts in `wording.md` for the owner's pass (VAL-41).
+- **C2 (OPEN, with C1):** the sentence is joined to the kernel's first line by a single space ("... observed in every
+  sample The earlier RUV figures ..."); join with ". " when the first line does not end in punctuation.
+- C1 and C2: the small code change (the string choice and the separator) follows the owner's wording pass; this
+  ticket's correction pass is spent.
+- **C4 (stated limit):** (a) after a partial removal (some files removed, then one that cannot be) the refusal names
+  only the file left; the ones already removed are not tagged. (b) I01's condition relies on
+  `diaLimpaPassThroughSource` agreeing with the pass-through body's own inline rule. Both read the same states at the
+  merged tree (`R/utils_workflow_dia_norm.R:606`, `:630`); the body is digest-pinned, so a change to one shows.
+
+### The train: scope and predictions (the auditor's)
+
+Base staging 828dd105 (or later); head the merge of `kit-257`. NEWS and the ledger conflict; resolve as appends.
+
+| Group | Files | Prediction against staging |
+|---|---|---|
+| R2's 55 (`r2-files.txt`) | as listed | `same` at staging's counts, except `test-kit257-norm-own-files.R` and `test-prot-norm-core.R` below |
+| `test-kit257-norm-own-files.R` | new on head | 133 passed, 0 failed, 0 skipped (R2' head) |
+| `test-prot-norm-core.R` | | 1548/306 both sides; `message-changed` at exactly four labels: W1 (a) and W2 `dia_normalization_refused`/`dia_normalization_retry` `files`, bbfad929 to 53f7545d / b51063f4 (the two stored values `:767`, `:801`, declared); nothing else |
+| Declared dependents and I10 | `test-kit129-run-path.R`, `test-prot-design-log2.R`, `test-workflow-native-session.R`, `test-workflow-saved-da.R`, `test-trx-da-without-ruv.R`, `test-kit196-da-no-value-features.R`, `test-module-ci-trx-da.R` | `same` (711/0, 226/0, 734/0, 776/175, 103/0, 540/0, 52/1) |
+| Partners | `test-kit243-summary-current-outputs.R`, `test-kit244-limpa-pass-through.R` | `same` (246/0, 204/0) |
+| I05's other dependent | `test-kit252-managed-failure-text.R` | `same` |
+| M1's dependents | `test-enrichment-significance.R`, `test-kit200-prot-da-no-value-proteins.R`, `test-kit201-treat-moderation.R`, `test-kit205-enrichment-background.R`, `test-kit208-gprofiler-identifiers.R`, `test-kit215-not-tested-lists.R`, `test-metab-02ab-da-module-characterization.R`, `test-module-ci-lipid-da.R`, `test-module-ci-metab-da.R`, `test-omic-da-head-fallback.R`, `test-omic-enrich-module.R`, `test-prot-07b-da-handlers-compat.R`, `test-prot-annotation-uniprot-empty.R`, `test-reference-mapping-enrichment.R`, `test-workflow-analysis-record.R` | `same` |
+| KIT-259 (if train 10 landed first) | `test-kit259-pearson-histogram-figure-failure.R` | `same` |
+| R CMD check | | identical findings |
+
+### Merge resolutions
+
+- **M2 (KIT-254):** the textual conflict after `omicNormApplyRunStart` in `R/mod_omic_norm.R`: keep KIT-254's
+  `omicNormCorrelationStart` and `clearOmicNormCorrelation`, then KIT-257's `omicNormOwnFiles`.
+- **KIT-259's hunk (`R/mod_prot_norm_workflow_helpers.R:524-527`):** the exact resolved text, replacing the conflict
+  block (the two lines after it are already KIT-259's):
+
+```r
+      if (!is.null(runner)) dispatchProtNormNormalization(runner, settings, workflowData, normData, experimentPaths,
+        omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
+        finish, fail, preQc = generatePreNormalizationQcFn) else
+        # KIT-259 (B2): after the completion notice, one warning names the figures that could not be drawn.
+        withProtNormFigureNotice(finish(runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
+          omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
+          getRuvGroupingVariableFn, pre_qc = generatePreNormalizationQcFn)), showNotificationFn)
+```
