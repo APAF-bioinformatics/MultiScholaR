@@ -1,0 +1,2 @@
+run_id	commit	purpose	job_minutes	result
+45599722106	671aba2c	G0 base observation (staging e0747fc1 + script; branch kit-254-g0)	12.0 script (about 22 with set-up)	ok; every in-process prediction held; phase 0 passed; stop rules 1 and 2 not triggered; 6 instrument errors (managed I, II: tab read after the server ended), not rerun
