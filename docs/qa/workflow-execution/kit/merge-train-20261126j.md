@@ -94,4 +94,28 @@ values, which equal those heads.
 
 ## Result
 
-(filled after the run)
+Run 45688899581 (request `merge-train-20261126j-f4ba3a42`, run-tests commit a09d7fa4, dispatched normally), head
+f4ba3a42 against train 16's tip 0fd29a6b, sent once; conclusion success; 144.9 job-minutes of the 280 ceiling (tests
+base 53.2, head 60.9; check base 14.4, head 15.4; plan and results 1.0). Tables in `merge-train-20261126j/`
+(`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`).
+
+| File | Base p/f/e/s | Head p/f/e/s | Verdict | Prediction |
+|---|---|---|---|---|
+| test-integration-record.R | 167/0/0/0 | 200/0/0/0 | count-changed | held |
+| test-integration-enrichment.R | 349/0/0/0 | 349/0/0/0 | same | held |
+| test-integration-outputs.R | 183/0/0/0 | 183/0/0/0 | same | held |
+| test-integration-input-matrix.R | 84/0/0/0 | 84/0/0/0 | same | held |
+| test-integration-workbook-api.R | 144/0/0/0 | 144/0/0/0 | same | held |
+| test-integration-removed-factors.R | 520/0/0/3 | 520/0/0/3 | same | held |
+| test-integration-model.R | 265/0/0/0 | 265/0/0/0 | same | held |
+| test-integration-enrichment-mofa.R | 0/0/0/3 | 0/0/0/3 | same | held |
+| test-integration-results.R | 258/0/0/0 | 258/0/0/0 | same | held |
+| test-integration-gui.R | 405/0/0/0 | 405/0/0/0 | same | held |
+| test-kit240-integration-default.R | 92/0/0/1 | 92/0/0/1 | same | held |
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdict: every prediction held. TRAIN GREEN, landing only after trains 15 and 16 land with their code unchanged.
+
+Not checked: trains 15 and 16 at landing; any file outside the 11; the MOFA lane and the rendered report (not in this
+train by the register); the full suite (KIT-246's A3 at the next checkpoint).
