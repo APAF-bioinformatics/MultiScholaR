@@ -54,7 +54,8 @@ metabolomicsDeclarationBinding <- list(
     # As `resolveMetabDuplicateAssayData` runs it per assay; the module reads its per-assay statistics.
     resolve_duplicates = function(object) {
         resolved <- resolveMetabDuplicateAssayData(assayList = object@metabolite_data,
-            metaboliteIdCol = object@metabolite_id_column, logWarnFn = function(...) NULL)
+            metaboliteIdCol = object@metabolite_id_column, logWarnFn = function(...) NULL,
+            designSamples = object@design_matrix[[object@sample_id]])
         object@metabolite_data <- resolved$resolvedAssayList
         list(object = object, value = list(stats = resolved$statsList))
     },

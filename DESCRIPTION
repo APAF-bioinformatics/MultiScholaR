@@ -549,6 +549,7 @@ Imports:
     vroom,
     withr,
     writexl,
+    zip,
     magick
 Remotes:
     cran/RUVIIIC,

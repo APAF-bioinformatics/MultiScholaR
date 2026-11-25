@@ -1,0 +1,2 @@
+file	test	passed	failed	error	skipped	seconds
+test-integration-record-mofa.R	KIT-142: with MOFA2, a saved integration is reopened, repeated from its record to the same model, and reported	29	0	FALSE	FALSE	163.07
