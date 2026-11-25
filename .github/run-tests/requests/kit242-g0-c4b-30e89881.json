@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-242 G0 optional case C4b (ticket r1.3 section 6): correlation filter with a kept empty sample column, RUV skipped; prediction in the script; 1.0 expected / 2.0 ceiling core-hours inside G0's remaining ceiling",
+  "label": "KIT-242 G0 C4b on kit-242-g0 30e89881 (staging 3eeaf100 + tools/kit242/g0.R)",
+  "package_commit": "30e89881d59230eb01b40cb61e41f213f1cbea0c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "tools/kit242/g0.R", "args": ["kit242-g0", "c4b"], "out": "kit242-g0", "out_pattern": "\\.(tsv|txt|json)$", "timeout_minutes": 15}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
