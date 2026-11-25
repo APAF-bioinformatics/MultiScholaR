@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-211 L1: blind lifecycle (E1 to E10, G2) of the missing-value filter measurement on the scripts as declared (declaration.md at this commit); expected 30 job-minutes (2.00 core-h), ceiling 55 (3.67); decides whether the counted jobs may be requested",
+  "label": "KIT-211 L1 lifecycle at 15829c8f",
+  "package_commit": "15829c8fc8a505b0b13800a5cd1c8b105c72049d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-211/l1-k211.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-211/l1"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-211/l1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
