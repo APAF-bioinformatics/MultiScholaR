@@ -368,13 +368,16 @@ kit254Configs <- list(
     lipid_ruv = list(class = "lipid", ruv = kit172LegacyRuv("manual")))
 
 # Lipid with RUV (AUDIT-KIT-254-impl I01): after KIT-224 (staging c4505c7f) G0's rule finds no listed threshold that
-# removes some samples and keeps two per group (G0b, run 45628705535: none up to 0.95, ten at 0.99), so stop rule 2
-# applies: t_hi 0.5, t_lo 0.3, nothing removed; E7 keeps its state and record assertions, its sample difference is not
-# shown on this fixture (was 0.99 / 0.95 at e0747fc1, G0 45599722106: B_4).
-kit254T <- list(lipid = c(hi = 0.95, lo = 0.9), metab = c(hi = 0.95, lo = 0.9), lipid_ruv = c(hi = 0.5, lo = 0.3))
+# removes some samples and keeps two per group (G0b, run 45628705535: none up to 0.95, ten at 0.99): stop rule 2. The
+# coordinator's ruling (KIT-248's G0b precedent; a declared-comparison change): t_hi = the midpoint of the two smallest
+# best within-group partner correlations G0b observed on the merged tree (g0b/g0b-best-partner.tsv: A_1 0.957297, B_4
+# 0.962751), (0.957297 + 0.962751) / 2 = 0.960024; PREDICTED to remove A_1 only (its best partner is below, every other
+# sample's at or above 0.962751). t_lo = G0's rule below it: 0.95 (removes none). At e0747fc1 it was 0.99 / 0.95 (G0
+# 45599722106: B_4).
+kit254T <- list(lipid = c(hi = 0.95, lo = 0.9), metab = c(hi = 0.95, lo = 0.9), lipid_ruv = c(hi = 0.960024, lo = 0.95))
 # G0's design samples (OBSERVED, both omics in process; C3 and II0): Apply(t_hi) alone removes A_5 (B_4 with RUV);
 # Apply(t_lo) alone removes none.
-kit254HiRuns <- list(lipid = setdiff(kit254All, "A_5"), metab = setdiff(kit254All, "A_5"), lipid_ruv = kit254All)
+kit254HiRuns <- list(lipid = setdiff(kit254All, "A_5"), metab = setdiff(kit254All, "A_5"), lipid_ruv = setdiff(kit254All, "A_1"))
 kit254LoRuns <- list(lipid = kit254All, metab = kit254All, lipid_ruv = kit254All)
 
 # ------------------------------------------------------------------------------------------------
@@ -543,7 +546,7 @@ for (name in c("lipid", "metab")) {
 #' Ticket 2.3's example on F172's group A (a = A_1, b = A_2): every within-group pair of `runs` (the input design's
 #' samples). LCMS_Pos: every pair with A_1 at 0.1, every other at 0.99. LCMS_Neg: A_1-A_2 and the pairs among A_3 to
 #' A_6 at 0.99, the other A pairs at 0.1; group B at 0.99.
-kit254E9Pairs <- function(runs, assay) {
+kit254E9Pairs <- function(runs, assay, both = FALSE) {
     groups <- split(sort(runs), sub("_.*$", "", sort(runs)))
     rows <- do.call(rbind, lapply(groups, function(g) {
         if (length(g) < 2L) return(NULL)
@@ -551,7 +554,8 @@ kit254E9Pairs <- function(runs, assay) {
         data.frame(Run.x = pairs[1L, ], Run.y = pairs[2L, ], stringsAsFactors = FALSE)
     }))
     key <- paste(rows$Run.x, rows$Run.y)
-    pass <- if (identical(assay, "LCMS_Pos")) rows$Run.x != "A_1" & rows$Run.y != "A_1" else
+    # `both`: A_1 below the threshold in both assays (every pair with A_1 at 0.1 in LCMS_Neg too).
+    pass <- if (identical(assay, "LCMS_Pos") || both) rows$Run.x != "A_1" & rows$Run.y != "A_1" else
         !startsWith(rows$Run.x, "A_") | key %in% c("A_1 A_2", "A_3 A_4", "A_3 A_5", "A_3 A_6", "A_4 A_5", "A_4 A_6", "A_5 A_6")
     rows$pearson_correlation <- ifelse(pass, 0.99, 0.1)
     rownames(rows) <- NULL
@@ -877,24 +881,31 @@ for (class in c("lipid", "metab")) {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
         seen <- kit254Notes()
-        values <- list(LCMS_Pos = kit172Values(172001L)$values, LCMS_Neg = kit172Values(172002L)$values)
-        fx <- kit254Fixture(file.path(root, "a"), class, values)
-        kit254Defer(fx)
-        nd <- omicNormReactiveState()
-        kit254Run(fx, nd)
-        kit254ExpectHead(fx, "_normalized", paste("E17 run", class))
-        testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(theObject, ...) {
-            runs <- as.character(methods::slot(theObject, "design_matrix")$Run)
-            assays <- names(methods::slot(theObject, fx$binding$data_slot))
-            stats::setNames(lapply(assays, function(assay) kit254E9Pairs(runs, assay)), assays)
-        }, .package = "MultiScholaR")
-        kit254Scripted(fx, list(0.5, "skip"))
-        expect_identical(kit254Removed(kit254Runs(fx)), "A_1", info = paste("E17 precondition", class))
-        out <- kit254Replay(fx, file.path(root, "replay"))
-        statement <- out$value$correlation_statement
-        kit254Line("E17", class, paste("statement", format(statement %||% "<none>")))
-        expect_null(out$error, info = paste("E17 replay precondition", class))
-        expect_true(isTRUE(grepl("leaves out A_1 (below the threshold in LCMS_Pos)", statement, fixed = TRUE)), info = paste("E17", class))
+        # A_1 below the threshold in LCMS_Pos only (its pair with A_2 passes in LCMS_Neg), then in both assays (the
+        # coordinator's ruling: the opposite error, an assay wrongly omitted, is caught too).
+        for (case in list(list(name = "pos", both = FALSE, assays = "LCMS_Pos"), list(name = "both", both = TRUE, assays = "LCMS_Pos, LCMS_Neg"))) {
+            values <- list(LCMS_Pos = kit172Values(172001L)$values, LCMS_Neg = kit172Values(172002L)$values)
+            fx <- kit254Fixture(file.path(root, case$name), class, values)
+            kit254Defer(fx)
+            nd <- omicNormReactiveState()
+            kit254Run(fx, nd)
+            kit254ExpectHead(fx, "_normalized", paste("E17 run", class, case$name))
+            local({
+                testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(theObject, ...) {
+                    runs <- as.character(methods::slot(theObject, "design_matrix")$Run)
+                    assays <- names(methods::slot(theObject, fx$binding$data_slot))
+                    stats::setNames(lapply(assays, function(assay) kit254E9Pairs(runs, assay, both = case$both)), assays)
+                }, .package = "MultiScholaR")
+                kit254Scripted(fx, list(0.5, "skip"))
+                expect_identical(kit254Removed(kit254Runs(fx)), "A_1", info = paste("E17 precondition", class, case$name))
+                out <- kit254Replay(fx, file.path(root, paste0(case$name, "-replay")))
+                statement <- out$value$correlation_statement
+                kit254Line("E17", paste(class, case$name), paste("statement", format(statement %||% "<none>")))
+                expect_null(out$error, info = paste("E17 replay precondition", class, case$name))
+                expect_true(isTRUE(grepl(paste0("leaves out A_1 (below the threshold in ", case$assays, ")"), statement, fixed = TRUE)),
+                    info = paste("E17", class, case$name))
+            })
+        }
     })
 }
 
