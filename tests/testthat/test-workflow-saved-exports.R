@@ -727,8 +727,10 @@ test_that("ten small normalization revert style export cycles release action res
         before <- product$data
         styled <- styleWorkflowDiaQcPlot(product, list(title = paste("Cycle", cycle), font_size = 10))
         expect_identical(product$data, before)
-        expect_warning(ggplot2::ggsave(file.path(output, paste0("cycle-", cycle, ".png")), styled,
-            width = 4, height = 3, dpi = 100), "Removed 1 row")
+        # KIT-259 (declared edit, A1): the histogram's count axis reaches the tallest bar, so no bar is removed. This
+        # expectation used to require ggplot2's removed-rows warning, i.e. the cut-off bar the fix repairs.
+        expect_no_warning(ggplot2::ggsave(file.path(output, paste0("cycle-", cycle, ".png")), styled,
+            width = 4, height = 3, dpi = 100), message = "Removed [0-9]+ rows?")
         norm <- list(correlation_filtered_obj = normalized, best_k = NA_integer_)
         result <- runProtNormExportSessionWorkflow(workflow, norm,
             list(norm_method = "cyclicloess", ruv_mode = "skip"), output,
