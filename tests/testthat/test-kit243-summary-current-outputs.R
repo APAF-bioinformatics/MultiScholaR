@@ -1426,7 +1426,7 @@ test_that("KIT-243 G5, G6 (proteomics), G6b: the archive reopened; an identical 
     k212Export(fixture, fixture$norm)
     dirs <- k212ProtDirs(fixture, "g5")
     save <- k243ProtSave(fixture, dirs)
-    expect_length(save$failed, 0L)
+    expect_identical(vapply(save$failed, conditionMessage, ""), character(), info = "G5 Save")
     archives <- sort(list.files(fixture$paths$source_dir, "^filtered_session_.*[.]msdia[.]tar$", full.names = TRUE))
     expect_true(length(archives) >= 1L, info = "G5 precondition: an archive")
     reopened <- k212Reopen(archives[[length(archives)]])
@@ -1442,10 +1442,12 @@ test_that("KIT-243 G5, G6 (proteomics), G6b: the archive reopened; an identical 
     k243Line("G6b", "prot", sprintf("status=%s", status), sprintf("copies=%d", copy$copies), sprintf("notes=%s", paste(copy$notes, collapse = " | ")))
     # G6: DA, Save, the identical DA in the same session, Copy.
     fixture <- k212Prot()
+    # Instrument repair (R1 45590602596, VAL-54): the proteomics Save follows the tab's export, as in every KIT-212 Save.
+    k212Export(fixture, fixture$norm)
     k243ProtDa(fixture)
     dirs <- k212ProtDirs(fixture, "g6")
     save <- k243ProtSave(fixture, dirs)
-    expect_length(save$failed, 0L)
+    expect_identical(vapply(save$failed, conditionMessage, ""), character(), info = "G6 prot Save")
     k243ProtDa(fixture)
     status <- k243Status(fixture$manager, dirs$proteomics$source_dir)
     copy <- k212Copy(fixture$workflow, "proteomics", dirs, argsSaved = TRUE)
