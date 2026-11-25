@@ -163,3 +163,74 @@ test_that("(KIT-263 DIAG B) the Summary save's own file for a proteomics project
     }
     succeed()
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-263 declared diagnostic D2 (the coordinator's ruling after D1): printing only, no expectation. The application's own
+# proteomics save with an OWNER (the `omicSummaryW1ProtSetup(owner = TRUE)` construction, test-omic-summary-module.R:
+# 826-841, without its tab server) whose protein object carries the shipped configuration as @args and the bus the same
+# as config_list, as the design import makes them; and a lipidomics owner's save (`module_ci_lipid_summary_workflow`),
+# section headers only.
+# ------------------------------------------------------------------------------------------------
+
+test_that("(KIT-263 DIAG D2-prot) the Summary save's file for a proteomics owner", {
+    config <- omicGuiConfig("proteomics")$summary
+    shipped <- kit263Config()
+    cfg <- module_ci_prot_summary_branch_config("DIA")
+    bus <- module_ci_prot_summary_workflow(cfg)
+    project_dirs <- module_ci_prot_summary_paths()
+    paths <- project_dirs$proteomics
+    withr::defer(unlink(paths$base_dir, recursive = TRUE))
+    design <- module_ci_prot_da_design()
+    rownames(design) <- NULL
+    quant <- module_ci_prot_da_table()
+    rownames(quant) <- NULL
+    object <- module_ci_prot_da_object(workflow_type = cfg$workflow_type, use_limpa = cfg$use_limpa,
+        report_template = cfg$report_template, design = design, protein_quant_table = quant, args = shipped)
+    store_root <- file.path(paths$base_dir, "store")
+    dir.create(store_root, showWarnings = FALSE)
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(store_root, "kit263-prot", cfg$workflow_type),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- paths
+    manager$saveState("correlation_filtered", object, list(), "kit263 fixture state")
+    bus$state_manager <- manager
+    bus$config_list <- shipped
+    final <- tryCatch(workflowSummaryFinalState(config, bus, "proteomics", function(...) NULL)$finalS4Object,
+        error = function(e) e)
+    cat("\n---- KIT-263 DIAG D2-prot: the final object handed to the writer ----\n")
+    cat("class(final): ", paste(class(final), collapse = ","), "; isSavedWorkflowReference: ",
+        tryCatch(isSavedWorkflowReference(final), error = function(e) NA), "\n")
+    args <- tryCatch(readDIAStateMetadata(manager, final)$data$slots$args, error = function(e) NULL)
+    if (is.null(args) && isS4(final)) args <- final@args
+    kit263PrintSections("D2-prot", args, bus$config_list)
+    err <- NULL
+    saveWorkflowSummaryParameters(config, bus, project_dirs, "proteomics", "kit263", "d",
+        notify = function(message, type, duration) cat("notify:", type, message, "\n"), done = function(value) NULL,
+        failed = function(error) err <<- error, writeAnalysisRecordFn = function(manager, path) invisible(path),
+        catFn = function(...) NULL)
+    if (!is.null(err)) cat("save failed: ", conditionMessage(err), "\n")
+    file <- file.path(paths$source_dir, "study_parameters.txt")
+    kit263PrintFile("D2-prot", if (file.exists(file)) readLines(file, warn = FALSE) else "<no study_parameters.txt>")
+    succeed()
+})
+
+test_that("(KIT-263 DIAG D2-lipid) the Summary save's section headers for a lipidomics owner", {
+    config <- omicGuiConfig("lipidomics")$summary
+    bus <- module_ci_lipid_summary_workflow(module_ci_lipid_summary_config("pos_neg"))
+    project_dirs <- module_ci_lipid_summary_paths()
+    paths <- project_dirs$lipidomics
+    withr::defer(unlink(paths$base_dir, recursive = TRUE))
+    err <- NULL
+    saveWorkflowSummaryParameters(config, bus, project_dirs, "lipidomics", "kit263", "d",
+        notify = function(message, type, duration) cat("notify:", type, message, "\n"), done = function(value) NULL,
+        failed = function(error) err <<- error, writeAnalysisRecordFn = function(manager, path) invisible(path),
+        catFn = function(...) NULL)
+    if (!is.null(err)) cat("save failed: ", conditionMessage(err), "\n")
+    file <- file.path(paths$source_dir, "study_parameters.txt")
+    lines <- if (file.exists(file)) readLines(file, warn = FALSE) else "<no study_parameters.txt>"
+    cat("\n==== KIT-263 DIAG D2-lipid: ", length(lines), " lines; headers (bracketed or ending in a colon at column 1) ====\n")
+    cat(grep("^\\[|^[A-Za-z][^ ]*:$|^[A-Z][A-Za-z ]*:$", lines, value = TRUE), sep = "\n")
+    cat("foreign lines: ", length(kit263Foreign(lines)), "\n==== end D2-lipid ====\n")
+    succeed()
+})

@@ -41,3 +41,23 @@ configuration as `config_list` and `@args`, as the design import makes them). Cl
    defect: the fixture is rebuilt on (B)'s construction with the expectations unchanged, and R1 is re-sent once
    (instrument rule, 1 of 3).
 3. Any other pattern: stop and report it as it is.
+
+## Diagnostic run D2 (declared 2026-11-26; the last diagnostic; printing only, no expectation, nothing under R/)
+
+D1 (run 45679194881): fixture A printed the foreign block once (S4 block), the Additional block empty because
+`formatConfigList` errors on `plotRle`'s length-2 value (separate defect, recorded in outcome.md, not fixed here); the
+module-ci construction gave the writer no S4 object. D2 observes the application's S4 block through a proteomics save
+with an owner (the `omicSummaryW1ProtSetup(owner = TRUE)` construction, protein object `@args` and bus `config_list` both
+the shipped configuration), printing the whole file with line numbers and the sections each block iterates over; and a
+lipidomics owner's save, headers only. Note: with an owner the writer uses the analysis record's formatter for the
+Additional block (not `formatConfigList`), so that block may print.
+Classification, committed before the run (the coordinator's):
+(i) the foreign block appears once, in the S4 block, the Additional block empty: the ticket is amended to the observed
+    state (T1's base value the observed count; T2's count for one block from the shipped config; T3's second assertion
+    replaced by one on the S4 block; a guard row recording, not asserting as desired, that the Additional block is empty
+    on base and head for the separate defect; one test calling the filter on the config_list path directly with a config
+    `formatConfigList` can format; "twice / six / ten" corrected), fix unchanged.
+(ii) twice in the application: the ticket's counts stand; the T1 fixture is rebuilt on D2's construction (instrument
+    rule, R1 re-sent once).
+(iii) no foreign line at all through this path: STOP and report; VAL-279's premise needs the owner.
+Lipidomics: no proteomics section expected.
