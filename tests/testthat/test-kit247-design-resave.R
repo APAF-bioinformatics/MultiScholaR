@@ -751,3 +751,25 @@ test_that("KIT-247 W288b (VAL-331): a proteomics Import Existing Design with onl
     expect_identical(out$taxon, out$before$taxon)
     expect_identical(out$organism, out$before$organism)
 })
+
+test_that("KIT-247 C05 (AUDIT closure check): a confirmed proteomics import refused at the checkpoint puts back the FASTA and UniProt tables and records no input", {
+    out <- kit247Lane("prot_lfq", "correlation", function(api, probe) {
+        run <- kit247MovedRun(api, probe$lane)
+        folder <- kit247ExportedDesign(probe, function(d) kit247Collide(d, run))
+        saveRDS(data.frame(planted = "KIT-247 aa"), file.path(folder, "aa_seq_tbl_final.RDS"))
+        saveRDS(data.frame(planted = "KIT-247 uniprot"), file.path(folder, "uniprot_dat_cln.RDS"))
+        digestOf <- function(name) digest::digest(probe$bus(name))
+        before <- list(aa = digestOf("aa_seq_tbl_final"), fasta = digestOf("fasta_metadata"), uniprot = digestOf("uniprot_dat_cln"),
+            design_file = probe$manager()$.context$snapshot$file_dependencies$design_file)
+        kit247Import(api, probe$lane, folder)
+        kit247Click(api, "design_matrix-confirm_design_resave")
+        probe$flush()
+        list(before = before, aa = digestOf("aa_seq_tbl_final"), fasta = digestOf("fasta_metadata"), uniprot = digestOf("uniprot_dat_cln"),
+            design_file = probe$manager()$.context$snapshot$file_dependencies$design_file, notes = probe$notes())
+    })
+    expect_true(any(grepl("Error during import", out$notes, fixed = TRUE)))
+    expect_identical(out$aa, out$before$aa)
+    expect_identical(out$fasta, out$before$fasta)
+    expect_identical(out$uniprot, out$before$uniprot)
+    expect_identical(out$design_file, out$before$design_file)
+})
