@@ -359,3 +359,75 @@ start count); no WL criterion read the column.
   with every table, then the check and upload), which occurs only if the real 35-minute deadline is reached (W08).
   WJ' needs a driver entry point that does not exist yet: `k237Main` runs only WL or WLprime. The accurate wording for
   any text about the network is "network blocked for the installed application's programs".
+
+## WL' send: the tree under test (recorded before the request, 2026-11-26)
+
+- **Staging merged:** `828dd1051d2acab075d6d04f887b7c9e9ccaa48e` (merge train 9) into `run-k237-journey` (889a23ff); it is
+  WL''s `commit_under_test`. `route_commit` = b0936b26bc5f75cf504d6705f51a2161fba7790c (the DC-1/DC-2 commit).
+- **The product under test has changed since WL (7327607f).** Trains landed since: train 5 (KIT-239, KIT-214, KIT-226,
+  KIT-241), train 6 (KIT-224, KIT-251), train 7 (KIT-252, KIT-250), train 8 (KIT-244, KIT-243, KIT-201) and train 9
+  (KIT-240, KIT-245, KIT-256); `packaging/electron/entry.R` and `lifecycle-test.js` changed with KIT-240. So product
+  findings that differ from WL's are expected and are classified by the declaration's failure classes (class 3: a product
+  finding, recorded, not re-run), not treated as instrument faults.
+- `git diff --stat 7327607f 828dd105 -- $PKG_PATHS`:
+
+```
+ DESCRIPTION                                     |   1 +
+ R/app_ui.R                                      |   4 +-
+ R/func_general_enrichment_engine_helpers.R      |  19 ++-
+ R/func_github_management.R                      | 134 +++++++++++++++++++--
+ R/func_lipid_da_model.R                         |   6 +-
+ R/func_lipid_norm_support_helpers.R             |   5 +
+ R/func_lipid_s4_ruv_methods.R                   |   7 ++
+ R/func_metab_da_core_engine.R                   |   6 +-
+ R/func_metab_norm_support_helpers.R             |   5 +
+ R/func_metab_s4_qc_methods.R                    |  10 +-
+ R/func_metab_s4_ruv_methods.R                   |   7 ++
+ R/func_omics_qc_shared.R                        |  14 ++-
+ R/func_omics_ruv_factors.R                      |   6 +-
+ R/func_prot_da_model_methods.R                  |   3 +
+ R/func_prot_da_model_stats.R                    |  16 ++-
+ R/mod_integration.R                             |   4 +-
+ R/mod_integration_enrichment.R                  |  30 +++--
+ R/mod_integration_model.R                       |  13 +-
+ R/mod_integration_results.R                     |  18 ++-
+ R/mod_omic_da.R                                 |  12 +-
+ R/mod_omic_design_builder.R                     |  18 ++-
+ R/mod_omic_enrich_panels.R                      |   9 +-
+ R/mod_omic_norm.R                               |  12 +-
+ R/mod_omic_norm_panels.R                        |  11 +-
+ R/mod_omic_qc_tabs.R                            |  11 +-
+ R/mod_omic_summary.R                            |  16 ++-
+ R/mod_prot_da_handlers_run_analysis.R           |  11 +-
+ R/mod_prot_import_orchestration_helpers.R       |   6 +
+ R/mod_prot_import_organism_helpers.R            |  32 ++++-
+ R/mod_prot_import_processing_helpers.R          |  23 +++-
+ R/mod_prot_import_server_helpers.R              |  19 ++-
+ R/mod_prot_import_ui_helpers.R                  |  32 ++++-
+ R/mod_prot_qc_protein_replicate.R               |  12 --
+ R/utils_integration_enrichment.R                |  31 +++--
+ R/utils_integration_gui.R                       | 152 ++++++++++++++++++++----
+ R/utils_integration_record.R                    |  54 ++++++++-
+ R/utils_integration_results.R                   | 115 ++++++++++++++----
+ R/utils_omic_gui_config.R                       |  27 +++--
+ R/utils_workflow_analysis_record.R              |  56 ++++++++-
+ R/utils_workflow_dia_da.R                       |  86 +++++++++++++-
+ R/utils_workflow_dia_norm.R                     |  10 +-
+ R/utils_workflow_dia_products.R                 |  13 +-
+ R/utils_workflow_enrichment.R                   |  21 +++-
+ R/utils_workflow_execution.R                    |  61 +++++++++-
+ R/utils_workflow_integration_model.R            | 104 ++++++++++++----
+ R/utils_workflow_lipid_declarations.R           |  17 +--
+ R/utils_workflow_metab_declarations.R           |   3 +-
+ R/utils_workflow_omics_actions.R                |  11 +-
+ R/utils_workflow_omics_declarations.R           | 110 +++++++++++++++--
+ R/utils_workflow_operations.R                   |   4 +-
+ R/utils_workflow_summary.R                      |  77 +++++++++++-
+ R/utils_workflow_trx_declarations.R             |  21 +++-
+ inst/reports/integration/integration_report.rmd |  11 ++
+ man/pushProjectToGithub.Rd                      |  19 ++-
+ man/pushProjectToGithubFromDirs.Rd              |   6 +-
+ man/runTestsContrasts.Rd                        |   4 +
+ 56 files changed, 1301 insertions(+), 244 deletions(-)
+```
+
