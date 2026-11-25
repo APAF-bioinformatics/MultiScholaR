@@ -27,7 +27,9 @@ args <- commandArgs(trailingOnly = TRUE)
 LANES <- c("prot_tmt", "prot_lfq")
 
 childMain <- function(side, out) {
-    ns <- asNamespace("MultiScholaR")
+    # The test helpers are sourced into their own environment by load_all(helpers = TRUE), not into the namespace:
+    # take the environment guiEntryRunLane encloses (where it looks up guiEntryStateDigests). (Probe run 45597931823.)
+    ns <- environment(get("guiEntryRunLane", mode = "function"))
     sha <- function(x) digest::digest(x, algo = "sha256")
     slots_rows <- list()
     leaf_rows <- list()
@@ -77,7 +79,7 @@ childMain <- function(side, out) {
         }
         original(manager, cache)
     }
-    unlockBinding("guiEntryStateDigests", ns)
+    if (bindingIsLocked("guiEntryStateDigests", ns)) unlockBinding("guiEntryStateDigests", ns)
     assign("guiEntryStateDigests", wrapped, envir = ns)
     failed <- FALSE
     for (lane in LANES) {
