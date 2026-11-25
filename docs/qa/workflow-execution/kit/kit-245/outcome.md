@@ -125,3 +125,101 @@ Step 0: ticket r1.3 records the decision and the (b) budget line. Detection as t
   of section 10's regression list `same` (the frozen UI digests of `test-omic-summary-module.R`, the UI-rendering
   files: tests run without `MSR_BUNDLE`); `R CMD check` nothing only on head. Binds the fix against c85267e8.
   Ceiling 460 job-minutes (section 11). Decides A2; stop rule 4.
+- Result, run 45606131371 (`r2p-compare.tsv`, `r2p-check-compare.txt`): A2 met. `test-kit245-github-panel.R` `fixed`
+  (base 12 passed, 28 failed; head 40 passed, 0 failed). The twelve other files `same`, among them
+  `test-omic-summary-module.R` (1,675 passed and the same 28 stored-reference failures on both sides) with the frozen
+  UI digests, `test-omic-gui-config.R`, `test-module-ui-wrapper-direct-shared.R` and `test-module-ci-trx-summary.R`;
+  Part S's file 31/0 on both. `R CMD check`: the six findings identical on both sides, none only on head.
+  86.9 job-minutes.
+
+### W1 (declared before the dispatch)
+
+- Purpose: A3 for (b) (P5: no push input and the sentence present for the four omics in the installed bundles) and
+  AS3 (P2 stops at the git check with no recorder call where git is absent; after P2 and P2g no file under
+  `tempdir()` holds the token). Binds the product tree 9efafdad (`val_product_tree_ok`); run branch `run-k245-w1`
+  (never merged): G0's stage, the redirect extended to Part S's token-free URL (`insteadOf = https://github.com/`),
+  the probe's P5 reporting the sentence. Ceiling 125 job-minutes. Decides A3, AS3 (stop rule 5).
+- Result, run 45606206919 (`w1-head-values.tsv`; the probe's lines keep the label "G0"): met on all five hosts.
+  Step 0 passed everywhere; every END line printed; 0 unmasked tokens in any invocation's output.
+
+| Case | Windows installed | Linux runner | ubuntu:22.04 | jammy-scm |
+|---|---|---|---|---|
+| P1 (no `.Rproj`) | "R project file does not exist"; staged folder removed | same | same | same |
+| P2 | `multischolar_github_git_missing`, recorder 0, nothing staged | POST, then `multischolar_github_push_failed` naming `kit245-probe-no-such-org/k245-p2`; staged folder removed | as Windows | as the runner |
+| P2n (no network) | | | | POST, then the message naming the repository; git: "Could not resolve host: github.com", no token in its text; nothing left |
+| P2g | | push succeeds; tree as at G0; nothing holds the token | | same |
+| P3 | the `menu` error; staged folder removed | same | same | same |
+| P5 (four omics) | push_to_github, enable_github, github_org absent; heading and the sentence present | same | same | same |
+| files under `tempdir()` holding the token, after every case | none | none | none | none |
+
+## Acceptance criteria
+
+| # | Criterion | State | Evidence |
+|---|---|---|---|
+| A0 | G0 on base | met | runs 45587834788, 45593577523; `g0-base-values.tsv` |
+| AS1 | Part S tests-only: S1 to S5 fail at their base values; G1 to G3 pass | met | run 45598693322; `r1s-tests.tsv`, `r1s-failures.txt` |
+| AS2 | Part S fix against tests-only: new file passes, 10 regression files `same` (declared edits), check nothing only on head | met | run 45600718143; `r2s-compare.tsv`, `r2s-check-compare.txt` |
+| AS3 | installed bundles: P2 stops at the git check with no recorder call where git is absent; no file under `tempdir()` holds the token after P2 and P2g | met | run 45606206919; `w1-head-values.tsv` |
+| A1 | product tests-only: E1 fails, G1 passes | met | run 45604664357; `r1p-tests.tsv` |
+| A2 | product fix: new file passes, every other file `same`, check nothing only on head | met | run 45606131371; `r2p-compare.tsv`, `r2p-check-compare.txt` |
+| A3 | (b) P5: no `push_to_github` and the sentence present for the four omics, installed | met | run 45606206919 |
+| A4 | full suite at the next checkpoint | open (rides the merge train) | |
+| A5 | NEWS, ledger rows, this file with "For the change report"; `NAMESPACE`, `DESCRIPTION`, `packaging/` unchanged | met | `git diff e0747fc1 -- NAMESPACE DESCRIPTION packaging` empty |
+
+## Observed and inferred
+
+Observed: every value in the tables above and in the result files. Inferred, not run: that Windows R users with git
+2.31 or later can push (no Windows run of the R function with git exists; see "Not checked"); that "private" means
+visible to the organisation's owners and to the members its settings allow (GitHub's model, not re-read).
+
+## Not checked
+
+- An authenticated push to github.com or any real GitHub answer (no token, no network by rule).
+- The R function on Windows with git present (run-tests is Linux only; the installed Windows application has no
+  git). In particular: R on Windows may unset a variable set to the empty string (`Sys.setenv`, through the C
+  runtime), which would leave `GIT_CONFIG_VALUE_0` missing so that git refuses the push after the repository was
+  created; INFERRED risk for R users on Windows only, not observed. The alternative carrying the same configuration
+  in `GIT_CONFIG_PARAMETERS` would avoid an empty variable.
+- The Linux systemd launcher (the probe runs the installed Rscript directly; `MSR_BUNDLE` is passed to its units per
+  `R/utils_workflow_execution.R:1441-1445`, read, not run).
+- A user's own credential helper being bypassed (no helper existed on the runners).
+- The full suite (rides the merge train, A4).
+
+## For the change report
+
+**What was wrong, and who was affected.**
+- *Destructive, legacy (on `main`):* the Project ID typed in the 'Push to GitHub' panel was used unchecked as a folder
+  name under R's temporary folder, and an existing folder of that name was deleted recursively. An ID of `..` deleted
+  the folder holding R's session folder; `.` deleted R's own session folder; a path such as `../../../Documents`
+  deleted the user's Documents folder on Windows. Anyone with a GitHub token who typed such an ID could trigger it,
+  on `main` from proteomics, lipidomics and metabolomics, in 0.9 from every omic. `main` 436cdbe8
+  `R/func_github_management.R:122-131` (read with `git show main:R/func_github_management.R`); base e0747fc1
+  `:123-131`.
+- *The token on disk (legacy):* the token was written into the temporary clone's remote URL
+  (`.git/config`, base `:323-325`) after the repository was created, and the folder was removed only on success
+  (`:362`): after any failed push it stayed, on Windows indefinitely. Observed at G0 on every host.
+- *An empty repository created before a local failure (legacy):* the git program was needed only after the repository
+  had been created (base `:308-357`); on the installed Windows application (no git) every push with a token and a
+  `.Rproj` created an empty private repository and failed, and the name could not be pushed again until it was
+  deleted on GitHub. Observed at G0 on Windows and ubuntu:22.04.
+- *Undisclosed upload:* the push sends the omic's whole scripts folder, which in 0.9 holds copies of the input files
+  (lipidomics, metabolomics, transcriptomics) and the session archive with its data (proteomics); nothing said so.
+  Observed tree at G0 (P2g).
+- *A control that could not work in the installed application* (no git on Windows, no `.Rproj` made anywhere).
+
+**What changed.** At the fix commits 37af31e4 (Part S) and 9efafdad (product (b)):
+- `R/func_github_management.R`: the Project ID validated before any path is built (class
+  `multischolar_github_project_id_invalid`); the staged folder removed on every exit (`on.exit`, `expand = FALSE`);
+  the git program and git 2.31 or later checked before anything is staged or created (`..._git_missing`,
+  `..._git_too_old`); every staged file within 100 MiB before the repository is created (`..._file_too_large`,
+  naming the project path); the remote URL without the token, the credential passed to git through
+  environment-borne configuration for the push alone with the user's helpers cleared; a failure after the creation
+  names `<org>/<id>` (`..._push_failed`). Help and NEWS state what is sent, where and what private means.
+- `R/mod_omic_summary.R` (`mod_omic_summary_ui`): with `MSR_BUNDLE` set (the installed application), the panel shows
+  one sentence instead of the push controls; elsewhere unchanged.
+- No computed result changes.
+
+**Evidence.** G0 runs 45587834788 and 45593577523 (base behaviour in the installed bundles, dummy token, no network
+path to GitHub); R1s 45598693322 and R2s 45600718143 (Part S); R1p 45604664357 and R2p 45606131371 (product (b));
+W1 45606206919 (the fix in the installed bundles). Limits: Linux test runners only; no real GitHub call; Windows
+only as the installed application (no git).
