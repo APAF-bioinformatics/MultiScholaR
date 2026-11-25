@@ -61,6 +61,18 @@
 
 ### Fixes
 
+ * Lipidomics and metabolomics: 'Skip Filtering & Proceed to DE' pressed after the correlation filter was applied now
+   uses every sample, as the tab says, and applying the filter again filters the normalised table again instead of the
+   already filtered one. Before, in development builds from 31 October 2026, after Apply and then Skip, the
+   differential analysis, the exported normalised session, the integration input, the study parameters and the
+   analysis record used or named the filtered table, while the tab reported that no sample was removed and the final
+   PCA showed every sample. And applying the filter again could not bring back samples that an earlier, higher
+   threshold had removed, while the analysis record named only the last threshold. With more than one assay, applying
+   it again, even at the same threshold, could remove further samples. A differential analysis run between Apply and
+   Skip must now be run again (the Summary asks for it). In earlier releases the analysis after Skip used every sample,
+   but the tab's summary and final PCA still showed the samples the filter had removed; they now show every sample.
+   (KIT-254)
+
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
