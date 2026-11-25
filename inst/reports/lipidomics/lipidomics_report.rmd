@@ -380,8 +380,8 @@ ExtractLipidStudyParameters <- function(study_params) {
   s4_ruv_ctrl <- s4_params$ctrl %||% list()
 
   # Extract UI parameter sections
-  # KIT-236 (P03): the DA UI block under the name the writer gives it ("Differential Expression"), else the
-  # older name; files of every earlier version keep reading.
+  # KIT-236 (P03, I10): the DA UI block the application writes is named "Differential Expression UI Parameters"
+  # (the only name any writer has used); the name read before, "Differential Abundance", is never written.
   ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", NULL) %||%
     safe_extract(ui_params, "Differential Expression UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
@@ -550,10 +550,12 @@ FormatMethodDetails <- function(numbers) {
   assay_text <- if (num_assays > 1) {
     glue::glue(
       "The dataset contains {num_assays} assays: {assay_names}. ",
-      # KIT-236 (D6): what is done per assay; there is no integration step.
-      "Each assay was normalised separately and differential abundance was tested separately within each assay; ",
-      "samples removed by the quality-control filters were removed from every assay; the results of the ",
-      "{num_assays} assays are reported together."
+      # KIT-236 (D6, I09): what is done per assay; there is no integration step. Not "removed from every assay": a
+      # sample the correlation filter removes in one assay stays in the others until KIT-255.
+      "Each assay was processed and tested for differential abundance separately; ",
+      if (is.null(numbers$report_facts$failures)) "the results of the {num_assays} assays are reported together." else
+        paste("the results are reported together for the assays and comparisons where the test could be computed",
+          "(see Differential Abundance Analysis).")
     )
   } else {
     glue::glue("The dataset contains a single assay: {assay_names}.")
@@ -572,6 +574,18 @@ FormatMethodDetails <- function(numbers) {
   } else ""
   # KIT-236 (D9): the assays must hold the same samples (the object's validity rule).
   same_samples_text <- if (isTRUE(suppressWarnings(as.numeric(num_assays)) > 1)) " The assays were required to contain the same samples." else ""
+
+  # KIT-236 (D8, I12): "none" and "not recorded" say so; the sentence of a method applied is unchanged until KIT-242
+  # (which decides what is said when a chosen method fails for an assay).
+  norm_sentence <- if (!isTRUE(numbers$report_facts$normalisation_recorded %||% TRUE)) {
+    "The between-sample normalisation method is not recorded for this analysis."
+  } else if (identical(as.character(norm_method), "none")) {
+    "No between-sample normalisation was applied."
+  } else {
+    glue::glue("Between-sample normalization was performed using the '{norm_method}' method from
+the 'limma' R package (Ritchie et al., 2015) to account for systematic technical
+variation across samples.")
+  }
 
   # Log transformation text
   # KIT-172: plain log2 by default; a replayed record's offset is stated as the transform it was.
@@ -737,9 +751,7 @@ Data Preprocessing and Normalization
 ITSD Normalization
 {itsd_text}
 
-Between-sample normalization was performed using the '{norm_method}' method from
-the 'limma' R package (Ritchie et al., 2015) to account for systematic technical
-variation across samples.
+{norm_sentence}
 
 Batch Effect Correction
 {numbers$ruv_design_methods %||% ruv_text}
@@ -867,7 +879,8 @@ FormatDEDetails <- function(numbers) {
   # KIT-236 (D15, D17): the volcano plots and the results table are named only when they are there.
   outputs <- c(
     if (length(ReportImages("report_publication_figures_dir", "Volcano_Plots"))) paste0("Volcano plots of differentially ",
-      "abundant lipids are shown in Figure 3, with a threshold of q-value < ", ui_q_val_thresh, "."),
+      "abundant lipids are shown in Figure 3, with a threshold of q-value < ", ui_q_val_thresh,
+      ReportFoldChangeCriterion(treat), "."),
     if (isTRUE(ReportFileState("report_publication_tables_dir", paste0("DA_results_", params$omic_type, ".xlsx")))) {
       paste0("Full details of all lipids are provided in the supplementary results table DA_results_", params$omic_type,
         ".xlsx within the Publication_tables folder.")
@@ -877,14 +890,28 @@ FormatDEDetails <- function(numbers) {
   contrast_text <- ReportContrastList(numbers)
   block_text <- ReportBlockClause(numbers)
   fdr_text <- ReportFdrSentence(numbers)
+  # KIT-236 (I01): under the declared RUV design the uncorrected values were tested with each assay's factors in the
+  # model; (I06) the p-values are TREAT's at a fold-change threshold; (I09) a comparison whose test failed is named.
+  declared <- numbers$report_facts$ruv_declared
+  declared_none <- !is.null(declared) && identical(declared$design, "none")
+  matrix_text <- if (is.null(declared)) "using the adjusted abundance matrix" else if (declared_none) {
+    "on the normalised abundance matrix, with no RUV factors (the declared RUV design 'none')"
+  } else {
+    k <- declared$k
+    k_text <- if (length(k) && !all(is.na(k))) paste0(" (", paste0(names(k), ": ", k, " factors", collapse = "; "), ")") else ""
+    paste0("on the uncorrected abundance matrix, with each assay's RUV factors as covariates in the model", k_text)
+  }
+  formula_text <- if (is.null(declared) || declared_none) paste0("'", formula_string_val, "'") else
+    paste0("'", formula_string_val, "' plus each assay's RUV factors")
+  pvalue_text <- ReportPvalueClause(treat)
+  failure_text <- ReportFailureText(numbers)
 
   glue::glue("
 DIFFERENTIAL ABUNDANCE ANALYSIS
 
-Differential abundance of lipids was tested separately within each assay, using the adjusted abundance matrix,
+Differential abundance of lipids was tested separately within each assay, {matrix_text},
 for the comparisons defined in the contrast table{contrast_text}. The 'limma' R package (Ritchie et al., 2015) was
-used. A linear model was fitted using the formula '{formula_string_val}' with the 'lmFit' function, and p-values
-were calculated using the 'eBayes' function.{block_text}
+used. A linear model was fitted using the formula {formula_text} with the 'lmFit' function, and {pvalue_text}.{block_text}{failure_text}
 {trend_robust_text} {fdr_text}
 {treat_desc} {significance_text}{outputs_text}",
     .trim = FALSE
@@ -1029,8 +1056,10 @@ ReportRecordFacts <- function(design_matrix, study_params) {
   labels <- c(design_builder = "import and design", intensity_filter = "intensity filter",
     duplicate_resolution = "duplicate resolution", qc_finalize = "quality-control finalisation",
     itsd_normalisation = "internal-standard normalisation", log2 = "log2 transformation",
-    between_sample_normalisation = "between-sample normalisation", ruv = "RUV-III correction",
+    between_sample_normalisation = "between-sample normalisation", ruv = "RUV correction",
     pearson_selection = "sample-correlation filter")
+  # KIT-236 (I05): a step without a label (the filter's Skip, `<prefix>_norm_complete`; a reset; a legacy step) is left
+  # out: it changes no count, and an internal operation name is never printed.
   counts <- character()
   for (step in steps) {
     feature_rows <- step$dimensions$rows
@@ -1038,17 +1067,51 @@ ReportRecordFacts <- function(design_matrix, study_params) {
     operation <- as.character(step$operation %||% "")
     key <- names(labels)[vapply(names(labels), function(k) identical(operation, k) || endsWith(operation, paste0("_", k)),
       logical(1))]
-    counts <- c(counts, paste(if (length(key)) labels[[key[[1L]]]] else gsub("_", " ", operation), feature_rows))
+    if (length(key)) counts <- c(counts, paste(labels[[key[[1L]]]], feature_rows))
   }
   if (length(counts)) facts$step_features <- paste(counts, collapse = "; ")
-  # The samples the sample-correlation filter kept, only when its step is in the record: n = the runs of the design
-  # table (written before any filter), k = the samples of the record's analysed design.
-  pearson <- Filter(function(step) endsWith(as.character(step$operation %||% ""), "pearson_selection"), steps)
-  if (length(pearson) && length(rows) && is.data.frame(design_matrix)) {
-    threshold <- Filter(function(p) identical(p$name, "min_pearson_correlation_threshold"),
-      pearson[[length(pearson)]]$parameters)
-    facts$samples_kept <- list(k = length(rows), n = nrow(design_matrix),
-      threshold = if (length(threshold)) decode(threshold[[1L]]$value) else NULL)
+  # The samples the sample-correlation filter kept, only when its step is in the record (KIT-236 I02): n = the samples
+  # given to the filter, k = the samples of the record's analysed design; the filter's own removals are the step's
+  # columns (samples plus a fixed number of id columns) less those of the step before it, so a sample that left the
+  # design at an earlier step is not counted as the filter's.
+  pearson_at <- which(vapply(steps, function(step) endsWith(as.character(step$operation %||% ""), "pearson_selection"),
+    logical(1)))
+  if (length(pearson_at) && length(rows)) {
+    at <- pearson_at[[length(pearson_at)]]
+    columns_of <- function(step) {
+      value <- step$dimensions$columns
+      if (is.numeric(value) && length(value) == 1L) value else NA_real_
+    }
+    before <- Filter(function(i) !is.na(columns_of(steps[[i]])), seq_len(at - 1L))
+    removed <- if (length(before)) columns_of(steps[[before[[length(before)]]]]) - columns_of(steps[[at]]) else NA_real_
+    threshold <- Filter(function(p) identical(p$name, "min_pearson_correlation_threshold"), steps[[at]]$parameters)
+    if (!is.na(removed) && removed >= 0) {
+      facts$samples_kept <- list(k = length(rows), n = length(rows) + removed,
+        threshold = if (length(threshold)) decode(threshold[[1L]]$value) else NULL)
+    }
+  }
+  # KIT-236 (I09): the comparisons and assays whose test could not be computed, as the record names them.
+  failed <- da$failures %||% list()
+  if (length(failed)) {
+    facts$failures <- data.frame(
+      contrast = vapply(failed, function(x) as.character(x$contrast %||% NA_character_), ""),
+      assay = vapply(failed, function(x) as.character(x$assay %||% NA_character_), ""),
+      error = vapply(failed, function(x) as.character(x$error %||% ""), ""), stringsAsFactors = FALSE)
+  }
+  # KIT-236 (I01): the declared RUV design (KIT-129) tests the uncorrected values with each assay's factors in the model;
+  # the RUV step's record names the design and the factors per assay.
+  ruv_steps <- Filter(function(step) grepl("(^|_)ruv$", as.character(step$operation %||% "")), steps)
+  if (length(ruv_steps)) {
+    ruv_step <- ruv_steps[[length(ruv_steps)]]
+    design_parameter <- Filter(function(p) identical(p$name, "ruv_design"), ruv_step$parameters)
+    declared <- ruv_step$outcomes$ruv_design %||% (if (length(design_parameter)) decode(design_parameter[[1L]]$value))
+    if (ReportKnown(declared)) {
+      best_k <- ruv_step$outcomes$best_k
+      facts$ruv_declared <- list(design = as.character(declared),
+        k = if (is.list(best_k) && length(best_k) && !is.null(names(best_k))) {
+          unlist(lapply(best_k, function(x) if (is.numeric(x) && length(x) == 1L) x else NA_real_))
+        } else NULL)
+    }
   }
   # Internal standards: the assays the file lists under 'ITSD Features Per Assay' (KIT-235's parser returns the block
   # as a section of its own).
@@ -1059,6 +1122,7 @@ ReportRecordFacts <- function(design_matrix, study_params) {
     identical(step$operation, "normalization-ruv"), steps)
   facts$normalisation_recorded <- ReportKnown(study_params[["Between-Sample Normalization"]][["Method"]]) ||
     ReportKnown(study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]][["normaliseBetweenSamples"]][["method"]]) ||
+    ReportKnown(study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]][["normaliseBetweenSamples"]][["normalisation_method"]]) ||
     length(norm_steps) > 0L
   facts
 }
@@ -1172,6 +1236,40 @@ ReportContrastList <- function(numbers) {
     paste(friendly, collapse = ", "), ")")
 }
 
+#' KIT-236 (I06): how the p-values were computed: limma's TREAT test at a fold-change threshold above 0, else eBayes
+ReportPvalueClause <- function(treat) {
+  if (identical(treat$state, "treat")) {
+    return(paste("the variances were moderated with limma's empirical Bayes method ('eBayes'), and p-values were",
+      "calculated with limma's TREAT test against the fold-change threshold"))
+  }
+  if (identical(treat$state, "zero")) return("p-values were calculated using the 'eBayes' function")
+  paste("p-values were calculated with limma's moderated t-test ('eBayes'), or with its TREAT test if a fold-change",
+    "threshold was used (not recorded)")
+}
+
+#' KIT-236 (I07): the second criterion of significance at a fold-change threshold, for the count and volcano sentences
+ReportFoldChangeCriterion <- function(treat) {
+  if (identical(treat$state, "treat") && !is.na(treat$cutoff)) {
+    paste0(" and an absolute log2 fold change of at least ", treat$cutoff)
+  } else ""
+}
+
+#' KIT-236 (I08): a contrast as the DA paragraph names it (the record's friendly name), else as given
+ReportComparisonName <- function(contrast, contrasts) {
+  hit <- if (length(contrasts)) unname(contrasts[as.character(contrast)]) else rep(NA_character_, length(contrast))
+  ifelse(is.na(hit), as.character(contrast), hit)
+}
+
+#' KIT-236 (I09): the comparisons and assays whose test could not be computed, with the error the record holds
+ReportFailureText <- function(numbers) {
+  failures <- numbers$report_facts$failures
+  if (is.null(failures) || !nrow(failures)) return("")
+  names <- ReportComparisonName(failures$contrast, numbers$report_facts$contrasts)
+  items <- paste0(names, ifelse(is.na(failures$assay), "", paste0(" in ", failures$assay)),
+    ifelse(nzchar(failures$error), paste0(" (", failures$error, ")"), ""))
+  paste0(" The test could not be computed for ", paste(items, collapse = "; "), ".")
+}
+
 #' The technical-replicate block (D10): when the record's block reason contains 'technical_replicates'
 ReportBlockClause <- function(numbers, per_assay = TRUE) {
   reason <- numbers$report_facts$block_reason
@@ -1278,7 +1376,7 @@ AnalyzeSamples <- function(design_matrix, study_params) {
 }
 
 # Format DE Summary Table
-FormatDESummaryTable <- function(filepath, figure_present = FALSE) {
+FormatDESummaryTable <- function(filepath, figure_present = FALSE, treat = NULL, contrasts = NULL) {
   if (!file.exists(filepath)) return("")
 
   tryCatch({
@@ -1288,16 +1386,18 @@ FormatDESummaryTable <- function(filepath, figure_present = FALSE) {
     # (up_regulated, down_regulated, assay, contrast, q_threshold); the counts are stated per comparison and assay, and
     # Figure 2 is named only when it is drawn.
     if (all(c("up_regulated", "down_regulated", "contrast") %in% names(data))) {
+      # KIT-236 (I07): at a fold-change threshold the counts also used |log2 FC| >= c, as stated.
       q_text <- if ("q_threshold" %in% names(data)) paste0(" (q-value < ", paste(unique(data$q_threshold), collapse = ", "),
-        ")") else ""
+        ReportFoldChangeCriterion(treat %||% list(state = "unknown")), ")") else ""
       if (!nrow(data) || sum(data$up_regulated + data$down_regulated, na.rm = TRUE) == 0) {
         return(paste0("No significant differentially abundant lipids were found", q_text, "."))
       }
       assay_text <- if ("assay" %in% names(data)) paste0(" in ", data$assay) else ""
-      rows_text <- paste0("For the comparison ", data$contrast, assay_text, ", there were ", data$up_regulated,
+      # KIT-236 (I08): the comparison as the DA paragraph names it.
+      rows_text <- paste0("For the comparison ", ReportComparisonName(data$contrast, contrasts), assay_text, ", there were ", data$up_regulated,
         " upregulated and ", data$down_regulated, " downregulated lipids.")
       lead <- if (isTRUE(figure_present)) {
-        paste0("The number of significant differentially abundant lipids is summarized in Figure 2", q_text, ".")
+        paste0("The number of significant differentially abundant lipids is summarised in Figure 2", q_text, ".")
       } else paste0("Significant differentially abundant lipids", q_text, ", by comparison and assay:")
       return(paste(c(lead, rows_text), collapse = " "))
     }
@@ -1321,7 +1421,7 @@ FormatDESummaryTable <- function(filepath, figure_present = FALSE) {
       paste(collapse = " ")
 
     if (!isTRUE(figure_present)) return(summary_text)
-    return(paste("The number of significant differentially abundant lipids is summarized in Figure 2.", summary_text))
+    return(paste("The number of significant differentially abundant lipids is summarised in Figure 2.", summary_text))
   }, error = function(e) {
     return(paste("Error reading DE summary table:", e$message))
   })
@@ -1399,7 +1499,8 @@ Main <- function() {
     "_num_sig_de_molecules.tab"))
   de_summary_path <- c(de_summary_candidates[file.exists(de_summary_candidates)], de_summary_candidates)[[1L]]
   num_sig_figure <- length(ReportImages("report_publication_figures_dir", "NumSigDeMolecules")) > 0L
-  de_summary_text <- FormatDESummaryTable(de_summary_path, figure_present = num_sig_figure)
+  de_summary_text <- FormatDESummaryTable(de_summary_path, figure_present = num_sig_figure,
+    treat = ReportTreatState(analysis_results$numbers), contrasts = analysis_results$numbers$report_facts$contrasts)
 
   # Generate sections
   report_content <- list(

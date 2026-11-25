@@ -256,8 +256,8 @@ ExtractStudyParametersNew <- function(study_params) {
   samples_after_count <- s4_sample_filt$samples_after_count %||% NA
   
   # Extract UI parameter sections
-  # KIT-236 (P03): the DA UI block under the name the writer gives it ("Differential Expression"), else the
-  # older name; files of every earlier version keep reading.
+  # KIT-236 (P03, I10): the DA UI block the application writes is named "Differential Expression UI Parameters"
+  # (the only name any writer has used); the name read before, "Differential Abundance", is never written.
   ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", NULL) %||%
     safe_extract(ui_params, "Differential Expression UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
@@ -402,6 +402,9 @@ FormatMethodDetails <- function(numbers) {
   missing_vals_cutoff <- if(is.null(numbers$missing_values_cutoff) || is.na(numbers$missing_values_cutoff)) 33.3 else as.numeric(numbers$missing_values_cutoff)
   max_groups_cutoff <- if(is.null(numbers$max_groups_percentage_cutoff) || is.na(numbers$max_groups_percentage_cutoff)) 0 else as.numeric(numbers$max_groups_percentage_cutoff)
   norm_method <- numbers$normalisation_method %||% "cyclicloess"
+  # KIT-236 (B2, I12): "none" says no normalisation was applied; the sentence of a method applied is unchanged.
+  norm_text <- if (identical(as.character(norm_method), "none")) "no between-sample normalisation was applied." else
+    glue::glue("between-sample normalisation \nwere performed using the '{norm_method}' method from the 'limma' R package \n(Ritchie et al., 2015).", .trim = FALSE)
   
   # RUV parameters from new structure
   best_k_val <- numbers$best_k %||% "auto-determined"
@@ -666,9 +669,7 @@ value patterns and intensity thresholds to ensure robust statistical analysis.
 Intensities below the {intensity_cutoff_pct}{intensity_cutoff_suffix} percentile of all 
 intensities in the table were treated as missing. Within each experimental group a protein 
 failed if the share of its values that were missing exceeded the allowed share, {missing_vals_cutoff}% (shown rounded to three decimals); {cross_groups_text} 
-The data matrix was then log (base 2) transformed and between-sample normalisation 
-were performed using the '{norm_method}' method from the 'limma' R package 
-(Ritchie et al., 2015).
+The data matrix was then log (base 2) transformed and {norm_text}
 
 {numbers$ruv_design_methods %||% ruv_text}{ruv_count_text}
 
@@ -768,7 +769,10 @@ FormatDEDetails <- function(numbers) {
   formula_string_val <- numbers$s4_formula_string %||% "~ 0 + group"
 
   # KIT-236 (D20): the fold-change threshold as it was tested (the record's model, else the DA UI block, else the cutoff).
-  treat_desc <- ReportTreatSentence(ReportTreatState(numbers))
+  treat_state <- ReportTreatState(numbers)
+  treat_desc <- ReportTreatSentence(treat_state)
+  # KIT-236 (I06): the p-values are TREAT's at a fold-change threshold above 0.
+  pvalue_text <- ReportPvalueClause(treat_state)
   # KIT-236 (D11): the FDR method of each comparison where the record names it, else the rule.
   fdr_text <- ReportFdrSentence(numbers)
   # KIT-236 (D10): the technical-replicate block, when the record holds it.
@@ -790,7 +794,7 @@ DIFFERENTIAL ABUNDANCE ANALYSIS
 Differential abundance analysis of proteins was performed using the adjusted 
 abundance matrix for the comparisons defined in the contrast table. The 'limma' R 
 package (Ritchie et al., 2015) was used. A linear model was fitted using the formula '{formula_string_val}' with the 
-'lmFit' function, and p-values were calculated using the 'eBayes' function.{block_text} 
+'lmFit' function, and {pvalue_text}.{block_text} 
 {trend_robust_text} {fdr_text} 
 {treat_desc} Significant differentially expressed proteins were defined as those 
 with q-values less than {ui_q_val_thresh}.
@@ -1079,8 +1083,10 @@ ReportRecordFacts <- function(design_matrix, study_params) {
   labels <- c(design_builder = "import and design", intensity_filter = "intensity filter",
     duplicate_resolution = "duplicate resolution", qc_finalize = "quality-control finalisation",
     itsd_normalisation = "internal-standard normalisation", log2 = "log2 transformation",
-    between_sample_normalisation = "between-sample normalisation", ruv = "RUV-III correction",
+    between_sample_normalisation = "between-sample normalisation", ruv = "RUV correction",
     pearson_selection = "sample-correlation filter")
+  # KIT-236 (I05): a step without a label (the filter's Skip, `<prefix>_norm_complete`; a reset; a legacy step) is left
+  # out: it changes no count, and an internal operation name is never printed.
   counts <- character()
   for (step in steps) {
     feature_rows <- step$dimensions$rows
@@ -1088,17 +1094,51 @@ ReportRecordFacts <- function(design_matrix, study_params) {
     operation <- as.character(step$operation %||% "")
     key <- names(labels)[vapply(names(labels), function(k) identical(operation, k) || endsWith(operation, paste0("_", k)),
       logical(1))]
-    counts <- c(counts, paste(if (length(key)) labels[[key[[1L]]]] else gsub("_", " ", operation), feature_rows))
+    if (length(key)) counts <- c(counts, paste(labels[[key[[1L]]]], feature_rows))
   }
   if (length(counts)) facts$step_features <- paste(counts, collapse = "; ")
-  # The samples the sample-correlation filter kept, only when its step is in the record: n = the runs of the design
-  # table (written before any filter), k = the samples of the record's analysed design.
-  pearson <- Filter(function(step) endsWith(as.character(step$operation %||% ""), "pearson_selection"), steps)
-  if (length(pearson) && length(rows) && is.data.frame(design_matrix)) {
-    threshold <- Filter(function(p) identical(p$name, "min_pearson_correlation_threshold"),
-      pearson[[length(pearson)]]$parameters)
-    facts$samples_kept <- list(k = length(rows), n = nrow(design_matrix),
-      threshold = if (length(threshold)) decode(threshold[[1L]]$value) else NULL)
+  # The samples the sample-correlation filter kept, only when its step is in the record (KIT-236 I02): n = the samples
+  # given to the filter, k = the samples of the record's analysed design; the filter's own removals are the step's
+  # columns (samples plus a fixed number of id columns) less those of the step before it, so a sample that left the
+  # design at an earlier step is not counted as the filter's.
+  pearson_at <- which(vapply(steps, function(step) endsWith(as.character(step$operation %||% ""), "pearson_selection"),
+    logical(1)))
+  if (length(pearson_at) && length(rows)) {
+    at <- pearson_at[[length(pearson_at)]]
+    columns_of <- function(step) {
+      value <- step$dimensions$columns
+      if (is.numeric(value) && length(value) == 1L) value else NA_real_
+    }
+    before <- Filter(function(i) !is.na(columns_of(steps[[i]])), seq_len(at - 1L))
+    removed <- if (length(before)) columns_of(steps[[before[[length(before)]]]]) - columns_of(steps[[at]]) else NA_real_
+    threshold <- Filter(function(p) identical(p$name, "min_pearson_correlation_threshold"), steps[[at]]$parameters)
+    if (!is.na(removed) && removed >= 0) {
+      facts$samples_kept <- list(k = length(rows), n = length(rows) + removed,
+        threshold = if (length(threshold)) decode(threshold[[1L]]$value) else NULL)
+    }
+  }
+  # KIT-236 (I09): the comparisons and assays whose test could not be computed, as the record names them.
+  failed <- da$failures %||% list()
+  if (length(failed)) {
+    facts$failures <- data.frame(
+      contrast = vapply(failed, function(x) as.character(x$contrast %||% NA_character_), ""),
+      assay = vapply(failed, function(x) as.character(x$assay %||% NA_character_), ""),
+      error = vapply(failed, function(x) as.character(x$error %||% ""), ""), stringsAsFactors = FALSE)
+  }
+  # KIT-236 (I01): the declared RUV design (KIT-129) tests the uncorrected values with each assay's factors in the model;
+  # the RUV step's record names the design and the factors per assay.
+  ruv_steps <- Filter(function(step) grepl("(^|_)ruv$", as.character(step$operation %||% "")), steps)
+  if (length(ruv_steps)) {
+    ruv_step <- ruv_steps[[length(ruv_steps)]]
+    design_parameter <- Filter(function(p) identical(p$name, "ruv_design"), ruv_step$parameters)
+    declared <- ruv_step$outcomes$ruv_design %||% (if (length(design_parameter)) decode(design_parameter[[1L]]$value))
+    if (ReportKnown(declared)) {
+      best_k <- ruv_step$outcomes$best_k
+      facts$ruv_declared <- list(design = as.character(declared),
+        k = if (is.list(best_k) && length(best_k) && !is.null(names(best_k))) {
+          unlist(lapply(best_k, function(x) if (is.numeric(x) && length(x) == 1L) x else NA_real_))
+        } else NULL)
+    }
   }
   # Internal standards: the assays the file lists under 'ITSD Features Per Assay' (KIT-235's parser returns the block
   # as a section of its own).
@@ -1109,6 +1149,7 @@ ReportRecordFacts <- function(design_matrix, study_params) {
     identical(step$operation, "normalization-ruv"), steps)
   facts$normalisation_recorded <- ReportKnown(study_params[["Between-Sample Normalization"]][["Method"]]) ||
     ReportKnown(study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]][["normaliseBetweenSamples"]][["method"]]) ||
+    ReportKnown(study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]][["normaliseBetweenSamples"]][["normalisation_method"]]) ||
     length(norm_steps) > 0L
   facts
 }
@@ -1220,6 +1261,40 @@ ReportContrastList <- function(numbers) {
   if (!length(friendly)) return("")
   paste0(" (", length(friendly), if (length(friendly) == 1L) " comparison: " else " comparisons: ",
     paste(friendly, collapse = ", "), ")")
+}
+
+#' KIT-236 (I06): how the p-values were computed: limma's TREAT test at a fold-change threshold above 0, else eBayes
+ReportPvalueClause <- function(treat) {
+  if (identical(treat$state, "treat")) {
+    return(paste("the variances were moderated with limma's empirical Bayes method ('eBayes'), and p-values were",
+      "calculated with limma's TREAT test against the fold-change threshold"))
+  }
+  if (identical(treat$state, "zero")) return("p-values were calculated using the 'eBayes' function")
+  paste("p-values were calculated with limma's moderated t-test ('eBayes'), or with its TREAT test if a fold-change",
+    "threshold was used (not recorded)")
+}
+
+#' KIT-236 (I07): the second criterion of significance at a fold-change threshold, for the count and volcano sentences
+ReportFoldChangeCriterion <- function(treat) {
+  if (identical(treat$state, "treat") && !is.na(treat$cutoff)) {
+    paste0(" and an absolute log2 fold change of at least ", treat$cutoff)
+  } else ""
+}
+
+#' KIT-236 (I08): a contrast as the DA paragraph names it (the record's friendly name), else as given
+ReportComparisonName <- function(contrast, contrasts) {
+  hit <- if (length(contrasts)) unname(contrasts[as.character(contrast)]) else rep(NA_character_, length(contrast))
+  ifelse(is.na(hit), as.character(contrast), hit)
+}
+
+#' KIT-236 (I09): the comparisons and assays whose test could not be computed, with the error the record holds
+ReportFailureText <- function(numbers) {
+  failures <- numbers$report_facts$failures
+  if (is.null(failures) || !nrow(failures)) return("")
+  names <- ReportComparisonName(failures$contrast, numbers$report_facts$contrasts)
+  items <- paste0(names, ifelse(is.na(failures$assay), "", paste0(" in ", failures$assay)),
+    ifelse(nzchar(failures$error), paste0(" (", failures$error, ")"), ""))
+  paste0(" The test could not be computed for ", paste(items, collapse = "; "), ".")
 }
 
 #' The technical-replicate block (D10): when the record's block reason contains 'technical_replicates'
