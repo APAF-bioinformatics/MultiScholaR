@@ -1126,7 +1126,8 @@ protNormW2Normalization <- function(fixture, dispatch, norm, settings, post_qc, 
         assertDIAExportReady(manager, allow_action = "normalization")
         diaNormalizationRequest(manager, settings, norm, "group")
     })
-    removeProtNormOwnFiles(fixture$paths, "normalization") # KIT-257: as dispatchProtNormNormalization's actions start
+    # KIT-257 (AUDIT-KIT-257-impl I03): as dispatchProtNormNormalization's actions start (where the function exists).
+    if (exists("removeProtNormOwnFiles", mode = "function")) removeProtNormOwnFiles(fixture$paths, "normalization")
     state <- if (identical(settings$ruv_mode, "skip")) "normalized" else "ruv_corrected"
     result <- dispatch("normalization-ruv", request$parameters, request$source, state)
     withDIAStateScope(manager, function() publishDIAReferenceNormalization(manager, settings, result[c("value", "reference")],
@@ -1139,7 +1140,8 @@ protNormW2Correlation <- function(fixture, dispatch, norm, threshold, aesthetics
     source <- withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "correlation")
         source <- diaCorrelationSource(manager, norm)
-        removeProtNormOwnFiles(fixture$paths, "correlation") # KIT-257: as dispatchProtNormCorrelation's first action
+        # KIT-257 (AUDIT-KIT-257-impl I03): as dispatchProtNormCorrelation's first action (where the function exists).
+        if (exists("removeProtNormOwnFiles", mode = "function")) removeProtNormOwnFiles(fixture$paths, "correlation")
         readDIAStateMetadata(manager, source)
         source
     })
