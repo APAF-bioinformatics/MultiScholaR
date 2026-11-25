@@ -11,7 +11,7 @@ kit247Click <- function(api, id) {
 }
 
 #' The design builder through its inputs (guiEntryDesignActions, presses raised, several comparisons).
-kit247DesignActions <- function(api, design, contrasts, prefix, tech_rep) {
+kit247DesignActions <- function(api, design, contrasts, prefix, tech_rep, formula = "~ 0 + group") {
     builder <- function(name) paste0(prefix, name)
     groups <- unique(design$group)
     for (i in seq_along(groups)) {
@@ -33,7 +33,7 @@ kit247DesignActions <- function(api, design, contrasts, prefix, tech_rep) {
         }
     }
     for (pair in contrasts) {
-        api$set(stats::setNames(list(pair[[1L]], pair[[2L]], "~ 0 + group"), builder(c("contrast_group1", "contrast_group2", "formula_string"))))
+        api$set(stats::setNames(list(pair[[1L]], pair[[2L]], formula), builder(c("contrast_group1", "contrast_group2", "formula_string"))))
         kit247Click(api, builder("add_contrast"))
     }
     kit247Click(api, builder("save_results"))
@@ -71,8 +71,9 @@ kit247Resave <- function(api, lane, kind) {
         }
     }
     if (identical(kind, "contrast")) contrasts <- list(spec$contrast, rev(spec$contrast))
+    formula <- if (identical(kind, "formula")) "~ 0 + group + replicates" else "~ 0 + group"
     api$set(stats::setNames(list("design"), api$tabs))
-    kit247DesignActions(api, design, contrasts, prefix, tech_rep = !prot)
+    kit247DesignActions(api, design, contrasts, prefix, tech_rep = !prot, formula = formula)
 }
 
 kit247Confirm <- function(api, lane) {
@@ -185,6 +186,7 @@ kit247Lane <- function(lane_id, until, actions) {
             history = function() guiEntryHistory(manager()),
             status = function() lapply(shiny::isolate(workflow_data$tab_status), as.character),
             notes = function() vapply(log$notes, `[[`, "", "message"),
+            note_types = function() vapply(log$notes, `[[`, "", "type"),
             clear_notes = function() log$notes <- list(),
             modals = function() length(log$modals),
             notices = function() notices$count,
@@ -559,52 +561,120 @@ kit247DaGroup <- function(manager, runs) {
     })
 }
 
+#' I07's sequence after the confirmed re-save: Reset, (Quality Control re-applied when `reapply`), run, correlation,
+#' export, load, DA; every notification and the active history's state names are recorded after each press, and whether
+#' the normalisation run committed a state (coordinator's ruling: recording only; I07's presses and expectations kept).
+kit247I07 <- function(lane_id, reapply = FALSE) {
+    kit247Lane(lane_id, "correlation", function(api, probe) {
+        lane <- probe$lane
+        log <- list()
+        note <- function(press) {
+            log[[length(log) + 1L]] <<- list(press = press, history = paste(probe$history(), collapse = " > "),
+                notes = paste(probe$notes(), collapse = " || "))
+            probe$clear_notes()
+        }
+        run <- kit247MovedRun(api, lane)
+        kit247Resave(api, lane, "move")
+        kit247Click(api, if (identical(lane$omic_type, "proteomics")) "design_matrix-confirm_design_resave" else "design-confirm_design_resave")
+        note("resave + confirm")
+        kit247Reset(api, lane)
+        note("reset")
+        if (reapply) {
+            for (id in c("qc_intensity", "qc_duplicates", "qc_finalize")) {
+                api$set(stats::setNames(list(probe$steps[[id]]$tab), probe$tabs))
+                probe$steps[[id]]$run(api)
+                note(id)
+            }
+        }
+        before_run <- probe$history()
+        kit247Run(api, lane)
+        after_run <- probe$history()
+        run_committed <- length(after_run) > length(before_run) || !identical(after_run, before_run)
+        note("run")
+        prot <- identical(lane$omic_type, "proteomics")
+        api$set(stats::setNames(list(if (prot) "normalization" else "norm"), api$tabs))
+        if (prot) {
+            api$set(list(`normalization-norm_qc_tabs` = "Correlation Filtering", `normalization-min_pearson_correlation_threshold` = 0.5))
+            kit247Click(api, "normalization-apply_correlation_filter")
+            note("correlation")
+            kit247Click(api, "normalization-export_filtered_session")
+            note("export")
+            api$set(stats::setNames(list("da"), api$tabs))
+            kit247Click(api, "differential_expression-load_filtered_session")
+            note("load")
+            api$set(list(`differential_expression-formula_string` = "~ 0 + group", `differential_expression-da_q_val_thresh` = 0.05,
+                `differential_expression-treat_lfc_cutoff` = 0))
+            modals <- probe$modals()
+            kit247Click(api, "differential_expression-run_da_analysis")
+            if (probe$modals() > modals) kit247Click(api, "differential_expression-acknowledge_qvalue_warning")
+            note("da")
+        } else {
+            api$set(list(`norm-min_pearson_correlation_threshold` = 0.5))
+            kit247Click(api, "norm-apply_correlation_filter")
+            note("correlation")
+            kit247Click(api, "norm-export_session")
+            note("export")
+            api$set(stats::setNames(list("de"), api$tabs))
+            kit247Click(api, "de-load_filtered_session")
+            note("load")
+            api$set(list(`de-formula_string` = "~ 0 + group", `de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 0))
+            kit247Click(api, "de-run_da_analysis")
+            note("da")
+        }
+        probe$flush()
+        record <- buildWorkflowAnalysisRecord(probe$manager())
+        rows <- as.data.frame(record$design$rows, stringsAsFactors = FALSE)
+        hit <- which(apply(rows, 1L, function(r) any(as.character(r) == run)))
+        builder <- Filter(function(step) identical(step$operation, "design_builder"), record$steps)
+        list(da = kit247DaGroup(probe$manager(), run), record_group = unique(as.character(rows$group[hit])),
+            builder_entity = if (length(builder)) builder[[1L]]$result_entity_id else NA_character_,
+            design_entity = probe$entity(kit247DesignState(lane)), run_committed = run_committed, log = log,
+            record_steps = paste(vapply(record$steps, function(step) paste0(step$state, "=", step$operation), ""), collapse = " > "))
+    })
+}
+
+kit247PrintLog <- function(label, out) {
+    cat(sprintf("KIT247-LOG %s run_committed=%s da=%s record_group=%s builder_entity=%s design_entity=%s\n", label,
+        out$run_committed, out$da, paste(out$record_group, collapse = "|"), out$builder_entity, out$design_entity))
+    cat(sprintf("KIT247-LOG %s record_steps: %s\n", label, out$record_steps))
+    for (entry in out$log) cat(sprintf("KIT247-LOG %s [%s] history: %s | notes: %s\n", label, entry$press, entry$history, entry$notes))
+}
+
 for (lane_id in c("prot_lfq", "lipid_canonical")) {
     test_that(paste("KIT-247 I07 (VAL-277):", lane_id, "after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself"), {
-        out <- kit247Lane(lane_id, "correlation", function(api, probe) {
-            lane <- probe$lane
-            run <- kit247MovedRun(api, lane)
-            kit247Resave(api, lane, "move")
-            kit247Click(api, if (identical(lane$omic_type, "proteomics")) "design_matrix-confirm_design_resave" else "design-confirm_design_resave")
-            kit247Reset(api, lane)
-            kit247Run(api, lane)
-            prot <- identical(lane$omic_type, "proteomics")
-            api$set(stats::setNames(list(if (prot) "normalization" else "norm"), api$tabs))
-            if (prot) {
-                api$set(list(`normalization-norm_qc_tabs` = "Correlation Filtering", `normalization-min_pearson_correlation_threshold` = 0.5))
-                kit247Click(api, "normalization-apply_correlation_filter")
-                kit247Click(api, "normalization-export_filtered_session")
-                api$set(stats::setNames(list("da"), api$tabs))
-                kit247Click(api, "differential_expression-load_filtered_session")
-                api$set(list(`differential_expression-formula_string` = "~ 0 + group", `differential_expression-da_q_val_thresh` = 0.05,
-                    `differential_expression-treat_lfc_cutoff` = 0))
-                modals <- probe$modals()
-                kit247Click(api, "differential_expression-run_da_analysis")
-                if (probe$modals() > modals) kit247Click(api, "differential_expression-acknowledge_qvalue_warning")
-            } else {
-                api$set(list(`norm-min_pearson_correlation_threshold` = 0.5))
-                kit247Click(api, "norm-apply_correlation_filter")
-                kit247Click(api, "norm-export_session")
-                api$set(stats::setNames(list("de"), api$tabs))
-                kit247Click(api, "de-load_filtered_session")
-                api$set(list(`de-formula_string` = "~ 0 + group", `de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 0))
-                kit247Click(api, "de-run_da_analysis")
-            }
-            probe$flush()
-            record <- buildWorkflowAnalysisRecord(probe$manager())
-            rows <- as.data.frame(record$design$rows, stringsAsFactors = FALSE)
-            hit <- which(apply(rows, 1L, function(r) any(as.character(r) == run)))
-            builder <- Filter(function(step) identical(step$operation, "design_builder"), record$steps)
-            list(da = kit247DaGroup(probe$manager(), run), record_group = unique(as.character(rows$group[hit])),
-                builder_entity = if (length(builder)) builder[[1L]]$result_entity_id else NA_character_,
-                design_entity = probe$entity(kit247DesignState(lane)))
-        })
+        out <- kit247I07(lane_id)
+        kit247PrintLog(paste("I07", lane_id), out)
         new <- kit247LaneSpec(lane_id)$new
         expect_identical(out$da, new)
         expect_identical(out$record_group, new)
         expect_identical(out$builder_entity, out$design_entity)
     })
 }
+
+test_that("KIT-247 I07b (VAL-277, coordinator's ruling): lipidomics, Quality Control re-applied after the confirmed re-save, then the run: the DA is on the NEW groups and the record agrees with itself", {
+    out <- kit247I07("lipid_canonical", reapply = TRUE)
+    kit247PrintLog("I07b lipid_canonical", out)
+    expect_identical(out$da, "WT")
+    expect_identical(out$record_group, "WT")
+    expect_false(is.na(out$builder_entity))
+    expect_identical(out$builder_entity, out$design_entity)
+})
+
+test_that("KIT-247 E15b (coordinator's ruling): after the cut, a lipidomics run with no Quality Control either commits a state or says why it did not; never neither", {
+    out <- kit247Lane("lipid_canonical", "correlation", function(api, probe) {
+        kit247Resave(api, probe$lane, "move")
+        kit247Click(api, "design-confirm_design_resave")
+        before <- probe$history()
+        probe$clear_notes()
+        kit247Run(api, probe$lane)
+        list(before = before, after = probe$history(), notes = probe$notes(), types = probe$note_types())
+    })
+    cat(sprintf("KIT247-LOG E15b before: %s | after: %s | notes: %s\n", paste(out$before, collapse = " > "),
+        paste(out$after, collapse = " > "), paste(out$notes, collapse = " || ")))
+    committed <- !identical(out$after, out$before)
+    explained <- any(out$types %in% c("error", "warning"))
+    expect_true(committed || explained)
+})
 
 test_that("KIT-247 G3 (VAL-277): after the cut, Quality Control re-applied and a run give the numbers of a project designed that way from the start", {
     qc <- c("qc_intensity", "qc_duplicates", "qc_finalize")
@@ -628,4 +698,64 @@ test_that("KIT-247 G3 (VAL-277): after the cut, Quality Control re-applied and a
         normalised(probe)
     })
     expect_identical(redone, fresh)
+})
+
+# ---------------------------------------------------------------------------------------------------------------------
+# VAL-288 (the owner, 2026-11-26): a formula-only change, and on the proteomics import an organism, taxon or FASTA-only
+# change, count as changes: they ask; Save resets the differential analysis (formula) or enrichment only (organism).
+# ---------------------------------------------------------------------------------------------------------------------
+
+for (lane_id in c("prot_lfq", "lipid_canonical")) {
+    test_that(paste("KIT-247 F288a (VAL-288 (a)):", lane_id, "a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again"), {
+        key <- if (identical(lane_id, "prot_lfq")) "differential_expression" else "differential_analysis"
+        out <- kit247Lane(lane_id, "da", function(api, probe) {
+            before <- list(history = probe$history(), head = probe$head(), entity = probe$entity(), status = probe$status(),
+                modals = probe$modals())
+            kit247Resave(api, probe$lane, "formula")
+            asked <- probe$modals() > before$modals
+            kit247Click(api, if (identical(probe$lane$omic_type, "proteomics")) "design_matrix-confirm_design_resave" else "design-confirm_design_resave")
+            probe$flush()
+            list(before = before, asked = asked, history = probe$history(), head = probe$head(), entity = probe$entity(),
+                status = probe$status(), formula = resolveOmicsDesignFormula(probe$bus("config_list")))
+        })
+        expect_identical(out$before$status[[key]], "complete")
+        expect_true(out$asked)
+        expect_identical(out$history, out$before$history)
+        expect_identical(out$head, out$before$head)
+        expect_identical(out$entity, out$before$entity)
+        expect_identical(out$status[[key]], "pending")
+        expect_identical(out$status$quality_control, out$before$status$quality_control)
+        expect_identical(gsub("\\s", "", out$formula), "~0+group+replicates")
+    })
+}
+
+test_that("KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism", {
+    out <- kit247Lane("prot_lfq", "correlation", function(api, probe) {
+        folder <- kit247ExportedDesign(probe, identity)
+        before <- list(history = probe$history(), head = probe$head(), entity = probe$entity(), modals = probe$modals(),
+            status = probe$status())
+        api$set(stats::setNames(list("design"), api$tabs))
+        api$set(list(`design_matrix-import_dir_text` = folder, `design_matrix-import_taxon_id` = 10090L,
+            `design_matrix-import_organism_name` = "Mus musculus"))
+        kit247Click(api, "design_matrix-confirm_import")
+        asked <- probe$modals() > before$modals
+        kit247Click(api, "design_matrix-confirm_design_resave")
+        probe$flush()
+        list(before = before, asked = asked, history = probe$history(), head = probe$head(), entity = probe$entity(),
+            status = probe$status(), taxon = probe$bus("taxon_id"), organism = probe$bus("organism_name"))
+    })
+    expect_true(out$asked)
+    expect_identical(out$history, out$before$history)
+    expect_identical(out$head, out$before$head)
+    expect_identical(out$entity, out$before$entity)
+    expect_identical(out$status$quality_control, out$before$status$quality_control)
+    expect_identical(out$status$normalization, out$before$status$normalization)
+    expect_identical(as.integer(out$taxon), 10090L)
+    expect_identical(out$organism, "Mus musculus")
+})
+
+test_that("KIT-247 F288c (VAL-288): the question names what changed (draft wording)", {
+    expect_match(omicsDesignResaveLimitedText("formula"), "formula", fixed = TRUE)
+    expect_match(omicsDesignResaveLimitedText("organism"), "organism", fixed = TRUE)
+    expect_match(omicsDesignResaveLimitedText("fasta"), "FASTA", fixed = TRUE)
 })
