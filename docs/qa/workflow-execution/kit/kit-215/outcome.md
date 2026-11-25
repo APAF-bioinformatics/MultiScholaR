@@ -14,7 +14,7 @@ Ticket r1.3 (`tickets/kit/KIT-215.md`, section 18: step 0 on f93dfd85). Plan aud
 | 66f32932 | correction pass (R2): T7b asserts the refusal's class (the ticket's stated expectation) and its sentence, not the caught error's message |
 | a55acb66 | merge of staging 185ebf75 (merge train: KIT-202, KIT-184; ledger to VAL-200, this row after) |
 | 9a14cfa7 | audit repairs, tests first: T2 and T11 filtered summaries (K215-I01), T7b's exact refusal text restored (K215-I02); nothing under `R/` |
-| (next) | audit repairs K215-I01 (two lines per summary formatter) and K215-I02 (`enrichmentErrorMessage` at the five error signals); NEWS (I03), ledger wording (I06), records (I04, I05, I07, I08, O1) |
+| d73d8bc0, e741758d | audit repairs K215-I01 (two lines per summary formatter) and K215-I02 (`enrichmentErrorMessage` at the five error signals); NEWS (I03), ledger wording (I06), records (I04, I05, I07, I08, O1) |
 
 ## Runs (observed)
 
@@ -40,8 +40,12 @@ See `runs.tsv`.
   - G1's results digest and G5's 16 report-text digests (four templates, records with and without the outcome, no record; the limits sentence removed) are identical base against head (`r2/digests-*.txt`).
   - G2 (KIT-203's gate g1 on head): environment as KIT-189's; "match on every list" (400 of 400).
 - **R3, run 45502798552: full suite on 94d57634 (head: the merge of staging d048898d plus the correction pass) against d048898d (base)** (`r3/`): 478 files `same`. The new file is only on head: 110 passed, 0 failed, so T7b's corrected row passes. No file timed out or crashed. Check findings are identical on both sides (3 WARNINGs, 3 NOTEs). This also re-runs R2's scope after the correction pass.
-- **Audit repairs and R2b** (implementation audit `AUDIT-KIT-215-impl-20261125.md`; the coordinator's ruling: audit repairs, not a second correction pass, verified in the one R2b merge check that is due because the merge train landed): PENDING.
-- **Runner use (before R2b):** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours (expected 105.67, ceiling 469.33).
+- **Audit repairs and R2b** (implementation audit `AUDIT-KIT-215-impl-20261125.md`; the coordinator's ruling: audit repairs, not a second correction pass, verified in the one R2b merge check that is due because the merge train landed). **R2b, run 45519111732: e741758d (head) against staging 185ebf75 (base)** (`r2b/`):
+  - All 26 files `same`, including KIT-202's `test-kit202-intensity-filter-samples.R`, `test-workflow-analysis-record.R`, `test-workflow-omics-binding-steps.R` and `test-gui-entry-proteomics.R` (KIT-184's re-frozen lane).
+  - The new file is only on head: 112 passed, 0 failed. That includes T2's and T11's filtered summaries (K215-I01) and T7b's exact refusal text (K215-I02).
+  - Check findings are identical on both sides (3 WARNINGs, 3 NOTEs).
+  - Failing-first for the repairs: the request takes one head and one base, and the base (staging) does not contain the new file. So the base values are as the audit states: I01 by reading ("Showing 0 up-/down-regulated GO terms"); I02 by R2's recorded head message (run 45495673217).
+- **Runner use:** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours within the ceiling (expected 105.67, ceiling 469.33), plus R2b 204 job-minutes = 13.6 core-hours (outside the ceiling, as ticket 11 states).
 
 ## The design of the GO classification (S0-1; step-0 ruling SR-1)
 
@@ -71,7 +75,7 @@ The GO route calls `clusterProfiler::enricher` as before. Only for a list with p
 | # | Criterion | Evidence | State |
 |---|---|---|---|
 | A1 | G0: engine conditions and fixture families | `g0a/engine.tsv`, `g0b/g0.tsv` | met |
-| A2 | failing-first rows fail at base values; guards pass; all pass on the fix | R1; R2 (T7b exposed K215-I02); R3 110/0; R2b (audit repairs) | see R2b |
+| A2 | failing-first rows fail at base values; guards pass; all pass on the fix | R1; R2 (T7b exposed K215-I02); R3 110/0; R2b 112/0 with the audit repairs | met |
 | A3 | R2: every file `same` except the new file | `r2/compare.tsv` | met |
 | A4 | KIT-203 gate G1 on head | `g2/g1-summary.tsv` | met |
 | A5 | R3 full suite on the merge | `r3/compare.tsv`: 478 same, new file only on head | met |
