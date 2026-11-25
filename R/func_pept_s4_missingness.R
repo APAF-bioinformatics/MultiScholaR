@@ -48,6 +48,12 @@ setMethod( f="peptideMissingValueImputation"
              has_declared_replicates <- length(replicate_group_column) == 1L &&
                !is.na(replicate_group_column) && nzchar(trimws(replicate_group_column)) &&
                replicate_group_column %in% names(theObject@design_matrix)
+             # KIT-222 (owner's OD-3): imputation within a key holding runs of more than one technical-replicate
+             # marking action would fill one biological sample's values from another's; such a design is refused.
+             if (has_declared_replicates) {
+               resolveProtTechnicalReplicateBlock(as.data.frame(theObject@design_matrix), theObject@group_id,
+                 replicate_group_column)
+             }
 
              if (!has_declared_replicates) {
                peptide_values_imputed <- theObject@peptide_data
