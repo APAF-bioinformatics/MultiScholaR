@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-235 gate G0 (a, b, c): observe the lipid/metab report parser defect on writer files and the GUI lanes before any code",
+  "label": "KIT-235 G0 on kit-235-g0 90802bdf (staging 67569959 + tools/kit235/g0.R)",
+  "package_commit": "90802bdf6ff5b67b7c514554b1934b2f4d80613c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit235/g0.R",
+      "args": [
+        "6756995954684128d617ab92dab983bdcaa05394",
+        "436cdbe83aebfef1b8ec1c7c6d77027c004e4e0f",
+        "5e7efe5fa33e3eb69d22f3084154a6d8427786c3"
+      ],
+      "out": "kit235-g0",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [
+    "main"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
