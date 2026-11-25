@@ -361,6 +361,50 @@ omicsItsdRowsUsed <- function(binding, before, after, feature_ids) {
     out
 }
 
+#' The rows a pattern-mode ITSD step used, read from the stored states when its product names none (a product saved by a
+#' build before KIT-260; AUDIT-KIT-260-impl I02 (a), the coordinator's ruling of 2026-11-26): the identifiers the S4
+#' method stored in the ITSD state's `args$ITSDNormalization$itsd_features_per_assay`, their annotations read from the
+#' state the step read (its `previous_state`), two columns and only those rows, a page at a time (no assay is
+#' hydrated), and the note's rule (`omicsItsdLegacyPatternMatches`) with that state's stored pattern. Pattern mode only:
+#' the method records `itsd_pattern_columns` only then. No state's values or arguments are read or written beyond these.
+#' @param binding The omic's binding.
+#' @param context The owner's context.
+#' @param record The ITSD state's record.
+#' @return `omicsItsdRowsUsed()`'s form, or an empty list when the rows cannot be read.
+#' @noRd
+omicsItsdRowsFromStates <- function(binding, context, record) {
+    slots <- record$data$slots
+    itsd <- slots$args$ITSDNormalization
+    ids <- itsd$itsd_features_per_assay
+    if (!length(ids) || is.null(itsd$itsd_pattern_columns)) return(list())
+    previous <- record$previous_state
+    reference <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) context$snapshot$states[[previous]]
+    id_column <- slots[[binding$id_slot]]
+    annotation <- slots$annotation_id_column
+    regex <- slots$internal_standard_regex
+    if (is.null(reference) || !is.character(id_column) || length(id_column) != 1L) return(list())
+    readable <- is.character(annotation) && length(annotation) == 1L && !is.na(annotation)
+    rows <- tryCatch(omicsVisitAssays(binding, list(.context = context), reference, function(assay, scope) {
+        if (!readable || !all(c(id_column, annotation) %in% scope$metadata$columns)) return(NULL)
+        wanted <- as.character(ids[[assay]])
+        omicsReadRows(scope, c(id_column, annotation), function(page) as.character(page[[id_column]]) %in% wanted)
+    }, assays = names(ids)), error = function(error) NULL)
+    used <- list()
+    legacy <- list()
+    for (assay in names(ids)) {
+        identifier <- as.character(ids[[assay]])
+        table <- rows[[assay]]
+        names_used <- if (is.null(table)) rep(NA_character_, length(identifier)) else
+            as.character(table[[annotation]])[match(identifier, as.character(table[[id_column]]))]
+        used[[assay]] <- list(identifier = identifier, annotation = names_used)
+        flagged <- omicsItsdLegacyPatternMatches(names_used, regex)
+        if (any(flagged)) legacy[[assay]] <- names_used[flagged]
+    }
+    out <- list(itsd_used = used, itsd_id_column = id_column)
+    if (length(legacy)) out$itsd_legacy_rows <- legacy
+    out
+}
+
 #' One assay's rows used, in words: "annotation (identifier column identifier)" each (KIT-260, OD-2 (b)).
 #' @noRd
 omicsItsdRowWords <- function(rows, id_column, texts = omicGuiItsdTexts()) {
@@ -1280,12 +1324,14 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
         outcomes$itsd_applied <- TRUE
         # KIT-260 (VAL-241; E-2): the rows used per assay, annotation and identifier (OD-2 (b)), and the note where the
         # stored pattern matched names through the alternatives the corrected default removed (OD-3 (a)); read from the
-        # step's saved product, as the RUV outcomes are (a product saved before KIT-260 names none).
+        # step's saved product, as the RUV outcomes are. A product saved before KIT-260 names none: the rows are then
+        # read from the stored states (AUDIT-KIT-260-impl I02 (a): "read from the state before the ITSD step").
         product <- record$data$products[[paste0(operation, "_science")]]
         saved <- if (isSavedWorkflowReference(product)) tryCatch({
             hydrated <- hydrateSavedWorkflowEntity(context$store, product)
             if (is.list(hydrated$value)) hydrated$value else hydrated
         }, error = function(error) NULL) else NULL
+        if (!length(saved$itsd_used)) saved <- omicsItsdRowsFromStates(binding, context, record)
         if (length(saved$itsd_used)) {
             outcomes$itsd_features_per_assay <- lapply(saved$itsd_used, omicsItsdRowWords, id_column = saved$itsd_id_column)
         }
