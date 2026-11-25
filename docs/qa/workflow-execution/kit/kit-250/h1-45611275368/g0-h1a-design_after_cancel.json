@@ -1,0 +1,49 @@
+{
+  "tab_status": {
+    "setup_import": "incomplete",
+    "design_matrix": "disabled",
+    "quality_control": "disabled",
+    "normalization": "disabled",
+    "differential_expression": "disabled",
+    "enrichment_analysis": "disabled",
+    "session_summary": "disabled"
+  },
+  "setup_import": null,
+  "notes": [],
+  "modals": [
+    {
+      "start": 1795609338331,
+      "end": 1795609339131,
+      "title": "Experiment Setup",
+      "progress": false,
+      "text": "Experiment Setup Experiment Label: Project Output Directory Select where to create the project directories: Directory Path: Browse... A new folder will be created here with your experiment label Cancel Continue"
+    },
+    {
+      "start": 1795609345931,
+      "end": 1795609347331,
+      "title": "Processing Data",
+      "progress": true,
+      "text": "Processing Data Reading DIANN data... Please wait while your data is being processed."
+    },
+    {
+      "start": 1795609347531,
+      "end": 1795609357931,
+      "title": "Select Primary Organism",
+      "progress": false,
+      "text": "Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection"
+    }
+  ],
+  "texts": {
+    "proteomics_workflow-setup_import-import_status": "Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.",
+    "proteomics_workflow-setup_import-data_summary": ""
+  },
+  "stepper": [
+    "stepper-step step-current",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending"
+  ]
+}

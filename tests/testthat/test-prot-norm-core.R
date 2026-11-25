@@ -1850,10 +1850,13 @@ test_that("GUI audit A111-03: a managed worker failure shows the worker's reason
         click(1, list(status = "worker_failed", error = "No valid percentage found"))
         expect_identical(log$notes, c(working, "[error 15] Error applying proteomics step: No valid percentage found",
             "[error 10] Error in normalization: No valid percentage found"))
-        # A failure that is not the worker's own error keeps the controller's wording.
+        # KIT-252: a failure that is not the worker's own error is told in plain words (draft WP-1, the memory limit).
         click(2, list(status = "memory_guard", error = NULL))
-        expect_identical(log$notes, c(working, "[error 15] Error applying proteomics step: managed action ended: memory_guard",
-            "[error 10] Error in normalization: managed action ended: memory_guard"))
+        memory_limit <- paste("the step needed more memory than the application allows for one step (at most 16 GB, less",
+            "when the computer has less free memory), so it was stopped before it finished. Its result was not saved.",
+            "Closing other programs may help; if it stops again, this data set is too large for this step on this computer.")
+        expect_identical(log$notes, c(working, paste("[error 15] Error applying proteomics step:", memory_limit),
+            paste("[error 10] Error in normalization:", memory_limit)))
         expect_identical(fixture$manager$current_state, "protein_replicate_filtered")
     })
 })

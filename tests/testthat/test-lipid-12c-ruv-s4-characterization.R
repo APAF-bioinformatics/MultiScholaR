@@ -608,8 +608,9 @@ test_that("lipidomics S4 ruvIII_C_Varying forwards per-assay controls and cleans
   expect_identical(ruv_capture$k, 2L)
   expect_identical(ruv_capture$toCorrect, c("L1", "L2", "L3"))
   expect_identical(ruv_capture$potentialControls, c("L2", "L3"))
-  expect_equal(corrected_assay$Sample_4, c(113, 123, 133))
-  expect_equal(corrected_assay$Sample_2, c(111, 121, 131))
+  # KIT-224: the stub adds 100 to every value; the method restores each lipid's level, which removes it.
+  expect_equal(corrected_assay$Sample_4, c(13, 23, 33))
+  expect_equal(corrected_assay$Sample_2, c(11, 21, 31))
   expect_identical(
     corrected@design_matrix$Sample_ID,
     c("Sample_4", "Sample_2", "Sample_1", "Sample_3")
@@ -619,9 +620,10 @@ test_that("lipidomics S4 ruvIII_C_Varying forwards per-assay controls and cleans
   expect_identical(corrected@args$ctrl$`Positive Mode`, c("L2", "L3"))
 })
 
-# KIT-124 W1: the reference match, with nothing replaced. The method's output is RUVIIIC::RUVIII_C_Varying's own, value
-# for value: this method does not restore each lipid's level after the correction (the proteomics method does since
-# KIT-123 R2). That is today's behaviour, recorded here and not a statement of what it should be.
+# KIT-124 W1: the reference match, with nothing replaced. KIT-224 (decision M8): the method's output is
+# RUVIIIC::RUVIII_C_Varying's own with each lipid's level restored (`restoreRuvFeatureLevels`), as the proteomics method
+# does since KIT-123 R2; under the earlier rule (MultiScholaR.ruv_feature_levels = "shifted", the replay of a record
+# made before KIT-224) it is RUVIIIC::RUVIII_C_Varying's own, value for value.
 test_that("(KIT-124 W1) lipidomics ruvIII_C_Varying returns RUVIIIC::RUVIII_C_Varying's values exactly, per assay", {
   design_matrix <- data.frame(
     Sample_ID = sprintf("Sample_%d", c(3, 1, 2, 4, 7, 5, 8, 6)),
@@ -645,19 +647,24 @@ test_that("(KIT-124 W1) lipidomics ruvIII_C_Varying returns RUVIIIC::RUVIII_C_Va
       .before = 1L
     )
 
-    corrected <- suppressMessages(
-      suppressWarnings(
-        ruvIII_C_Varying(
-          newLipidRuvObject(assay_tbl = assay_tbl, design_matrix = design_matrix),
-          ruv_grouping_variable = "group",
-          ruv_number_k = k,
-          ctrl = controls
+    correct <- function() {
+      corrected <- suppressMessages(
+        suppressWarnings(
+          ruvIII_C_Varying(
+            newLipidRuvObject(assay_tbl = assay_tbl, design_matrix = design_matrix),
+            ruv_grouping_variable = "group",
+            ruv_number_k = k,
+            ctrl = controls
+          )
         )
       )
-    )
-    corrected_assay <- corrected@lipid_data$`Positive Mode`
-    after <- as.matrix(corrected_assay[, design_matrix$Sample_ID])
-    rownames(after) <- corrected_assay$database_identifier
+      corrected_assay <- corrected@lipid_data$`Positive Mode`
+      after <- as.matrix(corrected_assay[, design_matrix$Sample_ID])
+      rownames(after) <- corrected_assay$database_identifier
+      after
+    }
+    after <- correct()
+    shifted <- withr::with_options(list(MultiScholaR.ruv_feature_levels = "shifted"), correct())
 
     # The reference, called directly: Y in the design's sample order, M from the group.
     Y <- t(values[, design_matrix$Sample_ID])
@@ -667,9 +674,15 @@ test_that("(KIT-124 W1) lipidomics ruvIII_C_Varying returns RUVIIIC::RUVIII_C_Va
       k = k, Y = Y, M = M, toCorrect = colnames(Y), potentialControls = controls, progress = FALSE
     ))
 
-    expect_identical(after, reference, info = case)
+    original <- values[rownames(reference), colnames(reference), drop = FALSE]
+    expect_identical(after, restoreRuvFeatureLevels(reference, original), info = case)
     expect_identical(sum(is.na(after)), if (missing) 5L else 0L, info = case)
-    # the levels are the reference's, not the input's
-    expect_gt(max(abs(rowMeans(after, na.rm = TRUE) - rowMeans(values, na.rm = TRUE))), 1, label = paste("the level shift,", case))
+    # each lipid keeps its mean over the samples finite before and after
+    both <- is.finite(after) & is.finite(original)
+    mean_in <- function(m) rowSums(replace(m, !both, 0)) / rowSums(both)
+    expect_lt(max(abs(mean_in(after) - mean_in(original))), 1e-9, label = paste("the level kept,", case))
+    # under the earlier rule: the reference's values, with its level shift
+    expect_identical(shifted, reference, info = case)
+    expect_gt(max(abs(rowMeans(shifted, na.rm = TRUE) - rowMeans(values, na.rm = TRUE))), 1, label = paste("the level shift,", case))
   }
 })

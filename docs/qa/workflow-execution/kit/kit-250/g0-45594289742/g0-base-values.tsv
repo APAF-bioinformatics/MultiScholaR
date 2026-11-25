@@ -1,0 +1,248 @@
+case	moment	field	predicted	observed	verdict	session	utc
+a	import	how	(recorded)	organism dialog shown	recorded	A	2026-11-25T10:34:33Z
+a	dialog_open	modal_open	Select Primary Organism	Select Primary Organism	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	setup_import	complete	complete	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	design_matrix	pending	pending	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	setup_log_taxon_id	10090	10090	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	setup_log_organism	Mus musculus	Mus musculus	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	mixed_species_selection	absent	absent	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	form_taxon_disabled	TRUE	TRUE	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Copied default config.ini to scripts directory.	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	notice_success	(recorded)	absent	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	notice_primary	(recorded)	absent	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	notice_error	(recorded)	none	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	setup_log_timestamp	(recorded)	2026-11-25 10:34:31	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	screenshot	(recorded)	g0-a-dialog_open.png	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	dialog_text	(recorded)	Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Organism Taxon ID Proteins % Homo sapiens 9606 400 100 Previous1Next Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection	recorded	A	2026-11-25T10:34:35Z
+a	dialog_open	dialog_selected	9606	9606	as predicted	A	2026-11-25T10:34:35Z
+a	dialog_open	dialog_filter	(recorded)	FALSE	recorded	A	2026-11-25T10:34:35Z
+a	after_cancel	modal_open	none	none	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	setup_import	complete	complete	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	design_matrix	pending	pending	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	later_tabs	all disabled	all disabled	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	setup_log_taxon_id	10090	10090	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	setup_log_organism	Mus musculus	Mus musculus	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	mixed_species_selection	absent	absent	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	data_summary	~Organism: Mus musculus \(taxon: 10090 \)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	form_taxon_id	10090	10090	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	form_organism_name	Mus musculus	Mus musculus	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	notices	none	none	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	notice_success	(recorded)	absent	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	notice_primary	(recorded)	absent	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	notice_error	(recorded)	none	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	notice_naming_organism	none	none	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	setup_log_timestamp	(recorded)	2026-11-25 10:34:31	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	screenshot	(recorded)	g0-a-after_cancel.png	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	cancel_hit_button	TRUE	TRUE	as predicted	A	2026-11-25T10:34:37Z
+a	after_cancel	cancel_button_text	(recorded)	Cancel	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	cancel_top_element	(recorded)	button.btn.btn-default	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	cancel_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	cancel_point	(recorded)	983.6406,556.7344	recorded	A	2026-11-25T10:34:37Z
+a	after_cancel	dialog_closed	(recorded)	TRUE	recorded	A	2026-11-25T10:34:37Z
+a2	design	modal_open	(recorded)	none	recorded	A	2026-11-25T10:34:50Z
+a2	design	setup_import	(recorded)	complete	recorded	A	2026-11-25T10:34:50Z
+a2	design	design_matrix	complete	complete	as predicted	A	2026-11-25T10:34:50Z
+a2	design	later_tabs	(recorded)	quality_control=pending normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T10:34:50Z
+a2	design	tab_status_all	(recorded)	setup_import=complete design_matrix=complete quality_control=pending normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T10:34:50Z
+a2	design	setup_log_taxon_id	(recorded)	10090	recorded	A	2026-11-25T10:34:50Z
+a2	design	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T10:34:50Z
+a2	design	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T10:34:50Z
+a2	design	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T10:34:50Z
+a2	design	import_status	(recorded)	[OK] Data imported successfully! |    |   Format: diann | Type: peptide	recorded	A	2026-11-25T10:34:50Z
+a2	design	data_summary	(recorded)	Data Summary |    |     Data format: DIANN |     Data type: peptide |     Total rows: 8,989 |     Number of runs: 8 |     Number of protein groups: 400 |     Number of peptides: 1,037 |     Organism: Mus musculus (taxon: 10090 )	recorded	A	2026-11-25T10:34:50Z
+a2	design	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T10:34:50Z
+a2	design	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T10:34:50Z
+a2	design	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T10:34:50Z
+a2	design	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T10:34:50Z
+a2	design	notices	(recorded)	[message] Design saved successfully. You can close this builder. || [warning] Protein annotation was not retrieved: UniProt could not be reached (Couldn't connect to server [rest.uniprot.org]: Failed to connect to 127.0.0.1 port 9 after 0 ms: Connection refused). The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run. To try again, save the design again. || [message] Design matrix and contrasts saved successfully!	recorded	A	2026-11-25T10:34:50Z
+a2	design	notice_success	(recorded)	absent	recorded	A	2026-11-25T10:34:50Z
+a2	design	notice_primary	(recorded)	absent	recorded	A	2026-11-25T10:34:50Z
+a2	design	notice_error	(recorded)	none	recorded	A	2026-11-25T10:34:50Z
+a2	design	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T10:34:50Z
+a2	design	setup_log_timestamp	(recorded)	2026-11-25 10:34:31	recorded	A	2026-11-25T10:34:50Z
+a2	design	screenshot	(recorded)	g0-a2-design.png	recorded	A	2026-11-25T10:34:50Z
+a2	design	design_tab	(recorded)	proteomics_workflow-workflow_tabs = Design Matrix: active	recorded	A	2026-11-25T10:34:50Z
+a2	design	design_tab_active	TRUE	TRUE	as predicted	A	2026-11-25T10:34:50Z
+a2	design	data_available	TRUE	TRUE	as predicted	A	2026-11-25T10:34:50Z
+a2	design	builder_shown	TRUE	TRUE	as predicted	A	2026-11-25T10:34:50Z
+a2	design	design_save_outcome	complete	complete	as predicted	A	2026-11-25T10:34:50Z
+a2	design	design_save_message	(recorded)		recorded	A	2026-11-25T10:34:50Z
+a2	design	design_log_taxon_id	10090	10090	as predicted	A	2026-11-25T10:34:50Z
+a2	design	design_log_lines	(recorded)	Processing quantitative data with 400 rows for UniProt annotation || Target organism taxon ID: 10090 || UniProt IDs detected (or non-Ensembl format). Proceeding with direct query. || === FINAL CHECK BEFORE UniProt API SUBMISSION === || ID Type Check: [OK] UniProt IDs - Ready for API ||    Cache dir: /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/cache/uniprot_annotations || Fetching UniProt annotations... ||    Output path: /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/cache/uniprot_annotations/uniprot_results.tsv || Querying 400 valid UniProt IDs || UniProt annotation ended without a table: request_failed || Warning: UniProt annotation is empty: UniProt could not be reached (0 of 400 accessions annotated)	recorded	A	2026-11-25T10:34:50Z
+b	import	how	(recorded)	organism dialog shown	recorded	B	2026-11-25T10:35:06Z
+b	after_click	modal_open	Select Primary Organism	Select Primary Organism	as predicted	B	2026-11-25T10:35:10Z
+b	after_click	setup_import	(recorded)	complete	recorded	B	2026-11-25T10:35:10Z
+b	after_click	design_matrix	(recorded)	pending	recorded	B	2026-11-25T10:35:10Z
+b	after_click	later_tabs	(recorded)	all disabled	recorded	B	2026-11-25T10:35:10Z
+b	after_click	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	B	2026-11-25T10:35:10Z
+b	after_click	setup_log_taxon_id	(recorded)	10090	recorded	B	2026-11-25T10:35:10Z
+b	after_click	setup_log_organism	(recorded)	Mus musculus	recorded	B	2026-11-25T10:35:10Z
+b	after_click	mixed_species_selection	(recorded)	absent	recorded	B	2026-11-25T10:35:10Z
+b	after_click	mixed_filter_applied	(recorded)	absent	recorded	B	2026-11-25T10:35:10Z
+b	after_click	import_status	(recorded)	[OK] Data imported successfully! | Format: diann | Type: peptide	recorded	B	2026-11-25T10:35:10Z
+b	after_click	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	B	2026-11-25T10:35:10Z
+b	after_click	form_taxon_id	(recorded)	10090	recorded	B	2026-11-25T10:35:10Z
+b	after_click	form_organism_name	(recorded)	Mus musculus	recorded	B	2026-11-25T10:35:10Z
+b	after_click	form_mixed_species	(recorded)	TRUE	recorded	B	2026-11-25T10:35:10Z
+b	after_click	form_taxon_disabled	(recorded)	TRUE	recorded	B	2026-11-25T10:35:10Z
+b	after_click	notices	(recorded)	none	recorded	B	2026-11-25T10:35:10Z
+b	after_click	notice_success	(recorded)	absent	recorded	B	2026-11-25T10:35:10Z
+b	after_click	notice_primary	(recorded)	absent	recorded	B	2026-11-25T10:35:10Z
+b	after_click	notice_error	(recorded)	none	recorded	B	2026-11-25T10:35:10Z
+b	after_click	notice_naming_organism	(recorded)	none	recorded	B	2026-11-25T10:35:10Z
+b	after_click	setup_log_timestamp	(recorded)	2026-11-25 10:35:04	recorded	B	2026-11-25T10:35:10Z
+b	after_click	screenshot	(recorded)	g0-b-after_click.png	recorded	B	2026-11-25T10:35:10Z
+b	after_click	tab_in_view_before_scroll	(recorded)	FALSE	recorded	B	2026-11-25T10:35:10Z
+b	after_click	tab_in_view	(recorded)	TRUE	recorded	B	2026-11-25T10:35:10Z
+b	after_click	top_element	(recorded)	div.modal-footer	recorded	B	2026-11-25T10:35:10Z
+b	after_click	click_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	B	2026-11-25T10:35:10Z
+b	after_click	click_reached_tab	FALSE	FALSE	as predicted	B	2026-11-25T10:35:10Z
+b	after_click	design_tab_active	FALSE	FALSE	as predicted	B	2026-11-25T10:35:10Z
+b	after_click	note	(recorded)	the page was scrolled to the tab link by script before the mouse event (a user cannot scroll behind the dialog)	recorded	B	2026-11-25T10:35:10Z
+c	import	how	(recorded)	organism dialog shown	recorded	C	2026-11-25T10:35:26Z
+c	after_confirm	modal_open	none	none	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	setup_import	complete	complete	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	design_matrix	pending	pending	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	later_tabs	(recorded)	all disabled	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	setup_log_taxon_id	9606	9606	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	setup_log_organism	Homo sapiens	Homo sapiens	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	mixed_species_selection	9606	9606	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	mixed_filter_applied	FALSE	FALSE	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	data_summary	~Organism: Homo sapiens \(taxon: 9606 \)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Homo sapiens (taxon: 9606 )	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	form_taxon_id	9606	9606	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	form_organism_name	Homo sapiens	Homo sapiens	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	form_mixed_species	(recorded)	TRUE	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	form_taxon_disabled	(recorded)	TRUE	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	notices	(recorded)	[message] Primary organism set to: Homo sapiens (Taxon: 9606) || [message] Data import successful! || [message] Multi-species FASTA detected. Filtering to Homo sapiens enabled.	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	notice_success	present	present	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	notice_primary	present	present	as predicted	C	2026-11-25T10:35:28Z
+c	after_confirm	notice_error	(recorded)	none	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	notice_naming_organism	(recorded)	[message] Primary organism set to: Homo sapiens (Taxon: 9606) || [message] Multi-species FASTA detected. Filtering to Homo sapiens enabled.	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	setup_log_timestamp	(recorded)	2026-11-25 10:35:24	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	screenshot	(recorded)	g0-c-after_confirm.png	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	confirm_pressed	(recorded)	TRUE	recorded	C	2026-11-25T10:35:28Z
+c	after_confirm	dialog_closed	(recorded)	TRUE	recorded	C	2026-11-25T10:35:28Z
+d1	import	how	(recorded)	organism dialog shown	recorded	D1	2026-11-25T10:35:44Z
+d1	after_cancel	modal_open	(recorded)	none	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	setup_import	complete	complete	as predicted	D1	2026-11-25T10:35:47Z
+d1	after_cancel	design_matrix	(recorded)	pending	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	later_tabs	(recorded)	all disabled	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	setup_log_taxon_id	10090	10090	as predicted	D1	2026-11-25T10:35:47Z
+d1	after_cancel	setup_log_organism	(recorded)	Mus musculus	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	mixed_species_selection	(recorded)	absent	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	mixed_filter_applied	(recorded)	absent	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	import_status	(recorded)	[OK] Data imported successfully! | Format: diann | Type: peptide	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	form_taxon_id	(recorded)	10090	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	form_organism_name	(recorded)	Mus musculus	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	form_mixed_species	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	form_taxon_disabled	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	notices	(recorded)	none	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	notice_success	(recorded)	absent	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	notice_primary	(recorded)	absent	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	notice_error	(recorded)	none	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	notice_naming_organism	(recorded)	none	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	setup_log_timestamp	(recorded)	2026-11-25 10:35:42	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	screenshot	(recorded)	g0-d1-after_cancel.png	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	cancel_hit_button	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	cancel_button_text	(recorded)	Cancel	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	cancel_top_element	(recorded)	button.btn.btn-default	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	cancel_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	cancel_point	(recorded)	983.6406,556.7344	recorded	D1	2026-11-25T10:35:47Z
+d1	after_cancel	dialog_closed	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:47Z
+d1	after_reimport	modal_open	none	none	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	setup_import	complete	complete	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	design_matrix	pending	pending	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	later_tabs	all disabled	all disabled	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	setup_log_taxon_id	9606	9606	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	setup_log_organism	Homo sapiens	Homo sapiens	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	mixed_species_selection	9606	9606	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	mixed_filter_applied	(recorded)	FALSE	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	import_status	(recorded)	[OK] Data imported successfully! | Format: diann | Type: peptide	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Homo sapiens (taxon: 9606 )	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	form_taxon_id	(recorded)	9606	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	form_organism_name	(recorded)	Homo sapiens	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	form_mixed_species	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	form_taxon_disabled	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Primary organism set to: Homo sapiens (Taxon: 9606) || [message] Data import successful! || [message] Multi-species FASTA detected. Filtering to Homo sapiens enabled.	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	notice_success	present	present	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	notice_primary	present	present	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	notice_error	none	none	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	notice_naming_organism	(recorded)	[message] Primary organism set to: Homo sapiens (Taxon: 9606) || [message] Multi-species FASTA detected. Filtering to Homo sapiens enabled.	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	setup_log_timestamp	(recorded)	2026-11-25 10:35:49	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	screenshot	(recorded)	g0-d1-after_reimport.png	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	reimport_dialog_shown	TRUE	TRUE	as predicted	D1	2026-11-25T10:35:53Z
+d1	after_reimport	reimport_how	(recorded)	organism dialog shown	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	confirm_pressed	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:53Z
+d1	after_reimport	dialog_closed	(recorded)	TRUE	recorded	D1	2026-11-25T10:35:53Z
+d2	import	how	(recorded)	organism dialog shown	recorded	D2	2026-11-25T10:36:09Z
+d2	after_cancel	modal_open	(recorded)	none	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	setup_import	complete	complete	as predicted	D2	2026-11-25T10:36:11Z
+d2	after_cancel	design_matrix	(recorded)	pending	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	later_tabs	(recorded)	all disabled	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	setup_log_taxon_id	10090	10090	as predicted	D2	2026-11-25T10:36:11Z
+d2	after_cancel	setup_log_organism	(recorded)	Mus musculus	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	mixed_species_selection	(recorded)	absent	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	mixed_filter_applied	(recorded)	absent	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	import_status	(recorded)	[OK] Data imported successfully! | Format: diann | Type: peptide	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	form_taxon_id	(recorded)	10090	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	form_organism_name	(recorded)	Mus musculus	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	form_mixed_species	(recorded)	TRUE	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	form_taxon_disabled	(recorded)	TRUE	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	notices	(recorded)	none	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	notice_success	(recorded)	absent	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	notice_primary	(recorded)	absent	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	notice_error	(recorded)	none	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	notice_naming_organism	(recorded)	none	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	setup_log_timestamp	(recorded)	2026-11-25 10:36:07	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	screenshot	(recorded)	g0-d2-after_cancel.png	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	cancel_hit_button	(recorded)	TRUE	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	cancel_button_text	(recorded)	Cancel	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	cancel_top_element	(recorded)	button.btn.btn-default	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	cancel_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	cancel_point	(recorded)	983.6406,556.7344	recorded	D2	2026-11-25T10:36:11Z
+d2	after_cancel	dialog_closed	(recorded)	TRUE	recorded	D2	2026-11-25T10:36:11Z
+d2	after_reimport	modal_open	Processing Data	Processing Data	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	setup_import	complete	complete	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	design_matrix	pending	pending	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	later_tabs	all disabled	all disabled	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	setup_log_taxon_id	10090	10090	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	setup_log_organism	Mus musculus	Mus musculus	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	mixed_species_selection	absent	absent	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	mixed_filter_applied	(recorded)	absent	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	form_taxon_id	(recorded)	10090	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	form_organism_name	(recorded)	Mus musculus	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	form_mixed_species	FALSE	FALSE	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	form_taxon_disabled	(recorded)	FALSE	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	notices	(recorded)	[message] Sample names sanitized for R compatibility.	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	notice_success	absent	absent	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	notice_primary	(recorded)	absent	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	notice_error	none	none	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	notice_naming_organism	(recorded)	none	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	setup_log_timestamp	(recorded)	2026-11-25 10:36:13	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	screenshot	(recorded)	g0-d2-after_reimport.png	recorded	D2	2026-11-25T10:36:18Z
+d2	after_reimport	import_completed	TRUE	TRUE	as predicted	D2	2026-11-25T10:36:18Z
+d2	after_reimport	reimport_how	(recorded)	the import's completion line logged	recorded	D2	2026-11-25T10:36:18Z

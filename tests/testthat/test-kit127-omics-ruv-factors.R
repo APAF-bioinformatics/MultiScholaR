@@ -215,7 +215,7 @@ test_that("metabolomics gives the factors and the tables lipidomics gives", {
     }
 })
 
-test_that("the corrected matrix of the new path keeps each feature's level; today's correction still shifts it", {
+test_that("the corrected matrix of the new path keeps each feature's level; today's correction keeps it too (KIT-224)", {
     fixture <- kit127Fixture()
     mats <- lapply(fixture$assays, `[[`, "y")
     samples <- fixture$design$Sample_ID
@@ -225,10 +225,15 @@ test_that("the corrected matrix of the new path keeps each feature's level; toda
         run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", K127_K, "user"))
         legacy <- kit127Quiet(ruvIII_C_Varying(object, ruv_grouping_variable = "group", ruv_number_k = K127_K,
             ctrl = lapply(mats, rownames)))
+        # KIT-224: the earlier rule (records made before) keeps the shift
+        legacy_shifted <- withr::with_options(list(MultiScholaR.ruv_feature_levels = "shifted"),
+            kit127Quiet(ruvIII_C_Varying(object, ruv_grouping_variable = "group", ruv_number_k = K127_K,
+                ctrl = lapply(mats, rownames))))
         for (assay in names(mats)) {
             before <- mats[[assay]]
             after <- kit127Values(methods::slot(run$corrected, slot_name)[[assay]], samples)
             today <- kit127Values(methods::slot(legacy, slot_name)[[assay]], samples)
+            earlier <- kit127Values(methods::slot(legacy_shifted, slot_name)[[assay]], samples)
             expect_identical(rownames(after), rownames(today))
             kept <- rownames(after)
             both <- is.finite(before[kept, ]) & is.finite(after)
@@ -238,8 +243,9 @@ test_that("the corrected matrix of the new path keeps each feature's level; toda
             # the correction itself is today's: the two differ by a constant per feature
             expect_equal((after - mean_in(after))[both], (today - mean_in(today))[both], tolerance = 1e-9)
             expect_gt(max(abs(after - before[kept, ])[both]), 0.01)
-            # today's path is not changed by this ticket: its level shift is still there
-            expect_gt(max(abs(mean_in(today) - mean_in(before[kept, ]))), 0.01)
+            # today's legacy path restores too (KIT-224); under the earlier rule its level shift is still there
+            expect_equal(mean_in(today), mean_in(before[kept, ]), tolerance = 1e-9)
+            expect_gt(max(abs(mean_in(earlier) - mean_in(before[kept, ]))), 0.01)
         }
         # the object the DA reads is not touched
         expect_identical(methods::slot(object, slot_name), lapply(mats, kit127AssayTable))

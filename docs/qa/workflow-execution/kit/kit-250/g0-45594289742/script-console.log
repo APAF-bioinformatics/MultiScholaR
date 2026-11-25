@@ -1,0 +1,14 @@
+verdict.txt
+:
+sessions attached: 5 of 5 (A,B,C,D1,D2)
+predictions: 72 as predicted, 0 differ, 0 not observed, 175 recorded without prediction
+stop rule 1 (import NOT complete after Cancel, or a notice naming the organism): not fired
+stop rule 2 (a person can press behind the dialog): not fired
+stop rule 4 (a second import refused or failing): not fired
+ session step  outcome seconds
+       A   S1 complete     4.9
+       A   S3 complete     9.6
+       B   S1 complete     4.6
+       C   S1 complete     4.7
+      D1   S1 complete     4.7
+      D2   S1 complete     4.8
