@@ -82,6 +82,12 @@
 
 ### Fixes
 
+ * Proteomics: the study-parameters file (`study_parameters.txt`) no longer lists metabolomics or transcriptomics
+   settings. Every proteomics project copies the package's whole configuration file, and the file printed its
+   metabolomics intensity-filter settings twice, although no proteomics step uses them; this was so in every earlier
+   release. Only the printed file changes; analyses, results and stored records do not.
+   `createWorkflowArgsFromConfig()` gains `omic_type`; scripts that do not pass it get the same file as before
+   (KIT-263).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
