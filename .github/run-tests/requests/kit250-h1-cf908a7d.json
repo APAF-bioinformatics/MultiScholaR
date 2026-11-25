@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-250 correction pass H1: the fix observed in a headless browser (Cancel by real click, Esc, backdrop, design after Cancel, re-import, second Cancel, Confirm, unticked import); commit under test 77296fcf; ceiling 60 job-minutes",
+  "label": "KIT-250 H1 on kit-250 cf908a7d (commit under test 77296fcf)",
+  "package_commit": "cf908a7d27aecd171b37279ff5aa02a05098f4bd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["shinytest2"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-250/h1.R",
+      "args": ["h1", "77296fcf591f5ba591f18025be86231b2b275041"],
+      "out": "k250h1-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

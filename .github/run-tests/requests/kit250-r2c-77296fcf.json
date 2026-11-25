@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-250 correction pass R2': tests-only' 43c1a304 against the fix' 77296fcf, the seven R2 files, check both sides; predictions in kit-250/correction-predictions.md; ceiling 600 job-minutes",
+  "label": "KIT-250 R2' base 43c1a304 head 77296fcf",
+  "package_commit": "77296fcf591f5ba591f18025be86231b2b275041",
+  "base_commit": "43c1a304beec84c630c7e71b6cec582fb8d742a2",
+  "tools_ref": "",
+  "tests": ["test-kit250-organism-dialog.R", "test-prot-01c-import-module-contracts.R", "test-prot-01d-import-module-characterization.R", "test-module-ci-prot-import.R", "test-module-ci-trx-app.R", "test-workflow-gui-memory-lifetimes.R", "test-workflow-server-shared.R"],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
