@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-259 R1 failing-first: the new test file and the declared test-metab-01k edit on the tests-only commit (R/ as staging c4505c7f); E rows fail at their base values, G rows pass (stop rule 1); 1 job, ceiling 45 job-minutes",
+  "label": "KIT-259 R1 on kit-259 e0cb5a99 (tests only)",
+  "package_commit": "e0cb5a99d030b3a849b146a2f639e1311cdf9d3d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit259-pearson-histogram-figure-failure.R",
+    "test-metab-01k-s4-plot-pearson-characterization.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
