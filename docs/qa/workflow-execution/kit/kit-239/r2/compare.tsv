@@ -1,0 +1,20 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-integration-enrichment-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-integration-enrichment-options.R	271	0	0	0	ok	271	0	0	0	ok	same		
+test-integration-enrichment-tests.R	181	0	0	2	ok	181	0	0	2	ok	same		
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-gui.R	399	1	0	0	failed	401	0	0	0	ok	fixed	fixed: KIT-239 (L6): after training, the Model tab points to the limitations on the Results tab; counts: KIT-239 (L6): after training, the Model tab points to the limitations on the Results tab (passed 2 -> 4, skipped 0 -> 0)	
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-model-tab-mofa.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-integration-model.R	263	0	0	0	ok	263	0	0	0	ok	same		
+test-integration-outputs-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		
+test-integration-partitioned-alignment.R	253	0	0	0	ok	253	0	0	0	ok	same		
+test-integration-record-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-record.R	134	5	0	0	failed	155	0	0	0	ok	fixed	fixed: KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers; fixed: KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none; counts: KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers (passed 1 -> 14, skipped 0 -> 0); counts: KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none (passed 0 -> 8, skipped 0 -> 0)	
+test-integration-removed-factors.R	526	0	0	3	ok	526	0	0	3	ok	same		
+test-integration-results-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-results.R	170	6	0	0	failed	241	0	0	0	ok	fixed	fixed: KIT-239 (L1): the Results tab has a place for the limitations, after the notes from the model; fixed: KIT-239 (L2): the Results tab states the limitations with this model's own numbers; fixed: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds; counts: KIT-239 (L1): the Results tab has a place for the limitations, after the notes from the model (passed 1 -> 3, skipped 0 -> 0); counts: KIT-239 (L2): the Results tab states the limitations with this model's own numbers (passed 0 -> 18, skipped 0 -> 0); counts: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds (passed 0 -> 29, skipped 0 -> 0); counts: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers (passed NA -> 22, skipped NA -> 0)	
+test-integration-sample-match.R	76	0	0	0	ok	76	0	0	0	ok	same		
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-integration-workbook-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		

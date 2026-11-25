@@ -542,8 +542,6 @@ checkManagedProteinModule <- function(spec) {
         do.call(session$setInputs, stats::setNames(list(2), spec$apply))
         session$flushReact()
         expect_length(dispatched, 1L)
-        # The replicate module observes its apply input on the module and the root scope (pre-existing), so its
-        # in-process path runs once per observer here.
         expect_identical(in_process, spec$in_process_calls %||% 1L)
     })
     invisible(TRUE)
@@ -570,7 +568,6 @@ test_that("the KIT-015 protein QC modules take the managed worker under a manage
         list(server = mod_prot_qc_protein_replicate_server, apply = "apply_protein_replicate_filter",
             inputs = list(protein_grouping_variable = "group", parallel_cores = 4),
             operation = "protein_replicate_filter", in_process = "runProteinReplicateFilterApplyObserver", outputs = "updateProteinReplicateFilterOutputs",
-            text = "protein_replicate_filter_results", plot = "proteinReplicateFilterPlot", expected = list(grouping_variable = "group", parallel_cores = 4),
-            in_process_calls = 2L))
+            text = "protein_replicate_filter_results", plot = "proteinReplicateFilterPlot", expected = list(grouping_variable = "group", parallel_cores = 4)))
     for (spec in specs) checkManagedProteinModule(spec)
 })

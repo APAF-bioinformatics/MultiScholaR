@@ -1,0 +1,6 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-integration-record.R	166	1	0	0	failed	167	0	0	0	ok	fixed	fixed: KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none; counts: KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none (passed 12 -> 13, skipped 0 -> 0)	
+test-integration-results.R	251	7	0	0	failed	258	0	0	0	ok	fixed	fixed: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds; fixed: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers; counts: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds (passed 32 -> 34, skipped 0 -> 0); counts: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers (passed 29 -> 34, skipped 0 -> 0)	
+test-integration-gui.R	401	0	0	0	ok	401	0	0	0	ok	same		
+test-integration-model.R	263	0	0	0	ok	263	0	0	0	ok	same		
+test-integration-removed-factors.R	526	0	0	3	ok	526	0	0	3	ok	same		

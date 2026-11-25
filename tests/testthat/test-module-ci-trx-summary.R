@@ -59,12 +59,17 @@ test_that("MCI-032.1 after DA the RUVIII export records M = group, leaves the DA
   expect_identical(written$analyses$trx_ruviii_export$outcomes$ruviii_m_source, "group")
   tsv <- file.path(paths$integration_dir, "transcriptomics_normalized_data.tsv")
   expect_true(file.exists(tsv))
-  # The export's matrix is the reference newY (above); the file is the notebook's (vroom_write of that matrix, as rmd:714-724),
-  # byte-identical to KIT-040's stable output.
-  stable <- reference$store$stable_outputs
-  expect_identical(digest::digest(file = tsv, algo = "sha256"),
-    stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"])
+  # The export's matrix is the reference newY (above). KIT-224 (OD-2, the owner's decision of 2026-11-25): the file keeps
+  # each gene's TMM logCPM level, so it is no longer byte-identical to KIT-040's stable output (the notebook's file): each
+  # gene's mean is its logCPM mean.
+  log_cpm <- withWorkflowStateScope(owner, function() {
+    export <- owner$.context$snapshot$exports$trx_ruviii_export
+    trxSavedMatrix(owner, trxProductValue(owner, trxStateRuvs(owner, export$source)$logcpm)$log_cpm)
+  })
   exported <- as.data.frame(vroom::vroom(tsv, show_col_types = FALSE))
+  file_values <- t(as.matrix(exported[-1L]))
+  colnames(file_values) <- exported$Run
+  expect_lt(max(abs(rowMeans(file_values) - rowMeans(log_cpm[rownames(file_values), colnames(file_values), drop = FALSE]))), 1e-9)
   expect_identical(exported$Run, rownames(value$newY))
   expect_identical(names(exported)[-1L], colnames(value$newY))
   # The results summary: the output map's files.

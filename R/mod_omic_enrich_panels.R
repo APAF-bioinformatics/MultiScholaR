@@ -645,7 +645,10 @@ writeProtEnrichResultsDownloadArchive <- function(file,
                                                   tempDir = tempdir(),
                                                   writeTsvFn = readr::write_tsv,
                                                   writeLinesFn = writeLines,
-                                                  zipFn = utils::zip,
+                                                  # KIT-241: the zip package writes the archive itself (no external zip program, which the
+                                                  # installed Windows application lacks); zipr stores each file under its base name, as -j
+                                                  # did; flags stays in the seam's signature for the injected test doubles.
+                                                  zipFn = \(zipfile, files, flags) zip::zipr(zipfile = zipfile, files = files),
                                                   sysTimeFn = Sys.time,
                                                   significanceRule = NULL,
                                                   notTested = NULL,
@@ -688,9 +691,9 @@ writeProtEnrichResultsDownloadArchive <- function(file,
       paste("Up log2FC Cutoff:", upCutoff),
       paste("Down log2FC Cutoff:", downCutoff),
       # KIT-203 (OD9): on the clusterProfiler method the cutoff is named for both its uses, and the run's rule is
-      # given; the g:Profiler summary is unchanged.
+      # given. KIT-226 (VAL-196): on g:Profiler the cutoff applies to the service's adjusted p-value.
       if (identical(methodInfo$method, "clusterprofiler")) paste0("Significance cutoff: ", qCutoff, "\nSignificance: ",
-        enrichmentSignificanceLabel(significanceRule)) else paste("Q-value Cutoff:", qCutoff),
+        enrichmentSignificanceLabel(significanceRule)) else paste("Adjusted p-value cutoff:", qCutoff),
       "",
       "## Results Summary:",
       paste("gprofiler2 terms:", if (!is.null(gprofilerResults)) nrow(gprofilerResults) else 0),
