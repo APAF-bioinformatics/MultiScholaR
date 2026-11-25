@@ -1,6 +1,6 @@
 # KIT-247 outcome: a design saved again after Quality Control or normalisation
 
-**State: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train.** R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
+**State: second correction (the owner's VAL-277) in progress: I01 and I02 repaired in 40948dd8, tests first in fbf729ef; this is the LAST correction for KIT-247 (`second-correction-declaration.md`).** Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
 
 - Ticket r1.4 (owner's decisions VAL-239: OD-1 (D) on the whole design table, OD-2 (a), OD-3 (a), OD-4 (a) including the
   top-level integration file). E-5 stays open for the coordinator.

@@ -28,3 +28,10 @@
 Owner's questions:
 1. Should a formula-only change set the differential analysis to pending (as a change of comparisons does)?
 2. Should an organism, taxonomy or FASTA change on Import Existing Design count as a change?
+
+## Left as they are by the second correction (VAL-277; not decided by the owner, parked row 47 (2))
+
+- Whether a formula-only change counts as a change (today: "Design saved; nothing changed.", the DA not set to pending).
+- Whether an organism, taxonomy id or FASTA change on proteomics Import Existing Design counts as a change (today: not
+  compared; the unchanged path applies none of them).
+- The confirmation's wording (title "Save the changed design?", its text, the buttons): unchanged drafts above.
