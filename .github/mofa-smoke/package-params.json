@@ -1,8 +1,8 @@
 {
-  "label": "k184-covariates-mofa-val160",
-  "package_commit": "5ba85c1fd5f6082c9e392ef54410377313afd0bf",
+  "label": "k234-direct-run-mofa",
+  "package_commit": "652c962b99257049e50a1b8f37b2ee5ee607d5bb",
   "tests": [
-    "test-integration-enrichment-mofa.R"
+    "test-integration-workbook-mofa.R"
   ],
   "record": false,
   "runs": 1
