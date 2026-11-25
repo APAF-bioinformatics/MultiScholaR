@@ -30,8 +30,8 @@ K237_LFQ_FILES <- list(
     S10.1 = "^scripts/proteomics/study_parameters\\.txt$",
     S10.2 = "(^|/)Publication_tables/DA_results_proteomics\\.xlsx$",
     S10.3 = c("^scripts/proteomics/LFQ_report\\.rmd$", "(^|/)LFQ_report_proteomics_[^/]*\\.(docx|html|pdf)$"),
-    S10.5 = c("^scripts/proteomics/session_state_[^/]*\\.RDS$", "(^|/)differential_abundance\\.xlsx$",
-        "(^|/)normalized_intensities\\.xlsx$", "(^|/)summary_stats\\.xlsx$")
+    # SC-09: the lane's placeholder `expected_exports` are not named (no product output by those names; known.tsv K2).
+    S10.5 = "^scripts/proteomics/session_state_[^/]*\\.RDS$"
 )
 
 K237_ROUTES$prot_lfq <- list(

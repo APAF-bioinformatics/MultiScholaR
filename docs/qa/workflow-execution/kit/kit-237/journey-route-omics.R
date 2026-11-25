@@ -75,7 +75,10 @@ k237OmicFiles <- function(omic, exports, trx = FALSE) {
         S10.1 = paste0(src, "study_parameters\\.txt$"),
         S10.2 = sprintf("(^|/)Publication_tables/DA_results_%s\\.xlsx$", omic),
         S10.3 = sprintf("%s%s_report\\.rmd$", src, omic),
-        S10.5 = c(paste0(src, "session_state_[^/]*\\.RDS$"), sprintf("(^|/)%s$", gsub(".", "\\.", exports, fixed = TRUE))))
+        # SC-09: the lane's `expected_exports` are named on trx only, whose names are real (test-e2e-transcriptomics-
+        # screen.R:110); lipid's and metab's are placeholders no product output carries (known.tsv K3, K4).
+        S10.5 = c(paste0(src, "session_state_[^/]*\\.RDS$"), if (trx) sprintf("(^|/)%s$", gsub(".", "\\.", exports,
+            fixed = TRUE))))
     if (trx) {
         # WL 45605975875: the trx DA writes results/transcriptomics/da_genes/de_results_<contrast>.csv; trx has no S7.
         files$S8.2 <- NULL

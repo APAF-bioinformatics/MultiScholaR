@@ -1,8 +1,8 @@
 id	route	step	kind	what	covered_by	source
 K1	prot_lfq	S9.d	3	the enrichment results download writes no archive on Windows (utils::zip needs a zip program the shell's environment has not; shiny answers 404)	KIT-241 (R0), not merged at 7327607f; expected in WL	KIT-237 2.2, 5.2 S9
-K2	prot_lfq	S10.5	3	the lane's expected_exports differential_abundance.xlsx, normalized_intensities.xlsx, summary_stats.xlsx: no code under R/ writes these names for proteomics (by reading, dd769671)	manifest label; for the coordinator	journey-route-lfq.R
-K3	lipid_canonical	S10.5	3	the lane's expected_exports lipid_summary.xlsx, differential_abundance.xlsx: not asserted by the lane's own test (by reading)	manifest label; for the coordinator	journey-route-omics.R
-K4	metab_lc	S10.5	3	the lane's expected_exports feature_summary.xlsx, differential_abundance.xlsx: not asserted by the lane's own test (by reading)	manifest label; for the coordinator	journey-route-omics.R
+K2	prot_lfq	S10.5	3	the lane's expected_exports differential_abundance.xlsx, normalized_intensities.xlsx, summary_stats.xlsx: no code under R/ writes these names for proteomics (by reading, dd769671)	manifest label; no product output by that name; not named in the route since SC-09 (r1.5)	journey-route-lfq.R
+K3	lipid_canonical	S10.5	3	the lane's expected_exports lipid_summary.xlsx, differential_abundance.xlsx: not asserted by the lane's own test (by reading)	manifest label; no product output by that name; not named in the route since SC-09 (r1.5)	journey-route-omics.R
+K4	metab_lc	S10.5	3	the lane's expected_exports feature_summary.xlsx, differential_abundance.xlsx: not asserted by the lane's own test (by reading)	manifest label; no product output by that name; not named in the route since SC-09 (r1.5)	journey-route-omics.R
 K5	all	S10	D-1	runDIANativeTarR left its staging folder in TMP on Windows (run 44598642342); repaired in code by KIT-156 (R/utils_workflow_dia_sessions.R:45-48), never re-run on Windows	KIT-156	KIT-237 2.2
 K6	all	-	-	GUI-entry families: session_summary Windows path form (2 steps per lane) and norm_log text digest (8 steps) under testServer	R1 (test helper guiEntryMask)	KIT-237 2.2, 9
 K7	trx_screen	-	-	trx_screen GUI-entry lane: module session has been destroyed under testServer (its browser lane passes)	R2	KIT-237 2.2, 9

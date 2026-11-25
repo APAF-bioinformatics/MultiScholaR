@@ -116,6 +116,9 @@ k237Launch <- function(G, label, test_mode = TRUE) {
     env <- c("current", MSR_LAUNCHER_PROBE = K237_PROBE, MSR_RUN_FOLDER = k237Slash(S$run_folder),
         OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1", CHROMOTE_CHROME = K233_NO_BROWSER)
     if (test_mode) env <- c(env, MULTISCHOLAR_TEST_MODE = "true")
+    # The request's `test_features` (KIT-240 section 8, addendum 3): TRUE starts the application with
+    # MULTISCHOLAR_TEST_FEATURES=1 (packaging/electron/entry.R:14-31); FALSE or absent leaves it unset.
+    if (isTRUE(G$test_features)) env <- c(env, MULTISCHOLAR_TEST_FEATURES = "1")
     S$command <- paste(c(rscript, args), collapse = " ")
     started <- Sys.time()
     S$proc <- processx::process$new(rscript, args, env = env, wd = G$pkg, stdout = S$log, stderr = "2>&1",
@@ -224,14 +227,16 @@ k237Action <- function(S, spec) {
     # RA-02: a screenshot at the moment a terminal signal appears (an error notification, or a modal that is neither
     # expected nor a progress modal), before journey.R's 60-second grace lets it disappear.
     S$terminal_shot <- ""
+    since_page <- as.numeric(k233Js(S, "Date.now()") %||% 0)
     inner <- spec$hook %||% S$hooks[[spec$step]]
     spec$hook <- function(S, el) {
         if (is.function(inner)) inner(S, el)
         if (nzchar(S$terminal_shot)) return(invisible(NULL))
-        seen <- k233Js(S, paste0("(function(){var K=window.__k233||{notes:[],modals:[]};",
-            "var e=K.notes.filter(function(n){return n.type==='error';}).length>0;",
-            "var m=K.modals.filter(function(x){return x.end===null&&!x.progress;});",
-            "return {error:e, modal:m.length?m[m.length-1].title:''};})()"))
+        # Only signals of this action (WL rerun 2: earlier steps' error notes gave terminal screenshots at 0 s).
+        seen <- k233Js(S, sprintf(paste0("(function(){var K=window.__k233||{notes:[],modals:[]};var t=%.0f;",
+            "var e=K.notes.filter(function(n){return n.type==='error'&&n.t>=t;}).length>0;",
+            "var m=K.modals.filter(function(x){return x.end===null&&!x.progress&&x.start>=t;});",
+            "return {error:e, modal:m.length?m[m.length-1].title:''};})()"), since_page))
         modal <- as.character(seen$modal %||% "")
         if (isTRUE(seen$error) || (nzchar(modal) && !modal %in% spec$modals)) {
             path <- file.path(G$out, sprintf("%s-%02d-%s-terminal.png", S$label, S$nn, spec$step))
@@ -484,9 +489,172 @@ k237WL0 <- function(G, S, wf) {
     crit("the application's .libPaths() is the installed bundle's library only (probe line in the run folder)",
         length(probe) > 0 && all(inside), G$app_libpaths)
     log <- k233ReadLog(S$log)
-    crit("MULTISCHOLAR_TEST_FEATURES unset in the application's environment (no MSR-TEST-FEATURES line)",
-        !any(grepl("^MSR-TEST-FEATURES", log)) && !nzchar(Sys.getenv("MULTISCHOLAR_TEST_FEATURES")),
-        paste(grep("^MSR-", log, value = TRUE), collapse = " || "))
+    if (isTRUE(G$test_features)) {
+        crit("test_features TRUE: the application starts with the test setting (one MSR-TEST-FEATURES line)",
+            sum(grepl("^MSR-TEST-FEATURES", log)) == 1L, paste(grep("^MSR-", log, value = TRUE), collapse = " || "))
+    } else {
+        crit("MULTISCHOLAR_TEST_FEATURES unset in the application's environment (no MSR-TEST-FEATURES line)",
+            !any(grepl("^MSR-TEST-FEATURES", log)) && !nzchar(Sys.getenv("MULTISCHOLAR_TEST_FEATURES")),
+            paste(grep("^MSR-", log, value = TRUE), collapse = " || "))
+    }
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# WL' (SC-11; ticket 7 and 20): the lifecycle that proves, on the installed build it runs on, what WL proved and RA-01's
+# pieces WL never met: the internal deadline (planted), a progress dialog open over 60 s (planted), and the outbound
+# block (a real connection attempt from the application's R, made by the journey step; read here). Test mode.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The deadline, planted: while S2 waits, the driver's internal deadline is moved to 5 s ahead; the step must end
+#' `deadline`, every later step `not_reached (deadline)`, a kind-5 finding must be written, and the tables must exist.
+#' The real deadline is restored when the session ends.
+k237DeadlineHook <- function(S, el) {
+    if (isTRUE(S$deadline_planted)) return(invisible(NULL))
+    S$deadline_planted <- TRUE
+    S$deadline_real <- S$G$deadline_at
+    S$G$deadline_at <- as.numeric(Sys.time()) + 5
+    invisible(NULL)
+}
+
+#' A progress dialog, planted in the page (a Shiny-form modal holding a `.progress` element, titled as planted), open
+#' 75 s from the press and then removed; the press targets a harmless tab link and the step has no completion signal,
+#' with a hard wait of 120 s. The classifier must record the dialog as a progress dialog of about 75 s and end the step
+#' `timeout`, never `refused`.
+K237_PLANT_MODAL_JS <- r"---((function (show) {
+  var w = document.getElementById('k237-planted-modal');
+  if (!show) { if (w) { w.remove(); } return true; }
+  if (w || document.getElementById('shiny-modal')) { return false; }
+  w = document.createElement('div');
+  w.id = 'k237-planted-modal';
+  w.innerHTML = '<div id="shiny-modal" class="modal fade in show" style="display:block;" tabindex="-1">' +
+    '<div class="modal-dialog"><div class="modal-content"><div class="modal-header">' +
+    '<h4 class="modal-title">KIT-237 planted progress dialog</h4></div><div class="modal-body">' +
+    '<div class="progress"><div class="progress-bar" style="width:50%"></div></div></div></div></div></div>';
+  document.body.appendChild(w);
+  return true;
+})(%s))---"
+
+k237ModalHook <- function(S, el) {
+    if (!isTRUE(S$modal_shown)) {
+        S$modal_shown <- isTRUE(k233Js(S, sprintf(K237_PLANT_MODAL_JS, "true")))
+        S$modal_at <- el
+    } else if (!isTRUE(S$modal_removed) && el - S$modal_at >= 75) {
+        S$modal_removed <- isTRUE(k233Js(S, sprintf(K237_PLANT_MODAL_JS, "false")))
+        S$modal_removed_at <- el
+    }
+    invisible(NULL)
+}
+
+k237WLprime <- function(G) {
+    wf <- G$workflow
+    routes <- G$routes
+    lfq <- routes$prot_lfq
+    guard <- function(criterion, code) tryCatch(code, error = function(e) k237Criterion(G, criterion,
+        "driver error while judging", FALSE, conditionMessage(e)))
+    # WL'-0: launch and attach (as WL-0), and the outbound block, from the journey step's attempt.
+    R1 <- G$runs$prot_lfq("k237_wlp_lfq")
+    R1$after <- list(S8 = k233L4a)
+    S1 <- k237Launch(G, "WP1")
+    k237WL0(G, S1, wf)
+    k237Criterion(G, "WL-0", "outbound block: the installed application's R cannot reach a reserved address (a firewall DROP is logged for it, none for the same attempt from a program without a rule)",
+        identical(wf$outbound_drop_r, "yes") && identical(wf$outbound_drop_control, "no"),
+        sprintf("R attempt: %s; DROP for R: %s; DROP for control: %s; %s", wf$outbound_r_said %||% "-",
+            wf$outbound_drop_r %||% "-", wf$outbound_drop_control %||% "-", wf$outbound_method %||% ""))
+    if (is.null(S1$driver)) {
+        k237StopSession(S1)
+        return(k237Verdict(G, "instrument not proven (WL'): launch or attach failed"))
+    }
+    # WL-1 (to S8) and WL-4 on LFQ, WL-5 on each route (test mode, S1 to S8).
+    k237SetOmic(lfq$omic, lfq$tabs_id)
+    R1$live <- new.env(parent = emptyenv())
+    S1$R <- R1
+    S1$plant_delete <- list(step = "S6.2", pattern = "(^|/)post_norm_pca\\.png$")
+    k233RunRoute(S1, lfq, R1, upto = "S8")
+    k237StopSession(S1)
+    if (!any(vapply(G$criteria, function(c) identical(c$criterion, "L-4") && startsWith(c$item, "(a)"), logical(1)))) {
+        k237Criterion(G, "L-4", "(a) the emptied DA results table gives a kind-3 finding naming it", FALSE,
+            "S8 of WP1 did not complete, so the planted check did not run")
+    }
+    guard("WL-4", k233L4b(G, S1))
+    planted <- Filter(function(f) identical(f$session, "WP1") && identical(f$step, "S6.2") && identical(f$kind, 3L) &&
+        isTRUE(f$planted) && grepl("post_norm_pca", f$message, fixed = TRUE), G$findings)
+    k237Criterion(G, "WL-4", "(c) a named normalisation figure deleted after S6 gives a kind-3 finding naming it",
+        length(planted) == 1L && nzchar(S1$planted_deleted %||% ""), sprintf("deleted: %s", k233Clean(S1$planted_deleted)))
+    guard("WL-5", k237L5(G, "WP1"))
+    # WL-2, WL-3.
+    missing <- paste0(k237Slash(G$work), "/no-such-folder")
+    R2 <- G$runs$prot_lfq("k237_wlp2")
+    R2$project_dir_override <- missing
+    S2 <- k237RunSession(G, lfq, R2, "WP2", upto = "S2")
+    k237StopSession(S2)
+    s1 <- Filter(function(r) identical(r$session, "WP2") && identical(r$step, "S1"), G$steps)
+    k237Criterion(G, "WL-2", "S1 refused with 'Base directory does not exist: <path>' within 60 s",
+        length(s1) == 1L && identical(s1[[1L]]$outcome, "refused") &&
+            grepl(paste("Base directory does not exist:", missing), s1[[1L]]$message, fixed = TRUE) &&
+            as.numeric(s1[[1L]]$seconds) - 60 <= 60 && nzchar(k233Clean(s1[[1L]]$terminal_screenshot)),
+        sprintf("S1 %s after %s s: %s; terminal screenshot: %s", if (length(s1)) s1[[1L]]$outcome else "-",
+            if (length(s1)) s1[[1L]]$seconds else "-", if (length(s1)) s1[[1L]]$message else "-",
+            if (length(s1)) k233Clean(s1[[1L]]$terminal_screenshot) else "-"))
+    S3 <- k237RunSession(G, lfq, G$runs$prot_lfq("k237_wlp3"), "WP3", upto = "S2", hooks = list(S2 = k237KillTreeHook))
+    k237StopSession(S3)
+    s2 <- Filter(function(r) identical(r$session, "WP3") && identical(r$step, "S2"), G$steps)
+    msg <- if (length(s2)) k233Clean(s2[[1L]]$message) else ""
+    k237Criterion(G, "WL-3", "the tree ended while S2 waits: the port refuses within 10 s and S2 is crashed from the browser session",
+        length(s2) == 1L && identical(s2[[1L]]$outcome, "crashed") && !is.na(S3$port_refused_s %||% NA) &&
+            grepl("browser", msg, fixed = TRUE), sprintf("S2 %s: %s; port refused after %s s",
+            if (length(s2)) s2[[1L]]$outcome else "-", msg, k233Clean(S3$port_refused_s)))
+    # WL'-D: the internal deadline, planted at S2.
+    Sd <- k237RunSession(G, lfq, G$runs$prot_lfq("k237_wlpd"), "WPd", upto = "S3", hooks = list(S2 = k237DeadlineHook))
+    if (!is.null(Sd$deadline_real)) G$deadline_at <- Sd$deadline_real
+    k237StopSession(Sd)
+    k233WriteAll(G)
+    rows <- Filter(function(r) identical(r$session, "WPd"), G$steps)
+    s2d <- Filter(function(r) identical(r$step, "S2"), rows)
+    later <- Filter(function(r) !r$step %in% c("S1", "S2"), rows)
+    five <- Filter(function(f) identical(f$session, "WPd") && identical(f$kind, 5L), G$findings)
+    k237Criterion(G, "WL-D", "the internal deadline (planted at S2): S2 deadline, later steps not_reached (deadline), a kind-5 finding, the tables written",
+        length(s2d) == 1L && identical(s2d[[1L]]$outcome, "deadline") && length(later) > 0 &&
+            all(vapply(later, function(r) identical(r$outcome, "not_reached (deadline)"), logical(1))) && length(five) >= 1L &&
+            all(file.exists(file.path(G$out, c("steps.tsv", "findings.tsv", "numbers.tsv")))),
+        sprintf("S2 %s; later: %s; kind-5 findings %d; deadline restored: %s", if (length(s2d)) s2d[[1L]]$outcome else "-",
+            paste(vapply(later, function(r) r$outcome, character(1)), collapse = ","), length(five),
+            !is.null(Sd$deadline_real)))
+    # WL'-M: a progress dialog open over 60 s (planted).
+    Sm <- k237RunSession(G, lfq, G$runs$prot_lfq("k237_wlpm"), "WPm", upto = "S1")
+    if (!is.null(Sm$driver)) {
+        k233Action(Sm, list(step = "PM", name = "a planted progress dialog held open 75 s", by = "css",
+            target = "#proteomics_workflow-workflow_tabs a[data-value='setup']", tabs = list(),
+            tab_note = "planted (no tab change)", hard_s = 120, hook = k237ModalHook, dom = function(st) FALSE,
+            planted = TRUE))
+    }
+    k237StopSession(Sm)
+    pm <- Filter(function(r) identical(r$session, "WPm") && identical(r$step, "PM"), G$steps)
+    k237Criterion(G, "WL-M", "a progress dialog open over 60 s is recorded as progress and does not end the step (timeout at 120 s, not refused)",
+        length(pm) == 1L && identical(pm[[1L]]$outcome, "timeout") && grepl("KIT-237 planted progress dialog",
+            k233Clean(pm[[1L]]$progress_modals), fixed = TRUE) && !nzchar(k233Clean(pm[[1L]]$other_modals)) &&
+            isTRUE(Sm$modal_removed_at >= 75),
+        sprintf("PM %s after %s s; progress dialogs: %s; other dialogs: %s; shown at %s s, removed at %s s",
+            if (length(pm)) pm[[1L]]$outcome else "-", if (length(pm)) pm[[1L]]$seconds else "-",
+            if (length(pm)) k233Clean(pm[[1L]]$progress_modals) else "-", if (length(pm)) k233Clean(pm[[1L]]$other_modals) else "-",
+            k233Clean(Sm$modal_at), k233Clean(Sm$modal_removed_at)))
+    # WL-5 on the three further routes (S1 to S8), and the chooser once in user mode (LFQ).
+    for (id in setdiff(names(routes), "prot_lfq")) {
+        if (k233Remaining(G) < 300) {
+            k237Criterion(G, "WL-5", sprintf("%s: S1 to S8 in test mode", id), FALSE, "not started: less than 5 minutes left")
+            next
+        }
+        label <- paste0("WP5-", id)
+        S <- k237RunSession(G, routes[[id]], G$runs[[id]](paste0("k237_wlp_", id)), label, upto = "S8")
+        k237StopSession(S)
+        guard("WL-5", k237L5(G, label))
+    }
+    Su <- k237RunSession(G, lfq, G$runs$prot_lfq("k237_wlpu"), "WPu", test_mode = FALSE, upto = "S2")
+    k237StopSession(Su)
+    s2u <- Filter(function(r) identical(r$session, "WPu") && identical(r$step, "S2"), G$steps)
+    k237Criterion(G, "WL-0u", "the chooser selects every input file in user mode on prot_lfq",
+        length(s2u) == 1L && identical(s2u[[1L]]$outcome, "complete") && length(Su$chooser) == 2L && all(Su$chooser),
+        sprintf("S2 %s; chooser selections %d of 2", if (length(s2u)) s2u[[1L]]$outcome else "-", sum(Su$chooser %in% TRUE)))
+    k237Verdict(G)
 }
 
 k237WL1Criteria <- function(G, label, criterion = "WL-1", proteomics = TRUE) {
@@ -684,11 +852,11 @@ k237Verdict <- function(G, stop_text = NULL) {
     for (i in seq_along(G$criteria)) G$criteria[[i]]$criterion <- sub("^L-", "WL-", G$criteria[[i]]$criterion)
     results <- vapply(G$criteria, function(c) c$result, character(1))
     names <- vapply(G$criteria, function(c) c$criterion, character(1))
-    blocking <- names %in% c("WL-0", "WL-0u", "WL-1", "WL-2", "WL-3", "WL-4")
+    blocking <- names %in% c("WL-0", "WL-0u", "WL-1", "WL-2", "WL-3", "WL-4", "WL-D", "WL-M")
     proven <- is.null(stop_text) && !any(results[blocking] == "fail")
     # WL-0u is required on all four routes (SC-02): a missing route's row counts as not proven.
     routes_u <- sum(names == "WL-0u")
-    if (!is.null(G$routes) && routes_u < length(G$routes)) proven <- FALSE
+    if (!identical(G$phase$run_mode, "WLprime") && !is.null(G$routes) && routes_u < length(G$routes)) proven <- FALSE
     l5 <- !any(results[names == "WL-5"] == "fail")
     writeLines(c(stop_text %||% sprintf("instrument %s on Windows (WL-0, WL-0u, WL-1 to WL-4: %d pass, %d fail, %d recorded)",
         if (proven) "proven" else "not proven", sum(results[blocking] == "pass"), sum(results[blocking] == "fail"),
@@ -752,6 +920,7 @@ k237Main <- function(args) {
     G <- k233Context(phase)
     assign("K237_G", G, envir = globalenv())
     G$workflow <- k237ReadWorkflowRecord(out)
+    G$test_features <- isTRUE(request$test_features)
     G$routes <- k237Routes(request$routes)
     G$runs <- k237Runs(G, a$fixtures, request)
     file.copy(file.path(a$src, K237_RECORDS, "known.tsv"), file.path(out, "known.tsv"), overwrite = TRUE)
@@ -765,7 +934,7 @@ k237Main <- function(args) {
         G$fatal <- paste(conditionMessage(e), "| call:", paste(deparse(conditionCall(e)), collapse = " "))
         writeLines(G$fatal, file.path(out, "inner-fatal.txt"))
     }
-    tryCatch(k237WL(G), error = fatal)
+    tryCatch(if (identical(request$run, "WLprime")) k237WLprime(G) else k237WL(G), error = fatal)
     invisible(G)
 }
 
@@ -811,6 +980,15 @@ k237WriteEnvironment <- function(G, request, rebound) {
         list(key = "project_root_length", value = if (is.null(R)) "" else nchar(R$live$project_dir %||% "")),
         list(key = "application_libpaths", value = k233Clean(G$app_libpaths)),
         list(key = "journey_R_rebound", value = paste(rebound, collapse = "; ")),
+        list(key = "test_features", value = isTRUE(G$test_features)),
+        # SC-13: how the application's start here differs from the shell's (packaging/electron/main.js:125-175).
+        list(key = "launch_differences_from_shell", value = paste(
+            "a wrapper file sources the installed entry.R (test mode: the test-mode options first; always one probe line",
+            "writing .libPaths() into the run folder); working directory = the checkout; NOT_CRAN=true, TZ=UTC and",
+            "OMP/OPENBLAS/MKL_NUM_THREADS=1 inherited from the driver; MULTISCHOLAR_TEST_MODE=true in test mode;",
+            "CHROMOTE_CHROME points at nothing; the shell's own variables otherwise as windows-clean-run.ps1 sets them;",
+            "MSR_LAUNCHER_PROBE given as the shell gives it on Windows (process, 'win32: no systemd');",
+            "the shell's pid replaced by the driver's")),
         list(key = "github_run_id", value = Sys.getenv("GITHUB_RUN_ID")),
         list(key = "finished_utc", value = k233Utc())))
     k233WriteTsv(rows, file.path(G$out, "environment.tsv"))

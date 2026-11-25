@@ -265,3 +265,49 @@ instrument reruns within 1,410; two of three instrument reruns used).
 - User mode beyond S2 (WJ''s; VAL-216), and WJ' itself (release commit).
 - Screenshots and per-step JSON are in the run artifacts only (30 days), not committed.
 
+## A defect found in rerun 2's records after the verdict (no criterion judged it)
+
+The RA-02 terminal screenshot was also taken on 12 completed steps at 0.0 s (for example `WL1-16-S10.1-terminal.png`):
+the trigger read every error notification of the page, including earlier steps' (S9's). The refusals' screenshots
+(WL2 S1, S5.4, S6.1, S9) are at the refusal. Repaired for WL' (only notifications and dialogs from the action's own
+start count); no WL criterion read the column.
+
+## Weak fixtures (recorded, nothing built)
+
+- `metab_lc` has 6 metabolites over two assays (`Total metabolites: 6`) and 0 significant at Q < 0.05. Its N2 compares
+  0 with 0, and its WL-4 (a) plant needed "Show: All Results" to have rows to empty. A stronger fixture would need a few
+  hundred features per assay with a planted effect in a known subset (as `prot_lfq_maxquant`'s P00001-P00040), so that
+  the significant count is well above zero and the default (significant-only) table has rows; its design and SHA-256
+  would go into the manifest under a new lane id, without changing `metab_lc` (the e2e lane's oracle).
+- `lipid_canonical` and `metab_lc` hold no internal standards (K12): the ITSD analysis and ITSD normalisation are never
+  exercised on these routes. A stronger fixture would carry standards in the column and form the method matches by
+  default (KIT-242's P01 finding).
+
+## WL' declaration (SC-11; written before any send; not sent: the ticket's auditor reads it first)
+
+- **Purpose:** prove, on the installed build it runs on, what WL proved (WL-0, WL-2, WL-3, WL-4 (a) to (c), WL-5 on each
+  route, the chooser once in user mode) and RA-01's pieces WL did not meet: the internal deadline (WL-D, planted at
+  S2), a progress dialog open over 60 s (WL-M, planted in the page for 75 s with a 120-s hard wait), and the outbound
+  block (WL-0: a connection attempt from the installed application's R to 192.0.2.1:47011, RFC 5737 TEST-NET-1, with
+  a DROP required in the Windows Firewall log and none for the same attempt from the step's shell to :47012). Also
+  RA-02 (terminal screenshot at the refusal, required on WL-2) and RA-03/RA-05 as since rerun 1. Decides "instrument
+  proven (WL')"; it is the WL' that section 7 places in the WJ' job at the release commit, sent once now on the
+  current tree so its new pieces are proven before the release.
+- **Binding (at send):** commit under test = the `v0.9-staging` head merged into `run-k237-journey` just before the
+  request (SC-03 (a)); driver `76e4b519`; routes = the commit holding this declaration; mode test (the chooser once in
+  user mode); `e2e` false, `gui_entry` false; `test_features` false.
+- **Bounds:** journey step `timeout_minutes` 45, internal deadline `deadline_minutes` 35, hard wait per step 10 minutes
+  (120 s for the planted dialog); job ceiling 90 minutes = 37 set-up + 45 + 3 check + 5 margin (6.00 core-hours);
+  expected 68 minutes = 37 + 28 journey + 3 (4.53 core-hours). Not in r1.4's table (there WL' rides in WJ''s job):
+  the coordinator places it (the instrument line has 1,252 of 1,410 job-minutes left, or a new line). At most three
+  VAL-54 instrument reruns; a result is not re-run.
+- **Request (to be written as `requests/wlp-<date>.json` only at send):** `"run": "WLprime"`, `commit_under_test`,
+  `journey_commit` 76e4b519…, `route_commit`, `route_files` [lfq, omics], `routes` [the four], `mode` "test",
+  `platforms` ["windows"], `e2e` false, `gui_entry` false, `test_features` false, `deadline_minutes` 35,
+  `timeout_minutes` 45, `inputs` as `wl-20261125.json`.
+- **Predictions:** WL-0 passes, including the outbound block (DROP logged for the R attempt, none for the control;
+  uncertain only in whether the log records it within 10 s); WL-4 (a), (b), (c), WL-2 (with a terminal screenshot at
+  0.5 s), WL-3 pass; WL-D passes (S2 `deadline` about 5 s after the press, S3 to S10 `not_reached (deadline)`, one
+  kind-5 finding); WL-M passes (the planted dialog recorded as progress for about 75 s, the step `timeout` at 120 s,
+  no `refused`); WL-5 passes on the four routes to S8; the chooser passes; total journey about 28 minutes.
+
