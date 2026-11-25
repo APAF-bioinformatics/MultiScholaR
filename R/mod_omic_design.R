@@ -244,21 +244,16 @@ runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigg
     # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
     manager <- workflowData$state_manager
     stateName <- config$design$state_name
-    compared <- omicsDesignCompared(manager, workflowData)
     verdict <- compareOmicsDesignResult(manager, list(design_matrix = results$design_matrix, data = results$data_cln),
-        stateName, compared)
-    # VAL-288 (a): a formula-only change asks too, and on Save sets the differential analysis back to be run again.
-    formulaChanged <- omicsDesignFormulaChanged(results$config_list, compared)
+        stateName, omicsDesignCompared(manager, workflowData))
     runOmicsDesignResaveGate(session, verdict, length(omicsDesignLaterStates(manager, stateName)) > 0L,
-        limited = if (formulaChanged) "formula" else character(),
         commit = function(cut) runOmicsDesignCommitNow(results, workflowData, experimentPaths, qcTrigger, config, cut),
         unchanged = function() {
             written <- results
             written$data_cln <- resolveWorkflowOwnedValue(results$data_cln, manager)
             tryCatch(writeOmicsDesignArtifacts(experimentPaths$source_dir, written, workflowData$column_mapping,
                 results$config_list), error = function(e) logger::log_warn(paste("Design files not written:", e$message)))
-            applyOmicsDesignUnchanged(workflowData, results, config$da$status_key %||% "differential_analysis",
-                forceDaPending = formulaChanged)
+            applyOmicsDesignUnchanged(workflowData, results, config$da$status_key %||% "differential_analysis")
         })
     invisible(NULL)
 }
@@ -277,8 +272,7 @@ runOmicsDesignCommitNow <- function(results, workflowData, experimentPaths, qcTr
         },
         omics_design_save_failed = function(e) omicsDesignSaveFailed(e$message))
     if (is.null(committed)) return(invisible(NULL))
-    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln,
-        workflowData$config_list)
+    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
     tryCatch({
         didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, config$design$state_name)
         if (!is.null(qcTrigger)) qcTrigger(TRUE)
@@ -406,8 +400,7 @@ runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTr
     }
     commit <- function(cut) tryCatch({
         committed <- commitOmicsDesignImport(workflowData, imported, experimentPaths$source_dir, config)
-        rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln,
-        workflowData$config_list)
+        rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
         didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, config$design$state_name)
         if (!is.null(qcTrigger)) qcTrigger(TRUE)
         status <- workflowData$tab_status
@@ -424,21 +417,17 @@ runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTr
         # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
         manager <- workflowData$state_manager
         stateName <- config$design$state_name
-        compared <- omicsDesignCompared(manager, workflowData)
         verdict <- compareOmicsDesignResult(manager, list(design_matrix = imported$design_matrix, data = imported$assay_list),
-            stateName, compared)
+            stateName, omicsDesignCompared(manager, workflowData))
         later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
-        formulaChanged <- omicsDesignFormulaChanged(imported$config_list, compared)
         # AUDIT I01 (b): the working notice is closed before the question (Cancel then leaves nothing behind).
-        if (later && (identical(verdict, "changed") || formulaChanged)) shiny::removeNotification("importing_design")
+        if (later && identical(verdict, "changed")) shiny::removeNotification("importing_design")
         runOmicsDesignResaveGate(session, verdict, later,
             commit = commit,
-            limited = if (formulaChanged) "formula" else character(),
             unchanged = function() {
                 shiny::removeNotification("importing_design")
                 applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = imported$contrasts_tbl,
-                    config_list = imported$config_list), config$da$status_key %||% "differential_analysis",
-                    forceDaPending = formulaChanged)
+                    config_list = imported$config_list), config$da$status_key %||% "differential_analysis")
             })
     }, error = function(e) {
         msg <- paste("Error during import:", e$message)
