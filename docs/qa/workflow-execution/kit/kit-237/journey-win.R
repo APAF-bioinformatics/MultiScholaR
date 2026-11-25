@@ -557,12 +557,15 @@ k237WLprime <- function(G) {
     R1$after <- list(S8 = k233L4a)
     S1 <- k237Launch(G, "WP1")
     k237WL0(G, S1, wf)
-    k237Criterion(G, "WL-0", "outbound block: the installed application's R cannot reach a reserved address (a firewall DROP is logged for it, none for the same attempt from a program without a rule)",
-        identical(wf$outbound_drop_r, "yes") && identical(wf$outbound_drop_control, "no") &&
-            identical(wf$outbound_allow_control, "yes"),
-        sprintf("R attempt: %s; DROP for R: %s; DROP for control: %s; ALLOW for control: %s; %s", wf$outbound_r_said %||% "-",
-            wf$outbound_drop_r %||% "-", wf$outbound_drop_control %||% "-", wf$outbound_allow_control %||% "-",
-            wf$outbound_method %||% ""))
+    # The outbound row, probe repaired (r1.7, WR.5): the job's GitHub host, port 443, reached by the step's shell and not
+    # by the installed R in the same seconds; the DROP attributing it to the rules is recorded beside it.
+    k237Criterion(G, "WL-0", "outbound block: the installed application's R cannot reach an address the runner reaches at the same time (the job's GitHub host, port 443)",
+        identical(wf$outbound_control_connected, "True") && grepl("cannot be opened|cannot open the connection", wf$outbound_r_said %||% ""),
+        sprintf("probe %s; shell connected: %s; R: %s", wf$outbound_probe %||% "-", wf$outbound_control_connected %||% "-",
+            wf$outbound_r_said %||% "-"))
+    k237Criterion(G, "WL-0", "the block attributed: a firewall DROP logged for R's attempt", NA,
+        sprintf("DROP for R's attempt: %s (first found %s s after the attempts); %s", wf$outbound_drop_r %||% "-",
+            wf$outbound_log_polled_seconds %||% "-", wf$outbound_method %||% ""))
     if (is.null(S1$driver)) {
         k237StopSession(S1)
         return(k237Verdict(G, "instrument not proven (WL'): launch or attach failed"))

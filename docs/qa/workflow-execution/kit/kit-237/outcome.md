@@ -321,16 +321,15 @@ start count); no WL criterion read the column.
      7327607f (a new refusal, a changed message or control) is a product finding, recorded and not re-run. Only a wrong
      selector or text of the instrument, against unchanged behaviour, is an instrument fault.
   4. Any finding not listed below is new, goes to the coordinator, and is never chased in this run.
-- **Outbound row, classified before the send:**
-  1. DROP for 47011, no DROP for 47012 (and, if built, an ALLOW for 47012): pass. (The ALLOW is built: W03 (b).)
-  2. Log absent; or no line for 192.0.2.1 at all within the 60 s poll; or `outbound_r_said` is not a connection failure
-     (an R error or a parse error): instrument fault (the attempt or the log was not observed); VAL-54.
-  3. A DROP for 47012: the control is invalid (the runner drops that address for every program); instrument fault,
-     re-sent with another TEST-NET-1 address.
-  4. With (b): an ALLOW for 47012 and no DROP for 47011 is a result. The program rules did not stop the installed R. It
-     is recorded as a finding against the network condition of WL, the lifecycle step and WJ', and never re-run.
-     Without (b), case 4 cannot be told from case 2. It is classified as case 2 once; if it occurs again, the
-     coordinator is told it is a result.
+- **Outbound row (probe repaired, r1.7), classified before the send.** The probe is the job's GitHub host (`GITHUB_SERVER_URL`): its first IPv4 address, resolved once by the step's shell, port 443. First the installed R (`socketConnection`, 8 s), then the step's shell (`TcpClient`, 8 s), to the same address and port. The firewall's dropped-packet log is polled every 5 s for up to 60 s for a DROP of R's attempt, then read once more.
+  1. The shell connected; R's message is a connection failure ('… cannot be opened' or 'cannot open the connection'); a DROP for R's attempt is logged: pass.
+  2. The shell connected; R's message is a connection failure; no DROP for R's attempt within the poll: pass. The block is shown (R could not reach an address the runner reached in the same seconds). 'Attribution not logged' is recorded beside it; not re-run.
+  3. The shell connected; R connected: a result. The installed R reached the network. It is recorded as a finding against the network condition of WL, WL', the lifecycle step and WJ', and never re-run; the paper's network sentence then goes to the owner.
+  4. The shell did not connect, or the address did not resolve: the probe could not run; instrument fault (VAL-54).
+  5. R's message is not a connection failure (an R error, a parse error, no output): instrument fault (VAL-54).
+  6. Anything else: a result, reported to the coordinator (section 8: if unsure, it is a result).
+- **Decision rule (r1.7):** WL' 45653739806 is recorded as 'not proven: the outbound row outside the declared classes (a result, section 8)'; its other 22 rows stand as proven on 828dd105, routes b0936b26. WJ' is not blocked by it. The outbound row with the repaired probe is judged first in the WL' inside WJ''s job: case 1 or 2 passes it; cases 4 and 5 make WJ' an instrument fault (stop rule 8); case 3 or 6 is a result reported before any citation.
+- *(The four-case table of r1.6 with the TEST-NET-1 probe, under which run 45653739806 was classified, is replaced by the above for every later WL'; it stays in this file's history at commit 1d89e066.)*
 - **The busy refusal (K14; W04, coordinator's ruling):** the product defect gets its own ticket, repaired before the
   release commit; until it merges, WL' re-presses as WL did (S6.1w, recorded); WJ' re-presses nothing.
 - **Request (to be written as `requests/wlp-<date>.json` only at send):** `"run": "WLprime"`, `commit_under_test`,
@@ -461,4 +460,28 @@ result: stop and report") WL' is not re-sent; the coordinator decides. Inferred,
 by the program rules (a DROP for its port, none for the control's); the positive control did not show its attempt
 (either the shell's attempt was not logged as ALLOW, for example because the firewall logs allowed outbound
 connections differently or not at all for this profile, or the attempt did not leave).
+
+## WL' 45653739806: the ruling and what it establishes (r1.7)
+
+- **Verdict (coordinator's ruling after the auditor's "WL' result 45653739806"):** the run stands as recorded: 22 rows
+  proven on the installed build of 828dd105 (routes b0936b26); the outbound row NOT proven (outside the declared
+  classes: a result, section 8). WL' is not re-sent, and nothing is renamed into a new item to get a second attempt.
+  The repaired outbound probe is judged first in the WL' that runs inside WJ''s job.
+- **What the outbound observation establishes:** the installed R could not open a connection to a non-local address,
+  and Windows Firewall logged a DROP for exactly that destination port (observed); all 40 installed programs had block
+  rules (observed). **What it does not:** the attribution of the drop to the program rules (inferred: the control
+  produced no observation, and the log was written with a delay, so a later line for the control may not have been
+  written by the final read); the other executables (same rule construction only); programs outside the application
+  folder. Until WJ''s in-job WL' passes, "network blocked for the installed application's programs" rests on the 40
+  rules plus this DROP.
+- **The label-free count:** 18 → 17 is the expected effect of KIT-201 (VAL-266, VAL-267) on the label-free route at the
+  default TREAT cutoff 0 (not isolated; lipidomics unchanged at 4, as VAL-267 predicts); not a defect. No label-free DA
+  count from before merge train 8 (such as WL's 18 at 7327607f) may be cited; the paper's count and its report sentence
+  (N4) come from WJ' at the release commit. A DA saved before KIT-201 still replays with its own earlier rule (VAL-266's
+  replay marker), so reopening an old session reproduces 18 by design.
+- **The probe repaired (r1.7, WR.5), not run:** the job's GitHub host, first IPv4 address, port 443; R then the shell,
+  8 s each, a handshake only, no token in the step; the dropped-packet log and 60-s poll kept for R's DROP to that
+  address; allowed-connection logging removed. No local listener (loopback-class traffic is not filtered by Windows
+  Firewall). Criterion: `identical(wf$outbound_control_connected, "True") && grepl("cannot be opened|cannot open the
+  connection", wf$outbound_r_said %||% "")`, with the DROP recorded beside it (result `recorded`).
 

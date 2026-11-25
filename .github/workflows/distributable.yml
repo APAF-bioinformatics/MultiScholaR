@@ -1307,48 +1307,43 @@ jobs:
           Add-Record firewall_programs $programs.Count
           Add-Record firewall_rules_added_here $added
           Add-Record firewall_unruled @($programs | Where-Object { $rules -notcontains "kit-134 block $($_.FullName)" }).Count
-          # KIT-237 RA-01: a real outbound attempt from the installed application's R to a reserved, unroutable address
-          # (192.0.2.1, RFC 5737 TEST-NET-1: no service answers there; nothing is sent but a connection attempt, and this
-          # step holds no token), and the same attempt from this shell, which has no rule. The firewall's dropped-packet
-          # log must hold a DROP for the R attempt's port and none for the control's.
+          # KIT-237 RA-01, probe repaired (r1.7, WR.5): one destination that answers and that the job already uses, the
+          # job's GitHub host (GITHUB_SERVER_URL), its first IPv4 address resolved once here, port 443. The installed R
+          # attempts first (8 s), then this shell, which has no rule (8 s); only a TCP handshake is attempted, no request
+          # is sent, and this step holds no token. The dropped-packet log is polled for a DROP of R's attempt.
           $fwlog = Join-Path $env:SystemRoot 'System32\LogFiles\Firewall\pfirewall.log'
-          # W03 (b): allowed connections are logged too during the test only, so the control's attempt is seen (ALLOW).
-          Set-NetFirewallProfile -All -LogBlocked True -LogAllowed True -LogFileName '%systemroot%\system32\LogFiles\Firewall\pfirewall.log' -LogMaxSizeKilobytes 4096
-          try {
-            Start-Sleep -Seconds 5
-            $rSaid = (& "$env:APP_FOLDER\resources\runtime\R\bin\Rscript.exe" --vanilla -e "x <- tryCatch({ con <- socketConnection('192.0.2.1', 47011, blocking = TRUE, open = 'r+', timeout = 8); close(con); 'connected' }, error = function(e) paste('failed:', conditionMessage(e)), warning = function(w) paste('failed:', conditionMessage(w))); cat(x)" 2>&1 | Out-String).Trim()
-            $client = [System.Net.Sockets.TcpClient]::new()
-            $controlConnected = $false
-            try { $controlConnected = $client.ConnectAsync('192.0.2.1', 47012).Wait(8000) } catch { } finally { $client.Dispose() }
-            # W03 (a): the log is read every 5 s for up to 60 s until the R attempt's DROP is there, then once more.
-            function Read-FirewallLog {
-              if (-not (Test-Path -LiteralPath $fwlog)) { return '' }
-              $stream = [IO.File]::Open($fwlog, 'Open', 'Read', 'ReadWrite')
-              try { return [IO.StreamReader]::new($stream).ReadToEnd() } finally { $stream.Dispose() }
-            }
-            $logText = ''
-            for ($waited = 0; $waited -le 60; $waited += 5) {
-              Start-Sleep -Seconds 5
-              $logText = Read-FirewallLog
-              if ($logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47011 ') { break }
-            }
+          Set-NetFirewallProfile -All -LogBlocked True -LogFileName '%systemroot%\system32\LogFiles\Firewall\pfirewall.log' -LogMaxSizeKilobytes 4096
+          Start-Sleep -Seconds 5
+          $probeHost = ([uri]$env:GITHUB_SERVER_URL).Host
+          $probeIp = ([System.Net.Dns]::GetHostAddresses($probeHost) | Where-Object { $_.AddressFamily -eq 'InterNetwork' } | Select-Object -First 1).IPAddressToString
+          # R first (8 s), then the step's shell (8 s), to the same address and port 443; only a TCP handshake is attempted.
+          $rSaid = (& "$env:APP_FOLDER\resources\runtime\R\bin\Rscript.exe" --vanilla -e "x <- tryCatch({ con <- socketConnection('$probeIp', 443, blocking = TRUE, open = 'r+', timeout = 8); close(con); 'connected' }, error = function(e) paste('failed:', conditionMessage(e)), warning = function(w) paste('failed:', conditionMessage(w))); cat(x)" 2>&1 | Out-String).Trim()
+          $client = [System.Net.Sockets.TcpClient]::new()
+          $controlConnected = $false
+          try { $controlConnected = $client.ConnectAsync($probeIp, 443).Wait(8000) } catch { } finally { $client.Dispose() }
+          # The log is read every 5 s for up to 60 s until a DROP of R's attempt (that address, port 443) is there, then once more.
+          function Read-FirewallLog {
+            if (-not (Test-Path -LiteralPath $fwlog)) { return '' }
+            $stream = [IO.File]::Open($fwlog, 'Open', 'Read', 'ReadWrite')
+            try { return [IO.StreamReader]::new($stream).ReadToEnd() } finally { $stream.Dispose() }
+          }
+          $dropPattern = 'DROP TCP \S+ ' + [regex]::Escape("$probeIp") + ' \d+ 443 '
+          $logText = ''
+          for ($waited = 0; $waited -le 60; $waited += 5) {
             Start-Sleep -Seconds 5
             $logText = Read-FirewallLog
-          } finally {
-            # Allowed connections are logged for the test only, even if the step fails in between.
-            Set-NetFirewallProfile -All -LogAllowed False
+            if ($logText -match $dropPattern) { break }
           }
-          $dropR = $logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47011 '
-          $dropC = $logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47012 '
-          $allowC = $logText -match 'ALLOW TCP \S+ 192\.0\.2\.1 \d+ 47012 '
+          Start-Sleep -Seconds 5
+          $logText = Read-FirewallLog
+          $dropR = $logText -match $dropPattern
+          Add-Record outbound_probe "$probeHost $probeIp 443"
           Add-Record outbound_r_said $rSaid
           Add-Record outbound_control_connected $controlConnected
           Add-Record outbound_drop_r $(if ($dropR) { 'yes' } else { 'no' })
-          Add-Record outbound_drop_control $(if ($dropC) { 'yes' } else { 'no' })
-          Add-Record outbound_allow_control $(if ($allowC) { 'yes' } else { 'no' })
           # outbound_log_polled_seconds: seconds from the attempts to the read the R DROP was first found in (70 when it never was; the final read is 5 s later).
           Add-Record outbound_log_polled_seconds ($waited + 5)
-          Add-Record outbound_method "Windows Firewall log of dropped and (for the test only) allowed connections ($fwlog, $(if (Test-Path -LiteralPath $fwlog) { 'present' } else { 'absent' })); R port 47011, control port 47012, address 192.0.2.1"
+          Add-Record outbound_method "Windows Firewall dropped-packet log ($fwlog, $(if (Test-Path -LiteralPath $fwlog) { 'present' } else { 'absent' })); R then the shell to $probeHost ($probeIp) port 443, a handshake only"
           # Windows' default on a desktop installation (5.3), for the rest of this disposable runner's job.
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
           $longPathsBefore = (Get-ItemProperty $key).LongPathsEnabled
