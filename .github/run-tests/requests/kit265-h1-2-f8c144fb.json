@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-265 H1 rerun 1 of 3 (instrument defects of run 45703724770: driver helper, wait on stale toast; no expected value changes); commit under test 4a8915ac; ceiling 60 job-minutes for H1 in all",
+  "label": "KIT-265 H1 rerun 1 on kit-265 f8c144fb (commit under test 4a8915ac)",
+  "package_commit": "f8c144fbba83b7fbaa1e24f23576ea0332d7390e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-265/h1.R",
+      "args": [
+        "h1",
+        "4a8915ac9de13190aba32b779e0c75b0076d3e5b"
+      ],
+      "out": "k265h1-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
