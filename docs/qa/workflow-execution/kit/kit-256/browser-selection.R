@@ -209,10 +209,11 @@ k256Attach <- function() {
         k256Instrument("AppDriver did not attach: ", attachError)
     }
     k256Drivers[[length(k256Drivers) + 1L]] <<- app
-    # A notification recorder: every Shiny notification added to the page, with its class and text.
-    app$run_js(paste0("window.k256Notes = []; new MutationObserver(function(ms) { ms.forEach(function(m) {",
+    # A notification recorder: every Shiny notification element added to the page, kept; its class and text are read
+    # when the notes are read (G0 run 45617875300: read at insertion, before Shiny filled them, they were empty).
+    app$run_js(paste0("window.k256NoteNodes = []; new MutationObserver(function(ms) { ms.forEach(function(m) {",
         "m.addedNodes.forEach(function(n) { if (n.classList && n.classList.contains('shiny-notification')) ",
-        "window.k256Notes.push(n.className + ' :: ' + n.textContent.replace(/\\s+/g, ' ').trim()); }); }); })",
+        "window.k256NoteNodes.push(n); }); }); })",
         ".observe(document.body, {childList: true, subtree: true});"))
     app
 }
@@ -224,7 +225,8 @@ k256OptsJs <- function(id) sprintf(paste0("(function() { var el = document.getEl
 k256BoxJs <- "JSON.stringify(document.getElementById('b-tech_rep_samples').selectize.getValue())"
 k256SummaryJs <- paste0("(function() { var el = document.getElementById('b-tech_rep_summary');",
     " return el ? el.textContent : ''; })()")
-k256NotesJs <- "JSON.stringify(window.k256Notes || [])"
+k256NotesJs <- paste0("JSON.stringify((window.k256NoteNodes || []).map(function(n) {",
+    " return n.className + ' :: ' + n.textContent.replace(/\\s+/g, ' ').trim(); }))")
 k256Box <- function(app) k256Js(app, k256BoxJs)
 k256Summary <- function(app) gsub("\\s*\n\\s*", " | ", trimws(k256Js(app, k256SummaryJs)))
 k256Notes <- function(app) jsonlite::fromJSON(k256Js(app, k256NotesJs))
