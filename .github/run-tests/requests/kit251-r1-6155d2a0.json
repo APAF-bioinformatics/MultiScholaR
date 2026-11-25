@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-251 R1: tests-only commit 6155d2a0, failing-first (E1, E2, E3 and the declared edit of test-perf107-audit.R fail 2 vs 1; G1 passes); 1 job, ceiling 45 job-minutes",
+  "label": "KIT-251 R1 failing-first on kit-251 6155d2a0 (tests only)",
+  "package_commit": "6155d2a09032a3135156aeb55e9995b43ec61687",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit251-replicate-filter-one-click.R",
+    "test-perf107-audit.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
