@@ -1,0 +1,29 @@
+{
+  "requested_by": "Merge train 23 (KIT-259): render job (closure check C.4), four proteomics lanes, V0/V1/V2 as render3.R predicts, on head 460253ba; 1 scripts job, ceiling 60 job-minutes",
+  "label": "Train 23 KIT-259 render on 460253ba",
+  "package_commit": "460253ba5d2f7b7a2ec9defe6b5cb78fc12f9f9a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-259/render3.R",
+      "args": [],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit259-render",
+      "out_pattern": "\\.(txt|tsv)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
