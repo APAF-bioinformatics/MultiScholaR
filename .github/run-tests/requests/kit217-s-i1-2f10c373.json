@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-217 control S instrument rerun 1 of 3 (VAL-54): parse filter fixed; R code identical to ba962c19; base 185ebf75; ceiling 75 job-minutes",
+  "label": "KIT-217 control S rerun 1 on kit-217 2f10c373",
+  "package_commit": "2f10c37315ef54e48e1afbda24268d29d18f11bf",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-217/filter-missing-control.R",
+      "args": [
+        "185ebf75cc179fdf88df397c38473cdf9592bb6f",
+        "docs/qa/workflow-execution/kit/kit-217/s"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-217/s",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [
+    "kit-217-measure"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
