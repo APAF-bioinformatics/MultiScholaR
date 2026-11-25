@@ -67,6 +67,13 @@ k258E6Table <- function() k258Table(
   k258Row("X", "real", c(rep(1e6, 6L), rep(1e5, 5L), NA)),
   k258Row("X", "noise", rep(2000, 12L)),
   k258Row("W", "other", seq(1000, 12000, by = 1000)), samples = k258Samples12)
+# E7 (VAL-284 (1), the mean half): equal counts, a zero in one row; four samples built in code: id V, row A (0, 300, 300,
+# NA) measured in 2 of 4, mean of its measured values 300 (200 with the zero averaged); row B (NA, NA, 250, 250) measured
+# in 2 of 4, mean 250; id U once. The decided rule keeps A; a zero averaged into the mean (KIT-214) keeps B.
+k258E7Table <- function() k258Table(
+  k258Row("V", "A", c(0, 300, 300, NA)),
+  k258Row("V", "B", c(NA, NA, 250, 250)),
+  k258Row("U", "C", c(10, 11, 12, 13)), samples = k258Samples4)
 
 # The ticket's cases on the declared step: table, its samples, the duplicated id, the name of the row kept now and
 # under KIT-214.
@@ -76,6 +83,7 @@ k258Cases <- list(
   E3 = list(table = k258E3Table, samples = k258Samples, id = "F", head = "R", base = "Q"),
   E5 = list(table = k258E5Table, samples = k258Samples4, id = "Z", head = "B", base = "A"),
   E6 = list(table = k258E6Table, samples = k258Samples12, id = "X", head = "noise", base = "real"),
+  E7 = list(table = k258E7Table, samples = k258Samples4, id = "V", head = "A", base = "B"),
   G1 = list(table = k258G1Table, samples = k258Samples, id = "H", head = "V", base = "V"),
   G3 = list(table = k258G3Table, samples = k258Samples, id = "K", head = "W", base = "W"))
 
@@ -183,7 +191,8 @@ for (case in names(k258Cases)) {
 k258Scripted <- list(
   E4 = list(table = k258E1Table, samples = k258Samples, id = "D", head = "B", other = c("E", "C")),
   E5 = list(table = k258E5Table, samples = k258Samples4, id = "Z", head = "B", other = c("Y", "C")),
-  E6 = list(table = k258E6Table, samples = k258Samples12, id = "X", head = "noise", other = c("W", "other")))
+  E6 = list(table = k258E6Table, samples = k258Samples12, id = "X", head = "noise", other = c("W", "other")),
+  E7 = list(table = k258E7Table, samples = k258Samples4, id = "V", head = "A", other = c("U", "C")))
 
 for (case in names(k258Scripted)) {
   local({

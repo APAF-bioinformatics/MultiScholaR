@@ -135,7 +135,7 @@ OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in al
 - `test-metab-01m-...` `fixed` (base 4 failed: the new pins; head 19/0); `test-metab-02u-...` `fixed` (base 1; head 17/0).
 - `test-workflow-omics-binding-steps.R` `message-changed`, counts unchanged (58/1 both sides; `r2/binding-steps.txt`:
   the duplicate step's recorded parameters, as predicted).
-- **One verdict not as predicted, declared here (stop rule 3):** `test-workflow-omics-declarations.R` is `same`
+- **One verdict not as predicted, declared here (stop rule 3):** `test-workflow-omics-declarations.R:45` is `same`
   (45/23 both sides), not `message-changed`. Its registry expectation (the KIT-073 frozen dump,
   `fixtures/kit073-omics-declarations-frozen.rds`) fails on both sides with the identical text
   "`actual$lipidomics$lipid_duplicate_resolution$declaration$fixed` is a list / `expected...` is NULL": the base
@@ -146,6 +146,18 @@ OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in al
 - Every other file `same`, including `test-kit214-sample-columns.R` (176/0 both). Pre-existing failures identical on
   both sides: `test-kit224-ruv-feature-levels.R` (1), `test-workflow-operation-registry.R` (2).
 - Check: 0 errors, 3 warnings, 3 notes on both sides; findings identical (6), none only on head.
+
+## R3 (the ticket's one correction pass: test E7, tests only; declared before the request)
+
+- Purpose: the mean half of VAL-284 (1) has no falsifying test (audit I02). E7: id V, row A (0, 300, 300, NA) against
+  row B (NA, NA, 250, 250), both measured in 2 of 4; A's mean of its measured values 300 (200 with the zero averaged),
+  B's 250; the decided rule keeps A, KIT-214's rule keeps B.
+- Base: the R2 base `5dfe2bc8` plus the E7 test file only (the commit is recorded in `runs.tsv`); head: the commit of
+  this section. Files: `test-kit258-duplicate-completeness.R` only; no change under `R/`.
+- Prediction: base, E7 fails (it keeps B) in the declared-step cases and the kernel and S4 cases; head, E7 passes; the
+  file's passed count rises by E7's assertions (142 to 149 on head per the audit's count), no failure.
+- Ceiling: about 30 job-minutes for both jobs (the ticket's correction ceiling of 705 is unchanged). Decision: if E7 does
+  not behave as predicted, stop and report; no second run and no code change.
 
 ## Acceptance criteria
 
@@ -178,8 +190,13 @@ OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in al
 
 **Main part (legacy, `main`).** On `main` (and before KIT-214), lipidomics and metabolomics duplicate resolution kept,
 for an identifier listed more than once in an assay, the row with the highest mean over every numeric column of the
-table, identifier and annotation columns included (`main:R/func_lipid_qc.R:188`, `:275`;
-`main:R/func_lipid_s4_objects.R:4314`, `:4634`, as the ticket read them). Who was affected: users whose table repeats
+table, identifier and annotation columns included (the step's columns, every numeric column: `main:R/mod_lipid_qc_duplicates.R:261` and
+`main:R/mod_metab_qc_duplicates.R:261`, passed to the kernel at `:274`; the kernel's mean and keep:
+`main:R/func_lipid_qc.R:267`, `:275` and `main:R/func_metab_qc.R:267`, `:275`; the same code at
+`main:R/func_lipid_s4_objects.R:4634` and `main:R/func_metab_s4_objects.R:4642`). On `main` the import kept an
+intensity of exactly 0 as a value (it counted zeros as missing only in its summary,
+`main:R/func_lipid_import.R:822`), so a zero entered that mean and lowered the row's average. In 0.9 a zero is read
+as missing at import (KIT-118 M3) and, since KIT-258, is not measured by the duplicate rule on every route. Who was affected: users whose table repeats
 an identifier (custom imports, Import Existing Design, objects built in code; MS-DIAL default exports have unique
 identifiers). What changed in results: such an identifier can now keep a different row, with its own name and
 annotation, and every later step (internal-standard normalisation, RUV, the moderated test, the BH family) sees that
