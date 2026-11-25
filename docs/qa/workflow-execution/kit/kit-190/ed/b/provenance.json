@@ -1,0 +1,64 @@
+{
+  "ticket": "KIT-190 E",
+  "head_commit": "a1c12d28bfd6e8291f3e360ab75b6875458d8c88",
+  "base_commit": "d4e2eb2cff0302c27f98b78f90bfb51dab6aee04",
+  "base_arg": "d4e2eb2cff0302c27f98b78f90bfb51dab6aee04",
+  "generator": {
+    "file": "tests/testthat/helper-kit172.R",
+    "commit": "d4e2eb2c",
+    "lines": "21-62"
+  },
+  "lifecycle": false,
+  "fault": false,
+  "stop_rule": true,
+  "cells": ["E-s", "E-p", "E-g"],
+  "replicates": 50,
+  "workers_per_side": 2,
+  "falsifier_counts_as_stated": true,
+  "seed_rule": "set.seed(190000000 + 10000 * cell + r); cells N-r 1, N-s 2, E-r 3, E-s 4, E-p 5, E-g 6",
+  "side_exit_status": {
+    "base": 0,
+    "head": 0
+  },
+  "journeys": 600,
+  "mean_journey_seconds": 20.1257466666667,
+  "projected_minutes_per_side_full": 108.343602888889,
+  "seconds_per_cell_class": {
+    "E-s lipid": {
+      "base": 822.051,
+      "head": 1367.091
+    },
+    "E-s metab": {
+      "base": 858.458,
+      "head": 1375.021
+    },
+    "E-p lipid": {
+      "base": 824.113000000001,
+      "head": 1377.995
+    },
+    "E-p metab": {
+      "base": 830.616,
+      "head": 1208.611
+    },
+    "E-g lipid": {
+      "base": 850.172,
+      "head": 870.702999999997
+    },
+    "E-g metab": {
+      "base": 819.420000000001,
+      "head": 871.197
+    }
+  },
+  "wall_seconds_sides": 3555.75896286964,
+  "wall_seconds": 3556.7397582531,
+  "stopped_at": {},
+  "started": "2026-11-24T05:01:07+0000",
+  "finished": "2026-11-24T06:00:24+0000",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "cores": 4,
+  "processor": "AMD EPYC 9V74 80-Core Processor",
+  "script_sha256": "8c79e614f5b0bbb0dc4548f69bf65865ec42af6fed1b1f8854351ca1fa73d3c2"
+}

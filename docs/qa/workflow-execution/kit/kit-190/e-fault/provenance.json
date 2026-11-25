@@ -1,0 +1,50 @@
+{
+  "ticket": "KIT-190 E",
+  "head_commit": "5c7d984df8d76a93cfcd3faf0806cd00a56a47cc",
+  "base_commit": "5c7d984df8d76a93cfcd3faf0806cd00a56a47cc",
+  "base_arg": "self",
+  "generator": {
+    "file": "tests/testthat/helper-kit172.R",
+    "commit": "d4e2eb2c",
+    "lines": "21-62"
+  },
+  "lifecycle": true,
+  "fault": true,
+  "stop_rule": true,
+  "cells": "N-r",
+  "replicates": 2,
+  "workers_per_side": 2,
+  "seed_rule": "set.seed(190000000 + 10000 * cell + r); cells N-r 1, N-s 2, E-r 3, E-s 4, E-p 5, E-g 6",
+  "side_exit_status": {
+    "base": 0,
+    "head": 0
+  },
+  "journeys": 12,
+  "mean_journey_seconds": 15.687625,
+  "projected_minutes_per_side_full": 84.4517145833333,
+  "seconds_per_cell_class": {
+    "N-r lipid": {
+      "base": 34.407,
+      "head": 34.137
+    },
+    "N-r metab": {
+      "base": 33.613,
+      "head": 23.344
+    }
+  },
+  "wall_seconds_sides": 96.3771419525146,
+  "wall_seconds": 96.510650396347,
+  "stopped_at": {
+    "cell": "N-r",
+    "falsifiers": ["F1", "F2"]
+  },
+  "started": "2026-11-23T22:41:23+0000",
+  "finished": "2026-11-23T22:42:59+0000",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "cores": 4,
+  "processor": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "script_sha256": "f8b1250bff00aecdd33406d50c70661ee646562db6761845b9b2649c4105312e"
+}

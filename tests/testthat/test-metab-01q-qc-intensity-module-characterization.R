@@ -203,7 +203,10 @@ test_that("metabolomics intensity module preserves apply filter public behavior"
     metaboliteIntensityFiltering = function(
       theObject,
       metabolites_intensity_cutoff_percentile,
-      metabolites_proportion_of_samples_below_cutoff
+      metabolites_proportion_of_samples_below_cutoff,
+      # KIT-217 (r1.7, test mechanics): the mock's signature follows the generic, which gained two formals.
+      metabolites_min_values_per_group = NULL,
+      metabolites_min_groups = NULL
     ) {
       captured$filter_call <- list(
         the_object = theObject,
@@ -1262,7 +1265,10 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
     function(
       theObject,
       metabolites_intensity_cutoff_percentile,
-      metabolites_proportion_of_samples_below_cutoff
+      metabolites_proportion_of_samples_below_cutoff,
+      # KIT-217 (r1.7, test mechanics): the mock's signature follows the generic, which gained two formals.
+      metabolites_min_values_per_group = NULL,
+      metabolites_min_groups = NULL
     ) {
       captured$filter_call <- list(
         the_object = theObject,

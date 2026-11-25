@@ -70,7 +70,19 @@ for (omic in names(ruvCases())) {
     old <- ruvSweep(case, object)
     expect_identical(names(new), names(old))
     expect_identical(ruvComparable(new), ruvComparable(old))
-    expect_true(all(vapply(new, function(assay) isTRUE(assay$success), logical(1))))
+    # KIT-190: under rule (d) assay `two` of this fixture finds no admissible percentage (owner, VAL-280); the
+    # once-only imputation is still compared on both assays above, and assay `one` must succeed.
+    expect_true(isTRUE(new$one$success))
+    # KIT-190 (VAL-280), observation only, no expectation: why each assay's percentages were accepted or rejected.
+    for (assay in names(new)) {
+      trace <- new[[assay]]$optimization_results
+      if (is.data.frame(trace) && nrow(trace)) {
+        cat(sprintf("\nKIT-190 observation %s %s: %s%% %s k=%s reason=%s", omic, assay, trace$percentage_requested,
+          trace$status, trace$best_k, trace$error_reason), sep = "")
+      }
+      if (!isTRUE(new[[assay]]$success)) cat(sprintf("\nKIT-190 observation %s %s: %s", omic, assay, new[[assay]]$error))
+    }
+    cat("\n")
   })
 
   test_that(paste(omic, "preparation leaves complete data untouched and honours the object's components"), {

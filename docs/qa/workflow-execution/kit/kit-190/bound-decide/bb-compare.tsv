@@ -1,0 +1,3 @@
+cell	endpoint	F+B_minus_B+B	D+B_minus_B+B	seeds	far_worse
+N-w	any_call	0.1120	0.1160	250	True
+E-w	fdp	0.0496	0.0491	200	False

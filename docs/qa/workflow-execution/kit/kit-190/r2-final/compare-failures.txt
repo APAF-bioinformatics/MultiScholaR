@@ -1,0 +1,312 @@
+== test-prot-norm-core.R | message-changed | the lipid and metab RUV declaration give the recorded result through the moved owner stripper
+-- base:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "9ada579119fd90fdd3523c0ab92d01333e90aa7732fc4fccbd90845a96523dec"
+  `expected`: "dea4b04738e8b80a58bbd8639b8eef9eb90ae27d6c6da30da0d434592f9d10df"
+  
+  metab_ruv
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "cc4276caacf74e0785a547762b1cba4797ddd5800bf63d97f2c4bec724c9dc66"
+  `expected`: "0921c3d1d2dae12528e3b3690680e84dc1d9749fea2226a419aeade1b11390f6"
+  
+  lipid_ruv
+-- head:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "1cfd7586c748f4976e4f5c3b4fdd85324152293f8e892e6db334b7b29e5ac08f"
+  `expected`: "0921c3d1d2dae12528e3b3690680e84dc1d9749fea2226a419aeade1b11390f6"
+  
+  lipid_ruv
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "f7593cff12d12ed9030c998bba6ed4062b730df7e763003a28a676061883606a"
+  `expected`: "dea4b04738e8b80a58bbd8639b8eef9eb90ae27d6c6da30da0d434592f9d10df"
+  
+  metab_ruv
+
+== test-omic-norm-module.R | new-failure | (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "56e0f5614543ba4ed0027756f65aeb31be2cf65ef3364290cd24b6c495998dec"
+  `expected`: "6f03ec2fff1c90a3a1728422205f6ebe8d929a0e97a02b42dc0e053b026e5942"
+  
+  lipid manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "70d15badd8b75ecacecaf1a1828f9f98be516a19f6630d390d8e34a85990d090"
+  `expected`: "1ab8a05076a605820dc0d14e237215f9abfaa251d04c7076ca03825877e57dc2"
+  
+  lipid manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a9b7326e2a270b95a32381ae27ffff05d2ce7e032116b273a7cd983bb72c550b"
+  `expected`: "0b68624dba919ae6e6852528493ba338d672d75d235b8437c2895e8c6f724bf5"
+  
+  lipid manual skip_correlation provenance
+
+== test-omic-norm-module.R | new-failure | (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "357815f322e924dde66af6e38355a135eda96220161075443076b7fc176a29dc"
+  `expected`: "667cc9562bd90c598ef04d93d5fe30d6ad1818b89c02f50d86dcfec344a11371"
+  
+  metab manual skip_correlation provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "54190570168222bd4009ff992fe6585e852580faf7c06f8da9a741234b34a890"
+  `expected`: "279b01b63aa09b94e9ccaa8e085154e7b281eb0fd48361548782ceead23456e3"
+  
+  metab manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9f3dc69aebe34ac437e7da9abd85c2bc560af6548b0fb66c698b423b04c0de69"
+  `expected`: "24204497ce33beb525005c4869fd60e6f560a7c1f6eb2293cc928049e1410ba2"
+  
+  metab manual run provenance
+
+== test-omic-norm-module.R | new-failure | (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic run provenance
+
+== test-omic-norm-module.R | new-failure | (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic run provenance
+
+== test-workflow-omics-binding-steps.R | message-changed | KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+-- base:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 1
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[3]]$parameters` is length 3
+  `expected$metabolomics$steps[[3]]$parameters` is length 2
+  
+  `actual$metabolomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$metabolomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters` is length 1
+  `expected$metabolomics$steps[[4]]$parameters` is length 0
+  
+  `actual$metabolomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 10
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+  `actual$metabolomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[10]]` is absent
+  
+  records
+-- head:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 1
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$outcomes` is length 13
+  `expected$lipidomics$steps[[9]]$outcomes` is length 9
+  
+  names(actual$lipidomics$steps[[9]]$outcomes)[7:13] vs names(expected$lipidomics$steps[[9]]$outcomes)[7:9]
+    "negative_control_count_per_assay"
+    "negative_control_percentage"
+    "negative_control_percentage_per_assay"
+  - "k_sweep_per_assay"
+  - "k_cap_per_assay"
+  - "ruv_k_notice_per_assay"
+  - "ruv_status_per_assay"
+  
+  `actual$lipidomics$steps[[9]]$outcomes$k_sweep_per_assay` is a list
+  `expected$lipidomics$steps[[9]]$outcomes$k_sweep_per_assay` is absent
+  
+  `actual$lipidomics$steps[[9]]$outcomes$k_cap_per_assay` is a list
+  `expected$lipidomics$steps[[9]]$outcomes$k_cap_per_assay` is absent
+  
+  `actual$lipidomics$steps[[9]]$outcomes$ruv_k_notice_per_assay` is a list
+  `expected$lipidomics$steps[[9]]$outcomes$ruv_k_notice_per_assay` is absent
+  
+  `actual$lipidomics$steps[[9]]$outcomes$ruv_status_per_assay` is a list
+  `expected$lipidomics$steps[[9]]$outcomes$ruv_status_per_assay` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 12
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters[[11]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[11]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters[[12]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[12]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[3]]$parameters` is length 3
+  `expected$metabolomics$steps[[3]]$parameters` is length 2
+  
+  `actual$metabolomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$metabolomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters` is length 1
+  `expected$metabolomics$steps[[4]]$parameters` is length 0
+  
+  `actual$metabolomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$outcomes` is length 13
+  `expected$metabolomics$steps[[9]]$outcomes` is length 9
+  
+  names(actual$metabolomics$steps[[9]]$outcomes)[7:13] vs names(expected$metabolomics$steps[[9]]$outcomes)[7:9]
+    "negative_control_count_per_assay"
+    "negative_control_percentage"
+    "negative_control_percentage_per_assay"
+  - "k_sweep_per_assay"
+  - "k_cap_per_assay"
+  - "ruv_k_notice_per_assay"
+  - "ruv_status_per_assay"
+  
+  `actual$metabolomics$steps[[9]]$outcomes$k_sweep_per_assay` is a list
+  `expected$metabolomics$steps[[9]]$outcomes$k_sweep_per_assay` is absent
+  
+  `actual$metabolomics$steps[[9]]$outcomes$k_cap_per_assay` is a list
+  `expected$metabolomics$steps[[9]]$outcomes$k_cap_per_assay` is absent
+  
+  `actual$metabolomics$steps[[9]]$outcomes$ruv_k_notice_per_assay` is a list
+  `expected$metabolomics$steps[[9]]$outcomes$ruv_k_notice_per_assay` is absent
+  
+  `actual$metabolomics$steps[[9]]$outcomes$ruv_status_per_assay` is a list
+  `expected$metabolomics$steps[[9]]$outcomes$ruv_status_per_assay` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 12
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+  `actual$metabolomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[10]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters[[11]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[11]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters[[12]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[12]]` is absent
+  
+  records
+
+== test-workflow-omics-ruv-cancor-once.R | new-failure | metab sweep is 1:1 with imputing at every percentage, with missing values
+-- base:
+  <passes>
+-- head:
+  Expected `all(vapply(new, function(assay) isTRUE(assay$success), logical(1)))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+== test-workflow-omics-ruv-cancor-once.R | new-failure | lipid sweep is 1:1 with imputing at every percentage, with missing values
+-- base:
+  <passes>
+-- head:
+  Expected `all(vapply(new, function(assay) isTRUE(assay$success), logical(1)))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

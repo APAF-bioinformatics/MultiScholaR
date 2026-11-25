@@ -1,0 +1,31 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-omic-da-module.R	1316	53	0	0	failed	1303	66	0	0	failed	new-failure	new-failure: (b) in process: prot_main; counts: (b) in process: prot_main (passed 211 -> 198, skipped 0 -> 0)	
+test-omic-enrich-module.R	1051	19	0	0	failed	1051	19	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-lipid-02ab-da-module-characterization.R	15	0	0	2	ok	15	0	0	2	ok	same		
+test-lipid-02b-da-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-07-s4-da-plot-methods.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-metab-02aa-da-display-filter-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-02k-da-numsig-barplot-characterization.R	4	0	0	0	ok	4	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-prot-07-da-analysis.R	3	0	0	1	ok	3	0	0	1	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-prot-07c-da-results-characterization.R	23	0	0	0	ok	23	0	0	0	ok	same		
+test-prot-07c-da-results-output-shared.R	38	0	0	0	ok	37	1	0	0	failed	new-failure	new-failure: protein DA output method writes annotated results and summary graphics; counts: protein DA output method writes annotated results and summary graphics (passed 9 -> 8, skipped 0 -> 0)	
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	ok	60	0	0	1	ok	same		
+test-prot-da-compat-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-prot-da-render-direct-shared.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-summary-report-templates.R	123	0	0	0	ok	123	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-figure-paths.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-operations.R	75	0	0	0	ok	75	0	0	0	ok	same		
+test-lipid-08-s4-da-analysis-methods.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-metab-02p-da-analysis-characterization.R	18	0	0	0	ok	18	0	0	0	ok	same		
+test-metab-02q-da-analysis-helper-characterization.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	ok	538	0	0	0	ok	same		
+test-kit204-prot-da-not-tested.R	0	0	0	0	absent	81	0	0	0	ok	only-on-head		

@@ -1,0 +1,151 @@
+== test-kit261-norm-run-button.R | fixed | KIT-261 E1, E2: lipidomics the button is disabled with the busy label while the entry figures run, then enabled
+-- base:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E1 label
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E2 label
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E1 toggleState
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E2 toggleState
+-- head:
+  <passes>
+
+== test-kit261-norm-run-button.R | fixed | KIT-261 E1, E2: metabolomics the button is disabled with the busy label while the entry figures run, then enabled
+-- base:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E1 label
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E2 label
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E1 toggleState
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E2 toggleState
+-- head:
+  <passes>
+
+== test-kit261-norm-run-button.R | fixed | KIT-261 E3: lipidomics, Finalize QC's figure then the entry figures (queued behind it): busy throughout, enabled at the end
+-- base:
+  Expected `ctx$rec$labels` to be identical to `c(k261Busy, k261Default)`.
+  Differences:
+   actual | expected                                     
+          - "Please wait: a step is still running..." [1]
+          - "Run Normalization Pipeline"              [2]
+  
+  E3 labels
+  Expected `ctx$rec$toggles` to be identical to `c(FALSE, TRUE)`.
+  Differences:
+  `actual`:             
+  `expected`: FALSE TRUE
+  
+  E3 toggleState
+  Expected `ctx$rec$toggles` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E3: disabled once, while the metrics and then the entry figures ran
+-- head:
+  <passes>
+
+== test-kit261-norm-run-button.R | fixed | KIT-261 E5: lipidomics, the entry figures fail: the button is enabled again with its own label
+-- base:
+  Expected `ctx$rec$toggles` to be identical to `c(FALSE, TRUE)`.
+  Differences:
+  `actual`:             
+  `expected`: FALSE TRUE
+  
+  E5 toggleState
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E5 label
+-- head:
+  <passes>
+
+== test-kit261-norm-run-button.R | fixed | KIT-261 E6: transcriptomics, the button is disabled with the busy label while a transcriptomics step runs, then enabled
+-- base:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E6 label
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E6 label after
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E6 toggleState
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E6 toggleState after
+-- head:
+  <passes>
+
+== test-kit261-norm-run-button.R | fixed | KIT-261 E7: lipidomics, during the run the button stays disabled when the tab is left and opened again
+-- base:
+  Expected `k261Since(ctx$rec$toggles, toggles)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E7: disabled once, kept disabled across the re-entry
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E7 label
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E7: enabled after the run
+-- head:
+  <passes>
+

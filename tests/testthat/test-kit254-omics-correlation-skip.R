@@ -367,17 +367,15 @@ kit254Configs <- list(
     metab = list(class = "metab", ruv = NULL),
     lipid_ruv = list(class = "lipid", ruv = kit172LegacyRuv("manual")))
 
-# Lipid with RUV (AUDIT-KIT-254-impl I01): after KIT-224 (staging c4505c7f) G0's rule finds no listed threshold that
-# removes some samples and keeps two per group (G0b, run 45628705535: none up to 0.95, ten at 0.99): stop rule 2. The
-# coordinator's ruling (KIT-248's G0b precedent; a declared-comparison change): t_hi = the midpoint of the two smallest
-# best within-group partner correlations G0b observed on the merged tree (g0b/g0b-best-partner.tsv: A_1 0.957297, B_4
-# 0.962751), (0.957297 + 0.962751) / 2 = 0.960024; PREDICTED to remove A_1 only (its best partner is below, every other
-# sample's at or above 0.962751). t_lo = G0's rule below it: 0.95 (removes none). At e0747fc1 it was 0.99 / 0.95 (G0
-# 45599722106: B_4).
-kit254T <- list(lipid = c(hi = 0.95, lo = 0.9), metab = c(hi = 0.95, lo = 0.9), lipid_ruv = c(hi = 0.960024, lo = 0.95))
-# G0's design samples (OBSERVED, both omics in process; C3 and II0): Apply(t_hi) alone removes A_5 (B_4 with RUV);
-# Apply(t_lo) alone removes none.
-kit254HiRuns <- list(lipid = setdiff(kit254All, "A_5"), metab = setdiff(kit254All, "A_5"), lipid_ruv = setdiff(kit254All, "A_1"))
+# Lipid with RUV, re-derived on the train 15 head (merge-train-20261126h 4308c5ae, which holds KIT-190's decided control
+# rule, VAL-110 and VAL-126; train record "After the focused audit", AUDIT-TRAIN15-kit254-e7-20261126): G0b's script
+# unchanged (g0b/g0b-ruv-thresholds.R), run 45704341824, docs/qa/workflow-execution/kit/kit-254/g0c/g0b-values.tsv: G0's
+# rule gives t_hi = 0.8 (Apply removes B_1) and t_lo = 0.7 (removes none). Earlier: 0.960024 / 0.95 after KIT-224 (G0b
+# 45628705535; AUDIT-KIT-254-impl I01), 0.99 / 0.95 at e0747fc1 (G0 45599722106).
+kit254T <- list(lipid = c(hi = 0.95, lo = 0.9), metab = c(hi = 0.95, lo = 0.9), lipid_ruv = c(hi = 0.8, lo = 0.7))
+# G0's design samples (OBSERVED, both omics in process; C3 and II0): Apply(t_hi) alone removes A_5 (B_1 with RUV, run
+# 45704341824); Apply(t_lo) alone removes none.
+kit254HiRuns <- list(lipid = setdiff(kit254All, "A_5"), metab = setdiff(kit254All, "A_5"), lipid_ruv = setdiff(kit254All, "B_1"))
 kit254LoRuns <- list(lipid = kit254All, metab = kit254All, lipid_ruv = kit254All)
 
 # ------------------------------------------------------------------------------------------------

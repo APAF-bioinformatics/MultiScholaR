@@ -215,8 +215,8 @@ saveWorkflowOmicsNormSessionArtifacts <- function(binding, sessionData, sourceDi
     for (assay_name in names(sessionData$ruv_optimization_results)) {
         result <- sessionData$ruv_optimization_results[[assay_name]]
         if (!is.null(result) && isTRUE(result$success)) {
-            ruv_summary_lines <- paste0(ruv_summary_lines, sprintf("\n  %s: k=%d, %%=%.1f, controls=%d", assay_name, result$best_k,
-                result$best_percentage, sum(result$control_genes_index, na.rm = TRUE)))
+            # KIT-190 I01: the k removed, with the k found where the cap reduced it.
+            ruv_summary_lines <- paste0(ruv_summary_lines, omicsRuvExportSummaryLine(assay_name, result))
         }
     }
     if (ruv_summary_lines == "") ruv_summary_lines <- "\n  (RUV skipped or not applied)"

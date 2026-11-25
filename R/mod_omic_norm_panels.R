@@ -1211,7 +1211,13 @@ registerOmicNormRuvCancorOutputs <- function(output, normData) {
 omicNormRuvSummary <- function(result) {
     if (is.null(result)) return("Not yet computed")
     if (!isTRUE(result$success)) return(paste0("Failed: ", result$error))
-    paste0("Best k: ", result$best_k, "\n", "Best %: ", result$best_percentage, "\n", "Separation: ",
+    # KIT-190 I01: where the cap reduced the search's k, the k removed is shown with the k found.
+    k_line <- if (!is.null(result$k_removed) && !is.null(result$k_found) && !is.na(result$k_found) &&
+        !is.na(result$k_removed) && result$k_found != result$k_removed) {
+        sprintf("Factors removed: %d (the search found %d; at most %d with %d samples)", as.integer(result$k_removed),
+            as.integer(result$k_found), as.integer(result$k_cap %||% result$k_removed), as.integer(result$k_samples %||% NA_integer_))
+    } else paste0("Best k: ", result$best_k)
+    paste0(k_line, "\n", "Best %: ", result$best_percentage, "\n", "Separation: ",
         round(result$separation_score, 4), "\n", "Controls: ", sum(result$control_genes_index, na.rm = TRUE))
 }
 

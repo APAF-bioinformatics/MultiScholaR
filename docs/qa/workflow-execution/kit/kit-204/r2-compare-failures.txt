@@ -1,0 +1,144 @@
+== test-omic-da-module.R | new-failure | (b) in process: prot_main
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main dendrogram_off values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main save_heatmap values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main table_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main table_limit values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main tree_dynamic values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main tree_height values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main tree_k values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main tree_none values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main volcano_labels values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main volcano_ticked values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main volcano_unticked values
+
+== test-prot-07c-da-results-output-shared.R | new-failure | protein DA output method writes annotated results and summary graphics
+-- base:
+  <passes>
+-- head:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

@@ -126,9 +126,11 @@ newMetabIntensityObject <- function(args = list()) {
     metabolite_id_column = "feature",
     annotation_id_column = "annotation_id",
     internal_standard_regex = "^ISTD",
+    # KIT-217 (T-M3): one group per sample; the intensity filter refuses a design without a group column.
     design_matrix = data.frame(
       Run = c("Sample_1", "Sample_2"),
       TechRep = c("pair_a", "pair_a"),
+      group = c("A", "B"),
       stringsAsFactors = FALSE
     ),
     sample_id = "Run",

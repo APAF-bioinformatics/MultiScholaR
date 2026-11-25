@@ -1,0 +1,2 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit254-omics-correlation-skip.R	379	0	0	0	ok	379	0	0	0	ok	same		
