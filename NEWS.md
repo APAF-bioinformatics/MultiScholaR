@@ -70,13 +70,23 @@
    tab of lipidomics, metabolomics and transcriptomics now clears its results when the table changes, as proteomics
    already did, and after a session file is loaded and the table then moves, the next analysis runs on the current
    table. Before, the saved parameters, the report and the publication folder could combine one table's parameters
-   with another table's differential analysis. They still can if the analysis is run again and Copy or the Report is
-   pressed without pressing 'Save Workflow Arguments' first; the Summary does not check this. 'Generate Report' after
+   with another table's differential analysis. 'Generate Report' after
    the analysis was run again since the last 'Copy' now asks for 'Copy' first. A saved analysis record whose
    differential analysis was run on another table than its final one no longer replays. To check an earlier save: in
    analysis_record.json, the differential_abundance entry's source_state should be the last step's state, or, for
    proteomics with enrichment, the last state before enrichment_completed; if it is empty or names another state, run
    the differential analysis again and save again (KIT-212).
+ * Every omic: each differential analysis now first removes the files it writes that an earlier analysis left (the
+   heatmaps and the combined heatmap PDF, the significance-count barplot and, in proteomics, a comparison's interactive
+   volcano page or its not-available note), so a figure the newest analysis did not draw (for example the heatmap of a
+   comparison with nothing significant) is no longer copied or reported as current. Heatmaps saved with 'Save Heatmap'
+   are kept; in proteomics those of the comparisons the latest analysis ran are copied with the results, whatever
+   settings they were saved under; one of another comparison stops Copy, as before. If an earlier file cannot be removed
+   (for example, it is open in another program) or the new files cannot be written, the analysis says so, and 'Copy to
+   Publication Directory' and 'Generate Report' refuse until the analysis is run again (unless the results folder cannot
+   be written to at all, when nothing is removed). They also refuse with a message until 'Save Workflow Arguments' is
+   pressed again when the table or the differential analysis changed after the last save; before, they paired the last
+   save's parameters and analysis record with the newer results (KIT-243).
  * Proteomics enrichment: a list of up- or down-regulated proteins that could not be tested (on g:Profiler none of its
    proteins has a gene name; on the Gene Ontology route none has a Gene Ontology annotation that the analysis tests) is
    now shown in the tab, the download and the report as 'Not tested', with the reason, and is recorded in the analysis
