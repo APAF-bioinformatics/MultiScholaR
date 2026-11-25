@@ -702,61 +702,52 @@ test_that("KIT-247 G3 (VAL-277): after the cut, Quality Control re-applied and a
 })
 
 # ---------------------------------------------------------------------------------------------------------------------
-# VAL-288 (the owner, 2026-11-26): a formula-only change, and on the proteomics import an organism, taxon or FASTA-only
-# change, count as changes: they ask; Save resets the differential analysis (formula) or enrichment only (organism).
+# VAL-331 (the owner, 2026-11-26): VAL-288 is WITHDRAWN from KIT-247. A formula-only Save and, on the proteomics import,
+# an organism, taxon or FASTA-only Save answer "nothing changed": no question, nothing reset, no status moves.
 # ---------------------------------------------------------------------------------------------------------------------
 
 for (lane_id in c("prot_lfq", "lipid_canonical")) {
-    test_that(paste("KIT-247 F288a (VAL-288 (a)):", lane_id, "a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again"), {
+    test_that(paste("KIT-247 W288a (VAL-331):", lane_id, "a formula-only re-save asks nothing, resets nothing and says nothing changed"), {
         key <- if (identical(lane_id, "prot_lfq")) "differential_expression" else "differential_analysis"
         out <- kit247Lane(lane_id, "da", function(api, probe) {
             before <- list(history = probe$history(), head = probe$head(), entity = probe$entity(), status = probe$status(),
                 modals = probe$modals())
+            probe$clear_notes()
             kit247Resave(api, probe$lane, "formula")
-            asked <- probe$modals() > before$modals
-            kit247Click(api, if (identical(probe$lane$omic_type, "proteomics")) "design_matrix-confirm_design_resave" else "design-confirm_design_resave")
-            probe$flush()
-            list(before = before, asked = asked, history = probe$history(), head = probe$head(), entity = probe$entity(),
-                status = probe$status(), formula = resolveOmicsDesignFormula(probe$bus("config_list")))
+            list(before = before, modals = probe$modals(), history = probe$history(), head = probe$head(),
+                entity = probe$entity(), status = probe$status(), notes = probe$notes())
         })
         expect_identical(out$before$status[[key]], "complete")
-        expect_true(out$asked)
+        expect_identical(out$modals, out$before$modals)
+        expect_true(any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE)))
         expect_identical(out$history, out$before$history)
         expect_identical(out$head, out$before$head)
         expect_identical(out$entity, out$before$entity)
-        expect_identical(out$status[[key]], "pending")
-        expect_identical(out$status$quality_control, out$before$status$quality_control)
-        expect_identical(gsub("\\s", "", out$formula), "~0+group+replicates")
+        expect_identical(out$status, out$before$status)
     })
 }
 
-test_that("KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism", {
+test_that("KIT-247 W288b (VAL-331): a proteomics Import Existing Design with only the organism changed asks nothing, applies nothing and says nothing changed", {
     out <- kit247Lane("prot_lfq", "correlation", function(api, probe) {
         folder <- kit247ExportedDesign(probe, identity)
         before <- list(history = probe$history(), head = probe$head(), entity = probe$entity(), modals = probe$modals(),
-            status = probe$status())
+            status = probe$status(), taxon = probe$bus("taxon_id"), organism = probe$bus("organism_name"))
+        probe$clear_notes()
         api$set(stats::setNames(list("design"), api$tabs))
         api$set(list(`design_matrix-import_dir_text` = folder, `design_matrix-import_taxon_id` = 10090L,
             `design_matrix-import_organism_name` = "Mus musculus"))
         kit247Click(api, "design_matrix-confirm_import")
-        asked <- probe$modals() > before$modals
-        kit247Click(api, "design_matrix-confirm_design_resave")
         probe$flush()
-        list(before = before, asked = asked, history = probe$history(), head = probe$head(), entity = probe$entity(),
-            status = probe$status(), taxon = probe$bus("taxon_id"), organism = probe$bus("organism_name"))
+        list(before = before, modals = probe$modals(), history = probe$history(), head = probe$head(),
+            entity = probe$entity(), status = probe$status(), taxon = probe$bus("taxon_id"),
+            organism = probe$bus("organism_name"), notes = probe$notes())
     })
-    expect_true(out$asked)
+    expect_identical(out$modals, out$before$modals)
+    expect_true(any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE)))
     expect_identical(out$history, out$before$history)
     expect_identical(out$head, out$before$head)
     expect_identical(out$entity, out$before$entity)
-    expect_identical(out$status$quality_control, out$before$status$quality_control)
-    expect_identical(out$status$normalization, out$before$status$normalization)
-    expect_identical(as.integer(out$taxon), 10090L)
-    expect_identical(out$organism, "Mus musculus")
-})
-
-test_that("KIT-247 F288c (VAL-288): the question names what changed (draft wording)", {
-    expect_match(omicsDesignResaveLimitedText("formula"), "formula", fixed = TRUE)
-    expect_match(omicsDesignResaveLimitedText("organism"), "organism", fixed = TRUE)
-    expect_match(omicsDesignResaveLimitedText("fasta"), "FASTA", fixed = TRUE)
+    expect_identical(out$status, out$before$status)
+    expect_identical(out$taxon, out$before$taxon)
+    expect_identical(out$organism, out$before$organism)
 })
