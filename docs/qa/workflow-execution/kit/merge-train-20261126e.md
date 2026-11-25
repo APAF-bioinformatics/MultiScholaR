@@ -1,0 +1,130 @@
+# Merge train 12 of 2026-11-26: KIT-249, KIT-236
+
+**This train is STACKED on merge train 11.** It was branched from `origin/merge-train-20261126d` at its tip
+`a50f93025c3aba59a2edbb41ee88431b7053cd10` (train 11's declaration commit; train 11's code head 1292afc4: KIT-257,
+itself stacked on train 10's tip 53e99554). Train 11's run was out when this train was built. Staging was 3a6794b0
+(train 10 landed: KIT-259 = VAL-273; ledger rows VAL-274 to VAL-280, docs only). **Train 12 lands only if train 11
+lands with its code unchanged.** If train 11's check fails, or its code is rebuilt or changed, this train is rebuilt
+and its check repeated.
+
+## Train
+
+Base: `a50f93025c3aba59a2edbb41ee88431b7053cd10` (train 11's tip, fetched before building).
+
+| Order | Ticket | Branch head | Merge commit | Ledger row | Audit |
+|---|---|---|---|---|---|
+| 1 | KIT-249 | `origin/kit-249` 2288d944 | 758d23ee | `VAL-<train12-1>` (`VAL-<train12-1b>` reserved for the coordinator's correction row to VAL-237; not written here) | AUDIT-KIT-249-impl-20261125, closure check (2026-11-26) |
+| 2 | KIT-236 | `origin/kit-236` 8cd81769 | 55413b59 | `VAL-<train12-2>` | AUDIT-KIT-236-impl-20261125, closure check (2026-11-26) |
+
+Head (bound by the run): `55413b59` (full hash in the request). This file, the predictions table and the records
+commit after the run are under `docs/qa/` only.
+
+### Conflicts met and their resolutions
+
+- **KIT-249.** `kit-249` carries staging 3a6794b0, which the base (built before train 10 landed) does not. So the
+  merge also brings staging's docs since train 10's tip: the ledger rows VAL-273 to VAL-280 and train 10's numbered
+  records (`kit-259/outcome.md`, `merge-train-20261126c.md`), merged automatically except the ledger.
+  - `docs/methods-decision-ledger.md`: the base held train 10's row as `VAL-<train10-1>` and train 11's
+    `VAL-<train11-1>`; the branch held the same KIT-259 row landed as VAL-273 (status cell completed at landing),
+    VAL-274 to VAL-280 and KIT-249's `VAL-<merge>`. Resolved: staging's landed rows VAL-273 to VAL-280 (VAL-273
+    replaces the identical-but-for-status `VAL-<train10-1>` row, so the row is not duplicated), then train 11's
+    `VAL-<train11-1>` unchanged, then KIT-249's row as `VAL-<train12-1>`. This differs from "keep both" only in not
+    duplicating the KIT-259 row; it is the ledger as it will read once train 11 lands.
+  - `NEWS.md`: KIT-257's entry (base) then KIT-249's, both kept. KIT-249's entry already carries the closure's W2a,
+    W2b and W3 corrections (I05) on the branch.
+  - `R/func_prot_da_model_stats.R` and the new test merged automatically.
+- **KIT-236.** `docs/methods-decision-ledger.md` (KIT-236 carried staging c4505c7f only: its row `VAL-<merge>`
+  against the base's rows through `VAL-<train12-1>`; kept the base's, then KIT-236's as `VAL-<train12-2>`; also in
+  `kit-236/outcome.md`, commit table) and `NEWS.md` (both kept, the base's first). The six report templates under
+  `inst/reports/`, the KIT-227 and KIT-235 test files (KIT-236's declared edits) and the new test merged
+  automatically. No conflict under `R/`, `tests/` or `inst/`.
+- `DESCRIPTION` and `NAMESPACE` unchanged by the train.
+
+### Path lengths
+
+Checked by script before sending: 234 paths are new since the base (staging's train-10 records included); none exceeds
+100 bytes with the `MultiScholaR/` prefix; the longest is 99
+(`docs/qa/workflow-execution/kit/kit-236/g0-45577606908/g0a/met-src-study_parameters.txt`).
+
+## Declaration (written before the run is sent)
+
+**Purpose.** Both members' merge checks on the merged tree, once, on the train.
+
+**Scope.** 103 files, deduplicated, base and head, R CMD check on both sides, and KIT-236's render job:
+- KIT-249: 79 files: the 77 of its correction run (`kit249-r3-144d2c5d`: R2's 70 with the new file and the 7
+  named) plus `test-kit201-treat-moderation.R` and `test-kit243-summary-current-outputs.R` (the section-9 grep at the
+  base gives 71 including these two);
+- KIT-236: the 34 files of its correction run (`kit236-c1-8fd559b2`);
+- 10 files are shared (each member runs the other's: `test-e2e-browser-harness.R`, `test-e2e-proteomics-dia-limpa.R`,
+  `test-e2e-proteomics-tmt-lfq.R`, `test-enrichment-significance.R`, `test-gui-entry-proteomics.R`,
+  `test-kit205-enrichment-background.R`, `test-kit215-not-tested-lists.R`, `test-kit220-da-threshold-consumers.R`,
+  `test-module-ci-prot-da.R`, `test-omic-summary-module.R`); KIT-249's new file is in KIT-236's scope only by this
+  union, and KIT-236's new file in KIT-249's.
+- Script on the head: `docs/qa/workflow-execution/kit/kit-236/render.R`, no arguments, out `kit236-render`, pattern
+  `\.(txt|tsv)$`, timeout 90 minutes, exactly as the correction run 45621749264 requested it.
+
+**Run settings.** `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` on both sides (`test-prot-norm-core.R` is not in scope, so no
+`MULTISCHOLAR_KIT105_W3_DUMP`); no extra packages (neither member's runs used any); reference BLAS; 8 shards per side;
+per-file kill limits of 120 minutes for the three GUI-entry files and 90 for `test-workflow-saved-da.R` (not
+thresholds).
+
+**Ceiling.** 1,560 job-minutes: KIT-249's merge-check (R2) ceiling 1,020 (12 × 70 + 2 × 90) and KIT-236's R2 ceiling
+540, each from its ticket's budget.
+
+**Base values.** Per file in `merge-train-20261126e-predictions.tsv`. Train 11 moves no file in this scope (its
+declared moves are `test-prot-norm-core.R` and the KIT-257 file, neither here), so base counts are staging's: train 11's
+declared table (the checkpoint 45644467847 at 828dd105), else train 10's, 9's or 8's run tables. The checkpoint
+installed `sva`, `limpa` and `mixOmics` and train 8 `sva`; this run installs none, so skip counts in files that need
+them may read differently; the verdict is base against head in this run. Nine files are on no record
+(`test-prot-norm-optimization-direct-shared.R`, `test-protein-da-golden-master.R`, `test-prot-ruv-sweep-imputation.R`,
+`test-lipid-12c-ruv-s4-characterization.R`, `test-metab-02y-get-neg-ctrl-metab-anova-characterization.R`,
+`test-e2e-manifest.R`, `test-module-ci-prot-import.R`, `test-module-ci-sentinels.R`,
+`test-prot-summary-report-templates.R`): predicted `same`, counts read from the run.
+
+### Predictions, KIT-249
+
+- `test-kit249-prot-da-qvalue-fallback.R`: only on head, 144/0.
+- `test-workflow-saved-da.R`: `message-changed`, base 776/175, head 755/196. Newly failing on head exactly R2's 21
+  info lines (`kit-249/r2-45601895895/saved-da-new.txt`: 18 `entities`, 3 `calls`); the messages changed are exactly
+  I01's 87 leaves; KIT-201's four `record` leaves, `limpa_one_contrast`, `states`, `fits` and `fdr` do not move; the
+  digest values in the changed messages are read from the run. Nothing else in the file moves.
+- `test-kit201-treat-moderation.R` 89/0 and `test-kit243-summary-current-outputs.R` 246/0: `same`.
+- Every other file of its 79 `same`.
+
+### Predictions, KIT-236
+
+- `test-kit236-report-sentences.R`: only on head, 289/0.
+- `test-kit227-report-ruv-sentences.R`: head 162/0; base 166/0 (train 4's run 45586240983; the file and the
+  lipid/metab templates it reads are unchanged since); `count-changed` by KIT-236's declared edit; base count read
+  from the run.
+- `test-kit235-lipid-metab-report-parser.R`: head 54/0; base 50/0 (train 4); `count-changed`; base count read from
+  the run.
+- The other 31 `same`, with the existing failure lists identical: `test-gui-entry-proteomics.R` 168/25,
+  `test-omics-summary-core.R` 676/25, `test-omic-summary-module.R` 1675/28, `test-kit220-da-threshold-consumers.R`
+  79/0 (with the trx flag; KIT-236's own run, without it, read 71/2).
+- Render job: exit 0, `checks.tsv` 140 rows, 140 "as predicted".
+
+### Combined predictions, shared files
+
+The ten shared files are `same` under both members at the base counts in the table (for example
+`test-gui-entry-proteomics.R` 168/25, `test-kit205-enrichment-background.R` 228/0, `test-module-ci-prot-da.R`
+250/0, `test-omic-summary-module.R` 1675/28). KIT-249 changes a proteomics comparison's q-values only when Storey's
+q-value fails; no GUI-entry lane or module-CI fixture in these files has such a comparison (KIT-249 R2: the proteomics
+GUI-entry oracles identical; KIT-236 closure: no lane has a fallback). KIT-236 changes report templates only; these
+files read no template sentence it changes (its own run: all `same`). `test-workflow-saved-da.R` is KIT-249's alone
+(KIT-236 does not run it).
+
+### Predictions, R CMD check
+
+- Findings identical on both sides, nothing only on head; the portable-file-names NOTE the same count on both sides.
+
+### Decision and attempts
+
+- Every prediction holds: TRAIN GREEN, landing after train 11 lands with its code unchanged.
+- Any other move is a result: the member is named with its files and counts; it is not repaired here.
+- One run; one re-send only for an instrument defect with no result judged. An HTTP 500 at dispatch with no run
+  created: started once by hand with the README's command, recorded.
+
+## Result
+
+(filled after the run)

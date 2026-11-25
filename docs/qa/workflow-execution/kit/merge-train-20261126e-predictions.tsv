@@ -1,0 +1,104 @@
+file	ticket	base_expected(p/f/e/s)	head_expected	verdict_expected	source
+test-gui-entry-proteomics.R	KIT-249+KIT-236	168/25/0/0	168/25/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit129-run-path.R	KIT-249	711/0/0/1	711/0/0/1	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-prot-design-log2.R	KIT-249	226/0/0/0	226/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-omics-application-reads.R	KIT-249	230/0/0/0	230/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-omic-da-module.R	KIT-249	1289/80/0/0	1289/80/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-omic-enrich-module.R	KIT-249	1011/59/0/0	1011/59/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit212-da-current.R	KIT-249	309/0/0/0	309/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-saved-da.R	KIT-249	776/175/0/0	755/196/0/0	message-changed	KIT-249 closure: exactly R2 saved-da-new.txt (21) newly failing, I01 87 leaves changed; base from train 11 declared
+test-kit200-prot-da-no-value-proteins.R	KIT-249	538/0/0/0	538/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-omic-summary-module.R	KIT-249+KIT-236	1675/28/0/0	1675/28/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-analysis-record.R	KIT-249	351/0/0/0	351/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-prot-annotation-uniprot-empty.R	KIT-249	327/0/0/0	327/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit205-enrichment-background.R	KIT-249+KIT-236	228/0/0/0	228/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-prot-ruv-factors-in-model.R	KIT-249	312/0/0/0	312/0/0/0	same	train 8 run 45626605316 head
+test-dia-limpa-ruv-rules.R	KIT-249	333/1/0/0	333/1/0/0	same	train 8 run 45626605316 head
+test-enrichment-significance.R	KIT-249+KIT-236	181/0/0/0	181/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-prot-declarations.R	KIT-249	303/0/0/2	303/0/0/2	same	train 8 run 45626605316 head
+test-workflow-omics-da-contrasts.R	KIT-249	138/0/0/0	138/0/0/0	same	train 8 run 45626605316 head
+test-kit215-not-tested-lists.R	KIT-249+KIT-236	112/0/0/0	112/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit208-gprofiler-identifiers.R	KIT-249	60/0/0/0	60/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-operations.R	KIT-249	75/0/0/0	75/0/0/0	same	train 8 run 45626605316 head
+test-reference-mapping-enrichment.R	KIT-249	66/0/0/0	66/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit249-prot-da-qvalue-fallback.R	KIT-249	absent	144/0/0/0	only-on-head	KIT-249 closure
+test-workflow-dia-products.R	KIT-249	191/0/0/0	191/0/0/0	same	train 8 run 45626605316 head
+test-workflow-omics-binding-steps.R	KIT-249	58/1/0/0	58/1/0/0	same	train 10 run 45650328815 head (828dd105)
+test-workflow-checkpoint-harness.R	KIT-249	628/0/1/8	628/0/1/8	same	train 9 run 45636060029 head
+test-kit220-da-threshold-consumers.R	KIT-249+KIT-236	79/0/0/0	79/0/0/0	same	train 8 run 45626605316 head
+test-workflow-figure-paths.R	KIT-249	181/0/0/0	181/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-module-ci-trx-app.R	KIT-249	50/0/0/0	50/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit127-omics-ruv-factors.R	KIT-249	425/1/0/0	425/1/0/0	same	train 8 run 45626605316 head
+test-omic-norm-ruv-design.R	KIT-249	1153/0/0/0	1153/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-saved-projection.R	KIT-249	406/0/0/0	406/0/0/0	same	train 8 run 45626605316 head
+test-workflow-kit-harness.R	KIT-249	734/1/0/0	734/1/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-workflow-gui-diagnostic.R	KIT-249	65/0/3/3	65/0/3/3	same	train 10 run 45650328815 head (828dd105)
+test-workflow-operation-registry.R	KIT-249	1095/2/0/0	1095/2/0/0	same	train 10 run 45650328815 head (828dd105)
+test-kit174-ruv-grouping.R	KIT-249	77/0/0/0	77/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-lipid-02ab-da-module-characterization.R	KIT-249	15/0/0/2	15/0/0/2	same	train 8 run 45626605316 head
+test-prot-norm-optimization-direct-shared.R	KIT-249	read from the run	read from the run	same	not on record
+test-metab-02ab-da-module-characterization.R	KIT-249	9/0/0/4	9/0/0/4	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit218-da-wrapper-tail.R	KIT-249	80/0/0/2	80/0/0/2	same	train 8 run 45626605316 head
+test-prot-04-design.R	KIT-249	488/0/0/118	488/0/0/118	same	train 10 run 45650328815 head (828dd105)
+test-protein-da-golden-master.R	KIT-249	read from the run	read from the run	same	not on record
+test-prot-07d-da-model-stats-shared.R	KIT-249	60/0/0/1	60/0/0/1	same	train 8 run 45626605316 head
+test-workflow-server-shared.R	KIT-249	226/0/0/0	226/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-module-ci-prot-da.R	KIT-249+KIT-236	250/0/0/1	250/0/0/1	same	train 8 run 45626605316 head
+test-prot-ruv-sweep-imputation.R	KIT-249	read from the run	read from the run	same	not on record
+test-kit128-no-biological-replication-prot.R	KIT-249	6/0/0/0	6/0/0/0	same	train 8 run 45626605316 head
+test-workflow-saved-consumers.R	KIT-249	47/0/0/0	47/0/0/0	same	train 8 run 45626605316 head
+test-module-ui-wrapper-direct-shared.R	KIT-249	45/0/0/0	45/0/0/0	same	train 9 run 45636060029 head
+test-prot-s4-norm-methods-direct-shared.R	KIT-249	11/0/0/1	11/0/0/1	same	train 8 run 45626605316 head
+test-e2e-browser-harness.R	KIT-249+KIT-236	126/0/0/1	126/0/0/1	same	train 8 run 45626605316 head
+test-prot-04d-peptide-s4-normalization-characterization.R	KIT-249	112/0/0/0	112/0/0/0	same	train 10 run 45650328815 head (828dd105)
+test-lipid-12c-ruv-s4-characterization.R	KIT-249	read from the run	read from the run	same	not on record
+test-prot-07b-da-handlers-compat.R	KIT-249	35/0/0/2	35/0/0/2	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-metab-02aa-da-display-filter-characterization.R	KIT-249	0/0/0/0	0/0/0/0	same	train 8 run 45626605316 head
+test-metab-02y-get-neg-ctrl-metab-anova-characterization.R	KIT-249	read from the run	read from the run	same	not on record
+test-omics-da-list-routing.R	KIT-249	5/0/0/0	5/0/0/0	same	train 8 run 45626605316 head
+test-prot-07-da-analysis.R	KIT-249	3/0/0/1	3/0/0/1	same	train 8 run 45626605316 head
+test-metab-02p-da-analysis-characterization.R	KIT-249	18/0/0/0	18/0/0/0	same	train 8 run 45626605316 head
+test-prot-06-ruv.R	KIT-249	35/0/0/1	35/0/0/1	same	train 8 run 45626605316 head
+test-prot-da-compat-shared.R	KIT-249	16/0/0/0	16/0/0/0	same	train 8 run 45626605316 head
+test-workflow-memory-mechanism-member.R	KIT-249	0/0/0/13	0/0/0/13	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-lipid-08-s4-da-analysis-methods.R	KIT-249	20/0/0/0	20/0/0/0	same	train 8 run 45626605316 head
+test-metab-da-core-engine-direct-shared.R	KIT-249	10/0/0/0	10/0/0/0	same	train 8 run 45626605316 head
+test-e2e-proteomics-tmt-lfq.R	KIT-249+KIT-236	0/0/0/3	0/0/0/3	same	train 8 run 45626605316 head
+test-workflow-saved-installed.R	KIT-249	0/0/0/1	0/0/0/1	same	train 8 run 45626605316 head
+test-e2e-proteomics-dia.R	KIT-249	0/0/0/1	0/0/0/1	same	train 8 run 45626605316 head
+test-e2e-proteomics-enrichment.R	KIT-249	0/0/0/2	0/0/0/2	same	train 8 run 45626605316 head
+test-metab-s4-da-methods-direct-shared.R	KIT-249	12/0/0/0	12/0/0/0	same	train 8 run 45626605316 head
+test-metab-02g-da-core-engine-characterization.R	KIT-249	2/0/0/0	2/0/0/0	same	train 8 run 45626605316 head
+test-e2e-proteomics-dia-limpa.R	KIT-249+KIT-236	0/0/0/1	0/0/0/1	same	train 8 run 45626605316 head
+test-prot-da-render-direct-shared.R	KIT-249	0/0/0/0	0/0/0/0	same	train 8 run 45626605316 head
+test-metab-da-orchestration-direct-shared.R	KIT-249	31/0/0/0	31/0/0/0	same	train 8 run 45626605316 head
+test-lipid-02-da-core-helpers.R	KIT-249	16/0/0/0	16/0/0/0	same	train 8 run 45626605316 head
+test-metab-02q-da-analysis-helper-characterization.R	KIT-249	19/0/0/0	19/0/0/0	same	train 8 run 45626605316 head
+test-tech-reps-limma.R	KIT-249	0/0/1/0	0/0/1/0	same	train 8 run 45626605316 head
+test-metab-02h-da-orchestration-characterization.R	KIT-249	26/0/0/0	26/0/0/0	same	train 8 run 45626605316 head
+test-kit201-treat-moderation.R	KIT-249	89/0/0/0	89/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit243-summary-current-outputs.R	KIT-249	246/0/0/0	246/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-e2e-manifest.R	KIT-236	read from the run	read from the run	same	not on record
+test-general-filemgmt-report-helpers-shared.R	KIT-236	85/0/0/1	85/0/0/1	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-go-propagation.R	KIT-236	321/0/0/1	321/0/0/1	same	train 8 run 45626605316 head
+test-gui-entry-lipidomics.R	KIT-236	35/0/0/0	35/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-gui-entry-metabolomics.R	KIT-236	105/0/0/0	105/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-kit227-report-ruv-sentences.R	KIT-236	166/0/0/0	162/0/0/0	count-changed	KIT-236 declared test edit; base from train 4 run 45586240983 (file and lipid/metab templates unchanged since); counts read from the run
+test-kit234-workbooks-withdrawn.R	KIT-236	29/0/0/0	29/0/0/0	same	train 9 run 45636060029 head
+test-kit235-lipid-metab-report-parser.R	KIT-236	50/0/0/0	54/0/0/0	count-changed	KIT-236 declared test edit; base from train 4 run 45586240983; counts read from the run
+test-kit236-report-sentences.R	KIT-236	absent	289/0/0/0	only-on-head	KIT-236 closure
+test-lipid-14a-summary-module-characterization.R	KIT-236	0/0/0/0	0/0/0/0	same	train 9 run 45636060029 head
+test-lipid-15-summary-module-seams.R	KIT-236	0/0/0/0	0/0/0/0	same	train 9 run 45636060029 head
+test-metab-05-summary-module-characterization.R	KIT-236	0/0/0/0	0/0/0/0	same	train 9 run 45636060029 head
+test-module-ci-lipid-summary.R	KIT-236	14/0/0/6	14/0/0/6	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-module-ci-metab-summary.R	KIT-236	12/0/0/6	12/0/0/6	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-module-ci-prot-import.R	KIT-236	read from the run	read from the run	same	not on record
+test-module-ci-prot-norm.R	KIT-236	60/0/0/4	60/0/0/4	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-module-ci-prot-summary.R	KIT-236	20/0/0/5	20/0/0/5	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-module-ci-sentinels.R	KIT-236	read from the run	read from the run	same	not on record
+test-omic-gui-config.R	KIT-236	1911/0/0/0	1911/0/0/0	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-omics-summary-core.R	KIT-236	676/25/0/2	676/25/0/2	same	train 8 run 45626605316 head
+test-prot-05b-norm-module-contracts.R	KIT-236	440/0/0/22	440/0/0/22	same	train 11 declared (checkpoint 45644467847, 828dd105)
+test-prot-12a-summary-module-characterization.R	KIT-236	0/0/0/0	0/0/0/0	same	train 8 run 45626605316 head
+test-prot-12-summary-module-contracts.R	KIT-236	0/0/0/0	0/0/0/0	same	train 9 run 45636060029 head
+test-prot-summary-report-templates.R	KIT-236	read from the run	read from the run	same	not on record
