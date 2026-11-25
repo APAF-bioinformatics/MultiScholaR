@@ -1,0 +1,82 @@
+{
+  "requested_by": "KIT-262 L2 (M2 lifecycle, blind, not counted): E5b, scorer self-test, M2 at r = 91 in all 198 cells, E8 replicates, failure check; ceiling 45 job-minutes",
+  "label": "KIT-262 L2 d6f9c081",
+  "package_commit": "d6f9c0818bb919365b391a6535eb408010f9eb29",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/e5b-k262.R",
+      "args": ["k262-l2/e5b"],
+      "env": {},
+      "out": "k262-l2/e5b",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 3
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-k262.R",
+      "args": ["selftest", "k262-l2/score"],
+      "env": {},
+      "out": "k262-l2/score",
+      "out_pattern": "checks\\.tsv$",
+      "timeout_minutes": 2
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-l2/main"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_REPS": "91",
+        "K262_E8_MAX": "91",
+        "K262_E1P": "91",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-l2/main",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 29
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-l2/e8"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_CELLS": "3,25,50,62,83,100,121,143,150,172",
+        "K262_REPS": "92:95",
+        "K262_E8_MAX": "95",
+        "K262_E1P": "92:95",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-l2/e8",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 5
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-l2/fault"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_CELLS": "1",
+        "K262_REPS": "91:92",
+        "K262_E8": "0",
+        "K262_E1P": "0",
+        "K262_FAULT": "1",
+        "K262_WORKERS": "2"
+      },
+      "out": "k262-l2/fault",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 1
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
