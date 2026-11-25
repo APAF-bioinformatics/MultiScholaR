@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-255 G0 instrument rerun 1 of 3 (VAL-54): o3 and o4 recorders fixed after run 45606617982, no prediction changed; staging 7327607f + script only, branch kit-255-g0; 1 job, ceiling 75 job-minutes",
+  "label": "KIT-255 G0 instrument rerun 1 fd9da180 (staging 7327607f + tools/kit255/g0.R)",
+  "package_commit": "fd9da180be7898e9aa07adbf8b0a7eb003855edf",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit255/g0.R",
+      "args": ["kit255-g0"],
+      "env": {},
+      "out": "kit255-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
