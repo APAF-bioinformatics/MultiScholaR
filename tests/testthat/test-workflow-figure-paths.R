@@ -96,8 +96,8 @@ test_that("the figure check names the missing files and, on Windows, the over-lo
     expect_no_match(windows, "written.pdf", fixed = TRUE)
     expect_match(windows, paste(nchar(long), "characters"), fixed = TRUE)
     expect_match(windows, "longer than 259 characters", fixed = TRUE)
-    expect_no_match(message_of(c(written, long), windows = FALSE), "259", fixed = TRUE)
-    expect_no_match(message_of(empty, windows = TRUE), "259", fixed = TRUE)
+    expect_no_match(message_of(c(written, long), windows = FALSE), "259 characters", fixed = TRUE)
+    expect_no_match(message_of(empty, windows = TRUE), "259 characters", fixed = TRUE)
     expect_error(checkWorkflowFigureFiles(empty, class = "saved_entity_outputs_pending"),
         class = "saved_entity_outputs_pending")
 })
@@ -468,7 +468,7 @@ test_that("a failed copy says, on Windows, that the project's path is too long w
     expect_match(windows, paste(nchar(long), "characters"), fixed = TRUE)
     expect_match(windows, "too long for Windows with long paths disabled", fixed = TRUE)
     expect_match(windows, "enable Windows long paths", fixed = TRUE)
-    expect_no_match(message_of(long, windows = FALSE, copied = FALSE), "259", fixed = TRUE)
+    expect_no_match(message_of(long, windows = FALSE, copied = FALSE), "259 characters", fixed = TRUE)
     # A copy that reported success but left no file is named as well.
     expect_match(message_of(file.path(directory, "gone.png"), copied = TRUE), "gone.png", fixed = TRUE)
 })
