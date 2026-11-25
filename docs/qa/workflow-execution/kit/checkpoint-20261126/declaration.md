@@ -106,4 +106,98 @@ The KIT-240 identity script is predicted to give its verdict file all TRUE, with
 
 ## Result
 
-(filled after the run)
+**Verdict: CLEAN.** Every difference is explained by `predictions.tsv`, and there are no findings.
+
+Run 45644467847 (request `checkpoint-20261126-828dd105`, run-tests commit cabf3d8f) was sent once and finished with
+conclusion success. Its 45 jobs used 1,353.9 job-minutes of the 1,553.0 ceiling: check 30.8, scripts 11.1. Tables
+beside this file: `compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`;
+KIT-240's identity outputs are under `id240/`.
+
+### Verdicts, 505 files
+
+| Verdict | Files | Predicted |
+|---|---|---|
+| same | 454 | 454 |
+| only-on-head | 24 | 24: the new files, every one passing (failed 0) |
+| count-changed | 13 | 13 |
+| message-changed | 9 | 9 |
+| new-failure | 4 | 4: KIT-201's moved references |
+| fixed | 1 | 1: `test-prot-ruv-factors-in-model.R` |
+
+All 51 predicted files differ, and no other file does. Each predicted file's base and head counts equal the
+predicted values exactly: the first train's base and the last train's head (passed, failed, skipped), as listed in
+`predictions.tsv`.
+
+Selected rows:
+
+| File | Base | Head |
+|---|---|---|
+| test-workflow-saved-da.R | 780/171 | 776/175 |
+| test-gui-entry-proteomics.R | 189/4 | 168/25 |
+| test-omic-da-module.R | 1316/53 | 1289/80 |
+| test-omic-enrich-module.R | 1051/19 | 1011/59 |
+| test-omics-enrich-core.R | 232/9/1 | 221/20/1 |
+| test-integration-gui.R | 397 | 405 |
+| test-integration-results.R | 169 | 258 |
+| test-integration-record.R | 133 | 167 |
+| test-integration-model.R | 263 | 265 |
+| test-workflow-trx-declarations.R | 309/33 | 313/31 |
+| test-module-ci-trx-summary.R | 86/2 | 87/1 |
+| test-prot-norm-core.R | 1548/306 | 1548/306 |
+
+In `test-omic-enrich-module.R` the I13 leaf passed on base, so the move is 19 to 59, not 22.
+
+### Message level
+
+Every failing file on the head was compared with the latest train run that held it, by failure records with temporary
+paths masked.
+- The head's failure records are identical to train 8's head (45626605316, tree aceb7190) in every failing file that
+  train ran. That covers the 13 message-changed and new-failure files except the declarations snapshot,
+  `test-kit127-omics-ruv-factors.R`, and ten pre-existing failing `same` files.
+- `test-workflow-omics-declarations.R` is identical to train 6's head (45608483144).
+- `test-trx-publication.R` (a `same` file) is identical to train 6's head.
+- So no message moved beyond what the trains observed and declared.
+- Of the 20 files that fail on both sides with `same`, nine have no train record to compare. They are `same` against
+  the reference, so their failures are the reference's own, recorded before the trains:
+  `test-general-filemgmt-load-dependencies-shared.R`, `test-module-ci-trx-design.R`, `-norm.R`, `-qc.R`,
+  `test-optional-packages.R`, `test-trx-design.R`, `test-workflow-omics-owner.R`, `test-workflow-perf101-diagnostic.R`
+  and `test-workflow-sleep-guard.R`.
+
+### R CMD check
+
+- 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head. This matches the trains.
+- The portable-file-names NOTE lists 238 paths on each side, the same as train 8. No path new since dd769671 is in it.
+
+### KIT-240 identity script
+
+`default-identity.R` 67aed57f against 828dd105 exited 0 after 27 s. The verdict file holds 23 checks, all TRUE ("all
+checks pass: TRUE"):
+- (i): head with the option unset equals base with it TRUE, after the declared substitutions (counts 1, 2 and 21 in
+  base and 0 in head; the Enrichment mark inserted 8 times on head);
+- (ii): head FALSE equals base unset; the module is the unavailable panel;
+- (iii): head renders the same in two processes.
+
+This is the release-checklist item from KIT-240's `outcome.md` that this run could carry.
+
+### Tickets served
+
+On this tree, the checkpoint stands in for these post-merge full suites:
+- KIT-201 R3b;
+- KIT-243 R3;
+- KIT-218 A4;
+- KIT-222 A5;
+- KIT-240 A7;
+- KIT-245;
+- KIT-256.
+
+KIT-204, KIT-190 and KIT-236 are not merged and are not served.
+
+### Findings
+
+None.
+
+### Not checked
+
+- The tree after this record (docs only).
+- The other KIT-240 release-checklist items (the systemd observation, the enrichment defaults): those are the owner's.
+- The e2e browser lanes, which skip in run-tests.
