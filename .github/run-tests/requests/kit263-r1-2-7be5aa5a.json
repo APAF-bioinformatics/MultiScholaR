@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-263 R1 re-send (instrument defect, 1 of 3): tests-only 7be5aa5a, fixture rebuilt on the application's owner construction, expectations unchanged",
+  "label": "KIT-263 R1-2 tests-only 7be5aa5a, new file alone; ceiling 45 job-minutes",
+  "package_commit": "7be5aa5a1c81b275382d4c0f91e286b3244bb3ca",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit263-prot-study-parameters-sections.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
