@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-259 triage of KIT-247 G0-4 run 45604291093 (label-free Pearson figure 'Problem while converting geom to grob'): one diagnostic, scripts only on staging 63143aa3; decides application defect or launch artefact; 1 job, ceiling 30 job-minutes (2.0 core-hours)",
+  "label": "KIT-259 G0 diagnostic on kit-259-g0 9ea11ba2 (R/ as v0.9-staging 63143aa3)",
+  "package_commit": "9ea11ba299d2a6f4cc74c7cc85d8e7155f9734ed",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-259/g0-diag.R",
+      "args": [
+        "kit259-g0"
+      ],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit259-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
