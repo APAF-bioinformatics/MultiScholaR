@@ -70,6 +70,22 @@
 
 ### Fixes
 
+ * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
+   protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
+   shown twice (KIT-251).
+ * Every omic: when a step run by the application's worker ends without an error of its own (the application's
+   memory limit for one step, the time limit for one step, a process that stopped or could not start, a table that
+   changed while the step ran, a result whose files could not be written, an internal check), the message now says
+   in plain words what happened, whether the step's result was saved, and what to do; before, it showed an
+   internal code such as 'managed action ended: memory_guard'. The wording is a draft for the owner's review
+   (KIT-252).
+
+ * Proteomics import with 'Mixed species FASTA': when the 'Select Primary Organism' window appears, the import now
+   finishes only when an organism is confirmed there; Cancel clears the import and says so, and the data must be
+   imported again. Before, the import counted as finished before the
+   choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
+   annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
+   with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
  * Design builder, every omic: the technical-replicate list is emptied after each successful 'Assign Technical
    Replicates'. Before, in this and every earlier release, it kept the runs just marked; adding the next sample's runs
    and pressing Assign made two biological samples one, with no warning. To add runs to a sample already marked, select
@@ -353,6 +369,17 @@
    Present since the legacy pipeline (KIT-226).
 
 ### Scientific changes
+
+ * Lipidomics and metabolomics RUV-III correction (Automatic and Manual, the default): each feature now keeps its mean
+   abundance after the correction, as in proteomics. Before, every feature's corrected values were shifted by a
+   constant that depended on the control features' levels and on the unit the intensities were expressed in. Fold
+   changes are unchanged where the sample-correlation filter keeps the same samples. The moderated p- and q-values of
+   the differential analysis can change, because limma's variance trend is fitted against each feature's mean
+   abundance, and the sample-correlation filter can keep different samples. The abundances in the exported and
+   displayed tables, the sample-correlation plot, the session file and the RUV-corrected matrices offered to the
+   integration change; PCA, RLE and the PC boxplots do not. Analyses recorded before this change replay as they were
+   made. Transcriptomics: the RUVIII export file and the RUV-corrected integration input keep each gene's logCPM
+   level; the differential analysis is not affected (KIT-224).
 
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
@@ -745,7 +772,7 @@ First staging build with every omic in the distributable (Linux and Windows) and
    corrected object given together with the factors, stops. The corrected matrix of this design
    (for figures, export and integration) keeps each feature's mean abundance. Without `ruv_factors` every
    result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts
-   each feature by a constant.
+   each feature by a constant (KIT-224 later removed the shift; see the unreleased section).
 
 ### Other changes
 

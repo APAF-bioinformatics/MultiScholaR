@@ -1,0 +1,49 @@
+file: test-kit251-replicate-filter-one-click.R
+test: E1: under a managed application one click starts the managed step once
+kind: failure
+message:
+  Expected `length(calls$apply)` to be identical to 1L.
+  Differences:
+    `actual`: 2
+  `expected`: 1
+
+file: test-kit251-replicate-filter-one-click.R
+test: E2: under a managed application one click on a normalised table shows the refusal once
+kind: failure
+message:
+  Expected `k251Count(shown, "Error applying protein replicate filter: kit251 normalised head")` to be identical to 1L.
+  Differences:
+    `actual`: 2
+  `expected`: 1
+
+file: test-kit251-replicate-filter-one-click.R
+test: E3: in process one click runs the in-process apply path once
+kind: failure
+message:
+  Expected `calls$in_process` to be identical to 1L.
+  Differences:
+    `actual`: 2
+  `expected`: 1
+
+file: test-perf107-audit.R
+test: the KIT-015 protein QC modules take the managed worker under a managed application and the in-process declaration otherwise
+kind: failure
+message:
+  Expected `in_process` to be identical to `spec$in_process_calls %||% 1L`.
+  Differences:
+    `actual`: 2
+  `expected`: 1
+trace (first lines):
+       ▆
+    1. ├─checkManagedProteinModule(spec) at test-perf107-audit.R:572:5
+    2. │ └─shiny::testServer(...) at test-perf107-audit.R:527:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
