@@ -7,6 +7,7 @@ table the analysis uses).
 | Where | Code | Draft text |
 |---|---|---|
 | The tab's log (not a notification), when an Apply or a Skip pressed at a correlation-step head first returns to the run's result | `omicNormCorrelationStart` (`R/mod_omic_norm.R`) | "Correlation filter starts again from '<state>', the table the normalisation produced" |
+| Replay of an older record with the filter applied and then skipped (OD-1 (a), VAL-247): in the replay's result (`correlation_statement`) and as a warning of class `workflow_replay_correlation_skip` | `workflowReplayCorrelationStatement` (`R/utils_workflow_analysis_record.R`) | "This record shows the correlation filter applied (threshold <t>) and then skipped: the step 'correlation filtering skipped' was recorded on the filtered table. The replay reproduces the analysis as it was computed, so these samples are left out although the filter was skipped: <assay>: <samples or none>; <assay>: ...." |
 | NEWS, `### Fixes` | `NEWS.md` | see the entry (KIT-254); drafted from the ticket's section 12, without the bracket on OD-1 (coordinator's ruling) |
 
 Wording candidates for the owner's pass (ticket F3; not changed here):
