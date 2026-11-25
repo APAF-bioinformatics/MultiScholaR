@@ -82,6 +82,23 @@
 
 ### Fixes
 
+ * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
+   a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
+   package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
+   mainly the lowest correlations visible (since 2024; KIT-259).
+ * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
+   stopping with an error (KIT-259).
+ * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
+   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   have no correlation and are not shown (KIT-259).
+ * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
+   unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
+   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
+   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
+   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
+   figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
    shown twice (KIT-251).
