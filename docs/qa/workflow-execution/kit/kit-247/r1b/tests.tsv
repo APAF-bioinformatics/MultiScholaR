@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit247-import-config.R	1	1	0	0	0	6.1	failed

@@ -1,0 +1,5 @@
+run_id	commit	purpose	minutes	result
+45604461406	526ec2aa	R1 failing-first (tests only)	47	every E row fails at its G0 value; G2 passes; E13's mechanics did not go below the run's start (instrument)
+45608591579	1bbe5c40	R1b departure 3's tests-first pair	9	D3 fails (imported configuration kept); guard passes
+45612214974	5909d0e8	R1c E13 mechanics, VAL-54 instrument rerun 1 of 3	48	E13 fails at its base value (lipid_reset); other rows as R1
+45612382879	3ec7bcf8 vs 526ec2aa	R2 base against head, 66 files, check	533	new file fixed (117/0), import-config 2/2 only on head, 63 same, check identical; NEW FAILURE test-workflow-native-session.R (KIT-026 test): stop rule 3

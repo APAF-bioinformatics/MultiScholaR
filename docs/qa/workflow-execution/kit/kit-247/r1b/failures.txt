@@ -1,0 +1,9 @@
+file: test-kit247-import-config.R
+test: KIT-247 D3: a changed design waiting for confirmation keeps the session's configuration
+kind: failure
+message:
+  Expected `kit247ImportShell("changed")` to be identical to `list(source = "session")`.
+  Differences:
+  `actual$source`:   "imported"
+  `expected$source`: "session" 
+
