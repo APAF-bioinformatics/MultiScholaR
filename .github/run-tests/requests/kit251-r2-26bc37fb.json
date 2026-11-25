@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-251 R2: fix 26bc37fb against tests-only 6155d2a0, the 11-file grep plus the new file, 3 shards per side, R CMD check both sides; ceiling 600 job-minutes",
+  "label": "KIT-251 R2 fix 26bc37fb vs tests-only 6155d2a0: 12 files, check",
+  "package_commit": "26bc37fba3c3fd8fd0a9b85b49a7fb1b88545e4c",
+  "base_commit": "6155d2a09032a3135156aeb55e9995b43ec61687",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-memory-mechanism-member.R",
+    "test-workflow-checkpoint-dia-state.R",
+    "test-workflow-gui-memory-repairs.R",
+    "test-prot-norm-input-current.R",
+    "test-kit200-prot-da-no-value-proteins.R",
+    "test-e2e-browser-harness.R",
+    "test-prot-02c-qc-protein-module-contracts.R",
+    "test-prot-02h-qc-protein-replicate-shared.R",
+    "test-prot-02p-qc-protein-orchestrator-shared.R",
+    "test-module-ci-prot-protein-qc.R",
+    "test-perf107-audit.R",
+    "test-kit251-replicate-filter-one-click.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
