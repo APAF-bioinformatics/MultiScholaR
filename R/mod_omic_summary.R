@@ -175,6 +175,9 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
     if (!is.null(experimentLabel)) shiny::updateTextInput(session, "experiment_label", value = experimentLabel)
     values <- shiny::reactiveValues(workflow_args_saved = FALSE, files_copied = FALSE, report_generated = FALSE,
         report_path = NULL)
+    # KIT-212 (VAL-172; implementation audit K212-I02): the DA the last successful Copy was made under, kept outside
+    # `values` (whose fields the Summary captures record).
+    copied <- new.env(parent = emptyenv())
 
     output$template_status <- shiny::renderText({
         shiny::req(projectDirs)
@@ -189,11 +192,14 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
 
     shiny::observeEvent(input$copy_to_publication, {
         shiny::req(input$experiment_label)
-        omicSummaryCopy(output, values, input$experiment_label, input$description, projectDirs, omicType, workflowData,
-            config)
+        copied_result <- omicSummaryCopy(output, values, input$experiment_label, input$description, projectDirs, omicType,
+            workflowData, config)
+        if (is.null(copied_result$error)) copied$da <- omicSummaryDaReference(workflowData)
     }, ignoreInit = TRUE)
 
     shiny::observeEvent(input$generate_report, {
+        # KIT-212 (K212-I02): a DA run since the last Copy makes the copied files another analysis's; Copy is asked for again.
+        if (isTRUE(values$files_copied) && !identical(copied$da, omicSummaryDaReference(workflowData))) values$files_copied <- FALSE
         # KIT-101 F-11: a refused report says why before the gate stops it.
         if (!shiny::isTruthy(input$experiment_label)) {
             shiny::showNotification("Please enter an experiment label before generating the report.", type = "warning")
@@ -229,6 +235,15 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
     shiny::outputOptions(output, "report_ready", suspendWhenHidden = FALSE)
 
     invisible(values)
+}
+
+#' KIT-212 (VAL-172; K212-I02): the store's current DA manifest (its entity id), or NULL without a reference-state owner or a
+#' DA: what a Copy was made under, so that the Report asks for Copy again after a later DA.
+#' @noRd
+omicSummaryDaReference <- function(workflowData) {
+    manager <- shiny::isolate(workflowData$state_manager)
+    if (!usesWorkflowReferenceStates(manager)) return(NULL)
+    manager$.context$snapshot$da_results$entity_id
 }
 
 #' The core's notifications, shown.

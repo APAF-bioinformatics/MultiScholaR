@@ -699,7 +699,17 @@ omicNormGuardTexts <- function() {
             "normalisation (and the correlation filter or its Skip), then press this button again."),
         summary_loaded = paste("This session file was saved after Quality Control was reverted past the normalisation, so its",
             "table (\"%s\") was not normalised. Import the data again, run quality control and the normalisation, then press",
-            "this button again."))
+            "this button again."),
+        # KIT-212 (VAL-172 (1), (5)): the Summary's refusals of a differential analysis not run on the current table, and of
+        # DA files no analysis of this session made (drafts for the owner's wording pass, VAL-41); `%s` is the folder and
+        # the files.
+        summary_da_stale = paste("The differential analysis was run on an earlier table, not the current one: the table changed",
+            "after the analysis ran (a new normalisation run, a Revert, or the correlation filter applied again). Run the",
+            "differential analysis again, then press 'Save Workflow Arguments' before copying or generating the report."),
+        summary_da_files_unmade = paste("The results folder %s holds differential analysis files that no differential analysis",
+            "of this session made (%s): they are from an earlier session, an opened session file, or a contrast the last analysis",
+            "did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save",
+            "Workflow Arguments' before copying or generating the report."))
 }
 
 #' Whether the binding is transcriptomics' (one normalisation state, `trx_ruvs`).

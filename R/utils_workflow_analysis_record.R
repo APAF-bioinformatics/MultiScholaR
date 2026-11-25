@@ -712,6 +712,31 @@ workflowReplayParameters <- function(parameters, declared) {
     out
 }
 
+#' KIT-212 (VAL-172 (3)): a record's DA replays only when it was run on the record's final table: its `source_state` is
+#' the state of one of the record's steps (a precondition state the replay store holds, or a replayed step), and, after
+#' the steps are replayed, that state holds the replayed head's table (`workflowDaTablesDiffer`). Refused otherwise
+#' (`workflow_replay_invalid`): replaying it would test another table than the one recorded.
+#' @param manager The replay's owner, after the steps.
+#' @param da The record's `analyses$differential_abundance`.
+#' @param steps The record's steps.
+#' @noRd
+assertWorkflowReplayDaSource <- function(manager, da, steps) {
+    text <- paste("This record's differential analysis was run on a table other than the record's final table, so a replay",
+        "would test a different table. Open the session, run the differential analysis on the final table, save, and replay",
+        "the new record.")
+    source_state <- da$source_state
+    states <- vapply(steps, function(step) as.character(step$state %||% NA_character_), character(1))
+    if (!is.character(source_state) || length(source_state) != 1L || is.na(source_state) || !source_state %in% states) {
+        rlang::abort(text, class = "workflow_replay_invalid")
+    }
+    differ <- withWorkflowStateScope(manager, function() {
+        source <- getWorkflowStateReference(manager, source_state)
+        is.null(source) || workflowDaTablesDiffer(manager, source, workflowDaTableState(manager))
+    })
+    if (differ) rlang::abort(text, class = "workflow_replay_invalid")
+    invisible(TRUE)
+}
+
 #' Replay an analysis record (KIT-028): the record alone, with hash-checked inputs, re-executes the analysis.
 #'
 #' The import and the GUI-built design are not registry operations: they are preconditions, verified (the
@@ -895,6 +920,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     da <- record$analyses$differential_abundance
     da_manifest <- NULL
     if (!is.null(da)) {
+        assertWorkflowReplayDaSource(manager, da, steps)
         settings <- list()
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
         contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
