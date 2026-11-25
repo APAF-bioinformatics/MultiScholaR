@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45623233776	e96ef0f6	G0-B: Part B base observation (prot_lfq lane in process; DIA owner in process and managed after a lifecycle check; 16 groups x 2)	16.5	57 of 59 predictions held; 2 not held: factor2 is also a zero-pair choice (substance held: batch used), and the tab-entry probe of part C drew nothing (not observed); stop rule 2: (b) and (c) both leave the normalisation committed and unfinished at warn 0/1
