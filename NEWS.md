@@ -95,6 +95,12 @@
    and with 60 samples the pattern was recovered closely in 30 of 30 either way. It no longer calls the pattern weak or
    says the scaling otherwise made no difference. Reports and study parameters already saved are not changed; saving
    the record again writes the corrected sentence (KIT-246).
+ * Proteomics: the study-parameters file (`study_parameters.txt`) no longer lists metabolomics or transcriptomics
+   settings. Every proteomics project copies the package's whole configuration file, so the file listed its
+   metabolomics intensity-filter settings although no proteomics step uses them: twice in 0.9.0, once in the
+   earlier releases that carried these settings (since November 2025). Only the printed file changes; analyses,
+   results and stored records do not. `createWorkflowArgsFromConfig()` gains `omic_type`; scripts that do not pass
+   it get the same file as before (KIT-263).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
