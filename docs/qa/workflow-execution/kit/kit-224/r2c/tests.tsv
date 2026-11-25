@@ -1,0 +1,9 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-omic-norm-module.R	639	0	0	0	0	299.5	ok
+test-kit224-ruv-feature-levels.R	69	0	0	0	0	87.6	ok
+test-module-ci-trx-summary.R	87	1	0	0	0	220.6	failed
+test-integration-input-transcriptomics.R	79	0	0	0	0	59	ok
+test-workflow-trx-declarations.R	313	31	0	0	0	126.7	failed
+test-kit127-omics-ruv-factors.R	425	1	0	0	0	43.1	failed
+test-metab-03a-ruviii-c-varying-characterization.R	40	0	0	0	0	7.7	ok
+test-lipid-12c-ruv-s4-characterization.R	67	0	0	0	0	8	ok

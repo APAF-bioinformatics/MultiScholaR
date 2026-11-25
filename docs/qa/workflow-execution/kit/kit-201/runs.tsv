@@ -1,0 +1,10 @@
+run_id	commit	purpose	minutes	result
+45328062374	ed56c7a6	R1 failing-first: new test file and the two rewritten contract files; family.tsv check	25	every stated value seen; T-A5 instrument defect (fixture row names), family identical
+45329779064	base 2c399d0c, head fa1f9909	R1-2: T-A5 instrument re-run (VAL-54, 1 of 3) on base; the new and rewritten tests on the fix	29	base: every stated failing value, T-A5 included; head: all pass (60, 312, 1153 expectations), verdict fixed in all 3 files
+45573413958	base dd769671, head 65da7eab	R0: blind M1 lifecycle (r 9001-9005, three kernels, forced-failure cell)	23	every check passes (17 of 17); precision by formula: 982 gated, 8 reported, projected 11.63 core-hours
+45577233409	a87b01a6 (base dd769671)	M1 kernel L (counted)	90	no worse: 326 of 326 gated comparisons pass
+45577238407	a87b01a6 (base dd769671)	M1 kernel M (counted)	88	no worse: 326 of 326 gated comparisons pass
+45577242529	a87b01a6 (base dd769671)	M1 kernel P (counted)	58	no worse: 330 of 330 gated comparisons pass
+45577246802	base dd769671, head c25e3e1d	R2: scope (101 files) base against head, 3 shards per side, check; skip-none.R	528	95 same, 1 only-on-head (new file, 89 pass), 1 fixed, 1 message-changed, 3 new-failure (proteomics DA and enrichment captures: predicted categories, see outcome); check identical (0 only on head); skip-none: Skip and none within 4e-13
+45592673648	base dd769671, head c25e3e1d	R3: full suite, 20 shards per side	1242.4 (42 jobs, jobs API)	475 same, 1 only-on-head, 1 fixed, 1 message-changed, 4 new-failure (R2 five plus test-omics-enrich-core.R); see outcome
+45607796537	base 63143aa3, head 50a5023d (merge)	R2b: scope (108 files) base against the merge, 3 shards per side, check	508.8	as predicted: 101 same, only-on-head (new file), fixed (rewritten legacy test), 5 files move (the predicted leaves; refusals new-failure because I13 flaky leaf passed on base); check identical

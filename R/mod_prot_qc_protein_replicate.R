@@ -307,18 +307,6 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
         parallelCores = input$parallel_cores
       )
     })
-
-    rootScopeFn <- session$rootScope
-    rootSession <- if (is.function(rootScopeFn)) rootScopeFn() else session
-    if (!identical(rootSession, session)) {
-      shiny::observeEvent(rootSession$input[[session$ns("apply_protein_replicate_filter")]], {
-        logger::log_info("Protein replicate filter apply observed via root input")
-        runApplyObserver(
-          groupingVariable = rootSession$input[[session$ns("protein_grouping_variable")]] %||% input$protein_grouping_variable,
-          parallelCores = rootSession$input[[session$ns("parallel_cores")]] %||% input$parallel_cores
-        )
-      }, ignoreNULL = TRUE)
-    }
     
     # Revert Protein Replicate Filter
     shiny::observeEvent(input$revert_protein_replicate_filter, {

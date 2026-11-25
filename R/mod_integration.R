@@ -17,8 +17,8 @@
 # KIT-138: the integration workflow's shell. app_server finds `mod_integration_ui/server` by name, as it finds an
 # omic's, when Integration is selected on the home page. The shell composes the single-omic shell's helpers itself
 # (the bus, the stepper, the tab chain; `integrationGuiConfig()$shell`), since `validateOmicGuiConfig` requires the
-# single-omic groups (KIT-060 audit section 5.3). Behind the gate `MultiScholaR.integration_gui` (off by default):
-# with it off the module is the "not yet implemented" panel app_server showed before it existed. Recorded divergence
+# single-omic groups (KIT-060 audit section 5.3). Behind the gate `MultiScholaR.integration_gui`, on unless set FALSE
+# (KIT-240); set FALSE, the module is the "not yet implemented" panel app_server showed before it existed. Recorded divergence
 # from conventions/R-shiny.md (module function names, fluidRow and pill tabset, no bslib): the app's existing module
 # pattern and layout are kept, under the existing-code rule of conventions/R.md.
 

@@ -1,0 +1,14 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit245-github-push-safety.R	68	19	0	0	failed	87	0	0	0	ok	fixed	fixed: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository; fixed: KIT-245 S6: the function's git options give the token to github.com only, past the user's own helpers; fixed: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created; counts: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository (passed 10 -> 14, skipped 0 -> 0); counts: KIT-245 S6: the function's git options give the token to github.com only, past the user's own helpers (passed 4 -> 5, skipped 0 -> 0); counts: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created (passed 33 -> 47, skipped 0 -> 0)	
+test-kit245-github-panel.R	41	1	0	0	failed	42	0	0	0	ok	fixed	fixed: KIT-245 E2: in the installed application the push observer refuses inputs a client sends itself; counts: KIT-245 E2: in the installed application the push observer refuses inputs a client sends itself (passed 0 -> 1, skipped 0 -> 0)	
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-github-management-direct-shared.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-kit234-workbooks-withdrawn.R	29	0	0	0	ok	29	0	0	0	ok	same		
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-15-summary-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-trx-summary.R	83	2	0	0	failed	83	2	0	0	failed	same		
+test-module-ui-wrapper-direct-shared.R	45	0	0	0	ok	45	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-optional-packages.R	11	1	0	0	failed	11	1	0	0	failed	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		

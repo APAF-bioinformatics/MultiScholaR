@@ -518,7 +518,9 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
                 percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_))
-        })
+        },
+        # KIT-224: the rule marker of the feature levels after the correction (`workflowReplayRuleMarkers`).
+        fixed = list(ruv_feature_levels = "restored"))
 }
 
 #' The new design's RUV parameters (KIT-129 integration item 1), by the names of KIT-129 section 1e: the design, the
@@ -788,8 +790,9 @@ omicsDaOperation <- function(binding) {
             accepted$columns <- names(result[[long_table]])
             # KIT-128: the assays the kernel could not compute, as it names them.
             if (length(result$failed_assays)) accepted$failed_assays <- result$failed_assays
+            # KIT-201 (D3): the TREAT moderation the DA ran under (the replay rule marker).
             accepted$model <- c(list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
-                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
+                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)), workflowTreatModerationRecord(),
                 omicsDaBlockRecord(list(list(
                     block_reason = lapply(result$contrasts_results, function(entry) entry$fit.eb$block_reason),
                     uses_duplicate_correlation = lapply(result$contrasts_results, function(entry) entry$fit.eb$uses_duplicate_correlation)))))
@@ -1761,8 +1764,10 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
         stop(paste(unique(unlist(lapply(results, `[[`, "errors"))), collapse = "; "), call. = FALSE)
     }
     # KIT-095: the model record is the binding's (`da_model`); lipid and metab keep the limma one.
-    model <- if (is.function(binding$da_model)) binding$da_model(parameters) else list(model = "limma",
-        formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
+    # KIT-201 (D3): lipid and metab also record the TREAT moderation the DA ran under (the replay rule marker).
+    model <- if (is.function(binding$da_model)) binding$da_model(parameters) else c(list(model = "limma",
+        formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
+        workflowTreatModerationRecord())
     model <- c(model, omicsDaBlockRecord(lapply(results, `[[`, "model")))
     manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
         stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
