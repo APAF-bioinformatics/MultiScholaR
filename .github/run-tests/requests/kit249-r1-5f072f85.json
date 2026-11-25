@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-249 R1: tests-only commit 5f072f85 on staging 16112917, the new file alone; failing-first (each new test at G0's value), guards pass; 1 job, ceiling 60 job-minutes; decides stop rule 2",
+  "label": "KIT-249 R1 tests-only 5f072f85 (failing first)",
+  "package_commit": "5f072f8544c70ea0c4c95e089c937a2920f10d96",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit249-prot-da-qvalue-fallback.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
