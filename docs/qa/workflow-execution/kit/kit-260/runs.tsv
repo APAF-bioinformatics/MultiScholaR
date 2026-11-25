@@ -1,0 +1,3 @@
+run_id	commit	purpose	minutes	result
+45592901435	e3e4fd25db2a74690d03b1803e8e210c2492d56b	G0 request kit260-g0-e3e4fd25: pushed as the blank template by the implementer's mistake (fields empty)	0.2	plan refused the request (required fields empty); no job ran; not an attempt at G0
+45592957172	e3e4fd25db2a74690d03b1803e8e210c2492d56b	G0 (request kit260-g0-e3e4fd25-2): D0, D0b, D1 to D7 on v0.9-staging 16112917 + tools/kit260/g0.R	18.0	scripts job green; every group exit 0; D0 to D5 and D7 as predicted; D6 recorded (its 'none' route has no DA table: the package's DA refuses integer ids after method none)
