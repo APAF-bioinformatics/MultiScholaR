@@ -325,6 +325,24 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics normalisation (KIT-242, first part; draft wording): a normalisation that cannot be
+   carried out for an assay is no longer reported as done. When a sample has no value in an assay, that assay is
+   normalised between samples on its other samples and the sample is left empty in that assay only, with a notice
+   naming both; a sample with no value in any assay is removed from the design, with a notice. When internal-standard
+   normalisation is selected and no internal standard is found in an assay, that assay is not normalised to internal
+   standards (it is still normalised between samples); the normalisation tab shows the number of standards used per
+   assay, and the analysis record and the session summary say, per assay, whether it was applied. A sample without
+   internal-standard signal in an assay is set missing in that assay only, and the assay is normalised without it. An
+   error in the normalisation method (for example quantile normalisation of a sample with fewer than two values) or an
+   invalid assay now stops the step with a message naming the assay. Before, the assay was left unnormalised with a
+   warning the application did not show, the tab said 'complete', the record said the step had been applied, and the
+   differential analysis was run on those values. The analysis record now states, for each comparison and assay,
+   whether q-values or Benjamini-Hochberg adjusted p-values were used, as it already did for proteomics. In
+   proteomics, a sample with no value is removed from the protein table and the design before between-sample
+   normalisation; before, Scale normalisation then made every value missing, which made a later step stop with an
+   unrelated message. Analyses recorded before this change replay as they were made. RUV correction of such assays
+   follows in the second part of KIT-242.
+
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
    it counted in how many samples a feature was below it. An MS-DIAL table imported with its default identifier column

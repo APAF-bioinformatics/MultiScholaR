@@ -316,10 +316,18 @@ omicsItsdNormalisationOperation <- function(binding) {
         kernel = function(object, parameters, store) {
             omicsAssertManualItsdPresent(binding, object, parameters$itsd_feature_ids)
             normaliseUntransformedDataFn <- normaliseUntransformedData
-            normalised <- normaliseUntransformedDataFn(theObject = object, method = "ITSD",
-                itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids)
+            # KIT-242 (VAL-242 OD-2 (b), OD-3 (d)): the per-assay outcome travels in the result value (the tab's notice reads
+            # it; a warning does not cross the worker), so the two notices' warnings are muffled here.
+            normalised <- withCallingHandlers(normaliseUntransformedDataFn(theObject = object, method = "ITSD",
+                itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids),
+                omics_itsd_not_applied = function(w) invokeRestart("muffleWarning"),
+                omics_itsd_sample_without_standard = function(w) invokeRestart("muffleWarning"))
             object <- NULL
-            list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")))
+            itsd <- normalised@args$ITSDNormalization
+            list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")),
+                itsd = list(applied_per_assay = itsd$applied_per_assay, not_applied_reason_per_assay = itsd$not_applied_reason_per_assay,
+                    counts_per_assay = itsd$itsd_counts_per_assay, samples_without_standard_per_assay = itsd$samples_without_standard_per_assay,
+                    pattern = normalised@internal_standard_regex, columns = itsd$itsd_pattern_columns))
         })
 }
 
@@ -395,13 +403,33 @@ omicsLog2Operation <- function(binding) {
 omicsBetweenSampleNormalisationOperation <- function(binding) {
     newOmicsOperation(binding, paste0(binding$prefix, "_between_sample_normalisation"), "whole_matrix",
         parameters = "normalisation_method", product_type = paste0(binding$prefix, ".between_sample_normalisation_result"),
+        # KIT-242 (VAL-242 OD-4 (c)): records made before replay with the earlier rule (`workflowReplayRuleMarkers`).
+        fixed = list(normalisation_fallback = "exclude"),
         kernel = function(object, parameters, store) {
             normaliseBetweenSamplesFn <- normaliseBetweenSamples
-            normalised <- if (identical(parameters$normalisation_method, "none")) object else
-                normaliseBetweenSamplesFn(theObject = object, normalisation_method = parameters$normalisation_method)
+            assays <- names(methods::slot(object, binding$data_slot))
+            excluded <- list()
+            removed <- character()
+            # KIT-242: the samples left out of an assay, and those removed from the design, travel in the result value
+            # (the per-assay notice and the record read them; a warning does not cross the worker, 2.4).
+            normalised <- if (identical(parameters$normalisation_method, "none")) object else withCallingHandlers(
+                normaliseBetweenSamplesFn(theObject = object, normalisation_method = parameters$normalisation_method),
+                omics_normalisation_sample_excluded = function(w) {
+                    excluded[[w$assay]] <<- unique(c(excluded[[w$assay]], w$sample))
+                    invokeRestart("muffleWarning")
+                },
+                omics_normalisation_sample_removed = function(w) {
+                    removed <<- unique(c(removed, w$sample))
+                    invokeRestart("muffleWarning")
+                })
             object <- NULL
-            list(final = store$checkpoint(normalised, paste0(binding$prefix, "-normalised")),
+            value <- list(final = store$checkpoint(normalised, paste0(binding$prefix, "-normalised")),
                 applied = !identical(parameters$normalisation_method, "none"))
+            if (omicsNormalisationCurrentRule()) {
+                value$per_assay <- list(applied = stats::setNames(as.list(rep(value$applied, length(assays))), assays),
+                    samples_excluded = excluded, samples_removed = removed)
+            }
+            value
         })
 }
 
@@ -1159,7 +1187,34 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
             outcomes$ruv_k_permutations_per_assay <- lapply(saved$k_estimate, function(estimate) estimate$permutations %||% NA_integer_)
         }
     }
-    if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) outcomes$itsd_applied <- TRUE
+    if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) {
+        # KIT-242 (VAL-242 OD-2 (b), OD-3 (d)): applied only when at least one assay was normalised to its standards, per
+        # assay with the reason and the count of standards used (0 where none matched), and the samples without standard
+        # signal per assay. A state made before KIT-242 carries no per-assay fields; its record reads as it did.
+        itsd <- record$data$slots$args$ITSDNormalization
+        outcomes$itsd_applied <- if (is.null(itsd$applied_per_assay)) TRUE else isTRUE(itsd$applied)
+        if (!is.null(itsd$applied_per_assay)) {
+            outcomes$itsd_applied_per_assay <- as.list(itsd$applied_per_assay)
+            outcomes$itsd_not_applied_reason_per_assay <- as.list(itsd$not_applied_reason_per_assay %||% list())
+            outcomes$itsd_counts_per_assay <- as.list(itsd$itsd_counts_per_assay %||% list())
+            outcomes$itsd_samples_without_standard_per_assay <- as.list(itsd$samples_without_standard_per_assay %||% list())
+        }
+    }
+    if (identical(operation, paste0(binding$prefix, "_between_sample_normalisation"))) {
+        # KIT-242 (VAL-242 OD-1 (c)): per assay whether it was normalised and which samples were left out of it (kept empty
+        # there), and the samples removed from the design (no value in any assay); a step made under the earlier rule
+        # records none of these.
+        product <- record$data$products[[paste0(operation, "_science")]]
+        saved <- if (isSavedWorkflowReference(product)) tryCatch({
+            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
+            if (is.list(hydrated$value)) hydrated$value else hydrated
+        }, error = function(error) NULL) else NULL
+        if (!is.null(saved$per_assay)) {
+            outcomes$normalisation_applied_per_assay <- as.list(saved$per_assay$applied)
+            outcomes$normalisation_samples_excluded_per_assay <- as.list(saved$per_assay$samples_excluded)
+            outcomes$normalisation_samples_removed <- as.character(saved$per_assay$samples_removed)
+        }
+    }
     outcomes
 }
 

@@ -152,7 +152,36 @@ collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, inp
         feature_counts = feature_counts),
         stats::setNames(list(workflowData[[export$counts_field]]), export$counts_field),
         list(qc_params = workflowData$qc_params, normalization_complete = normData$normalization_complete,
-            ruv_complete = normData$ruv_complete, correlation_filtering_complete = normData$correlation_filtering_complete))
+            ruv_complete = normData$ruv_complete, correlation_filtering_complete = normData$correlation_filtering_complete),
+        # KIT-242 (VAL-242 OD-2 (b); outcome 6): what the ITSD step did per assay, from the state (the summary's "ITSD
+        # applied" line reads it; `itsd_applied` above keeps the checkbox, what the user asked for).
+        # (only when the state records it, so a session list of a state without the ITSD step keeps its fields)
+        if (!is.null(omicsItsdOutcomeOfState(current_s4))) list(itsd_outcome_per_assay = omicsItsdOutcomeOfState(current_s4)))
+}
+
+#' The ITSD step's per-assay outcome a state carries (KIT-242): applied, the reason where not, and the count of standards
+#' used; NULL for a state made before KIT-242 or before the ITSD step.
+#' @noRd
+omicsItsdOutcomeOfState <- function(object) {
+    itsd <- tryCatch(object@args$ITSDNormalization, error = function(e) NULL)
+    if (is.null(itsd$applied_per_assay)) return(NULL)
+    list(applied = itsd$applied_per_assay, reason = itsd$not_applied_reason_per_assay %||% list(),
+        counts = itsd$itsd_counts_per_assay %||% list())
+}
+
+#' The session summary's "ITSD applied" text (KIT-242, outcome 6): per assay when the state records it ("A1 yes (5
+#' standards); A2 no (no internal standard matched)"), else the checkbox as before. Draft wording (VAL-41).
+#' @noRd
+omicsItsdSummaryText <- function(sessionData) {
+    outcome <- sessionData$itsd_outcome_per_assay
+    if (!isTRUE(sessionData$itsd_applied) || is.null(outcome)) return(ifelse(isTRUE(sessionData$itsd_applied), "Yes", "No"))
+    reasons <- c(no_standard_matched = "no internal standard matched", no_pattern_column = "no annotation column to search",
+        no_standard_selected = "no internal standard selected")
+    paste(vapply(names(outcome$applied), function(assay) {
+        if (isTRUE(outcome$applied[[assay]])) return(sprintf("%s yes (%d standards)", assay, as.integer(outcome$counts[[assay]] %||% 0L)))
+        reason <- outcome$reason[[assay]] %||% ""
+        sprintf("%s no (%s)", assay, if (reason %in% names(reasons)) reasons[[reason]] else reason)
+    }, character(1)), collapse = "; ")
 }
 
 #' The normalisation export's files under the owner's publication request (KIT-105 W2, from `saveLipidNormExportArtifacts`
@@ -224,7 +253,7 @@ saveWorkflowOmicsNormSessionArtifacts <- function(binding, sessionData, sourceDi
     summary_content <- sprintf(
         "%s Normalized Session Data Export Summary\n===================================================\n\nExport Timestamp: %s\nSession File: %s\n\nData Summary:%s\n\nNormalization Parameters:\n- Method: %s\n- ITSD applied: %s\n- ITSD aggregation: %s\n- Log2 offset: %s\n- RUV mode: %s\n- RUV grouping variable: %s\n- Correlation threshold: %s\n\nRUV Optimization Results (per-assay):%s\n\nContrasts:\n%s\n\nThis data is ready for differential expression analysis.\nUse 'Load Filtered Session' in the DE tab to import.\n",
         title, format(summaryTime, "%Y-%m-%d %H:%M:%S"), session_filename, feature_summary_lines, sessionData$normalization_method,
-        ifelse(isTRUE(sessionData$itsd_applied), "Yes", "No"),
+        omicsItsdSummaryText(sessionData),
         ifelse(is.na(sessionData$itsd_aggregation), "N/A", sessionData$itsd_aggregation),
         sessionData$log_offset, sessionData$ruv_mode, sessionData$ruv_grouping_variable,
         ifelse(is.null(sessionData$correlation_threshold), "N/A", sessionData$correlation_threshold), ruv_summary_lines,

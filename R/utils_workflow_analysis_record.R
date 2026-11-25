@@ -514,8 +514,12 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             # KIT-076: a v2 manifest is keyed by contrast, one entry per contrast and assay; a v1 entry keeps its reading
             # (the omics v1 manifests put the assay names under `contrast`).
             results = if (identical(output$version, 2L)) unlist(lapply(names(manifest$results), function(name) {
-                lapply(manifest$results[[name]]$assays, function(entry) list(contrast = name, assay = entry$assay,
-                    entity_id = entry$tables[[long_table]]$entity_id %||% NA_character_, rows = entry$rows %||% NA_integer_))
+                lapply(manifest$results[[name]]$assays, function(entry) c(list(contrast = name, assay = entry$assay,
+                    entity_id = entry$tables[[long_table]]$entity_id %||% NA_character_, rows = entry$rows %||% NA_integer_),
+                    # KIT-242 (outcome 7): the lipid and metabolite entries name the FDR method per comparison and assay, by
+                    # proteomics' rule (`workflowRecordDaFdrMethod`), from the contrast's q-value fallbacks.
+                    if (da_operation %in% c("lipid_da_contrast", "metab_da_contrast")) workflowRecordDaFdrMethod("DA-contrast-output",
+                        list(qvalue_warnings = manifest$results[[name]]$qvalue_warnings[[entry$assay]]))))
             }), recursive = FALSE, use.names = FALSE) else lapply(names(manifest$results), function(name) c(list(contrast = name,
                 entity_id = manifest$results[[name]]$tables[[long_table]]$entity_id %||% NA_character_,
                 rows = manifest$results[[name]]$rows %||% NA_integer_),
@@ -657,7 +661,15 @@ workflowReplayRuleMarkers <- list(
     # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
     # made before counted every numeric column of the assay ("numeric_columns").
     intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
-        earlier = "numeric_columns"))
+        earlier = "numeric_columns"),
+    # KIT-242 (VAL-242 OD-1 (c), OD-4 (c)): lipid and metabolite between-sample normalisation leaves a sample with no value
+    # out of the method and keeps it empty in that assay only, and stops on a method failure or a malformed assay
+    # ("exclude"); records made before skipped such an assay with a warning ("warn").
+    normalisation_fallback = list(option = "MultiScholaR.normalisation_fallback", current = "exclude", earlier = "warn"),
+    # KIT-242 Part C: proteomics between-sample normalisation removes a sample with no value from the protein table, the
+    # DPC EList and the design ("remove"); records made before kept it, so scale emptied the whole table ("keep").
+    protein_normalisation_fallback = list(option = "MultiScholaR.protein_normalisation_fallback", current = "remove",
+        earlier = "keep"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).

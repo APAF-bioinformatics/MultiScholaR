@@ -151,18 +151,33 @@ setMethod(
         itsd_collector <- new.env(parent = emptyenv())
         itsd_collector$features_per_assay <- list()
         itsd_collector$counts_per_assay <- list()
+        # KIT-242 (VAL-242 OD-2 (b), OD-3 (d)): the assays not normalised to standards, with the reason, and the samples
+        # without standard signal, per assay.
+        itsd_collector$not_applied <- list()
+        itsd_collector$samples_without <- list()
 
         # --- Process Each Assay ---
         normalized_assay_list <- lapply(seq_along(assay_list), function(i) {
             assay_index_name <- assay_names[i] # Use the name from the corrected list
             assay_tibble <- assay_list[[i]]
             message(sprintf("-- Processing assay: %s", assay_index_name))
+            # KIT-242 (VAL-242 OD-2 (b)): no standard in this assay: not normalised to standards, recorded, with a notice.
+            notApplied <- function(reason, text) {
+                itsd_collector$not_applied[[assay_index_name]] <- reason
+                itsd_collector$counts_per_assay[[assay_index_name]] <- 0L
+                rlang::warn(text, class = "omics_itsd_not_applied", assay = assay_index_name, reason = reason)
+            }
+            # KIT-242 (VAL-242: a method failure or a malformed assay stops).
+            itsdFailed <- function(reason, text, parent = NULL) {
+                rlang::abort(text, class = "omics_itsd_failed", assay = assay_index_name, reason = reason, parent = parent,
+                    call = NULL)
+            }
 
             # --- Basic Checks ---
             if (!tibble::is_tibble(assay_tibble)) {
                 warning(sprintf("Assay '%s' is not a tibble. Attempting to coerce.", assay_index_name), immediate. = TRUE)
                 assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                    warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_index_name, e$message), immediate. = TRUE)
+                    itsdFailed("malformed_assay", sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_index_name, e$message))
                     return(NULL) # Signal to skip this assay
                 })
                 if (is.null(assay_tibble)) {
@@ -170,7 +185,7 @@ setMethod(
                 } # Return original if coercion failed
             }
             if (!lipid_id_col %in% colnames(assay_tibble)) {
-                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_index_name, lipid_id_col), immediate. = TRUE)
+                itsdFailed("malformed_assay", sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_index_name, lipid_id_col))
                 return(assay_tibble)
             }
             # --- Validate ITSD Identification Prerequisites ---
@@ -179,16 +194,16 @@ setMethod(
             if (!use_manual_itsd) {
                 # Check if *any* of the itsd_pattern_columns exist
                 if (!any(itsd_pattern_columns %in% colnames(assay_tibble))) {
-                    warning(sprintf(
+                    notApplied("no_pattern_column", sprintf(
                         "Assay '%s': None of the specified ITSD pattern columns ('%s') found. Cannot identify ITSDs. Skipping normalization.",
                         assay_index_name, paste(itsd_pattern_columns, collapse = "', '")
-                    ), immediate. = TRUE)
+                    ))
                     return(assay_tibble)
                 }
                 # Filter itsd_pattern_columns to only those present in the current assay
                 actual_itsd_cols <- intersect(itsd_pattern_columns, colnames(assay_tibble))
                 if (length(actual_itsd_cols) == 0) { # Should be caught above, but double check
-                    warning(sprintf("Assay '%s': No ITSD identification columns found after checking existence. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                    notApplied("no_pattern_column", sprintf("Assay '%s': No ITSD identification columns found after checking existence. Skipping normalization.", assay_index_name))
                     return(assay_tibble)
                 }
             }
@@ -198,7 +213,7 @@ setMethod(
             all_assay_cols <- colnames(assay_tibble)
             sample_cols <- intersect(all_assay_cols, design_samples)
             if (length(sample_cols) == 0) {
-                warning(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                itsdFailed("malformed_assay", sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_index_name))
                 return(assay_tibble)
             }
             # Ensure sample columns are numeric
@@ -217,7 +232,7 @@ setMethod(
                 # Manual mode: use provided feature IDs for this assay
                 assay_itsd_ids <- itsd_feature_ids[[assay_index_name]]
                 if (is.null(assay_itsd_ids) || length(assay_itsd_ids) == 0) {
-                    warning(sprintf("Assay '%s': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.", assay_index_name), immediate. = TRUE)
+                    notApplied("no_standard_selected", sprintf("Assay '%s': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.", assay_index_name))
                     return(assay_tibble)
                 }
                 # Match feature IDs against lipid_id_col
@@ -225,10 +240,10 @@ setMethod(
                 itsd_rows_logical <- feature_ids %in% as.character(assay_itsd_ids)
 
                 if (!any(itsd_rows_logical, na.rm = TRUE)) {
-                    warning(sprintf(
+                    notApplied("no_standard_matched", sprintf(
                         "Assay '%s': None of the %d manual ITSD feature IDs matched rows in the data. Skipping normalization.",
                         assay_index_name, length(assay_itsd_ids)
-                    ), immediate. = TRUE)
+                    ))
                     return(assay_tibble)
                 }
                 message(sprintf("   Using %d manually selected ITSD features.", sum(itsd_rows_logical)))
@@ -241,10 +256,10 @@ setMethod(
                     purrr::reduce(`|`)
 
                 if (!any(itsd_rows_logical, na.rm = TRUE)) {
-                    warning(sprintf(
+                    notApplied("no_standard_matched", sprintf(
                         "Assay '%s': No ITSD features identified using regex '%s' in columns '%s'. Skipping normalization.",
                         assay_index_name, itsd_regex, paste(actual_itsd_cols, collapse = "', '")
-                    ), immediate. = TRUE)
+                    ))
                     return(assay_tibble)
                 }
                 message(sprintf("   Identified %d ITSD features via regex.", sum(itsd_rows_logical)))
@@ -273,7 +288,7 @@ setMethod(
                         dplyr::summarise(SampleNormFactor = itsd_aggregation_func(.data$Intensity, na.rm = TRUE), .groups = "drop")
                 },
                 error = function(e) {
-                    warning(sprintf("Assay '%s': Error calculating normalization factors: %s. Skipping normalization.", assay_index_name, e$message), immediate. = TRUE)
+                    itsdFailed("factor_error", sprintf("Assay '%s': Error calculating normalization factors: %s. Skipping normalization.", assay_index_name, e$message))
                     return(NULL)
                 }
             )
@@ -285,10 +300,15 @@ setMethod(
             problematic_factors <- norm_factors_long |>
                 dplyr::filter(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0)
             if (nrow(problematic_factors) > 0) {
-                warning(sprintf(
+                itsd_collector$samples_without[[assay_index_name]] <- as.character(problematic_factors$Sample)
+                # KIT-242 (VAL-242 OD-3 (d)): the sample is set missing in this assay only (the between-sample step then
+                # leaves it out of this assay), recorded per assay and sample, with a notice.
+                rlang::warn(sprintf(
                     "Assay '%s': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: %s. Normalized values will be NA for these samples.",
                     assay_index_name, paste(problematic_factors$Sample, collapse = ", ")
-                ), immediate. = TRUE)
+                ),
+                    class = "omics_itsd_sample_without_standard", assay = assay_index_name,
+                    sample = as.character(problematic_factors$Sample))
                 # Set factor to NA to ensure division results in NA
                 norm_factors_long <- norm_factors_long |>
                     dplyr::mutate(SampleNormFactor = dplyr::if_else(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0, NA_real_, .data$SampleNormFactor))
@@ -297,7 +317,7 @@ setMethod(
             # Step 2: Calculate the average aggregate ITSD signal across all samples
             average_norm_factor <- mean(norm_factors_long$SampleNormFactor, na.rm = TRUE)
             if (is.na(average_norm_factor) || average_norm_factor == 0) {
-                warning(sprintf("Assay '%s': Average aggregate ITSD signal is NA or zero. Cannot perform average-centered normalization. Skipping.", assay_index_name), immediate. = TRUE)
+                itsdFailed("no_standard_signal", sprintf("Assay '%s': Average aggregate ITSD signal is NA or zero. Cannot perform average-centered normalization. Skipping.", assay_index_name))
                 return(assay_tibble)
             }
 
@@ -316,7 +336,7 @@ setMethod(
                         ))
                 },
                 error = function(e) {
-                    warning(sprintf("Assay '%s': Error applying normalization factors: %s. Returning unnormalized data for non-ITSD features.", assay_index_name, e$message), immediate. = TRUE)
+                    itsdFailed("apply_error", sprintf("Assay '%s': Error applying normalization factors: %s. Returning unnormalized data for non-ITSD features.", assay_index_name, e$message))
                     return(non_itsd_data) # Return unnormalized if error
                 }
             )
@@ -362,7 +382,12 @@ setMethod(
             if (!"ITSDNormalization" %in% names(theObject@args)) {
                 theObject@args$ITSDNormalization <- list()
             }
-            theObject@args$ITSDNormalization$applied <- TRUE
+            # KIT-242 (VAL-242 OD-2 (b)): applied only when at least one assay was normalised to its standards.
+            theObject@args$ITSDNormalization$applied <- length(itsd_collector$features_per_assay) > 0
+            theObject@args$ITSDNormalization$applied_per_assay <- as.list(stats::setNames(
+                assay_names %in% names(itsd_collector$features_per_assay), assay_names))
+            theObject@args$ITSDNormalization$not_applied_reason_per_assay <- as.list(itsd_collector$not_applied)
+            theObject@args$ITSDNormalization$samples_without_standard_per_assay <- as.list(itsd_collector$samples_without)
             theObject@args$ITSDNormalization$method_type <- "average_centered"
             theObject@args$ITSDNormalization$itsd_aggregation <- tolower(itsd_aggregation)
             theObject@args$ITSDNormalization$itsd_pattern_columns <- itsd_pattern_columns # Record actual columns used (potentially default)
@@ -372,8 +397,13 @@ setMethod(
             # Store per-assay ITSD feature information for reporting
             if (length(itsd_collector$features_per_assay) > 0) {
                 theObject@args$ITSDNormalization$itsd_features_per_assay <- as.list(itsd_collector$features_per_assay)
-                theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)
                 message(sprintf("   Stored ITSD feature names for %d assays", length(itsd_collector$features_per_assay)))
+            }
+            # KIT-242: the count of standards used per assay, 0 where none matched (the count of standards matched, not of
+            # standards observed in each sample).
+            if (length(itsd_collector$counts_per_assay) > 0) {
+                theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)[
+                    intersect(assay_names, names(itsd_collector$counts_per_assay))]
             }
         }
 
@@ -647,9 +677,15 @@ setMethod(
         # Store the *actually used* method back into args
         theObject@args$normalisation_method <- normalisation_method_final
         log_info("Applying between-sample normalization method: {normalisation_method_final}")
+        # KIT-242 (VAL-242): the rule this run is made under (the earlier one only when replaying an older record).
+        current_rule <- omicsNormalisationCurrentRule()
+        norm_collector <- new.env(parent = emptyenv())
+        norm_collector$excluded <- list()
 
 
         if (length(assay_list) == 0) {
+            if (current_rule) abortOmicsNormalisation(NA_character_, "malformed_assay", normalisation_method_final,
+                "Between-sample normalisation was not run: the object holds no assay.")
             warning("No assays found in `lipid_data` slot. Skipping normalization.")
             return(theObject)
         }
@@ -672,12 +708,17 @@ setMethod(
             assay_name <- assay_names[i]
             assay_tibble <- assay_list[[i]]
             message(sprintf("-- Processing assay for normalization: %s", assay_name))
+            # KIT-242 (VAL-242, UVR-082): a malformed assay stops under the current rule; earlier, it was skipped.
+            malformed <- function(text) {
+                if (current_rule) abortOmicsNormalisation(assay_name, "malformed_assay", normalisation_method_final, text)
+                warning(text, immediate. = TRUE)
+            }
 
             # --- Basic Checks ---
             if (!tibble::is_tibble(assay_tibble)) {
                 warning(sprintf("Assay '%s' is not a tibble. Attempting coercion.", assay_name), immediate. = TRUE)
                 assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                    warning(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_name, e$message), immediate. = TRUE)
+                    malformed(sprintf("Failed to coerce assay '%s' to tibble: %s. Skipping normalization.", assay_name, e$message))
                     return(NULL) # Signal to skip
                 })
                 if (is.null(assay_tibble)) {
@@ -685,7 +726,7 @@ setMethod(
                 } # Return original if coercion failed
             }
             if (!lipid_id_col_name %in% colnames(assay_tibble)) {
-                warning(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_name, lipid_id_col_name), immediate. = TRUE)
+                malformed(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_name, lipid_id_col_name))
                 return(assay_tibble)
             }
 
@@ -694,13 +735,13 @@ setMethod(
                 character(0)
             })
             if (length(design_samples) == 0) {
-                warning(sprintf("Assay '%s': Could not extract valid sample IDs from design matrix column '%s'. Skipping normalization.", assay_name, sample_id_col_name), immediate. = TRUE)
+                malformed(sprintf("Assay '%s': Could not extract valid sample IDs from design matrix column '%s'. Skipping normalization.", assay_name, sample_id_col_name))
                 return(assay_tibble)
             }
             all_assay_cols <- colnames(assay_tibble)
             sample_cols <- intersect(all_assay_cols, design_samples)
             if (length(sample_cols) == 0) {
-                warning(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_name), immediate. = TRUE)
+                malformed(sprintf("Assay '%s': No sample columns identified matching design matrix sample IDs. Skipping normalization.", assay_name))
                 return(assay_tibble)
             }
             # Ensure sample columns are numeric
@@ -720,7 +761,7 @@ setMethod(
                         as.matrix()
                 },
                 error = function(e) {
-                    warning(sprintf("Assay '%s': Error converting tibble to matrix: %s. Skipping normalization.", assay_name, e$message), immediate. = TRUE)
+                    malformed(sprintf("Assay '%s': Error converting tibble to matrix: %s. Skipping normalization.", assay_name, e$message))
                     return(NULL)
                 }
             )
@@ -730,56 +771,67 @@ setMethod(
 
             assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf
 
-            # KIT-145 (M17): cyclic loess is refused below its minimum number of features. The refusal is raised here,
-            # before the skips below and outside the tryCatch around the fit, so that it is never turned into
-            # unnormalised data with a warning.
-            if (identical(normalisation_method_final, "cyclicloess")) {
-                checkOmicsCyclicLoessMinimum(assay_matrix, assay_name, "lipids")
-            }
-
-            # Check if matrix is valid for normalization
-            if (nrow(assay_matrix) < 1 || ncol(assay_matrix) < 1) {
-                warning(sprintf("Assay '%s': Matrix is empty after preparation. Skipping normalization.", assay_name), immediate. = TRUE)
-                return(assay_tibble)
-            }
-            # Check if all values are NA in any column (causes issues for some methods)
-            if (any(colSums(!is.na(assay_matrix)) == 0)) {
-                warning(sprintf("Assay '%s': At least one sample column contains only NA values. Skipping normalization.", assay_name), immediate. = TRUE)
-                return(assay_tibble)
-            }
-
-            # --- Apply Normalization Method ---
-            normalized_matrix <- assay_matrix # Default to original if method is 'none' or fails
-
-            if (normalisation_method_final != "none") {
-                normalized_matrix <- tryCatch(
-                    {
-                        switch(normalisation_method_final,
-                            cyclicloess = {
-                                message("   Applying cyclic loess normalization...")
-                                limma::normalizeCyclicLoess(assay_matrix)
-                            },
-                            quantile = {
-                                message("   Applying quantile normalization...")
-                                limma::normalizeQuantiles(assay_matrix)
-                            },
-                            scale = {
-                                message("   Applying scale (median absolute deviation) normalization...")
-                                limma::normalizeMedianAbsValues(assay_matrix)
-                            },
-                            { # Default case for switch if none of the above match (should not happen due to checkParams)
-                                warning(sprintf("Assay '%s': Unknown normalization method '%s'. Skipping normalization.", assay_name, normalisation_method_final), immediate. = TRUE)
-                                assay_matrix # Return original matrix
-                            }
-                        )
-                    },
-                    error = function(e) {
-                        warning(sprintf("Assay '%s': Error during '%s' normalization: %s. Returning unnormalized data for this assay.", assay_name, normalisation_method_final, e$message), immediate. = TRUE)
-                        return(assay_matrix) # Return original matrix on error
-                    }
-                )
+            if (current_rule) {
+                # KIT-242 (VAL-242 OD-1 (c)): a sample with no value is left out of the method and kept empty in this
+                # assay only; KIT-145's guard counts the other samples (item viii); a method failure stops.
+                if (nrow(assay_matrix) < 1 || ncol(assay_matrix) < 1) {
+                    malformed(sprintf("Assay '%s': Matrix is empty after preparation. Skipping normalization.", assay_name))
+                }
+                normalised <- normaliseOmicsAssayMatrix(assay_matrix, assay_name, normalisation_method_final, "lipids")
+                normalized_matrix <- normalised$matrix
+                if (length(normalised$excluded)) norm_collector$excluded[[assay_name]] <- normalised$excluded
             } else {
-                message("   Normalization method is 'none'. Skipping application.")
+                # KIT-145 (M17): cyclic loess is refused below its minimum number of features. The refusal is raised here,
+                # before the skips below and outside the tryCatch around the fit, so that it is never turned into
+                # unnormalised data with a warning.
+                if (identical(normalisation_method_final, "cyclicloess")) {
+                    checkOmicsCyclicLoessMinimum(assay_matrix, assay_name, "lipids")
+                }
+
+                # Check if matrix is valid for normalization
+                if (nrow(assay_matrix) < 1 || ncol(assay_matrix) < 1) {
+                    warning(sprintf("Assay '%s': Matrix is empty after preparation. Skipping normalization.", assay_name), immediate. = TRUE)
+                    return(assay_tibble)
+                }
+                # Check if all values are NA in any column (causes issues for some methods)
+                if (any(colSums(!is.na(assay_matrix)) == 0)) {
+                    warning(sprintf("Assay '%s': At least one sample column contains only NA values. Skipping normalization.", assay_name), immediate. = TRUE)
+                    return(assay_tibble)
+                }
+
+                # --- Apply Normalization Method ---
+                normalized_matrix <- assay_matrix # Default to original if method is 'none' or fails
+
+                if (normalisation_method_final != "none") {
+                    normalized_matrix <- tryCatch(
+                        {
+                            switch(normalisation_method_final,
+                                cyclicloess = {
+                                    message("   Applying cyclic loess normalization...")
+                                    limma::normalizeCyclicLoess(assay_matrix)
+                                },
+                                quantile = {
+                                    message("   Applying quantile normalization...")
+                                    limma::normalizeQuantiles(assay_matrix)
+                                },
+                                scale = {
+                                    message("   Applying scale (median absolute deviation) normalization...")
+                                    limma::normalizeMedianAbsValues(assay_matrix)
+                                },
+                                { # Default case for switch if none of the above match (should not happen due to checkParams)
+                                    warning(sprintf("Assay '%s': Unknown normalization method '%s'. Skipping normalization.", assay_name, normalisation_method_final), immediate. = TRUE)
+                                    assay_matrix # Return original matrix
+                                }
+                            )
+                        },
+                        error = function(e) {
+                            warning(sprintf("Assay '%s': Error during '%s' normalization: %s. Returning unnormalized data for this assay.", assay_name, normalisation_method_final, e$message), immediate. = TRUE)
+                            return(assay_matrix) # Return original matrix on error
+                        }
+                    )
+                } else {
+                    message("   Normalization method is 'none'. Skipping application.")
+                }
             }
 
             normalized_matrix[!is.finite(normalized_matrix)] <- NA # Ensure NAs remain NAs
@@ -810,7 +862,7 @@ setMethod(
                         dplyr::relocate(dplyr::all_of(metadata_cols), dplyr::all_of(sample_cols))
                 },
                 error = function(e) {
-                    warning(sprintf("Assay '%s': Error reconstructing tibble after normalization: %s. Returning original data.", assay_name, e$message), immediate. = TRUE)
+                    malformed(sprintf("Assay '%s': Error reconstructing tibble after normalization: %s. Returning original data.", assay_name, e$message))
                     return(assay_tibble) # Return original on error
                 }
             )
@@ -821,6 +873,14 @@ setMethod(
 
         # Restore original names
         names(normalized_assay_list) <- assay_names
+
+        # KIT-242 (item 1a): a sample with no value in any assay leaves the design, with a notice.
+        if (current_rule && length(norm_collector$excluded)) {
+            pruned <- omicsRemoveSamplesEmptyEverywhere(normalized_assay_list, theObject@design_matrix, sample_id_col_name,
+                norm_collector$excluded)
+            normalized_assay_list <- pruned$assays
+            theObject@design_matrix <- pruned$design
+        }
 
         # Update the slot in the object
         methods::slot(theObject, "lipid_data") <- normalized_assay_list
