@@ -18,3 +18,28 @@ Notes for the owner's wording pass:
   only where the rows a stored pattern matched included a name containing `w/o MS2:` or a name matched only through
   the unanchored `IS-`.
 - The NEWS entry is the ticket's section 11 draft with the decided options (OD-1 (c)) written in.
+
+## Points from the implementation audit (AUDIT-KIT-260-impl-20261126), for the owner's wording pass
+
+- **I08 (what the note counts).** The `IS-` case counts a name that contains 'IS-' after its first character and that
+  no other alternative of the stored pattern matches; a name that starts with 'IS-' (a label the corrected default also
+  matches, as `^IS-`) is not counted. Read literally, 'matched only through the unanchored IS-' would count it too (E8's
+  object: 10 rows per assay instead of 9).
+- **I09 (the import help's last sentence).** "Leave it empty for none." With 'Apply ITSD normalization' ticked (the
+  default), an empty box stops the normalisation with an R error ("missing value where TRUE/FALSE needed"; the slot
+  becomes NA). Proposed: "Leave it empty for none, and untick 'Apply ITSD normalization' on the normalisation tab." The
+  error itself is KIT-242's (its ticket 2.1 (4)).
+- **I11 (the note on a new project).** The note fires for any used name containing `w/o MS2:`, whatever the pattern.
+  Under the corrected default a labelled standard MS-DIAL prefixed, such as 'w/o MS2:PC 15:0_18:1(d7)' or
+  'w/o MS2:Caffeine_d9', is still used (through `\(d[0-9]+\)` and `_d[0-9]+$`) and then gives the sentence "This project
+  was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS ..." on a
+  new project: true of the row, within the decided rule, but it reads as a problem of an older project.
+- **I12 (wording points).** `used_log` writes "1 rows" for one row; the normalisation tab writes the identifier as
+  "IS_Caffeine (Alignment ID 41)" and the integration tab as "Caffeine_d9 (42)"; the record viewer prints outcomes by
+  their internal key ("itsd_note = ..."); NEWS's "every such feature" holds for metabolomics, but for lipidomics only
+  where the user picked the name column (a real MS-DIAL lipid export gets no annotation column proposed, G0 D2n);
+  standards written with a hyphen ('Cholesterol-d7') are still not recognised (the hyphen form was not decided) and no
+  text says so.
+- **I13 (standards the corrected default no longer finds; decided, informational).** Labels with "IS-" after the start
+  ('Leu-IS-1') and MS-DIAL-prefixed standards ('w/o MS2:IS_Caffeine'); an assay whose only standards are written so is
+  skipped (KIT-242 shows and records the skip).

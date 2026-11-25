@@ -31,7 +31,14 @@ Runs: `runs.tsv`; tables in `g0-45592957172/`, `p0-45603194585/`, `p0b-456123392
   (`:1293`); the study-parameters file writes it as `* Note:` in the ITSD block when the analysis record carries it
   (`R/func_general_filemgmt_study_parameter_writer.R:299`, `:500`; `omicsItsdRecordNote`, `:389`); both reports append it
   to the ITSD paragraph; the integration Sample Matching tab states it where marked rows are such names. No replay
-  marker (the stored pattern governs).
+  marker (the stored pattern governs). The `IS-` case counts a name that contains 'IS-' after its first character and
+  that no other alternative of the stored pattern matches; a name that starts with 'IS-' (a label the corrected default
+  also matches, as `^IS-`) is not counted. Read literally, 'matched only through the unanchored IS-' would count it too
+  (E8's object: 10 rows per assay instead of 9) (I08). Correction pass (I02 (a)): when the ITSD step's product names no
+  rows (a product saved by a build before KIT-260), the record reads them from the stored states
+  (`omicsItsdRowsFromStates`: the ITSD state's stored identifiers, their annotations from the state the step read, two
+  columns a page at a time, the note's rule with that state's stored pattern), so an older project reopened and
+  summarised without re-running normalisation gets the note in the record, the study-parameters file and the reports.
 - **OD-4 (a)**: INT-3's rule unchanged. The Sample Matching tab names, per data set, the marked rows "display name
   (identifier)" (`integrationInternalStandardNames`, `R/utils_workflow_integration_model.R:659`; facts in
   `R/utils_integration_gui.R`); the model product and the record's model outcome carry `internal_standards_marked`
@@ -72,11 +79,11 @@ Runs: `runs.tsv`; tables in `g0-45592957172/`, `p0-45603194585/`, `p0b-456123392
   `message-changed`, no `count-changed`. Check: ERRORs 0, WARNINGs 3, NOTEs 3 on both sides, findings identical (6),
   none only on head. **Stop rule 2 not triggered.**
 
-R2's file list (recounted at e0747fc1): the ticket's grep, 106 files of 491; its four named files; 23 lipidomics,
+R2's file list (recounted at e0747fc1): the ticket's grep, 106 files of 491; its four named files (none in the grep); 19 further lipidomics,
 metabolomics and integration files that exercise the other code r1.3's file list touches (the study-parameters writer,
 the reports, the integration facts and model record, the tab pipelines: e.g. `test-integration-gui.R`,
 `test-integration-record.R`, `test-kit235-lipid-metab-report-parser.R`, `test-omic-norm-module.R`,
-`test-workflow-analysis-record.R`, the two GUI-entry lanes and e2e files); and the new file: 130. Proteomics- and
+`test-workflow-analysis-record.R`, the two GUI-entry lanes and e2e files); and the new file: 106 + 4 + 19 + 1 = 130 (24 beyond the grep). Proteomics- and
 transcriptomics-only matches of the wider grep were left out.
 
 ## Acceptance criteria
@@ -112,14 +119,51 @@ step outcome, `inst/reports/shared/analysis_record_SI.rmd:55-57`; not rendered h
   skipped assay has no entry there; KIT-242's "matched nothing" notice and record belong beside them.
 - `test-omic-norm-module.R`'s `omicNormFrozen` and `test-omics-norm-core.R`'s error-run notes now carry KIT-260's lines;
   KIT-242's own log or notification changes will move the same keys again.
+- **One name, two meanings (I04).** Both branches define `omicsItsdReportResult`: KIT-260 in
+  `R/utils_workflow_omics_declarations.R` (`(value, addLog, notify)`, reading `value$itsd_used`), KIT-242 in
+  `R/utils_workflow_omics_actions.R` (`(value, addLog, warn)`, reading `value$itsd`). The definitions are in different
+  files and hunks, so a merge keeps both without a conflict, and the Collate order (declarations before actions) lets
+  the later file's definition win silently when the namespace loads: KIT-260's call sites would run KIT-242's function.
+  Whichever ticket merges second renames one of them and keeps a single per-assay log line (the coordinator's ruling,
+  2026-11-26; nothing renamed now).
+- **The empty pattern box (I09).** With 'Apply ITSD normalization' ticked (the default) an empty pattern box becomes NA
+  in the object's slot and pattern-mode ITSD stops with R's "missing value where TRUE/FALSE needed"
+  (`R/func_metab_s4_transformation_methods.R:340`, lipid `R/func_lipid_s4_normalization_methods.R:111`; KIT-260's ticket
+  2.1 (4)). KIT-260's new import help ends "Leave it empty for none." (wording for the owner's pass, `wording.md`); the
+  error is KIT-242's.
+- **Merge order (I03).** The coordinator's ruling of 2026-11-26: KIT-260 may merge before KIT-242 if it is ready first;
+  it waits for the owner's by-file answer on `test-integration-gui.R` (parked row 42) in either order.
+
+## The correction pass (AUDIT-KIT-260-impl-20261126; one pass, tests first)
+
+- Commits: 7af2d51e tests (I02 (a) per consumer, metab and lipid: record, study parameters, report; I05; I10: lipid
+  study parameters and report, the integration-tab note with flagged rows, the model record's marked rows through a
+  stand-in trainer); eca09bc5 the I02 (a) fix (`omicsItsdRowsFromStates`); b71b2d62 a coverage test of E6's managed arm
+  through the worker's own delivery (`omicsTabServer` with `omicsManagedChainMocks`); then these records; then the merge
+  of staging 42846c0e.
+- **I05 (the ruling's test).** An older-build product is made by running ITSD with `omicsItsdRowsUsed` returning
+  nothing; the record is written as that build wrote it; the replay runs this version's kernel (the ITSD product gains
+  the rows-used fields). The test requires no mismatch from the replay harness (`kitReplayJourney`, which judges every
+  state and every product by sha256) and identical assays in every replayed state. Its result is in the correction
+  pass's runs below; if the harness reports the ITSD product, the coordinator rules (a replay marker, as KIT-242's
+  OD-4 (c)); none is added here.
+- **I06, I07, I08, I09, I11 to I13** applied as the register's texts (ledger row in five cells with escaped pipes and the
+  open by-file question; the R2 file count; `wording.md`).
+- **I14** (the DA join failure with a numeric identifier after between-sample 'None'): recorded in `g0-outcome.md`;
+  lipidomics likely alike, legacy likely; candidate row K260-G0-D6 is the coordinator's. **I15** the old default string
+  survives in `tools/profiling/kit_omics_corpus.R:10` (a comment; that folder is not edited by rule) and in
+  `tools/refactor/staging/wave1_*` (historic copies, built out). **I16** the exported `integrationMatchSamples()` returns
+  the new names line in its facts and two more elements in its `preview` (additive); the S4 methods list an assay's
+  standards before its factor is computed, so "then removed" can be false where the factor fails (moot once KIT-242's
+  Part A stops on such a failure).
 
 ## Not checked
 
 - The real-data share of MS1-only annotations (G-R not run).
 - The report rendered as a document (E8 checks the parser and the Methods paragraph's text, not the rendered file).
 - The record viewer rendered (`renderWorkflowAnalysisRecord`).
-- The integration model trained end to end with marked rows (the product field is set by the kernel; R2's integration
-  files pass; no test trains a model and reads `internal_standards_marked` back).
+- The integration model with MOFA2 itself (the correction pass's test trains with a stand-in trainer and reads
+  `internal_standards_marked` back from the product and the record outcomes).
 - The application in a browser.
 - R3 (the merge train's full suite).
 
