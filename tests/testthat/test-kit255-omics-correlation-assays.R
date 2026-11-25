@@ -549,7 +549,7 @@ for (class in c("lipid", "metab")) {
         })
         expect_match(summary, "Removed: 0 samples", fixed = TRUE)
         # E16 (session): the exported session list carries the exclusions, read through the metadata reader
-        session <- collectWorkflowOmicsNormSession(fx$binding, fx$workflow, nd, kit255Input(), "kit255", fx$config$norm$export)
+        session <- shiny::isolate(collectWorkflowOmicsNormSession(fx$binding, fx$workflow, nd, kit255Input(), "kit255", fx$config$norm$export))
         expect_identical(names(session$correlation_exclusions$excluded), "LCMS_Neg")
         expect_identical(names(session$correlation_exclusions$excluded$LCMS_Neg), kit255S)
         expect_match(summary, "Set missing in some assays only: B_6 in LCMS_Neg", fixed = TRUE)
@@ -603,9 +603,13 @@ for (class in c("lipid", "metab")) {
         record <- out@args$correlation_exclusions
         expect_identical(record$not_tested, list(LCMS_Neg = "B"))
         notice <- omicsCorrelationExclusionNotice(record)
-        expect_true(any(grepl("In assay LCMS_Neg, no sample of group B has a value left, so comparisons with that group are not tested in LCMS_Neg.", notice, fixed = TRUE)))
-        expect_match(omicsCorrelationExclusionSummaryLine(record), "Comparisons not tested (no sample of the group has a value): group B in LCMS_Neg.", fixed = TRUE)
-        expect_true(any(grepl("group B in LCMS_Neg", omicsCorrelationExclusionStudyLines(record), fixed = TRUE)))
+        expect_true(any(grepl("In assay LCMS_Neg, no sample of group B has a value left, so comparisons with that group are not tested in LCMS_Neg.", notice, fixed = TRUE)),
+            info = "E20 the notice names the group and the assay")
+        expect_match(omicsCorrelationExclusionSummaryLine(record), "Comparisons not tested (no sample of the group has a value): group B in LCMS_Neg.", fixed = TRUE,
+            info = "E20 the summary line")
+        study <- omicsCorrelationExclusionStudyLines(record)
+        expect_true(any(grepl("* Comparisons not tested (no sample of the group has a value there):", study, fixed = TRUE)), info = "E20 the study-parameters heading")
+        expect_true(any(grepl("    - LCMS_Neg: group B", study, fixed = TRUE)), info = "E20 the study-parameters line (the drafted form, wording.md 9)")
     })
 
     test_that(paste("KIT-255 E20 (two replicates per group):", class, "every one-assay failure leaves a group without a value in that assay, recorded as not tested"), {
