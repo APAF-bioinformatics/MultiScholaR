@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-260 correction pass R1b: the new test file, base 7af2d51e (tests commit before the I02 (a) fix), head e83c8011 (merged with staging 42846c0e); 1 shard per side; ceiling 45 job-minutes; shows failing first and I05's replay result",
+  "label": "KIT-260 R1b tests 7af2d51e against merged e83c8011, new test file",
+  "package_commit": "e83c8011c1dc9061063642fb9da077e48467a3cc",
+  "base_commit": "7af2d51ee6591ea1d9d716321d44f2f26eec0bc7",
+  "tools_ref": "",
+  "tests": [
+    "test-kit260-itsd-default-pattern.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
