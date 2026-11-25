@@ -1,0 +1,14 @@
+case	write	lines	l_lines	steps_changed	captures	l_text
+lipid_refusals	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_refusals: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+lipid_main	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+lipid_variants	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+lipid_required_missing	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+lipid_github_fallback	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_github_fallback: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+lipid_managed	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+lipid_global_another	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) lipid_global_another: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+metab_refusals	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) metab_refusals: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+metab_main	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) metab_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+metab_variants	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) metab_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+metab_required_missing	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) metab_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+metab_github_fallback	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) metab_github_fallback: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
+metab_managed	NA	NA	NA			ERROR: rlang_error Failed to find test with description "(b) metab_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's".
