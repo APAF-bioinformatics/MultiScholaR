@@ -541,9 +541,11 @@ for (class in c("lipid", "metab")) {
             k194Run(fx, nd, k194Input(ruv = ruv))
             k194ExpectRun(fx, nd, paste("T1", route))
             k194Apply(fx, nd)
-            k194Skip(fx, nd)
-            heads <- paste0(prefix, c("_norm_complete", "_correlation_filtered", if (!is.null(ruv)) "_ruv_corrected", "_normalized"))
-            expect_true(all(c(heads, paste0(prefix, "_log2")) %in% k194History(fx)), info = paste("T1 precondition:", paste(k194History(fx), collapse = " ")))
+            # KIT-254 (set-up only): each correlation-step head is met in its own sequence (a Skip at the correlation
+            # state now returns to the run's result first); the heads and every refusal expectation are unchanged.
+            result <- paste0(prefix, if (!is.null(ruv)) "_ruv_corrected" else "_normalized")
+            expect_true(all(paste0(prefix, c("_correlation_filtered", if (!is.null(ruv)) "_ruv_corrected", "_normalized", "_log2")) %in% k194History(fx)),
+                info = paste("T1 precondition (after the Apply):", paste(k194History(fx), collapse = " ")))
             refused <- function(head, label) {
                 for (button in c("apply", "resolve", "finalize")) {
                     if (!is.null(head)) selectWorkflowStateReference(k194Owner(fx), head)
@@ -557,7 +559,12 @@ for (class in c("lipid", "metab")) {
                     if (identical(route, "managed")) expect_length(rec$operations, 0L)
                 }
             }
-            for (head in heads) refused(head, head)
+            refused(paste0(prefix, "_correlation_filtered"), paste0(prefix, "_correlation_filtered"))
+            selectWorkflowStateReference(k194Owner(fx), result)
+            k194Skip(fx, nd)
+            expect_true(paste0(prefix, "_norm_complete") %in% k194History(fx),
+                info = paste("T1 precondition (after the Skip):", paste(k194History(fx), collapse = " ")))
+            for (head in paste0(prefix, c("_norm_complete", if (!is.null(ruv)) "_ruv_corrected", "_normalized"))) refused(head, head)
             # A QC state made by the wrapper on the normalised table (an old session's sequence, the scripted path).
             selectWorkflowStateReference(k194Owner(fx), paste0(prefix, "_normalized"))
             kit172Quiet(runWorkflowOmicsReferenceIntensityFilter(fx$binding, k194Owner(fx), 1, 0.5, fx$workflow$config_list))
@@ -1026,7 +1033,6 @@ for (class in c("lipid", "metab")) {
         k194Run(fx, nd, k194Input(itsd = TRUE))
         k194ExpectRun(fx, nd, "T8")
         k194Apply(fx, nd)
-        k194Skip(fx, nd)
         k194SetNormStatus(fx, "complete")
         da <- function(head, expected) {
             if (!identical(k194Head(fx), head)) selectWorkflowStateReference(k194Owner(fx), head)
@@ -1036,8 +1042,12 @@ for (class in c("lipid", "metab")) {
             expect_identical(out$runs, expected, info = info)
             if (identical(expected, 0L)) expect_true(k194Noted(seen, k194DaText), info = info)
         }
-        # Accepted (both commits), latest first so that each selection keeps the next in the history.
-        for (head in paste0(prefix, c("_norm_complete", "_correlation_filtered", "_normalized"))) da(head, 1L)
+        # Accepted (both commits), latest first so that each selection keeps the next in the history. KIT-254 (set-up
+        # only): the correlation state first, then the Skip pressed at the run's result for `_norm_complete`.
+        da(paste0(prefix, "_correlation_filtered"), 1L)
+        selectWorkflowStateReference(k194Owner(fx), paste0(prefix, "_normalized"))
+        k194Skip(fx, nd)
+        for (head in paste0(prefix, c("_norm_complete", "_normalized"))) da(head, 1L)
         # Refused heads: a state inside the normalisation, and the QC table after a Revert.
         for (head in paste0(prefix, c("_log2", "_itsd_norm", "_qc_complete"))) da(head, 0L)
         # After Reset (no Revert needed): `<prefix>_reset`.
