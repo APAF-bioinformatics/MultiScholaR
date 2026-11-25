@@ -1,0 +1,20 @@
+{
+  "requested_by": "K242-P01 observation, VAL-54 instrument rerun 1 of 3: worker group only (run 45579225993 failed in the script's helper set-up, no measurement); within the 60 job-minute ceiling",
+  "label": "obs-itsd worker rerun 1 on obs-itsd-20261125 af2ed456",
+  "package_commit": "af2ed456690743afcc3d6a43acd499261a264c0d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "tools/obs-itsd/obs-itsd.R", "args": ["obs-itsd-out", "worker"], "out": "obs-itsd-out", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 20}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
