@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-213 R3 on the merge with staging 4d588ba3 (coordinator, 2026-11-26): full suite base against head, 20 shards per side, check; predictions in docs/qa/workflow-execution/kit/kit-213/r3-predictions.md; expected about 84 core-hours; ceiling 2,800 job-minutes",
+  "label": "KIT-213 R3 full suite fa970e50 vs 4d588ba3 with check",
+  "package_commit": "fa970e505363a77ba45f3e370e03d965eb6d29b4",
+  "base_commit": "4d588ba3ed5c6fee76a5a1450c028b409ba419ba",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1", "MULTISCHOLAR_KIT105_W3_DUMP": "1"},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
