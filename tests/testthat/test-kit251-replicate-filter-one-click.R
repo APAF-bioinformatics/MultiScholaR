@@ -1,8 +1,9 @@
 # KIT-251 (KIT-233 A2): one click on the proteomics Protein Replicate Filter Apply button is handled once. The module
 # observed the button twice, through its own input and through the root session's copy of the same input, so one click
 # ran the apply path twice in one flush: under a managed application the second call met the "already running" guard
-# (a false warning), a refusal before the request was shown twice, and in process the second call was skipped as
-# already complete. Rows E1, E2, E3 (failing first: twice on the base commit) and guard G1 of the ticket (section 10).
+# (a false warning), a refusal before the request was shown twice, and in process the second call was skipped after a
+# success and ran the step again after a failure. Rows E1, E2, E3 (failing first: twice on the base commit) and guard
+# G1 of the ticket (section 10).
 # `shiny::testServer` registers both observers (the module session's rootScope() is the mock session, not the module's
 # proxy), as the base commit's test-perf107-audit.R in-process count of 2 shows.
 

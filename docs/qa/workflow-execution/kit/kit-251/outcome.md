@@ -12,7 +12,7 @@ run below is a GitHub-hosted run-tests run.
 | 1a60a4c7 | G0 records (`g0-45593374307/`) |
 | 6155d2a0 | tests only: new `tests/testthat/test-kit251-replicate-filter-one-click.R` (E1, E2, E3, G1); the declared edit of `tests/testthat/test-perf107-audit.R` (the comment at `:545-546` and `in_process_calls = 2L` at `:574` deleted) |
 | 26bc37fb | the fix: `R/mod_prot_qc_protein_replicate.R` `:310-321` at 16112917 deleted (the root-session observer of the Apply input and the blank line before it) |
-| (records commit) | records, NEWS, ledger row `VAL-<merge>` |
+| 4ed9c0ec | records, NEWS, ledger row `VAL-<merge>` |
 
 ## Runs (`runs.tsv`)
 
@@ -63,6 +63,16 @@ OBSERVED (`r2-45599010969/compare.tsv`, `check-compare.txt`): 10 files `same` (i
 base, 9/0 on head). R CMD check on both sides: 0 ERRORs, 3 WARNINGs, 3 NOTEs, findings identical (none only on head,
 none only on base). Base is the tests-only commit, so the new file shows `fixed`, not `only-on-head` (predicted).
 Recounted grep at the branch point: 11 files, as the ticket.
+Four of the ten ran no expectation on either side (every test skipped: `test-prot-02h-qc-protein-replicate-shared.R`
+5 and `test-module-ci-prot-protein-qc.R` 6 under quarantines Q-21/Q-22; `test-workflow-gui-memory-repairs.R` 6 and
+`test-workflow-memory-mechanism-member.R` 13, opt-in or installed-predecessor tests); their `same` carries no
+evidence. The regression evidence is the six that ran (538, 407, 321, 174, 126 and 19 passed on both sides) and the
+two fixed files.
+
+OBSERVED (R2 logs): in `testServer` each click logged "observed via module input" on both sides and "observed via
+root input" only on base (module/root, base against head: new file 4/4 against 4/0, `test-perf107-audit.R` 2/2
+against 2/0, `test-prot-02c` 1/1 against 1/0). In the running application, G0 (a)'s warning (two calls from one
+trusted click) shows that both observers fired, the module observer included.
 
 ## Acceptance criteria
 
@@ -80,14 +90,19 @@ ceiling. No correction pass, no instrument rerun.
 
 ## Inferred (not executed)
 
-- In process on base, the second call returned `already_complete` (`R/mod_prot_qc_protein_replicate.R:143-146`):
-  inferred from one success notice and one step completion; pinned by R1's E3 and `test-perf107-audit.R`.
-- The fix cannot lose a click: the removed listener read the same reactive input as the remaining one (ticket
-  section 2); G0 shows one browser input change per click, which the module observer receives.
+- In process on base, after a success the second call returned `already_complete`
+  (`R/mod_prot_qc_protein_replicate.R:143-146`): inferred from one success notice and one step completion; pinned by
+  R1's E3 and `test-perf107-audit.R`.
+- In process on base, after a refusal or a failure the second call ran the step again and showed the error again
+  (by reading `R/mod_prot_qc_protein_replicate.R:141-202` at 16112917; not executed).
+
+Conventions: the new test file follows the sibling ticket tests' line length (17 lines over R.md's 100
+characters, at most 118).
 
 ## Not checked
 
-- R-log observer lines in the running application (not on the console; see G0).
+- R-log observer lines in the running application (the in-app logger does not write to the console; see G0); in
+  `testServer` they were read in R2's logs.
 - A click on head in a browser (handed to KIT-233's journey J; stop rule 2).
 - Whether a first-call failure before `R/utils_workflow_execution.R:945` let the second call start a second request
   on base (not a normal path).
@@ -102,14 +117,22 @@ observer added with the DIA browser test lane, 132e1359, 2026-05-05; `main` has 
 `main:R/mod_prot_qc_protein_replicate.R:85`). Every proteomics user of the installed application on the DIA (iq),
 label-free and TMT routes saw, at every Apply, the warning "A protein replicate filter action is already running"
 beside the working notice, although nothing else was running; on a normalised table KIT-182's refusal was shown
-twice. In process (no managed worker) the second call was skipped silently.
+twice. In process (an R session, `run_app()`; no managed worker) the second call was skipped after a success
+(`already_complete`, `R/mod_prot_qc_protein_replicate.R:143-146` at 16112917; it re-marked Quality Control
+complete, a value already set). After a refusal or a failure it ran the step again (`:150-201`): the working
+notice, the computation or the refusal check, and the error notice a second time. A failed step commits nothing,
+so no state was committed twice on either launcher; a refusal was shown twice on both.
+The false warning appeared from 2026-10-14 (KIT-015, 31603afc), when this step moved to the managed worker; the
+double observer is in the v0.9.0 tag (12560b8a, 2026-11-22) and not on `main`.
 
 **Code.** Base 16112917: `R/mod_prot_qc_protein_replicate.R:303-309` (module observer, kept) and `:311-321` (root
 observer, removed); the guard that produced the warning `R/utils_workflow_execution.R:896-898`. Fix 26bc37fb: the
 module observer alone (`R/mod_prot_qc_protein_replicate.R:303-309`).
 
-**What changed in results.** Nothing: the step ran once per click before and after (G0: one worker request from one
-real click under the plain launcher; in process one step run). One false warning disappears; a refusal is shown once.
+**What changed in results.** Nothing: before and after, one click committed the step at most once (G0: one worker request from one real click
+under the plain launcher; in process one step run after a success). In process, a refused or failed step is no
+longer attempted a second time by the same click. The false warning disappears; a refusal or an error is shown
+once.
 
 **Evidence.** G0 45593374307 (one real mouse click in headless Chrome against the application started through
 `packaging/electron/entry.R`, network closed, the 8-run fixture; and the same in process); R1 45596850061 (E1 to E3 and
