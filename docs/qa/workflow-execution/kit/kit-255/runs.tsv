@@ -1,0 +1,5 @@
+run_id	commit	purpose	job_minutes	result
+45685635354	841ed133	G1 observation on staging 988512e6 + script (kit-255-g1)	12.5	script stopped at the K2-a class validity after the construction check; no consumer observed: INSTRUMENT DEFECT (VAL-54), no result
+45687997124	f4d9c5e7	G1 instrument rerun 1 of 3: K2-a built by dropping B_6 from a valid object	17.3	ran to the end (264 s); results for P-d, P-f (non-RUV), P-g, P-h writer, P-k, P-j and the older-form record (tarball); INSTRUMENT DEFECTS (no result on the items they hit): stop rule (i) did not hold for the RUV objects (real pairs after RUV: B_6 0.99 in both assays, nothing failed), P-e (runOmicsRuvFactors on un-normalised log values refused), model (needs two omics)
+45691461799	708e5f6a	G1 instrument rerun 2 of 3, first request	0	refused at plan: requested_by over 300 characters (no run)
+45691779984	708e5f6a	G1 instrument rerun 2 of 3: RUV objects' pairs hand-made, P-e from the pipeline's factors, the model on both omics, P-j not repeated	16.8	ran to the end (264 s); every prediction held except P-f's RUV arm (see outcome.md); stop rules 0, i, ii not triggered; G1 PASSED
