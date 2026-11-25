@@ -10,7 +10,8 @@ printCountDaGenesTable(
   formula_string = "analysis_type ~ comparison",
   facet_column = analysis_type,
   comparison_column = "comparison",
-  expression_column = "expression"
+  expression_column = "expression",
+  p_value_column = NULL
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ printCountDaGenesTable(
 \item{comparison_column}{The name of the column describing the contrasts or comparison between groups (tidyverse style).}
 
 \item{expression_column}{The name of the column that will contain the formula expressions of the contrasts.}
+
+\item{p_value_column}{The name of the raw p-value column (tidyverse style), or NULL (the default); when given, rows
+without a p-value are counted as Not tested (\code{countStatDaGenes}).}
 }
 \description{
 Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.

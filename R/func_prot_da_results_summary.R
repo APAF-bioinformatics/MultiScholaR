@@ -5,8 +5,12 @@
 #' @param q_val_thresh A numerical value specifying the q-value threshold for statistically significant proteins.
 #' @param log_fc_column The name of the log fold-change column (tidyverse style).
 #' @param q_value_column The name of the q-value column (tidyverse style).
+#' @param p_value_column The name of the raw p-value column (tidyverse style), or NULL (the default). When given, a row
+#'   whose p-value is missing was not tested and gets the status Not tested (KIT-204); that status is listed only when
+#'   at least one row has it.
 #' @return A table with the following columns:
-#' status: The status could be Significant and Up, Significant and Down or Not significant
+#' status: The status could be Significant and Up, Significant and Down or Not significant, or Not tested (when
+#'   `p_value_column` is given and the p-value is missing)
 #' counts: The number of proteins wit this status
 #' @export
 #' @param data Runtime inputs used by this function; see the usage section for accepted values.
@@ -14,10 +18,16 @@ countStatDaGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
                              log_fc_column = log2FC,
-                             q_value_column = fdr_qvalue) {
+                             q_value_column = fdr_qvalue,
+                             p_value_column = NULL) {
   # comparison <- as.data.frame(data) |>
   #   distinct(comparison) |>
   #   pull(comparison)
+
+  # KIT-204 (VAL-129 (1)): with a p-value column, a row without a p-value is "Not tested" (it has no q-value either).
+  # Without one, or with no such row, the counting below is the earlier one, line for line.
+  not_tested <- if (rlang::quo_is_null(rlang::enquo(p_value_column))) FALSE else
+    is.na(dplyr::pull(data, {{ p_value_column }}))
 
   selected_data <- data |>
     dplyr::mutate(status = case_when(
@@ -26,13 +36,15 @@ countStatDaGenes <- function(data,
       {{ log_fc_column }} < lfc_thresh & {{ q_value_column }} < q_val_thresh ~ "Significant and Down",
       TRUE ~ "Not significant"
     ))
+  if (any(not_tested)) selected_data$status[not_tested] <- "Not tested"
 
   counts <- selected_data |>
     group_by(status) |>
     summarise(counts = n()) |>
     ungroup()
 
-  all_possible_status <- data.frame(status = c("Not significant", "Significant and Up", "Significant and Down"))
+  all_possible_status <- data.frame(status = c("Not significant", "Significant and Up", "Significant and Down",
+    if (any(not_tested)) "Not tested"))
 
   results <- all_possible_status |>
     left_join(counts, by = c("status" = "status")) |>
@@ -55,7 +67,8 @@ countStatDaGenesHelper <- function(
   lfc_thresh = 0,
   q_val_thresh = 0.05,
   log_fc_column = logFC,
-  q_value_column = fdr_qvalue
+  q_value_column = fdr_qvalue,
+  p_value_column = NULL
 ) {
   message(paste("   countStatDaGenesHelper: da_table class =", class(da_table)))
   message(paste("   countStatDaGenesHelper: da_table is list =", is.list(da_table)))
@@ -75,14 +88,16 @@ countStatDaGenesHelper <- function(
                        lfc_thresh = lfc_thresh,
                        q_val_thresh = q_val_thresh,
                        log_fc_column = {{ log_fc_column }},
-                       q_value_column = {{ q_value_column }})
+                       q_value_column = {{ q_value_column }},
+                       p_value_column = {{ p_value_column }})
     })
   } else {
     list(countStatDaGenes(da_table,
                           lfc_thresh = lfc_thresh,
                        q_val_thresh = q_val_thresh,
                        log_fc_column = {{ log_fc_column }},
-                       q_value_column = {{ q_value_column }}))
+                       q_value_column = {{ q_value_column }},
+                       p_value_column = {{ p_value_column }}))
   }
 
   message("   countStatDaGenesHelper: da_table_updated created")
@@ -150,6 +165,8 @@ countStatDaGenesHelper <- function(
 #' @param facet_column The name of the column describing the type of analysis or parameters used to generate the result table (tidyverse style). This is related to the \code{list_of_descriptions} parameter above.
 #' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
+#' @param p_value_column The name of the raw p-value column (tidyverse style), or NULL (the default); when given, rows
+#'   without a p-value are counted as Not tested (`countStatDaGenes`).
 #' @export
 printCountDaGenesTable <- function(
   list_of_da_tables,
@@ -157,7 +174,8 @@ printCountDaGenesTable <- function(
   formula_string = "analysis_type ~ comparison",
   facet_column = analysis_type,
   comparison_column = "comparison",
-  expression_column = "expression"
+  expression_column = "expression",
+  p_value_column = NULL
 ) {
   num_significant_da_genes_all <- purrr::map2(
     list_of_da_tables,
@@ -168,14 +186,16 @@ printCountDaGenesTable <- function(
         description = b,
         facet_column = {{ facet_column }},
         comparison_column = comparison_column,
-        expression_column = expression_column
+        expression_column = expression_column,
+        p_value_column = {{ p_value_column }}
       )
     }
   ) |>
     bind_rows()
 
+  # KIT-204: the barplot draws the two significant statuses only (not "Not tested").
   num_sig_da_genes_barplot <- num_significant_da_genes_all |>
-    dplyr::filter(status != "Not significant") |>
+    dplyr::filter(status %in% c("Significant and Up", "Significant and Down")) |>
     ggplot(aes(x = status, y = counts)) +
     geom_bar(stat = "identity") +
     geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +

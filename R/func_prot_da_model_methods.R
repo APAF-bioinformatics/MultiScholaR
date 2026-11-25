@@ -505,10 +505,12 @@ setMethod(
     # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
     nested_list_for_count <- list(contrasts_results_table)
     names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
+    # KIT-204 (VAL-129 (1)): rows without a p-value are counted as "Not tested", not "Not significant".
     num_sig_da_molecules <- printCountDaGenesTable(
       list_of_da_tables = list(nested_list_for_count),
       list_of_descriptions = list("RUV applied"),
-      formula_string = "analysis_type ~ comparison"
+      formula_string = "analysis_type ~ comparison",
+      p_value_column = !!rlang::sym(raw_pvalue_column)
     )
 
     return_list$num_sig_da_molecules_first_go <- num_sig_da_molecules
@@ -594,8 +596,10 @@ setMethod(
     return_list$list_of_volcano_plots <- list_of_volcano_plots
 
     # Additional summary statistics
+    # KIT-204: a row without a p-value was not tested; the status is listed only where it occurs.
     num_sig_da_molecules <- significant_rows %>%
       dplyr::mutate(status = case_when(
+        is.na(.data[[raw_pvalue_column]]) ~ "Not tested",
         !!sym(qvalue_column) >= da_q_val_thresh ~ "Not significant",
         log2FC >= 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Up",
         log2FC < 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Down",
@@ -607,12 +611,12 @@ setMethod(
 
     return_list$num_sig_da_molecules <- num_sig_da_molecules
 
-    # Create barplots if significant results exist
+    # Create barplots if significant results exist (KIT-204: "Not tested" is neither)
     if (num_sig_da_molecules %>%
-      dplyr::filter(status != "Not significant") |>
+      dplyr::filter(status %in% c("Significant and Up", "Significant and Down")) |>
       nrow() > 0) {
       num_sig_da_genes_barplot_only_significant <- num_sig_da_molecules %>%
-        dplyr::filter(status != "Not significant") %>%
+        dplyr::filter(status %in% c("Significant and Up", "Significant and Down")) %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
         geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +

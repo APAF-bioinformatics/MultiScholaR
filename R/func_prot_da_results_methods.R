@@ -356,9 +356,9 @@ setMethod(
           message(sprintf("   outputDaResultsAllContrasts: Wrote NumSigDE Excel: %s", basename(excel_path)))
 
           # Generate combined barplot from the aggregated data
-          # Filter to only significant results
+          # Filter to only significant results (KIT-204: not "Not tested" either)
           sig_only <- combined_numsig_table |>
-            dplyr::filter(status != "Not significant")
+            dplyr::filter(status %in% c("Significant and Up", "Significant and Down"))
 
           if (nrow(sig_only) > 0) {
             num_sig_de_barplot <- sig_only |>
