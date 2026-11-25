@@ -1,0 +1,44 @@
+case	class	arm	step	kind	cls	text
+C4b	lipid	RUV skipped, correlation 0.5	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C4b	lipid	RUV skipped, correlation 0.5	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C4b	lipid	RUV skipped, correlation 0.5	itsd	warning	simpleWarning,warning,condition	Assay 'A2': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: B_6. Normalized values will be NA for these samples.
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	Using default annotation column 'LipidClass' to identify ITSDs. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Assay 'A1' normalization complete. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Assay 'A2' normalization complete. 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	   Stored ITSD feature names for 2 assays 
+C4b	lipid	RUV skipped, correlation 0.5	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C4b	lipid	RUV skipped, correlation 0.5	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C4b	lipid	RUV skipped, correlation 0.5	between_sample	message	message	   Assay 'A1' normalization complete. 
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5	warning	simpleWarning,warning,condition	.local: 'tech_rep_remove_regex' is not defined. 
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5	warning	simpleWarning,warning,condition	many-to-many relationship detected while pairing samples by `group`
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5	warning	simpleWarning,warning,condition	many-to-many relationship detected while pairing samples by `group`
+C4b	lipid	RUV skipped, correlation 0.5	da	error	simpleError,error,condition	Assay 'A1' has sample column(s) missing from design: B_6
+C4b	metab	RUV skipped, correlation 0.5	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C4b	metab	RUV skipped, correlation 0.5	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C4b	metab	RUV skipped, correlation 0.5	itsd	warning	simpleWarning,warning,condition	Assay 'A2': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: B_6. Normalized values will be NA for these samples.
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	Using default annotation column 'Ontology' to identify ITSDs. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Assay 'A1' normalization complete. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Assay 'A2' normalization complete. 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	   Stored ITSD feature names for 2 assays 
+C4b	metab	RUV skipped, correlation 0.5	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C4b	metab	RUV skipped, correlation 0.5	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C4b	metab	RUV skipped, correlation 0.5	between_sample	message	message	   Assay 'A1' normalization complete. 
+C4b	metab	RUV skipped, correlation 0.5	correlation_0.5	warning	simpleWarning,warning,condition	.local: 'tech_rep_remove_regex' is not defined. 

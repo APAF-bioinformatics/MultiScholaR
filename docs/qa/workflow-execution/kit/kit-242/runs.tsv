@@ -2,3 +2,4 @@ run_id	commit	purpose	minutes	result
 45584784285	33f11d9e4a7111e4973769b6ee3570c71e152b00	G0 cases C1 to C14 (C10 reused) at base 3eeaf100; one scripts job, ceiling 120	21.3	every group ran; C9 proteomics arms failed in the script's object builder (instrument defect, no result); all other cases observed
 45588916720	2942615fdbabfe7cad9880b6dd3200a035a16cc0	G0 C9 only, VAL-54 instrument rerun 1 of 3 (protein table row names dropped); within G0's ceiling	11.6	C9 observed as predicted
 45579225993	4a82ddff88da4a7216fb2c215d1350a880d31ae1	(not this ticket's run) obs-itsd observation for K242-P01 at the same base; reused for C10	-	reused, tables copied to g0-c10-45579225993/
+45594264982	30e89881d59230eb01b40cb61e41f213f1cbea0c	G0 optional case C4b (ticket r1.3): RUV skipped, correlation filter 0.5, a sample column kept empty in A2; ceiling 30 minutes	8.6	prediction holds (B_6 removed from A2 and the design); not predicted: B_6 kept in A1, lipid DA refuses, metab DA runs

@@ -52,3 +52,23 @@ logger line), `tab-log.tsv`, `notifications.tsv`; lane records under `lanes/`.
 - What the correlation filter does with an empty column in an assay that is kept (A2 was dropped before it, C4).
 - Why LCMS_Neg's named control vector misses assay features (C12 c, `:220`); recorded as a new adjacent item.
 - A separately started worker's log; DT pre-selection in a browser; real data of any kind.
+
+## C4b (ticket r1.3, optional; run 45594264982 at 30e89881 = 3eeaf100 + script; 8.6 job-minutes, 0.57 core-hours)
+
+C4's object (seed 242004; S's standards missing in A2), ITSD median, log2, cyclic loess, **RUV skipped**, then the
+correlation filter at 0.5, then the DA; lipid and metab. Prediction, written in the script and emitted before any
+value was read: "B_6 removed from A2 and from the design (so from every assay's DA)". Records: `g0-c4b-45594264982/`.
+
+| Item | Observed (lipid and metab alike unless stated) | Against the prediction |
+|---|---|---|
+| Up to between-sample | as C4: S has 0 finite values in A2; "At least one sample column contains only NA values. Skipping normalization." for A2 | as before |
+| Correlation filter | A2's pairs naming B_6: 5 rows, 0 finite correlations (A1's: 5 finite). After the filter: design 11 samples, B_6 not in it; A2 has 11 samples, B_6 absent | **as predicted** |
+| A1 after the filter | A1 still holds B_6's column (40 finite values), so the assays hold different samples and A1 holds a sample the design lacks | not predicted |
+| DA | lipid: **refused**, "Assay 'A1' has sample column(s) missing from design: B_6"; metab: completed, tables for A1 and A2 (40 rows each), B_6 absent from the design | not predicted; lipid and metab differ |
+
+Observed: a sample emptied in one assay is removed from the whole design by the correlation filter, as predicted.
+Inferred: under OD-1 (b) or "Skip RUV" with the filter applied, the sample leaves every assay's DA (metab), or the
+lipid DA stops with a message naming the other assay (lipid). Not checked: why the metab DA accepts an assay column
+the design lacks; whether the GUI's DA tab reaches the same refusal.
+
+G0 core-hours now 2.19 + 0.57 = 2.76 of 8.0.

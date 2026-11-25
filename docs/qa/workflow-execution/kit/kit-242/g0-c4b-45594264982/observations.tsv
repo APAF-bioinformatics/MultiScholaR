@@ -1,0 +1,61 @@
+case	class	arm	item	value
+C4b	lipid	RUV skipped, correlation 0.5	prediction (written before the run)	B_6 removed from A2 and from the design (so from every assay's DA)
+C4b	lipid	RUV skipped, correlation 0.5	qc_finalize result	completed
+C4b	lipid	RUV skipped, correlation 0.5	qc_finalize design samples	12; B_6 in design: TRUE
+C4b	lipid	RUV skipped, correlation 0.5	qc_finalize A1	45 features x 12 samples; B_6 column: present, 45 finite
+C4b	lipid	RUV skipped, correlation 0.5	qc_finalize A2	45 features x 12 samples; B_6 column: present, 40 finite
+C4b	lipid	RUV skipped, correlation 0.5	qc_finalize assays	A1;A2
+C4b	lipid	RUV skipped, correlation 0.5	itsd result	completed
+C4b	lipid	RUV skipped, correlation 0.5	itsd design samples	12; B_6 in design: TRUE
+C4b	lipid	RUV skipped, correlation 0.5	itsd A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	lipid	RUV skipped, correlation 0.5	itsd A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4b	lipid	RUV skipped, correlation 0.5	itsd assays	A1;A2
+C4b	lipid	RUV skipped, correlation 0.5	log2 result	completed
+C4b	lipid	RUV skipped, correlation 0.5	log2 design samples	12; B_6 in design: TRUE
+C4b	lipid	RUV skipped, correlation 0.5	log2 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	lipid	RUV skipped, correlation 0.5	log2 A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4b	lipid	RUV skipped, correlation 0.5	log2 assays	A1;A2
+C4b	lipid	RUV skipped, correlation 0.5	between_sample result	completed
+C4b	lipid	RUV skipped, correlation 0.5	between_sample design samples	12; B_6 in design: TRUE
+C4b	lipid	RUV skipped, correlation 0.5	between_sample A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	lipid	RUV skipped, correlation 0.5	between_sample A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4b	lipid	RUV skipped, correlation 0.5	between_sample assays	A1;A2
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5 result	completed
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5 design samples	11; B_6 in design: FALSE
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5 A2	40 features x 11 samples; B_6 column: absent
+C4b	lipid	RUV skipped, correlation 0.5	correlation_0.5 assays	A1;A2
+C4b	lipid	RUV skipped, correlation 0.5	correlation pairs naming B_6 (per assay: rows; finite correlations)	{"A1":"5 rows; 5 finite","A2":"5 rows; 0 finite"}
+C4b	lipid	RUV skipped, correlation 0.5	DA	failed: Assay 'A1' has sample column(s) missing from design: B_6
+C4b	metab	RUV skipped, correlation 0.5	prediction (written before the run)	B_6 removed from A2 and from the design (so from every assay's DA)
+C4b	metab	RUV skipped, correlation 0.5	qc_finalize result	completed
+C4b	metab	RUV skipped, correlation 0.5	qc_finalize design samples	12; B_6 in design: TRUE
+C4b	metab	RUV skipped, correlation 0.5	qc_finalize A1	45 features x 12 samples; B_6 column: present, 45 finite
+C4b	metab	RUV skipped, correlation 0.5	qc_finalize A2	45 features x 12 samples; B_6 column: present, 40 finite
+C4b	metab	RUV skipped, correlation 0.5	qc_finalize assays	A1;A2
+C4b	metab	RUV skipped, correlation 0.5	itsd result	completed
+C4b	metab	RUV skipped, correlation 0.5	itsd design samples	12; B_6 in design: TRUE
+C4b	metab	RUV skipped, correlation 0.5	itsd A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	metab	RUV skipped, correlation 0.5	itsd A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4b	metab	RUV skipped, correlation 0.5	itsd assays	A1;A2
+C4b	metab	RUV skipped, correlation 0.5	log2 result	completed
+C4b	metab	RUV skipped, correlation 0.5	log2 design samples	12; B_6 in design: TRUE
+C4b	metab	RUV skipped, correlation 0.5	log2 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	metab	RUV skipped, correlation 0.5	log2 A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4b	metab	RUV skipped, correlation 0.5	log2 assays	A1;A2
+C4b	metab	RUV skipped, correlation 0.5	between_sample result	completed
+C4b	metab	RUV skipped, correlation 0.5	between_sample design samples	12; B_6 in design: TRUE
+C4b	metab	RUV skipped, correlation 0.5	between_sample A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	metab	RUV skipped, correlation 0.5	between_sample A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4b	metab	RUV skipped, correlation 0.5	between_sample assays	A1;A2
+C4b	metab	RUV skipped, correlation 0.5	correlation_0.5 result	completed
+C4b	metab	RUV skipped, correlation 0.5	correlation_0.5 design samples	11; B_6 in design: FALSE
+C4b	metab	RUV skipped, correlation 0.5	correlation_0.5 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4b	metab	RUV skipped, correlation 0.5	correlation_0.5 A2	40 features x 11 samples; B_6 column: absent
+C4b	metab	RUV skipped, correlation 0.5	correlation_0.5 assays	A1;A2
+C4b	metab	RUV skipped, correlation 0.5	correlation pairs naming B_6 (per assay: rows; finite correlations)	{"A1":"5 rows; 5 finite","A2":"5 rows; 0 finite"}
+C4b	metab	RUV skipped, correlation 0.5	DA source state	metab_correlation_filtered
+C4b	metab	RUV skipped, correlation 0.5	DA groupB-groupA assays with a table	A1;A2
+C4b	metab	RUV skipped, correlation 0.5	DA groupB-groupA rows per assay	40;40
+C4b	metab	RUV skipped, correlation 0.5	DA groupB-groupA errors	none
+C4b	metab	RUV skipped, correlation 0.5	DA groupB-groupA qvalue_warnings	none
