@@ -1,7 +1,8 @@
 {
-  "label": "k239-r3-l8",
-  "package_commit": "09286c2d6c252cf2a73517d2ed3fcc98b25e2d4e",
+  "label": "train5-mofa",
+  "package_commit": "cc3d4bdc9efe3a317eeef98565a0d5449a63ed7e",
   "tests": [
+    "test-integration-workbook-mofa.R",
     "test-integration-record-mofa.R"
   ],
   "record": false,
