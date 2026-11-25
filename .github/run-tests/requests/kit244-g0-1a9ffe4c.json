@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-244 gate G0: base values of the DIA with limpa pass-through ((A) at 0.5 and t_hi, t_hi's rule, B1, B2; in process and worker); no assertion; R/ = origin/kit-225 600dcc6e; ceiling 60 job-minutes (4.0 core-hours); decides stop rules 1, 5, 6",
+  "label": "KIT-244 G0 base values at 1a9ffe4c (origin/kit-225 600dcc6e + script)",
+  "package_commit": "1a9ffe4caa889413bb478ed44d8694e0b04c9f23",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-244/g0-base-values.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-244/g0-out",
+      "out_pattern": "\\.(tsv|log|txt)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
