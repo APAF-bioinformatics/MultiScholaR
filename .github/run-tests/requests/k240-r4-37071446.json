@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-240 R4 (r1.4, implementation audit I01-I10): base = tests-only b89be231 (14 new assertions fail first), head = wording commit 37071446; identity script vs 3eeaf100, counts 1, 2, 21 and 8 per mode",
+  "label": "KIT-240 R4 r1.4 37071446 vs b89be231",
+  "package_commit": "37071446f7be724b57803f7f7660412cf9795e19",
+  "base_commit": "b89be231111603d8c20afce2032ef4adfac4e33e",
+  "tools_ref": "",
+  "tests": [
+    "test-kit240-integration-default.R",
+    "test-integration-gui.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-sample-match.R",
+    "test-integration-record.R",
+    "test-integration-enrichment.R",
+    "test-integration-enrichment-options.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-removed-factors.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-240/default-identity.R",
+      "args": [
+        "3eeaf100110e661944f50c427d266d9b3f6a21df",
+        "kit240-identity"
+      ],
+      "out": "kit240-identity",
+      "out_pattern": "\\.(tsv|txt|json|log|html)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
