@@ -61,6 +61,14 @@ kit255Design1 <- function(runs) {
     design <- kit172Design()
     design[!(design$Run %in% runs), , drop = FALSE]
 }
+#' `object` without the samples `runs` (their columns in every assay and their design rows; slot assignment, as the class
+#' validity is not asked of a hand-built stand-in).
+kit255Drop <- function(object, class, runs) {
+    slot <- kit255Slot(class)
+    methods::slot(object, slot) <- lapply(methods::slot(object, slot), function(t) t[, setdiff(names(t), runs), drop = FALSE])
+    object@design_matrix <- object@design_matrix[!(object@design_matrix$Run %in% runs), , drop = FALSE]
+    object
+}
 kit255Obj <- function(values, class, design = NULL) {
     object <- kit172Object(values, class)
     if (!is.null(design)) object@design_matrix <- design
@@ -195,7 +203,7 @@ for (class in c("lipid", "metab")) {
             expect_length(entry$errors, 0L)
         }
         b <- kit255Kernel(class, out)
-        a <- kit255Kernel(class, kit255Obj(kit255Without(values, kit255S), class, kit255Design1(kit255S)))
+        a <- kit255Kernel(class, kit255Drop(kit172Object(values, class), class, kit255S))
         expect_false(inherits(b, "error"))
         expect_false(inherits(a, "error"))
         if (!inherits(b, "error") && !inherits(a, "error")) {
