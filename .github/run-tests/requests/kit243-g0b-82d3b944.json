@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-243 G0 instrument re-run 1 of 3 (VAL-54): run 45588535137's record comparisons failed in the script's mechanics (k243Trip not found); same probes, no expected value changed; within G0's 60 job-minute ceiling",
+  "label": "KIT-243 G0b base values on 82d3b944 (R/ as v0.9-staging 16112917)",
+  "package_commit": "82d3b944c9d9dcd0a5c7faa0368d26c286539c9c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [{"path": "docs/qa/workflow-execution/kit/kit-243/g0-base-values.R", "args": ["kit243-g0"], "env": {"NOT_CRAN": "true"}, "out": "kit243-g0", "timeout_minutes": 50}],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

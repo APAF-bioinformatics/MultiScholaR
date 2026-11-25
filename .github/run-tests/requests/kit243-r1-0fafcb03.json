@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-243 R1: tests-only commit 0fafcb03 (R/ as staging 16112917), the new file alone; each E row must fail at its base value, G rows pass; ceiling 75 job-minutes; decides stop rule 1",
+  "label": "KIT-243 R1 failing-first on tests-only 0fafcb03",
+  "package_commit": "0fafcb039204787c7f0fb34d9304be4ba16f084d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit243-summary-current-outputs.R"],
+  "shards": 1,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
