@@ -412,3 +412,37 @@ test_that("KIT-142: the comparison tells a different model apart", {
     b$factors$biological_sample <- "y"
     expect_identical(integrationCompareModels(a, b)$largest_relative, Inf)
 })
+
+test_that("KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers", {
+    # INT-31 corrects INT-24's evidence sentence: the z-score's sentence said "weak factors" (undefined) and "otherwise
+    # made no practical difference" (KIT-151 d: inconclusive at 20 samples without missing values). One journey with
+    # the default scaling; the paragraph as built and as read back from JSON. E2 and E5 (the owner's words and the
+    # agreement with the Model tab's help) are added with the fix.
+    old <- paste("each scaled to mean 0 and standard deviation 1 after the selection (which used the unscaled values);",
+        "in simulation, with few samples and missing values this scaling improved the recovery of weak factors, and",
+        "otherwise made no practical difference.")
+    project <- intRecProject()
+    journey <- intRecJourney(project)
+    record <- buildWorkflowAnalysisRecord(journey$manager)
+    json <- file.path(project$root, "record.json")
+    writeWorkflowAnalysisRecord(journey$manager, json)
+    read <- jsonlite::read_json(json, simplifyVector = FALSE)
+    t <- integrationRecordTexts()
+    # E1: every record prints the table's sentence, and not the old one.
+    for (methods in list(built = integrationMethodsText(record), json = integrationMethodsText(read))) {
+        expect_true(grepl(t[["methods_scaling_feature_zscore"]], methods, fixed = TRUE))
+        expect_false(grepl("weak factors", methods, fixed = TRUE))
+        expect_false(grepl("no practical difference", methods, fixed = TRUE))
+        expect_false(grepl(old, methods, fixed = TRUE))
+    }
+    # G1: a record whose scaling is "none" keeps its own sentence (the value replaced in the record's encoded form).
+    parameters <- read$analyses$integration_mofa_model$parameters
+    hit <- vapply(parameters, \(parameter) identical(integrationRecordScalar(parameter$name), "scaling"), logical(1))
+    expect_identical(sum(hit), 1L)
+    parameters[[which(hit)]]$value <- encodeWorkflowRecordValue("none")
+    read$analyses$integration_mofa_model$parameters <- parameters
+    unscaled <- integrationMethodsText(read)
+    expect_true(grepl(t[["methods_scaling_none"]], unscaled, fixed = TRUE))
+    expect_true(grepl("without per-feature scaling.", unscaled, fixed = TRUE))
+    expect_false(grepl(t[["methods_scaling_feature_zscore"]], unscaled, fixed = TRUE))
+})
