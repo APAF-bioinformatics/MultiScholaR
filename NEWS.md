@@ -144,6 +144,18 @@
    records no assays. A project keeps the copy of the report template made at its first report; projects that
    generated a lipidomics or metabolomics report before this version keep the earlier template unless that copy
    (`scripts/<omic>/<omic>_report.rmd`) is removed (KIT-235).
+ * `daAnalysisWrapperFunction()`, an older scripted proteomics function not used by the application, no longer stops
+   with 'is.data.frame(df) is not TRUE' after its differential-abundance step. It passed its per-comparison result
+   tables one list level too deep to the step that builds its summary tables, so it stopped on every input and returned
+   nothing. It now returns its tables, plots and counts when the comparisons table has a `full_format` column, as the
+   application writes it, or its first column holds `name=expression` strings. The numbers in its tables are those of
+   its differential-abundance step, unchanged. It still stops when the comparisons table gives only bare expressions,
+   when a group name begins with a digit, and, by our reading (not run), for data quantified with limpa. Its
+   gene-labelled volcano plots are not produced, and its first count table counts at q < 0.05 whatever threshold is
+   set. It stops with a clear message when `contrasts_tbl` is not a data frame, and reads the comparisons as text,
+   so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
+   name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
+   delivered to a user.
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session

@@ -1,0 +1,52 @@
+file: test-kit218-da-wrapper-tail.R
+test: KIT-218 W1: two contrasts on complete data run through the wrapper's tail with the DA step's numbers
+kind: failure
+message:
+  Expected W1 error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit218Completed(run, "W1 error") at test-kit218-da-wrapper-tail.R:136:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+file: test-kit218-da-wrapper-tail.R
+test: KIT-218 W2: KIT-200's T9 object (a protein without values) runs through the wrapper's tail
+kind: failure
+message:
+  Expected W2 error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit218Completed(run, "W2 error") at test-kit218-da-wrapper-tail.R:153:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+file: test-kit218-da-wrapper-tail.R
+test: KIT-218 W3: one contrast on complete data runs through the wrapper's tail
+kind: failure
+message:
+  Expected W3 error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit218Completed(run, "W3 error") at test-kit218-da-wrapper-tail.R:172:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+file: test-kit218-da-wrapper-tail.R
+test: KIT-218 W4: a data.frame of contrasts without full_format gives every row's comparison (OD-4 (a))
+kind: failure
+message:
+  Expected W4 error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit218Completed(run, "W4 error") at test-kit218-da-wrapper-tail.R:182:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
