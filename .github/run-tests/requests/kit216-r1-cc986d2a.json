@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-216 R1: tests-only commit cc986d2a on staging 16112917; each new row failing at its stated value, guards; the base-made archives (section 4); ceiling 75 job-minutes",
+  "label": "KIT-216 R1 tests-only cc986d2a",
+  "package_commit": "cc986d2acc3bf56b4eaebcd3b0e172c8325ce864",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit216-prot-session-after-enrichment.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-216/r1-archives.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-216/r1-archives",
+      "out_pattern": "\\.msdia\\.tar$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
