@@ -82,6 +82,12 @@
 
 ### Fixes
 
+ * Proteomics: skipping the correlation filter is now recorded as a skip in the analysis record and in the study
+   parameters ('pearson-skip', skipped = TRUE), and a replay of the record keeps every sample, as the run did. Before, a
+   skip with no filter applied before it made the record impossible to replay, and a skip after an applied filter was
+   recorded, and listed in the study parameters, as the filter at its threshold (a replay then removed the samples the
+   filter had removed, so its differential abundance results differed from the reported ones). Results of the analysis
+   itself did not change. Records made before this version are replayed as the skips they were (KIT-248).
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
    shown twice (KIT-251).

@@ -853,6 +853,11 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     for (step in steps[-preconditions]) {
         operation <- step$operation
         if (identical(operation, "enrichment")) next # KIT-107 D5: after the DA, below
+        # KIT-248 (VAL-238, OD-1 (a), (a')): a proteomics correlation step recorded before the Skip recorded itself, as
+        # the Apply it followed (`pearson-selection`) or as `legacy`, whose outcome says skipped (only the Skip writes
+        # that on this state), replays as the skip it was. An earlier `legacy` step has already been refused by then.
+        if (identical(omic_type, "proteomics") && identical(step$state, "correlation_filtered") &&
+            operation %in% c("pearson-selection", "legacy") && isTRUE(unlist(step$outcomes$skipped))) operation <- "pearson-skip"
         entry <- if (operation %in% c("legacy", "import", "design_builder")) NULL else
             tryCatch(workflowOperationEntry(operation), error = function(e) NULL)
         if (is.null(entry)) cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}",
@@ -926,6 +931,16 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 spec <- readWorkflowStateMetadata(manager, selection$value)$data
                 commitWorkflowReferenceState(manager, "correlation_filtered", spec,
                     list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
+            } else if (identical(operation, "pearson-skip")) {
+                # KIT-248 (VAL-238): as the tab's Skip commits: the correlation's source, unfiltered (the normalisation's
+                # final checkpoint; on the DIA_LIMPA route the head state), with the Skip's config, description and step
+                # provenance.
+                correlation_source <- normalization_final %||% getWorkflowStateReference(manager)
+                spec <- readWorkflowStateMetadata(manager, correlation_source)$data
+                clearWorkflowStepProvenance(manager)
+                setWorkflowStepProvenance(manager, "pearson-skip", "whole", character(), fixed = list(skipped = TRUE))
+                commitWorkflowReferenceState(manager, "correlation_filtered", spec,
+                    list(min_pearson_correlation_threshold = 0, skipped = TRUE), "Skipped final sample correlation filter")
             } else if (identical(operation, "protein_ruv_covariates") && !is.null(parameters$ruv_control_rule)) {
                 # KIT-129 sixth pass item 5: declared rules, as the tab runs and commits them (`computeDIAReferenceRuvCovariates`,
                 # `diaRuvCovariatesCommit`).
