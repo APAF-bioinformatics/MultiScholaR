@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-174 (a) audit repairs I01/I02 (AUDIT-KIT-174a-impl-20261125): the new test file on head edf1e010 (staging 67569959 merged) and its base side; coordinator's ruling: audit repairs, not a correction pass; ceiling 60 job-minutes per side",
+  "label": "KIT-174 (a) audit tests edf1e010 vs 67569959",
+  "package_commit": "edf1e01034eb4ea6b86c22e68b6ba66121951f2f",
+  "base_commit": "6756995954684128d617ab92dab983bdcaa05394",
+  "tools_ref": "",
+  "tests": [
+    "test-kit174-ruv-grouping.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
