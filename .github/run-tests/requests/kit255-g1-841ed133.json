@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-255 G1 (ticket r2.1 10.1): observation of RUV-applied objects and of every consumer of the blank column, on staging 988512e6 + tools/kit255/g1.R only (branch kit-255-g1, never merged); predictions committed in the script; 1 job, ceiling 75 job-minutes",
+  "label": "KIT-255 G1 observation 841ed133 (staging 988512e6 + tools/kit255/g1.R)",
+  "package_commit": "841ed1338b77b3bff13c74791a5d12019369216a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit255/g1.R",
+      "args": [
+        "kit255-g1"
+      ],
+      "env": {},
+      "out": "kit255-g1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
