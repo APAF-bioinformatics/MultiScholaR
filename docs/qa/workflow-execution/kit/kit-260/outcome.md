@@ -167,6 +167,28 @@ step outcome, `inst/reports/shared/analysis_record_SI.rmd:55-57`; not rendered h
 - The application in a browser.
 - R3 (the merge train's full suite).
 
+## The correction pass: results (runs 45635735448 and 45635740954)
+
+- **R1b** (the new file; base 7af2d51e, head e83c8011): on base every I02 test fails at 'no note' (metab and lipid; the
+  record's `itsd_note` and `itsd_features_per_assay`, the study-parameters `* Note:` line, the report's note and
+  Methods paragraph); on head they pass, the twins carry no note. The I10 tests (lipid study parameters and report, the
+  integration-tab note, the model record's marked rows through the stand-in trainer) and E6's managed arm through the
+  worker's delivery pass on head. Head: 150 passed, 1 failed.
+- **I05: the stop condition of the coordinator's ruling.** On head the replay of an older-build record (its ITSD product
+  without the rows-used fields) reports six mismatches from the replay harness (`kitReplayJourney`, every product
+  judged by sha256): `metab_itsd_norm/products/metab_itsd_normalisation_science`, and on `metab_log2` and
+  `metab_normalized` the ITSD product they carry and their own products, which chain to it
+  (`metab_log2_science`, `metab_between_sample_normalisation_science`). Every replayed state's assays are identical to
+  the origin's (the test's value expectations pass). So the replay comparison counts KIT-260's additive product fields
+  as a difference. By the ruling the work stops here: a replay marker (as KIT-242's OD-4 (c)) or another standard for
+  additive display fields is the coordinator's decision; none is added.
+- **R2b** (130 files, base staging 42846c0e, head e83c8011, check both sides): 128 `same`; `test-omics-norm-core.R`
+  `count-changed` (one more passing expectation, predicted); the new file `only-on-head` with the one I05 failure; no
+  `new-failure`, no `message-changed`; check findings identical (6 each side), nothing only on head. Predictions:
+  `predictions-correction.md` (all held; I05's mismatch was the likely outcome stated there).
+- Budget: the correction pass used 23.6 + 467.3 = 490.9 job-minutes = 32.7 core-hours (R2b's ceiling 73.33); the
+  ticket's total is now 778.2 + 490.9 = 1,269.1 job-minutes = 84.6 core-hours (ceiling 201.33).
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table

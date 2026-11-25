@@ -1,0 +1,14 @@
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I05: a record from a build before KIT-260 whose ITSD used standards replays with identical values
+kind: failure
+message:
+  Expected `as.character(replay$mismatches)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "metab_itsd_norm/products/metab_itsd_normalisation_science"
+  - "metab_log2/products/metab_itsd_normalisation_science"
+  - "metab_log2/products/metab_log2_science"
+  - "metab_normalized/products/metab_itsd_normalisation_science"
+  - "metab_normalized/products/metab_log2_science"
+  - "metab_normalized/products/metab_between_sample_normalisation_science"
+
