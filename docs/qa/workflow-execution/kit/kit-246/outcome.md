@@ -193,3 +193,31 @@ head 10df1d31; env MULTISCHOLAR_TRX_MANIFEST_NOTE=1; ceiling 60 job-minutes (4.0
 - No check in this run. The full 11-file scope with R CMD check rides the merge train (coordinator's ruling,
   2026-11-26). The first predictions above that name ten `same` files and an identical check are superseded by this
   scope.
+
+## Follow-up (VAL-305), 2026-11-26: result of the wording run
+
+Run 45712506511 (request kit246c-wording-10df1d31, request commit d2599e58; package 10df1d31 against tests-only
+bfc57ce7; `test-integration-record.R`, `-results.R`, `-gui.R`, `-model.R`; one shard per side; no check; env
+MULTISCHOLAR_TRX_MANIFEST_NOTE=1). Tables: `r3-compare.tsv`, `r3-tests.tsv`, `r3-tests-base.tsv`,
+`r3-compare-failures.txt`, `r3-meta.txt`.
+
+Observed, against the predictions:
+
+| File | Predicted | Observed |
+|---|---|---|
+| test-integration-record.R | base 201 / 8, head 209 / 0, fixed | base 201 passed, 8 failed; head 209 passed, 0 failed; `fixed` |
+| test-integration-results.R | same | 258 / 0 on both; `same` |
+| test-integration-gui.R | same | 405 / 0 on both; `same` |
+| test-integration-model.R | same | 265 / 0 on both; `same` |
+
+- The eight base failures are the phrase expectations: each of the four phrases, for the shared passage (4) and for
+  the help and the Methods sentence together (4); each actual FALSE (`r3-compare-failures.txt`). The expectation that
+  the passage's last sentence (VAL-251) is unchanged passed on both sides.
+- Cost: 54.6 job-minutes (head 22.6, base 31.1, plan 0.4, results 0.5; GitHub job timings) = 3.64 core-hours, under
+  the 4.00 ceiling (60 job-minutes). One run, no correction used.
+- All predictions met. The 11-file scope with R CMD check was not run here; it rides the merge train (coordinator's
+  ruling, 2026-11-26).
+
+Inferred: no other reader of the passage moves, from the three unchanged files and the search of step 0.
+
+Not checked: R CMD check on this change; the other seven files of KIT-246's scope; the rendered Word report.
