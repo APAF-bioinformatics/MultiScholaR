@@ -56,7 +56,7 @@ the Sample Details:
 
 > Error running Main function: missing value where TRUE/FALSE needed
 
-and no "METHOD DETAILS". The captured `study_parameters.txt` (`*-c17-src-study_parameters.txt`) has 23 lines starting
+and no "METHOD DETAILS". The captured `study_parameters.txt` (`*-c17-src-params.txt`) has 23 lines starting
 `* ` and none starting `•` or `-`.
 
 The first run's capture failed: the trace could not find `kit235Capture` from the helper's frame, so 0 files were
@@ -156,6 +156,17 @@ The NEWS entry is a draft for the owner's wording pass (VAL-41): see `wording.md
   does not write that form: by reading on the applied route, and by G0c on the skip route.
 - The newly visible sentences (ticket section 8) belong to KIT-236, KIT-219, KIT-227's wording pass and the wording
   pass. That includes G0c's false ITSD sentence on runs where no standard was found.
+
+## Merge train 4 (2026-11-25): record files renamed
+
+At merge train 4 (`merge-train-20261125d.md`, run 45586240983) R CMD check's "portable file names" NOTE listed 8
+files of `g0-45573071526/g0b/` over 100 bytes with the `MultiScholaR/` prefix (committed in 96e3c813). KIT-235's
+own R2 check could not show this: its base f53db55a already held the files, so the NOTE was identical on both sides.
+On the train (coordinator's ruling, the train's one correction pass) the 8 files were renamed, contents unchanged,
+by one rule: `analysis_record` becomes `record` and `study_parameters` becomes `params` in those 8 names only
+(for example `lip-c17-src-analysis_record.json` is now `lip-c17-src-record.json`). `g0b/files.tsv` and the reference
+above were updated. The run's verbatim outputs (`g0-45573071526/console.log`, `g0c/checks.txt`,
+`r2-45577137662/check-summary.txt`) keep the names the runs printed.
 
 ## Not checked
 
