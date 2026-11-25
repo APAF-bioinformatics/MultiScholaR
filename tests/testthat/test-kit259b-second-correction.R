@@ -150,7 +150,9 @@ k259bCovariatesSteps <- function(state) {
         })
 }
 
-k259bCovariatesWarning <- "^\\[warning [^]]+\\] .*'RUV-corrected Pearson correlation' could not be drawn: injected drawing failure"
+# Third pass (VAL-307, W11, declared edit): at the covariates step the figures are named as the RUV-III-adjusted matrix
+# drawn for quality control (they were "RUV-corrected").
+k259bCovariatesWarning <- "^\\[warning [^]]+\\] .*'RUV-III-adjusted \\(for quality control\\) Pearson correlation' could not be drawn: injected drawing failure"
 
 for (managed in c(FALSE, TRUE)) {
     test_that(sprintf("KIT-259 I04-E1 (%s): the DIA-with-limpa RUV covariates step names a figure it replaced",
@@ -221,6 +223,150 @@ test_that("KIT-259 (ii)-E2: a normalisation run removes the earlier run's post-n
     expect_identical(file.exists(file.path(dir, names)), c(FALSE, FALSE, TRUE))
 })
 
+# ------------------------------------------------------------------------------------------------
+# Third pass (VAL-307; closure check C01): the replaced panels are recorded with Figure 1. The publication writes
+# `proteomics_composite_QC_figure.placeholders` (one line per replaced panel: its letter and its figure) beside the
+# combined figure when it builds it; KIT-257's start-of-run removal takes it; Copy and the session archive carry it; the
+# four proteomics templates read it beside the combined figure they show.
+# ------------------------------------------------------------------------------------------------
+
+k259bList <- "proteomics_composite_QC_figure.placeholders"
+
+#' The drive's capture of the list in the project's QC folder after each step (its lines, or NULL).
+k259bListAfter <- function(fixture, steps, managed = FALSE) {
+    path <- file.path(fixture$paths$protein_qc_dir, k259bList)
+    wrapped <- lapply(steps, function(step) function(session) {
+        step(session)
+        session$flushReact()
+        fixture$lists[[length(fixture$lists) + 1L]] <- if (file.exists(path)) readLines(path) else NULL
+    })
+    fixture$lists <- list()
+    k259bDrive(fixture, wrapped, managed = managed)
+    fixture$lists
+}
+
+k259bFailingRun <- function(state, click, fail = TRUE) {
+    run <- do.call(click, c(list("run_normalization"), protNormW3Inputs("skip")))
+    function(session) {
+        state$fail <- fail
+        run(session)
+    }
+}
+
+for (managed in c(FALSE, TRUE)) {
+    test_that(sprintf("KIT-259 C01-E1 (%s): the run writes the replaced panels beside the combined figure; a redraw leaves them",
+        if (managed) "managed" else "in process"), {
+        if (managed) skip_if_not(workflowOwnerCapable())
+        state <- new.env()
+        k259bFailCorrelation(state)
+        click <- protNormW3Clicker()
+        fixture <- protNormCoreOwner()
+        fixture <- list2env(fixture)
+        lists <- k259bListAfter(fixture, list(
+            run = k259bFailingRun(state, click),
+            redraw = function(session) {
+                state$fail <- FALSE
+                session$setInputs(color_variable = "batch")
+            }), managed = managed)
+        expect_identical(lists[[1L]], "h\tpost_norm_correlation")
+        expect_identical(lists[[2L]], "h\tpost_norm_correlation")
+        expect_true(file.exists(file.path(fixture$paths$protein_qc_dir, "proteomics_composite_QC_figure.png")))
+    })
+}
+
+test_that("KIT-259 C01-E2: a redraw that fails after a run whose figures drew writes no list; pre markers enter the list", {
+    state <- new.env()
+    k259bFailCorrelation(state)
+    click <- protNormW3Clicker()
+    fixture <- list2env(protNormCoreOwner())
+    lists <- k259bListAfter(fixture, list(
+        run = k259bFailingRun(state, click, fail = FALSE),
+        redraw = function(session) {
+            state$fail <- TRUE
+            session$setInputs(color_variable = "batch")
+        }))
+    expect_null(lists[[1L]])
+    expect_null(lists[[2L]])
+    expect_true(file.exists(file.path(fixture$paths$protein_qc_dir, "post_norm_correlation.png.placeholder")))
+    # A pre-normalisation figure replaced earlier (its marker in the project folder) is one of Figure 1's panels.
+    state$fail <- FALSE
+    pre <- list2env(protNormCoreOwner())
+    k259bQuiet(ggplot2::ggsave(file.path(pre$paths$protein_qc_dir, "pre_norm_pca.png"), ggplot2::ggplot(),
+        width = 8, height = 6, dpi = 150))
+    writeLines("injected", file.path(pre$paths$protein_qc_dir, "pre_norm_pca.png.placeholder"))
+    lists <- k259bListAfter(pre, list(run = k259bFailingRun(new.env(), protNormW3Clicker(), fail = FALSE)))
+    expect_identical(lists[[1L]], "a\tpre_norm_pca")
+})
+
+test_that("KIT-259 C01-E3: a normalisation run removes the earlier list; the pre markers stay", {
+    dir <- withr::local_tempdir()
+    file.create(file.path(dir, c(k259bList, "pre_norm_pca.png.placeholder")))
+    removeProtNormOwnFiles(list(protein_qc_dir = dir), "normalization")
+    expect_identical(file.exists(file.path(dir, c(k259bList, "pre_norm_pca.png.placeholder"))), c(FALSE, TRUE))
+})
+
+test_that("KIT-259 C01-E4: Copy carries the list into QC_figures beside the combined figure", {
+    root <- withr::local_tempdir()
+    paths <- list(results_dir = file.path(root, "results"),
+        results_summary_dir = file.path(root, "results_summary", "proteomics_kit259"),
+        publication_graphs_dir = file.path(root, "publication_graphs"), time_dir = file.path(root, "time"),
+        qc_dir = file.path(root, "qc"), da_output_dir = file.path(root, "da"), pathway_dir = file.path(root, "pathway"),
+        source_dir = file.path(root, "source"), feature_qc_dir = file.path(root, "feature_qc"),
+        subfeature_qc_dir = file.path(root, "peptide_qc"))
+    for (path in unlist(paths)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    for (ext in c("png", "pdf")) k259bQuiet(ggplot2::ggsave(file.path(paths$feature_qc_dir,
+        paste0("proteomics_composite_QC_figure.", ext)), ggplot2::ggplot(), width = 4, height = 3, dpi = 50))
+    writeLines("h\tpost_norm_correlation", file.path(paths$feature_qc_dir, k259bList))
+    testthat::local_mocked_bindings(getProjectPaths = function(...) paths, .package = "MultiScholaR")
+    k259bQuiet(utils::capture.output(copyToResultsSummary(omic_type = "proteomics", experiment_label = "kit259",
+        contrasts_tbl = data.frame(contrasts = "groupB-groupA"), design_matrix = data.frame(Run = "S1", group = "A"),
+        force = TRUE)))
+    copied <- file.path(paths$results_summary_dir, "QC_figures", k259bList)
+    expect_true(file.exists(copied))
+    if (file.exists(copied)) expect_identical(readLines(copied), "h\tpost_norm_correlation")
+})
+
+test_that("KIT-259 C01-E5: a session exported after the run and imported again keeps the list", {
+    state <- new.env()
+    k259bFailCorrelation(state)
+    click <- protNormW3Clicker()
+    fixture <- list2env(protNormCoreOwner())
+    k259bDrive(fixture, list(run = k259bFailingRun(state, click),
+        correlation = function(session) {
+            state$fail <- FALSE
+            click("apply_correlation_filter")(session)
+        },
+        export = click("export_filtered_session")))
+    archives <- list.files(fixture$root, pattern = "[.]msdia[.]tar$", recursive = TRUE, full.names = TRUE)
+    expect_true(length(archives) >= 1L)
+    skip_if(!length(archives))
+    archive <- archives[order(file.mtime(archives), decreasing = TRUE)][[1L]]
+    fresh <- file.path(withr::local_tempdir(), "fresh")
+    paths <- list(source_dir = file.path(fresh, "scripts", "proteomics"),
+        protein_qc_dir = file.path(fresh, "results", "proteomics", "protein_qc"),
+        peptide_qc_dir = file.path(fresh, "results", "proteomics", "peptide_qc"))
+    for (path in c(unlist(paths), file.path(dirname(paths$protein_qc_dir), "publication_graphs"))) {
+        dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    }
+    imported <- k259bQuiet(openDIANativeSession(archive, paths$source_dir))
+    withr::defer(closeDIAStateAdapter(imported$manager))
+    k259bQuiet(restoreDIANativeGuiFiles(imported, paths))
+    restored <- file.path(paths$protein_qc_dir, k259bList)
+    expect_true(file.exists(restored))
+    if (file.exists(restored)) expect_identical(readLines(restored), "h\tpost_norm_correlation")
+})
+
+test_that("KIT-259 C01-G1: DIA with limpa builds no combined figure, so no list is written even when a figure is replaced", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    state <- new.env()
+    k259bFailCorrelation(state)
+    fixture <- protNormW1LimpaOwner()
+    k259bDrive(fixture, k259bCovariatesSteps(state))
+    expect_false(file.exists(file.path(fixture$paths$protein_qc_dir, k259bList)))
+    expect_false(file.exists(file.path(fixture$paths$protein_qc_dir, "proteomics_composite_QC_figure.png")))
+})
+
 k259bTemplates <- c(LFQ = "LFQ_report.rmd", TMT = "TMT_report.rmd", DIANN = "DIANN_report.rmd",
     DIANN_limpa = "DIANN_limpa_report.rmd")
 
@@ -233,34 +379,50 @@ k259bChunk <- function(file, label) {
     lines[start:end]
 }
 
-#' What the template's placeholder chunk prints, for markers in a QC folder and a recorded RUV state.
-k259bSentence <- function(file, markers, ruv_applied) {
+#' What the template's placeholder chunk prints: `list` written beside a combined figure (when `composite`) in the
+#' report's QC_figures folder, and per-figure `markers` in the project's QC folder (the second correction's source).
+k259bSentence <- function(file, list = NULL, composite = TRUE, markers = character()) {
     chunk <- k259bChunk(file, "QC_metrics_placeholders")
     if (is.null(chunk)) return(NULL)
-    dir <- withr::local_tempdir()
-    if (length(markers)) file.create(file.path(dir, paste0(markers, ".png.placeholder")))
+    figures <- withr::local_tempdir()
+    feature <- withr::local_tempdir()
+    if (composite) file.create(file.path(figures, "proteomics_composite_QC_figure.png"))
+    if (length(list)) writeLines(list, file.path(figures, k259bList))
+    if (length(markers)) file.create(file.path(feature, paste0(markers, ".png.placeholder")))
     env <- new.env(parent = globalenv())
-    env$current_project_paths <- list(feature_qc_dir = dir)
-    env$results_data <- list(numbers = list(ruv_applied = ruv_applied))
+    env$params <- list(omic_type = "proteomics")
+    env$report_qc_figures_dir <- figures
+    env$current_project_paths <- list(feature_qc_dir = feature)
+    env$results_data <- list(numbers = list(ruv_applied = FALSE))
     rmd <- tempfile(fileext = ".Rmd")
     writeLines(chunk, rmd, useBytes = TRUE)
     code <- tempfile(fileext = ".R")
     suppressMessages(knitr::purl(rmd, output = code, quiet = TRUE, documentation = 0))
-    utils::capture.output(for (e in parse(code, keep.source = FALSE, encoding = "UTF-8")) eval(e, env))
+    paste(utils::capture.output(for (e in parse(code, keep.source = FALSE, encoding = "UTF-8")) eval(e, env)),
+        collapse = "\n")
 }
 
 for (name in names(k259bTemplates)) {
-    test_that(sprintf("KIT-259 (ii)-E3 (%s): the report names the Figure 1 panels replaced by a placeholder", name), {
+    test_that(sprintf("KIT-259 (ii)-E3 (%s): the report names Figure 1's replaced panels from the list beside it", name), {
         file <- k259bTemplates[[name]]
         expect_false(is.null(k259bChunk(file, "QC_metrics_placeholders")))
         skip_if(is.null(k259bChunk(file, "QC_metrics_placeholders")))
-        text <- function(markers, ruv) paste(k259bSentence(file, markers, ruv), collapse = "\n")
-        expect_match(text(c("pre_norm_pca", "post_norm_correlation"), FALSE), paste0("In Figure 1, panels a \\(principal ",
-            "component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample ",
-            "normalisation\\) could not be drawn by the application"))
-        expect_match(text(c("pre_norm_pca", "post_norm_correlation"), TRUE), "panels a \\(.*\\) and k \\(Pearson correlation")
-        expect_match(text("ruv_corrected_cancor", TRUE), "panel m \\(RUV-III canonical correlation\\)")
-        expect_match(text("post_norm_rle", NA), "the panel of relative log expression after between-sample normalisation")
+        expect_match(k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation")), paste0("In Figure 1, panels a ",
+            "\\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample ",
+            "normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot."))
+        expect_match(k259bSentence(file, c("a\tpre_norm_pca", "k\tpost_norm_correlation", "m\truv_corrected_cancor")),
+            "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)")
+        expect_match(k259bSentence(file, "f\tpost_norm_rle"), paste0("In Figure 1, panel f \\(relative log expression ",
+            "after between-sample normalisation\\) could not be drawn by the application; it shows a note"))
+    })
+
+    test_that(sprintf("KIT-259 C01-E6 (%s): the tab's current markers are not read; a list without a combined figure prints nothing",
+        name), {
+        file <- k259bTemplates[[name]]
+        skip_if(is.null(k259bChunk(file, "QC_metrics_placeholders")))
+        expect_identical(k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation")), "")
+        expect_identical(k259bSentence(file, "h\tpost_norm_correlation", composite = FALSE), "")
+        expect_identical(k259bSentence(file, NULL), "")
     })
 
     test_that(sprintf("KIT-259 (ii)-G1 (%s): with no placeholder the Figure 1 section knits to the same text", name), {
