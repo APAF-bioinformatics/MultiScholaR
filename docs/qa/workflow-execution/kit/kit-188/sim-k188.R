@@ -90,7 +90,7 @@ BLIND <- c("n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls
     "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share",
     "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa", "tie_share", "tie_block", "tie_block_onegroup", "perm_jaccard",
     "mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev",
-    "mu_t_dev", "mu_call_changes", "mu_t_dev_notrend")
+    "mu_t_dev", "mu_call_changes", "mu_t_dev_notrend", "logfc_max")
 
 warning_count <- new.env()
 warning_count$n <- 0L
@@ -1001,6 +1001,8 @@ scoreFamily <- function(da, T_ids, theta, or_err = NULL) {
         err_p99 = if (any(!is.na(err))) unname(stats::quantile(err, 0.99, na.rm = TRUE)) else NA_real_,
         err_rmse = if (any(!is.na(err))) sqrt(mean(err^2, na.rm = TRUE)) else NA_real_,
         err_max = if (any(!is.na(err))) max(err, na.rm = TRUE) else NA_real_,
+        # M-warn's fourth signal (5.8): the largest |logFC| the family returned
+        logfc_max = if (any(is.finite(da$logFC))) max(abs(da$logFC), na.rm = TRUE) else NA_real_,
         gross1 = if (any(!is.na(err))) mean(err > 1, na.rm = TRUE) else NA_real_,
         slope = if (any(!null)) sum(th[!null] * da$logFC[!null], na.rm = TRUE) / sum(th[!null]^2) else NA_real_,
         q_method = if (!nrow(da) || !any(is.finite(da$q))) NA_character_ else if (isTRUE(all.equal(da$q, bh, check.attributes = FALSE)))
