@@ -978,5 +978,47 @@ test_that("KIT-216 E9 (P07): archives written before the fix with the enrichment
         if (exists("diaEnrichmentProduct", mode = "function")) expect_false(is.null(diaEnrichmentProduct(manager)), info = name)
         expect_length(steps, 1L)
         if (length(steps) == 1L) expect_identical(unlist(steps[[1L]]$input_entity_ids), table, info = name)
+        # r1.4 (audit F02, (c)): the enrichment tab's restore on the converted owner returns the enrichment.
+        restored <- if (is.null(reopened$error)) restoreWorkflowEnrichment(manager, omicGuiConfig("proteomics")$enrichment)
+        cat(sprintf("KIT-216 E9 %s restored_contrasts=%s\n", name, k216Text(names(restored$all_enrichment_results))))
+        expect_true(length(restored$all_enrichment_results) > 0L, info = paste(name, "restore"))
     }
+})
+
+# ------------------------------------------------------------------------------------------------
+# G21 (r1.4; audit F02, F03): an enrichment below a table head is never restored as current
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-216 G21 (F02): an old-shape store with the enrichment below a table head restores no enrichment (guard)", {
+    q <- k216Normalised()
+    fixture <- q$fixture
+    manifest <- k216RealDa(fixture)
+    # The store shape of a base project: the enrichment committed as the head state (KIT-206 :94-95), then the
+    # normalisation and the correlation filter committed again on top of it (their names are already in the history,
+    # so the history still ends with `enrichment_completed`).
+    built <- k216Error(protNormCoreQuiet(fixture$manager$saveState("enrichment_completed", k216EnrichmentResults(),
+        list(q_cutoff = 0.05), "fixture enrichment")))
+    expect_null(built)
+    for (state in c("normalized", "correlation_filtered")) protNormCoreQuiet(k216Scope(fixture, function() {
+        record <- readDIAStateMetadata(fixture$manager, getDIAStateReference(fixture$manager, state))
+        commitDIAReferenceState(fixture$manager, state, record$data, record$config, "fixture re-run")
+    }))
+    history <- diaStateHistory(fixture$manager)
+    cat(sprintf("KIT-216 G21 head=%s history=%s\n", fixture$manager$current_state, k216Text(history)))
+    expect_identical(fixture$manager$current_state, "correlation_filtered")
+    expect_true("enrichment_completed" %in% history)
+    before <- k216Snapshot(fixture$paths)
+    log <- k216Export(fixture, q$norm, "skip")
+    added <- setdiff(k216Archives(fixture$paths), before$archives)
+    expect_length(added, 1L)
+    skip_if(length(added) != 1L, "no archive written by the export")
+    reopened <- k216Reopen(added)
+    manager <- reopened$fixture$manager
+    restored <- if (is.null(reopened$error)) restoreWorkflowEnrichment(manager, omicGuiConfig("proteomics")$enrichment)
+    steps <- if (is.null(reopened$error)) Filter(function(step) identical(step$operation, "enrichment"),
+        buildWorkflowAnalysisRecord(manager)$steps)
+    cat(sprintf("KIT-216 G21 reopen stage=%s error=%s head=%s restored=%s enrichment_steps=%d inputs=%s\n", reopened$stage,
+        if (is.null(reopened$error)) "none" else conditionMessage(reopened$error), k216Text(manager$current_state),
+        !is.null(restored), length(steps), k216Text(unlist(lapply(steps, function(step) step$input_entity_ids)))))
+    expect_null(restored)
 })
