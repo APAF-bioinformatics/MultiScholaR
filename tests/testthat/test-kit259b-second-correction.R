@@ -238,7 +238,8 @@ k259bListAfter <- function(fixture, steps, managed = FALSE) {
     wrapped <- lapply(steps, function(step) function(session) {
         step(session)
         session$flushReact()
-        fixture$lists[[length(fixture$lists) + 1L]] <- if (file.exists(path)) readLines(path) else NULL
+        # One element per step, NULL included (`[[<-` with NULL would drop it).
+        fixture$lists[length(fixture$lists) + 1L] <- list(if (file.exists(path)) readLines(path) else NULL)
     })
     fixture$lists <- list()
     k259bDrive(fixture, wrapped, managed = managed)
@@ -335,12 +336,25 @@ test_that("KIT-259 C01-E5: a session exported after the run and imported again k
         correlation = function(session) {
             state$fail <- FALSE
             click("apply_correlation_filter")(session)
-        },
-        export = click("export_filtered_session")))
-    archives <- list.files(fixture$root, pattern = "[.]msdia[.]tar$", recursive = TRUE, full.names = TRUE)
-    expect_true(length(archives) >= 1L)
-    skip_if(!length(archives))
-    archive <- archives[order(file.mtime(archives), decreasing = TRUE)][[1L]]
+        }))
+    # The export through its workflow function, as test-workflow-native-session.R exports (the tab's button refuses
+    # under testServer: the fixture's owner is not the test session's).
+    manager <- fixture$manager
+    workflow <- fixture$workflow
+    workflow$ruv_optimization_result <- workflow$ruv_optimization_result %||% list(ruv_skipped = TRUE)
+    workflow$data_format <- workflow$data_format %||% "diann"
+    workflow$data_type <- workflow$data_type %||% "peptide"
+    norm <- new.env(parent = emptyenv())
+    final <- withDIAStateScope(manager, function() manager$getState())
+    norm$correlation_filtered_obj <- saveDIAOwnedValue(final, "correlation_filtered_obj", manager)
+    norm$correlation_threshold <- 0.5
+    result <- k259bQuiet(testthat::with_mocked_bindings(withDIAStateScope(manager, function()
+        runProtNormExportSessionWorkflow(workflow, norm, list(norm_method = "quantile", ruv_mode = "skip"),
+            fixture$paths$source_dir, withProgressFn = function(message, value, expr) force(expr),
+            incProgressFn = function(...) NULL)), getDIAActiveManager = function() manager))
+    archive <- result$exportArtifacts$sessionFilepath
+    expect_true(is.character(archive) && file.exists(archive))
+    skip_if(!(is.character(archive) && file.exists(archive)))
     fresh <- file.path(withr::local_tempdir(), "fresh")
     paths <- list(source_dir = file.path(fresh, "scripts", "proteomics"),
         protein_qc_dir = file.path(fresh, "results", "proteomics", "protein_qc"),
