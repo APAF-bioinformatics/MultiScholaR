@@ -1,6 +1,6 @@
 # KIT-247 outcome: a design saved again after Quality Control or normalisation
 
-**State: second correction (the owner's VAL-277) in progress: I01 and I02 repaired in 40948dd8, tests first in fbf729ef; this is the LAST correction for KIT-247 (`second-correction-declaration.md`).** Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
+**State: done and ready for the closure audit.** The second and LAST correction (the owner's VAL-277 for AUDIT I01 and I02, and VAL-288) holds every prediction in the final comparison (45698414166). Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
 
 - Ticket r1.4 (owner's decisions VAL-239: OD-1 (D) on the whole design table, OD-2 (a), OD-3 (a), OD-4 (a) including the
   top-level integration file). E-5 stays open for the coordinator.
@@ -241,3 +241,36 @@ check findings identical, nothing only on head.
 - **Evidence.** G0 runs 45594073040, 45594077082, 45594081675, 45598375255, 45594085728, 45597423706, 45600644799,
   45604291093 (base); R1 45604461406, R1b 45608591579, R1c 45612214974, R2 45612382879 (one regression); R1' 45629316617, R2' 45629323979. Fixtures: the GUI-entry e2e lanes
   (small synthetic data); no simulation; no real data.
+
+## Second correction (the owner's VAL-277 and VAL-288; the last correction for KIT-247)
+
+- **Scope.** AUDIT-KIT-247-impl-20261126 I01 (the confirmed proteomics Import Existing Design runs inside the import's
+  error handling: an error after Save shows "Error during import: ..." and the bus is put back; the "Importing design
+  files..." notice is closed before the question) and I02 (a design save is compared with what the last successful design
+  commit left, not the live bus); I07 and G3 rows; VAL-288: (a) a formula-only change asks and on Save sets the
+  differential analysis back to be run again (both builders and both imports); (b) on the proteomics import an organism,
+  taxonomy id or FASTA-only change asks, names what changed, and on Save applies it and sets only enrichment back. The
+  confirmation's wording stays a draft (wording.md). Commits: merges of staging abfc99ac (0f9196a5) and 12701142
+  (32c0ec57), tests fbf729ef and 97fd133f, fixes 40948dd8 and 1d0364e0, test mechanics 740a712f, records.
+- **Declarations before each run:** `second-correction-declaration.md`, `val288-declaration.md` (with the I07
+  classification rule and E15's gap).
+- **Runs.** R1'' 45666094374 (as predicted except I07 lipid); R2'' 45666101179 (recorded as it is: 73 same, check
+  identical, two head failures); R1''' 45676491133 (instrument: I02's planted failure, set with
+  `local_mocked_bindings(.env)` and `deferred_run()`, outlived its row and failed every later lipidomics lane's design
+  save; it also explains I07 lipid in R1'' and the two head failures of R2''); R1'''b 45688025752 (VAL-54 instrument
+  rerun 1 of 3, the planted failure scoped with `with_mocked_bindings`: everything as predicted; the VAL-288 rows fail
+  first as their tests-first proof).
+- **I07 on lipidomics, classified by the rule written before the run:** neither a product result nor a test-design
+  error. After the confirmed re-save, Reset brings nothing back and says why; the run from the design state completes
+  ("Normalization pipeline complete!"), the correlation filter, export, load and DA run, the DA is on the NEW group
+  (WT) and the record's design_builder step is the design state's entity (`r1pppb/kit247-log.txt`). I07b (Quality
+  Control re-applied) and E15b (a run after the cut commits or explains) hold.
+- **Final comparison 45698414166** (base staging 12701142, head 166ef4f5, the 76 files of `r2pp-files.txt`, R CMD
+  check, 615 job-minutes): every prediction held: 73 files `same`; `test-kit247-design-resave.R` (188 passed),
+  `test-kit247-import-config.R` (2), `test-kit247-resave-no-session.R` (7) only on head and passing; check findings
+  identical (0 / 3 / 3), nothing only on head (`final/`).
+- **Budget.** The owner raised the ticket's ceiling from 148.67 to 190 core-hours (VAL-309). Used: 90.8 before the
+  second correction, 48.9 for R1'' to R1'''b, 41.0 for the final comparison: **180.7 of 190**.
+- **Not checked (added):** the VAL-288 (b) FASTA path through a FASTA file (only an `aa_seq_tbl_final.RDS` in the import
+  folder is compared; the organism path is tested); a formula-only change on the import paths (by reading); the
+  confirmation in a browser (I08, owed after KIT-259 and before the release tag).
