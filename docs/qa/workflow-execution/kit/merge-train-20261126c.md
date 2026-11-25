@@ -10,7 +10,7 @@ Base: `828dd1051d2acab075d6d04f887b7c9e9ccaa48e` (`origin/v0.9-staging`, fetched
 
 | Order | Ticket | Branch head | Merge commit | Ledger row | Audit |
 |---|---|---|---|---|---|
-| 1 | KIT-259 | `origin/kit-259` 485f722d | 4baea49f | `VAL-<train10-1>` | AUDIT-KIT-259-impl-20261126, section 5 (I07), section 6 (I13) |
+| 1 | KIT-259 | `origin/kit-259` 485f722d | 4baea49f | `VAL-273` | AUDIT-KIT-259-impl-20261126, section 5 (I07), section 6 (I13) |
 
 Head (bound by the run): `4baea49f` (full hash in the request). This file and the records commit after the run are
 under `docs/qa/` only.
@@ -23,7 +23,7 @@ be drawn no longer leaves the normalisation unfinished, and is replaced by a not
 
 ### Conflicts
 
-None: `kit-259` already contains 828dd105. Its ledger row sits after VAL-272, written `VAL-<train10-1>`; the same
+None: `kit-259` already contains 828dd105. Its ledger row sits after VAL-272, written `VAL-273`; the same
 placeholder replaced in `kit-259/outcome.md` (acceptance table). NEWS: KIT-259's entries under the one unreleased
 heading. `DESCRIPTION` and `NAMESPACE` unchanged.
 
@@ -88,4 +88,61 @@ their runs). Eleven files are on neither record: they are predicted `same` and t
 
 ## Result
 
-(filled after the run)
+Dispatch: the request commit c277d799 was pushed once; the push answered HTTP 500 and the retry found it already on
+origin, but no dispatcher run was created for it (none listed at c277d799; the next dispatcher run, another agent's at
+9dfa3f8f, compares only its own push). With no run of this request in existence, it was started once by hand with the
+README's command (`gh workflow run run-tests.yml --ref run-tests -f request=merge-train-20261126c-4baea49f`): run
+45650328815, whose `meta.txt` names this request file, package_commit 4baea49f and base_commit 828dd105. This is the
+first and only run of the request, not a re-send. The one `gh run watch` ended early (exit 1, a rate-limited read);
+one status read afterwards: completed, success.
+
+Run 45650328815: conclusion success; 487.4 job-minutes of the 820 ceiling (tests 458.2, check 28.3, plan and results
+0.9). Tables in `merge-train-20261126c/` (`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`,
+`check-summary.txt`, `meta.txt`).
+
+Observed, 53 files: 52 `same`, 1 `only-on-head`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | prediction |
+|---|---|---|---|---|
+| test-kit259-pearson-histogram-figure-failure.R | absent | 85/0/0/0 | only-on-head | held |
+| test-metab-01k-s4-plot-pearson-characterization.R | 17/0/0/0 | 17/0/0/0 | same | held |
+| test-workflow-saved-exports.R | 271/0/1/4 | 271/0/1/4 | same | held |
+| test-prot-norm-core.R | 1548/306/0/0 | 1548/306/0/0 | same | held (failure list identical; no failure names the pass-through body digest) |
+| test-workflow-saved-da.R | 776/175/0/0 | 776/175/0/0 | same | held |
+| test-gui-entry-proteomics.R | 168/25/0/0 | 168/25/0/0 | same | held |
+| test-kit244-limpa-pass-through.R | 204/0/0/0 | 204/0/0/0 | same | held |
+
+Every other file `same` at its staging count on record. The eleven not on record, read from the run (both sides):
+`test-lipid-05-s4-correlation-helpers.R` 21/0, `test-metab-norm-standalone-shared.R` 21/0,
+`test-omics-cyclic-loess-minimum.R` 72/0, `test-omics-norm-core.R` 62/0 (14 skipped),
+`test-omics-norm-itsd-selection.R` 22/0, `test-prot-s4-qc-direct-shared.R` 72/0,
+`test-prot-04d-peptide-s4-normalization-characterization.R` 112/0, `test-metab-s4-qc-shared.R` 32/0,
+`test-prot-05c-norm-module-seams.R` 0/0 (4 skipped), `test-metab-01k-...` 17/0 (above), and the new file (above).
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdict: every prediction held. TRAIN GREEN.
+
+Not checked: any file outside the 53; the full suite (KIT-259's A-criterion at the next checkpoint; a staging
+checkpoint run by another agent was out at the same time and is not read here); KIT-259's partners (KIT-257, KIT-242,
+KIT-247) merging later.
+
+## Merge record (coordinator)
+
+Landed on `v0.9-staging` on 2026-11-26 by a merge of `merge-train-20261126c` (tip fd6ff63c) into
+staging abe2199c, which differs from the train's base 828dd105 by docs only (the full-suite
+checkpoint's records and three docs-only corrections). Ledger row: KIT-259 = VAL-273 (in the
+ledger, `kit-259/outcome.md` and this record), its status cell filled. No conflict at landing.
+
+Evidence: run 45650328815 (base 828dd105, head 4baea49f; 53 test files and R CMD check, both
+environment switches set on both sides): 52 files the same, the new test file only on head and
+passing (85/0); the check identical on both sides (0 errors, 3 warnings, 3 notes). 487.4 of 820
+job-minutes. The request's first push returned an HTTP 500 and created no run; the run was started
+once by hand with the documented command (a first send, not a re-send).
+
+Open before the release commit (the owner's, parked row 45): an inferred axis-label defect whose
+repair needs a second correction, and the report text that describes a placeholder panel as
+drawn. The one-line summary of merge commit 4baea49f is inaccurate; the NEWS entries describe the
+change correctly.
+
+Not shown by this record: the full suite on the landed tree (next checkpoint).

@@ -167,6 +167,20 @@
    the normalisation again for the figures, before Copy. On DIA with limpa, pressing "Run Normalization & RUV" again
    on the correlation's or the RUV covariates' result keeps that result's files. Projects normalised before this
    release keep such files until the normalisation is run again. (KIT-257)
+ * Proteomics differential analysis (DIA, label-free and TMT on the default route, the scripted wrappers, and the
+   older `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects): when Storey's q-value cannot be
+   computed for a comparison, the q-value column now holds the Benjamini-Hochberg adjusted p-values, as the warning and
+   the analysis record already said. Before, the column was left empty for every protein of that comparison, so nothing
+   was reported significant, the volcano plot showed no protein and the interactive volcano was replaced by a 'not
+   available' note, and the comparison had no proteins for enrichment. This happens when no p-value in the comparison
+   reaches 0.95. That is likely when only a few tens of proteins or fewer are unchanged, for example in a small protein
+   table or in a comparison in which nearly every protein changes strongly; it can also happen in a larger table when
+   the unchanged proteins' p-values are not spread evenly between 0 and 1 (for example after an uncorrected shift
+   between the groups).
+   Comparisons whose q-values could be computed are unchanged. DIA with limpa, lipidomics and metabolomics in the
+   application, and transcriptomics were not affected. Analyses recorded before this change now replay with the
+   Benjamini-Hochberg values their record names, so for those comparisons a replay differs from the results saved
+   before this change (significant counts, plots, enrichment and report numbers included) (KIT-249).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

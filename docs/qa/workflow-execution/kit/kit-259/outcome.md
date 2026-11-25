@@ -132,7 +132,7 @@ committed before the run. Every prediction held:
 | A1 | G0-B on base | `g0b-45623233776/g0b-base.tsv`; section 1 | met (2 rows not held, stated) |
 | A2 | E rows fail at base by assertion, G rows pass; all pass on the fix | R1; R2 head | met: all 85 expectations of the new file pass on the fix (R2 head) |
 | A3 | R2 every file `same` except the new file and the declared `test-metab-01k` | R2 `compare.tsv` | met after the correction pass: R2 40 files `same`, 2 `fixed`, check identical; the one unpredicted file is the declared edit (r1.3) and is `fixed` in R2c |
-| A4 | NEWS, ledger, wording; this file with "For the change report" and P16's note | `NEWS.md`, `docs/methods-decision-ledger.md` (VAL-<train10-1>), `wording.md`, section 4 | met (drafts for the owner's pass) |
+| A4 | NEWS, ledger, wording; this file with "For the change report" and P16's note | `NEWS.md`, `docs/methods-decision-ledger.md` (VAL-273), `wording.md`, section 4 | met (drafts for the owner's pass) |
 
 ## 3. Inferred, and notes
 
