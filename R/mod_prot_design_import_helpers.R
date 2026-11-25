@@ -357,16 +357,32 @@ runProtDesignImportConfirmationFlow <- function(
     later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
     verdict <- if (later) compareOmicsDesignResult(manager, list(design_matrix = importedArtifacts$importedDesign,
       data = importedArtifacts$importedDataCln), stateName,
-      list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln)) else "first"
+      omicsDesignCompared(manager, workflowData)) else "first"
     if (later && verdict %in% c("unchanged", "changed")) {
       importedConfig <- workflowData$config_list
+      # AUDIT I01 (VAL-277): the confirmed import runs inside the import's error handling, as the unconfirmed one does
+      # in the shell: an error after Save is shown as "Error during import: ...", and the bus is put back as it was.
       flow <- function(cut) {
-        workflowData$config_list <- importedConfig
-        runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
-        importedArtifacts, taxonId, organismName, session, qcTrigger, successMessage, successNotificationId,
-        hydrateFastaSidecar, hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn,
-        completePostCheckpointFn, cut = cut)
+        fields <- c("design_matrix", "data_cln", "contrasts_tbl", "config_list", "taxon_id", "organism_name")
+        kept <- lapply(stats::setNames(fields, fields), function(field) shiny::isolate(workflowData[[field]]))
+        tryCatch({
+          workflowData$config_list <- importedConfig
+          runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
+          importedArtifacts, taxonId, organismName, session, qcTrigger, successMessage, successNotificationId,
+          hydrateFastaSidecar, hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn,
+          completePostCheckpointFn, cut = cut)
+        }, error = function(e) {
+          for (field in fields) workflowData[[field]] <- kept[[field]]
+          msg <- paste("Error during import:", conditionMessage(e))
+          logger::log_error(msg)
+          shiny::removeModal()
+          shiny::showNotification(msg, type = "error", duration = 15)
+          shiny::removeNotification(successNotificationId)
+          invisible(NULL)
+        })
       }
+      # AUDIT I01 (b): the working notice is closed before the question (Cancel then leaves nothing behind).
+      if (identical(verdict, "changed")) shiny::removeNotification(successNotificationId)
       return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, unchanged = function() {
         shiny::removeNotification(successNotificationId)
         applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = importedArtifacts$importedContrasts,
@@ -420,6 +436,7 @@ runProtDesignImportConfirmationFlowNow <- function(workflowData, experimentPaths
     actionLabel = "Import",
     validateColumnMapping = TRUE
   )
+  rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
   didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
   # KIT-177: the values the design step set to missing, named and counted.
   notifyProtDesignLog2Counts(workflowData)

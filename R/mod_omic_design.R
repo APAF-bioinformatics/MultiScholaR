@@ -245,7 +245,7 @@ runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigg
     manager <- workflowData$state_manager
     stateName <- config$design$state_name
     verdict <- compareOmicsDesignResult(manager, list(design_matrix = results$design_matrix, data = results$data_cln),
-        stateName, list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln))
+        stateName, omicsDesignCompared(manager, workflowData))
     runOmicsDesignResaveGate(session, verdict, length(omicsDesignLaterStates(manager, stateName)) > 0L,
         commit = function(cut) runOmicsDesignCommitNow(results, workflowData, experimentPaths, qcTrigger, config, cut),
         unchanged = function() {
@@ -272,6 +272,7 @@ runOmicsDesignCommitNow <- function(results, workflowData, experimentPaths, qcTr
         },
         omics_design_save_failed = function(e) omicsDesignSaveFailed(e$message))
     if (is.null(committed)) return(invisible(NULL))
+    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
     tryCatch({
         didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, config$design$state_name)
         if (!is.null(qcTrigger)) qcTrigger(TRUE)
@@ -399,6 +400,7 @@ runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTr
     }
     commit <- function(cut) tryCatch({
         committed <- commitOmicsDesignImport(workflowData, imported, experimentPaths$source_dir, config)
+        rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
         didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, config$design$state_name)
         if (!is.null(qcTrigger)) qcTrigger(TRUE)
         status <- workflowData$tab_status
@@ -416,8 +418,11 @@ runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTr
         manager <- workflowData$state_manager
         stateName <- config$design$state_name
         verdict <- compareOmicsDesignResult(manager, list(design_matrix = imported$design_matrix, data = imported$assay_list),
-            stateName, list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln))
-        runOmicsDesignResaveGate(session, verdict, length(omicsDesignLaterStates(manager, stateName)) > 0L,
+            stateName, omicsDesignCompared(manager, workflowData))
+        later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
+        # AUDIT I01 (b): the working notice is closed before the question (Cancel then leaves nothing behind).
+        if (later && identical(verdict, "changed")) shiny::removeNotification("importing_design")
+        runOmicsDesignResaveGate(session, verdict, later,
             commit = commit,
             unchanged = function() {
                 shiny::removeNotification("importing_design")

@@ -385,6 +385,24 @@ compareOmicsDesignResult <- function(manager, results, stateName, current) {
     "unchanged"
 }
 
+#' KIT-247 (VAL-277, AUDIT-KIT-247-impl I02): the design and data the last SUCCESSFUL design commit left, recorded on
+#' the session owner, so that a save that failed after replacing the bus cannot make the next save of the same design
+#' look unchanged.
+#' @noRd
+rememberOmicsDesignCommit <- function(manager, design, data) {
+    if (inherits(manager, "DIAStateAdapter")) manager$.context$kit247_design_compared <- list(design_matrix = design, data = data)
+    invisible(NULL)
+}
+
+#' KIT-247 (VAL-277). What a design save is compared with: the last successful commit's record, else the bus (a session
+#' opened from a file, before any commit in it).
+#' @noRd
+omicsDesignCompared <- function(manager, workflowData) {
+    remembered <- if (inherits(manager, "DIAStateAdapter")) manager$.context$kit247_design_compared
+    if (!is.null(remembered)) return(remembered)
+    list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln)
+}
+
 #' KIT-247. The states of the active history after the design state.
 #' @noRd
 omicsDesignLaterStates <- function(manager, stateName) {

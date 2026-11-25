@@ -97,6 +97,7 @@ runProtDesignBuilderSaveFlow <- function(
       actionLabel = "Save Design"
     )
     # KIT-247 (VAL-239, OD-1 (D)): a changed design confirmed over later steps sets them aside.
+    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
     didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
     # KIT-177: the values the design step set to missing, named and counted.
     notifyProtDesignLog2Counts(workflowData)
@@ -179,7 +180,7 @@ runProtDesignBuilderObserverShell <- function(
   stateName <- protDesignStateName(manager)
   verdict <- compareOmicsDesignResult(manager,
     list(design_matrix = results$design_matrix, data = results$data_reference %||% results$data_cln), stateName,
-    list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln))
+    omicsDesignCompared(manager, workflowData))
   later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
   if (!later || !verdict %in% c("unchanged", "changed")) return(commit(FALSE))
   runOmicsDesignResaveGate(session, verdict, later, commit = commit, unchanged = function() {
