@@ -1,4 +1,4 @@
-# KIT-269 outcome (in progress)
+# KIT-269 outcome
 
 Ticket r1.1, base `v0.9-staging` 4d588ba3ed5c6fee76a5a1450c028b409ba419ba (fetched 2026-11-26), branch `kit-269`.
 
@@ -65,7 +65,74 @@ parent-only line, which failed on base by value, as the changed assertion does. 
 coordinator: R01 (the dependency note's premise about KIT-263's test file: it runs the record path) and R02
 (section 2 `:45`, stale after F5) stand as stale ticket sentences.
 
-## R2 predictions (unchanged from above; base = 50077f3a, head = 220b1e2e)
+## R2 (run 45709024838; head 220b1e2e, base 50077f3a = the final tests-only commit; 46 files; check on both)
 
-Base is the final tests-only commit, so the new file is on both sides: verdict `fixed` for it (base 15/5/4 or equal
-by value; head 24 passed expected, 0 failed). Every other file `same`. Check identical.
+Observed (`compare.tsv`, `check-compare.txt`): 45 files `same`, 1 `fixed` (the new file), 0 other verdicts. The new file:
+base 17 passed / 6 failed / 4 errors (T1, T2, T4, T7 error; T3 seven-element row, T5 `Yaxis Limit`, T6 three line
+values fail; the same failures as R1 with the final file), head 33 passed / 0 / 0. Pre-existing failures identical on
+both sides: `test-omic-summary-module.R` 1675/28 (the predicted 28), `test-gui-entry-proteomics.R` 168/25,
+`test-omics-summary-core.R` 676/25, `test-integration-input-transcriptomics.R` 67/3, `test-module-ci-trx-summary.R`
+83/2, `test-kit224-ruv-feature-levels.R` 65/1. Named predictions: `test-kit235-lipid-metab-report-parser.R` 54/0 same;
+`test-general-filemgmt-config-direct-shared.R` 33/0 same; `test-general-filemgmt-config-roundtrip-contracts.R` 24/0
+same; no stored digest moved. R CMD check: base and head each 0 ERRORs, 3 WARNINGs, 3 NOTEs, identical findings
+(6 on both, none only on either side). Prediction check: the new file's head count was predicted 31 passed (my
+count of expectations), observed 33 (the by-hand count missed two expectations); every verdict prediction held.
+
+## Acceptance criteria
+
+| # | Criterion | Status | Evidence |
+|---|---|---|---|
+| A1 | tests-only commit fails as stated; base block empty; no `Analysis Record:` line | met | R1 45707147607 (15/5/4 as predicted) and R2 base (17/6/4 with the final file); T5's base file ends at the dashes (116 lines) |
+| A2 | all rows pass on the fix | met | R2 head 33/0/0 |
+| A3 | every file `same` except the new file; check identical | met | R2: 45 same, 1 fixed; check identical (0/3/3 both sides) |
+| A4 | printed form (a+); failure wording draft | met, wording draft | T1-T4 on head; `wording.md` |
+| A5 | NEWS, ledger row, outcome with change report | met | `NEWS.md`, `docs/methods-decision-ledger.md` (`VAL-<merge>`), this file |
+
+## Core-hours
+
+R1 about 12 job-minutes (one tests job plus plan and results); R2 301.8 job-minutes summed from the job start and end times
+(3+3 test jobs, 2 check jobs, plan, results). Total about 314 minutes = about 20.9 core-hours against expected 28.57
+and ceiling 99.0. No correction pass, no further instrument run.
+
+## Deviations
+
+- Instrument defect in R1 (the `k269After` helper; section "R1"): fixed in commit 50077f3a without changing an expected value.
+- R03 of the plan re-check changed the failure reason after R1 was sent (T6's parent case; commit 8f5c30e8). R1 was
+  not re-sent; the base failure is by value either way and R2's base shows the final file.
+- The R2 base is the final tests-only commit (50077f3a), so the new file's verdict is `fixed` (the ticket predicted
+  "only on head" for a base that lacks the file).
+- Stale ticket sentences for the coordinator (not edited): R01 (dependency note on KIT-263's test file: it runs the
+  record path) and R02 (section 2 `:45`, replaced by F5).
+- `cli::` is used in the handler as in `R/utils_workflow_summary.R:231`; `cli` is not listed in `DESCRIPTION` Imports
+  or Suggests (pre-existing for about 1,000 uses; check identical). Unrelated; left alone.
+
+## Not checked
+
+- No R on the laptop; everything above is from the runner.
+- The long failure line when a `purrr` error is the reason (the message carries the call's source; see `wording.md`).
+- Whether the lipidomics and metabolomics report templates read the newly printed block (only `test-kit235` cases M and L2, same).
+- Windows. Real data.
+- Merge with the partner branches by `git merge-tree` only: kit-269 against `origin/merge-train-20261126k` merges
+  cleanly in the two R files; NEWS.md and docs/methods-decision-ledger.md conflict textually (adjacent insertions at the
+  same anchor), for the coordinator at merge. KIT-213 and KIT-217 were not tried.
+
+## For the change report
+
+What was wrong and who was affected. The "Additional Configuration Parameters" block of `study_parameters.txt` was empty,
+with no message, whenever the file was written without an analysis record, because a setting with several numbers could
+not be listed: the shipped `[plotRle] yaxis_limit = -3,3` in proteomics, the RUV control vector `ctrl` in lipidomics
+and metabolomics. The exported `createStudyParametersFile()` stopped on the shipped configuration ("Result must be
+length 1, not 2"). On `main` and every earlier release, every proteomics project that uses the shipped configuration
+wrote the file with an empty block (main: `main:R/func_general_filemgmt.R:1755` and `main:R/func_general_helpers.R:1072`
+for `formatConfigList`, the call at `:5388` inside a `tryCatch` whose handler (`:5399`) loses its assignment; the
+conversion of `yaxis_limit` at `main:R/func_general_filemgmt.R:1250-1252`). In 0.9 the application takes the record path
+and is affected only when the record cannot be built; scripted callers are affected. Text settings of six or more values
+were cut after five with "..." and are now printed in full.
+
+Code references. Base 4d588ba3: `R/func_general_filemgmt_config_io_helpers.R:483-488` (five-value cut, character vectors
+only; plain `as.character` for others), `R/func_general_filemgmt_study_parameter_writer.R:973-976` (handler assigned with
+`<-`). Fix 220b1e2e: the plain-value branch joins every value of length above one with ", " in full; the handler
+assigns with `<<-` and writes "The configuration settings could not be listed here: <message>" (draft wording).
+
+Results: unchanged (display only). Evidence: runs 45707147607 (R1) and 45709024838 (R2) above; base block observed
+empty in R1 and R2's base (T5, 116 lines ending at the dashes).

@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	result
 45707147607	79680e763fe5eb017e9e9da7276e261199972815	R1: tests-only commit, failing first (no base)	11.3	success; file 15 passed / 5 failed / 4 errors, as predicted (see outcome.md)
+45709024838	220b1e2e09f826adeaed8b750f6c6e6c260e7587 vs 50077f3a6a8d30e079322874db9547b8785a21fb	R2: base against head, 46 files, check both	61.8 wall; 301.8 job-minutes	 success; 45 files same, new file fixed; check identical
