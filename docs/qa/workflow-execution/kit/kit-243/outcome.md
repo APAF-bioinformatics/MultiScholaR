@@ -218,3 +218,29 @@ The fix (4e2f1575) was drafted before R1 was read and committed after R1's verdi
   publication), the `Heatmap/` exclusion by exact folder, "a directory is never deleted", the class
   `workflow_figure_unwritten`, the text and the four seams stay as they are; and the removal core never writes or
   clears the DA marker (a completed normalisation publication must not hide a failed DA's refusal).
+
+## Correction pass (implementation audit I01, I02)
+
+Commits: f13d31e3 (tests first: E15 for I01, a trailing `/` on the publication folder standing for Windows' separators;
+E16 for I02, `*` and `?` in a contrast name), a27a1c7c (the fix: the register's exact texts, nothing else under `R/`),
+22646bdd (records), 92ee7617 (merge of staging 63143aa3: no conflict), 66772471 (ledger row draft).
+
+**The run, declared before it was sent.**
+- Purpose: E15 and E16 failing first and fixed; regressions on the merged tree.
+- Binding: base `run-k243-corr-base` d392be7c (f13d31e3 merged with staging 63143aa3: the KIT-243 fix without I01 and
+  I02), head `kit-243` at the commit carrying this declaration (a27a1c7c's I01/I02 on the same merged tree; everything
+  else between base and head is documents).
+- Scope: `r2-scope.txt` (75 files, the new one included) plus `test-kit220-da-threshold-consumers.R`,
+  `test-kit222-replicate-keys.R`, `test-kit218-da-wrapper-tail.R`; R CMD check.
+- Ceiling: R2's, 6 shards per side and check, 1,080 job-minutes (72.0 core-hours), within the ticket's correction
+  budget.
+- Predictions:
+  - `test-kit243-summary-current-outputs.R`: `fixed`. On base, only E15's "planted heatmaps left" and E16's "siblings
+    the pattern matches" fail; on head everything passes. With KIT-220 under both sides, E4's line should read
+    `left=` with the barplot removed (no barplot at q 1e-300).
+  - `test-workflow-saved-da.R`: `same`, counts equal on both sides. The base already holds KIT-243's removal, so the
+    move of the three `files` values (R2, against a base without the removal) is on both sides here; I01 and I02 do not
+    touch this fixture's names. (A run against a base without KIT-243 would show R2's `message-changed` at exactly those
+    three values.)
+  - Every other file `same`; R CMD check: nothing only on head.
+- Decides: whether the correction pass is accepted, so the branch is ready for a train.
