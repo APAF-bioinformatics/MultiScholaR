@@ -56,8 +56,6 @@ then the records and the I04 rework (below). Runs: `runs.tsv`. About 53.0 core-h
 
 ## Not checked
 - R3 (full suite), control C (GUI-entry keys), run D (re-dumps), the rendered reports, Windows, real data.
-- The I04 rework after R2b (the transcriptomics note's wording moved from the frozen GUI configuration into the module,
-  `R/mod_omic_da.R`, so that `test-omic-gui-config.R`'s KIT-106 W1 value does not move): not yet run; the merge run covers it.
 - The workbook route's interactive volcano still colours at q 0.05 and |log2FC| >= 1 (KIT-230 N3; routed by the coordinator).
 - `daAnalysisWrapperFunction` (left for after KIT-218, ticket 3 item 4).
 
@@ -142,6 +140,13 @@ Script `redump.R` (each file in its own process with the dump switches and the G
   findings identical. Anything else is a stop.
 - Staging dd769671 merged (8bda2aac; ledger: staging's rows to VAL-211 first, `VAL-<merge>` after); NEWS: the
   workbook clause removed (VAL-209), 5d327b2f.
+
+## R3 (45573760967; merge 1c2d8fdd against staging dd769671; 84.6 core-hours)
+
+As declared: 480 files `same`; `test-kit220-da-threshold-consumers.R` `only-on-head` (79 passed, 0 failed);
+`test-workflow-saved-da.R` `message-changed` (780 passed / 171 failed on both sides; messages differ at exactly the 19
+W1 leaves listed above, MECHANICAL); `test-omic-gui-config.R` `same` (so 77ebed8a is verified); every re-frozen file
+`same`; check findings identical. A3 and A4 met as restated. Ticket total about 191.5 core-hours (ceiling 487.33).
 
 ## For the change report
 - **What was wrong.** Proteomics (every workflow and route): the published count table (`.tab`/`.xlsx`), its NumSig
