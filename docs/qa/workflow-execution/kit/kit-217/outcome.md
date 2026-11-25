@@ -190,10 +190,9 @@ Then R2 again (correction pass) and R3.
      the per-step comparisons fail from the `design` step on; the first difference is the design state's digest
      (`protein_s4_initial`). Inferred (not shown): the two metabolite keys added to `inst/config/config.ini` (5.3, decided)
      enter the configuration every route reads at the design into its states, so every proteomics state digest moves.
-     Nothing in proteomics' filter or route code was changed. The lipid/metab lanes' failures already start at
-     `qc_intensity` because their oracles hold the same configuration at the design? Not established: their design steps
-     did not move, so the inference above is unproven; a probe comparing the proteomics design state's `@args`/config
-     on base and head would settle it.
+     Nothing in proteomics' filter or route code was changed. The lipid/metab lanes' design steps did not move, so
+     their design does not read the shipped `config.ini` the same way; the inference is unproven until a probe compares
+     the proteomics design state's `@args` and configuration on base and head.
   2. `test-omic-enrich-module.R` `fixed`: one test fails on base only (a second enrichment Run shows a different text
      digest than the first); proteomics enrichment, off this ticket's route; inferred instability, not shown.
 - Per the coordinator's rule no further correction; the ticket goes back with these two verdicts for a ruling.
