@@ -457,7 +457,7 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
                 paste(names(result$value$best_k), "=", unlist(result$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- result$stateReference
             normData$ruv_complete <- TRUE
-            addLog("RUV-III correction applied")
+            addLog(omicsRuvAppliedText(result$value))
         }, function() {
             advance("Running RUV-III batch correction...")
             addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
@@ -577,7 +577,7 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
                 paste(names(ruv$value$best_k), "=", unlist(ruv$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- ruv$reference
             normData$ruv_complete <- TRUE
-            addLog("RUV-III correction applied")
+            addLog(omicsRuvAppliedText(ruv$value))
             advance("Generating RUV QC plots...")
             figures(readWorkflowOmicsState(binding, manager, normData$ruv_corrected_obj), "ruv_corrected", "RUV QC plots generated")
         } else {

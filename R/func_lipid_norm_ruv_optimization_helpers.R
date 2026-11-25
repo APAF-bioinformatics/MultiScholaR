@@ -224,6 +224,25 @@ runLipidPerAssayRuvOptimization <- function(
                     ))
                 }
 
+                # KIT-242 (VAL-242 Q6.2 (c)): under the current rule an assay the canonical-correlation step returned no
+                # plot for (it could not be computed) is a failed computation, not a curve without an elbow.
+                if (omicsRuvFallbackCurrent() && is.list(pct_res$cancor_list) && !assay_name %in% names(pct_res$cancor_list)) {
+                    return(list(
+                        percentage_requested    = pct
+                        , candidate_feature_count = candidate_feature_count
+                        , realized_num_controls   = realized_num_controls
+                        , realized_percentage     = realized_percentage
+                        , sample_size             = sample_size
+                        , best_k                  = NA_integer_
+                        , separation_score        = NA_real_
+                        , composite_score         = NA_real_
+                        , status                  = "error_cancor"
+                        , error_reason            = "error_cancor: the canonical correlations could not be computed for this assay"
+                        , ctrl_indices            = ctrl_indices
+                        , cancor_plot             = NULL
+                    ))
+                }
+
                 separation_score <- tryCatch(
                     calculateSeparationScore(cancor_plot, metric = separation_metric)
                     , error = function(e) NA_real_
