@@ -205,3 +205,88 @@ run_0008), limpa about 0.963613 (removes run_0001).
 | G1 | passes |
 | E10b (G row) | passes: record `pearson-selection` at 0.5; replay 12 samples equal to live |
 | registry lists | the two exact-list expectations fail on base (no `pearson-skip`), declared |
+
+### R1 (run 45645244865, tests-only 2630bf57 on staging 828dd105): observed against predicted
+
+`r1/tests.tsv`, `r1/failures.txt`. New file: 90 passed, 96 failed, 1 skipped (E5's replay after its refusal); 18.5
+job-minutes. **Every failure is at its predicted value; G1, G2 and E10b pass.**
+- E1/E7 (LFQ, TMT, DIA): entry and record step `pearson-selection`, `threshold` present, no `skipped` parameter, study
+  block `[4. correlation_filtered: pearson-selection]` with a threshold line; G3: `pearson-selection` after DA.
+- E2/E3: replay completes, entry `pearson-selection`, 11 samples against live 12 (run_0008 removed), DA table differs.
+- E4/E5: `legacy`, incomplete lists "legacy step: correlation_filtered", no study block; replay refused
+  ('step "correlation_filtered" cannot be replayed: operation "legacy"').
+- E8, E12: as E1. E11: entry `legacy` (LFQ and limpa), the other assertions pass.
+- E6 (limpa): as E1; replay 11 samples (run_0001 removed); RUV covariates design and DA differ.
+- **E10 (I06 re-derivation, on a tree holding KIT-244): live components = L7's, 12 samples (passes); record step
+  `pearson-selection`; replay 11 samples, table differs; in process and through the worker.** As predicted in r1.4.
+- E9: constructed pre-fix record `pearson-selection` with outcome skipped (passes); replay entry `pearson-selection`,
+  config threshold t_hi only, 11 samples. E13: constructed `legacy` step with outcome skipped (passes); replay refused;
+  the earlier-legacy refusal names `normalized` (passes).
+- Registry: the two declared lists fail on base (`pearson-skip` absent) and also on `integration_mofa_model`, a
+  difference that exists at staging independently of this ticket (see R2).
+
+### The fix (29072595)
+
+- `R/utils_workflow_dia_products.R`: `runDIAReferenceCorrelation` sets `pearson-skip` (cleared pending first, fixed
+  skipped = TRUE) only when the Skip commits; new `diaPearsonSkipOperation()` (store unit, no parameters, no-op kernel).
+- `R/utils_workflow_operations.R`: `pearson-skip` registered in the in-process loop beside `enrichment`; empty defaults.
+- `R/utils_workflow_analysis_record.R`: replay maps a proteomics `correlation_filtered` step recorded as
+  `pearson-selection` or `legacy` whose outcome says skipped to `pearson-skip` (OD-1 (a), (a′)); a `pearson-skip` branch
+  commits the correlation's source unfiltered (`normalization_final %||%` the head) with the Skip's config, description
+  and provenance (R1-01).
+- NEWS (### Fixes), ledger `VAL-<merge>`, `wording.md`. `man/`, `NAMESPACE`, `DESCRIPTION` unchanged.
+
+### R2 (run 45649121588; base 2630bf57, head 29072595; 80 files, 4 shards per side, check): observed
+
+`r2/compare.tsv`, `r2/check-compare.txt`, `r2/tests*.tsv`; 793.4 job-minutes (over the ticket's R2 row ceiling of 600;
+the scope recounted at 828dd105 is 80 files, about twice the files the ceiling was sized for).
+- 76 files `same`.
+- `test-kit248-correlation-skip-record.R`: fixed, 206 passed, 0 failed (every E and G row passes on head).
+- `test-workflow-operation-registry.R`: message-changed. The declared `pearson-skip` lines of both exact lists are
+  resolved on head (A3's declared edit); both expectations still fail on base and head, identically, on
+  `integration_mofa_model` (registered, absent from the stored lists at staging; not this ticket's). Counts +1/+2/+1 in
+  three loops over the registry (the new operation).
+- `test-workflow-partitions.R`: count-changed, passed 95 -> 96 (its loop over every operation; no failure).
+- **`test-prot-norm-core.R`: message-changed (not predicted).** KIT-111 W1 (a) and W2 compare each click's capture with
+  frozen digests (`tests/testthat/test-prot-norm-core.R:505-517`, frozen values from `:559`, `dia_correlation_skip` at
+  `:718`). Those frozen values already fail on runners on base and head (laptop-recorded); on head the
+  `dia_correlation_skip` provenance digest and one record digest (and the provenance digests of the later cases on the
+  same owner) take new values (`r2/prot-norm-core-w1-*.txt`, `-w2-*.txt`). This is the intended change (the Skip's
+  step is now `pearson-skip`) reaching a stored reference the ticket did not declare.
+- R CMD check: identical on both sides (0 errors, 3 warnings, 3 notes; nothing only on head).
+
+**Stop rule 3 applies** ("any file other than A3's moving: stop and report"): `test-prot-norm-core.R` (frozen KIT-111
+W1/W2 digests) and, benignly, `test-workflow-partitions.R` (+1 passed) moved beyond A3's declared pair. Work stopped
+here; no correction run was sent. Decision needed (owner, by file, as VAL-246 did for the same file): whether the
+`dia_correlation_skip` and the following cases' provenance and record digests in `test-prot-norm-core.R` may be
+re-pinned from a runner dump; the partitions count change needs no decision but is recorded.
+
+## For the change report (draft; final after the implementation audit)
+
+- **What was wrong (development branch only; `main` has no record or replay).** Proteomics, every route (label-free,
+  TMT, DIA with iq, DIA with limpa), in process and managed. "Skip Filtering & Proceed to DE" committed the unfiltered
+  table but set no step provenance. A Skip with no Apply before it was recorded as `legacy`: the record was marked
+  incomplete, the study parameters omitted the step and a replay refused the whole record (G0 45592410449, all four
+  routes). An Apply followed by a Skip kept the Apply's entry (`R/utils_workflow_dia_state.R:838`, the DA's keep rule):
+  the record and the study parameters said the filter was applied at its threshold, and a replay removed the sample
+  again, so the replayed DA table differed from the reported one (G0b 45597013061: one sample of 12 at t_hi on every
+  route; 11 of 11 cells differ; limpa RUV covariates differ too). Live results were correct throughout.
+- **Code.** Base 828dd105: `R/utils_workflow_dia_products.R:1820-1821` (the Skip's commit, no provenance),
+  `R/utils_workflow_analysis_record.R:856-859` (`legacy` refused), `:914-928` (`pearson-selection` re-filters). Fix
+  29072595: the same function's commit block and `diaPearsonSkipOperation`; `R/utils_workflow_operations.R` (the
+  registration); `R/utils_workflow_analysis_record.R` (the mapping before the entry lookup and the `pearson-skip` branch).
+- **What changed in results.** No live result. The record and the study parameters now state the skip
+  ('[n. correlation_filtered: pearson-skip]', 'skipped [fixed] = TRUE', no threshold); a replay keeps every sample and
+  its DA equals the live one (R2: E1 to E13 pass on head, including limpa's covariates and DA and KIT-244's second-press
+  sequence, E10). Records made before the fix replay as the skips they were (E9, E13).
+- **Evidence and limits.** Runs G0 45592410449, G0b 45597013061, R1 45645244865, R2 45649121588. Synthetic "small"
+  recipe (64 proteins x 12 samples); one sample removed at t_hi; no real data; Linux runners only.
+- **Parity (R1-04).** Lipidomics and metabolomics skip steps still print nothing in the study parameters (KIT-254).
+- **Overlap.** KIT-257 (branch `kit-257`, not merged; AUDIT-KIT-257-impl I01) changes which files a DIA-with-limpa second
+  press removes; this ticket's E10/E10b press twice and assert the store and the record, not those files.
+
+## Not checked (implementation)
+
+- The full suite (the merge train's); `test-prot-norm-core.R` re-pinned values (awaiting the decision).
+- The supplement's rendering of a `pearson-skip` step; the GUI observers themselves (runners called directly).
+- KIT-257's merged code with this ticket; Windows; real data.
