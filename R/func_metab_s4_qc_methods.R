@@ -356,8 +356,11 @@ setMethod("resolveDuplicateFeatures",
                         dplyr::mutate(
                             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
                         ) %>%
-                        # KIT-258: the number of measured (not missing) values the row's mean is over
-                        dplyr::mutate(n_measured = sum(!is.na(dplyr::c_across(dplyr::any_of(sample_cols))))) %>%
+                        # KIT-258 (VAL-284): the count and the mean of the measured values, neither missing nor zero
+                        dplyr::mutate(
+                            n_measured = length(duplicateResolutionMeasured(dplyr::c_across(dplyr::any_of(sample_cols)))),
+                            avg_measured = duplicateResolutionMeasuredMean(dplyr::c_across(dplyr::any_of(sample_cols)))
+                        ) %>%
                         dplyr::ungroup() %>%
                         dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>%
                         # *** Group by the correct ID column ***
@@ -365,7 +368,7 @@ setMethod("resolveDuplicateFeatures",
                         # KIT-258: the most measured row, then the highest mean, then the first
                         keepDuplicateResolutionRow() %>%
                         dplyr::ungroup() %>%
-                        dplyr::select(-.data$avg_intensity, -"n_measured")
+                        dplyr::select(-.data$avg_intensity, -"n_measured", -"avg_measured")
 
                     rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                     if (rows_removed_non_itsd > 0) {

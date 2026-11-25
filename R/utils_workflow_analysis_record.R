@@ -671,8 +671,9 @@ workflowReplayRuleMarkers <- list(
     # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
     # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
     treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"),
-    # KIT-258 (VAL-254): among the rows of one duplicated id, the most measured row, then the highest mean of its
-    # measured values ("measured_then_mean"); records made before ranked by the mean alone ("mean").
+    # KIT-258 (VAL-254, VAL-284): among the rows of one duplicated id, the most measured row (a value neither missing nor
+    # zero), then the highest mean of its measured values ("measured_then_mean"); records made before ranked by the mean
+    # of the non-missing values alone ("mean").
     duplicate_resolution_rank = list(option = "MultiScholaR.duplicate_resolution_rank", current = "measured_then_mean",
         earlier = "mean"))
 
