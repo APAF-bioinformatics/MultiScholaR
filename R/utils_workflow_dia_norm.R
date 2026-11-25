@@ -325,6 +325,111 @@ saveProtNormQcPlotArtifact <- function(
   artifactPath
 }
 
+# --- KIT-259 (B2): a normalisation QC figure that cannot be drawn ---
+# Before, a figure that failed to draw after the normalisation was committed left the step unfinished and every later
+# step refused until Reset; the project kept the earlier run's file under that name. Now the figure is replaced, under
+# its own name and size, by a placeholder image naming it and the reason, and the step completes with one warning.
+
+#' A normalisation QC figure's name for the user, from its file name.
+#' @param filename The figure's file name (`<stage>_<kind>.png`).
+#' @return The name, or the file name when it is not a stage figure.
+#' @noRd
+protNormFigureTitle <- function(filename) {
+  stages <- c(pre_norm = "Pre-normalisation", post_norm = "Post-normalisation", ruv_corrected = "RUV-corrected")
+  kinds <- c(pca = "PCA", rle = "RLE", density = "PCA density", correlation = "Pearson correlation",
+    cancor = "canonical correlation")
+  parts <- regmatches(filename, regexec("^(pre_norm|post_norm|ruv_corrected)_(pca|rle|density|correlation|cancor)[.]png$",
+    filename))[[1L]]
+  if (length(parts) != 3L) return(filename)
+  paste(stages[[parts[[2L]]]], kinds[[parts[[3L]]]])
+}
+
+#' Write the placeholder image of a QC figure that could not be drawn, at the figure's size. No partial file is left
+#' when it cannot be written either.
+#' @param path The figure's path.
+#' @param figure The figure's file name.
+#' @param reason Why it could not be drawn.
+#' @param width,height,dpi The figure's size, as it is saved.
+#' @return `path`.
+#' @noRd
+writeProtNormFigurePlaceholder <- function(path, figure, reason, width, height, dpi = 150) {
+  label <- paste(c(paste0(protNormFigureTitle(figure), ": could not be drawn."), strwrap(reason, 70L)), collapse = "\n")
+  plot <- ggplot2::ggplot() +
+    ggplot2::annotate("text", x = 0.5, y = 0.5, label = label, size = 5) +
+    ggplot2::xlim(0, 1) + ggplot2::ylim(0, 1) +
+    ggplot2::theme_void() +
+    ggplot2::theme(plot.background = ggplot2::element_rect(fill = "white", colour = NA))
+  tryCatch({
+    ggplot2::ggsave(path, plot, width = width, height = height, dpi = dpi)
+    checkWorkflowFigureFiles(path, "a placeholder for a figure that could not be drawn was not written")
+  }, error = function(e) {
+    unlink(path)
+    stop(e)
+  })
+  path
+}
+
+#' Draw one normalisation QC figure; when it cannot be drawn, write its placeholder under its name and signal
+#' `prot_norm_figure_unavailable` (fields `figure`, `reason`). Diverges from conventions/R.md (catch specific
+#' conditions): ggplot2's drawing errors carry no stable class, so a drawing error is caught generically, as the
+#' lipidomics and metabolomics generators do, and logged with its message. A figure that could not be written
+#' (`workflow_figure_unwritten`), a condition of the store (`saved_entity_*`) and an interrupt still stop.
+#' @param qcDir The figure's directory; NULL draws nothing and writes no placeholder.
+#' @param filename The figure's file name.
+#' @param width,height,dpi The figure's size.
+#' @param draw `function()` that draws and writes the figure, returning its path.
+#' @param placeholder Whether a placeholder replaces the figure (FALSE: the figure is skipped).
+#' @param signal Whether `prot_norm_figure_unavailable` is signalled (the worker only logs).
+#' @return The path written, the figure's or its placeholder's; NULL when nothing was written.
+#' @noRd
+drawProtNormQcFigure <- function(qcDir, filename, width, height, draw, dpi = 150, placeholder = TRUE, signal = TRUE) {
+  tryCatch(draw(), error = function(e) {
+    if (inherits(e, "workflow_figure_unwritten") || any(startsWith(class(e), "saved_entity"))) stop(e)
+    reason <- cli::ansi_strip(conditionMessage(e))
+    logger::log_warn(paste("The QC figure", filename, "could not be drawn:", reason))
+    if (!placeholder || is.null(qcDir)) return(NULL)
+    path <- writeProtNormFigurePlaceholder(file.path(qcDir, filename), filename, reason, width, height, dpi)
+    if (signal) rlang::warn(paste0("The QC figure '", filename, "' could not be drawn: ", reason),
+      class = "prot_norm_figure_unavailable", figure = filename, reason = reason)
+    path
+  })
+}
+
+#' The warning notice naming the figures that could not be drawn.
+#' @param figures A list of `list(figure, reason)`.
+#' @return The notice's text.
+#' @noRd
+buildProtNormFigureUnavailableNotice <- function(figures) {
+  named <- vapply(figures, function(item) paste0("'", protNormFigureTitle(item$figure), "'"), "")
+  reasons <- vapply(figures, function(item) item$reason, "")
+  if (length(figures) == 1L) {
+    return(paste0("The normalisation finished, but the figure ", named, " could not be drawn: ", reasons,
+      ". The normalised data are not affected. In this tab, the composite QC figure and the report the figure is ",
+      "replaced by a note giving the reason."))
+  }
+  paste0("The normalisation finished, but these figures could not be drawn: ",
+    paste0(named, " (", reasons, ")", collapse = "; "),
+    ". The normalised data are not affected. In this tab, the composite QC figure and the report each figure is ",
+    "replaced by a note giving the reason.")
+}
+
+#' Evaluate a normalisation run's completion; afterwards, one warning notice names the figures it could not draw.
+#' @param code The run and its completion.
+#' @param showNotificationFn The notice.
+#' @return The value of `code`.
+#' @noRd
+withProtNormFigureNotice <- function(code, showNotificationFn = shiny::showNotification) {
+  figures <- list()
+  value <- withCallingHandlers(code, prot_norm_figure_unavailable = function(w) {
+    figures[[length(figures) + 1L]] <<- list(figure = w$figure, reason = w$reason)
+    invokeRestart("muffleWarning")
+  })
+  if (length(figures)) {
+    showNotificationFn(buildProtNormFigureUnavailableNotice(figures), type = "warning", duration = NULL)
+  }
+  value
+}
+
 # --- The composite QC figure and the workflow's completion (#21, #22; the composite's callees) ---
 
 buildProtNormLabelPlot <- function(title) {
