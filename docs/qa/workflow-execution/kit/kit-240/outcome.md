@@ -71,7 +71,7 @@ Applied with the register's texts, as a tests-only commit (b89be231) and a wordi
   samples are left out.", the threshold computed over `nrow(preview$aligned$samples)`. The audit's inferred point (the
   preview's sample table counts the kept samples): `test-integration-gui.R` now asserts 5 rows and a threshold of 3 for
   the small project at the defaults, and `test-integration-partitioned-alignment.R:422` asserts the facts equal between
-  the partitioned preview and the whole-object alignment; R4's result decides whether this is confirmed. At the tab the
+  the partitioned preview and the whole-object alignment; R4 confirmed it (below). At the tab the
   missing-sample rule is always the default (keep missing), so kept samples equal all samples there; the
   drop-incomplete rule is not reachable from the tab.
 - **I03** the alignment note names its three rules; **I05** the report's legend and status word read "a default not
@@ -87,6 +87,23 @@ Applied with the register's texts, as a tests-only commit (b89be231) and a wordi
   the probe should avoid a managed environment is for the owner and coordinator (stop rule 4 keeps it out).
 - **I07** NEWS carries no draft marker (drafts are tracked in `wording.md`); the ledger row cites r1.4, the run ids and
   the Enrichment mark.
+
+### R4 (45596337362; base b89be231, head 37071446; evidence under `r4/`)
+
+- Base: 12 new expectation failures, 0 errors: T7 1 (`integrationElboText(0.004)` gave "0.00"), T8 1 (no limit
+  sentence), T12 8, `test-integration-gui.R` 2 (the sparse sentence; the column's "two samples"). **Declared 14; the
+  difference is the declaration's arithmetic, not the tests':** T12 has 8 assertions (declared as 9), and the I02
+  `expect_identical` of the facts cannot fail on base, because R's `sprintf` ignores the extra arguments and returns the
+  old sentence (it passed with a warning). Every assertion that can fail first did. Not re-run.
+- Head: `test-kit240-integration-default.R` 88 passed, 0 failed (T9 skipped), `test-integration-gui.R` 401 passed,
+  0 failed (`fixed` both); `test-integration-partitioned-alignment.R` (253, its facts-equality check `:422`
+  included), `-sample-match.R`, `-record.R` and the four Enrichment-tab files `same`, 0 failures. **I02's inferred
+  point is confirmed at the defaults:** the preview's sample table holds the 5 kept samples and the threshold is 3, and
+  the partitioned preview's facts equal the whole-object alignment's.
+- R CMD check: 0 ERROR, 3 WARNING, 3 NOTE on both; 0 only on head.
+- Identity script against 3eeaf100: every check TRUE; per mode settings note 1, Results note 2, mark 21, the Enrichment
+  insertion 8 on head and 0 on base (no new allowed substitution: r1.4's texts are all server-rendered).
+- 157.0 job-minutes, 10.47 core-hours (declared 10.00: exceeded by 0.47, within R2's correction reserve).
 
 ## A8: partner edits and release-checklist items
 
