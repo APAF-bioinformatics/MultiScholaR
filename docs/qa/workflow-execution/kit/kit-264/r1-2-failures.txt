@@ -1,0 +1,187 @@
+file: test-kit264-trx-export-current.R
+test: KIT-264 E1, E5, G7: route A (run k = 2, export, run k = 1): the export is not listed, its figure is not shown, the state keeps it
+kind: failure
+message:
+  Expected `k264Listed(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 record
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E1, E5, G7: route A (run k = 2, export, run k = 1): the export is not listed, its figure is not shown, the state keeps it
+kind: failure
+message:
+  Expected `text` to be identical to `k264None`.
+  Differences:
+  actual vs expected
+  - "RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it."
+  + "No RUVIII integration export was recorded for this analysis."
+  
+  E1 text
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E1, E5, G7: route A (run k = 2, export, run k = 1): the export is not listed, its figure is not shown, the state keeps it
+kind: failure
+message:
+  Expected `shown$out` to be identical to `k264Missing`.
+  Differences:
+  `actual`:   ""                                                  
+  `expected`: "Figure not available: ruviii_before_and_after.png "
+  
+  E5 figure output
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E1, E5, G7: route A (run k = 2, export, run k = 1): the export is not listed, its figure is not shown, the state keeps it
+kind: failure
+message:
+  Expected `inherits(shown$value, "knit_image_paths")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E5 figure value
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E2: route B (run k = 2, export, run with the design none): no entry, the never-exported sentence
+kind: failure
+message:
+  Expected `k264Listed(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E2 record
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E2: route B (run k = 2, export, run with the design none): no entry, the never-exported sentence
+kind: failure
+message:
+  Expected `text` to be identical to `k264None`.
+  Differences:
+  actual vs expected
+  - "RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it."
+  + "No RUVIII integration export was recorded for this analysis."
+  
+  E2 text
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E3: route C (run, export, Revert to trx_qc_complete): the export's source is in the states but not in the history
+kind: failure
+message:
+  Expected `"trx_ruviii_export" %in% names(record$analyses)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E3 record
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E6: route A with the export's figure files in publication_graphs_dir: the second run removes them; omicNormOwnFiles names five
+kind: failure
+message:
+  Expected `own` to be identical to `c(...)`.
+  Differences:
+  actual vs expected
+    "canonical_correlation_panels.png"
+    "canonical_correlation_panels.pdf"
+    "canonical_correlation_optimization_summary.xlsx"
+  + "ruviii_before_and_after.png"
+  + "ruviii_before_and_after.pdf"
+  
+  E6 omicNormOwnFiles
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E6: route A with the export's figure files in publication_graphs_dir: the second run removes them; omicNormOwnFiles names five
+kind: failure
+message:
+  Expected `any(file.exists(files))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E6 files removed
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E6: route A with the export's figure files in publication_graphs_dir: the second run removes them; omicNormOwnFiles names five
+kind: failure
+message:
+  Expected `grepl(paste(k264FigureNames, collapse = ", "), log, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E6 log: [19:52:25] Running TMM, the RUV grid (manual) and RUVs
+  [19:52:29] RUVs applied: W_1..W_2 added to the design (state 'trx_ruvs')
+  [19:52:30] PCA and RLE (raw) generated
+  [19:52:30] PCA and RLE (tmm) generated
+  [19:52:31] PCA and RLE (ruvs) generated
+  [19:52:35] CCA panels, grid workbook and the normalisation comparison grid saved
+  [19:52:35] Normalization complete - ready for differential expression
+  [19:52:36] Removed the earlier run's files this run replaces: canonical_correlation_panels.png, canonical_correlation_panels.pdf, canonical_correlation_optimization_summary.xlsx
+  [19:52:36] Normalisation runs again from 'trx_qc_complete', the table the previous run started from
+  [19:52:36] Running TMM, the RUV grid (manual) and RUVs
+  [19:52:40] RUVs applied: W_1..W_1 added to the design (state 'trx_ruvs')
+  [19:52:40] PCA and RLE (raw) generated
+  [19:52:41] PCA and RLE (tmm) generated
+  [19:52:41] PCA and RLE (ruvs) generated
+  [19:52:46] CCA panels, grid workbook and the normalisation comparison grid saved
+  [19:52:46] Normalization complete - ready for differential expression
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E7: run k = 2, export, Reset, run with the design none: the entity under the name trx_ruvs is replaced, no entry
+kind: failure
+message:
+  Expected `k264Listed(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E7 record
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E7: run k = 2, export, Reset, run with the design none: the entity under the name trx_ruvs is replaced, no entry
+kind: failure
+message:
+  Expected `text` to be identical to `k264None`.
+  Differences:
+  actual vs expected
+  - "RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it."
+  + "No RUVIII integration export was recorded for this analysis."
+  
+  E7 text
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E8: the owner's route B through the mounted tabs: the report does not state the earlier export
+kind: failure
+message:
+  Expected `has(k264None)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 never-exported sentence
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E8: the owner's route B through the mounted tabs: the report does not state the earlier export
+kind: failure
+message:
+  Expected `has("RUVIII (ruv::RUVIII) was applied")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E8 the earlier export is not stated
+
+file: test-kit264-trx-export-current.R
+test: KIT-264 E8: the owner's route B through the mounted tabs: the report does not state the earlier export
+kind: failure
+message:
+  Expected `file.exists(figure)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E8 the earlier figure is not delivered
+

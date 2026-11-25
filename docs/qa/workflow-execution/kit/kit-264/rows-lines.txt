@@ -1,0 +1,67 @@
+..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
+.KIT-264 L2 listed: FALSE text: No RUVIII integration export was recorded for this analysis.
+KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  value: NULL
+...KIT-264 E1 listed: FALSE text: No RUVIII integration export was recorded for this analysis.
+..KIT-264 E5 figure file: TRUE chunk output: Figure not available: ruviii_before_and_after.png  class: NULL
+..KIT-264 G7 export kept: TRUE same source: TRUE
+....KIT-264 E2 listed: FALSE ruv_applied: FALSE text: No RUVIII integration export was recorded for this analysis.
+....KIT-264 E3 history: initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete listed: FALSE
+..KIT-264 E6 own files: canonical_correlation_panels.png,canonical_correlation_panels.pdf,canonical_correlation_optimization_summary.xlsx,ruviii_before_and_after.png,ruviii_before_and_after.pdf present after the second run:  log removed line: TRUE
+.....KIT-264 E7 listed: FALSE text: No RUVIII integration export was recorded for this analysis.
+...KIT-264 G8 head: trx_reset listed: TRUE
+.KIT-264 G6 listed: TRUE k: 1 text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 1, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+....KIT-264 E8 none-sentence: TRUE no-correction: TRUE applied-sentence: FALSE figure in the results summary: FALSE
+....KIT-264 E8 control applied-sentence: TRUE figure in the results summary: TRUE
+KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
+.KIT-264 L2 listed: FALSE text: No RUVIII integration export was recorded for this analysis.
+KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  value: NULL
+...KIT-264 E1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+12KIT-264 E5 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+34KIT-264 G7 export kept: TRUE same source: TRUE
+....KIT-264 E2 listed: TRUE ruv_applied: FALSE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+....KIT-264 E3 history: initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete listed: TRUE
+..KIT-264 E6 own files: canonical_correlation_panels.png,canonical_correlation_panels.pdf,canonical_correlation_optimization_summary.xlsx present after the second run: ruviii_before_and_after.png,ruviii_before_and_after.pdf log removed line: TRUE
+.....KIT-264 E7 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+...KIT-264 G8 head: trx_reset listed: TRUE
+.KIT-264 G6 listed: TRUE k: 1 text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 1, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+....KIT-264 E8 none-sentence: FALSE no-correction: TRUE applied-sentence: TRUE figure in the results summary: TRUE
+....KIT-264 E8 control applied-sentence: TRUE figure in the results summary: TRUE
+KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
+.KIT-264 L2 listed: FALSE text: No RUVIII integration export was recorded for this analysis.
+KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  value: NULL
+...KIT-264 E1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+12KIT-264 E5 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+34KIT-264 G7 export kept: TRUE same source: TRUE
+....KIT-264 E2 listed: TRUE ruv_applied: FALSE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+....KIT-264 E3 history: initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete listed: TRUE
+..KIT-264 E6 own files: canonical_correlation_panels.png,canonical_correlation_panels.pdf,canonical_correlation_optimization_summary.xlsx present after the second run: ruviii_before_and_after.png,ruviii_before_and_after.pdf log removed line: TRUE
+.....KIT-264 E7 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+...KIT-264 G8 head: trx_reset listed: TRUE
+.KIT-264 G6 listed: TRUE k: 1 text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 1, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+d..eKIT-264 E8 none-sentence: FALSE no-correction: FALSE applied-sentence: FALSE figure in the results summary: FALSE
+KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
+.KIT-264 L2 listed: FALSE text: No RUVIII integration export was recorded for this analysis.
+KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  value: NULL
+...KIT-264 E1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+12KIT-264 E5 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
+34KIT-264 G7 export kept: TRUE same source: TRUE
+....KIT-264 E2 listed: TRUE ruv_applied: FALSE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+....KIT-264 E3 history: initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete listed: TRUE
+..KIT-264 E6 own files: canonical_correlation_panels.png,canonical_correlation_panels.pdf,canonical_correlation_optimization_summary.xlsx present after the second run: ruviii_before_and_after.png,ruviii_before_and_after.pdf log removed line: TRUE
+.....KIT-264 E7 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+...KIT-264 G8 head: trx_reset listed: TRUE
+.KIT-264 G6 listed: TRUE k: 1 text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 1, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+....KIT-264 E8 none-sentence: FALSE no-correction: TRUE applied-sentence: TRUE figure in the results summary: TRUE
+....KIT-264 E8 control applied-sentence: TRUE figure in the results summary: TRUE
+KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
