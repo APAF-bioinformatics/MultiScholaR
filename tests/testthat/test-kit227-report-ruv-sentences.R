@@ -121,6 +121,16 @@ k227Case <- function(name, file_lines = character(), record = NULL, side = "head
 
 k227Has <- function(text, pattern) grepl(pattern, text, fixed = TRUE)
 
+#' KIT-236: the lines after the line equal to `heading` up to the next blank line followed by a heading line
+k227Paragraph <- function(text, heading) {
+    lines <- strsplit(text, "\n", fixed = TRUE)[[1L]]
+    start <- which(lines == heading)
+    if (!length(start)) return(NA_character_)
+    end <- start[[1L]] + 1L
+    while (end < length(lines) && !(lines[[end]] == "" && nzchar(lines[[end + 1L]]))) end <- end + 1L
+    paste(lines[(start[[1L]] + 1L):(end - 1L)], collapse = "\n")
+}
+
 # --- File sections, in the writer's shape (R/func_general_filemgmt_study_parameter_support.R:230-317) ----------------
 
 k227ProtSection <- function(percentage = "10.0%", k = "2", separation = "0.5000", composite = "0.4000", controls = "50",
@@ -362,7 +372,11 @@ test_that("KIT-227 G1: Automatic on the group column prints the base text byte f
             info <- paste(name, case)
             expect_true(k227Has(head$method, "an automatic optimisation process was run"), info = info)
             expect_true(k227Has(head$method, "provided the best separation of biological groups"), info = info)
-            expect_identical(head$method, base$method, info = info)
+            # KIT-236 (declared edit (a), extended from its G0c): DIA with limpa without a DPC engine no longer prints
+            # the "Technical replicate averaging" paragraph; every other byte of the method text is the base's.
+            base_method <- if (identical(name, "DIANN_limpa")) sub(paste0("(?s)\\*\\*Technical replicate averaging\\*\\*\n\n",
+                ".*?\\(Oberg et al\\., 2008\\)\\.\n\n"), "", base$method, perl = TRUE) else base$method
+            expect_identical(head$method, base_method, info = info)
             expect_identical(head$results, base$results, info = info)
         }
     }
@@ -376,8 +390,10 @@ test_that("KIT-227 G1: Automatic on the group column prints the base text byte f
             base <- k227Case(name, spec$lines, spec$record, side = "base")
             info <- paste(name, case)
             expect_true(k227Has(head$method, "RUVIII-C"), info = info)
-            expect_identical(head$method, base$method, info = info)
-            expect_identical(head$results, base$results, info = info)
+            # KIT-236 (declared edit (a)): the lipid/metab Methods and Results outside the RUV paragraph changed by
+            # design (KIT-236 section 1); the RUV paragraph is the base's byte for byte.
+            expect_identical(k227Paragraph(head$method, "Batch Effect Correction"),
+                k227Paragraph(base$method, "Batch Effect Correction"), info = info)
         }
     }
     trx_head <- k227TrxText(k227TrxOutcomes("automatic"))

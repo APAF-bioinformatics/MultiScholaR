@@ -1,0 +1,75 @@
+template: inst/reports/proteomics/DIANN_report.rmd
+check: 'none' method from the 'limma' R package
+observed: present
+== text
+normalisation_method: "none"
+
+METHOD DETAILS  
+
+Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
+SOP reference: [to be completed by the analyst].  
+
+**Data import, filtering and normalisation**
+
+Precursor-level identifications and quantities were imported from the DIA-NN main report 
+(one row per precursor and run). Peptide and protein quantification was then performed using a series of filtering and 
+aggregation steps to ensure high-confidence identifications and accurate 
+quantification. Initially, low-confidence peptide identifications were removed 
+using q-value and proteotypic peptide filtering, retaining only peptides with a 
+q-value threshold of 0.01 and 
+only those that are proteotypic. Precursor ion intensities were then 
+aggregated into peptide-level quantification values, combining all charge states 
+of the same peptide sequence while keeping different modified peptides 
+(peptidoforms) as separate entries.
+
+Intensity threshold filtering was applied to remove peptides where a significant 
+proportion of samples fell below a specified log-intensity threshold. By default, 
+peptides were excluded if 50% or more 
+of the samples were below the lowest 1st 
+percentile of intensity values. Proteins were required to have a minimum of 
+2 peptides, which could include different 
+modifications of the same sequence, to be considered for further analysis.
+
+**Sample quality control and filtering**
+
+Samples with poor performance, indicated by an unusually low number of identified 
+peptides, were identified and removed to ensure data quality and reliable downstream 
+analysis. Such samples may be compromised due to issues in sample preparation, 
+instrument performance, or other technical factors. Including these low-quality samples 
+in downstream analysis could introduce bias and reduce the statistical power to detect 
+true biological differences. Samples with fewer than 500 peptides 
+were excluded from further analysis. This minimum peptide threshold ensures that all 
+retained samples have sufficient protein coverage for reliable quantification and 
+statistical testing.
+
+Peptides appearing in only one replicate across all groups were also excluded to 
+maintain measurement reproducibility. Protein-level quantification was performed using 
+the IQ algorithm, implementing the maxLFQ algorithm to generate protein abundance 
+values. Peptide intensities were aggregated into protein-level quantification without 
+normalisation at this stage, resulting in a protein quantification matrix with 
+log2-transformed intensity values for each protein across all samples.
+
+**FASTA reference and protein accession cleanup**
+
+Protein identifications were validated against the provided FASTA reference database.
+
+
+
+Using the protein intensity matrix, zero values were replaced with NA denoting 
+these are missing values. Protein filtering was then applied based on missing 
+value patterns and intensity thresholds to ensure robust statistical analysis. 
+Intensities below the 1st percentile of all 
+intensities in the table were treated as missing. Within each experimental group a protein 
+failed if the share of its values that were missing exceeded the allowed share, 33.333% (shown rounded to three decimals); a protein was retained only if it passed in every experimental group. 
+The data matrix was then log (base 2) transformed and between-sample normalisation 
+were performed using the 'none' method from the 'limma' R package 
+(Ritchie et al., 2015).
+
+Whether RUV-III batch correction was applied is not recorded for this analysis.
+
+At each stage of the data normalisation, the samples were checked for batch effects 
+using principal component analysis (PCA) plot, density boxplots, relative 
+log-expression (RLE) plots and the distribution of the Pearson correlation between 
+replicate samples within groups.
+
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].  

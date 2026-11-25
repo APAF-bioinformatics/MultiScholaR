@@ -1,0 +1,39 @@
+template: inst/reports/metabolomics/metabolomics_report.rmd
+check: batches merged effectively, suggesting successful removal of unwanted variations
+observed: present
+== text
+
+Quality Control
+
+Quality Control Analysis
+Figure 1 shows the QC metrics across three stages of data processing:
+• Log2 normalization (leftmost column, a, d, g, j)
+• Cyclic loess normalization (centre column, b, e, h, k)
+• RUVIII-C normalization (rightmost column, c, f, i, l)
+
+Principal Component Analysis
+The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:
+• Initial log2 data showed notable batch effects
+• After cyclic loess normalization, batch effects remained in PC1 but were reduced
+  in PC2
+• Post RUVIII-C and cyclic loess normalization, batches merged effectively,
+  suggesting successful removal of unwanted variations
+
+Density Boxplots
+The density boxplots (Figures 1d-f) show the distribution of the PC1 and PC2 values
+for each group.
+• The density boxplots show that the distribution of the PC1 and PC2 values for
+  each group are similar.
+• Successive rounds of normalization have reduced the variability in the PC1 and
+  PC2 values for each group.
+
+Relative Log Expression
+The RLE plots (Figures 1g-i) show progressive improvement in data quality:
+• Smaller interquartile ranges (IQR) after normalization indicate reduced technical
+  variation
+• Final normalized data shows consistent median values near zero, suggesting
+  successful bias removal
+
+Pearson Correlation
+• The Pearson correlation matrix (Figures 1j-l) shows that the correlation between
+  biological samples was high and consistent across all normalization methods 
