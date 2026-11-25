@@ -6,3 +6,4 @@ run_id	commit	purpose	minutes	result
 45577238407	a87b01a6 (base dd769671)	M1 kernel M (counted)	88	no worse: 326 of 326 gated comparisons pass
 45577242529	a87b01a6 (base dd769671)	M1 kernel P (counted)	58	no worse: 330 of 330 gated comparisons pass
 45577246802	base dd769671, head c25e3e1d	R2: scope (101 files) base against head, 3 shards per side, check; skip-none.R	528	95 same, 1 only-on-head (new file, 89 pass), 1 fixed, 1 message-changed, 3 new-failure (proteomics DA and enrichment captures: predicted categories, see outcome); check identical (0 only on head); skip-none: Skip and none within 4e-13
+45592673648	base dd769671, head c25e3e1d	R3: full suite, 20 shards per side	about 1257 (857 file-minutes plus set-up; job times not read: API rate limit)	475 same, 1 only-on-head, 1 fixed, 1 message-changed, 4 new-failure (R2 five plus test-omics-enrich-core.R); see outcome

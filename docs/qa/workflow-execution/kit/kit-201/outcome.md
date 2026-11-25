@@ -125,9 +125,26 @@ whether the two routes hand the DA the same matrix is not compared here (KIT-188
   enrichment built on it, are expected unchanged (inferred; not run here). No committed lipid/metab record with a cutoff
   above 0 exists. T-A5 builds its records in process under each rule.
 
-## Moved stored references
+## Moved stored references (R3, run 45592673648; base dd769671, head c25e3e1d)
 
-[R3's base-against-head list, against 6.2's prediction, to be filled after R3.]
+Of 482 files: 475 `same`; `test-kit201-treat-moderation.R` only on head; `test-prot-ruv-factors-in-model.R` `fixed`
+(rewritten here, 6.2 (a)(ii)); six files move. None is edited (D5); each goes to plan section 11.
+
+| File | Reference | Expectations failing, base -> head | 6.2 |
+|---|---|---|---|
+| `tests/testthat/test-gui-entry-proteomics.R` | `tests/testdata/gui-entry/prot_dia.json`, `prot_lfq.json`, `prot_lfq_fragpipe.json`, `prot_tmt.json`, from the DA step on (DIA lane `message-changed`; the three protein lanes `new-failure`) | 4 -> 25 | (iii), named |
+| `tests/testthat/test-workflow-saved-da.R` | `savedDaW1Frozen` (`:764` on), W1 (a) and W2 DIA cases | 171 -> 175 (`message-changed`) | (i), (iii), named |
+| `tests/testthat/test-omic-da-module.R` | `omicDaW1Frozen[["prot_main"]]` (`:3366`): DA files and manifest | 53 -> 80 (with the next two rows) | (iii), named |
+| same | `omicDaW1Frozen[["prot_load"]]` (`:3254`), `[["prot_no_contrasts"]]` (`:4052`), and KIT-112 W3's managed run compared with `prot_main`: the DA manifest digest (model record) | | (i), by category |
+| `tests/testthat/test-omic-enrich-module.R` | `omicEnrichW1Frozen` (`:836` on): `da_results_data` (the proteomics DA manifest) and the enrichment of the legacy test's results, in gprofiler, kernel_gprofiler, organism_filter, refusals, restore (`new-failure`), clusterprofiler and kernel_clusterprofiler (`message-changed`) | 22 -> 59 | **not named**: downstream of (i) and (iii) |
+| `tests/testthat/test-omics-enrich-core.R` | W2's core-side comparison with W1 (b)'s frozen run step (`omicEnrichW1Frozen`, read from the module file): `da_data` digest of the run step | 9 -> 20 | **not named**: downstream of (i) and (iii) |
+
+Unchanged as predicted: `prot_dia_limpa`, `trx_screen` and the lipid and metabolite GUI-entry lanes (`same`).
+
+**Stop rule (8, "a moved reference outside 6.2's prediction").** The two enrichment files are not named in 6.2. Their
+moved values are the proteomics DA manifest and DA tables (6.2 (i), (iii)) as the enrichment receives them, and the
+enrichment of those tables; nothing in the enrichment code changed. Whether they count as predicted is the
+coordinator's call; the ticket stops here for that ruling.
 
 ## Figures measured on the earlier TREAT moderation (D9; labelled, none re-measured)
 
@@ -145,9 +162,28 @@ whether the two routes hand the DA the same matrix is not compared here (KIT-188
 ## Not checked
 
 - No R was run on this machine; every result above is a runner's.
-- The managed worker path's handling of the marker (R2's scope covers the worker tests).
+- The managed worker path's handling of the marker beyond R2 and R3's worker tests (KIT-112 W2 moved as predicted).
+- Skip against `none` through the two whole routes (only the kernels, `r2/skip-none.tsv`).
+- The replay of the committed KIT-173 record (its store is not committed).
 - Windows; real data.
 
 ## Current state
 
-R0, M1 (no worse, all three kernels) and R2 done; R3 running.
+R0, M1 (no worse, all three kernels), R2 and R3 done. Stopped at the moved-reference stop rule for the two enrichment files
+(above), for the coordinator's ruling.
+
+## Acceptance criteria
+
+| # | State | Evidence |
+|---|---|---|
+| A1 | met | R1 and R1-2 (each failing-first value; T-A5 after one instrument repair); R2 (the new file passes on the merged head: 89 expectations, T-196 and T-196 (b) included) |
+| A2 | met | R0 (17 of 17 checks, blind); declaration a87b01a6 committed alone before M1; M1: L, M, P no worse; sizes above |
+| A3 | met, subject to the ruling | R2: no `compare-error`; the `new-failure` verdicts are the moved references above (the enrichment-module file is one of the two not named) |
+| A4 | met | R2 check: findings identical on base and head |
+| A5 | met, subject to the ruling | R3: the list above, with file, line and size |
+| A6 | met | NEWS under the unreleased heading; two `VAL-<merge>` rows (one closes DAS-016); no version change; `man/runTestsContrasts.Rd` |
+
+## Core-hours
+
+R1 1.7, R1-2 1.9, R0 1.5, M1 15.7 (L 6.0, M 5.9, P 3.9), R2 35.2, R3 about 83.8: about 139.8, against 107.3 expected,
+524.4 ceiling (812.4 cap). R2 and R3 ran above their expected figures (16.8 and 65.1), under their ceilings.
