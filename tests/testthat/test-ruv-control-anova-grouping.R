@@ -675,3 +675,45 @@ test_that("KIT-190 T9 (iii): the bound's replay marker; under the earlier rule t
   names_fixed <- vapply(Filter(function(p) identical(p$source, "fixed"), step$parameters), function(p) p$name, "")
   expect_false("ruv_k_bound" %in% names_fixed)
 })
+
+test_that("KIT-190 T9 (iv): the tab and the export show the k removed, and the notices reach the tab on both routes", {
+  # A capped Automatic step's value (as `omicsRuvOperation` returns it) and its sweep result for one assay.
+  value <- list(best_k = list(LCMS_Pos = 2L), k_sweep = list(LCMS_Pos = 8L), k_cap = list(LCMS_Pos = 2L),
+    k_samples = list(LCMS_Pos = 12L), k_notice = list(LCMS_Pos = "LCMS_Pos: the automatic search found 8 unwanted factors."))
+  results <- list(LCMS_Pos = list(success = TRUE, best_k = 8L, best_percentage = 11, separation_score = 0.5,
+    control_genes_index = c(a = TRUE, b = TRUE, c = FALSE)))
+  annotate <- get0("omicsRuvAnnotateResults", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+  expect_true(is.function(annotate))
+  if (is.function(annotate)) {
+    annotated <- annotate(results, value)
+    summary <- omicNormRuvSummary(annotated$LCMS_Pos)
+    expect_match(summary, "Factors removed: 2 (the search found 8; at most 2 with 12 samples)", fixed = TRUE)
+    expect_false(grepl("Best k: 8", summary, fixed = TRUE))
+    # Not capped: the summary is as before.
+    plain <- annotate(list(LCMS_Pos = utils::modifyList(results$LCMS_Pos, list(best_k = 2L))),
+      utils::modifyList(value, list(k_sweep = list(LCMS_Pos = 2L), k_notice = list(LCMS_Pos = NULL))))
+    expect_match(omicNormRuvSummary(plain$LCMS_Pos), "^Best k: 2\n")
+  }
+  report <- get0("omicsRuvReportNotices", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+  expect_true(is.function(report))
+  if (is.function(report)) {
+    logged <- character()
+    warned <- character()
+    report(value, function(text) logged <<- c(logged, text), function(text) warned <<- c(warned, text))
+    expect_identical(warned, value$k_notice$LCMS_Pos)
+    expect_true(any(grepl(value$k_notice$LCMS_Pos, logged, fixed = TRUE)))
+  }
+  # Both routes deliver the annotation and the notices (in process: the tab's notify; managed: showNotification).
+  for (route in c("runWorkflowOmicsInProcessNormalisation", "runWorkflowOmicsManagedNormalisation")) {
+    body_text <- paste(deparse(body(get(route, envir = asNamespace("MultiScholaR")))), collapse = "\n")
+    expect_true(grepl("omicsRuvAnnotateResults", body_text, fixed = TRUE), info = route)
+    expect_true(grepl("omicsRuvReportNotices", body_text, fixed = TRUE), info = route)
+  }
+  # The session-export summary prints the k removed with the k found.
+  line_fn <- get0("omicsRuvExportSummaryLine", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+  expect_true(is.function(line_fn))
+  if (is.function(line_fn) && is.function(annotate)) {
+    expect_match(line_fn("LCMS_Pos", annotate(results, value)$LCMS_Pos), "k=2 (found 8, at most 2 with 12 samples)",
+      fixed = TRUE)
+  }
+})
