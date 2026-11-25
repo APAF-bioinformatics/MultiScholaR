@@ -423,10 +423,28 @@ k264Fixture <- function(env = parent.frame()) {
     fixture
 }
 
+#' Copies of `module_ci_trx_summary_steps` and `module_ci_trx_docx_text` (test-module-ci-trx-summary.R:13-22 and :33-36;
+#' they are defined in that test file, not in a helper, so this file has its own, verbatim; R1 instrument defect 1).
+k264SummarySteps <- function(session, output, out) {
+    session$setInputs(`summary-experiment_label` = "kit097", `summary-description` = "KIT-097 synthetic transcriptomics")
+    session$setInputs(`summary-save_workflow_args` = 1L)
+    session$flushReact()
+    session$setInputs(`summary-copy_to_publication` = 1L)
+    session$flushReact()
+    session$setInputs(`summary-generate_report` = 1L)
+    session$flushReact()
+    out$session_summary <- output$`summary-session_summary`
+}
+
+k264DocxText <- function(path) {
+    xml <- utils::unzip(path, "word/document.xml", exdir = tempfile())
+    gsub("<[^>]+>", " ", paste(readLines(xml, warn = FALSE), collapse = " "))
+}
+
 k264Docx <- function(fixture) {
     report <- k264Reports(fixture)
     expect_length(report, 1L)
-    if (length(report)) module_ci_trx_docx_text(report[[1L]]) else ""
+    if (length(report)) k264DocxText(report[[1L]]) else ""
 }
 
 test_that("KIT-264 E8: the owner's route B through the mounted tabs: the report does not state the earlier export", {
@@ -438,7 +456,7 @@ test_that("KIT-264 E8: the owner's route B through the mounted tabs: the report 
         session$flushReact()
         session$setInputs(`de-run_da_analysis` = 2L)
         session$flushReact()
-        module_ci_trx_summary_steps(session, output, out)
+        k264SummarySteps(session, output, out)
     }
     out <- module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "manual", ruv_k = 2L, ruv_percentage = 10),
         ruviii = "group", summary = again)
@@ -461,7 +479,7 @@ test_that("KIT-264 E8 control: the same journey without the second run keeps the
     fixture <- k264Fixture()
     owner <- fixture$owner
     out <- module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "manual", ruv_k = 2L, ruv_percentage = 10),
-        ruviii = "group", summary = module_ci_trx_summary_steps)
+        ruviii = "group", summary = k264SummarySteps)
     expect_identical(out$errors, character(), info = "precondition: no step failed")
     expect_false(is.null(k264Snapshot(owner)$exports$trx_ruviii_export), info = "precondition: the export is in the state")
     record <- buildWorkflowAnalysisRecord(owner)
