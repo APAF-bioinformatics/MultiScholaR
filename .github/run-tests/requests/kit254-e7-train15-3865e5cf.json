@@ -1,0 +1,27 @@
+{
+  "requested_by": "Train 15 focused audit, resolution (a) step 3: test-kit254-omics-correlation-skip.R alone, edited head 3865e5cf vs base e69b411e; ceiling 60 job-minutes; predicted 379/0 both sides, same",
+  "label": "Train 15 kit254 E7 file 3865e5cf vs e69b411e",
+  "package_commit": "3865e5cf153ee02a0a994638b53d506352deaced",
+  "base_commit": "e69b411ea1d4a61abe5d20cfe5cc30e9106d78f5",
+  "tools_ref": "",
+  "tests": [
+    "test-kit254-omics-correlation-skip.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "limpa",
+    "mixOmics",
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
