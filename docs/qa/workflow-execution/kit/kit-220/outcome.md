@@ -1,4 +1,4 @@
-# KIT-220 outcome (r1.3; stopped before run D, control C, the re-freeze and R3, as ordered)
+# KIT-220 outcome (r1.3; complete: control C, run D, re-freeze, R3)
 
 Branch `kit-220` from `origin/v0.9-staging` d048898d (before KIT-204, at the coordinator's order). Commits: 0804ed93
 tests first; bb092685 and 19b9a4dc instrument fixes 1 and 2 (VAL-54; tests and G0 only, no expected value changed);
@@ -43,8 +43,8 @@ then the records and the I04 rework (below). Runs: `runs.tsv`. About 53.0 core-h
 ## Acceptance
 - A1 met (G0). A2 met (R1 failing-first; R2b: the new file passes 79 of 79 on head). A3 not met as worded: only
   `dia_refused`'s five leaves are outside section 6 (`prot_load` and the W3 comparison are inside it; RC1-01 mislabelled
-  `:3348`, which is `prot_load`). The owner has since allowed them (below). A4 (R3), run D,
-  control C: not run (stopped as ordered). A5: NEWS, ledger row, no version or NAMESPACE change; this record.
+  `:3348`, which is `prot_load`). The owner has since allowed them (below). A4: R3 45573760967 as
+  declared; control C 45522656187/45522658880/45522663108; run D 45522667790/45522671732/45522675562 (sections below). A5: NEWS, ledger row, no version or NAMESPACE change; this record.
 
 ## Findings
 - F6 (folded into KIT-220 at r1.3 by the coordinator): the lipidomics and metabolomics published count tables'
@@ -56,7 +56,8 @@ then the records and the I04 rework (below). Runs: `runs.tsv`. About 53.0 core-h
 
 ## Not checked
 - R3 (full suite), control C (GUI-entry keys), run D (re-dumps), the rendered reports, Windows, real data.
-- The workbook route's interactive volcano still colours at q 0.05 and |log2FC| >= 1 (KIT-230 N3; routed by the coordinator).
+- The exported `outputDeAnalysisResults()` colours its interactive page at |log2FC| >= 1 whatever cutoff (workbooks
+  archived, VAL-209).
 - `daAnalysisWrapperFunction` (left for after KIT-218, ticket 3 item 4).
 
 ## r1.3 (implementation audit AUDIT-KIT-220-impl-20261125; coordinator's rulings)
@@ -130,12 +131,13 @@ Script `redump.R` (each file in its own process with the dump switches and the G
   (laptop-recorded; read also by W2): `dia_qvalue_only` products, dependencies, manifest, head_manifest, display,
   files; `dia_refused` products, dependencies, head_manifest, display, files; `files` of dia_one_contrast,
   dia_two_contrasts, dia_repeat, dia_reopened_rerun, dia_non_head, dia_changed_arguments, dia_retry, limpa_one_contrast
-  (19 leaves). Runner values: `control-cd.tsv`.
+  (19 leaves; read by W1 and its W2 twin: 37 messages). Runner values: `control-cd.tsv`.
 - **A3/A4 restated.** A3: R2-scope files `same` base against head except the new file, the re-frozen files (now passing
   their re-frozen leaves) and `test-workflow-saved-da.R`, whose runner failures are the known ones plus message
   changes at those 19 leaves only. **Expected R3 verdict** (staging dd769671 against the merge): every file `same`,
   except `test-kit220-da-threshold-consumers.R` (`only-on-head`, all passing) and `test-workflow-saved-da.R`
-  (`message-changed`, the same failure count, messages differing only at the 19 W1 leaves); `test-omic-gui-config.R`
+  (`message-changed`, the same failure count, messages differing only at 37 places: the 19 W1 leaves and their 18 W2
+  twins); `test-omic-gui-config.R`
   `same`; the re-frozen GUI-entry, module and core files `same` (base passes the old values, head the new); check
   findings identical. Anything else is a stop.
 - Staging dd769671 merged (8bda2aac; ledger: staging's rows to VAL-211 first, `VAL-<merge>` after); NEWS: the
@@ -144,9 +146,9 @@ Script `redump.R` (each file in its own process with the dump switches and the G
 ## R3 (45573760967; merge 1c2d8fdd against staging dd769671; 84.6 core-hours)
 
 As declared: 480 files `same`; `test-kit220-da-threshold-consumers.R` `only-on-head` (79 passed, 0 failed);
-`test-workflow-saved-da.R` `message-changed` (780 passed / 171 failed on both sides; messages differ at exactly the 19
-W1 leaves listed above, MECHANICAL); `test-omic-gui-config.R` `same` (so 77ebed8a is verified); every re-frozen file
-`same`; check findings identical. A3 and A4 met as restated. Ticket total about 191.5 core-hours (ceiling 487.33).
+`test-workflow-saved-da.R` `message-changed` (780 passed / 171 failed on both sides; messages differ at 37 places, the 19 W1 leaves and
+their 18 W2 twins (W2 has no `dia_non_head`), MECHANICAL); `test-omic-gui-config.R` `same` (so 77ebed8a is verified); every re-frozen file
+`same`; check findings identical. A3 and A4 met as restated. Ticket total 164.5 core-hours (2,467.3 job-minutes in `runs.tsv`; ceiling 487.33).
 
 ## For the change report
 - **What was wrong.** Proteomics (every workflow and route): the published count table (`.tab`/`.xlsx`), its NumSig
@@ -171,12 +173,13 @@ W1 leaves listed above, MECHANICAL); `test-omic-gui-config.R` `same` (so 77ebed8
   `R/utils_workflow_dia_da.R:876-880`; `R/utils_workflow_trx_declarations.R:902-916`, `:1100`; `R/func_trx_da.R:105`;
   `R/func_trx_publication.R:253`; `inst/reports/proteomics/{DIANN,LFQ,TMT}_report.rmd` FormatDESummaryTable;
   `inst/reports/transcriptomics/transcriptomics_report.rmd:152`; `R/func_lipid_da_export.R:311-315`;
-  `R/func_metab_da_results_output.R:313-317`. At c788f04a / d0b8672c: the same functions (`printCountDaGenesTable`
-  `q_val_thresh`; `q_threshold` after the bind; `Status` with `lfc_thresh`; identity `lfc`; `fdr_thresh` in the trx
-  calls; `decideTests.DGEExact` status; up/down before `significant` with `relocate`).
+  `R/func_metab_da_results_output.R:313-317`. At the fix (c788f04a / d0b8672c): `R/func_prot_da_model_methods.R:509-514`,
+  `R/func_prot_da_results_methods.R:349-353`, `R/func_prot_da_volcano_glimma.R:222-226`, `R/utils_workflow_dia_da.R:878-890`,
+  `:1005`, `R/utils_workflow_trx_declarations.R:897-920`, `:1110`, `R/func_lipid_da_export.R:310-319`,
+  `R/func_metab_da_results_output.R:312-321`.
 - **Evidence and its limits.** G0 (45503391942 base; R2 45503395846 head), R1b 45501071657, R2, R2b 45513008193. A
-  synthetic proteomics fixture, trx_edge_12 and an 8-row lipid/metab table only; no real data; GUI-entry lanes not yet
-  run for proteomics (control C).
+  synthetic proteomics fixture, trx_edge_12 and an 8-row lipid/metab table only; no real data. GUI-entry lanes: control C
+  (45522656187, 45522658880, 45522663108) and R3 45573760967.
 
 ## Past results
 - Wrong when the threshold set was not 0.05: proteomics `NumSigDaMolecules/da_proteins_num_sig_da_molecules.*`,
@@ -187,6 +190,15 @@ W1 leaves listed above, MECHANICAL); `test-omic-gui-config.R` `same` (so 77ebed8
 - Every lipid/metab count table ever published shows 0 up and 0 down; its total and bar chart are right.
 - After the fix, a transcriptomics report rendered from a project whose DA ran before it at t < 0.05 captions the
   earlier 0.05 top-genes list "FDR (BH) < t"; a direction with fewer than 10 genes below t then shows rows above t.
-- The workbook route's interactive volcano still colours at q 0.05 and |log2FC| >= 1 (KIT-230 N3).
+- The exported `outputDeAnalysisResults()` colours its interactive page at |log2FC| >= 1 whatever cutoff (workbooks
+  archived, VAL-209).
 - How a user can tell: `analysis_record.json` `DA$qvalue` != 0.05 (proteomics, trx); its `software.sha`/`build` tell
   whether the files predate the fix; recount from `DA_results_*.xlsx` or `de_results_*.csv` at the stated threshold.
+
+## Routing (closure check C04; the coordinator's)
+- The lipidomics and metabolomics reports' count sentence (the template reads `de_<omic>_num_sig_de_molecules.tab`,
+  Copy writes `da_…`, and the template's reader expects `status`/`counts`) is NOT this ticket's: routed to KIT-236.
+- H2, open: metabolomics Copy copies no `NumSigDeMolecules` folder, no count table and no `Volcano_Plots`; lipidomics
+  Copy copies no `Volcano_Plots`. Routed to a small Copy-parity ticket before the release.
+- C02: the owner is to be told (next batch) that VAL-207 (2)(ii) and (iii) were allowed but not applied (deferred under
+  VAL-207's own stop); plan section 11 row added.
