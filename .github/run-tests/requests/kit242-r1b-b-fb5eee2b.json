@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-242 R1b-B (ticket r1.6, Part B): Part B's rows failing first on tests-only commit fb5eee2b (base 0020144c plus the rows and the two VAL-303 re-pins); decides stop rule 1 for these rows; ceiling per VAL-329; 1 job, ceiling 60 minutes",
+  "label": "KIT-242 R1b-B tests-only fb5eee2b",
+  "package_commit": "fb5eee2bd0fa7eb456126301590f163a3b10f58a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit242-normalisation-fallback.R"],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
