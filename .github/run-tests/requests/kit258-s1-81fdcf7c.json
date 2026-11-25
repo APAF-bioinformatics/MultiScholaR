@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-258 S1: duplicate-resolution control, fix 81fdcf7c (pending OD-1, OD-2) against staging 63143aa3; A4 (a) to (e), stop rules 1 and 2; one scripts job",
+  "label": "KIT-258 S1 control on kit-258 81fdcf7c vs 63143aa3; 1 scripts job, ceiling 60 job-minutes",
+  "package_commit": "81fdcf7c0fac256d0728e2c36fed4f71ec585fd5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-258/dup-rank-control.R",
+      "args": ["63143aa3618eae2729c6864ab10903928bec5071", "docs/qa/workflow-execution/kit/kit-258/s1"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-258/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
