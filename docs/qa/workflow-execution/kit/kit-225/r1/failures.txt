@@ -1,0 +1,364 @@
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  LFQ
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "1d86edbad30bcdc6c7351c92923512c6018127be3ca8cb9319d0e1ed1fa4add0"
+  `expected`: "d1b2eae662fadd0c49cce290b0eeeaf8dad54a31818b495a1c2d443f6004c59f"
+  
+  LFQ
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `reset$result$previousState` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  LFQ
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit225NoticeText("Duplicate Removal")`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Duplicate Removal)."
+  
+  LFQ
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "1d86edbad30bcdc6c7351c92923512c6018127be3ca8cb9319d0e1ed1fa4add0"
+  `expected`: "d1b2eae662fadd0c49cce290b0eeeaf8dad54a31818b495a1c2d443f6004c59f"
+  
+  LFQ
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  TMT
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "e69f5784e10756c6650087b1e44c9ea73dab32826693c857291a1410f9f87a02"
+  `expected`: "dee01089cfac8e2c872982989318d1e982b8bdfca2af3eb1a53782dda333be43"
+  
+  TMT
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `reset$result$previousState` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  TMT
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit225NoticeText("Duplicate Removal")`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Duplicate Removal)."
+  
+  TMT
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "e69f5784e10756c6650087b1e44c9ea73dab32826693c857291a1410f9f87a02"
+  `expected`: "dee01089cfac8e2c872982989318d1e982b8bdfca2af3eb1a53782dda333be43"
+  
+  TMT
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E3: DIA with limpa at its normal ending, Reset returns the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "precursor_rollup"      
+  `expected`: "peptide_count_filtered"
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E3: DIA with limpa at its normal ending, Reset returns the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `l7$entity_id`.
+  Differences:
+  `actual`:   "fea60f596a3dabe6577db401acac9000466f60436db08a7c80e644a124e57a26"
+  `expected`: "19dfe188ab5d6f749d91b3049ebaff155a946fb63c63857bf80a57fa48d1ff93"
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E3: DIA with limpa at its normal ending, Reset returns the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit225NoticeText("Peptide Count Filter")`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (precursor_rollup)"
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter)."
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E4: DIA (iq) normalised before the replicate filter, Reset returns the protein table (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "protein_intensity_filtered".
+  Differences:
+  `actual`:   "imputed"                   
+  `expected`: "protein_intensity_filtered"
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E4: DIA (iq) normalised before the replicate filter, Reset returns the protein table (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `d3$entity_id`.
+  Differences:
+  `actual`:   "b30dd471e38fd774141ac360f4a442bc5193fc58518eed94cb722e41c7d62d16"
+  `expected`: "2485496c137b904cf1b2fc36fe6e08fcdb9f66351b326f472a2ebfa6a95b07aa"
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E5: after a design saved again, Reset returns the second run's source by identity, not by name (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `p3b$entity_id`.
+  Differences:
+  `actual`:   "7c2713aaf5ee2d01bd6aa0962fc29ebf7d5b9161414df39090ba4e0e9cf85cf8"
+  `expected`: "de566224103aa4f566c38e88ccbd42bdf3add032b9ce8aa88c5d6622f36adfd4"
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E5: after a design saved again, Reset returns the second run's source by identity, not by name (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "duplicates_removed"        
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, p3) at test-kit225-prot-norm-reset-source.R:222:5
+   2.   └─testthat::expect_identical(kit225History(fixture), history) at test-kit225-prot-norm-reset-source.R:148:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "168b8dc24bd9a0396e78cd43221ac9e8528ae4125fed2cb1b872e7d71419c5db"
+  `expected`: "13034dfafded3bca538e725c03b759b439c193a65c9bdd2f92cb7f9eec340f54"
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, p3) at test-kit225-prot-norm-reset-source.R:222:5
+   2.   └─testthat::expect_identical(kit225Head(fixture)$entity_id, head$entity_id) at test-kit225-prot-norm-reset-source.R:149:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `reset$result$previousState` to be NULL.
+  Differences:
+  `actual` is a character vector ('protein_s4_initial')
+  `expected` is NULL
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit225NothingText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are."
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, p3) at test-kit225-prot-norm-reset-source.R:235:5
+   2.   └─testthat::expect_identical(kit225History(fixture), history) at test-kit225-prot-norm-reset-source.R:148:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "cfcee394aea09f71f8803d542b83534a997d12253878b85fecce3405156a938a"
+  `expected`: "ba2f96e43f559f1ecce57f842d70b596e03431d396b11290b491d5021edf3f92"
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, p3) at test-kit225-prot-norm-reset-source.R:235:5
+   2.   └─testthat::expect_identical(kit225Head(fixture)$entity_id, head$entity_id) at test-kit225-prot-norm-reset-source.R:149:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit225NothingText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are."
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, p3) at test-kit225-prot-norm-reset-source.R:246:5
+   2.   └─testthat::expect_identical(kit225History(fixture), history) at test-kit225-prot-norm-reset-source.R:148:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "6e80a55a69559408bd391eee7cab7a758ecce466fdcbd28ce52f7d55820cf75f"
+  `expected`: "ebacbfe7e8286b9ae63e2c28413b45bba39451c4920d698a7d0ebe64d42e88a3"
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, p3) at test-kit225-prot-norm-reset-source.R:246:5
+   2.   └─testthat::expect_identical(kit225Head(fixture)$entity_id, head$entity_id) at test-kit225-prot-norm-reset-source.R:149:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit225NothingText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are."
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before)
+kind: failure
+message:
+  Expected `kit225Reset(fixture, norm)` to throw a error with class <prot_norm_reset_source_unknown>.
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before)
+kind: failure
+message:
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+  `actual`:   "initial" "protein_replicate_filtered"             
+  `expected`: "initial" "protein_replicate_filtered" "normalized"
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, head) at test-kit225-prot-norm-reset-source.R:261:5
+   2.   └─testthat::expect_identical(kit225History(fixture), history) at test-kit225-prot-norm-reset-source.R:148:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before)
+kind: failure
+message:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "1f37c2298618917cd3d6b5e824a7b9995dca6521e3110ec5b2de721662508f5e"
+  `expected`: "b46414098a94b710c3a56e5f5f37ec4d6c759ec0eaa5fe1809610a963e82561e"
+trace (first lines):
+      ▆
+   1. └─kit225Unchanged(fixture, history, head) at test-kit225-prot-norm-reset-source.R:261:5
+   2.   └─testthat::expect_identical(kit225Head(fixture)$entity_id, head$entity_id) at test-kit225-prot-norm-reset-source.R:149:5
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "normalized".
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "normalized"                
+
+file: test-kit225-prot-norm-reset-source.R
+test: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `unknown$entity_id`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('0000000000000000000000000000000000000000000000000000000000000000')
+
+file: test-prot-05b-norm-module-contracts.R
+test: runProtNormResetWorkflow sequences reset helpers and notification
+kind: failure
+message:
+  Expected `calls$revert$normData` to be identical to `norm_data`.
+  Differences:
+  `actual` is NULL
+  `expected` is an environment
+

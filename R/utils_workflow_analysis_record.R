@@ -640,7 +640,8 @@ validateWorkflowAnalysisRecord <- function(record) {
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
 }
 
-#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`): for
+#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
+#' adds `intensity_filter_samples`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -652,7 +653,11 @@ workflowReplayRuleMarkers <- list(
         earlier = "rounded_percentage"),
     # KIT-205: the enrichment background is each comparison's tested rows (`enrichmentTestedRows`); earlier, every row.
     enrichment_background = list(option = "MultiScholaR.enrichment_background", current = "tested",
-        earlier = "all_rows"))
+        earlier = "all_rows"),
+    # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
+    # made before counted every numeric column of the assay ("numeric_columns").
+    intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
+        earlier = "numeric_columns"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).
@@ -705,6 +710,31 @@ workflowReplayParameters <- function(parameters, declared) {
         out[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
     }
     out
+}
+
+#' KIT-212 (VAL-172 (3)): a record's DA replays only when it was run on the record's final table: its `source_state` is
+#' the state of one of the record's steps (a precondition state the replay store holds, or a replayed step), and, after
+#' the steps are replayed, that state holds the replayed head's table (`workflowDaTablesDiffer`). Refused otherwise
+#' (`workflow_replay_invalid`): replaying it would test another table than the one recorded.
+#' @param manager The replay's owner, after the steps.
+#' @param da The record's `analyses$differential_abundance`.
+#' @param steps The record's steps.
+#' @noRd
+assertWorkflowReplayDaSource <- function(manager, da, steps) {
+    text <- paste("This record's differential analysis was run on a table other than the record's final table, so a replay",
+        "would test a different table. Open the session, run the differential analysis on the final table, save, and replay",
+        "the new record.")
+    source_state <- da$source_state
+    states <- vapply(steps, function(step) as.character(step$state %||% NA_character_), character(1))
+    if (!is.character(source_state) || length(source_state) != 1L || is.na(source_state) || !source_state %in% states) {
+        rlang::abort(text, class = "workflow_replay_invalid")
+    }
+    differ <- withWorkflowStateScope(manager, function() {
+        source <- getWorkflowStateReference(manager, source_state)
+        is.null(source) || workflowDaTablesDiffer(manager, source, workflowDaTableState(manager))
+    })
+    if (differ) rlang::abort(text, class = "workflow_replay_invalid")
+    invisible(TRUE)
 }
 
 #' Replay an analysis record (KIT-028): the record alone, with hash-checked inputs, re-executes the analysis.
@@ -890,6 +920,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     da <- record$analyses$differential_abundance
     da_manifest <- NULL
     if (!is.null(da)) {
+        assertWorkflowReplayDaSource(manager, da, steps)
         settings <- list()
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
         contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
@@ -1166,7 +1197,10 @@ workflowRecordReportSources <- list(
     enrichment_significance_rule = list(record = list(c("enrichment", "significance_rule"),
         c("outcomes", "enrichment", "significance_rule"))),
     # KIT-205: the enrichment background rule, a fixed constant of the step; a record without it was made with every row.
-    enrichment_background = list(record = c("enrichment", "enrichment_background")))
+    enrichment_background = list(record = c("enrichment", "enrichment_background")),
+    # KIT-215 (VAL-170): the lists not tested, on both routes ("<comparison>: <direction>", joined by "; "); a record
+    # without it ("not recorded") was made with every list tested or before KIT-215.
+    enrichment_lists_not_tested = list(record = c("outcomes", "enrichment", "enrichment_lists_not_tested")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the

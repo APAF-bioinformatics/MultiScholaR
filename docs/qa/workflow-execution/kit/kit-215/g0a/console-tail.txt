@@ -1,0 +1,25 @@
+! Column `go_id_go_molecular_function` not found in `.data`.
+Backtrace:
+     ▆
+  1. ├─global family_rows(...)
+  2. │ └─MultiScholaR:::buildUniprotGoGeneSets(annotations, MultiScholaR:::goPropagationShipped)
+  3. │   └─base::lapply(...)
+  4. │     └─MultiScholaR (local) FUN(X[[i]], ...)
+  5. │       └─MultiScholaR:::uniprotGoAspectPairs(go_annotations, column)
+  6. │         ├─dplyr::rename(...)
+  7. │         ├─dplyr::select(...)
+  8. │         ├─tidyr::separate_rows(...)
+  9. │         ├─dplyr::filter(go_annotations, !is.na(.data[[column]]))
+ 10. │         └─dplyr:::filter.data.frame(go_annotations, !is.na(.data[[column]]))
+ 11. │           └─dplyr:::filter_impl(...)
+ 12. │             └─dplyr:::filter_rows(...)
+ 13. │               └─dplyr:::filter_eval(...)
+ 14. │                 ├─base::withCallingHandlers(...)
+ 15. │                 └─mask$eval_all_filter(dots_expanded, invert, env_filter)
+ 16. │                   └─dplyr (local) eval()
+ 17. ├─go_id_go_molecular_function
+ 18. ├─rlang:::`[[.rlang_data_pronoun`(.data, "go_id_go_molecular_function")
+ 19. │ └─rlang:::data_pronoun_get(...)
+ 20. └─rlang:::abort_data_pronoun(x, call = y)
+ 21.   └─rlang::abort(msg, "rlang_error_data_pronoun_not_found", call = call)
+Execution halted

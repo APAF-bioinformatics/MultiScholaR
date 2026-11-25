@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit225-prot-norm-reset-source.R	24	32	0	0	0	125	failed
+test-prot-05b-norm-module-contracts.R	439	1	0	22	0	10.3	failed

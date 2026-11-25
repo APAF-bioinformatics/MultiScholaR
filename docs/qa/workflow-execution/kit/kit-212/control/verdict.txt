@@ -1,0 +1,7 @@
+exits: base=0 head_1=0 head_2=0
+every case dumped: base=TRUE head_1=TRUE head_2=TRUE
+changed leaves: 152; pre-existing leaves: 14
+(i) every changed leaf's base dump equals the stored value: TRUE
+(ii) the two head dumps are identical: TRUE
+(iii) every changed leaf is at a Copy, Report or later step of the nine cases: TRUE
+cases with changed leaves: lipid_main,lipid_variants,lipid_github_fallback,lipid_global_another,metab_main,metab_variants,metab_github_fallback,prot_owner,prot_owner_variants

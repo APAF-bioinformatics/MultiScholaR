@@ -156,6 +156,60 @@ enrichmentTestedRows <- function(de_data) {
   list(rows = de_data[tested, , drop = FALSE], left_out = sum(!tested))
 }
 
+#' Signal one enrichment list's or comparison's status (KIT-215, VAL-170)
+#'
+#' Through KIT-208's class `multischolar_enrichment_no_identifiers`, with `reason` and `route`. It does nothing unless
+#' a caller handles the class (`diaEnrichmentOperation`'s kernel collects the signals: it refuses a comparison that
+#' cannot be tested or a test that raised an error, and returns the lists not tested and the directions with no list).
+#' @param reason `"no_list"`, `"no_go_annotation"`, `"no_go_annotation_background"`, `"no_tested_term"` or `"error"`.
+#' @param route `"gprofiler2"` or `"clusterprofiler"`.
+#' @param contrast The comparison's `da_data` name.
+#' @param direction `"up"`, `"down"`, or NA for a comparison.
+#' @param list_size The list's size (NA for a comparison).
+#' @param background_ids The annotated proteins of the comparison's background, for a background reason; else NA.
+#' @param message The condition's message (an error's message for `"error"`).
+#' @return NULL, invisibly.
+#' @noRd
+signalEnrichmentListStatus <- function(reason, route, contrast, direction = NA_character_, list_size = NA_integer_,
+    background_ids = NA_integer_, message = reason) {
+  signalCondition(structure(class = c("multischolar_enrichment_no_identifiers", "condition"),
+    list(message = message, call = NULL, contrast = as.character(contrast), direction = as.character(direction),
+      list_size = as.integer(list_size), query_ids = NA_integer_, background_ids = as.integer(background_ids),
+      reason = reason, route = route)))
+  invisible(NULL)
+}
+
+#' The message of the error a caught condition was raised for (KIT-215): the innermost condition of an error chained by
+#' dplyr or rlang (whose own message is a context header such as "In argument: ..."), on one line, without a final full
+#' stop (the refusal adds one).
+#' @param condition The caught error.
+#' @return One string.
+#' @noRd
+enrichmentErrorMessage <- function(condition) {
+  while (inherits(condition$parent, "condition")) condition <- condition$parent
+  text <- paste(conditionMessage(condition), collapse = " ")
+  sub("[.[:space:]]+$", "", gsub("\\s*\n\\s*", " ", text))
+}
+
+#' What the clusterProfiler route can test in one comparison (KIT-215, VAL-170)
+#'
+#' Computed as enrichit 0.2.0 computes it inside `clusterProfiler::enricher` (4.20.0): the gene is TERM2GENE's second
+#' column, read positionally; the universe is the annotated genes in the background; the tested terms are those with 10
+#' to 500 universe genes (the shipped `minGSSize` and `maxGSSize`, `enrichment_force_universe` FALSE).
+#' @param term2gene The route's TERM2GENE (term, gene).
+#' @param background The comparison's background (its tested proteins).
+#' @return `list(annotated, universe, terms)`: the genes TERM2GENE holds, the size of the annotated universe and the
+#'   number of terms of tested size (m).
+#' @noRd
+enrichmentGoTestable <- function(term2gene, background) {
+  genes <- as.character(term2gene[[2L]])
+  annotated <- unique(genes)
+  universe <- intersect(annotated, as.character(background))
+  keep <- genes %in% universe
+  sizes <- lengths(lapply(split(genes[keep], as.character(term2gene[[1L]])[keep]), unique))
+  list(annotated = annotated, universe = length(universe), terms = sum(sizes >= 10L & sizes <= 500L))
+}
+
 # processEnrichments
 # ----------------------------------------------------------------------------
 #' Process Enrichments
@@ -364,10 +418,15 @@ processEnrichments <- function(da_results,
               
               up_result
             } else {
+              # KIT-215 (VAL-170 (5)): a direction with no list says so.
+              signalEnrichmentListStatus("no_list", "gprofiler2", contrast_name, "up", 0L)
               NULL
             }
           }, error = function(e) {
             warning(sprintf("Error processing up-regulated genes: %s", e$message))
+            # KIT-215 (VAL-170 (4)): the error refuses the run where the kernel handles the signal.
+            signalEnrichmentListStatus("error", "gprofiler2", contrast_name, "up", nrow(up_matrix),
+              message = enrichmentErrorMessage(e))
             message("Debug info for up-regulated genes:")
             message("Number of proteins: ", nrow(up_matrix))
             NULL
@@ -400,10 +459,13 @@ processEnrichments <- function(da_results,
               
               down_result
             } else {
+              signalEnrichmentListStatus("no_list", "gprofiler2", contrast_name, "down", 0L) # KIT-215
               NULL
             }
           }, error = function(e) {
             warning(sprintf("Error processing down-regulated genes: %s", e$message))
+            signalEnrichmentListStatus("error", "gprofiler2", contrast_name, "down", nrow(down_matrix), # KIT-215
+              message = enrichmentErrorMessage(e))
             message("Debug info for down-regulated genes:")
             message("Number of proteins: ", nrow(down_matrix))
             NULL
@@ -413,6 +475,8 @@ processEnrichments <- function(da_results,
           message(sprintf("*** ERROR in contrast processing: %s", e$message))
           message(sprintf("*** ERROR details: %s", class(e)))
           message(sprintf("*** Call stack: %s", paste(deparse(sys.calls()), collapse = " -> ")))
+          # KIT-215 (VAL-170 (4)): an error in the comparison's processing refuses the run where the kernel handles it.
+          signalEnrichmentListStatus("error", "gprofiler2", contrast_name, message = enrichmentErrorMessage(e))
           return(NULL)
         })
       })
@@ -597,6 +661,9 @@ processEnrichments <- function(da_results,
         message(sprintf("Using %d unique proteins as background for enrichment analysis (%d rows without a p-value left out)",
           length(background_IDs), reduced$left_out))
 
+        # KIT-215 (VAL-170): whether a list's call raised an error.
+        failed <- c(up = FALSE, down = FALSE)
+
         # Perform enrichment for up-regulated genes
         up_enrich <- tryCatch({
           if(length(up_genes) > 0) {
@@ -608,9 +675,16 @@ processEnrichments <- function(da_results,
               pvalueCutoff = q_cutoff,
               pAdjustMethod = "BH"
             )) # KIT-173 (VAL-61): geneID order fixed
-          } else NULL
+          } else {
+            signalEnrichmentListStatus("no_list", "clusterprofiler", long_name, "up", 0L) # KIT-215 (VAL-170 (5))
+            NULL
+          }
         }, error = function(e) {
           warning(sprintf("Error processing up-regulated genes: %s", e$message))
+          failed[["up"]] <<- TRUE
+          # KIT-215 (VAL-170 (4)): the error refuses the run where the kernel handles the signal.
+          signalEnrichmentListStatus("error", "clusterprofiler", long_name, "up", length(up_genes),
+            message = enrichmentErrorMessage(e))
           NULL
         })
 
@@ -625,11 +699,42 @@ processEnrichments <- function(da_results,
               pvalueCutoff = q_cutoff,
               pAdjustMethod = "BH"
             )) # KIT-173 (VAL-61): geneID order fixed
-          } else NULL
+          } else {
+            signalEnrichmentListStatus("no_list", "clusterprofiler", long_name, "down", 0L) # KIT-215
+            NULL
+          }
         }, error = function(e) {
           warning(sprintf("Error processing down-regulated genes: %s", e$message))
+          failed[["down"]] <<- TRUE
+          signalEnrichmentListStatus("error", "clusterprofiler", long_name, "down", length(down_genes), # KIT-215
+            message = enrichmentErrorMessage(e))
           NULL
         })
+
+        # KIT-215 (VAL-170): a list with proteins for which `enricher` returned NULL without an error is classified by
+        # what the route could test (enrichit 0.2.0 returns NULL for n = 0, m = 0 and m' = 0 only): a comparison whose
+        # background has no annotated protein (VAL-170 (3)) or no term of 10 to 500 of them (VAL-170 (2)) is signalled
+        # once, for the kernel to refuse; otherwise a list none of whose proteins is annotated is not tested; otherwise
+        # (m' = 0) it was tested and no tested term holds one of its proteins (VAL-170 (1)): no signal.
+        lists <- list(up = up_genes, down = down_genes)
+        empty <- c(up = length(up_genes) > 0 && is.null(up_enrich), down = length(down_genes) > 0 &&
+          is.null(down_enrich)) & !failed
+        if (any(empty)) {
+          testable <- enrichmentGoTestable(term2gene, background_IDs)
+          if (testable$universe == 0L) {
+            signalEnrichmentListStatus("no_go_annotation_background", "clusterprofiler", long_name, background_ids = 0L)
+          } else if (testable$terms == 0L) {
+            signalEnrichmentListStatus("no_tested_term", "clusterprofiler", long_name,
+              background_ids = testable$universe)
+          } else {
+            for (direction in names(empty)[empty]) {
+              if (!any(unique(as.character(lists[[direction]])) %in% testable$annotated)) {
+                signalEnrichmentListStatus("no_go_annotation", "clusterprofiler", long_name, direction,
+                  length(lists[[direction]]))
+              }
+            }
+          }
+        }
 
         # KIT-203: the whole-family value, formed after each call and outside the calls' tryCatch, so a result it
         # cannot be formed for is refused, not turned into "no result".

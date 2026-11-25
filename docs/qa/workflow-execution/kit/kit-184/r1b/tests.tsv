@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-workflow-integration-input.R	241	0	0	0	12	108.1	ok
+test-integration-input-lipid-metab.R	207	0	0	0	0	154.2	ok
