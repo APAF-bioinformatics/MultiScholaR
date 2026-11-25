@@ -169,8 +169,10 @@ k247LaneSpec <- function(lane_id) {
 k247GroupOf <- function(manager, reference, sample) {
     if (is.null(reference)) return("<null>")
     k247Try(withWorkflowStateScope(manager, function() {
-        object <- readWorkflowExecutionComponents(manager, reference, fields = "design_matrix")
-        design <- as.data.frame(methods::slot(object, "design_matrix"), stringsAsFactors = FALSE)
+        # VAL-54 instrument fix (g03 run 45594081675: rebuilding a trx object for its design alone failed validation,
+        # "counts must be numeric"): the design matrix component is read alone, as buildWorkflowAnalysisRecord reads it.
+        component <- readComponentMetadata(manager, reference)$data$components$design_matrix
+        design <- as.data.frame(materializeWorkflowTable(manager$.context, component), stringsAsFactors = FALSE)
         hit <- which(vapply(seq_len(nrow(design)), function(i) any(as.character(unlist(design[i, ])) %in% sample), NA))
         if (!length(hit)) "<absent>" else paste(unique(as.character(design$group[hit])), collapse = "|")
     }))
@@ -369,7 +371,9 @@ k247RunCase <- function(lane_id, case_id, until, custom) {
         }
         if (identical(omic, "proteomics")) ctx$moved <- e2e_match_available_values(laneSpec$moved,
             api$choices("design_matrix-builder-selected_runs"))
-        ctx$probe <- ctx$moved[[1L]]
+        # trx sums technical replicates into units named by tech_rep_group at the design (func_trx_design.R:126-149): the
+        # moved runs are found in a table's design under their old unit (Sera_03) or their new one (RPMI_04).
+        ctx$probe <- if (identical(omic, "transcriptomics")) c(ctx$moved, "Sera_03", laneSpec$new_set) else ctx$moved[[1L]]
         before <- list(head = manager()$current_state, history = history(), entities = entities(),
             status = shiny::isolate(workflow_data$tab_status), design = getWorkflowStateReference(manager(), design_state),
             da = entity(da_reference()))
@@ -709,6 +713,11 @@ k247Cases <- function(group) {
         add(l, "main", "ruv_covariates", k247Steps(o, c("resave", "reset", "run", "corr", "ruvcov", "export", "daload", "da", "record")))
         add(l, "e", "ruv_covariates", k247Steps(o, c("resave", "run", "record")))
     }
+    if (identical(group, "g03t")) {
+        # VAL-54 instrument rerun 1 of 1 (coordinator's ruling): trx's main and (e) again, the group lookup fixed.
+        add("trx_screen", "main", "norm", k247Steps("transcriptomics", c("resave", "reset", "run", "da", "record")))
+        add("trx_screen", "e", "norm", k247Steps("transcriptomics", c("resave", "run", "record")))
+    }
     if (identical(group, "g03")) {
         for (l in c("lipid_canonical", "metab_lc", "trx_screen")) {
             o <- guiEntryLane(l)$omic_type
@@ -733,6 +742,7 @@ k247Write <- function() {
     utils::write.table(observed, file.path(k247Out, paste0("g0-", k247Group, "-observed.tsv")), sep = "\t", quote = FALSE,
         row.names = FALSE)
     predicted <- k247PredictionTable[k247PredictionTable$lane %in% unique(c(observed$lane, k247GroupLanes)), , drop = FALSE]
+    if (identical(k247Group, "g03t")) predicted <- predicted[predicted$case %in% c("main", "e"), , drop = FALSE]
     utils::write.table(predicted, file.path(k247Out, paste0("g0-", k247Group, "-predictions.tsv")), sep = "\t", quote = FALSE,
         row.names = FALSE)
     compare <- predicted
@@ -751,6 +761,7 @@ k247Write <- function() {
 }
 
 k247GroupLanes <- switch(k247Group, g01 = "prot_lfq", g02 = "prot_dia_limpa", g03 = c("lipid_canonical", "metab_lc", "trx_screen"),
+    g03t = "trx_screen",
     stop("unknown group ", k247Group))
 k247Log("group ", k247Group, ": ", paste(k247GroupLanes, collapse = ", "))
 if (!workflowOwnerCapable()) stop("the session owner is not available (qs2/duckdb)")
