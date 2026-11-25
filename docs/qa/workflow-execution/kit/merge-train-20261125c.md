@@ -61,4 +61,43 @@ UVR-021's status, `parked-20261113.md` row 20); each ticket's `outcome.md` place
 
 ## Result
 
-(filled after the run)
+Run 45573711299 (request `merge-train-20261125c-8bce32aa`, run-tests commit cde483c6), head
+8bce32aa against base dd769671, sent once; conclusion success; 810.5 job-minutes of the 2,730
+ceiling (check 28.1). Tables in `merge-train-20261125c/` (`compare.tsv`, `tests.tsv`,
+`tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`).
+
+Observed, 108 files: 102 `same`, 6 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | member |
+|---|---|---|---|---|
+| test-kit212-da-current.R | absent | 309/0/0/0 | only-on-head | KIT-212, predicted |
+| test-omics-summary-core.R | 676/25/0/2 | 676/25/0/2 | message-changed | KIT-212, predicted (label-only, below) |
+| test-kit215-not-tested-lists.R | absent | 112/0/0/0 | only-on-head | KIT-215, predicted |
+| test-kit174-ruv-grouping.R | absent | 77/0/0/0 | only-on-head | KIT-174 (a), predicted |
+| test-kit225-prot-norm-reset-source.R | absent | 56/0/0/0 | only-on-head | KIT-225, predicted |
+| test-prot-05b-norm-module-contracts.R | 439/0/0/22 | 440/0/0/22 | count-changed | KIT-225, predicted |
+
+Predicted `same` and observed `same`: `test-omic-summary-module.R` 1675/28,
+`test-kit207-summary-head-guard.R` 292/0, `test-prot-norm-core.R` 1548/306,
+`test-kit129-run-path.R` 711/0 (1 skipped), `test-kit200-prot-da-no-value-proteins.R` 538/0,
+`test-workflow-omics-binding-steps.R` 58/1, the four GUI-entry files (proteomics 189/4,
+lipidomics 35/0, metabolomics 105/0, transcriptomics 16/13).
+
+`test-omics-summary-core.R`, label-only (KIT-212 E16): 25 failure records on each side. After
+masking temporary paths and replacing the expectation label
+`omicSummaryW1Frozen[[case]][[step]][[field]]` with `omicsSummaryCoreExpected(case, step, field)`,
+the two lists are identical. Two raw records differ, as in KIT-212's R4.
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides, all 6 findings identical, none only on
+head.
+
+Verdicts: KIT-212, KIT-215, KIT-174 (a) and KIT-225 each meet their predictions; no other file
+differs. TRAIN GREEN.
+
+When the result was read, staging had moved to 3eeaf100: ledger rows VAL-212 to VAL-225 only
+(`git diff dd769671 3eeaf100` touches only `docs/methods-decision-ledger.md`). The train lands by
+a merge; the rows stay `VAL-<train3-1>` to `VAL-<train3-4>` for the coordinator to number.
+
+Not checked: the trees after the run's head (docs only); files outside the 108 (no member's full
+suite on the train; KIT-225's R3 is left to the coordinator, as its `outcome.md` states); the merge
+with staging 3eeaf100.
