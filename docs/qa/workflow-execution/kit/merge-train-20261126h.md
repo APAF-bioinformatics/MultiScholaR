@@ -218,3 +218,39 @@ train is not rebuilt or re-run here. It lands, if at all, only after trains 13 a
 
 Not checked: trains 13 and 14's own results (train 14's run 45676428221 was out when this one was sent; its result was
 not read); any file outside the 166; the full suite; the digest values (read from the run).
+
+## After the focused audit: declaration of resolution (a) (written before any run of it)
+
+Source: `tickets/kit/audits/AUDIT-TRAIN15-kit254-e7-20261126.md` (verdict: no product defect; KIT-190's decided control
+rule, VAL-110 and VAL-126, moved the `lipid_ruv` expected sample lists of
+`tests/testthat/test-kit254-omics-correlation-skip.R`) and the coordinator's ruling of 2026-11-26: resolution (a), a
+DECLARED TEST-ONLY edit of that one file. Corrections to the result section above, from the audit: the "7 against 9"
+lists are a waldo diff window; the full lists are 9 samples on the head against 11 expected, of 12 (at 0.960024 the head
+removes A_5, A_6 and B_1 and keeps A_1); and the file has no metabolomics RUV case ("the metabolomics RUV case passes" is
+wrong: `metab` runs without RUV). The cancor-once miss (`test-workflow-omics-ruv-cancor-once.R` 16/0 `same`, not 14/2
+`fixed`) was the coordinator's brief error, not a failure of the code.
+
+**Step 1: the G0c run (instrument).** `docs/qa/workflow-execution/kit/kit-254/g0b/g0b-ruv-thresholds.R`, UNCHANGED, as a
+scripts-only request: `package_commit` 4308c5aeed00b5551e88be9983032f0c7bacbaf5, `base_commit` `none`, no tests, no
+extra packages, no env, `args` and `out` `kit254-g0c`, `out_pattern` `\.(txt|tsv)$`, timeout 25 minutes, ceiling 30
+job-minutes (G0b 45628705535 took 12). Purpose: the head's `t_hi`, `t_lo` and the C3 and II0 removed sets of
+`lipid_ruv` by G0's rule (`k254Choose`), and the head's best-partner table. Predictions (the audit's, not read from the
+run): the script runs unchanged; `t_hi` = 0.95 with C3 removing A_5, A_6, B_1 (SHOWN bound in the audit); `t_lo` and II0
+are not predicted, but G0's rule gives a `t_lo` that removes a strict subset of C3's set. Stop rules: if the script does
+not run unchanged on this head, that is an instrument question: stop and tell the coordinator, do not edit the script;
+if G0's own rule finds no `t_lo` removing a strict subset (its stop rule), stop and tell the coordinator.
+
+**Step 2: the test-only edit.** From that run's output only: `kit254T$lipid_ruv` (`t_hi`, `t_lo`),
+`kit254HiRuns$lipid_ruv = setdiff(kit254All, <C3 removed>)`, `kit254LoRuns$lipid_ruv = setdiff(kit254All, <II0
+removed>)` and the comments around them; `t_lo` is re-derived, not re-pinned to the head's observed list. Its own
+tests-only commit, with the G0c table under `kit-254/g0c/` and a dated addendum in `kit-254/outcome.md`. Prediction: the
+file 379 passed, 0 failed on the edited head.
+
+**Step 3: one test-file run.** `test-kit254-omics-correlation-skip.R` alone, base e69b411e and the edited head, both
+sides, `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` and `MULTISCHOLAR_KIT105_W3_DUMP=1`, limpa, mixOmics, sva, reference BLAS,
+ceiling 60 job-minutes. Prediction: base 379/0, head 379/0, `same`. Any other result is recorded, then stop; no second
+edit.
+
+**The other 165 verdicts and R CMD check stand** from run 45681065939 (the edit touches one test file; `kit254T`,
+`kit254HiRuns` and `kit254LoRuns` are referenced nowhere else, the audit's argument; each file runs in its own process
+and the check runs with `--no-tests`). Trains 16, 17 and 18 are not rebuilt or touched.
