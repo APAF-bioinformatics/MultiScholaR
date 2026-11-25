@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-256 G0: what the technical-replicate box shows after Assign in a browser, on base (R/ as v0.9-staging 63143aa3); decides stop rule 1; 1 job, ceiling 60 job-minutes (4.0 core-hours)",
+  "label": "KIT-256 G0 browser-selection.R on kit-256 88f60b00 (R/ as v0.9-staging 63143aa3)",
+  "package_commit": "88f60b007eb2586c817ebc79f0c63a87366c2de7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-256/browser-selection.R",
+      "args": [
+        "kit256-g0",
+        "g0"
+      ],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit256-g0",
+      "out_pattern": "\\.(tsv|txt|log|R)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
