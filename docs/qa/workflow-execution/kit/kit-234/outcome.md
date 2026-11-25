@@ -100,3 +100,18 @@ wrappers on the corpus with a stand-in trainer (`test-integration-workbook-api.R
   findings identical (0 only on head); W6 exit 0.
 - **Decides:** A7 and A12 on the final text, and stop rules 2 to 4 on the merged head. Anything else, or a check item
   or test changed by moving `project_setup.R`: stop and report.
+
+## R3, result (run 45573868468)
+
+Observed (`r3/`): every difference is the declared one. `test-enrichment-significance.R` 191 to 181,
+`test-go-propagation.R` 331 to 321 (T10 renamed), `test-integration-removed-factors.R` 526 to 520,
+`test-integration-workbook.R` 53 to 43, `test-integration-workbook-mofa.R` 3 skipped on both,
+`test-kit234-workbooks-withdrawn.R` only on head with 29 passed (W9 on the evidence-based text with the owner's
+additions), every other file `same` (`test-workflow-saved-da.R` 171 identical failures on both). R CMD check: 3
+WARNINGs and 3 NOTEs on both sides, 0 only on head: moving `project_setup.R` changed no check item. W6 exit 0.
+A7 and A12 are met on 51d53171. 111.6 job-minutes (7.44 core-hours); the ticket's total is now 264.4 job-minutes,
+17.63 core-hours, against 22.67 expected and 100.0 ceiling.
+
+Not checked by a run: d1fade06 (sent after R3): the two corrections from KIT-239 Re-check 1 (R1-01, R1-03) to the
+limitation text in `R/utils_integration_workbook.R` and `man/integrationTrainModel.Rd`. By reading only; W9's terms
+are all still present in it, and its Rd parse rides in the merge train's check.
