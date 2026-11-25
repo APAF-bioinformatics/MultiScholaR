@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-254 R1d (AUDIT-KIT-254-impl I01 step 2): staging c4505c7f + the new test file (branch kit-254-r1d); E7 under stop rule 2 and E17 failing first; predictions in kit-254/r1d-predictions.md; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-254 R1d failing-first 2cec2cf9",
+  "package_commit": "2cec2cf9163563507f26b796f713c715d1fbad17",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit254-omics-correlation-skip.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
