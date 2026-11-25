@@ -172,3 +172,32 @@ VAL-229) while the run was in progress. `git diff --stat 5174a798 origin/v0.9-st
 
 Not checked: the trees after the run's head (docs only); any file outside the 165; MOFA lane (not required for
 KIT-234 alone); the landing merge with staging 16112917 (ledger rows only, per the coordinator).
+
+## Correction (coordinator's ruling, the train's one correction pass)
+
+Cause of the check difference in run 45586240983: 8 of KIT-235's G0 record files (committed in 96e3c813) are over
+100 bytes with the `MultiScholaR/` prefix. KIT-235's own R2 check (45577137662) could not show this: its base
+f53db55a already held the files, so the NOTE was identical on both sides there. For KIT-235's records: note added in
+`kit-235/outcome.md`.
+
+Correction, commit e84c5571 (docs only): the 8 files renamed with `git mv`, contents unchanged (100 % renames), by
+one rule for these 8 names only: `analysis_record` becomes `record`, `study_parameters` becomes `params`. References
+updated: `kit-235/g0-45573071526/g0b/files.tsv` (8 rows, column 4) and `kit-235/outcome.md:59`. Left verbatim, as run
+outputs: `kit-235/g0-45573071526/console.log`, `g0c/checks.txt`, `kit-235/r2-45577137662/check-summary.txt`, and this
+train's `merge-train-20261125d/` tables. Script check on the new head: 255 paths absent from the base 5174a798, none
+over 100 bytes with the prefix; the longest is
+`docs/qa/workflow-execution/kit/kit-235/g0-45573071526/g0b/met-c04-src-design_matrix.tab`, 100 bytes.
+`git diff --name-only b7ee701f e84c5571`: 18 paths, all under `docs/qa/`, so the test verdicts of run 45586240983
+stand for this head.
+
+### Declaration of the second run (written before it is sent)
+
+- Purpose: repeat R CMD check only, after the renames.
+- Base 5174a798627cbe425cfc620b273625ff3dcfe11f; head e84c5571c0752af9519975b59ab994e8d5562128.
+- Tests: none (`"tests": []`, which the request format allows); `check: true`; no scripts; env and BLAS as the first
+  run.
+- Prediction: check findings identical on both sides, including the "portable file names" NOTE with 238 paths on
+  both sides; 0 ERRORs, 3 WARNINGs, 3 NOTEs on each.
+- Ceiling: 60 job-minutes (the first run's check took 29.7 for both sides), charged to the train's ceiling (811.0 of
+  3,105 used before it).
+- Decision: holds: the check prediction is met and the train is green. Does not hold: stop and report; no further run.
