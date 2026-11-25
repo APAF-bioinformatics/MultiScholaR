@@ -1,0 +1,63 @@
+{
+  "requested_by": "KIT-236 correction pass (AUDIT-KIT-236-impl-20261125): correction 8fd559b2 against tests-only d06d424d, 34 files, check, and the render job reading the six reports on the GUI lanes (I04); ceiling 540 job-minutes",
+  "label": "KIT-236 correction 8fd559b2 vs tests-only d06d424d (34 files, check, render)",
+  "package_commit": "8fd559b28737eb60b754844a7d9fd11659975e03",
+  "base_commit": "d06d424dbca1cf52fad747effcb69c259c0084cb",
+  "tools_ref": "",
+  "tests": [
+    "test-e2e-browser-harness.R",
+    "test-e2e-manifest.R",
+    "test-e2e-proteomics-dia-limpa.R",
+    "test-e2e-proteomics-tmt-lfq.R",
+    "test-enrichment-significance.R",
+    "test-general-filemgmt-report-helpers-shared.R",
+    "test-go-propagation.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-gui-entry-proteomics.R",
+    "test-kit205-enrichment-background.R",
+    "test-kit215-not-tested-lists.R",
+    "test-kit220-da-threshold-consumers.R",
+    "test-kit227-report-ruv-sentences.R",
+    "test-kit234-workbooks-withdrawn.R",
+    "test-kit235-lipid-metab-report-parser.R",
+    "test-kit236-report-sentences.R",
+    "test-lipid-14a-summary-module-characterization.R",
+    "test-lipid-15-summary-module-seams.R",
+    "test-metab-05-summary-module-characterization.R",
+    "test-module-ci-lipid-summary.R",
+    "test-module-ci-metab-summary.R",
+    "test-module-ci-prot-da.R",
+    "test-module-ci-prot-import.R",
+    "test-module-ci-prot-norm.R",
+    "test-module-ci-prot-summary.R",
+    "test-module-ci-sentinels.R",
+    "test-omic-gui-config.R",
+    "test-omics-summary-core.R",
+    "test-omic-summary-module.R",
+    "test-prot-05b-norm-module-contracts.R",
+    "test-prot-12a-summary-module-characterization.R",
+    "test-prot-12-summary-module-contracts.R",
+    "test-prot-summary-report-templates.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-236/render.R",
+      "args": [],
+      "out": "kit236-render",
+      "out_pattern": "\\.(txt|tsv)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
