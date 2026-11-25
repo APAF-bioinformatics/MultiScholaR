@@ -554,7 +554,10 @@ writeProtEnrichResultsDownloadArchive <- function(file,
                                                   tempDir = tempdir(),
                                                   writeTsvFn = readr::write_tsv,
                                                   writeLinesFn = writeLines,
-                                                  zipFn = utils::zip,
+                                                  # KIT-241: the zip package writes the archive itself (no external zip program, which the
+                                                  # installed Windows application lacks); zipr stores each file under its base name, as -j
+                                                  # did; flags stays in the seam's signature for the injected test doubles.
+                                                  zipFn = \(zipfile, files, flags) zip::zipr(zipfile = zipfile, files = files),
                                                   sysTimeFn = Sys.time,
                                                   significanceRule = NULL) {
   tryCatch({
