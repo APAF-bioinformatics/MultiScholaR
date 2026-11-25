@@ -305,3 +305,40 @@ done about it.
   end-of-project re-record.
 - Conventions (N6): many added R lines exceed 100 characters, as the edited files' own lines do; errors use
   `rlang::abort(class =)` as KIT-202's (existing-code scope rule).
+
+## Merge of staging 3a6794b0 (bc9ffbc4) and the merge-train comparison run, declared before sending
+
+- **Merge** (the coordinator's authorisation, 2026-11-26). Four conflicts, resolved as ruled:
+  - `NEWS.md`: staging's entries kept as they are; this ticket's entry placed directly before KIT-202's (after every
+    entry staging added in that section).
+  - `docs/methods-decision-ledger.md`: staging's rows through VAL-280 kept; `VAL-<merge>` after them.
+  - `R/utils_workflow_analysis_record.R` (the replay-marker list): the roxygen line joined ("KIT-214 adds
+    `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`; KIT-201 adds `treat_moderation` ...; KIT-217 adds
+    `intensity_filter_missing`"); the rows staging's first (`duplicate_resolution_samples`, `ruv_feature_levels`,
+    `treat_moderation`, its closing `))` turned into `),`), then `intensity_filter_missing` closing the list; after the
+    list KIT-201's three functions (`workflowTreatModerationCurrent`, `workflowTreatModerationRecord`,
+    `workflowDaReplayRuleOptions`), then `workflowRecordIntensityFilterEarlier`.
+  - `R/utils_workflow_omics_declarations.R` (adjacency, predicted by the implementation audit, section 6): after
+    `omicsIntensityFilterHelperColumns`, staging's KIT-214 block (`omicsDesignSampleColumnsOf`,
+    `omicsDesignNumericColumnsOf`, `omicsDuplicateResolutionSampleColumns`, `omicsDuplicateResolutionInput`) first, then
+    this ticket's kernel block (`omicsIntensityFilterCountsInForce` to `omicsIntensityFilterRemovedMissing`); no other
+    change. Checked: the merged file against staging adds exactly this branch's 220 lines against 185ebf75.
+- **Run, declared.** Purpose: the change on the merged tree. Head = `kit-217` after this records commit (bc9ffbc4 plus
+  records only), base = staging 3a6794b0 (abfc99ac plus one ledger row); same runner image; R CMD check on both sides;
+  4+4 shards; env `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`, `MULTISCHOLAR_KIT105_W3_DUMP=1`; ceiling 900 job-minutes
+  (60 core-hours). Scope: 57 files = the ticket's 5.10 grep re-run at staging (41), the 44 files of R2, and the
+  implementation audit's additions (proteomics and transcriptomics GUI-entry, `test-omic-enrich-module.R`, the registry
+  and analysis-record files, the KIT-201, 214, 220, 222, 224, 234, 235 files), and the files the grep now finds
+  (KIT-174, 212, 243). Base counts predicted from staging's own checkpoint-20261126 table.
+- **Predictions.** `test-kit217-intensity-filter-missing.R` `only-on-head`, 344 passed, 0 failed; and
+  `test-kit214-sample-columns.R` passes in full on head (176/0; the adjacency guard); `test-metab-qc-shared.R`
+  `count-changed` without failure; `test-workflow-operation-registry.R` `count-changed`, same failures, the two
+  per-parameter checks +4 each; `test-omic-qc-module.R` `new-failure` limited to test (b)'s four expectations;
+  `test-gui-entry-lipidomics.R` 16 of 35 and `test-gui-entry-metabolomics.R` 48 of 105 failing on head, the per-step
+  comparisons from `qc_intensity` on, `states` only (`new-failure`); `test-gui-entry-proteomics.R`: on head every
+  per-step comparison from `design` on in all five lanes fails, where the difference from base is the state digests
+  (`states`) only, base's own failing comparisons (25 at the checkpoint) unchanged in every other part (`new-failure`);
+  `test-gui-entry-transcriptomics.R` `same`; `test-workflow-omics-declarations.R` and
+  `test-workflow-omics-binding-steps.R` `message-changed` (I04's content); `test-omic-enrich-module.R` `same`, or I11's
+  known-unstable failure on one side; every other file `same`; check findings only on head: none. Decides: the
+  auditor's closure check.
