@@ -1,0 +1,2 @@
+sessions attached: 4 of 4 (A,B,C,D)
+predictions: 41 as predicted, 0 differ, 0 not observed, 149 recorded without prediction

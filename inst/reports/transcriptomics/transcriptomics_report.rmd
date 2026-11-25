@@ -170,7 +170,9 @@ if (file.exists(top_path)) {
 ## Integration export
 
 ```{r ruviii-figure, fig.cap = "PCA and RLE before and after RUVIII (the integration export)."}
-show_figure(summary_file("QC_figures", "ruviii_before_and_after.png"))
+# KIT-264: the figure follows the record's export (an earlier export is not listed, so its leftover file is not shown).
+ruviii_figure <- summary_file("QC_figures", "ruviii_before_and_after.png")
+if (is.null(export)) cat("Figure not available:", basename(ruviii_figure), "\n") else show_figure(ruviii_figure)
 ```
 
 # Appendix: software
