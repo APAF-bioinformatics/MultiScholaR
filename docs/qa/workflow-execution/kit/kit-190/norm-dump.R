@@ -35,23 +35,15 @@ for (side in names(status)) {
 utils::write.table(data.frame(side = names(status), exit = status, commit = c(args[[1L]],
   system2("git", c("rev-parse", "HEAD"), stdout = TRUE))), file.path(out, "sides.tsv"), sep = "\t", quote = FALSE,
   row.names = FALSE)
-read <- function(side) {
-  env <- new.env()
-  sys.source(file.path(out, paste0(side, ".R")), envir = env)
-  as.list(env)
-}
-flatten <- function(x, prefix = "") {
-  if (is.list(x)) {
-    nm <- names(x)
-    if (is.null(nm)) nm <- as.character(seq_along(x))
-    do.call(c, Map(function(v, n) flatten(v, if (nzchar(prefix)) paste(prefix, n, sep = "$") else n), x, nm))
-  } else stats::setNames(paste(format(x, digits = 17), collapse = ","), prefix)
-}
-b <- flatten(read("base"))
-h <- flatten(read("head"))
-paths <- union(names(b), names(h))
-rows <- data.frame(path = paths, base = unname(b[paths]), head = unname(h[paths]), stringsAsFactors = FALSE)
+# The dumps are R code that refers to objects of the test file, so they are compared as text, line by line (revision
+# after run 45329435006, whose sourcing of the dumps failed: an instrument defect, no result).
+b <- readLines(file.path(out, "base.R"), warn = FALSE)
+h <- readLines(file.path(out, "head.R"), warn = FALSE)
+n <- max(length(b), length(h))
+b <- c(b, rep(NA_character_, n - length(b)))
+h <- c(h, rep(NA_character_, n - length(h)))
+rows <- data.frame(line = seq_len(n), base = b, head = h, stringsAsFactors = FALSE)
 rows$same <- !is.na(rows$base) & !is.na(rows$head) & rows$base == rows$head
-utils::write.table(rows, file.path(out, "norm-module-control.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
-cat(sprintf("KIT-190 D5 control: %d fields, %d differ: %s\n", nrow(rows), sum(!rows$same),
-  paste(rows$path[!rows$same], collapse = "; ")))
+utils::write.table(rows[!rows$same, , drop = FALSE], file.path(out, "norm-module-control.tsv"), sep = "\t", quote = FALSE,
+  row.names = FALSE)
+cat(sprintf("KIT-190 D5 control: %d dump lines, %d differ\n", n, sum(!rows$same)))

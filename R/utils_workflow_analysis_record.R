@@ -660,7 +660,10 @@ workflowReplayRuleMarkers <- list(
     # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
     # made before counted every numeric column of the assay ("numeric_columns").
     intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
-        earlier = "numeric_columns"))
+        earlier = "numeric_columns"),
+    # KIT-190 (VAL-182, VAL-235): the legacy lipidomics and metabolomics Automatic k is bounded by the sample-size cap
+    # ("sample_size"); records made before used the sweep's k unbounded ("none").
+    ruv_k_bound = list(option = "MultiScholaR.ruv_k_bound", current = "sample_size", earlier = "none"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).

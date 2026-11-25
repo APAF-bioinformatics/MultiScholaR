@@ -424,8 +424,14 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
             ruv_results <- binding$optimise_ruv(object, parameters$ruv_mode, parameters[setdiff(omicsRuvParameterNames, "ruv_mode")])
             best_k <- binding$extract_best_k(ruv_results)
             controls <- binding$extract_controls(ruv_results)
+            # KIT-190 (VAL-182, VAL-235): the sweep is untouched; its k is bounded by the sample-size cap of proteomics
+            # (`calculateAdaptiveMaxK`, through `boundOmicsRuvSweepK`) in Automatic mode; a Manual k is kept, with a
+            # warning when above the cap. Records made before the bound replay unbounded (`workflowReplayRuleMarkers`).
+            k_limits <- omicsRuvKBound(object, ruv_results, parameters$ruv_mode, best_k)
+            best_k <- k_limits$best_k
             corrected <- ruvIII_C_VaryingFn(theObject = object, ruv_grouping_variable = parameters$ruv_grouping_variable,
                 ruv_number_k = best_k, ctrl = controls)
+            ruv_status <- omicsRuvAssayStatus(binding, object, corrected)
             object <- NULL
             final <- store$checkpoint(corrected, paste0(binding$prefix, "-ruv-corrected"))
             corrected <- NULL
@@ -438,10 +444,60 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
             list(final = final, optimisation = store$product(saved_results, "optimisation", paste0(binding$prefix, "-ruv-optimisation")),
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
-                percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_))
+                percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_),
+                k_sweep = k_limits$k_sweep, k_cap = k_limits$k_cap, k_notice = k_limits$k_notice, ruv_status = ruv_status)
         },
-        # KIT-190: the rule marker of the control selection (`workflowReplayRuleMarkers`).
-        fixed = list(ruv_control_grouping = "kept"))
+        # KIT-190: the rule markers of the control selection and of the bound on k (`workflowReplayRuleMarkers`).
+        fixed = list(ruv_control_grouping = "kept", ruv_k_bound = "sample_size"))
+}
+
+#' The bound on a legacy lipidomics or metabolomics RUV k (KIT-190, VAL-182, VAL-235): in Automatic mode the sweep's k
+#' per assay becomes min(k, `calculateAdaptiveMaxK`(the assay's samples)) (`boundOmicsRuvSweepK`), with a plain-language
+#' notice where it is reduced; in Manual mode the user's k is kept and a k above the cap gives a classed warning. Under
+#' the earlier rule of a record made before the bound (option `MultiScholaR.ruv_k_bound` = `"none"`) nothing changes.
+#' @return `list(best_k, k_sweep, k_cap, k_notice)`, each per assay (`k_notice` NULL where there is none).
+#' @noRd
+omicsRuvKBound <- function(object, ruv_results, ruv_mode, best_k) {
+    marker <- workflowReplayRuleMarkers$ruv_k_bound
+    if (identical(getOption(marker$option), marker$earlier)) {
+        return(list(best_k = best_k, k_sweep = best_k, k_cap = NULL, k_notice = NULL))
+    }
+    bound <- boundOmicsRuvSweepK(object, ruv_results)
+    slots <- omicsRuvAssaySlots(object)
+    design_samples <- as.character(object@design_matrix[[object@sample_id]])
+    samples <- lapply(methods::slot(object, slots$data), function(assay) length(intersect(colnames(assay), design_samples)))
+    notice <- stats::setNames(vector("list", length(bound$k)), names(bound$k))
+    automatic <- identical(ruv_mode, "automatic")
+    for (assay in names(bound$k)) {
+        k <- bound$sweep_k[[assay]]
+        cap <- bound$limit[[assay]]
+        if (is.na(k) || k <= cap) next
+        notice[[assay]] <- if (automatic) {
+            sprintf(paste("%s: the automatic search found %d unwanted factors. With %d samples, at most %d can be removed",
+                "while leaving enough samples to judge the differences between groups, so %d were removed."),
+                assay, k, samples[[assay]], cap, cap)
+        } else {
+            sprintf(paste("%s: you chose to remove %d unwanted factors. With %d samples, at most %d are advised, to leave",
+                "enough samples to judge the differences between groups. Your choice was kept."), assay, k, samples[[assay]], cap)
+        }
+        rlang::warn(notice[[assay]], class = "multischolar_ruv_k_notice")
+    }
+    if (automatic) best_k <- stats::setNames(lapply(names(best_k), function(assay) {
+        b <- bound$k[[assay]]
+        if (is.null(b) || is.na(b)) best_k[[assay]] else b
+    }), names(best_k))
+    list(best_k = best_k, k_sweep = bound$sweep_k, k_cap = bound$limit, k_notice = notice)
+}
+
+#' Per-assay RUV status of a legacy lipidomics or metabolomics RUV step (KIT-190, the KIT-242 hand-off, R1-N01):
+#' `corrected` (the assay is present and changed), `uncorrected` (present and unchanged) or `dropped` (absent after RUV).
+#' @noRd
+omicsRuvAssayStatus <- function(binding, before, after) {
+    a <- methods::slot(before, binding$data_slot)
+    b <- methods::slot(after, binding$data_slot)
+    stats::setNames(lapply(names(a), function(assay) {
+        if (!assay %in% names(b)) "dropped" else if (identical(a[[assay]], b[[assay]])) "uncorrected" else "corrected"
+    }), names(a))
 }
 
 #' The new design's RUV parameters (KIT-129 integration item 1), by the names of KIT-129 section 1e: the design, the
@@ -1128,6 +1184,11 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
         outcomes$negative_control_count_per_assay <- as.list(saved$control_count)
         outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
         outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
+        # KIT-190: the sweep's k, the cap and the k used (k_per_assay), the notice, and the per-assay RUV status.
+        if (!is.null(saved$k_sweep)) outcomes$k_sweep_per_assay <- as.list(saved$k_sweep)
+        if (!is.null(saved$k_cap)) outcomes$k_cap_per_assay <- as.list(saved$k_cap)
+        if (!is.null(saved$k_notice)) outcomes$ruv_k_notice_per_assay <- lapply(saved$k_notice, function(x) x %||% "")
+        if (!is.null(saved$ruv_status)) outcomes$ruv_status_per_assay <- as.list(saved$ruv_status)
         # KIT-129 integration item 3: a new design's product records its design and its k per assay: whether RUV was
         # applied, the rule, the estimate and the seed (today's product names none, and its outcomes are as before).
         if (!is.null(saved$ruv_design)) {
