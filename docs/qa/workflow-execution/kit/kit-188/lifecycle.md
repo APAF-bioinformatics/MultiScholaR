@@ -156,3 +156,40 @@ Line numbers are those of `sim-k188.R` (S) and `score-k188.R` (C) at the commit 
 - Parse level only: the new code has never been parsed by R. Expect instrument defects in a first lifecycle run (VAL-54 allows
   fixing script mechanics and re-sending, at most three times per item).
 - The scorer needs `K188_SCORE_R` only for E16 (a constructed row set); a counted run leaves it unset.
+
+## Revision of the script changes after the audit of 0866982f and ticket r1.22 and r1.23 (written, not yet run)
+
+Repairs of SA.9 (audit "Audit of the scripts at 0866982f", `AUDIT-KIT-188-r116-20261125.md`), the coordinator's rulings on the
+author's eleven points, and the ticket's r1.22 and r1.23 text. Line numbers are those of the commit that carries this section (S = `sim-k188.R`).
+
+| Item | Where |
+|---|---|
+| SA-P01 the plant name in the unit file names (`.rds`, rows, timing, checks) | S `runChild` (`suffix`) |
+| SA-P02 E16: constructed rows `e16/cases/*/rows.tsv.gz`, predicted values `e16/expected.tsv` (written by `e16/make-e16.py` from the ticket's rules and independent arithmetic, committed before the scorer runs), `e16/check-e16.py`, runner `e16/run-e16.sh` (`e16/run-e16.R` for the run-tests mechanism). Planted: a unit row; a timeout gap; `itsd_ok` FALSE; gate 20/400 and 21/400; refusals and dropped journeys; a phi event that later fails (gate first); K1 failing only on phi (K2 with GA safe, VAL-248's label with GA unsafe); K1, K3, K4; the excess path with one pair, best and worst on it; L24 reported; the R = 100 S5 label; a whole absent (cell, job) | `e16/` |
+| SA-P03 the metabolomics ITSD identity check (`E3_itsd_identity`; M12 401, N0 and E1, none and VD 20 %, NO and LA) | S `runConditionL` |
+| SA-P04 fewer than two paired data sets is "not determined (excess over OR)" | C `excessClass` |
+| SA-P05, rulings 1 and 2 (VAL-335): events = phi events and not in the gate, `events_also_gate` kept, phi over the data sets that reached the RUV step is the one figure and one outcome line, `phi_all` informational, `K188_PHI_DENOMINATOR` removed | C phi block, outcome block |
+| SA-P06 E10 requires the record match and the cap | S `checkE10` |
+| SA-P07, ruling 5: one check-only LA journey per L1r cell (N1, none; arm `LAu`, `ruv_k_bound = "none"`, rows not written) and `checkE10u` | S `ARM_MARKERS`, `runConditionL`, `checkE10u` |
+| SA-P08 `sameByName` by `all.equal` at tolerance 0 | S `sameByName` |
+| SA-P09 `ruv_no_k_reason` through `oneLine` | S `journeyAssayColumns` |
+| SA-P10 E7's keys required (the file is required whenever a Part L unit runs E7); E7 and `E15_silence` in the end-of-run stop list | S parent block |
+| SA-P11 `REFUSALS` gains `multischolar_refusal` and `multischolar_ruv_grouping_unusable` | S `REFUSALS` |
+| SA-P12 E5 compares the `lp` and `las` jobs' oracle rows with the deciding job's | S after E5r |
+| SA-P13, ruling 4: best and worst on the oracle-excess path (the arm's data sets without a table at 0 and 1, paired with the oracle's value) | C excess block |
+| SA-P14 the gap check runs on the declared (cell, job) set (`K188_SCORE_CELLS` overrides it for E16 only) | C `DECLARED_CELL_JOBS` |
+| SA-P15 `itsdpos`'s class exactly `a,b,c`; `ruvskip` and `daerror` predict the product status `uncorrected` | S `PLANT_EXPECT` |
+| SA-P16 `E15_silence` over every non-l1c unit; the predictions file's SHA-256 in the provenance | S parent block, provenance |
+| Ruling 10 M-warn reuses `cap_bound` | C M-warn |
+| Tamper-evident predictions: `predictions-l1c.tsv` is written from a reading of the bound commit, quoted here, committed and pushed before the request, and passed by a path inside the checkout (`predictionsFileOk`); it covers E7's R items in L1r | S `predictionsFileOk` |
+| `K188_SMOKE=1`: the smoke check writes every check and judges none (no end-of-run stop) | S end of the parent |
+
+**Waiting list, additions (SA.8; ticket 14):** (1) KIT-242's per-assay ITSD, normalisation and RUV records read beside E12 to E14 (today only their field names are recorded); (2) KIT-242's new classes added to `REFUSALS`; (3) the value set of Part B's product `ruv_status` and `sameByName`'s handling of its put-back missing values; (4) under KIT-255 a sample failing in one assay stays in the design, so `samples_removed` undercounts: read `corr_removed_one_assay` for it.
+
+**Smoke check, declared before it is sent (ticket 10, r1.23).** An instrument check with no expectation: no prediction is judged and nothing is a result.
+Purpose: find parse and run-time defects. Binding: these scripts' commit, merged with the `v0.9-staging` head of the day (not the bound commit).
+Step 1: both scripts parsed with Rscript, then E16 (script `e16/run-e16.R`, limit 10 minutes). Step 2: a mini lifecycle, `K188_LIFECYCLE=1`,
+`K188_SMOKE=1`: M12 and K172c, job types deciding, lp, las, k172c, data set 401 (limit 20 minutes); and L12 job l1c with
+`predictions-smoke.tsv` (header only, no R items; limit 10 minutes). Printed: the console of each script and the tables each writes (checks, plants,
+statuses, provenance). Ceiling: one job, 40 minutes, (40 + 10) x 4 / 60 = 3.33 core-hours, charged to the L1r line. Decision: proceed to L1r, or fix
+mechanics. It uses none of L1r's three VAL-54 re-sends; each fix-and-resend is the coordinator's to allow.
