@@ -1,5 +1,0 @@
-seq	file	test	lane	step	n_assays	n_keys	failed_contrasts	contrasts	friendly_names
-1	test-omic-summary-module.R	(b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
-2	test-omic-summary-module.R	(b) trx_technical: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
-3	test-omic-summary-module.R	(b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
-4	test-omic-summary-module.R	(W3, F108-03) trx: the save before the RUVIII export shows the gate's warning and no "Saved Integration" notice	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI

@@ -1,2 +1,0 @@
-seq	file	test	lane	step	n_assays	n_keys	failed_contrasts	contrasts	friendly_names
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	3	6		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT

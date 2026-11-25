@@ -1,4 +1,0 @@
-file	test	nb	passed	failed	skipped	error	real
-test-gui-entry-metabolomics.R	KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format)	35	35	0	FALSE	FALSE	62.296
-test-gui-entry-metabolomics.R	KIT-101 entry lane metab_gc: one GC-MS assay (custom format)	35	35	0	FALSE	FALSE	48.642
-test-gui-entry-metabolomics.R	KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format)	35	35	0	FALSE	FALSE	54.544

@@ -1,7 +1,0 @@
-seq	file	test	lane	step	assay	key	exact_match	exact_friendly	text_before_eq	rule_result	rule_result_in_friendly
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	LCMS_Pos	groupKO-groupWT	TRUE	KO_vs_WT	groupKO-groupWT	KO_vs_WT	TRUE
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	LCMS_Pos	groupRES-groupWT	TRUE	RES_vs_WT	groupRES-groupWT	RES_vs_WT	TRUE
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	LCMS_Neg	groupKO-groupWT	TRUE	KO_vs_WT	groupKO-groupWT	KO_vs_WT	TRUE
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	LCMS_Neg	groupRES-groupWT	TRUE	RES_vs_WT	groupRES-groupWT	RES_vs_WT	TRUE
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	GCMS	groupKO-groupWT	TRUE	KO_vs_WT	groupKO-groupWT	KO_vs_WT	TRUE
-1	control	G0 positive control: tied_pvalues lipid DA through completeOmicDaRun	NA	NA	GCMS	groupRES-groupWT	TRUE	RES_vs_WT	groupRES-groupWT	RES_vs_WT	TRUE

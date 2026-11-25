@@ -1,4 +1,4 @@
-# KIT-268 G0 results (run 45708195790, base 4d588ba3 + docs; tables verbatim under run-45708195790/scripts/5/out/)
+# KIT-268 G0 results (run 45708195790, base 4d588ba3 + docs; tables verbatim under r2/out/)
 
 Positive control (tied_pvalues lipid through completeOmicDaRun): fallback comparisons LCMS_Pos, LCMS_Neg, GCMS x groupKO-groupWT,
 groupRES-groupWT (6 keys, each an exact match on `contrasts`; rule result = friendly name). Non-empty: the instrument is live.

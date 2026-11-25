@@ -1,2 +1,0 @@
-seq	file	test	lane	step	n_assays	n_keys	failed_contrasts	contrasts	friendly_names
-1	test-gui-entry-lipidomics.R	KIT-101 entry lane lipid_canonical: two LipidSearch assays	lipid_canonical	NA	2	2		groupKO-groupWT	KO_vs_WT

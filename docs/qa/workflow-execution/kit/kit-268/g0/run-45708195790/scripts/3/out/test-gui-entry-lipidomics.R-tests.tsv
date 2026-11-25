@@ -1,2 +1,0 @@
-file	test	nb	passed	failed	skipped	error	real
-test-gui-entry-lipidomics.R	KIT-101 entry lane lipid_canonical: two LipidSearch assays	35	35	0	FALSE	FALSE	64.15
