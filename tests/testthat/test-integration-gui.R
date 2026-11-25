@@ -452,7 +452,9 @@ test_that("KIT-139: internal standards, features seen once and few samples are s
         # every sample kept as the default keeps missing ones), not "two samples"; the sample table counts the kept samples.
         expect_identical(nrow(preview$aligned$samples), 5L)
         expect_identical(integrationMinObserved(preview$parameters, nrow(preview$aligned$samples)), 3L)
-        expect_match(facts[[6L]], "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE)
+        # KIT-260 (coordinator's ruling, 2026-11-26): the fact found by its text, not its position (VAL-275's names line
+        # precedes it), so a later added fact cannot move it.
+        expect_match(facts, "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE, all = FALSE)
         expect_false(grepl("two samples", texts[["col_sparse"]], fixed = TRUE))
         expect_true(preview$few_samples)
         expect_match(output$alignment_status$html, sprintf(texts[["few_samples"]], 4L, INTEGRATION_FEW_SAMPLES), fixed = TRUE)
