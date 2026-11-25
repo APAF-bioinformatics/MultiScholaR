@@ -670,14 +670,16 @@ applyOmicsDesignTechRepAssignment <- function(designMatrix, techRepSamples, assi
             " in group ", selectedGroups[1], ", marked as another biological sample. Choose a number no other ",
             "sample uses."), "number_held"))
     }
+    # The column's type as base left it: base subtracted a double from every other run of the group numbered above
+    # the selection's highest number, which made an integer column double (KIT-222 G1).
+    baseShifted <- any(designMatrix$replicates[setdiff(inGroup, selected)] >
+        max(designMatrix$replicates[selected], na.rm = TRUE), na.rm = TRUE)
     designMatrix$replicates[selected] <- baseReplicateNumber
     techRepMapping <- stats::setNames(seq_along(techRepSamples), techRepSamples)
     designMatrix$tech_reps[selected] <- techRepMapping[designMatrix$Run[selected]]
     numbers <- designMatrix$replicates[inGroup]
     ranks <- match(numbers, sort(unique(numbers)))
-    # The column's type as base left it: base's shift of other runs (an integer minus a double) made it double.
-    othersMoved <- any(ranks != numbers & !inGroup %in% selected, na.rm = TRUE)
-    designMatrix$replicates[inGroup] <- if (is.integer(numbers) && !othersMoved) ranks else as.numeric(ranks)
+    designMatrix$replicates[inGroup] <- if (is.integer(numbers) && !baseShifted) ranks else as.numeric(ranks)
     list(ok = TRUE, type = "message",
         message = paste("Assigned", length(techRepSamples), "samples as technical replicates"),
         designMatrix = designMatrix)

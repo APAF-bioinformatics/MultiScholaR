@@ -35,7 +35,6 @@ applyProtDesignMetadataAssignment <- function(designMatrix, selectedRuns, factor
 #' @noRd
 applyProtDesignTechRepAssignment <- function(designMatrix, techRepSamples, assignmentMode,
                                              manualReplicateNumber = NULL) {
-    integerNumbers <- is.integer(designMatrix$replicates)
     assignment <- applyOmicsDesignTechRepAssignment(designMatrix, techRepSamples, assignmentMode,
         manualReplicateNumber)
     if (length(techRepSamples) < 2) {
@@ -43,8 +42,6 @@ applyProtDesignTechRepAssignment <- function(designMatrix, techRepSamples, assig
     } else if (identical(assignment$code, "groups")) {
         assignment$message <- "All selected samples must belong to the same group. Please assign metadata first."
     } else if (isTRUE(assignment$ok)) {
-        # KIT-222: proteomics' replicate numbers stay integers (a typed number is a double).
-        if (integerNumbers) assignment$designMatrix$replicates <- as.integer(assignment$designMatrix$replicates)
         # The biological replicate number the selected runs now share.
         baseReplicateNumber <- assignment$designMatrix$replicates[assignment$designMatrix$Run == techRepSamples[1]]
         assignment$message <- paste("Assigned", length(techRepSamples),
