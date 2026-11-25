@@ -338,14 +338,23 @@ runGroup <- function(group, tree) {
   add <- function(x) results[[length(results) + 1L]] <<- x
   if (group %in% c("staging", "worker")) {
     suppressMessages(pkgload::load_all(tree, export_all = TRUE, helpers = FALSE, attach_testthat = FALSE, quiet = TRUE))
-    # The worker group's helpers sit under the namespace, as in a test, so that the test's mocks reach them.
-    helpers <- new.env(parent = if (identical(group, "worker")) asNamespace("MultiScholaR") else globalenv())
+    helpers <- new.env(parent = globalenv())
     suppressMessages(testthat::source_test_helpers(file.path(tree, "tests", "testthat"), env = helpers))
-    if (identical(group, "worker")) {
-      environment(obsWorkerRun) <- helpers
-      assign("omicsWorkerRun", obsWorkerRun, envir = helpers)
-    }
     attach(helpers, name = "obs_helpers", warn.conflicts = FALSE)
+    if (identical(group, "worker")) {
+      # VAL-54 instrument repair 1 (run 45579225993: sourcing every helper under the namespace hit a locked
+      # environment): the three worker functions alone re-homed under the namespace, as in a test, so that the
+      # test's two mocks reach them; their bodies unchanged except omicsWorkerRun's suppressWarnings (see above).
+      worker_env <- new.env(parent = asNamespace("MultiScholaR"))
+      for (name in c("omicsWorkerAction", "omicsWorkerController")) {
+        fn <- get(name, envir = helpers)
+        environment(fn) <- worker_env
+        assign(name, fn, envir = worker_env)
+      }
+      environment(obsWorkerRun) <- worker_env
+      assign("omicsWorkerRun", obsWorkerRun, envir = worker_env)
+      attach(worker_env, name = "obs_worker", warn.conflicts = FALSE)
+    }
   }
   if (identical(group, "staging")) {
     f172 <- kit172Values(172001L)$values
@@ -430,8 +439,10 @@ if (length(args) >= 1L && identical(args[[1L]], "--group")) {
 }
 
 # ---- the job (parent) -----------------------------------------------------------------------------------------------
-stopifnot(length(args) == 1L)
+stopifnot(length(args) %in% 1:2)
 out <- args[[1L]]
+# optional: a comma list of the groups to run (default all; the VAL-54 rerun runs only the failed group)
+wanted <- if (length(args) == 2L) strsplit(args[[2L]], ",", fixed = TRUE)[[1L]] else c("staging", "worker", "k188", "k190")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 out <- normalizePath(out)
 git <- function(...) suppressWarnings(system2("git", c(...), stdout = TRUE, stderr = TRUE))
@@ -466,7 +477,7 @@ groups <- list(list(name = "staging", tree = getwd(), minutes = 10),
 rscript <- file.path(R.home("bin"), "Rscript")
 status <- list()
 collected <- list()
-for (g in groups) {
+for (g in Filter(function(g) g$name %in% wanted, groups)) {
   rds <- file.path(tempdir(), paste0("child-", g$name, ".rds"))
   log <- file.path(out, paste0("child-", g$name, ".txt"))
   t0 <- proc.time()[[3L]]
