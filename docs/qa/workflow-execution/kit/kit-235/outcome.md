@@ -78,7 +78,7 @@ All as predicted.
 - **ITSD, as predicted (decision rule item 1):** neither file has an "ITSD Features Per Assay" block, and the
   Methods say "Internal standard (ITSD) normalization was applied using the average_centered method with median
   aggregation …". This sentence is false: no standard was found on either lane. By the coordinator's routing it goes
-  to KIT-236's sentence list, and the recording fault to a separate `R/` ticket. It is not changed here and is not a
+  to KIT-236's sentence list, and the recording fault to KIT-242 (`R/`, owner's decision). It is not changed here and is not a
   stop.
 - **RUV form:** "Status: Not Applied"; no single form, no per-assay form, no Automatic section. G0c did not stop.
   **Branch A** is selected (E-6): F3 and F4 are withdrawn.
@@ -97,8 +97,9 @@ No T row other than T6 passed on base, so stop rule 1 did not fire.
 
 T6's head-against-base comparison on the `•` and `-` shapes passed on base. Its second clause ("identical to head on
 the `*` file") failed on base, 4 times (M and L1 by 2 shapes). It cannot pass there, because base stops on the `*`
-file. So the ticket's "T6 passes on base by construction" is true only of its first clause. This is recorded for the
-ticket text; the test was not changed.
+file. This is by construction: ticket r1.3 (audit K235-I02) restates T6's base cell (its stored-base clause passes on base,
+its `*` clause fails there; exempt from stop rule 1) and the exit ("T6's stored-base clause passes on both sides, and T6
+passes on head"). The test was not changed.
 
 ### R2 (run 45577137662): `r2-45577137662/`
 
@@ -109,7 +110,7 @@ Base f53db55a = staging 3eeaf100 + kit-227 5e7efe5f + this ticket's tests and re
   - `test-gui-entry-lipidomics.R` 35/0 and `test-gui-entry-metabolomics.R` 105/0 on both sides;
   - `test-kit227-report-ruv-sentences.R` 166/0;
   - `test-general-filemgmt-s4-contracts.R` 30/0 (the writer's pinned `*` shape);
-  - `test-omic-summary-module.R` 1675, `test-omic-gui-config.R` 1911, `test-omics-summary-core.R` 676;
+  - `test-omic-summary-module.R` 1675/28 and `test-omics-summary-core.R` 676/25 on both sides (failure lists identical; the same counts on both sides of KIT-227's R2 at cf8af245 and of merge train 2026-11-25b), `test-omic-gui-config.R` 1911/0; `test-lipid-14a-…`, `test-lipid-15-…` and `test-metab-05-…` run no expectation on either side;
   - the remaining files as listed in `compare.tsv`.
 - R CMD check: 0 errors, 3 warnings, 3 notes on both sides, findings identical (0 only on head).
 
@@ -120,17 +121,30 @@ Base f53db55a = staging 3eeaf100 + kit-227 5e7efe5f + this ticket's tests and re
 | G0 observed as predicted | met | G0a, G0b, G0c above; ITSD as predicted and routed; branch A |
 | Section 5's rows other than T6 fail on base | met | R1, 29 failures at the stated values |
 | They pass on head | met | R2 head 50/0 |
-| T6 passes on both | partly: passes on head; on base its head-vs-base clause passes, its `*` clause cannot | R1, R2 |
+| T6's stored-base clause passes on both sides, and T6 passes on head (ticket r1.3) | met | R1 (stored-base clause: no failure), R2 head 50/0 |
 | R2 `same` on every file but the new one | met | `compare.tsv` (14 same) |
 | R CMD check unchanged | met | `check-compare.txt` |
 | Stored references and existing expectations unmoved (stop rule 3) | met | R2: every existing file same, no file re-recorded |
 | Diff only section 4's lines (stop rule 4) | met | `git diff f53db55a dc2c638f -- inst R`: 8 lines in the two templates (lipid :123, :172, :173, :187; metab :120, :169, :170, :184), no `R/` file |
 
-## Inferred (not observed)
+### After the fix, on the real GUI lanes (KIT-236's G0): `post-fix-gui-45577606908/`
 
-- On the GUI route the fixed report prints the Methods with the values G0c shows. G0c applied the `•` rewrite with the
-  templates of staging and kit-227. F1 makes the `*` file parse identically to the `•` file: T6 checks this on head for M and L1.
+- **Observed after the fix on the real GUI lanes, by KIT-236's G0** (run 45577606908; package commit 10198a0d = this branch's dc2c638f plus `tools/kit236/g0.R`, never merged; template md5 lipid 52d2b2b3…, metab 9362fc19… = dc2c638f's; records `origin/kit-236-g0` deb7d755, `docs/qa/workflow-execution/kit/kit-236/g0-45577606908/g0a/{lip,met}-report-text.txt`). Both Word reports print 'METHOD DETAILS', 'The dataset contains 2 assays: LCMS_Pos, LCMS_Neg.' and 'RUV-III batch correction was not applied.', with no 'Error running Main function'. The Methods are G0c's prediction sentence for sentence.
+- The two report texts and the run's `meta.txt` are copied into `post-fix-gui-45577606908/` (source in its
+  `SOURCE.txt`), because `kit-236-g0` is never merged and run artifacts expire.
+
+## Inferred (not observed)
 - Proteomics and transcriptomics templates are untouched, so their reports are unchanged.
+
+## Merge order and release (coordinator's E-7, 2026-11-25)
+
+KIT-235 merges when it passes, after KIT-220 and KIT-227. Without the error, the lipidomics and metabolomics reports print again, for the first time since 2026-03-06, sentences that state findings whatever the data, or that are false for the analysis that was run. KIT-236 r1.2 counts 103 (lipid 51, metab 52). KIT-236's G0 (run 45577606908, on this branch's fix dc2c638f) observed them on both GUI lanes, including 'Internal standard (ITSD) normalization was applied … Internal standard features were removed after normalization.' where no internal standard was found. KIT-236 corrects them and is a release prerequisite. The recording fault behind the ITSD sentence, and the silent normalisation fallback, are KIT-242's (`R/`, owner's decision); KIT-236's D8 and D19 wait for it. No tag, the 0.9.1 alpha included, is cut between this merge and KIT-236's (and, under KIT-242 'refuse', not before KIT-242 has merged: KIT-236 r1.2 section 7). Report text produced from staging between these merges, for example by an evidence journey through an installed build, is not evidence that the report describes the analysis.
+
+Order: KIT-220, then KIT-227, then KIT-235, then KIT-236. `kit-235` contains `origin/kit-227` 5e7efe5f, so it does not join a train ahead of KIT-227.
+
+T6's stored base (audit K235-I06): `tests/testdata/kit235/base/` holds KIT-227's lipid/metab template chunks at 5e7efe5f. If KIT-227's lipid/metab template text changes before it merges, the base copies are re-cut from KIT-227's merged templates (test data only, declared and recorded) and this ticket's test file is run again on the train.
+
+The NEWS entry is a draft for the owner's wording pass (VAL-41): see `wording.md`.
 
 ## Stated limits
 
@@ -147,7 +161,6 @@ Base f53db55a = staging 3eeaf100 + kit-227 5e7efe5f + this ticket's tests and re
 
 - The applied-RUV GUI route: every lipid/metab GUI-entry lane skips RUV. That the applied route writes the per-assay
   form is by reading.
-- A real render of the fixed template on the GUI route. G0b observed the base only; head was checked through the chunks.
 - Whether tags v0.5.0-rc1 or v0.9.0 were distributed.
 - Hand-edited files with other bullet characters.
 - The R3 full suite (shared, coordinator's E-2).
@@ -176,12 +189,12 @@ the same `*` loss for their RUV values only; that was fixed on staging in f91741
   parsers have since f91741f6.
 
 **What changed in results.** No computed value changed. The report's text changed: a lipid/metab report made from the
-application's file now prints its Methods and the other sections. Files in the older `•` and `-` shapes print exactly
-what they printed before (T6, head against the base templates' chunks).
+application's file now prints its Methods and the other sections. Files in the older `•` and `-` shapes parse exactly as before: no line that any writer version writes in those shapes begins with `*` (by reading), and T6 shows the Methods text identical to the base templates' for two writer cases (M, L1) in both shapes.
 
 **Evidence.**
 - G0 runs 45525539989 and 45573071526: the defect observed on the writer's files under main, staging and kit-227, and
   on both GUI lanes' real Word reports.
-- R1 45575079261 and R2 45577137662: T1 to T6 fail first and then pass; 14 neighbouring test files are unchanged; R CMD check is unchanged.
+- R1 45575079261 and R2 45577137662: T1 to T5 fail first at their stated values and pass on head; T6 (a guard) passes on head, and on base its stored-base clause passes; 14 neighbouring test files are unchanged; R CMD check is unchanged.
+- KIT-236's G0 run 45577606908 (on dc2c638f): the fixed report on both real GUI lanes prints its Methods with no error.
 - Limits as stated above. The GUI evidence covers the RUV-skipped route only, with fixture data that hold no internal
   standard.
