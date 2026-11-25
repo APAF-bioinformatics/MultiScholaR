@@ -187,6 +187,11 @@ integrationRecordTexts <- function() {
         methods_seeds_elbo = paste("By its final evidence lower bound (ELBO, MOFA2's training objective; higher is better),",
             "the reported model ranked %d of the %d models, %s below the highest (range over the models %s, in the",
             "objective's units)."),
+        # r1.5 (owner's decision VAL-252): the rank's basis, from KIT-062's diagnosis and KIT-151c's per-seed rows.
+        methods_seeds_elbo_slack = paste("Differences of this size were observed between runs of one solution: trained twice,",
+            "one solution (matched factors correlated 0.999998) ended 0.676 apart when one run stopped five rounds later, and in",
+            "a simulation close to the default settings five seeds' final values spanned 0.015 with the declared seed ranked 5",
+            "of 5; the rank can therefore reflect where training stopped rather than a better solution."),
         methods_seeds_limit = paste("The stability figures describe only the reported model's factors: a factor that other",
             "seeds find but the reported model lacks is not listed."),
         # KIT-151 (INT-17). %s: the variables set.
@@ -1053,7 +1058,7 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     rank <- model$elbo_rank
     if (length(seeds) > 1L && length(rank) && !is.na(s(rank$rank))) {
         sentences <- c(sentences, sprintf(texts[["methods_seeds_elbo"]], as.integer(s(rank$rank)), as.integer(s(rank$of)),
-            integrationElboText(s(rank$below_best)), integrationElboText(s(rank$range))))
+            integrationElboText(s(rank$below_best)), integrationElboText(s(rank$range))), texts[["methods_seeds_elbo_slack"]])
     }
     results <- block$results
     if (!is.null(results)) {

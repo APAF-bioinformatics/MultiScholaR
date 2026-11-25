@@ -200,6 +200,8 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
                 shiny::p(sprintf(texts[["stability_intro"]], length(seeds), paste(seeds, collapse = ", "), seeds[[1L]])),
                 if (!is.null(rank)) shiny::p(sprintf(texts[["stability_elbo_rank"]], as.integer(rank$rank), as.integer(rank$of),
                     integrationElboText(rank$below_best), integrationElboText(rank$range))),
+                # r1.5 (VAL-252): the rank's basis.
+                if (!is.null(rank)) shiny::p(texts[["stability_elbo_slack"]]),
                 shiny::p(texts[["stability_limit"]]))
         })
         output$stability_table <- shiny::renderTable({

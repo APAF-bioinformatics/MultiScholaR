@@ -1,7 +1,7 @@
 # KIT-240: user-facing texts (drafts awaiting the owner)
 
 Every text below is a **draft awaiting the owner's wording** (VAL-41 allows implementing proposed wording; ticket
-KIT-240 r1.4, OD-1 to OD-3; implementation audit AUDIT-KIT-240-impl-20261125). The values the marks describe are decided (VAL-221); only the words are open.
+KIT-240 r1.5, OD-1 to OD-3; implementation audit AUDIT-KIT-240-impl-20261125). The values the marks describe are decided (VAL-221); only the words are open.
 Ledger IDs in the marks refer to `docs/methods-decision-ledger.md` in the repository, which the installed application
 does not carry (AUDIT-KIT-240-plan-20261125, Re-check 1, R1-07). The predicate `integrationParameterProvisional()`
 marks a default as waiting when its mark contains "awaiting the owner": a reworded waiting mark must keep that token, or
@@ -80,7 +80,23 @@ The two %s are ELBO differences written with two decimals (`integrationElboText`
 reads "less than 0.01" (r1.4, I01), so the rank line never prints "0.00 below the highest" at rank 2 or lower. No
 interpretive clause is added unless the owner adds one with a stated basis.
 
-### Open for the owner: how the rank is presented (AUDIT-KIT-240-impl I01)
+### The rank's basis (r1.5; owner's decision VAL-252: the rank kept, with a clause stating its basis)
+
+Drafts for the owner's wording pass; each fact cited to its evidence.
+
+| Key | Where shown | Draft |
+|---|---|---|
+| `stability_elbo_slack` | Results tab, after the rank sentence, when the rank is shown | Training stops by a rule, not at an exact optimum, so a difference of this size can come from where training stopped rather than from a better solution: in a check close to the default settings the five seeds' final values spanned 0.015 and the declared seed ranked 5 of 5, and one solution trained twice (factors correlated 0.999998) ended 0.68 apart when one run stopped five rounds later. |
+| `methods_seeds_elbo_slack` (record) | the methods paragraph, after the rank sentence, when the rank is known | Differences of this size were observed between runs of one solution: trained twice, one solution (matched factors correlated 0.999998) ended 0.676 apart when one run stopped five rounds later, and in a simulation close to the default settings five seeds' final values spanned 0.015 with the declared seed ranked 5 of 5; the rank can therefore reflect where training stopped rather than a better solution. |
+
+Evidence: (1) KIT-151c, cell n20weak cap1000 slow, seeds 1 to 5: final ELBOs span 0.0146, seed 1 (the declared seed's
+position) ranks 5 of 5 (`docs/qa/workflow-execution/kit/kit-151c/seed-rows.tsv` on branch `run-mofa-evidence-k151c`);
+(2) KIT-062's reproducibility diagnosis, same seed and data on two processors: 186 and 191 rounds, matched factors
+r = 0.999998, final ELBO -27000.324 and -26999.648, 0.676 apart
+(`docs/qa/workflow-execution/kit/kit-062/mofa-reproducibility-diagnose.json`, "within", diag-default-float32-1 against
+-4). Both as read by AUDIT-KIT-240-impl-20261125, I01.
+
+### Superseded by VAL-252: how the rank is presented (AUDIT-KIT-240-impl I01)
 
 The seeds' final ELBOs can differ by less than training's own stopping slack (KIT-151c n20weak cap1000 slow: five seeds
 span 0.0146, the declared seed ranks 5 of 5; KIT-062: one solution stopped at 186 and 191 rounds ended 0.676 apart), so
@@ -95,6 +111,8 @@ the rank can order one solution. Options, none implemented:
 - (c) drop the ordinal and keep the distance and the span: "the model shown is %s below the highest final value; the
   final values of all seeds span %s." (changes VAL-221 (1)'s "where ... ranks can be shown").
 - or keep it as is.
+
+The owner chose (a)'s kind on 2026-11-25 (VAL-252): the rank kept, with a clause stating its basis (above).
 
 ## Two facts for the owner (Re-check 1, R1-07)
 

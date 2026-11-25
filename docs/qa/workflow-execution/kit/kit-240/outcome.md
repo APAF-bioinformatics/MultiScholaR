@@ -105,6 +105,14 @@ Applied with the register's texts, as a tests-only commit (b89be231) and a wordi
   insertion 8 on head and 0 on base (no new allowed substitution: r1.4's texts are all server-rendered).
 - 157.0 job-minutes, 10.47 core-hours (declared 10.00: exceeded by 0.47, within R2's correction reserve).
 
+## Revision 1.5: the rank's basis (owner's decision VAL-252)
+
+The ELBO rank is kept, with a clause stating its basis built from two observed facts (KIT-151c's closest cell; KIT-062's
+one solution 0.676 apart), on the Results tab (`stability_elbo_slack`) and in the Methods paragraph
+(`methods_seeds_elbo_slack`), shown only with the rank. Drafts for the owner's wording pass, with evidence, in
+`wording.md`. Tests first (T7 expects both, T8 expects neither without a rank), then the code; run R5 (below, in
+`runs.tsv`).
+
 ## A8: partner edits and release-checklist items
 
 Done (by the coordinator, read by the audit): KIT-170 6.8 step 2 (`KIT-170.md:664`); KIT-233 `:271` superseded
