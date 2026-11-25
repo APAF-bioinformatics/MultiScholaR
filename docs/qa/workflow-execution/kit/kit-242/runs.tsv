@@ -1,2 +1,4 @@
 run_id	commit	purpose	minutes	result
 45602184961	17488ccf535835d737af5dafac268c59ed8a8005	R1 for the option-free rows (tests-only; staging e0747fc1 + the new test file); stop rule 1; ceiling 60	9.9	every one of the 14 tests fails at its base value (10 passed, 46 failed, 2 errors expectations); stop rule 1 not triggered
+45608276744	17d1ecc4cd615ba93f3d3c45915b234941a78405	R1b-A, Part A failing-first (tests-only; staging 7327607f + test file); stop rule 1; ceiling 60	13.9	every E and NA row fails at its base value; G1, G2, G3, G7 pass; stop rule 1 not triggered
+45610857369	base 17d1ecc4 / head dc75de6912e36d31876557080d2afed4bde458d5	R2a, Part A base against head, 138 files, 9 shards per side, check; ceiling 1,380	746.5	new file fixed (247/0/0); check identical; 11 new-failure and 3 message-changed files: predicted moves plus three unpredicted verdicts (T9 replay of an older project, the worker on a duplicate-id assay, KIT-025 scan); stop rule 2
