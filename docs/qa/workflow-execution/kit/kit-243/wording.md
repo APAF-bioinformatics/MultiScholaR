@@ -13,3 +13,22 @@ wording. The ticket's section 7 states which cases each one is true in.
 `<file>` is the full path. When the marker itself cannot be written (the publication folder cannot be written to), no new
 text is shown: KIT-131's existing figure check (`checkWorkflowFigureFiles`) names the marker file ("required figures were
 not written", "missing or empty: .multischolar_da_publication_pending", "in <folder>"), and nothing is removed.
+
+## Refinements proposed by the implementation audit (I10), for the owner's wording pass
+
+The code still shows the four drafts above. The new test asserts them word for word (`k243Texts` in
+`tests/testthat/test-kit243-summary-current-outputs.R`), so any rewording edits that list in the same commit.
+
+- **`da_publication_pending`** is also shown while a managed publication is still running, when running the analysis
+  again is not the remedy (proteomics refuses a second press). Proposed addition: "If the analysis is still running,
+  wait for it to finish." After a crash between a completed publication and the marker's deletion, "were not all
+  written" is untrue; the remedy still works.
+- **Removal failure.** For a folder under the file's name, or a read-only file on Windows, closing a program is not the
+  remedy. Proposed: "... Close any program that has it open, or move it out of the folder, then run the differential
+  analysis again."
+- **Marker not writable.** KIT-131's text then names an internal file as a figure ("required figures were not written",
+  "missing or empty: .multischolar_da_publication_pending", "in <folder>"). Proposed plain text: "The results folder
+  <folder> cannot be written to, so the earlier files were not removed and this analysis's files were not written."
+- **Hand-off to KIT-236 (report sentences).** With KIT-220 and KIT-243 together, an analysis with nothing significant
+  leaves no proteomics count barplot; the reports handle the missing file but print "Figure 2: Number of significant
+  ..." unconditionally (`inst/reports/proteomics/DIANN_report.rmd:1187-1189`, likewise LFQ and TMT).
