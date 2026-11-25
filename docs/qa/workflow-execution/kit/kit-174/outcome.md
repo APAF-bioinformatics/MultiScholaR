@@ -75,10 +75,8 @@ session. The fix reads the head state's design and group column (`omicNormRuvHea
 existing `omicNormRuvHeadTechnicalReplicates`) and falls back to the session's design table only without a session
 state. The session's saved design (`workflowData$design_matrix`) would have been wrong whenever quality control removed
 samples: a removed sample would still be counted, so a value could be reported as spanning groups (or the count "n of
-its m values" could be off) because of a sample that is no longer in the table RUV-III reads. The tests exercise the
-fallback only (their managers are not session adapters); the head-state read is exercised by the dependents that run
-real session managers with `group` (no warning expected, none raised: `test-prot-design-log2.R`,
-`test-workflow-saved-qc.R`, both `same`).
+its m values" could be off) because of a sample that is no longer in the table RUV-III reads. The T10 site tests exercise the fallback; the audit-repair tests (run 45522632448) exercise the head-state read
+on real session owners with a spanning column and no bus design table (classic proteomics, lipidomics).
 
 ## Not checked
 
