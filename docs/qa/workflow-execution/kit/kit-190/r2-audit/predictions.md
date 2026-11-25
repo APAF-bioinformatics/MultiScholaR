@@ -22,3 +22,23 @@ an instrument defect falls under VAL-54. No correction pass is left (outcome.md,
 | D5 control | 12 dump lines differ, all provenance digests; the head values equal the 12 stored values of I07 | the markers; nothing else moves |
 
 Budget before this run: 220.39 of 510.4 used (coordinator's figure), plus the I01 failing-first run (1 job).
+
+## The O1 run (VAL-280), declared before it is sent; sent only after run 45651851022 is judged
+
+The owner decided O1 (a) (VAL-280, staging 3a6794b0). Commit 6b465f1e (tests only) replaces `:73` of
+`test-workflow-omics-ruv-cancor-once.R` with the register's comment and `expect_true(isTRUE(new$one$success))`, and adds
+a printed observation ("KIT-190 observation <omic> <assay>: <percentage>% <status> k=<k> reason=<error_reason>", and
+the assay's refusal text where it failed). That observation changes no expectation and reads only the sweep's existing
+`optimization_results` and `error`; nothing under `R/` changed. Run 45651851022 (head 687ba6f3) does not contain this
+edit, and there `:73` is still predicted to fail as in 45619021147.
+
+Run `k190-o1-<head>`: this file alone, base 687ba6f323eb05692afa8074b8664648bed6b4ef (without the edit) against the head
+commit that holds this declaration (the test file is as in 6b465f1e). No check, no scripts, 1 shard, ceiling
+40 job-minutes, one attempt (VAL-54 for an instrument defect only).
+
+| Side | Prediction |
+|---|---|
+| base 687ba6f3 | 14 passed, 2 failed: `:73` for lipid and metab (assay `two` unsuccessful), as in 45619021147 |
+| head | 16 passed, 0 failed (3 tests per omic: 1 + 3 + 4 expectations) |
+| comparison | `fixed` (failing on base, passing on head) |
+| observation | assay `one` accepted at one or more percentages; assay `two` rejected at every percentage, with the reason printed per percentage (recorded as observed; it decides nothing; a separate measurement ticket owns it) |
