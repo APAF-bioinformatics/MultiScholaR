@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-247 G0 (observation of the base, no package code): G0-3 lipidomics, metabolomics, transcriptomics: path 2, (e), (f), (g), (h); v0.9-staging 16112917 + scripts only (branch kit-247-g0); 1 job, ceiling 90 job-minutes; decides stop rules 1, 2, 5",
+  "label": "KIT-247 G0 g03 on kit-247-g0 56ad3187 (R/ as v0.9-staging 16112917)",
+  "package_commit": "56ad31871586359770a6d3697ba8c85ce70bcada",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-247/g0-lanes.R",
+      "args": [
+        "g03",
+        "kit247-g0"
+      ],
+      "env": {},
+      "out": "kit247-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 85
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
