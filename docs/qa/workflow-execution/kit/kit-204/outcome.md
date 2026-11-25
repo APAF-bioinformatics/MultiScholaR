@@ -100,8 +100,16 @@ both sides, nothing only on head. Stop rules 2 and 3 not met (N4 passes on base,
 
 `r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`. 482 files: 480 same; `test-omic-da-module.R`
 new-failure, exactly the 13 `prot_main` summary values (13 distinct steps, each the one line); the new file only on
-head. 39 files fail identically on base and head (stored references recorded on the laptop, KIT-156; not this
-ticket's). Longest job 56.2 minutes (ceiling 70).
+head. 38 files fail identically on base and head (stored references recorded on the laptop, KIT-156; not this ticket's),
+and `test-omic-da-module.R` fails on both sides with exactly these 13 more on head (53 → 66): of R3's failure
+blocks, 965 are byte-identical on both sides, 13 are only on head and none only on base. Longest job 56.2 minutes (ceiling 70).
+
+## Departure from ticket 6.4, by the coordinator
+
+The implementation audit (AUDIT-KIT-204-impl-20261125, I02) found that the merge with staging conflicts in three files
+under `R/` and one Rd page (KIT-220), so ticket 6.4 would ask for R3b on the merge. The coordinator ruled on
+2026-11-25 that the next full-suite checkpoint on staging stands in for R3b (as for KIT-218's A4 and KIT-222's A5). R2b
+on the merged tree is run (below, when recorded).
 
 ## Acceptance criteria
 
@@ -161,11 +169,14 @@ TMT, limma and limpa routes) was affected. Lipidomics and metabolomics already s
 
 | Place | Base | Fix |
 |---|---|---|
-| Display counts | `R/utils_workflow_dia_da.R:1290` (token v1), `:1299`, `:1304` | `:1294` (v2), `:1303` (`not_tested`), `:1305`, `:1316` |
+| Display counts | `R/utils_workflow_dia_da.R:1290` (token v1), `:1299`, `:1304` | `:1294` (v2), `:1303` (`not_tested`), `:1308`, `:1316` |
 | Tab summary | `R/utils_workflow_dia_da_views.R:287-290`, `:305-312` | `:293` (manifest), `:308-317` (list) |
 | Count function | `R/func_prot_da_results_summary.R:13-42` | `:17-56` (`p_value_column`, `:29`, `:39`, `:47`); helper `:71`; printer `:178`, filter `:198` |
 | S4 method | `R/func_prot_da_model_methods.R:508-512`, `:597-615` | `:508-514` (p column passed), `:602` (Not tested), `:616`, `:619` (filters) |
 | Publication figure | `R/func_prot_da_results_methods.R:360-361` | `:359-361` |
+
+Legacy (`main` 436cdbe8): the same counting in `R/func_prot_da.R:3037-3066` (`TRUE ~ "Not significant"` at
+`:3051`) and `:4292-4301` (`:4297`); the tab's summary without the line in `R/mod_prot_da.R:1899-1906`.
 
 **What changed in results.** For a comparison with n untested proteins (n > 0): the count tables gain a
 "Not tested" row of n and their "Not significant" count falls by n; significant, up and down counts are unchanged; the
@@ -186,5 +197,7 @@ moved), so the published `.tab` change is shown by N9 on fixtures only.
 - The rendered tab in a browser (the summary is checked as the text `diaDaSummaryStatsView` returns).
 - The limpa (dpcDE) route's count tables with an untested protein (by reading, the same code; no limpa fixture here).
 - Why `qvalue()` fails on B-A of this fixture (its messages were silenced by the test); the cause is inferred.
-- The KIT-220 merge (`origin/kit-220` adds `q_val_thresh` as a last formal of the same functions): whichever merges
-  second places its formal after the other's and re-runs its R2.
+- The merge with staging after KIT-220 (merged first, VAL-230): `printCountDaGenesTable` has KIT-220's
+  `q_val_thresh` and then this ticket's `p_value_column` (`countStatDaGenes` and `countStatDaGenesHelper` are not
+  touched by KIT-220); three files under `R/` and one Rd page conflict, so the merger's rule (ticket 6.4) asks for
+  R2b and R3b on the merge.

@@ -107,11 +107,13 @@
    refused with 'no feature has a value in any sample, so nothing can be tested'. `runTestsContrasts()` returns
    `features_without_values` (the ids) when there are such proteins (KIT-200).
  * Proteomics: proteins that could not be tested in a comparison (no value in a compared group, or none in the
-   analysed samples) are now counted as 'Not tested' in the differential-abundance summary and in the table of
-   significant counts (`*_num_sig_da_molecules.tab`) in the application and the `differentialAbundanceAnalysis()`
-   method, instead of 'Not significant'. The summary line is always shown (0 when every protein was tested); the table
-   row appears only when there are such proteins. Other results are unchanged. Analyses saved by an earlier version keep
-   their table of significant counts until the analysis is run again (KIT-204).
+   analysed samples) are now counted as 'Not tested'. The differential-abundance summary always shows the line
+   'Not tested (no value in a compared group): n' (0 when every protein was tested); before, such proteins were
+   counted only in its total. In the application and the `differentialAbundanceAnalysis()` method, the table of
+   significant counts (`*_num_sig_da_molecules.tab` and `.xlsx`) lists them as 'Not tested' instead of 'Not
+   significant' when there are any, and the bar chart of every status that `outputDaAnalysisResults()` writes shows
+   them as their own bar. This change alters no other result. Analyses saved by an earlier version keep their table of
+   significant counts until the analysis is run again (KIT-204).
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
    Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
    differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
