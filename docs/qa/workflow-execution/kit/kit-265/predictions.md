@@ -109,3 +109,8 @@ changes; the ticket's ceiling is unchanged):
    second import completed (`setup_import` complete, `design_matrix` pending, "Data import successful!", no error).
    Fix: a refusal is an error toast that is new since the press. The values are re-observed in the rerun, against the
    same predictions.
+
+## H1 rerun 1 (run 45706090379): 41 of 41 as predicted
+
+4 of 4 sessions attached; 0 differ, 0 not observed. About 13.0 job-minutes (0.87 core-hours). H1 in all: 26.5
+job-minutes (1.77 core-hours) against 15 expected and the 60 ceiling.
