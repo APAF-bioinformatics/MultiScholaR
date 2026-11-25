@@ -118,3 +118,25 @@ Then R2 again (correction pass) and R3.
   missing: power 0.712 against 0.819 at g = 1).
 - **Limits.** Simulated data only (KIT-185's generator, no unwanted factor, equal groups); unequal groups, pools and
   refusals tested by unit tests, not measured; no real data.
+
+## Correction pass (the coordinator's rulings on R2 45526352392; declared before R2 again)
+
+- Merge of staging 3eeaf100 (4af8caf9): one conflict, in `docs/methods-decision-ledger.md`; staging's rows VAL-201 to
+  VAL-225 kept as they are and this ticket's row `VAL-<merge>` placed after VAL-225, now citing VAL-204 (the owner's
+  decisions). `workflowReplayRuleMarkers` was not changed on staging (KIT-190, KIT-214, KIT-224 not merged), so the
+  marker list merged without hand resolution: KIT-202's `intensity_filter_samples` and this ticket's
+  `intensity_filter_missing`, in that order.
+- 2c31eda0: (item 2) the whole kernel's removed-for-missing count reads the design's samples directly, no longer through
+  the refusing column helper; (item 3) the mocks of the S4 generics in `test-lipid-01k-qc-intensity-shared.R` (one) and
+  `test-metab-01q-qc-intensity-module-characterization.R` (two) gain the generics' two new formals (before and after in
+  ticket r1.7); no assertion changed. (Item 1) G7's answer is the observed 16-step list per lane (ticket r1.7).
+- T3 and T4 failing on the commit before the fix at the T1 wrapper is left to the implementation auditor to judge.
+- **R2 again, declared:** purpose: the same 44 files and check, head (this branch after the correction) against staging
+  3eeaf100 on the same runner image, 3+3 shards; control S is not repeated (its R code path differs only in the
+  removed-count's column selection, which the new tests and R2's partitions test cover; control S (iii) compared the
+  removed counts at ba962c19). Ceiling 675 job-minutes. Prediction: as 5.11 with r1.7's G7 list: new file
+  `only-on-head`; `test-metab-qc-shared.R` `count-changed` without failure; `test-omic-qc-module.R` `new-failure` limited
+  to test (b)'s four expectations; the two GUI-entry files `new-failure` limited to the 16 steps per lane from
+  `qc_intensity`; `test-workflow-omics-declarations.R` and `test-workflow-omics-binding-steps.R` `message-changed`;
+  everything else (including the registry, 01k and 01q files) `same`; check findings only on head: none. Decides:
+  R3 if it holds; otherwise stop and report (no further correction).
