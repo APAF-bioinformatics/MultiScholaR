@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-250 R1: tests-only commit d6bbcafb (R/ = v0.9-staging e0747fc1), failing-first: E1a to E7 and the declared edit fail by assertion, G1 to G3 pass; ceiling 45 job-minutes",
+  "label": "KIT-250 R1 on kit-250 d6bbcafb (tests only)",
+  "package_commit": "d6bbcafb0d5501eb0b2ca727e0a1c286c89bb144",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit250-organism-dialog.R", "test-prot-01c-import-module-contracts.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
