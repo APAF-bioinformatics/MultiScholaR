@@ -660,7 +660,7 @@ validateWorkflowAnalysisRecord <- function(record) {
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds two rows, `ruv_control_grouping` and `ruv_k_bound`; KIT-205,
 #' VAL-129 (2), adds `enrichment_background`; KIT-202 adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
 #' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
-#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`): for
+#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`; KIT-258 adds `duplicate_resolution_rank`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -698,7 +698,12 @@ workflowReplayRuleMarkers <- list(
     # group (default: 2 values in at least 1 group; pool groups not counted) and so removes a feature with no value
     # ("group_counts"); records made before did not count missing values ("not_counted").
     intensity_filter_missing = list(option = "MultiScholaR.intensity_filter_missing", current = "group_counts",
-        earlier = "not_counted"))
+        earlier = "not_counted"),
+    # KIT-258 (VAL-254, VAL-284): among the rows of one duplicated id, the most measured row (a value neither missing nor
+    # zero), then the highest mean of its measured values ("measured_then_mean"); records made before ranked by the mean
+    # of the non-missing values alone ("mean").
+    duplicate_resolution_rank = list(option = "MultiScholaR.duplicate_resolution_rank", current = "measured_then_mean",
+        earlier = "mean"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
