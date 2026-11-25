@@ -258,14 +258,17 @@ protNormFiguresDispatcher <- function(workflowData, getPlotAestheticsFn) {
 #' designate (`diaLimpaPassThroughSource`), then the pass-through runs in the delivery, as it does in process.
 #' @param settings The run's settings (its aesthetics).
 #' @param passThrough `function()`, the in-process pass-through with its notice; `failed` `function(error)`.
+#' @param experimentPaths The omic's project paths: KIT-257 removes the earlier run's own files when the action starts.
 #' @return TRUE, invisibly, once dispatched.
 #' @noRd
-dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData, passThrough, failed) {
+dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData, passThrough, failed, experimentPaths = NULL) {
   manager <- workflowData$state_manager
   runner$run(function() shiny::isolate({
     source <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "normalization")
-      diaLimpaPassThroughSource(manager, normData)
+      source <- diaLimpaPassThroughSource(manager, normData)
+      removeProtNormOwnFiles(experimentPaths, "normalization")
+      source
     })
     list(protNormFiguresAction(source, omicNormPlotAestheticsGetter(settings)(), deliver = function(result) passThrough()))
   }), failed = failed)
@@ -499,9 +502,17 @@ runProtNormNormalizationWorkflow <- function(
       }
       # KIT-122: on a managed session the worker saves the source's QC figures before the pass-through draws them.
       runner <- workflowOmicsManagedActions("proteomics")
-      if (is.null(runner)) return(pass_through())
+      if (is.null(runner)) {
+        # KIT-257 (VAL-250): the earlier run's own files go after the route's refusals, before the pass-through (whose
+        # definition is pinned, test-prot-norm-core.R); managed, the dispatched action removes them when it starts.
+        withDIAStateScope(workflowData$state_manager, function() {
+          assertDIAExportReady(workflowData$state_manager, allow_action = "normalization")
+          removeProtNormOwnFiles(experimentPaths, "normalization")
+        })
+        return(pass_through())
+      }
       return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through,
-        function(e) handleErrorFn(error = e)))
+        function(e) handleErrorFn(error = e), experimentPaths))
     }
     # KIT-182: the request runs synchronously here on both paths; when the run reads another table than the previous
     # run, its classed message is shown as the tab's notice.
@@ -621,7 +632,12 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
     function(result) held$result <- result))
   if (isTRUE(request$redraw_pre) && is.function(preQc)) actions <- c(list(protNormFiguresAction(request$source,
     omicNormPlotAestheticsGetter(settings)(), deliver = function(result) preQc())), actions)
-  runner$run(actions, done = figures, failed = failed)
+  # KIT-257 (VAL-250, R1-01): the earlier run's own files are removed when the actions start, not at the click: a click
+  # that waited behind another action (a correlation still publishing its table) removes what that action wrote.
+  runner$run(function() {
+    removeProtNormOwnFiles(experimentPaths, "normalization")
+    actions
+  }, done = figures, failed = failed)
   invisible(TRUE)
 }
 
@@ -712,6 +728,8 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
     held$source <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "correlation")
       source <- diaCorrelationSource(manager, normData)
+      # KIT-257 (VAL-250): the earlier results table (either name) goes before the pairs start.
+      removeProtNormOwnFiles(experimentPaths, "correlation")
       readDIAStateMetadata(manager, source)
       source
     })

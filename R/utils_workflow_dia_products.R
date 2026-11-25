@@ -744,6 +744,8 @@ runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, o
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "normalization")
         request <- diaNormalizationRequest(manager, settings, norm_data, grouping())
+        # KIT-257 (VAL-250): the earlier run's own files go before anything is drawn, computed or committed.
+        removeProtNormOwnFiles(paths, "normalization")
         if (isTRUE(request$redraw_pre) && is.function(pre_qc)) pre_qc()
         run <- computeDIAReferenceNormalization(manager, request$source, request$parameters)
         commit <- diaNormalizationCommit(manager, settings, run)
@@ -1806,6 +1808,8 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "correlation")
         source <- diaCorrelationSource(manager, norm_data)
+        # KIT-257 (VAL-250): the earlier results table (either name) goes before anything is computed or committed.
+        removeProtNormOwnFiles(paths, "correlation")
         original <- readDIAStateMetadata(manager, source)$data
         run <- if (skipped) list(final = source) else computeDIAReferenceCorrelation(manager, source, grouping(), threshold)
         commit <- diaCorrelationCommit(manager, run$final, threshold, skipped)

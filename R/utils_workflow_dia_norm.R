@@ -659,6 +659,24 @@ resolveProtNormCorrelationResultFilenames <- function(
   )
 }
 
+#' KIT-257 (VAL-250): before a proteomics normalisation or correlation run, remove its own earlier files from
+#' `protein_qc_dir`, by exact name: both names of the correlation's results table (TSV and the S4 compatibility RDS),
+#' and at a normalisation also the RUV-corrected figures and the cancor figure (written with RUV only). Copy prefers the
+#' RUV table whenever it exists, so an earlier run's table left there was delivered as the current one.
+#' @param paths The omic's project paths (`protein_qc_dir`).
+#' @param stage `normalization` or `correlation`.
+#' @return The removed paths, invisibly; a condition of class `workflow_figure_unwritten` when one cannot be removed.
+#' @noRd
+removeProtNormOwnFiles <- function(paths, stage = c("normalization", "correlation")) {
+  stage <- match.arg(stage)
+  tables <- paste0(rep(c("ruv_normalised", "normalised"), 2L), "_results_cln_with_replicates.", rep(c("tsv", "RDS"), each = 2L))
+  names <- if (identical(stage, "normalization")) c(paste0("ruv_corrected_", c("pca", "rle", "density", "correlation", "cancor"),
+    ".png"), tables) else tables
+  texts <- omicNormGuardTexts()
+  removeWorkflowOwnFiles(file.path(paths$protein_qc_dir, names),
+    if (identical(stage, "normalization")) texts$norm_unremoved else texts$correlation_unremoved)
+}
+
 saveProtNormCorrelationResults <- function(
   finalS4ForDe,
   experimentPaths,

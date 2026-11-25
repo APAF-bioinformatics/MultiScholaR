@@ -70,6 +70,19 @@
 
 ### Fixes
 
+ * Normalisation, every omic: each run now first removes the earlier run's files that depend on RUV (and, in
+   proteomics, the earlier normalised table), and writes again those it makes. Before, Copy and the report could
+   deliver files from an earlier, different normalisation:
+   - proteomics' Copy delivered an earlier run's RUV-normalised abundance table as `RUV_normalised_results.tsv` after a
+     later run without RUV (in every earlier release), while the analysis used another table;
+   - transcriptomics' report showed the canonical-correlation panels of an earlier RUV grid after a declared RUV
+     design;
+   - lipidomics' and metabolomics' Copy collected earlier RUV-corrected QC figures.
+
+   A file that cannot be removed (for example, open in another program) stops the run before the normalisation is
+   computed. If a proteomics normalisation fails after it has started, the earlier RUV figures and normalised table
+   are no longer in the project: run it again before Copy. Projects normalised before this release keep such files
+   until the normalisation is run again. (KIT-257)
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

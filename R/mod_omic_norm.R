@@ -446,8 +446,14 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
     manager <- workflowData$state_manager
     ruv_design <- omicNormReadRuvDesign(input, binding$omic_type, addLog)
     if (!ruv_design$ok) return(invisible(FALSE))
-    # KIT-194: the run rule (a refusal, or the previous run's start selected), after every other refusal (7.3).
-    started <- omicNormApplyRunStart(binding, manager, normData, addLog)
+    # KIT-194: the run rule (a refusal, or the previous run's start selected), after every other refusal (7.3). KIT-257:
+    # then the earlier RUV-corrected figures are removed; the assays are the tab's, else the head's (R1-03).
+    own_files <- function() {
+        assays <- shiny::isolate(normData$assay_names)
+        if (!length(assays) && inherits(manager, "DIAStateAdapter")) assays <- config$binding$read_metadata(manager)$assay_names
+        omicNormOwnFiles(binding, experimentPaths, assays)
+    }
+    started <- omicNormApplyRunStart(binding, manager, normData, addLog, remove = own_files)
     if (inherits(started, "error")) {
         shiny::showNotification(conditionMessage(started), type = "error", duration = 15)
         return(invisible(FALSE))
@@ -781,6 +787,11 @@ omicNormGuardTexts <- function() {
             "is left in this session, so it cannot be filtered or normalised again here. To change quality control or",
             "normalisation, import the data again."),
         busy = "A step is still running. Press \"Run Normalization Pipeline\" again when it has finished.",
+        # KIT-257 (VAL-250): a run's earlier file that could not be removed (`%s` the paths; drafts, VAL-41).
+        norm_unremoved = paste("An earlier file of the normalisation could not be removed, so this normalisation was not",
+            "run: %s. Close any program that has it open, then run the normalisation again."),
+        correlation_unremoved = paste("An earlier file of the normalisation could not be removed, so this correlation filter",
+            "was not run: %s. Close any program that has it open, then apply or skip the correlation filter again."),
         correlation = paste("the current table is not the one the last normalisation produced (Quality Control was reverted since),",
             "so the correlation filter would not use the normalised table the analysis reports. Press \"Run Normalization",
             "Pipeline\" again, then apply or skip the correlation filter."),
@@ -980,11 +991,18 @@ omicNormRunStart <- function(binding, manager, normData) {
 
 #' The run rule applied before a run: a refusal is logged and returned as an error (the caller shows it); a remembered
 #' start is selected (the history truncated there, as Revert to it would) and logged.
+#' KIT-257 (VAL-250): after the rule's refusals and before anything moves, the run's own earlier files are removed; a file
+#' that cannot be removed is a refusal of the run (`workflow_figure_unwritten`), returned as the rule's are.
+#' @param remove NULL, or `function()` giving the paths of the stage's own files (`omicNormOwnFiles`).
 #' @return TRUE when the run may go on, else the condition.
 #' @noRd
-omicNormApplyRunStart <- function(binding, manager, normData, addLog) {
+omicNormApplyRunStart <- function(binding, manager, normData, addLog, remove = NULL) {
     tryCatch({
         start <- omicNormRunStart(binding, manager, normData)
+        if (is.function(remove)) {
+            removed <- removeWorkflowOwnFiles(remove(), omicNormGuardTexts()$norm_unremoved)
+            if (length(removed)) addLog(paste("Removed the earlier run's files this run replaces:", paste(basename(removed), collapse = ", ")))
+        }
         if (!is.null(start)) {
             selectWorkflowStateReference(manager, start)
             addLog(sprintf("Normalisation runs again from '%s', the table the previous run started from", start))
@@ -994,6 +1012,24 @@ omicNormApplyRunStart <- function(binding, manager, normData, addLog) {
         addLog(paste("ERROR:", conditionMessage(e)))
         e
     })
+}
+
+#' KIT-257 (VAL-250): the normalisation stage's files that a run writes only conditionally, by exact name in the omic's
+#' own folders: transcriptomics' CCA panels and grid workbook (legacy grid only), lipidomics' and metabolomics'
+#' RUV-corrected QC figures per assay (RUV only; the safe name of the figure writers).
+#' @param binding The omic's declaration binding.
+#' @param experimentPaths The omic's project paths.
+#' @param assayNames The assay names (lipidomics, metabolomics).
+#' @return Paths, possibly none.
+#' @noRd
+omicNormOwnFiles <- function(binding, experimentPaths, assayNames = NULL) {
+    if (omicNormIsTrx(binding)) {
+        return(file.path(experimentPaths$publication_graphs_dir, c("canonical_correlation_panels.png",
+            "canonical_correlation_panels.pdf", "canonical_correlation_optimization_summary.xlsx")))
+    }
+    safe <- gsub("[^A-Za-z0-9]", "_", tolower(as.character(assayNames)))
+    file.path(experimentPaths[[binding$qc_dir_role]],
+        sprintf("%s_ruv_corrected_%s.png", rep(safe, each = 4L), c("pca", "density", "rle", "correlation")))
 }
 
 #' The correlation and export guard (7.4, lipidomics and metabolomics): the head must be the last run's result, or a
