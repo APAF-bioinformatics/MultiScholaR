@@ -201,3 +201,19 @@ stand for this head.
 - Ceiling: 60 job-minutes (the first run's check took 29.7 for both sides), charged to the train's ceiling (811.0 of
   3,105 used before it).
 - Decision: holds: the check prediction is met and the train is green. Does not hold: stop and report; no further run.
+
+### Result of the second run
+
+Run 45595251933 (request `merge-train-20261125d-check-e84c5571`, run-tests commit 548f59e1), head e84c5571 against
+base 5174a798, sent once; conclusion success; 24.2 job-minutes of the 60 ceiling (check head 12.9, check base 10.5,
+plan and results 0.8). Tables in `merge-train-20261125d/check2/`.
+
+Observed: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base;
+the "portable file names" NOTE lists 238 paths on both sides (`00check.log` of each side). The prediction holds.
+
+Train total: 811.0 + 24.2 = 835.2 job-minutes of the 3,105 ceiling.
+
+Train verdict: TRAIN GREEN. Test verdicts from run 45586240983 (every prediction held; the head then and now differs
+only under `docs/qa/`); R CMD check from run 45595251933 (identical). The train lands after train 3 (landed,
+staging 16112917); placeholders for the coordinator: `VAL-<train3-1..4>` = VAL-226 to VAL-229,
+`VAL-<train4-1..4>` = VAL-230 to VAL-233 (KIT-220, KIT-234, KIT-222, KIT-218).
