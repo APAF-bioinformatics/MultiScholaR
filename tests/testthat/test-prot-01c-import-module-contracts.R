@@ -1224,7 +1224,7 @@ test_that("analyzeProtImportMixedSpeciesData warns when no valid organism choice
     logWarn = function(text) {
       warnMessages <<- c(warnMessages, text)
     },
-    showNotification = function(message, type = "default", duration = NULL) {
+    showNotification = function(message, type = "default", duration = NULL, id = NULL) {
       notifications[[length(notifications) + 1]] <<- list(
         message = message,
         type = type,
@@ -1248,9 +1248,14 @@ test_that("analyzeProtImportMixedSpeciesData warns when no valid organism choice
   expect_false(result)
   expect_false(localData$waiting_for_organism_selection)
   expect_true(any(grepl("No valid organisms with taxon IDs found in FASTA", warnMessages, fixed = TRUE)))
+  # KIT-265: the notice names the organism the import will use; this call passes no form values (the blank-form sentence).
   expect_identical(
     notifications[[1]]$message,
-    "Could not extract organism information from FASTA headers. Using default organism settings."
+    paste0(
+      "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. ",
+      "The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. ",
+      "To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+    )
   )
   expect_identical(notifications[[1]]$type, "warning")
 })
@@ -1724,18 +1729,33 @@ test_that("runProtImportMixedSpeciesAnalysisIfNeeded only runs when analysis is 
   workflowData <- list2env(list(aa_seq_tbl_final = NULL))
   localData <- list2env(list())
   analyzeCalls <- list()
+  analyze <- function(...) {
+    analyzeCalls[[length(analyzeCalls) + 1]] <<- list(...)
+    "analyzed"
+  }
 
-  skipped <- runProtImportMixedSpeciesAnalysisIfNeeded(
+  # KIT-265: ticked with no FASTA table the import is refused (it was skipped, silently, with the form's organism).
+  expect_error(
+    runProtImportMixedSpeciesAnalysisIfNeeded(
+      workflowData = workflowData,
+      localData = localData,
+      dataImportResult = mockImportResult(),
+      fastaPath = "/tmp/proteins.fasta",
+      session = structure(list(), class = "MockShinySession"),
+      mixedSpeciesFasta = TRUE,
+      analyzeMixedSpeciesData = analyze
+    ),
+    class = "prot_import_organism_unavailable"
+  )
+
+  unticked <- runProtImportMixedSpeciesAnalysisIfNeeded(
     workflowData = workflowData,
     localData = localData,
     dataImportResult = mockImportResult(),
     fastaPath = "/tmp/proteins.fasta",
     session = structure(list(), class = "MockShinySession"),
-    mixedSpeciesFasta = TRUE,
-    analyzeMixedSpeciesData = function(...) {
-      analyzeCalls[[length(analyzeCalls) + 1]] <<- list(...)
-      TRUE
-    }
+    mixedSpeciesFasta = FALSE,
+    analyzeMixedSpeciesData = analyze
   )
 
   workflowData$aa_seq_tbl_final <- data.frame(id = "P1", stringsAsFactors = FALSE)
@@ -1747,13 +1767,10 @@ test_that("runProtImportMixedSpeciesAnalysisIfNeeded only runs when analysis is 
     fastaPath = "/tmp/proteins.fasta",
     session = structure(list(), class = "MockShinySession"),
     mixedSpeciesFasta = TRUE,
-    analyzeMixedSpeciesData = function(...) {
-      analyzeCalls[[length(analyzeCalls) + 1]] <<- list(...)
-      "analyzed"
-    }
+    analyzeMixedSpeciesData = analyze
   )
 
-  expect_false(skipped)
+  expect_false(unticked)
   expect_identical(analyzed, "analyzed")
   expect_length(analyzeCalls, 1)
   expect_identical(analyzeCalls[[1]]$fastaPath, "/tmp/proteins.fasta")
