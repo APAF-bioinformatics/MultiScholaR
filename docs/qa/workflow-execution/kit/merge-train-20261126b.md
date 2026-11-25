@@ -114,4 +114,43 @@ without the trx flag and the flag can change a count, the prediction is `same` w
 
 ## Result
 
-(filled after the run)
+Run 45636060029 (request `merge-train-20261126b-700853e7`, run-tests commit c590695d), head 700853e7 against train 8's
+tip b24fc159, sent once; conclusion success; 354.8 job-minutes of the 1,260 ceiling (tests 315.0, check 26.7, script
+11.8, plan and results 1.2). Tables in `merge-train-20261126b/` (`compare.tsv`, `tests.tsv`, `tests-base.tsv`,
+`check-compare.txt`, `check-summary.txt`, `meta.txt`, `identity-console.log`).
+
+Observed, 58 files: 52 `same`, 6 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | ticket, prediction |
+|---|---|---|---|---|
+| test-kit240-integration-default.R | absent | 92/0/0/1 | only-on-head | KIT-240, as declared |
+| test-integration-gui.R | 401/0/0/0 | 405/0/0/0 | count-changed | KIT-240, as declared |
+| test-integration-model.R | 263/0/0/0 | 265/0/0/0 | count-changed | KIT-240, as declared |
+| test-kit245-github-push-safety.R | absent | 87/0/0/0 | only-on-head | KIT-245, as declared (S6 ran: 0 skipped) |
+| test-kit245-github-panel.R | absent | 42/0/0/0 | only-on-head | KIT-245, as declared |
+| test-kit256-tech-rep-selection-cleared.R | absent | 20/0/0/0 | only-on-head | KIT-256, as declared |
+
+Counts read from the run, as declared:
+- `test-gui-entry-proteomics.R` 168/25 on both sides, `same` (equal to train 8's declared head, KIT-201's moves).
+- `test-module-ci-trx-summary.R` 87/1 on both sides, `same`.
+
+Every other file is `same` at the predicted values (for example `test-omic-summary-module.R` 1675/28,
+`test-gui-entry-transcriptomics.R` 16/13, `test-workflow-checkpoint-harness.R` 628/0/1 error,
+`test-workflow-ruv-pearson-diagnostic.R` 301/0/2 errors/5 skipped, the eight MOFA files skipped only).
+
+Identity script (KIT-240): exit 0, "all checks pass: TRUE"; in both modes settings note 1, Results note 2, mark 21,
+Enrichment insertion 8 (0 on base); head FALSE = base unset; head unset is not the unavailable panel.
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdicts:
+- KIT-240: holds exactly.
+- KIT-245: holds exactly.
+- KIT-256: holds exactly.
+- Check: identical.
+
+Train verdict: TRAIN GREEN, on condition that train 8 lands unchanged (this run's base is train 8's tip b24fc159,
+whose own run was out when this train was built).
+
+Not checked: train 8's own result; any file outside the 58; KIT-240's MOFA lane and bundle lane (stand, not repeated);
+the full suite (each member's A-criterion at the next checkpoint).
