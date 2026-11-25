@@ -1,0 +1,88 @@
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `is.character(statement) && length(statement) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl("LCMS_Pos: A_5", statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names A_5 in LCMS_Pos lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl(format(hi), statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names the threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E8 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `is.character(statement) && length(statement) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl("LCMS_Pos: A_5", statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names A_5 in LCMS_Pos metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl(format(hi), statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names the threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E8 warning metab
+

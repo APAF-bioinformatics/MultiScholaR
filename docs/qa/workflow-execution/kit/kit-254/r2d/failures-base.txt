@@ -1,0 +1,32 @@
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 lipid pos
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:905:17
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 metab pos
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:905:17
+
