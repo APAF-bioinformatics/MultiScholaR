@@ -92,6 +92,11 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     if (!mode %in% c("covariates", "correction")) stop("the RUV mode must be covariates, correction or skip")
     settings <- c(list(ruv_mode = mode, color_variable = input$color_variable, shape_variable = input$shape_variable),
       protNormDiaRuvDesignRules(choice))
+    # KIT-174 (a), VAL-29: the RUV grouping warning (on this route declared technical replicates
+    # are the replicate sets under every design).
+    omicNormWarnRuvGrouping(workflowData, getRuvGroupingVariableFn(), mode, choice$ruv_design,
+      technical = omicNormRuvHeadTechnicalReplicates(manager),
+      showNotificationFn = showNotificationFn)
     finish <- function(accepted) finishProtNormRuvCovariates(accepted, mode, output, workflowData, normData, renderTextFn,
       showNotificationFn, messageFn)
     # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
@@ -502,8 +507,13 @@ runProtNormNormalizationWorkflow <- function(
     # run, its classed message is shown as the tab's notice.
     withCallingHandlers({
       # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice (the classic routes' table).
-      settings <- applyProtNormRuvDesign(settings, omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics",
-        workflowData$state_manager$workflow_type)))
+      route <- workflowData$state_manager$workflow_type
+      choice <- omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics", route))
+      settings <- applyProtNormRuvDesign(settings, choice)
+      # KIT-174 (a), VAL-29: the RUV grouping warning, once the mode and the design are known.
+      omicNormWarnRuvGrouping(workflowData, getRuvGroupingVariableFn(), settings$ruv_mode,
+        choice$ruv_design, classic = TRUE, showNotificationFn = showNotificationFn,
+        technical = omicNormRuvHeadTechnicalReplicates(workflowData$state_manager))
       recordProtNormMethod(workflowData, settings$norm_method)
       finish <- function(completed) finishProtNormNormalization(completed, settings, workflowData, normData,
         buildCompletionNotificationFn, showNotificationFn, messageFn)

@@ -1,0 +1,22 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit174-ruv-grouping.R	0	0	0	0	absent	56	0	0	0	ok	only-on-head		
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-module-ci-lipid-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-module-ci-metab-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-kit207-summary-head-guard.R	292	0	0	0	ok	292	0	0	0	ok	same		
+test-module-ci-prot-dia-limpa.R	38	0	0	2	ok	38	0	0	2	ok	same		
+test-omics-norm-state-guards.R	647	0	0	0	ok	647	0	0	0	ok	same		
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-prot-05b-norm-module-contracts.R	439	0	0	22	ok	439	0	0	22	ok	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-prot-design-log2.R	226	0	0	0	ok	226	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-saved-qc.R	120	0	0	0	ok	120	0	0	0	ok	same		
