@@ -1,0 +1,5 @@
+trace installed: TRUE
+lip lipid_canonical: ran (73 s, 20 captures)
+met metab_lc: ran (67 s, 20 captures)
+lip report lip-c19-report.docx: contains 'Error running Main function' = TRUE; contains 'METHOD DETAILS' = FALSE
+met report met-c19-report.docx: contains 'Error running Main function' = TRUE; contains 'METHOD DETAILS' = FALSE

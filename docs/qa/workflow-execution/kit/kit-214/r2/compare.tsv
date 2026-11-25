@@ -1,0 +1,50 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-workflow-partitions.R	439	0	0	2	ok	439	0	0	2	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-omics-residency.R	97	0	0	0	ok	97	0	0	0	ok	same		
+test-kit214-sample-columns.R	122	44	0	0	failed	176	0	0	0	ok	fixed	fixed: KIT-214 E1 (e1_lipid, whole): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E1 (e1_lipid, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E1 (e1_metab, whole): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E1 (e1_metab, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E2 (e2_lipid, whole): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E2 (e2_lipid, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E2 (e2_metab, whole): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E2 (e2_metab, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples; fixed: KIT-214 E3: resolveMetabDuplicateAssayData averages the design's samples it is given; fixed: KIT-214 E4: the QC summary's sample count is the design's samples (metabolite MS-DIAL seed); fixed: KIT-214 E5 (metab_msdial): the per-assay Samples and Missingness count the design's samples; fixed: KIT-214 E6 (metab_msdial_id0): the per-assay Samples and Missingness count the design's samples; fixed: KIT-214 E7 (lipid_msdial): the per-assay Samples and Missingness count the design's samples; fixed: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples; fixed: KIT-214 E9: the ITSD selection table averages the sample columns it is given (numeric annotation column); fixed: KIT-214 E10 (module_ci_lipid): a text design sample is refused before any row is chosen; fixed: KIT-214 E10 (module_ci_metab): a text design sample is refused before any row is chosen; fixed: KIT-214 T6 (i): the replay rule of duplicate resolution follows the step's marker; fixed: KIT-214 T6 (iii) (e1_lipid): a duplicate step made now records the marker; fixed: KIT-214 T6 (iii) (e1_metab): a duplicate step made now records the marker; fixed: KIT-214 T6 (iv) (e1_lipid): records made before and after the change replay, each with its own rule; fixed: KIT-214 T6 (iv) (e1_metab): records made before and after the change replay, each with its own rule; fixed: KIT-214 T6 (v): a managed duplicate step records the marker; fixed: KIT-214 G7 (a) (module_ci_lipid): the per-assay Samples counts a text design sample; fixed: KIT-214 G7 (a) (module_ci_metab): the per-assay Samples counts a text design sample; counts: KIT-214 E1 (e1_lipid, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E1 (e1_lipid, whole): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E1 (e1_metab, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E1 (e1_metab, whole): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E10 (module_ci_lipid): a text design sample is refused before any row is chosen (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E10 (module_ci_metab): a text design sample is refused before any row is chosen (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E2 (e2_lipid, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E2 (e2_lipid, whole): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E2 (e2_metab, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E2 (e2_metab, whole): duplicate resolution keeps the row with the highest mean over the design's samples (passed 1 -> 2, skipped 0 -> 0); counts: KIT-214 E3: resolveMetabDuplicateAssayData averages the design's samples it is given (passed 0 -> 3, skipped 0 -> 0); counts: KIT-214 E4: the QC summary's sample count is the design's samples (metabolite MS-DIAL seed) (passed 0 -> 1, skipped 0 -> 0); counts: KIT-214 E5 (metab_msdial): the per-assay Samples and Missingness count the design's samples (passed 2 -> 4, skipped 0 -> 0); counts: KIT-214 E6 (metab_msdial_id0): the per-assay Samples and Missingness count the design's samples (passed 0 -> 4, skipped 0 -> 0); counts: KIT-214 E7 (lipid_msdial): the per-assay Samples and Missingness count the design's samples (passed 0 -> 4, skipped 0 -> 0); counts: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples (passed 2 -> 8, skipped 0 -> 0); counts: KIT-214 E9: the ITSD selection table averages the sample columns it is given (numeric annotation column) (passed 0 -> 2, skipped 0 -> 0); counts: KIT-214 G7 (a) (module_ci_lipid): the per-assay Samples counts a text design sample (passed 0 -> 2, skipped 0 -> 0); counts: KIT-214 G7 (a) (module_ci_metab): the per-assay Samples counts a text design sample (passed 0 -> 2, skipped 0 -> 0); counts: KIT-214 T6 (i): the replay rule of duplicate resolution follows the step's marker (passed 0 -> 8, skipped 0 -> 0); counts: KIT-214 T6 (iii) (e1_lipid): a duplicate step made now records the marker (passed 0 -> 1, skipped 0 -> 0); counts: KIT-214 T6 (iii) (e1_metab): a duplicate step made now records the marker (passed 0 -> 1, skipped 0 -> 0); counts: KIT-214 T6 (iv) (e1_lipid): records made before and after the change replay, each with its own rule (passed 6 -> 9, skipped 0 -> 0); counts: KIT-214 T6 (iv) (e1_metab): records made before and after the change replay, each with its own rule (passed 6 -> 9, skipped 0 -> 0); counts: KIT-214 T6 (v): a managed duplicate step records the marker (passed 2 -> 4, skipped 0 -> 0)	
+test-kit202-intensity-filter-samples.R	163	0	0	0	ok	163	0	0	0	ok	same		
+test-kit207-summary-head-guard.R	292	0	0	0	ok	292	0	0	0	ok	same		
+test-lipid-01c-qc-duplicate-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01e-qc-itsd-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01g-qc-duplicates-module-characterization.R	9	0	0	5	ok	9	0	0	5	ok	same		
+test-lipid-01h-qc-s4-module-characterization.R	3	0	0	0	ok	3	0	0	0	ok	same		
+test-lipid-01i-qc-itsd-wrapper-characterization.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	ok	58	0	0	2	ok	same		
+test-lipid-03-s4-duplicate-helpers.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-lipid-12a-norm-module-characterization.R	5	0	0	5	ok	5	0	0	5	ok	same		
+test-lipid-12-norm-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01b-qc-filtering-helpers-characterization.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-metab-01e-qc-variability-helper-characterization.R	14	0	0	0	ok	14	0	0	0	ok	same		
+test-metab-01m-s4-resolve-duplicate-intensity-characterization.R	17	0	0	0	ok	17	0	0	0	ok	same		
+test-metab-01p-qc-duplicates-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01r-qc-itsd-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01t-qc-s4-module-characterization.R	2	0	0	7	ok	2	0	0	7	ok	same		
+test-metab-01u-qc-duplicates-module-characterization.R	9	0	0	3	ok	9	0	0	3	ok	same		
+test-metab-02f-da-quant-data-characterization.R	6	0	0	0	ok	6	0	0	0	ok	same		
+test-metab-03b-norm-module-helper-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-03-norm-support-characterization.R	41	0	0	0	ok	41	0	0	0	ok	same		
+test-metab-qc-itsd-direct-shared.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-qc-shared.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-metab-qc-variability-helpers-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-metab-s4-qc-shared.R	32	0	0	0	ok	32	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-omic-qc-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omics-audit-carry-overs.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-omics-norm-itsd-selection.R	22	0	0	0	ok	22	0	0	0	ok	same		
+test-omics-norm-state-guards.R	647	0	0	0	ok	647	0	0	0	ok	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-prot-missing-value-counts.R	67	0	0	0	ok	67	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-omics-binding-steps.R	58	1	0	0	failed	58	1	0	0	failed	message-changed	message-changed: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit	
+test-workflow-omics-declarations.R	45	23	0	0	failed	45	23	0	0	failed	message-changed	message-changed: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced	
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-workflow-operation-registry.R	1095	2	0	0	failed	1095	2	0	0	failed	same		

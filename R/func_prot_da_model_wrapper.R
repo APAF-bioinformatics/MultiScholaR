@@ -19,6 +19,11 @@ daAnalysisWrapperFunction <- function(
   # KIT-126 audit F-02: this entry point tests the object's own table; a factors-in-the-model object is refused.
   refuseProtRuvModelObject(theObject, "daAnalysisWrapperFunction")
   contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
+  # KIT-218 (H1): the comparisons are read as text from a data frame; anything else is refused.
+  if (!is.data.frame(contrasts_tbl)) {
+    cli::cli_abort(c("{.arg contrasts_tbl} must be a data frame with one comparison per row in its first column",
+      x = "it is {.obj_type_friendly {contrasts_tbl}}"), class = "prot_da_contrasts_invalid", call = NULL)
+  }
   formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
   group_id <- checkParamsObjectFunctionSimplify(theObject, "group_id", "group")
   da_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
@@ -148,10 +153,10 @@ daAnalysisWrapperFunction <- function(
   # The downstream functions expect "comparison=expression" format (from full_format column)
   # NOT just the raw contrast expression (from contrasts column)
   if ("full_format" %in% names(contrasts_tbl)) {
-    contrast_strings_to_use <- contrasts_tbl$full_format # Use full_format column
+    contrast_strings_to_use <- as.character(contrasts_tbl$full_format) # Use full_format column, as text
   } else {
     # Auto-generate full_format column from raw contrasts
-    raw_contrasts <- contrasts_tbl[, 1][[1]]
+    raw_contrasts <- as.character(contrasts_tbl[[1]]) # KIT-218: every row, as text
 
     # Generate friendly names and full format
     full_format_strings <- sapply(raw_contrasts, function(contrast_string) {
@@ -215,9 +220,6 @@ daAnalysisWrapperFunction <- function(
     )
   }
 
-  # Extract the contrast name (contains "=" delimiter needed for downstream functions)
-  contrast_name <- names(contrasts_results$results)[1]
-
   # Map back to original group names in results if needed
   if (exists("group_mapping")) {
     contrasts_results_table <- contrasts_results$results |>
@@ -264,16 +266,10 @@ daAnalysisWrapperFunction <- function(
 
   ## Prepare data for drawing the volcano plots
 
-  # CRITICAL FIX: getSignificantData expects list_of_da_tables to be a list where each element
-  # is itself a list of data.frames. Since we're processing one contrast at a time, we need to
-  # wrap the single data.frame in an additional list layer.
-  # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDaGenesHelper
-  # expects to split on "=" to separate comparison name from expression. Use contrast_name which
-  # contains the full format like "H4_vs_WT=groupH4-groupWT"
-  nested_list <- list(contrasts_results_table)
-  names(nested_list) <- contrast_name # Use actual contrast name with "=" delimiter
+  # KIT-218: contrasts_results_table is already a list of tables named "<name>=<expression>", one per
+  # contrast; it is passed once, as protein_deAnalysisWrapperFunction does.
   significant_rows <- getSignificantData(
-    list_of_da_tables = list(nested_list),
+    list_of_da_tables = list(contrasts_results_table),
     list_of_descriptions = list("RUV applied"),
     row_id = !!sym(args_row_id),
     p_value_column = !!sym(raw_pvalue_column),
@@ -302,11 +298,8 @@ daAnalysisWrapperFunction <- function(
   return_list$volplot_plot <- volplot_plot
 
   ## Count the number of up or down significant differentially expressed proteins.
-  # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
-  nested_list_for_count <- list(contrasts_results_table)
-  names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
   num_sig_da_molecules_first_go <- printCountDaGenesTable(
-    list_of_da_tables = list(nested_list_for_count),
+    list_of_da_tables = list(contrasts_results_table),
     list_of_descriptions = list("RUV applied"),
     formula_string = "analysis_type ~ comparison"
   )

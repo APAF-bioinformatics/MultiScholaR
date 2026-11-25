@@ -1,0 +1,65 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-e2e-manifest.R	237	0	0	0	ok	237	0	0	0	ok	same		
+test-e2e-proteomics-dia-limpa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-proteomics-dia.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-proteomics-tmt-lfq.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-e2e-trx-journey.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-enrichment-significance.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-general-volcano-glimma-direct-shared.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-go-propagation.R	331	0	0	1	ok	331	0	0	1	ok	same		
+test-kit129-run-path.R	711	0	0	1	ok	711	0	0	1	ok	same		
+test-kit172-downstream.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-kit196-da-no-value-features.R	540	0	0	0	ok	540	0	0	0	ok	same		
+test-kit205-enrichment-background.R	228	0	0	0	ok	228	0	0	0	ok	same		
+test-kit220-da-threshold-consumers.R	28	38	3	0	failed	73	4	0	0	failed	fixed	fixed: KIT-220 T-P1: the first count table counts at the run's threshold (0.01 and 0.10), as the second table does; fixed: KIT-220 T-P2: with TREAT at 0.5 the first count table counts at the run's threshold; the tab counts by its rule; fixed: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too; fixed: KIT-220 T-PAR (proteomics): at 0.01, the tab's counts (box = the run's threshold) equal the published table's; fixed: KIT-220 T-P5: the proteomics interactive volcano colours by the user's q and fold-change cutoff; fixed: KIT-220 T-T1: the transcriptomics publication draws, counts and lists at the run's FDR threshold; fixed: KIT-220 T-T1 (summary line): the RUV summary's count line states and uses the run's threshold; fixed: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published; fixed: KIT-220 E-7: the feature omics' summary states the run's threshold and notes a box that differs from it; fixed: KIT-220 E-7 (proteomics, SD-6 (a)): the summary notes a fold-change box that differs from the run's cutoff; fixed: KIT-220 SD-6 (a): the interactive page is built and found with the run's fold-change cutoff; fixed: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh; counts: KIT-220 E-7 (proteomics, SD-6 (a)): the summary notes a fold-change box that differs from the run's cutoff (passed 1 -> 2, skipped 0 -> 0); counts: KIT-220 E-7: the feature omics' summary states the run's threshold and notes a box that differs from it (passed 0 -> 6, skipped 0 -> 0); counts: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh (passed 6 -> 13, skipped 0 -> 0); counts: KIT-220 SD-6 (a): the interactive page is built and found with the run's fold-change cutoff (passed 0 -> 2, skipped 0 -> 0); counts: KIT-220 T-P1: the first count table counts at the run's threshold (0.01 and 0.10), as the second table does (passed 2 -> 4, skipped 0 -> 0); counts: KIT-220 T-P2: with TREAT at 0.5 the first count table counts at the run's threshold; the tab counts by its rule (passed 2 -> 4, skipped 0 -> 0); counts: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too (passed 1 -> 10, skipped 0 -> 0); counts: KIT-220 T-P5: the proteomics interactive volcano colours by the user's q and fold-change cutoff (passed 0 -> 2, skipped 0 -> 0); counts: KIT-220 T-PAR (proteomics): at 0.01, the tab's counts (box = the run's threshold) equal the published table's (passed 0 -> 3, skipped 0 -> 0); counts: KIT-220 T-T1 (summary line): the RUV summary's count line states and uses the run's threshold (passed 0 -> 2, skipped 0 -> 0); counts: KIT-220 T-T1: the transcriptomics publication draws, counts and lists at the run's FDR threshold (passed 9 -> 13, skipped 0 -> 0); counts: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published (passed 5 -> 10, skipped 0 -> 0)	
+test-lipid-02ab-da-module-characterization.R	15	0	0	2	ok	15	0	0	2	ok	same		
+test-lipid-02b-da-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-07-s4-da-plot-methods.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-lipid-da-export-shared.R	18	0	0	0	ok	18	0	0	0	ok	same		
+test-metab-02aa-da-display-filter-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-02c-da-results-output-characterization.R	17	0	0	0	ok	17	0	0	0	ok	same		
+test-metab-02k-da-numsig-barplot-characterization.R	4	0	0	0	ok	4	0	0	0	ok	same		
+test-metab-da-results-output-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-module-ci-lipid-da.R	140	0	0	0	ok	140	0	0	0	ok	same		
+test-module-ci-lipid-summary.R	14	0	0	6	ok	14	0	0	6	ok	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-module-ci-trx-da.R	52	1	0	0	failed	52	1	0	0	failed	same		
+test-module-ci-trx-summary.R	86	2	0	0	failed	86	2	0	0	failed	same		
+test-omic-da-module.R	1316	53	0	0	failed	1305	64	0	0	failed	new-failure	new-failure: (b) in process: prot_load; new-failure: (b) in process: prot_main; new-failure: (b) in process: prot_no_contrasts; new-failure: KIT-112 W3 (D3): a managed run with one contrast dispatches DA-contrast-output then da_publication and gives the in-process run's manifest, tab and bus; counts: (b) in process: prot_load (passed 28 -> 27, skipped 0 -> 0); counts: (b) in process: prot_main (passed 211 -> 203, skipped 0 -> 0); counts: (b) in process: prot_no_contrasts (passed 28 -> 27, skipped 0 -> 0); counts: KIT-112 W3 (D3): a managed run with one contrast dispatches DA-contrast-output then da_publication and gives the in-process run's manifest, tab and bus (passed 8 -> 7, skipped 0 -> 0)	
+test-omic-enrich-module.R	1051	19	0	0	failed	1034	36	0	0	failed	new-failure	new-failure: (b) in process: gprofiler; message-changed: (b) in process: clusterprofiler; new-failure: (b) in process: kernel_gprofiler; message-changed: (b) in process: kernel_clusterprofiler; new-failure: (b) in process: organism_filter; new-failure: (b) in process: refusals; new-failure: (b) in process: restore; counts: (b) in process: clusterprofiler (passed 148 -> 146, skipped 0 -> 0); counts: (b) in process: gprofiler (passed 156 -> 154, skipped 0 -> 0); counts: (b) in process: kernel_clusterprofiler (passed 61 -> 60, skipped 0 -> 0); counts: (b) in process: kernel_gprofiler (passed 70 -> 68, skipped 0 -> 0); counts: (b) in process: organism_filter (passed 155 -> 151, skipped 0 -> 0); counts: (b) in process: refusals (passed 206 -> 202, skipped 0 -> 0); counts: (b) in process: restore (passed 88 -> 86, skipped 0 -> 0)	identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omics-da-core.R	129	0	0	2	ok	129	0	0	2	ok	same		
+test-omics-da-list-routing.R	5	0	0	0	ok	5	0	0	0	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-optional-packages.R	11	1	0	0	failed	11	1	0	0	failed	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-prot-07c-da-results-characterization.R	23	0	0	0	ok	23	0	0	0	ok	same		
+test-prot-07c-da-results-output-shared.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-prot-07-da-analysis.R	3	0	0	1	ok	3	0	0	1	ok	same		
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	ok	60	0	0	1	ok	same		
+test-prot-08-volcano.R	54	0	0	1	ok	54	0	0	1	ok	same		
+test-prot-12a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-da-compat-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-prot-da-render-direct-shared.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-protein-da-golden-master.R	15	0	0	0	ok	15	0	0	0	ok	same		
+test-prot-ruv-factors-in-model.R	306	1	0	0	failed	306	1	0	0	failed	same		
+test-prot-summary-report-templates.R	123	0	0	0	ok	123	0	0	0	ok	same		
+test-trx-da-without-ruv.R	103	0	0	0	ok	103	0	0	0	ok	same		
+test-trx-kernels.R	238	144	0	0	failed	238	144	0	0	failed	same		
+test-trx-publication.R	92	82	0	0	failed	92	82	0	0	failed	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-figure-paths.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-gui-memory-repairs.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-operation-registry.R	1095	2	0	0	failed	1095	2	0	0	failed	same		
+test-workflow-operations.R	75	0	0	0	ok	75	0	0	0	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	message-changed	message-changed: KIT-112 W1 (a): the DIA DA clicks in process give the recorded states, products, fits, manifest, record, files and display; message-changed: KIT-112 W1 (a): a DA kernel failure in process, then a retry with the same arguments, give the recorded values; message-changed: KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) in process gives the recorded values; message-changed: KIT-112 W2 (W1 (b)): the DIA DA clicks through the worker equal today's managed path and W1 (a)'s values; message-changed: KIT-112 W2 (W1 (b)): a worker failure, then a retry with the same arguments, give W1 (a)'s values; message-changed: KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE, no base fit) gives W1 (a)'s values	
+test-workflow-trx-declarations.R	309	33	0	0	failed	309	33	0	0	failed	same		

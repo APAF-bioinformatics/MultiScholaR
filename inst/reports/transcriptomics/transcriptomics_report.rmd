@@ -63,7 +63,20 @@ Genes were filtered with edgeR's filterByExpr on the TMM-scaled library sizes of
 ```{r ruv-text, results = "asis"}
 # KIT-186: a run without RUV (ruv_applied FALSE: the design none, or a declared design whose k is 0) says so. A run that
 # applied RUV prints the two paragraphs of earlier versions, word for word, with the same values.
-if (!no_ruv) {
+if (!no_ruv && identical(overlay$ruv_mode %||% ruv$ruv_mode, "manual")) {
+  # KIT-227: a manual run searched no grid of percentages; k and the percentage are the analyst's, and the recorded
+  # range and scores are not the run's, so neither is printed.
+  cat(paste0("Unwanted variation was estimated with RUVs (RUVSeq) on inferred empirical negative control genes: ",
+    "the least significant genes of a preliminary group-only quasi-likelihood GLM, taken at a chosen percentage of the ",
+    "filtered genes. They are inferred from the data, not known in advance. The selection mode was manual: the analyst ",
+    "set k = ", value(overlay$best_k %||% ruv$k), " and ",
+    value(overlay$best_percentage %||% ruv$negative_control_percentage), " % of the genes, giving ",
+    value(overlay$num_neg_ctrl %||% ruv$negative_control_count),
+    " inferred empirical negative controls; no grid of percentages was searched.\n\n"))
+  cat(paste0("The RUVs factors W_1..W_k were added to the design and used as model covariates in the differential ",
+    "expression model; the counts themselves were not corrected. The RUVs-corrected logCPM was used for display only ",
+    "(PCA and RLE figures).\n\n"))
+} else if (!no_ruv) {
   cat(paste0("Unwanted variation was estimated with RUVs (RUVSeq) on inferred empirical negative control genes: ",
     "the least significant genes of a preliminary group-only quasi-likelihood GLM, taken at a chosen percentage of the ",
     "filtered genes. They are inferred from the data, not known in advance. The selection mode was ",
@@ -149,7 +162,8 @@ top_path <- summary_file("Publication_tables", "top_de_genes.tsv")
 if (file.exists(top_path)) {
   top <- utils::read.delim(top_path, check.names = FALSE)
   keep <- intersect(c("comparison", "regulation", "GeneID", "DisplaySymbol", "logFC", "FDR"), names(top))
-  knitr::kable(top[, keep, drop = FALSE], digits = 4, caption = "Top up- and down-regulated genes per contrast (FDR (BH) < 0.05).")
+  knitr::kable(top[, keep, drop = FALSE], digits = 4, caption = paste0("Top up- and down-regulated genes per contrast (FDR (BH) < ",
+    value(fdr_threshold), ")."))
 }
 ```
 

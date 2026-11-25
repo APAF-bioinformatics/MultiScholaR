@@ -101,6 +101,18 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
   )
 }
 
+#' The per-comparison results tables the enrichment tab shows, built from an `EnrichmentResults`
+#'
+#' Each comparison's up and down results are bound into one table per method, with `directionality` and
+#' `analysis_method` added. On the g:Profiler route (KIT-226, VAL-196) g:Profiler returns only adjusted p-values:
+#' `p.adjust` holds the service's `p_value` (no `pvalue` or `qvalue` column is made), `p_adjust_method` the correction
+#' each direction's answer states (`gprofilerAdjustmentMethod`), and `Count` the answer's `intersection_size` (the
+#' list's genes annotated to the term). The clusterProfiler route's tables are bound as they are.
+#' @param enrichmentResults `EnrichmentResults`.
+#' @param methodInfo List whose `method` is `"gprofiler2"` or `"clusterprofiler"`.
+#' @param isEnrichResultFn,catFn Injectable `methods::is` and `cat`.
+#' @return A list per comparison: `gprofiler_results`, `clusterprofiler_results`, `stringdb_results`.
+#' @noRd
 buildProtEnrichAllContrastResults <- function(enrichmentResults,
                                               methodInfo,
                                               isEnrichResultFn = methods::is,
@@ -130,6 +142,7 @@ buildProtEnrichAllContrastResults <- function(enrichmentResults,
             upDf <- upResults$result
             upDf$directionality <- "positive"
             upDf$analysis_method <- "gprofiler2"
+            upDf$p_adjust_method <- gprofilerAdjustmentMethod(upResults)
             gprofilerResults <- rbind(gprofilerResults, upDf)
           }
         }
@@ -143,6 +156,7 @@ buildProtEnrichAllContrastResults <- function(enrichmentResults,
             downDf <- downResults$result
             downDf$directionality <- "negative"
             downDf$analysis_method <- "gprofiler2"
+            downDf$p_adjust_method <- gprofilerAdjustmentMethod(downResults)
             gprofilerResults <- rbind(gprofilerResults, downDf)
           }
         }
@@ -151,13 +165,12 @@ buildProtEnrichAllContrastResults <- function(enrichmentResults,
           if ("term_name" %in% names(gprofilerResults)) {
             gprofilerResults$Description <- gprofilerResults$term_name
           }
+          # KIT-226 (VAL-196): `p_value` is already adjusted by the service; it is shown once, as `p.adjust`.
           if ("p_value" %in% names(gprofilerResults)) {
-            gprofilerResults$pvalue <- gprofilerResults$p_value
             gprofilerResults$p.adjust <- gprofilerResults$p_value
-            gprofilerResults$qvalue <- gprofilerResults$p_value
           }
-          if ("term_size" %in% names(gprofilerResults)) {
-            gprofilerResults$Count <- gprofilerResults$term_size
+          if ("intersection_size" %in% names(gprofilerResults)) {
+            gprofilerResults$Count <- gprofilerResults$intersection_size
           }
           if ("source" %in% names(gprofilerResults)) {
             gprofilerResults$data_source <- gprofilerResults$source

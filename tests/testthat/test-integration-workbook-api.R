@@ -8,8 +8,8 @@
 #   - the enrichment's key reaches the query and is in no value returned; without a key STRING is skipped in words;
 #   - closed and repeated from its record, the analysis gives the same model;
 #   - arguments are refused in plain words (class `integration_api_invalid`) before anything runs.
-# Fails on the base tree: the functions are absent. The workbook rendered through these functions with MOFA2 is
-# test-integration-workbook-mofa.R (MOFA2 lane).
+# Fails on the base tree: the functions are absent. With MOFA2, the same twelve functions run end to end in
+# test-integration-workbook-mofa.R (MOFA2 lane; KIT-234 replaced the workbook's render by that direct run).
 
 intApiData <- function() normalizePath(testthat::test_path("..", "testdata", "integration"), mustWork = FALSE)
 intApiStored <- function(name) utils::read.delim(file.path(intApiData(), "mofa_reference", paste0(name, ".tsv")),
