@@ -80,13 +80,55 @@ coordinator's ruling E-7: no disable before the entry dispatch).
 
 - No browser, no Windows: the greyed appearance, the label rendering, the race of ticket 2.6, the Windows timing and the
   Windows bundle's shiny version (KIT-237's WJ' with H-1 and H-2 observes these).
+- The DOM id the two calls address. The new tests replace `shinyjs::toggleState` and `shiny::updateActionButton` with
+  recorders, so the module prefix is inferred, not observed: shinyjs adds it inside a module (`asis = FALSE`), as
+  `R/mod_prot_import_path_helpers.R:20-28` already relies on, and `updateActionButton` adds it through the module
+  session. The first browser observation is KIT-237 WJ' (H-2 records the seconds the button was disabled at S6.1). A
+  press refused there would show a defect.
 - Whether Shiny writes a custom message at once or at the end of the flush.
 - A UI rebuilt by `output$dynamic_tabs` while a step runs shows an enabled button until the next change of state (today's
   behaviour; the guard refuses); not tested.
 - The per-step deadline under the Windows plain launcher (without it the button stays disabled as long as today's press
   would be refused).
-- Partners not yet merged (KIT-254, KIT-247, KIT-242): no line overlap; the second to merge runs the other's test file.
+- Partners: KIT-254 landed on v0.9-staging in merge train 13 (988512e6), after this branch point. Its hunks in
+  `R/mod_omic_norm.R` (`applyOmicNormCorrelation`, `skipOmicNormCorrelation`, two functions after
+  `omicNormOwnFiles`) do not overlap this ticket's. This ticket's merge train runs
+  `test-kit254-omics-correlation-skip.R`, which the grep picks up at the train's base. KIT-247, KIT-242 and KIT-255
+  are not merged: there is no line overlap, and the second to merge runs the other's new test file.
 - Real data.
+
+## Implementation audit (AUDIT-KIT-261-impl-20261126): ready for a merge train
+
+**Train scope (I01).** KIT-261 (`kit-261` d6ab5b1b). The scope is:
+- the ticket's grep recounted at the train's base: 35 files at staging 988512e6 and at merge-train-20261126h
+  069c2832, that is the 34 of R2 45673434696 plus `test-kit254-omics-correlation-skip.R`;
+- the 8 helper-driven files: `test-gui-entry-{lipidomics,metabolomics,transcriptomics}.R`,
+  `test-workflow-omics-worker.R`, `test-workflow-omics-residency.R` and `test-module-ci-trx-{norm,da,summary}.R`;
+- `test-kit261-norm-run-button.R`.
+
+That is **44 files**, with env `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` and `MULTISCHOLAR_KIT105_W3_DUMP=1` and `check: true`.
+Predictions: `test-kit261-norm-run-button.R` is only on head, with 105 passed and 0 failed; every other file is `same`,
+with identical failure messages; `R CMD check` is identical.
+
+**Notes, no action (I06 to I08).**
+- I06: the default label and icon are restated in the helper (`R/mod_omic_norm.R:285-286`) beside the panel's
+  (`R/mod_omic_norm_panels.R:70-72`); no frame omic sets `run_label` today, so the restored label is right on every
+  route. If the panel's default ever changes, change both.
+- I07: `test-lipid-12-norm-module-contracts.R`, `test-metab-03b-norm-module-helper-characterization.R`,
+  `test-metab-03c-norm-module-seams.R` (0 expectations) and `test-prot-05c-norm-module-seams.R` (4 skipped) ran no
+  expectation on either side in R2; their `same` carries no weight (pre-existing).
+- I08: G1 (in process) covers lipid and metab, not trx; for trx in process the helper returns at `:277` as for the
+  others (the runner is NULL); that trx sends no call in process is INFERRED.
+
+**Later mergers (I09).** Any ticket merging after KIT-261 that edits `R/mod_omic_norm.R`,
+`R/utils_workflow_omics_actions.R`, `R/utils_workflow_execution.R`, `R/mod_omic_norm_panels.R` or the norm groups of
+`R/utils_omic_gui_config.R` includes `test-kit261-norm-run-button.R` (the grep picks it up). Named: if KIT-255, KIT-247
+or KIT-242 merge after KIT-261, their merge checks run `test-kit261-norm-run-button.R`.
+
+**For KIT-237 (I10).** H-2 waits on the Run button's test id being visible and enabled (the route presses by test id;
+the press script treats `disabled`, class `disabled` or `aria-disabled` as disabled), not on the label text, which is a
+draft. H-2's "seconds disabled" is an observation, not a criterion, and the only planned browser observation of the
+disable.
 
 ## For the change report
 
