@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-259 gate G0-B (Part B base observation, in process and managed, 16 groups x 2): scripts only on staging c4505c7f; decides stop rule 2 and E-4; 1 job, ceiling 60 job-minutes (4.0 core-hours)",
+  "label": "KIT-259 G0-B on kit-259 e96ef0f6 (R/ as v0.9-staging c4505c7f)",
+  "package_commit": "e96ef0f6d62241b56be40019dc64cdbb7bb86b73",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-259/g0b.R",
+      "args": [
+        "kit259-g0b"
+      ],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit259-g0b",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
