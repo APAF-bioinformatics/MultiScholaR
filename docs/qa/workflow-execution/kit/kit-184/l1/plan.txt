@@ -1,0 +1,18 @@
+setup took 636 s; deadline 06:39:52Z
+workers: ruv:A:1:1 ruv:A:2:2 ruv:A:3:3 ruv:A:4:5 ruv:B:1:1 ruv:B:2:2 ruv:B:3:3 ruv:B:4:5 ruv:D:1:1 ruv:D:2:2 ruv:D:3:3 ruv:D:4:5
+worker 2 (ruv:A:2:2) exit 0
+worker 3 (ruv:A:3:3) exit 0
+worker 1 (ruv:A:1:1) exit 0
+worker 4 (ruv:A:4:5) exit 0
+worker 5 (ruv:B:1:1) exit 0
+worker 7 (ruv:B:3:3) exit 0
+worker 6 (ruv:B:2:2) exit 0
+worker 11 (ruv:D:3:3) exit 0
+worker 10 (ruv:D:2:2) exit 0
+worker 9 (ruv:D:1:1) exit 0
+worker 8 (ruv:B:4:5) exit 0
+worker 12 (ruv:D:4:5) exit 0
+parity exit 0
+ruvfail exit 0
+simulation done after 1284 s
+completed 15

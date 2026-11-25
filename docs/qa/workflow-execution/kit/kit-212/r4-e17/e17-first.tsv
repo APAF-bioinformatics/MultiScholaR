@@ -1,0 +1,10 @@
+test	nb	failed	skipped	error
+KIT-212 E1, E2, E3: lipid Q1 (a second run without a DA): Save, Copy and Report refuse	20	0	FALSE	FALSE
+KIT-212 E4: lipid Q2 (one Revert) and Q3 (Apply again): Save refuses	19	0	FALSE	FALSE
+KIT-212 E1, E2, E3: metab Q1 (a second run without a DA): Save, Copy and Report refuse	20	0	FALSE	FALSE
+KIT-212 E4: metab Q2 (one Revert) and Q3 (Apply again): Save refuses	19	0	FALSE	FALSE
+KIT-212 G1, G2, G3, G5, G6: lipid the default path, no DA, a DA re-run, Skip after the DA, a loaded session's DA	36	0	FALSE	FALSE
+KIT-212 G8, G9: lipid the owner's own export reopened saves; the managed Save after Q1 queues nothing	18	0	FALSE	FALSE
+KIT-212 G1, G2, G3, G5, G6: metab the default path, no DA, a DA re-run, Skip after the DA, a loaded session's DA	36	0	FALSE	FALSE
+KIT-212 G8, G9: metab the owner's own export reopened saves; the managed Save after Q1 queues nothing	18	0	FALSE	FALSE
+KIT-212 E17: lipid, the Summary tab mounted: after Copy, a second DA, then Report asks for Copy again	6	2	FALSE	FALSE
