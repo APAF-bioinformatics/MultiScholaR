@@ -126,16 +126,84 @@ omicsFeatureCounts <- function(binding, object) {
     }, numeric(1))
 }
 
+#' Refuse sample columns the lipid and metabolite intensity filter cannot count (KIT-202, D3, VAL-130).
+#' @param assay The assay's name, or NULL for a table given to an exported helper.
+#' @param invalid The design samples (or given columns) that are absent from the table or not numeric.
+#' @noRd
+omicsIntensityFilterRefuse <- function(assay, invalid) {
+    shown <- paste(utils::head(invalid, 3L), collapse = ", ")
+    message <- if (!length(invalid)) {
+        sprintf("Assay '%s': no sample of the design is left to count. The intensity filter counts only the design's samples.",
+            assay %||% "assay table")
+    } else if (is.null(assay)) {
+        sprintf(paste("%d sample column(s) given are missing from the table or not numeric: %s. A run with no value at all",
+            "is read as not numeric: remove it in the design."), length(invalid), shown)
+    } else {
+        sprintf(paste("Assay '%s': %d sample(s) of the design are missing from the table or not numeric: %s. The intensity",
+            "filter counts only the design's samples. A run with no value at all is read as not numeric: remove it in the",
+            "design."), assay, length(invalid), shown)
+    }
+    rlang::abort(message, class = "omics_intensity_filter_samples_invalid", assay = assay, columns = invalid)
+}
+
+#' The columns the lipid and metabolite intensity filter counts as samples in one assay (KIT-202, VAL-118 (1)): the
+#' design's samples less the id column, in the table's order; under the earlier rule of a record made before
+#' (`workflowReplayRuleMarkers$intensity_filter_samples`), every numeric column, as then. A design sample absent from
+#' the table or not numeric, or no sample left, is refused (D3).
+#' @param table_columns The assay table's column names, in order.
+#' @param numeric_columns The names of its numeric columns.
+#' @param design_samples The design's sample ids.
+#' @param id_column The assay's identifier column.
+#' @param assay The assay's name (for the refusal).
+#' @return The columns to count.
+#' @noRd
+omicsIntensityFilterSampleColumns <- function(table_columns, numeric_columns, design_samples, id_column, assay) {
+    marker <- workflowReplayRuleMarkers$intensity_filter_samples
+    if (identical(getOption(marker$option), marker$earlier)) return(numeric_columns)
+    design_samples <- setdiff(unique(as.character(design_samples)), id_column)
+    present <- intersect(design_samples, table_columns)
+    invalid <- c(setdiff(design_samples, table_columns), setdiff(present, numeric_columns))
+    samples <- intersect(table_columns, design_samples)
+    if (length(invalid) || !length(samples)) omicsIntensityFilterRefuse(assay, invalid)
+    samples
+}
+
+#' The columns an exported intensity filter helper counts (KIT-202, D1 (d), VAL-130): `sample_columns` as given, refused
+#' when one is absent or not numeric; without it, every numeric column except the identifier, with a classed warning
+#' naming them (none when no column is counted, where the helper keeps its earlier warning and return).
+#' @noRd
+omicsIntensityFilterHelperColumns <- function(assay_table, id_column, sample_columns = NULL) {
+    numeric_columns <- names(assay_table)[vapply(assay_table, is.numeric, logical(1))]
+    if (!is.null(sample_columns)) {
+        sample_columns <- as.character(sample_columns)
+        invalid <- c(setdiff(sample_columns, names(assay_table)),
+            setdiff(intersect(sample_columns, names(assay_table)), numeric_columns))
+        if (length(invalid)) omicsIntensityFilterRefuse(NULL, invalid)
+        return(sample_columns)
+    }
+    counted <- setdiff(numeric_columns, id_column)
+    if (length(counted)) {
+        shown <- paste(utils::head(counted, 5L), collapse = ", ")
+        if (length(counted) > 5L) shown <- paste0(shown, ", ...")
+        rlang::warn(sprintf(paste("sample_columns not given: every numeric column except '%s' is counted as a sample: %s.",
+            "Pass the design's samples when the table holds other numeric columns."), id_column, shown),
+            class = "omics_intensity_filter_samples_guessed")
+    }
+    counted
+}
+
 #' The intensity filter (row, after the per-assay quantile pre-pass; the user's 2026-10-28 decision removed the
-#' `ceiling()` from that quantile in both kernels before any oracle was recorded).
+#' `ceiling()` from that quantile in both kernels before any oracle was recorded). KIT-202: the threshold and the share
+#' count the design's samples only (`omicsIntensityFilterSampleColumns`); the step records the rule marker.
 #' @noRd
 omicsIntensityFilterOperation <- function(binding) {
     filter <- function(object, parameters) binding$filter_intensity(object, parameters)
     declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_intensity_filter"), "row",
         parameters = binding$intensity_parameters,
         product_type = paste0(binding$prefix, ".intensity_filter_result"),
+        fixed = list(intensity_filter_samples = "design"),
         global_statistics = stats::setNames(
-            "the percentile of every intensity of one assay table, computed once per assay before any row",
+            "the percentile of the design's sample intensities of one assay table, computed once per assay before any row",
             binding$intensity_threshold),
         kernel = function(object, parameters, store) {
             before <- omicsFeatureCounts(binding, object)
@@ -151,12 +219,16 @@ omicsIntensityFilterOperation <- function(binding) {
         run <- omicsRunPartitioned(binding, store, function(template) filter(template, parameters), paste0(binding$prefix, "-intensity-filtered"),
             write_assay = function(assay, component, prototype, template, partition) {
                 id_column <- methods::slot(template, binding$id_slot)
-                numeric_columns <- partition$numeric_columns()
-                intensities <- if (id_column %in% partition$columns && length(numeric_columns)) partition$all_values(numeric_columns)
+                # KIT-202: the design's samples of this assay (every numeric column under a record's earlier rule).
+                sample_columns <- if (id_column %in% partition$columns) omicsIntensityFilterSampleColumns(
+                    names(partition$prototype), partition$numeric_columns(),
+                    methods::slot(template, "design_matrix")[[methods::slot(template, "sample_id")]], id_column, assay)
+                intensities <- if (length(sample_columns)) partition$all_values(sample_columns)
                 if (!length(intensities) || all(is.na(intensities))) return(partition$write_rows(partition$prototype, identity))
                 threshold <- stats::quantile(intensities, na.rm = TRUE, probs = c(percentile / 100))[1]
                 intensities <- NULL
-                page_filter <- function(page) binding$filter_intensity_page(page, threshold, proportion, id_column)
+                page_filter <- function(page) binding$filter_intensity_page(page, threshold, proportion, id_column,
+                    sample_columns)
                 partition$write_rows(suppressWarnings(page_filter(partition$prototype)), page_filter)
             })
         c(list(final = run$final), list(counts = list(before = omicsPartitionedFeatureCounts(binding, store, run$source_tables, run$id_column),

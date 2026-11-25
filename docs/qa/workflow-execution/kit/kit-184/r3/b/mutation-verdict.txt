@@ -1,0 +1,11 @@
+head: 22 test blocks, 0 with a failure or an error, 0 skipped
+head: KIT-184 K3 (base store) passes TRUE
+head: KIT-184 K3: the import passes TRUE
+head: KIT-184 K7 (i) (a) passes TRUE
+head: KIT-184 K7 (i) (b) passes TRUE
+head: KIT-184 K7 (ii), K16 passes TRUE
+head: KIT-184 K7 (iii), K9 (a) passes TRUE
+m1_always_element: K3 (base store) fails TRUE; K3 (the import) fails TRUE
+m2_covariates_default: K7 (ii) fails TRUE
+m3_no_restore: the replay of each entry in its saved form (K9 (b), in K7 (ii), K16) fails TRUE
+m4_setting_declared: K7 (i) (a) fails TRUE; K7 (iii) fails TRUE

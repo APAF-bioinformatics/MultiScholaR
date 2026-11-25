@@ -327,7 +327,11 @@ test_that("KIT-061: a classic route with RUV writes the corrected matrix after t
     filtered@design_matrix <- filtered@design_matrix[filtered@design_matrix$Run != "run_0005", ]
     manager$saveState("correlation_filtered", filtered, list(min_pearson_correlation_threshold = 0.5), "correlation")
     # An earlier save's archive is left as it was; the writer adds nothing beside its folder.
-    run <- integrationSummarySave(manager, root)
+    # KIT-184 K4: these stand-in states differ by a constant per protein (0.5), so no removed direction can be determined:
+    # the writer says so with its classed warning and writes no factors file.
+    expect_warning(run <- integrationSummarySave(manager, root), class = "integration_input_removed_factors_undetermined")
+    expect_false(file.exists(file.path(run$dir, "removed_proteomics.parquet")))
+    expect_identical(readIntegrationInput(run$dir)$manifest$views[[1L]]$removed_factors$status, "not_determined")
     expect_identical(run$saved$integrationFile, file.path("proteomics", "integration_input.json"))
     expect_true("Saved Integration input" %in% run$shown)
     expect_identical(list.files(run$integration_dir, all.files = TRUE, no.. = TRUE), "proteomics")
@@ -378,12 +382,15 @@ test_that("KIT-153: classic proteomics: the data set's matrix is the normalised 
         run
     }))))
     expect_identical(manager$current_state, "ruv_corrected")
-    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
+    saved_dir <- integrationSummarySave(manager, root)$dir
+    input <- readIntegrationInputWithMatrices(saved_dir)
     manifest <- input$manifest
     expect_identical(manifest$matrix_role, "normalised")
     expect_true(input$views$proteomics$corrected)
     expect_identical(manifest$correction[c("id", "method")], list(id = "C1", method = "RUVIII_C_Varying"))
     expect_equal(manifest$correction$k, run$value$best_k)
+    # KIT-184 K4 (gate G1): the written factors are what RUV-III-C removed.
+    expectIntegrationRemovedFactors(saved_dir, "proteomics", run$value$best_k, input = input)
     # The normalisation named: the method and the normalised checkpoint the RUV step read.
     expect_identical(manifest$normalisation$method, "quantile")
     expect_identical(manifest$normalisation$source[c("name", "entity_id")],
@@ -413,6 +420,70 @@ test_that("KIT-153: classic proteomics: the data set's matrix is the normalised 
         unname(as.matrix(again[at, names(input$views$proteomics$corrected_matrix)[-1L]])), tolerance = 1e-10)
 })
 
+# KIT-184 K4 (gate G1): the classic RUV-III-C step run with a given number of factors on a protein fixture.
+integrationRuvStep <- function(manager, protein, k) {
+    manager$saveState("protein_replicate_filtered", protein, list(), "source")
+    parameters <- list(norm_method = "quantile", ruv_mode = "manual", auto_percentage_min = NULL, auto_percentage_max = NULL,
+        separation_metric = NULL, k_penalty_weight = NULL, adaptive_k_penalty = NULL, ruv_percentage = 50, ruv_k = k,
+        grouping = "group")
+    run <- NULL
+    utils::capture.output(run <- suppressWarnings(suppressMessages(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+        commit <- diaNormalizationCommit(manager, parameters, run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        run
+    }))))
+    run
+}
+
+test_that("KIT-184 K4: classic proteomics with two factors and missing values: the written factors are what was removed", {
+    root <- withr::local_tempdir()
+    manager <- integrationProteinOwner(root, "DIA")
+    withr::defer(closeDIAStateAdapter(manager))
+    # The recipe's proteins that reach the input are complete (run 45325536775: 63 of 63), so three otherwise complete
+    # proteins are made missing in one run each before the step: RUV-III-C corrects them one by one.
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    samples <- setdiff(names(protein@protein_quant_table), protein@protein_id_column)
+    complete <- which(stats::complete.cases(protein@protein_quant_table[samples]))
+    expect_gte(length(complete), 6L)
+    for (i in 1:3) protein@protein_quant_table[complete[[i]], samples[[c(2L, 4L, 7L)[[i]]]]] <- NA_real_
+    run <- integrationRuvStep(manager, protein, 2)
+    dir <- integrationSummarySave(manager, root)$dir
+    input <- readIntegrationInput(dir)
+    expect_equal(run$value$best_k, 2)
+    expect_equal(input$manifest$correction$k, 2)
+    expectIntegrationRemovedFactors(dir, "proteomics", 2L, input = input)
+    # Proteins with a missing run were corrected one by one and are left out of the factors (gate G2).
+    expect_lt(input$manifest$views[[1L]]$removed_factors$features, input$views$proteomics$rows)
+})
+
+test_that("KIT-184 K4: after the correlation filter removed a run, the removed factors are approximate, with their share", {
+    root <- withr::local_tempdir()
+    manager <- integrationProteinOwner(root, "DIA")
+    withr::defer(closeDIAStateAdapter(manager))
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    samples <- setdiff(names(protein@protein_quant_table), protein@protein_id_column)
+    removed_run <- samples[[5L]]
+    # Otherwise complete proteins made missing in the run the filter will remove.
+    complete <- which(stats::complete.cases(protein@protein_quant_table[samples]))
+    expect_gte(length(complete), 6L)
+    protein@protein_quant_table[complete[1:3], removed_run] <- NA_real_
+    run <- integrationRuvStep(manager, protein, 2)
+    final <- withDIAStateScope(manager, function() readDIAExecutionComponents(manager, run$value$final))
+    filtered <- final
+    filtered@protein_quant_table <- filtered@protein_quant_table[, names(filtered@protein_quant_table) != removed_run]
+    filtered@design_matrix <- filtered@design_matrix[filtered@design_matrix$Run != removed_run, ]
+    manager$saveState("correlation_filtered", filtered, list(min_pearson_correlation_threshold = 0.5), "correlation")
+    dir <- integrationSummarySave(manager, root)$dir
+    input <- readIntegrationInput(dir)
+    expect_false(removed_run %in% input$samples$Run)
+    expectIntegrationRemovedFactors(dir, "proteomics", 2L, status = "approximate", input = input)
+    record <- input$manifest$views[[1L]]$removed_factors
+    expect_gt(record$rank, 2L)
+    expect_lt(record$share, 1)
+    expect_true(file.exists(file.path(dir, "removed_proteomics.parquet")))
+})
+
 test_that("KIT-061: a classic route without RUV writes the normalised matrix and names the UniProt gene as display name", {
     root <- withr::local_tempdir()
     manager <- integrationProteinOwner(root, "LFQ")
@@ -428,6 +499,9 @@ test_that("KIT-061: a classic route without RUV writes the normalised matrix and
     expect_identical(input$manifest$workflow, "LFQ")
     expect_identical(input$manifest$matrix_role, "normalised")
     expect_null(input$manifest$correction)
+    # KIT-184 K4: without RUV there are no removed factors: no file, no field.
+    expect_null(input$manifest$views[[1L]]$removed_factors)
+    expect_false("removed_proteomics.parquet" %in% names(input$manifest$files))
     features <- input$views$proteomics$features
     expect_identical(features$display_name, c("ALPHA", "GAMMA", ids[-(1:2)]))
     expect_identical(features$gene_names[1:2], c("ALPHA BETA", "GAMMA:x"))
@@ -456,6 +530,8 @@ test_that("KIT-061 (K061-1): after a classic re-run with RUV skipped the head's 
     expect_identical(manifest$source_state$entity_id, getDIAStateReference(manager, "normalized")$entity_id)
     expect_identical(manifest$matrix_role, "normalised")
     expect_null(manifest$correction)
+    expect_null(manifest$views[[1L]]$removed_factors)
+    expect_false("removed_proteomics.parquet" %in% names(manifest$files))
     # Then the correlation filter on it: its own lineage has no RUV state.
     manager$saveState("correlation_filtered", skipped, list(min_pearson_correlation_threshold = 0.5), "correlation")
     dir <- integrationSummarySave(manager, root)$dir
@@ -559,7 +635,8 @@ test_that("KIT-061 (D14): DIA_LIMPA in covariates mode writes the RUV-adjusted p
     manager <- fixture$manager
     withr::defer(closeDIAStateAdapter(manager))
     expect_identical(manager$current_state, "ruv_covariates")
-    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
+    saved_dir <- integrationSummarySave(manager, root)$dir
+    input <- readIntegrationInputWithMatrices(saved_dir)
     manifest <- input$manifest
     expect_identical(manifest$workflow, "DIA_LIMPA")
     expect_identical(manifest$matrix_role, "normalised")
@@ -581,6 +658,12 @@ test_that("KIT-061 (D14): DIA_LIMPA in covariates mode writes the RUV-adjusted p
     integrationLimpaExpectSameTable(input$views$proteomics$matrix, integrationLimpaTable(manager, fixture$correlation))
     # The design is the state's, with its W columns.
     expect_true(all(paste0("W", seq_len(manifest$correction$k)) %in% names(input$samples)))
+    # KIT-184 K4 (gate G1): the written factors are what was removed, and they span the design's W1..Wk.
+    factors <- expectIntegrationRemovedFactors(saved_dir, "proteomics", manifest$correction$k, input = input)
+    w <- vapply(paste0("W", seq_len(manifest$correction$k)), function(name) as.numeric(input$samples[[name]]),
+        numeric(nrow(input$samples)))
+    w <- scale(matrix(w, nrow = nrow(input$samples)), scale = FALSE)
+    expect_lt(max(abs(w - factors %*% crossprod(factors, w))) / max(abs(w)), 1e-8)
 })
 
 test_that("KIT-061: DIA_LIMPA in correction mode writes the corrected state's table", {
@@ -591,7 +674,8 @@ test_that("KIT-061: DIA_LIMPA in correction mode writes the corrected state's ta
     manager <- fixture$manager
     withr::defer(closeDIAStateAdapter(manager))
     expect_identical(manager$current_state, "ruv_corrected")
-    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
+    saved_dir <- integrationSummarySave(manager, root)$dir
+    input <- readIntegrationInputWithMatrices(saved_dir)
     manifest <- input$manifest
     expect_identical(manifest$matrix_role, "normalised")
     expect_identical(manifest$source_state$name, "ruv_corrected")
@@ -604,6 +688,8 @@ test_that("KIT-061: DIA_LIMPA in correction mode writes the corrected state's ta
     # The same fit as the covariates mode's adjusted matrix.
     expect_equal(input$views$proteomics$corrected_matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     expect_false(any(grepl("^W[0-9]+$", names(input$samples))))
+    # KIT-184 K4 (gate G1): the written factors are what the correction removed.
+    expectIntegrationRemovedFactors(saved_dir, "proteomics", manifest$correction$k, input = input)
     # KIT-153: the data set's own matrix is the table the RUV step read, the correlation filter's.
     integrationLimpaExpectSameTable(input$views$proteomics$matrix, integrationLimpaTable(manager, fixture$correlation))
 })

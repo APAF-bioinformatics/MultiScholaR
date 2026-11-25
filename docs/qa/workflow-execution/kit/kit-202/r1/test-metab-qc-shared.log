@@ -1,0 +1,51 @@
+metab-qc-shared: --- Plot Saving Diagnostics ---
+Value of publication_graphs_dir argument in function call: NULL
+Value of omics_type argument in function call: NULL
+Value of time_dir argument in function call: NULL
+Attempting to determine save directory from project_dirs, omic_type, and experiment_label...
+project_dirs, omic_type, and experiment_label available.
+Global omic_type value: 'metabolomics', Global experiment_label value: 'demo'
+Constructed omics_key for project_dirs: 'metabolomics_demo'
+omics_key 'metabolomics_demo' found in project_dirs and has a 'time_dir' entry.
+Retrieved time_dir from project_dirs: /tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234
+Successfully set actual_save_dir for plot saving to: '/tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234'
+Proceeding to save plots to derived directory: /tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234
+Saving plot: /tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234/filter_step_detected.png
+Saving plot: /tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234/filter_step_missingness.png
+Saving combined grid plot: /tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234/filter_step_combined_plots.png
+Metabolomics QC plots saved to: /tmp/Rtmp9MwZNX/metab-qc-save-5baaf6c8234
+--- End of Plot Saving Diagnostics ---
+........Raw intensity percentile from config/param: 50 # comment
+Raw proportion cutoff from config/param: 0.5
+
+Processing assay: valid
+Calculated minimum intensity threshold for assay 'valid': 6
+Filtered assay 'valid'. Original rows: 2, Filtered rows: 1
+
+Processing assay: no_id
+
+Processing assay: all_na
+....1....Raw intensity percentile from config/param: 50 # comment
+Raw proportion cutoff from config/param: 0.5
+
+Processing assay: no_numeric
+2Raw intensity percentile from config/param: 50 # comment
+Raw proportion cutoff from config/param: 0.5
+.Raw intensity percentile from config/param: not-a-number
+Raw proportion cutoff from config/param: 0.5
+.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-metab-qc-shared.R:255:3'): metaboliteIntensityFiltering pre
+Expected `recorded$thresholds[[1]]$sample_columns` to be identical to `c("S1", "S2")`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('S1', 'S2')
+
+
+── 2. Failure ('test-metab-qc-shared.R:281:3'): metaboliteIntensityFiltering pre
+Expected `suppressWarnings(metaboliteIntensityFiltering(no_numeric_object))` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-metab-qc-shared.R pass 18 fail 2 error 0 skip 0 warn 0

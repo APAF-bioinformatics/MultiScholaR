@@ -1,0 +1,2 @@
+table	rows_determinism	rows_counted	identical
+errors, one value altered	10652	10652	FALSE

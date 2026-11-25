@@ -1,0 +1,15 @@
+run	45326839837
+attempt	1
+request_commit	3be532ee65aa4ae153cac5361f15026549359182
+request	.github/run-tests/requests/kit202-r1-f9d7d910.json
+requested_by	KIT-202 R1: the new tests fail first on the tests-only commit at the ticket's stated values (A1); ceiling 45 job-minutes; a different base value stops the ticket
+label	KIT-202 R1 tests-only f9d7d910
+package_commit	f9d7d910e7b499c92f4ec11792c3af9fac53b250
+base_commit	none
+tools_ref	f9d7d910e7b499c92f4ec11792c3af9fac53b250
+runner	ubuntu-22.04 (GitHub-hosted)
+R	R version 4.6.1 (2026-06-24) 
+jobs	tests success; check skipped; scripts skipped
+shard-head-1	library install: 584 s since job start; cpu AMD EPYC 7763 64-Core Processor 4; BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 LAPACK /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0 3.10.0 
+env	{}
+
