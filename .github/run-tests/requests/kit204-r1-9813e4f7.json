@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-204 R1: tests-only commit; N1, N2, N2b, N3 (i), N5, N6, N7, N9 fail at their stated values, guards N3 (ii)/(iii), N4, N8 pass; decides stop rule 1; ceiling 60 job-minutes",
+  "label": "KIT-204 R1 tests first on kit-204 9813e4f7",
+  "package_commit": "9813e4f77c67391559d7770cc7e3e2e65a1c19cd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit204-prot-da-not-tested.R"],
+  "shards": 1,
+  "file_timeout_minutes": 50,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
