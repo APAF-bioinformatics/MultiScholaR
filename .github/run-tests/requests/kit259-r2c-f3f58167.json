@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-259 correction pass (coordinator's ruling on R2's stop): three files base against head, no check; predictions committed at f3f58167 (correction-predictions.md); ceiling 90 job-minutes",
+  "label": "KIT-259 R2c base 545c4557 head f3f58167 (3 files)",
+  "package_commit": "f3f5816761976d5459b4b63afc8803416d9ce7fb",
+  "base_commit": "545c45571e941272b014d89a871ac798214284a5",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-saved-exports.R",
+    "test-kit259-pearson-histogram-figure-failure.R",
+    "test-metab-01k-s4-plot-pearson-characterization.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
