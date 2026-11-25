@@ -1795,9 +1795,11 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
             }
             saveRDS(saved$ruv_result[setdiff(names(saved$ruv_result), "best_cancor_plot")],
                 file.path(staged$source_dir, "ruv_covariates_optimization_results.RDS"))
-            if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+            # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I04): guarded as the normalisation's cancor figure.
+            if (!is.null(saved$ruv_result$best_cancor_plot)) drawProtNormQcFigure(staged$protein_qc_dir,
+                "ruv_covariates_cancor.png", 8, 6, function() ggplot2::ggsave(
                 file.path(staged$protein_qc_dir, "ruv_covariates_cancor.png"),
-                saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+                saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150))
             ruv_qc(saved$adjusted)
             list(completed = TRUE, qc_paths = norm_data$qc_plot_paths, staged_qc_dir = staged$protein_qc_dir)
         }, "the RUV covariates' files could not be copied into the project's staging folder"), identity = list(product = product$entity_id, color = settings$color_variable,

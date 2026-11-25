@@ -767,7 +767,9 @@ setMethod(
                         ggplot(aes(pearson_correlation)) +
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
                         # Set x-axis limits and breaks
-                        scale_x_continuous(limits = c(lower, 1), breaks = seq(lower, 1, 0.1), expand = c(0, 0)) +
+                        # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I02): rounded below 0, so that the tick at 0
+                        # is 0 (seq() gives 5.6e-17 from -0.3, -0.6 or -0.7, and every label then printed in scientific form).
+                        scale_x_continuous(limits = c(lower, 1), breaks = if (lower < 0) round(seq(lower, 1, 0.1), 1) else seq(lower, 1, 0.1), expand = c(0, 0)) +
                         # # Set fixed y-axis scale, similar to protein version
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +

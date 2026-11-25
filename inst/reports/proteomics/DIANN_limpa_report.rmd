@@ -1187,6 +1187,44 @@ if(file.exists(composite_qc_fig_path)) {
 }
 ```
 
+```{r QC_metrics_placeholders, echo=FALSE, results="asis"}
+# KIT-259 second correction (VAL-287): name the Figure 1 panels the application replaced by a placeholder (a figure it
+# could not draw). The placeholder writer leaves `<figure>.png.placeholder` beside the figure in the QC folder the
+# composite is copied from; with none, nothing is printed and the report is as before.
+FormatPlaceholderPanels <- function(qc_dir, ruv_applied) {
+  if (is.null(qc_dir) || !dir.exists(qc_dir)) return("")
+  stages <- c(pre_norm = "after log2 transformation", post_norm = "after between-sample normalisation",
+    ruv_corrected = "after RUVIII-C correction")
+  kinds <- c(pca = "principal component analysis", density = "density plot", rle = "relative log expression",
+    correlation = "Pearson correlation")
+  layout <- if (isTRUE(ruv_applied)) names(stages) else if (isFALSE(ruv_applied)) names(stages)[1:2] else NULL
+  figures <- c(as.vector(t(outer(names(kinds), if (is.null(layout)) names(stages) else layout,
+    function(kind, stage) paste0(stage, "_", kind)))), if (!isFALSE(ruv_applied)) "ruv_corrected_cancor")
+  marked <- figures[file.exists(file.path(qc_dir, paste0(figures, ".png.placeholder")))]
+  if (!length(marked)) return("")
+  describe <- function(figure) {
+    if (identical(figure, "ruv_corrected_cancor")) return("RUV-III canonical correlation")
+    stage <- sub("_(pca|density|rle|correlation)$", "", figure)
+    paste(kinds[[sub("^.*_", "", figure)]], stages[[stage]])
+  }
+  join <- function(items) if (length(items) == 1L) items else
+    paste(paste(items[-length(items)], collapse = ", "), "and", items[[length(items)]])
+  shown <- if (length(marked) == 1L) "it shows" else "each shows"
+  if (is.null(layout)) {
+    what <- paste0(if (length(marked) == 1L) "the panel of " else "the panels of ", join(vapply(marked, describe, "")))
+  } else {
+    letters_at <- stats::setNames(letters[seq_along(figures)], figures)
+    what <- paste0(if (length(marked) == 1L) "panel " else "panels ",
+      join(paste0(letters_at[marked], " (", vapply(marked, describe, ""), ")")))
+  }
+  paste0("In Figure 1, ", what, " could not be drawn by the application; ", shown,
+    " a note giving the reason instead of the plot.")
+}
+qc_placeholder_text <- FormatPlaceholderPanels(current_project_paths$feature_qc_dir %||% current_project_paths$protein_qc_dir,
+  results_data$numbers$ruv_applied)
+if (nzchar(qc_placeholder_text)) cat("\n\n", qc_placeholder_text, "\n\n", sep = "")
+```
+
 # Differential Abundance Analysis
 
 `r results_data$content$de_details`
