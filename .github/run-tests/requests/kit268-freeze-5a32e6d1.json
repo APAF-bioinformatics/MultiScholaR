@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-268 O-3 (a): re-freeze of the lipid_canonical GUI-entry oracle on the runner at the fix tree (5a32e6d1 = fix 28b88665 + docs); expected 12 job-minutes, ceiling 20",
+  "label": "KIT-268 re-freeze lipid_canonical oracle 5a32e6d1",
+  "package_commit": "5a32e6d174b01e329498cd8c8f05b6e873bd5ac6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_GUI_ENTRY_FREEZE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-268/refreeze/freeze.R",
+      "args": [],
+      "env": {
+        "MULTISCHOLAR_GUI_ENTRY_FREEZE": "1"
+      },
+      "out": "kit268-freeze",
+      "out_pattern": "\\.(json|txt|log)$",
+      "timeout_minutes": 8
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
