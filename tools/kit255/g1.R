@@ -366,9 +366,35 @@ k255BuildRuv <- function(kind, class) {
     out
 }
 
+#' Instrument rerun 2 (VAL-54): after RUV the real correlations of B_6 are about 0.99 in both assays (run 45687997124: RUV-III
+#' removes a one-sample anomaly), so no object failed in LCMS_Neg. As KIT-254's tests bind the kernel, the pairs of the RUV
+#' objects are hand-made from the design's samples: every within-group pair 0.95, B_6's pairs in LCMS_Neg -0.015. Everything
+#' else is real (values, RUV, the selection kernel, the states).
+k255MockPairs <- function(env = parent.frame()) {
+    testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(theObject, ...) {
+        runs <- as.character(methods::slot(theObject, "design_matrix")$Run)
+        slot <- if (inherits(theObject, "LipidomicsAssayData")) "lipid_data" else "metabolite_data"
+        assays <- names(methods::slot(theObject, slot))
+        groups <- split(sort(runs), sub("_.*$", "", sort(runs)))
+        rows <- do.call(rbind, lapply(groups, function(g) {
+            pairs <- utils::combn(g, 2L)
+            data.frame(Run.x = pairs[1L, ], Run.y = pairs[2L, ], stringsAsFactors = FALSE)
+        }))
+        rownames(rows) <- NULL
+        stats::setNames(lapply(assays, function(assay) {
+            out <- rows
+            low <- identical(assay, "LCMS_Neg") & (out$Run.x == S | out$Run.y == S)
+            out$pearson_correlation <- ifelse(low, -0.015, 0.95)
+            out
+        }), assays)
+    }, .package = "MultiScholaR", .env = env)
+    invisible(TRUE)
+}
+
 #' The correlation step (0.5) on a built owner; records B_6's best correlation (stop rule (i)).
 k255Correlate <- function(built, class) {
     binding <- built$binding
+    k255MockPairs()
     run <- k255Capture(k255Gate(runWorkflowOmicsReferenceCorrelation(binding, built$fx$owner, "group", 0.5,
         built$fx$workflow$config_list)))
     if (length(run$warnings)) k255Record("BUILD", built$name, class, "declaration", "correlation warnings", unique(run$warnings))
@@ -595,6 +621,7 @@ for (class in c("lipid", "metab")) {
 # ---- P-d, P-f (non-RUV), P-g, P-i: the hand-built K2-b, K2-a, K3-b ----
 
 k255Plain <- list()
+k255Dirs <- list()
 for (class in c("lipid", "metab")) {
     binding <- kit172Binding(class)
     values <- k255K2Values()
@@ -649,38 +676,6 @@ for (class in c("lipid", "metab")) {
                     sum(vapply(intersect(c("P.Value", "raw_pvalue", "pvalue"), names(t)), function(n) sum(is.finite(t[[n]])), 1L))))
             k255Record("P-f", "K3-b", class, "kernel", "LCMS_Neg table columns", names(t))
             k255Record("P-f", "K3-b", class, "kernel", "result fields", names(run$value))
-        }
-    })
-
-    # P-e, P-f (RUV arm): the factors are estimated by a real RUV call on the object WITHOUT missing cells and logged values
-    # (as the pipeline's RUV step sees them), then the exported kernel tests the uncorrected values with the failing column blank.
-    k255Case("P-e", "K2-b-RUV", class, "kernel", function() {
-        full <- k255Log(k255K2Values(missing = FALSE))
-        ruv <- k255Capture(runOmicsRuvFactors(k255Obj(full, class), ruv_design = "groups_all_features", ruv_k = 1L, ruv_k_rule = "user",
-            ruv_grouping_variable = "group"))
-        if (ruv$failed) {
-            k255Record("P-e", "K2-b-RUV", class, "kernel", "runOmicsRuvFactors", paste("failed:", conditionMessage(ruv$value)))
-            return(invisible(NULL))
-        }
-        factors <- ruv$value$factors
-        k255Record("P-e", "K2-b-RUV", class, "kernel", "factors: status; k; W rows; B_6 in W (per assay)",
-            paste(names(factors), vapply(factors, function(f) sprintf("%s; %s; %s; %s", f$status, f$k %||% NA, if (is.null(f$W)) 0L else nrow(f$W),
-                if (is.null(f$W)) NA else S %in% rownames(f$W)), ""), sep = "=", collapse = " | "))
-        b <- k255Kernel(class, k255Obj(k255Blank(full, "LCMS_Neg", S), class), factors)
-        a <- k255Kernel(class, k255Drop(k255Obj(full, class), class, S), factors)
-        okb <- k255RecordKernel("P-e", "K2-b-RUV", class, "kernel", b)
-        oka <- k255RecordKernel("P-e", "K2-a-RUV", class, "kernel", a)
-        if (okb && oka) {
-            k255CompareTables("P-e", "K2-b-RUV", class, "kernel", "LCMS_Neg (K2-b vs K2-a, same factors)", b$value$per_assay_results$LCMS_Neg,
-                a$value$per_assay_results$LCMS_Neg)
-            k255CompareTables("P-e", "K2-b-RUV", class, "kernel", "LCMS_Pos (K2-b vs K2-a, same factors)", b$value$per_assay_results$LCMS_Pos,
-                a$value$per_assay_results$LCMS_Pos)
-        }
-        # P-f, RUV arm: group B blank in LCMS_Neg.
-        k3 <- k255Kernel(class, k255Obj(k255Blank(full, "LCMS_Neg", GROUP_B), class), factors)
-        if (k255RecordKernel("P-f", "K3-b-RUV", class, "kernel", k3)) {
-            k255Record("P-f", "K3-b-RUV", class, "kernel", "ruv_not_observed", utils::capture.output(str(k3$value$ruv_not_observed, give.attr = FALSE)))
-            k255Record("P-f", "K3-b-RUV", class, "kernel", "ruv_not_tested (names)", names(k3$value$ruv_not_tested) %||% "none")
         }
     })
 
@@ -751,7 +746,16 @@ for (class in c("lipid", "metab")) {
         k255Record("P-i", "K2-b", class, "session counts", "samples counted per assay (intersect(columns, design))",
             vapply(methods::slot(object, binding$data_slot), function(t) length(intersect(colnames(t), design_runs)), 1L))
         dir <- k255WriteInput("P-h", "K2-b", class, "integration", binding, staged$fx$owner)
-        if (is.null(dir)) return(invisible(NULL))
+        k255Dirs[[class]] <<- dir
+        invisible(NULL)
+    })
+}
+
+# P-h, the model (instrument rerun 2: the model takes two omics): lipidomics and metabolomics inputs of K2-b together.
+for (class in "lipid") {
+    k255Case("P-h", "K2-b", "lipid+metab", "model", function() {
+        dir <- unname(unlist(k255Dirs[c("lipid", "metab")]))
+        if (length(dir) != 2L) return(invisible(NULL))
         read <- k255Capture(integrationViewsFromInputs(dir))
         if (read$failed) {
             k255Record("P-h", "K2-b", class, "model", "integrationViewsFromInputs", paste("failed:", conditionMessage(read$value)))
@@ -808,6 +812,37 @@ for (class in c("lipid", "metab")) {
         k255Record("P-a", name, class, "declaration (before the press)", "args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg", k255CopyCells(before))
         copy_before <- before@args$ruv_uncorrected_assays
 
+        # P-e, P-f (RUV arm) (instrument rerun 2: the factors and the normalised state of the real pipeline): the exported kernel
+        # tests the uncorrected values (the normalised state) with the failing column blank, W the pipeline's, estimated before.
+        if (identical(kind, "new")) k255Case("P-e", "K2-b-RUV", class, "kernel", function() {
+            factors <- built$ruv$value$value$factors
+            k255Record("P-e", "K2-b-RUV", class, "kernel", "factors: status; k; W rows; B_6 in W (per assay)",
+                paste(names(factors), vapply(factors, function(f) sprintf("%s; %s; %s; %s", k255Val(f$status), k255Val(f$k),
+                    if (is.null(f$W)) 0L else nrow(f$W), if (is.null(f$W)) NA else S %in% rownames(f$W)), ""), sep = "=", collapse = " | "))
+            normalised <- k255State(built$fx, binding, paste0(built$prefix, "_normalized"))
+            blank <- function(object, runs) {
+                assays <- methods::slot(object, binding$data_slot)
+                assays$LCMS_Neg[, runs] <- NA_real_
+                methods::slot(object, binding$data_slot) <- assays
+                object
+            }
+            b <- k255Kernel(class, blank(normalised, S), factors)
+            a <- k255Kernel(class, k255Drop(normalised, class, S), factors)
+            okb <- k255RecordKernel("P-e", "K2-b-RUV", class, "kernel", b)
+            oka <- k255RecordKernel("P-e", "K2-a-RUV", class, "kernel", a)
+            if (okb && oka) {
+                k255CompareTables("P-e", "K2-b-RUV", class, "kernel", "LCMS_Neg (K2-b vs K2-a, same factors)", b$value$per_assay_results$LCMS_Neg,
+                    a$value$per_assay_results$LCMS_Neg)
+                k255CompareTables("P-e", "K2-b-RUV", class, "kernel", "LCMS_Pos (K2-b vs K2-a, same factors)", b$value$per_assay_results$LCMS_Pos,
+                    a$value$per_assay_results$LCMS_Pos)
+            }
+            k3 <- k255Kernel(class, blank(normalised, GROUP_B), factors)
+            if (k255RecordKernel("P-f", "K3-b-RUV", class, "kernel", k3)) {
+                k255Record("P-f", "K3-b-RUV", class, "kernel", "ruv_not_observed", utils::capture.output(str(k3$value$ruv_not_observed, give.attr = FALSE)))
+                k255Record("P-f", "K3-b-RUV", class, "kernel", "ruv_not_tested (names)", names(k3$value$ruv_not_tested) %||% "none")
+            }
+        })
+
         # P-k: the writer on the pre-correlation head, the failing column blank in the final read and in the normalised read.
         k255Case("P-k", paste0(name, "-b"), class, "integration", function() {
             ruv_id <- getWorkflowStateReference(owner, paste0(built$prefix, "_ruv_corrected"))$entity_id
@@ -851,6 +886,7 @@ for (class in c("lipid", "metab")) {
 for (class in c("lipid", "metab")) {
     in_process <- k255Case("P-a", "K2-RUVnew", class, "tab in process", function() {
         seen <- k194Notes()
+        k255MockPairs()
         fx <- k255Fixture(file.path(k255NewRoot(paste0("pa-ip-", class)), "project"), k255K2Values(missing = FALSE), class)
         on.exit(k255Close(fx$owner), add = TRUE)
         nd <- omicNormReactiveState()
@@ -875,6 +911,7 @@ for (class in c("lipid", "metab")) {
     })
     k255Case("P-a", "K2-RUVnew", class, "managed", function() {
         seen <- k194Notes()
+        k255MockPairs()
         k255Gate(k255Managed(class, paste0("pa-managed-", class), k255K2Values(missing = FALSE), function(fx, probe) {
             k255Record("P-a", "K2-RUVnew", class, "managed", "run completed", isTRUE(probe$ran) && isTRUE(probe$settled_run))
             k255Record("P-a", "K2-RUVnew", class, "managed", "Apply settled", isTRUE(probe$settled_apply))
@@ -903,7 +940,8 @@ harness <- new.env(parent = globalenv())
 sys.source(file.path("tools", "profiling", "workflow_kit.R"), harness)
 k255Api <- function(name) get(name, asNamespace("MultiScholaR"))
 
-for (class in c("lipid", "metab")) {
+k255RunPj <- identical(Sys.getenv("K255_PJ"), "1")  # run 45687997124 wrote the older-form record; not repeated
+for (class in if (k255RunPj) c("lipid", "metab")) {
     k255Case("P-j", "K2", class, "project and replay", function() {
         binding <- kit172Binding(class)
         prefix <- binding$prefix
@@ -953,7 +991,7 @@ for (class in c("lipid", "metab")) {
         k255Record("P-j", "K2", class, "replay", "replayed", replayed)
     })
 }
-k255Case("P-j", "K2", "lipid,metab", "tarball", function() {
+if (k255RunPj) k255Case("P-j", "K2", "lipid,metab", "tarball", function() {
     archive <- file.path(k255Root, "base-record.tar.gz")
     old <- setwd(k255Projects)
     on.exit(setwd(old), add = TRUE)
