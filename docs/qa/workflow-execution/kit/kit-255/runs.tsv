@@ -1,1 +1,2 @@
 run_id	commit	purpose	job_minutes	result
+45606617982	6fb5078d	G0 base observation (staging 7327607f + script)	1.8 script (job about 12 with set-up)	ok; phase 0 passed (lipid, metab); stop rule (i) holds; o1, o2, o5, K0, K1 as predicted; o4 runMetabolitesDA identical (K1, K2); INSTRUMENT DEFECTS: o3 recorder read the raw handoff (references only, nothing recorded); o4 declaration arm failed saving the transient object into a fresh owner (invalid hydration reference)

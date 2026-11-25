@@ -626,6 +626,33 @@ for (class in c("lipid", "metab")) {
         k255Record("o3", "K2", class, "worker", "rows per assay", if (length(rows)) paste(names(rows), rows, sep = "=") else "none")
         errors <- unlist(k255FindNamed(h, "errors"))
         k255Record("o3", "K2", class, "worker", "errors", if (length(errors)) errors else "none")
+        # Instrument rerun 1 (VAL-54): the raw handoff holds references, not the contrast's value (run 45606617982 found
+        # nothing in it). Its fields are recorded, and the same worker run is accepted on a controller
+        # (omicsWorkerAction, as omicsWorkerJourney does), whose value the manifest acceptance then reads.
+        k255Record("o3", "K2", class, "worker", "handoff fields / result fields", sprintf("%s / %s", paste(names(h), collapse = "+"),
+            paste(names(h$result), collapse = "+")))
+        testthat::local_mocked_bindings(finishWorkflowExecutionJob = function(owner, status) {
+            owner$job <- NULL
+            list(status = status)
+        }, .package = "MultiScholaR")
+        controller <- omicsWorkerController(built$fx)
+        action <- k255Capture(omicsWorkerAction(built$fx, controller, step$operation, step$parameters))
+        if (action$failed) {
+            k255Record("o3", "K2", class, "worker accepted", "omicsWorkerAction", paste("failed:", conditionMessage(action$value)))
+            return(invisible(NULL))
+        }
+        value <- action$value$value
+        k255Record("o3", "K2", class, "worker accepted", "acceptance", action$value$acceptance %||% "<none>")
+        k255Record("o3", "K2", class, "worker accepted", "contrast value: assays with a table", names(value$assays) %||% "none")
+        k255Record("o3", "K2", class, "worker accepted", "contrast value: rows per assay",
+            if (length(value$assays)) paste(names(value$assays), vapply(value$assays, function(e) as.character(e$rows %||% "-"), ""),
+                sep = "=") else "none")
+        k255Record("o3", "K2", class, "worker accepted", "contrast value: errors", if (length(value$errors)) value$errors else "none")
+        manifest <- k255Capture(withWorkflowStateScope(built$fx$owner, function() acceptWorkflowOmicsDaManifest(built$binding,
+            built$fx$owner, getWorkflowStateReference(built$fx$owner), DA_SETTINGS, kit172Contrasts(),
+            stats::setNames(list(value), step$contrast), read_results = FALSE)))
+        k255Record("o3", "K2", class, "worker accepted", "manifest acceptance",
+            if (manifest$failed) paste("stopped:", conditionMessage(manifest$value)) else "accepted")
     })
 }
 
@@ -676,8 +703,23 @@ for (name in c("K1", "K2")) {
                 k255Tables(a$value), k255Tables(b$value)))
         }
         # The declaration route: the correlation state on its owner; the removed object as a fresh owner's design state.
+        # Instrument rerun 1 (VAL-54): the transient object read from the store could not be saved into another owner
+        # ("invalid hydration reference", run 45606617982); the fresh owner now gets a plain object built from the same
+        # assay tables and design (as.data.frame), with kit172Object's args (the metab DA reads no other arg here).
+        plain <- methods::new("MetaboliteAssayData",
+            metabolite_data = lapply(removed@metabolite_data, function(t) as.data.frame(t, check.names = FALSE, stringsAsFactors = FALSE)),
+            design_matrix = as.data.frame(removed@design_matrix, stringsAsFactors = FALSE), metabolite_id_column = removed@metabolite_id_column,
+            annotation_id_column = removed@annotation_id_column, sample_id = removed@sample_id, group_id = removed@group_id,
+            technical_replicate_id = removed@technical_replicate_id, database_identifier_type = "Unknown",
+            internal_standard_regex = "^IS_",
+            args = list(deAnalysisParameters = list(formula_string = "~ 0 + group", de_q_val_thresh = 0.05, treat_lfc_cutoff = 0)))
         da <- k255Capture(runWorkflowOmicsReferenceDaAnalysis(binding, built$fx$owner, reference, DA_SETTINGS, kit172Contrasts()))
-        other <- kit172Quiet(kit172Owner(file.path(k255NewRoot(paste0("o4-", tolower(name))), "project"), removed, "metab"))
+        other <- k255Capture(kit172Owner(file.path(k255NewRoot(paste0("o4-", tolower(name))), "project"), plain, "metab"))
+        if (other$failed) {
+            k255Record("o4", name, "metab", "declaration", "owner for the removed object", paste("failed:", conditionMessage(other$value)))
+            return(invisible(NULL))
+        }
+        other <- other$value
         on.exit(k255Close(other$owner), add = TRUE)
         db <- k255Capture(runWorkflowOmicsReferenceDaAnalysis(binding, other$owner, getWorkflowStateReference(other$owner),
             DA_SETTINGS, kit172Contrasts()))

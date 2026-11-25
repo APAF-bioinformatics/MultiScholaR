@@ -1,0 +1,24 @@
+item	object	class	observable	predicted
+PHASE0	K2	lipid,metab	managed run and Apply(0.5)	complete; head <prefix>_correlation_filtered
+PHASE0	K2	lipid,metab	managed design = in-process design	TRUE
+PHASE0	K2	lipid,metab	B_6 (after log2, quantile)	out of the design and LCMS_Neg, in LCMS_Pos (both routes)
+STOP-i	K2	lipid,metab	B_6 best within-group correlation	LCMS_Pos >= 0.5 (passes); LCMS_Neg < 0.5 (fails); declaration route and phase 0 in process
+o1	K2	lipid,metab	design samples	11; B_6 absent
+o1	K2	lipid,metab	LCMS_Pos sample columns	12; B_6 present
+o1	K2	lipid,metab	LCMS_Neg sample columns	11; B_6 absent
+K1	K1	lipid,metab	A2 between-sample warning	present: 'Assay 'A2': At least one sample column contains only NA values. Skipping normalization.'
+K1	K1	lipid,metab	A2 normalised equals its log2 input	TRUE
+K1	K1	lipid,metab	correlation state	design 11, B_6 absent; A1 12 columns with B_6; A2 11 columns without (as C4b)
+o2	K1	lipid,metab	omicDaPreflight value	status=error; stage=preflight; errorMessage=Assay 'A1' has sample column(s) missing from design: B_6
+o2	K2	lipid,metab	omicDaPreflight value	status=error; stage=preflight; errorMessage=Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o2	K1,K2	lipid,metab	notification	one [error] notification with the errorMessage
+o3	K2	lipid	worker DA handoff	carries 'Assay 'LCMS_Pos' has sample column(s) missing from design: B_6'; no assay table
+o3	K2	metab	worker DA handoff	complete; tables for LCMS_Pos and LCMS_Neg; no error
+o4	K1,K2	metab	runMetabolitesDA: correlation state vs B_6 removed by hand from every assay	identical per assay and contrast (PREDICTED BY READING: both select columns by design name)
+o4	K1,K2	metab	declaration DA: correlation state vs B_6 removed by hand from every assay	identical per assay and contrast (PREDICTED BY READING)
+o5	K1,K2	lipid,metab	writer	writes (TRUE)
+o5	K1,K2	lipid,metab	A1 / LCMS_Pos view feature table has a column B_6	TRUE
+o5	K1,K2	lipid,metab	samples table rows	11
+o5	K1,K2	lipid,metab	every matrix's sample columns	11
+K0	K0	lipid,metab	correlation state	design 12; both assays 12 columns (nothing removed)
+K0	K0	lipid,metab	declaration DA	completes; tables for LCMS_Pos and LCMS_Neg
