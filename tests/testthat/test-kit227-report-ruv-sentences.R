@@ -165,8 +165,6 @@ k227OmicRecord <- function(name, mode = "automatic", grouping = "group", k = 2, 
         list(ruv_applied = TRUE, k = k, negative_control_percentage = percentage, negative_control_count = count)))
 }
 
-k227Feature <- function(name) if (identical(name, "lipid")) "lipids" else "metabolites"
-
 # --- E1, E1b: Manual -----------------------------------------------------------------------------------------------
 
 test_that("KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)", {
