@@ -22,7 +22,8 @@ The commit check printed `val_product_tree_ok` in both jobs; the installed Multi
 
 Windows' own extractors on G0's case B and C archives: `Expand-Archive` extracted the members equal by SHA-256;
 Explorer's engine row was an **instrument fault**: "You cannot call a method on a null-valued expression"
-(`Shell.NameSpace` returned null for the archive path R wrote with `/` separators). No result was produced for
+(`Shell.NameSpace` returned null; the archive path R wrote had `/` separators and the engine ran in a background
+job; W1 changed both, so which one mattered is not isolated). No result was produced for
 that row; G0 was not re-sent for it (W1 extracts the same writer's archives with the repaired mechanics: paths
 normalised with `[IO.Path]::GetFullPath`, the engine in an STA Windows PowerShell process). No expected value or
 stop rule changed (VAL-54 condition i). `tempdir()` lengths: Windows 47 characters (case folders 61, case C 66);
@@ -47,16 +48,26 @@ available"), `test-prot-11-enrichment-module-contracts.R` and `test-prot-11a-…
 both: quarantined Q-163 and Q-164). R CMD check: 0 errors, 3 warnings, 3 notes on both sides; 0 findings only on
 head (`r2-check-compare.txt`).
 
-The W1 capture leaf "clusterprofiler download download" in `test-omic-enrich-module.R` fails on base and head
-with the same message: the stored summary digest 6c76b09e… against the actual e7a41994… on **both** sides. The
-same actual member digest under `utils::zip` (base) and `zip::zipr` (head) is direct evidence that the archive's
-members are unchanged by the fix; the stored value differing is pre-existing and not this ticket's.
+The W1 capture leaf "clusterprofiler download download" in `test-omic-enrich-module.R` fails on base and head with
+the same message: the stored summary digest e7a41994… (`test-omic-enrich-module.R:1691`) against the actual
+6c76b09e… on **both** sides, and `clusterProfileR_results.tsv` equal to its stored digest 671ae3ed… on both. The
+same actual member digests under `utils::zip` (base) and `zip::zipr` (head) are direct evidence that the archive's
+members are unchanged by the fix; the stored summary value is pre-existing (it lacks the "Significance:" line the
+writer prints; recorded as pre-existing by KIT-226's control) and not this ticket's.
+
+The gprofiler W1 download leaf passes on base (Info-ZIP) and on head (zipr): the summary 13ce7979… and
+`gprofiler2_results.tsv` 4182e806… (`test-omic-enrich-module.R:1259-1260`) equal their stored values under both
+archivers. Every member of both W1 download captures is therefore observed unchanged by the fix (the summary with
+its date line masked).
 
 ### W1 (run 45588834064, commit under test e4b0f98e; `w1-head-values.tsv`)
 
-`val_product_tree_ok` in both jobs. Writer default printed as `function(zipfile, files, flags)
-zip::zipr(zipfile = zipfile, files = files)`. Closure 385 packages, zip in the plan: equal to G0 (N; roots not
-printed).
+`val_product_tree_ok` in both jobs. The build's package commit and the installed `SourceCommit` are the run-branch head 9619cb16, not e4b0f98e:
+`package_commit_rule` (`packaging/package-commit.sh`) names the head when the package source differs from its merge
+base with the release line; `val_product_tree_ok` shows 9619cb16's product tree (`PKG_PATHS` and `packaging/`)
+equal to e4b0f98e's. Writer default printed as `function(zipfile, files, flags)
+zip::zipr(zipfile = zipfile, files = files)`. Closure 385 packages, zip in the plan: equal to G0 (N); the build's plan line reads `closure: 385 packages (roots 137)` at G0 and `(roots 138)` at W1 on
+both platforms, every other count equal: one more root, zip, as stop rule 5 predicted.
 
 | Host | Case A (the fix's default) | Windows extractors |
 |---|---|---|
@@ -82,30 +93,41 @@ Stop rule 5 not met.
 
 - What a user sees in the Electron window on the download (F5, handed to KIT-237): G0 and W1 call the writer from
   Rscript under the installed R, not through the window.
-- That the archive's member bytes equal what `utils::zip` would have archived on a host with zip: shown for the
-  summary member through R2's shared actual digest, and by construction (same files) for the rest.
 
 ## Notes
 
 - N2: `packaging/multischolar.lock.json` keeps `"Declared": "indirect"` for zip; after this change zip is
   declared. Nothing reads the field; the lock is left alone.
-- Merge order (coordinator, P03): after KIT-215 (in merge train 20261125c at the time of writing; not on staging
-  when the fix was written). Expected conflict: KIT-215 edits the same writer (`:544-640`), possibly the
-  parameter list next to `:557`; the second to merge re-applies its hunk, runs the other's new test file
-  (`test-kit215-not-tested-lists.R`; KIT-226's `test-kit226-gprofiler-columns.R`) and repeats its R2. Neither file
-  was on this ticket's base, so neither is in R2.
+- Merge order (coordinator, P03): after KIT-215. KIT-215 was not on staging when the fix was written; it is on
+  staging 16112917, which was merged into `kit-241` after the implementation audit (the writer merged without a
+  conflict). Neither `test-kit215-not-tested-lists.R` nor KIT-226's `test-kit226-gprofiler-columns.R` was on this
+  ticket's base, so neither is in R2; they run in the merge train's run.
+- Conventions (I10): the new lines follow the parameter list's alignment and exceed R.md's 100 characters, as 48
+  lines of the file do; the tests' injected doubles use `function(...)` as the file's neighbouring tests do.
+- Push-triggered Module CI (I12): pushing the two run branches started Module CI runs 45577710878 (166
+  job-minutes) and 45585334125 (157), not requested by this ticket; their only failures, `module-ci impacted
+  (transcriptomics)` MCI-028/030/031/032, are identical to staging 16112917's run 45586880341. Listed in `runs.tsv`.
 
 ## Not checked
 
 - The full suite (A4): at the next checkpoint.
-- A source install on Windows with zip 3.0.0 (the laptop's verified library and the lock): such an install can
-  write an archive Windows Explorer refuses (r-lib/zip#153, fixed in 3.0.1); every bundle and runner carries 3.0.1
-  and no floor is set (E-5).
+- A source install on Windows with zip 3.0.0 (the laptop's verified library and the lock): such an install may
+  write an archive Windows Explorer refuses (r-lib/zip#153, fixed in 3.0.1). Every bundle and runner carries 3.0.1.
+  No floor is set in this merge (coordinator's ruling on E-5 and I06: a floor would stop the package loading on a
+  library holding 3.0.0); the floor `zip (>= 3.0.1)` is set at the next lock refresh, an item the coordinator owns.
 - The browser e2e lane `test-e2e-proteomics-enrichment.R`: skipped by run-tests (no shinytest2/chromote);
   covered by the next stage-`full` run's Linux e2e lanes.
 - `test-prot-11` and `test-prot-11a` (G2's injected-fake tests there) are quarantined (Q-163, Q-164) and ran no
   test on either side; G2 is covered by `test-enrichment-significance.R` only.
-- Explorer's engine on G0's base archives (instrument fault; W1 covers the fix's archives).
+- Explorer's engine on G0's base archives (instrument fault; W1 covers the fix's archives). The G0 fault's cause is
+  not isolated: the archive path had `/` separators and the engine ran in a background job; W1 changed both, so
+  which one mattered is not isolated.
+- The Explorer step's two weaknesses, for anyone reusing it (I09; KIT-237, KIT-245): with CopyHere flag 1024 (no
+  error interface) a refusal by Explorer (the #153 class) would surface as a 120-second timeout, which the step
+  classes as an instrument fault rather than a result: class "members missing when the engine finished or timed
+  out" as a result ("not extracted: …") and keep the instrument fault for a null namespace or a process that did
+  not start. And case C's Windows extractors read an ASCII copy of the archive (`D:\a\_temp\probe\C\download.zip`),
+  not the file under the non-ASCII folder.
 - Downloads through the Electron window (F5); Push to GitHub without git (F4, KIT-245).
 
 ## For the change report
@@ -137,7 +159,7 @@ zipfile, files = files)` with its comment), used at `:617`, `:621`, `:633` uncha
 after).
 
 **What changed in results.** Nothing numeric. The archive is now written; its members and their contents are the
-same files (R2: the same summary digest under both archivers); the archive container's own bytes differ
+same files (R2: every member digest of both W1 download captures the same under both archivers); the archive container's own bytes differ
 (compression level, timestamps). On the error path the archive holds only `download_error.txt` (zipr overwrites;
 Info-ZIP added to a partial archive). After the fix an archiver failure raises: the writer archives an error
 note, and only a second failure leaves the writer (HTTP 500 in a browser).

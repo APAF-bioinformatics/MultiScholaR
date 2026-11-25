@@ -63,7 +63,7 @@
 
  * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
    `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
-   those computers the download produced no archive. The files in the archive are unchanged (KIT-241).
+   those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).
 
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
