@@ -266,3 +266,25 @@ Observed (mechanics only; no endpoint read and `decide.R` not run): all 8 jobs c
 every job passed the stage-1 check; journey errors as in each `bound-s2/*/provenance.json`. 733.3 job-minutes, 48.89
 core-hours; programme total about 61.4 core-hours (ceiling 100). Returned files committed under `bound-s2/` for the
 auditor's check before `decide.R decide` runs.
+
+## The decision run, declared before its result (audit "Stage 2 (counted) and the decision run")
+
+One run of `decide.R decide` (660ebf9a) at 2b04b121 on the eight `bound-s2/*/journeys.tsv`; `out_pattern` admits only
+`verdicts.tsv`, `reported.tsv`, `decision.tsv`; a re-run only under VAL-54 (mechanics failure with no result).
+
+Decision table (declaration revision 10, sections 5 and 6; intersection–union, each cell one-sided at α = 0.05):
+
+| `decide.R` output | What follows |
+|---|---|
+| `no_worse` TRUE in all 8 deciding cells | rule (d) with the k bound ships (VAL-182 (3)); the bound's value goes to the owner with the k and FDP-by-k rows (VAL-182 (1)) |
+| `no_worse` FALSE in any deciding cell, inconclusive cells included | the first repair with the bound ships; its row-order dependence stays and is stated in NEWS |
+| FALSE only in N-w and/or E-w | as the row above; also reported to KIT-188's default ruling with the B+B reference |
+| `owner_asked` TRUE | the owner is asked before shipping |
+| `tango_bb_agree` FALSE in a null cell | reported to the owner; the Tango verdict stands |
+| `k190_decision_incomplete` | no decision; an instrument defect under VAL-54 |
+| E1-T1b, T11, secondary intervals | reported; decide nothing |
+
+The descriptive B+B comparison (D1), fixed now and computed after `decide.R` by `bb-compare.py` (committed with this
+entry): N-w, over the 250 seeds, the share of seeds with any call under X+B minus the share under B+B (X = F, D); E-w,
+over the 200 seeds, the mean over seeds of FDP(X+B) − FDP(B+B); "far worse" = both differences above 0.10 in that cell.
+Descriptive only; reported to the owner and KIT-188; decides nothing.
