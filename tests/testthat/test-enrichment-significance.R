@@ -495,7 +495,8 @@ test_that("KIT-203 S10: the tab offers both rules before Run, each with its note
     expect_true(grepl(paste0("Significance cutoff: 0.05\nSignificance: ", label("bh_whole_family")),
         summary_of("clusterprofiler", "bh_whole_family"), fixed = TRUE))
     expect_true(grepl(paste0("Significance: ", label("qvalue")), summary_of("clusterprofiler", NULL), fixed = TRUE))
-    expect_true(grepl("Q-value Cutoff: 0.05", summary_of("gprofiler2", NULL), fixed = TRUE))
+    # KIT-226 (VAL-196): the g:Profiler cutoff applies to the service's adjusted p-value.
+    expect_true(grepl("Adjusted p-value cutoff: 0.05", summary_of("gprofiler2", NULL), fixed = TRUE))
     expect_false(grepl("Significance", summary_of("gprofiler2", NULL), fixed = TRUE))
 
     # In the server: the status reads the run's rule, not the selector; a restored run without a rule is the q-value;

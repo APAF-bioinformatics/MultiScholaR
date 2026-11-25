@@ -1,0 +1,153 @@
+KIT-214 G0 at cd88f95f8ea0c7d6257e6e021c3780a272364f11 out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-214/g0 
+KIT-214 G0 fixture metab_msdial 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/seed_lcms_pos.csv
+::notice title=INFO::Read 8 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+::notice title=INFO::Found IS in column: Name
+KIT-214 G0 fixture metab_msdial_id0 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpf9oUul/kit214-g0-input-4c0d374364fb/seed_lcms_pos_id0.csv
+::notice title=INFO::Read 8 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+::notice title=INFO::Found IS in column: Name
+KIT-214 G0 fixture metab_msdial_dup 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpf9oUul/kit214-g0-input-4c0d61433c2a/seed_lcms_pos_dup.csv
+::notice title=INFO::Read 9 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+::notice title=INFO::Found IS in column: Name
+KIT-214 G0 fixture lipid_msdial 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpf9oUul/kit214-g0-input-4c0d3ede8486/msdial_lipid_pos.csv
+::notice title=INFO::Read 3 rows and 13 columns
+::notice title=INFO::Detected 4 sample columns and 9 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 lipid_msdial C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: Peak ID, Name
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture lipid_msdial_dup_import 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpf9oUul/kit214-g0-input-4c0d664a13fa/msdial_lipid_pos_dup.csv
+::notice title=INFO::Read 3 rows and 13 columns
+::notice title=INFO::Detected 4 sample columns and 9 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 lipid_msdial_dup_import C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: Peak ID, Name
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture lipid_msdial_dup_code 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 lipid_msdial_dup_code C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: Peak ID, Name
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture module_ci_lipid 
+::notice title=INFO::Analyzing internal standards with pattern: ^IS_
+::notice title=INFO::Found IS in column: lipid_id
+::notice title=INFO::Found IS in column: lipid_id
+KIT-214 G0 fixture module_ci_metab 
+::notice title=INFO::Analyzing internal standards with pattern: ^IS_
+::notice title=INFO::Found IS in column: database_identifier
+::notice title=INFO::Found IS in column: database_identifier
+KIT-214 G0 fixture e1_lipid 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 e1_lipid C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: feature_id, name
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture e1_metab 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 e1_metab C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: feature_id, name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0 fixture e2_lipid 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 e2_lipid C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: feature_id, mz
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture e2_metab 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 e2_metab C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: feature_id, mz
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0 fixture tie_lipid 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 tie_lipid C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: feature_id, name
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture tie_metab 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+KIT-214 G0 tie_metab C4 ITSD error: No internal standards found. Pattern: ITSD
+Columns searched: feature_id, name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0 fixture e9_metab 
+::notice title=INFO::Analyzing internal standards with pattern: ITSD
+::notice title=INFO::Found IS in column: Name
+KIT-214 G0 fixture text_sample_lipid 
+::notice title=INFO::Analyzing internal standards with pattern: ^IS_
+::notice title=INFO::Found IS in column: lipid_id
+::notice title=INFO::Found IS in column: lipid_id
+KIT-214 G0 fixture text_sample_metab 
+::notice title=INFO::Analyzing internal standards with pattern: ^IS_
+::notice title=INFO::Found IS in column: database_identifier
+::notice title=INFO::Found IS in column: database_identifier
+KIT-214 G0 fixture lipid_canonical 
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+KIT-214 G0 lipid_canonical C4 ^ITSD|_d[0-9]+$ error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: LipidName, LipidClass
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture metab_lc 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_pos_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_neg_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+KIT-214 G0 metab_lc C4 ^ITSD|_d[0-9]+$ error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0 fixture metab_gc 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_gc/gcms_features.tsv
+::notice title=INFO::Read 3 rows and 9 columns
+::notice title=INFO::Detected 8 sample columns and 1 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+KIT-214 G0 metab_gc C4 ^ITSD|_d[0-9]+$ error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0 fixture metab_combined 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_combined/combined_lcms_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_combined/combined_gcms_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+KIT-214 G0 metab_combined C4 ^ITSD|_d[0-9]+$ error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0 fixture a2_lipid_canonical 
+::notice title=INFO::Starting LipidSearch import from: /tmp/Rtmpf9oUul/kit214-g0-input-4c0dffa218a/lipidsearch_lcms_pos.txt
+::notice title=INFO::Read 12 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+KIT-214 G0 a2_lipid_canonical C4 ^ITSD|_d[0-9]+$ error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: LipidName, LipidClass
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name') 
+KIT-214 G0 fixture a2_metab_lc 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpf9oUul/kit214-g0-input-4c0d545a7716/lcms_pos_features.tsv
+::notice title=INFO::Read 5 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_neg_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+KIT-214 G0 a2_metab_lc C4 ^ITSD|_d[0-9]+$ error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name') 
+KIT-214 G0: rows 841 fixtures 23 failed FALSE 

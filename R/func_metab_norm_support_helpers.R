@@ -100,6 +100,8 @@ buildNormConfig <- function(input) {
 #' @param metabolite_id_col Column name for metabolite IDs
 #' @param annotation_cols Character vector of columns to search for IS patterns
 #' @param is_patterns Named list of regex patterns for IS detection
+#' @param sample_columns The sample columns to summarise (KIT-214: the design's samples that hold numbers); NULL counts
+#'   every numeric column except the id column, as before.
 #'
 #' @return Data frame with columns: feature_id, annotation, mean_intensity, cv_percent, is_candidate
 #'
@@ -118,6 +120,7 @@ buildItsdSelectionTable <- function(
         , isd = "(?i)^is_|_is$|^isd_|_isd$"
         , labeled = "(?i)_d[0-9]+$|_13c|_15n|deuterated|labeled"
     )
+    , sample_columns = NULL
 ) {
     # --- Input validation ---
     stopifnot(
@@ -129,6 +132,8 @@ buildItsdSelectionTable <- function(
     # --- Identify sample columns (numeric) vs metadata columns ---
     numeric_cols <- names(assay_data)[vapply(assay_data, is.numeric, logical(1))]
     sample_cols <- setdiff(numeric_cols, metabolite_id_col)
+    # KIT-214 (E-8): the design's samples that hold numbers, when the panel gives them.
+    if (!is.null(sample_columns)) sample_cols <- intersect(as.character(sample_columns), numeric_cols)
 
     if (length(sample_cols) == 0) {
         warning("No sample columns found in assay_data")

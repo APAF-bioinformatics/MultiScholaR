@@ -1706,10 +1706,12 @@ test_that("buildProtEnrichAllContrastResults collates and standardizes gprofiler
   expect_equal(contrast_results$directionality, c("positive", "negative"))
   expect_true(all(contrast_results$analysis_method == "gprofiler2"))
   expect_equal(contrast_results$Description, c("up term", "down term"))
-  expect_equal(contrast_results$pvalue, c(0.001, 0.01))
+  # KIT-226 (VAL-196): g:Profiler gives only the adjusted value, shown once as p.adjust; Count is intersection_size,
+  # which this fixture lacks.
+  expect_null(contrast_results$pvalue)
   expect_equal(contrast_results$p.adjust, c(0.001, 0.01))
-  expect_equal(contrast_results$qvalue, c(0.001, 0.01))
-  expect_equal(contrast_results$Count, c(5, 3))
+  expect_null(contrast_results$qvalue)
+  expect_null(contrast_results$Count)
   expect_equal(contrast_results$data_source, c("GO:BP", "REAC"))
   expect_null(collated$contrast_a$clusterprofiler_results)
   expect_null(collated$contrast_a$stringdb_results)

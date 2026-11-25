@@ -641,7 +641,7 @@ validateWorkflowAnalysisRecord <- function(record) {
 }
 
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`): for
+#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -651,9 +651,6 @@ validateWorkflowAnalysisRecord <- function(record) {
 workflowReplayRuleMarkers <- list(
     missing_value_comparison = list(option = "MultiScholaR.missing_filter_rule", current = "counts",
         earlier = "rounded_percentage"),
-    # KIT-190 (VAL-82): lipidomics and metabolomics legacy RUV choose controls by the ANOVA on the grouping column
-    # ("kept"); records made before chose the first rows ("dropped").
-    ruv_control_grouping = list(option = "MultiScholaR.ruv_control_grouping", current = "kept", earlier = "dropped"),
     # KIT-205: the enrichment background is each comparison's tested rows (`enrichmentTestedRows`); earlier, every row.
     enrichment_background = list(option = "MultiScholaR.enrichment_background", current = "tested",
         earlier = "all_rows"),
@@ -661,6 +658,16 @@ workflowReplayRuleMarkers <- list(
     # made before counted every numeric column of the assay ("numeric_columns").
     intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
         earlier = "numeric_columns"),
+    # KIT-214 (VAL-173 (1)): lipid and metabolite duplicate resolution averages the design's samples ("design"); records
+    # made before averaged every numeric column of the assay ("numeric_columns").
+    duplicate_resolution_samples = list(option = "MultiScholaR.duplicate_resolution_samples", current = "design",
+        earlier = "numeric_columns"),
+    # KIT-224 (decision M8): the lipidomics and metabolomics legacy RUV-III-C correction keeps each feature's level
+    # ("restored"); records made before kept the shift by a constant per feature ("shifted").
+    ruv_feature_levels = list(option = "MultiScholaR.ruv_feature_levels", current = "restored", earlier = "shifted"),
+    # KIT-190 (VAL-82): lipidomics and metabolomics legacy RUV choose controls by the ANOVA on the grouping column
+    # ("kept"); records made before chose the first rows ("dropped").
+    ruv_control_grouping = list(option = "MultiScholaR.ruv_control_grouping", current = "kept", earlier = "dropped"),
     # KIT-190 (VAL-182, VAL-235): the legacy lipidomics and metabolomics Automatic k is bounded by the sample-size cap
     # ("sample_size"); records made before used the sweep's k unbounded ("none").
     ruv_k_bound = list(option = "MultiScholaR.ruv_k_bound", current = "sample_size", earlier = "none"))

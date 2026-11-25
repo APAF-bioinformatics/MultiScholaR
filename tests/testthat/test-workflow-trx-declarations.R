@@ -339,10 +339,25 @@ test_that("KIT-095: every trx worker step and publication operation completes th
   volcano <- act("trx_volcano_page", list(contrast = names(da$manifest$results)[[1L]], assay = "counts", qvalue = 0.05))
   expect_true(isSavedWorkflowReference(volcano$display$page) || (is.character(volcano$display$message) && nzchar(volcano$display$message)))
   expect_true(isSavedWorkflowReference(volcano$display$page), info = volcano$display$message)
+  # KIT-224 (OD-2, the owner's decision of 2026-11-25): the file keeps each gene's TMM logCPM level, so it is no longer
+  # the KIT-040 notebook's file (`hash_of("results/transcriptomics/transcriptomics_normalized_data.tsv")`); it is the
+  # export's newY plus one constant per gene.
+  export_inputs <- withWorkflowStateScope(owner, function() {
+    export <- owner$.context$snapshot$exports$trx_ruviii_export
+    list(new_y = t(hydrateSavedWorkflowEntity(owner$.context$store, export$reference)$value$newY),
+      log_cpm = trxSavedMatrix(owner, trxProductValue(owner, trxStateRuvs(owner, export$source)$logcpm)$log_cpm))
+  })
   for (path in file.path(c(fixture$paths$integration_dir, file.path(fixture$paths$integration_dir, "Transcriptomics")), "transcriptomics_normalized_data.tsv")) {
     dir.create(dirname(path), showWarnings = FALSE)
     act("trx_integration_export", list(path = path, state_name = owner$current_state))
-    expect_identical(digest::digest(file = path, algo = "sha256"), hash_of("results/transcriptomics/transcriptomics_normalized_data.tsv"))
+    written <- as.data.frame(vroom::vroom(path, show_col_types = FALSE))
+    file_values <- t(as.matrix(written[-1L]))
+    colnames(file_values) <- written$Run
+    genes <- rownames(file_values)
+    runs <- colnames(file_values)
+    expect_lt(max(abs(rowMeans(file_values) - rowMeans(export_inputs$log_cpm[genes, runs, drop = FALSE]))), 1e-9)
+    within <- file_values - export_inputs$new_y[genes, runs, drop = FALSE]
+    expect_lt(max(apply(within, 1L, function(x) diff(range(x)))), 1e-9)
   }
   staged <- new.env()
   collect <- function(workflowData, normData, input) list(r6_current_state_name = owner$current_state, current_s4_object = NULL, omic_type = "transcriptomics")

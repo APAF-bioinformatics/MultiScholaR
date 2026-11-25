@@ -1,0 +1,842 @@
+fixture	site	variant	assay	key	value
+metab_msdial	columns		LCMS_Pos	id_column	Alignment ID
+metab_msdial	columns		LCMS_Pos	annotation_column	Name
+metab_msdial	columns		LCMS_Pos	columns	Alignment ID:numeric;Name:character;ctrl_1:numeric;ctrl_2:numeric;treat_1:numeric;treat_2:numeric
+metab_msdial	columns		LCMS_Pos	design_samples	ctrl_1;ctrl_2;treat_1;treat_2
+metab_msdial	C2			number_of_samples	5
+metab_msdial	C3	frame	LCMS_Pos	Samples	5
+metab_msdial	C3	frame	LCMS_Pos	Missingness	0
+metab_msdial	C5		LCMS_Pos	row:7	48400|0.377219392221189
+metab_msdial	C5		LCMS_Pos	row:8	32050|0.402806380260782
+metab_msdial	C5		LCMS_Pos	row:5	23700|38.2658008402156
+metab_msdial	C5		LCMS_Pos	row:3	53950|38.424635496608
+metab_msdial	C5		LCMS_Pos	row:1	40500|38.4926577743754
+metab_msdial	C5		LCMS_Pos	row:6	14650|38.6233938351863
+metab_msdial	C5		LCMS_Pos	row:2	29150|38.6301839333618
+metab_msdial	C5		LCMS_Pos	row:4	33675|39.1804981206085
+metab_msdial	C3	shell	LCMS_Pos	Samples	5
+metab_msdial	C3	shell	LCMS_Pos	Missingness	0
+metab_msdial	C4	ITSD	LCMS_Pos	mean:ITSD_Caffeine_d9	38721.4
+metab_msdial	C4	ITSD	LCMS_Pos	cv:ITSD_Caffeine_d9	55.8930852183853
+metab_msdial	C4	ITSD	LCMS_Pos	mean:ITSD_Leucine_d10	25641.6
+metab_msdial	C4	ITSD	LCMS_Pos	cv:ITSD_Leucine_d10	55.885959456272
+metab_msdial	C4	ITSD		cv_over_30	2
+metab_msdial	C4	ITSD		result_text_cv_line	  IS with CV > 30%: 2
+metab_msdial	C4	ITSD		long_samples	Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2
+metab_msdial	C1	whole	LCMS_Pos	n_duplicated_ids	0
+metab_msdial	C1	whole	LCMS_Pos	n_rows	8
+metab_msdial	C1	whole	LCMS_Pos	kept_pairs_digest	734a68700e63ed2622ef6dcd43f1ce967c9b5b52392bed26ad94954536a967f2
+metab_msdial	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+metab_msdial	C1	partitioned	LCMS_Pos	n_rows	8
+metab_msdial	C1	partitioned	LCMS_Pos	kept_pairs_digest	734a68700e63ed2622ef6dcd43f1ce967c9b5b52392bed26ad94954536a967f2
+metab_msdial_id0	columns		LCMS_Pos	id_column	Alignment ID
+metab_msdial_id0	columns		LCMS_Pos	annotation_column	Name
+metab_msdial_id0	columns		LCMS_Pos	columns	Alignment ID:numeric;Name:character;ctrl_1:numeric;ctrl_2:numeric;treat_1:numeric;treat_2:numeric
+metab_msdial_id0	columns		LCMS_Pos	design_samples	ctrl_1;ctrl_2;treat_1;treat_2
+metab_msdial_id0	C2			number_of_samples	5
+metab_msdial_id0	C3	frame	LCMS_Pos	Samples	5
+metab_msdial_id0	C3	frame	LCMS_Pos	Missingness	2.5
+metab_msdial_id0	C5		LCMS_Pos	row:6	48400|0.377219392221189
+metab_msdial_id0	C5		LCMS_Pos	row:7	32050|0.402806380260782
+metab_msdial_id0	C5		LCMS_Pos	row:4	23700|38.2658008402156
+metab_msdial_id0	C5		LCMS_Pos	row:2	53950|38.424635496608
+metab_msdial_id0	C5		LCMS_Pos	row:0	40500|38.4926577743754
+metab_msdial_id0	C5		LCMS_Pos	row:5	14650|38.6233938351863
+metab_msdial_id0	C5		LCMS_Pos	row:1	29150|38.6301839333618
+metab_msdial_id0	C5		LCMS_Pos	row:3	33675|39.1804981206085
+metab_msdial_id0	C3	shell	LCMS_Pos	Samples	5
+metab_msdial_id0	C3	shell	LCMS_Pos	Missingness	2.5
+metab_msdial_id0	C4	ITSD	LCMS_Pos	mean:ITSD_Caffeine_d9	38721.2
+metab_msdial_id0	C4	ITSD	LCMS_Pos	cv:ITSD_Caffeine_d9	55.894528840565
+metab_msdial_id0	C4	ITSD	LCMS_Pos	mean:ITSD_Leucine_d10	25641.4
+metab_msdial_id0	C4	ITSD	LCMS_Pos	cv:ITSD_Leucine_d10	55.8881394148676
+metab_msdial_id0	C4	ITSD		cv_over_30	2
+metab_msdial_id0	C4	ITSD		result_text_cv_line	  IS with CV > 30%: 2
+metab_msdial_id0	C4	ITSD		long_samples	Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2
+metab_msdial_id0	C1	whole	LCMS_Pos	n_duplicated_ids	0
+metab_msdial_id0	C1	whole	LCMS_Pos	n_rows	8
+metab_msdial_id0	C1	whole	LCMS_Pos	kept_pairs_digest	ec49193670e6b1d3827dc3ae2b5ae3abfa729251edf15f8466b7278fe701cd21
+metab_msdial_id0	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+metab_msdial_id0	C1	partitioned	LCMS_Pos	n_rows	8
+metab_msdial_id0	C1	partitioned	LCMS_Pos	kept_pairs_digest	ec49193670e6b1d3827dc3ae2b5ae3abfa729251edf15f8466b7278fe701cd21
+metab_msdial_dup	columns		LCMS_Pos	id_column	Alignment ID
+metab_msdial_dup	columns		LCMS_Pos	annotation_column	Name
+metab_msdial_dup	columns		LCMS_Pos	columns	Alignment ID:numeric;Name:character;ctrl_1:numeric;ctrl_2:numeric;treat_1:numeric;treat_2:numeric
+metab_msdial_dup	columns		LCMS_Pos	design_samples	ctrl_1;ctrl_2;treat_1;treat_2
+metab_msdial_dup	C2			number_of_samples	5
+metab_msdial_dup	C3	frame	LCMS_Pos	Samples	5
+metab_msdial_dup	C3	frame	LCMS_Pos	Missingness	0
+metab_msdial_dup	C5		LCMS_Pos	row:7	48400|0.377219392221189
+metab_msdial_dup	C5		LCMS_Pos	row:8	32050|0.402806380260782
+metab_msdial_dup	C5		LCMS_Pos	row:5	23700|38.2658008402156
+metab_msdial_dup	C5		LCMS_Pos	row:3	53950|38.424635496608
+metab_msdial_dup	C5		LCMS_Pos	row:1	40500|38.4926577743754
+metab_msdial_dup	C5		LCMS_Pos	row:1	20250|38.4926577743754
+metab_msdial_dup	C5		LCMS_Pos	row:6	14650|38.6233938351863
+metab_msdial_dup	C5		LCMS_Pos	row:2	29150|38.6301839333618
+metab_msdial_dup	C5		LCMS_Pos	row:4	33675|39.1804981206085
+metab_msdial_dup	C3	shell	LCMS_Pos	Samples	5
+metab_msdial_dup	C3	shell	LCMS_Pos	Missingness	0
+metab_msdial_dup	C4	ITSD	LCMS_Pos	mean:ITSD_Caffeine_d9	38721.4
+metab_msdial_dup	C4	ITSD	LCMS_Pos	cv:ITSD_Caffeine_d9	55.8930852183853
+metab_msdial_dup	C4	ITSD	LCMS_Pos	mean:ITSD_Leucine_d10	25641.6
+metab_msdial_dup	C4	ITSD	LCMS_Pos	cv:ITSD_Leucine_d10	55.885959456272
+metab_msdial_dup	C4	ITSD		cv_over_30	2
+metab_msdial_dup	C4	ITSD		result_text_cv_line	  IS with CV > 30%: 2
+metab_msdial_dup	C4	ITSD		long_samples	Alignment ID;ctrl_1;ctrl_2;treat_1;treat_2
+metab_msdial_dup	C1	whole	LCMS_Pos	n_duplicated_ids	1
+metab_msdial_dup	C1	whole	LCMS_Pos	n_rows	8
+metab_msdial_dup	C1	whole	LCMS_Pos	kept_pairs_digest	734a68700e63ed2622ef6dcd43f1ce967c9b5b52392bed26ad94954536a967f2
+metab_msdial_dup	C1	whole	LCMS_Pos	kept_row:1	1
+metab_msdial_dup	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+metab_msdial_dup	C1	partitioned	LCMS_Pos	n_rows	8
+metab_msdial_dup	C1	partitioned	LCMS_Pos	kept_pairs_digest	734a68700e63ed2622ef6dcd43f1ce967c9b5b52392bed26ad94954536a967f2
+metab_msdial_dup	C1	partitioned	LCMS_Pos	kept_row:1	1
+lipid_msdial	columns		LCMS_Pos	id_column	Peak ID
+lipid_msdial	columns		LCMS_Pos	annotation_column	Name
+lipid_msdial	columns		LCMS_Pos	columns	Peak ID:numeric;Name:character;wt_1:numeric;wt_2:numeric;ko_1:numeric;ko_2:numeric
+lipid_msdial	columns		LCMS_Pos	design_samples	wt_1;wt_2;ko_1;ko_2
+lipid_msdial	C2			number_of_samples	5
+lipid_msdial	C3	frame	LCMS_Pos	Samples	5
+lipid_msdial	C3	frame	LCMS_Pos	Missingness	13.3
+lipid_msdial	C5		LCMS_Pos	row:3	187|31.0298696821476
+lipid_msdial	C5		LCMS_Pos	row:2	177.333333333333|32.3957862893148
+lipid_msdial	C5		LCMS_Pos	row:1	150.5|38.3640621914574
+lipid_msdial	C3	shell	LCMS_Pos	Samples	5
+lipid_msdial	C3	shell	LCMS_Pos	Missingness	13.3
+lipid_msdial	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: Peak ID, Name Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+lipid_msdial	C1	whole	LCMS_Pos	n_duplicated_ids	0
+lipid_msdial	C1	whole	LCMS_Pos	n_rows	3
+lipid_msdial	C1	whole	LCMS_Pos	kept_pairs_digest	8a54235d921ec1402585fa6a74e6eb30a3beb01ac1cd75e45ef48794f70f31a4
+lipid_msdial	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+lipid_msdial	C1	partitioned	LCMS_Pos	n_rows	3
+lipid_msdial	C1	partitioned	LCMS_Pos	kept_pairs_digest	8a54235d921ec1402585fa6a74e6eb30a3beb01ac1cd75e45ef48794f70f31a4
+lipid_msdial_dup_import	columns		LCMS_Pos	id_column	Peak ID
+lipid_msdial_dup_import	columns		LCMS_Pos	annotation_column	Name
+lipid_msdial_dup_import	columns		LCMS_Pos	columns	Peak ID:character;Name:character;wt_1:numeric;wt_2:numeric;ko_1:numeric;ko_2:numeric
+lipid_msdial_dup_import	columns		LCMS_Pos	design_samples	wt_1;wt_2;ko_1;ko_2
+lipid_msdial_dup_import	C2			number_of_samples	4
+lipid_msdial_dup_import	C3	frame	LCMS_Pos	Samples	4
+lipid_msdial_dup_import	C3	frame	LCMS_Pos	Missingness	16.7
+lipid_msdial_dup_import	C5		LCMS_Pos	row:P003	187|31.0298696821476
+lipid_msdial_dup_import	C5		LCMS_Pos	row:P001	177.333333333333|32.3957862893148
+lipid_msdial_dup_import	C5		LCMS_Pos	row:P001	150.5|38.3640621914574
+lipid_msdial_dup_import	C3	shell	LCMS_Pos	Samples	4
+lipid_msdial_dup_import	C3	shell	LCMS_Pos	Missingness	16.7
+lipid_msdial_dup_import	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: Peak ID, Name Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+lipid_msdial_dup_import	C1	whole	LCMS_Pos	n_duplicated_ids	1
+lipid_msdial_dup_import	C1	whole	LCMS_Pos	n_rows	2
+lipid_msdial_dup_import	C1	whole	LCMS_Pos	kept_pairs_digest	0c57546c508e8cce8fccce74be99bb43b92eb0079ccf2ec7db6ce81e32ee857d
+lipid_msdial_dup_import	C1	whole	LCMS_Pos	kept_row:P001	2
+lipid_msdial_dup_import	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+lipid_msdial_dup_import	C1	partitioned	LCMS_Pos	n_rows	2
+lipid_msdial_dup_import	C1	partitioned	LCMS_Pos	kept_pairs_digest	0c57546c508e8cce8fccce74be99bb43b92eb0079ccf2ec7db6ce81e32ee857d
+lipid_msdial_dup_import	C1	partitioned	LCMS_Pos	kept_row:P001	2
+lipid_msdial_dup_code	columns		LCMS_Pos	id_column	Peak ID
+lipid_msdial_dup_code	columns		LCMS_Pos	annotation_column	Name
+lipid_msdial_dup_code	columns		LCMS_Pos	columns	Peak ID:character;Name:character;RT (min):numeric;Precursor m/z:numeric;Adduct:character;Formula:character;Ontology:character;Ion mode:character;Total Score:numeric;WT_1:numeric;WT_2:numeric;KO_1:numeric;KO_2:numeric
+lipid_msdial_dup_code	columns		LCMS_Pos	design_samples	WT_1;WT_2;KO_1;KO_2
+lipid_msdial_dup_code	C2			number_of_samples	7
+lipid_msdial_dup_code	C3	frame	LCMS_Pos	Samples	7
+lipid_msdial_dup_code	C3	frame	LCMS_Pos	Missingness	9.5
+lipid_msdial_dup_code	C5		LCMS_Pos	row:P003	224.504166666667|110.964896991743
+lipid_msdial_dup_code	C5		LCMS_Pos	row:P001	208.047857142857|121.702852782083
+lipid_msdial_dup_code	C5		LCMS_Pos	row:P001	213.497857142857|142.37615883432
+lipid_msdial_dup_code	C3	shell	LCMS_Pos	Samples	7
+lipid_msdial_dup_code	C3	shell	LCMS_Pos	Missingness	9.5
+lipid_msdial_dup_code	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: Peak ID, Name Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+lipid_msdial_dup_code	C1	whole	LCMS_Pos	n_duplicated_ids	1
+lipid_msdial_dup_code	C1	whole	LCMS_Pos	n_rows	2
+lipid_msdial_dup_code	C1	whole	LCMS_Pos	kept_pairs_digest	0c57546c508e8cce8fccce74be99bb43b92eb0079ccf2ec7db6ce81e32ee857d
+lipid_msdial_dup_code	C1	whole	LCMS_Pos	kept_row:P001	2
+lipid_msdial_dup_code	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+lipid_msdial_dup_code	C1	partitioned	LCMS_Pos	n_rows	2
+lipid_msdial_dup_code	C1	partitioned	LCMS_Pos	kept_pairs_digest	0c57546c508e8cce8fccce74be99bb43b92eb0079ccf2ec7db6ce81e32ee857d
+lipid_msdial_dup_code	C1	partitioned	LCMS_Pos	kept_row:P001	2
+module_ci_lipid	columns		LCMS_Pos	id_column	lipid_id
+module_ci_lipid	columns		LCMS_Pos	annotation_column	lipid
+module_ci_lipid	columns		LCMS_Pos	columns	lipid_id:character;lipid:character;LipidClass:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+module_ci_lipid	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+module_ci_lipid	columns		LCMS_Neg	id_column	lipid_id
+module_ci_lipid	columns		LCMS_Neg	annotation_column	lipid
+module_ci_lipid	columns		LCMS_Neg	columns	lipid_id:character;lipid:character;LipidClass:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+module_ci_lipid	columns		LCMS_Neg	design_samples	S1;S2;S3;S4
+module_ci_lipid	C2			number_of_samples	4
+module_ci_lipid	C3	frame	LCMS_Pos	Samples	4
+module_ci_lipid	C3	frame	LCMS_Pos	Missingness	9.6
+module_ci_lipid	C3	frame	LCMS_Neg	Samples	4
+module_ci_lipid	C3	frame	LCMS_Neg	Missingness	1.9
+module_ci_lipid	C5		LCMS_Pos	row:IS_PC_34_1	1001.25|0.852846505697844
+module_ci_lipid	C5		LCMS_Pos	row:IS_PC_34_1_ALT	901.25|0.947475798979158
+module_ci_lipid	C5		LCMS_Pos	row:L_NAME_IS	515|2.50678533735108
+module_ci_lipid	C5		LCMS_Pos	row:L_missing	100|0
+module_ci_lipid	C5		LCMS_Pos	row:L_TIE	50|0
+module_ci_lipid	C5		LCMS_Pos	row:L_TIE	50|0
+module_ci_lipid	C5		LCMS_Pos	row:L_ANN_B	83|3.11082999695375
+module_ci_lipid	C5		LCMS_Pos	row:L_DUP	97.5|6.62048435249131
+module_ci_lipid	C5		LCMS_Pos	row:L_keep	115|11.2260386846592
+module_ci_lipid	C5		LCMS_Pos	row:L_ANN_A	23|11.2260386846592
+module_ci_lipid	C5		LCMS_Pos	row:L_DUP	17.5|36.8855556781659
+module_ci_lipid	C5		LCMS_Pos	row:L_boundary	55|94.475498594666
+module_ci_lipid	C5		LCMS_Pos	row:L_zero	0|NA
+module_ci_lipid	C5		LCMS_Neg	row:IS_PC_34_1	1006.25|0.848608759085681
+module_ci_lipid	C5		LCMS_Neg	row:IS_PC_34_1_ALT	906.25|0.942248346295136
+module_ci_lipid	C5		LCMS_Neg	row:L_NAME_IS	520|2.48268163218424
+module_ci_lipid	C5		LCMS_Neg	row:L_zero	5|0
+module_ci_lipid	C5		LCMS_Neg	row:L_missing	105|0
+module_ci_lipid	C5		LCMS_Neg	row:L_TIE	55|0
+module_ci_lipid	C5		LCMS_Neg	row:L_TIE	55|0
+module_ci_lipid	C5		LCMS_Neg	row:L_ANN_B	88|2.93407829258138
+module_ci_lipid	C5		LCMS_Neg	row:L_DUP	102.5|6.29753389627222
+module_ci_lipid	C5		LCMS_Neg	row:L_ANN_A	28|9.22138891954147
+module_ci_lipid	C5		LCMS_Neg	row:L_keep	120|10.7582870727984
+module_ci_lipid	C5		LCMS_Neg	row:L_DUP	22.5|28.6887655274623
+module_ci_lipid	C5		LCMS_Neg	row:L_boundary	60|86.6025403784439
+module_ci_lipid	C3	shell	LCMS_Pos	Samples	4
+module_ci_lipid	C3	shell	LCMS_Pos	Missingness	9.6
+module_ci_lipid	C3	shell	LCMS_Neg	Samples	4
+module_ci_lipid	C3	shell	LCMS_Neg	Missingness	1.9
+module_ci_lipid	C4	^IS_	LCMS_Pos	mean:IS_PC_34_1	1001.25
+module_ci_lipid	C4	^IS_	LCMS_Pos	cv:IS_PC_34_1	0.852846505697844
+module_ci_lipid	C4	^IS_	LCMS_Pos	mean:IS_PC_34_1_ALT	901.25
+module_ci_lipid	C4	^IS_	LCMS_Pos	cv:IS_PC_34_1_ALT	0.947475798979158
+module_ci_lipid	C4	^IS_	LCMS_Neg	mean:IS_PC_34_1	1006.25
+module_ci_lipid	C4	^IS_	LCMS_Neg	cv:IS_PC_34_1	0.848608759085681
+module_ci_lipid	C4	^IS_	LCMS_Neg	mean:IS_PC_34_1_ALT	906.25
+module_ci_lipid	C4	^IS_	LCMS_Neg	cv:IS_PC_34_1_ALT	0.942248346295136
+module_ci_lipid	C4	^IS_		cv_over_30	0
+module_ci_lipid	C4	^IS_		result_text_cv_line	  IS with CV > 30%: 0
+module_ci_lipid	C4	^IS_		long_samples	S1;S2;S3;S4
+module_ci_lipid	C1	whole	LCMS_Pos	n_duplicated_ids	2
+module_ci_lipid	C1	whole	LCMS_Pos	n_rows	11
+module_ci_lipid	C1	whole	LCMS_Pos	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+module_ci_lipid	C1	whole	LCMS_Pos	kept_row:L_DUP	6
+module_ci_lipid	C1	whole	LCMS_Pos	kept_row:L_TIE	7
+module_ci_lipid	C1	whole	LCMS_Neg	n_duplicated_ids	2
+module_ci_lipid	C1	whole	LCMS_Neg	n_rows	11
+module_ci_lipid	C1	whole	LCMS_Neg	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+module_ci_lipid	C1	whole	LCMS_Neg	kept_row:L_DUP	6
+module_ci_lipid	C1	whole	LCMS_Neg	kept_row:L_TIE	7
+module_ci_lipid	C1	partitioned	LCMS_Pos	n_duplicated_ids	2
+module_ci_lipid	C1	partitioned	LCMS_Pos	n_rows	11
+module_ci_lipid	C1	partitioned	LCMS_Pos	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+module_ci_lipid	C1	partitioned	LCMS_Pos	kept_row:L_DUP	6
+module_ci_lipid	C1	partitioned	LCMS_Pos	kept_row:L_TIE	7
+module_ci_lipid	C1	partitioned	LCMS_Neg	n_duplicated_ids	2
+module_ci_lipid	C1	partitioned	LCMS_Neg	n_rows	11
+module_ci_lipid	C1	partitioned	LCMS_Neg	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+module_ci_lipid	C1	partitioned	LCMS_Neg	kept_row:L_DUP	6
+module_ci_lipid	C1	partitioned	LCMS_Neg	kept_row:L_TIE	7
+module_ci_metab	columns		LCMS_Pos	id_column	database_identifier
+module_ci_metab	columns		LCMS_Pos	annotation_column	Name
+module_ci_metab	columns		LCMS_Pos	columns	database_identifier:character;metabolite:character;Name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+module_ci_metab	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+module_ci_metab	columns		LCMS_Neg	id_column	database_identifier
+module_ci_metab	columns		LCMS_Neg	annotation_column	Name
+module_ci_metab	columns		LCMS_Neg	columns	database_identifier:character;metabolite:character;Name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+module_ci_metab	columns		LCMS_Neg	design_samples	S1;S2;S3;S4
+module_ci_metab	C2			number_of_samples	4
+module_ci_metab	C3	frame	LCMS_Pos	Samples	4
+module_ci_metab	C3	frame	LCMS_Pos	Missingness	9.6
+module_ci_metab	C3	frame	LCMS_Neg	Samples	4
+module_ci_metab	C3	frame	LCMS_Neg	Missingness	1.9
+module_ci_metab	C5		LCMS_Pos	row:IS_A	1001.25|0.852846505697844
+module_ci_metab	C5		LCMS_Pos	row:IS_A2	901.25|0.947475798979158
+module_ci_metab	C5		LCMS_Pos	row:M_NAME_IS	515|2.50678533735108
+module_ci_metab	C5		LCMS_Pos	row:M_missing	100|0
+module_ci_metab	C5		LCMS_Pos	row:M_TIE	50|0
+module_ci_metab	C5		LCMS_Pos	row:M_TIE	50|0
+module_ci_metab	C5		LCMS_Pos	row:M_ANN_B	83|3.11082999695375
+module_ci_metab	C5		LCMS_Pos	row:M_DUP	97.5|6.62048435249131
+module_ci_metab	C5		LCMS_Pos	row:M_keep	115|11.2260386846592
+module_ci_metab	C5		LCMS_Pos	row:M_ANN_A	23|11.2260386846592
+module_ci_metab	C5		LCMS_Pos	row:M_DUP	17.5|36.8855556781659
+module_ci_metab	C5		LCMS_Pos	row:M_boundary	55|94.475498594666
+module_ci_metab	C5		LCMS_Pos	row:M_zero	0|NA
+module_ci_metab	C5		LCMS_Neg	row:IS_A	1006.25|0.848608759085681
+module_ci_metab	C5		LCMS_Neg	row:IS_A2	906.25|0.942248346295136
+module_ci_metab	C5		LCMS_Neg	row:M_NAME_IS	520|2.48268163218424
+module_ci_metab	C5		LCMS_Neg	row:M_zero	5|0
+module_ci_metab	C5		LCMS_Neg	row:M_missing	105|0
+module_ci_metab	C5		LCMS_Neg	row:M_TIE	55|0
+module_ci_metab	C5		LCMS_Neg	row:M_TIE	55|0
+module_ci_metab	C5		LCMS_Neg	row:M_ANN_B	88|2.93407829258138
+module_ci_metab	C5		LCMS_Neg	row:M_DUP	102.5|6.29753389627222
+module_ci_metab	C5		LCMS_Neg	row:M_ANN_A	28|9.22138891954147
+module_ci_metab	C5		LCMS_Neg	row:M_keep	120|10.7582870727984
+module_ci_metab	C5		LCMS_Neg	row:M_DUP	22.5|28.6887655274623
+module_ci_metab	C5		LCMS_Neg	row:M_boundary	60|86.6025403784439
+module_ci_metab	C3	shell	LCMS_Pos	Samples	4
+module_ci_metab	C3	shell	LCMS_Pos	Missingness	9.6
+module_ci_metab	C3	shell	LCMS_Neg	Samples	4
+module_ci_metab	C3	shell	LCMS_Neg	Missingness	1.9
+module_ci_metab	C4	^IS_	LCMS_Pos	mean:IS_A	1001.25
+module_ci_metab	C4	^IS_	LCMS_Pos	cv:IS_A	0.852846505697844
+module_ci_metab	C4	^IS_	LCMS_Pos	mean:IS_A2	901.25
+module_ci_metab	C4	^IS_	LCMS_Pos	cv:IS_A2	0.947475798979158
+module_ci_metab	C4	^IS_	LCMS_Neg	mean:IS_A	1006.25
+module_ci_metab	C4	^IS_	LCMS_Neg	cv:IS_A	0.848608759085681
+module_ci_metab	C4	^IS_	LCMS_Neg	mean:IS_A2	906.25
+module_ci_metab	C4	^IS_	LCMS_Neg	cv:IS_A2	0.942248346295136
+module_ci_metab	C4	^IS_		cv_over_30	0
+module_ci_metab	C4	^IS_		result_text_cv_line	  IS with CV > 30%: 0
+module_ci_metab	C4	^IS_		long_samples	S1;S2;S3;S4
+module_ci_metab	C1	whole	LCMS_Pos	n_duplicated_ids	2
+module_ci_metab	C1	whole	LCMS_Pos	n_rows	11
+module_ci_metab	C1	whole	LCMS_Pos	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+module_ci_metab	C1	whole	LCMS_Pos	kept_row:M_DUP	6
+module_ci_metab	C1	whole	LCMS_Pos	kept_row:M_TIE	7
+module_ci_metab	C1	whole	LCMS_Neg	n_duplicated_ids	2
+module_ci_metab	C1	whole	LCMS_Neg	n_rows	11
+module_ci_metab	C1	whole	LCMS_Neg	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+module_ci_metab	C1	whole	LCMS_Neg	kept_row:M_DUP	6
+module_ci_metab	C1	whole	LCMS_Neg	kept_row:M_TIE	7
+module_ci_metab	C1	partitioned	LCMS_Pos	n_duplicated_ids	2
+module_ci_metab	C1	partitioned	LCMS_Pos	n_rows	11
+module_ci_metab	C1	partitioned	LCMS_Pos	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+module_ci_metab	C1	partitioned	LCMS_Pos	kept_row:M_DUP	6
+module_ci_metab	C1	partitioned	LCMS_Pos	kept_row:M_TIE	7
+module_ci_metab	C1	partitioned	LCMS_Neg	n_duplicated_ids	2
+module_ci_metab	C1	partitioned	LCMS_Neg	n_rows	11
+module_ci_metab	C1	partitioned	LCMS_Neg	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+module_ci_metab	C1	partitioned	LCMS_Neg	kept_row:M_DUP	6
+module_ci_metab	C1	partitioned	LCMS_Neg	kept_row:M_TIE	7
+e1_lipid	columns		LCMS_Pos	id_column	feature_id
+e1_lipid	columns		LCMS_Pos	annotation_column	name
+e1_lipid	columns		LCMS_Pos	columns	feature_id:integer;name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+e1_lipid	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+e1_lipid	C2			number_of_samples	5
+e1_lipid	C3	frame	LCMS_Pos	Samples	5
+e1_lipid	C3	frame	LCMS_Pos	Missingness	20
+e1_lipid	C5		LCMS_Pos	row:1000	60|0
+e1_lipid	C5		LCMS_Pos	row:2000	115|11.2260386846592
+e1_lipid	C5		LCMS_Pos	row:1000	50|NA
+e1_lipid	C3	shell	LCMS_Pos	Samples	5
+e1_lipid	C3	shell	LCMS_Pos	Missingness	20
+e1_lipid	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: feature_id, name Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+e1_lipid	C1	whole	LCMS_Pos	n_duplicated_ids	1
+e1_lipid	C1	whole	LCMS_Pos	n_rows	2
+e1_lipid	C1	whole	LCMS_Pos	kept_pairs_digest	76221682cab36e4d99e602d2369e4278129e4839cd8636e05b0967db8a523ba8
+e1_lipid	C1	whole	LCMS_Pos	kept_row:1000	1
+e1_lipid	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+e1_lipid	C1	partitioned	LCMS_Pos	n_rows	2
+e1_lipid	C1	partitioned	LCMS_Pos	kept_pairs_digest	76221682cab36e4d99e602d2369e4278129e4839cd8636e05b0967db8a523ba8
+e1_lipid	C1	partitioned	LCMS_Pos	kept_row:1000	1
+e1_metab	columns		LCMS_Pos	id_column	feature_id
+e1_metab	columns		LCMS_Pos	annotation_column	name
+e1_metab	columns		LCMS_Pos	columns	feature_id:integer;name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+e1_metab	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+e1_metab	C2			number_of_samples	5
+e1_metab	C3	frame	LCMS_Pos	Samples	5
+e1_metab	C3	frame	LCMS_Pos	Missingness	20
+e1_metab	C5		LCMS_Pos	row:1000	60|0
+e1_metab	C5		LCMS_Pos	row:2000	115|11.2260386846592
+e1_metab	C5		LCMS_Pos	row:1000	50|NA
+e1_metab	C3	shell	LCMS_Pos	Samples	5
+e1_metab	C3	shell	LCMS_Pos	Missingness	20
+e1_metab	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: feature_id, name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+e1_metab	C1	whole	LCMS_Pos	n_duplicated_ids	1
+e1_metab	C1	whole	LCMS_Pos	n_rows	2
+e1_metab	C1	whole	LCMS_Pos	kept_pairs_digest	76221682cab36e4d99e602d2369e4278129e4839cd8636e05b0967db8a523ba8
+e1_metab	C1	whole	LCMS_Pos	kept_row:1000	1
+e1_metab	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+e1_metab	C1	partitioned	LCMS_Pos	n_rows	2
+e1_metab	C1	partitioned	LCMS_Pos	kept_pairs_digest	76221682cab36e4d99e602d2369e4278129e4839cd8636e05b0967db8a523ba8
+e1_metab	C1	partitioned	LCMS_Pos	kept_row:1000	1
+e2_lipid	columns		LCMS_Pos	id_column	feature_id
+e2_lipid	columns		LCMS_Pos	annotation_column	mz
+e2_lipid	columns		LCMS_Pos	columns	feature_id:character;mz:numeric;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+e2_lipid	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+e2_lipid	C2			number_of_samples	5
+e2_lipid	C3	frame	LCMS_Pos	Samples	5
+e2_lipid	C3	frame	LCMS_Pos	Missingness	0
+e2_lipid	C5		LCMS_Pos	row:M1	11.6|7.7105792327579
+e2_lipid	C5		LCMS_Pos	row:M2	35.2|23.7177630281157
+e2_lipid	C5		LCMS_Pos	row:M1	28|143.747227124986
+e2_lipid	C3	shell	LCMS_Pos	Samples	5
+e2_lipid	C3	shell	LCMS_Pos	Missingness	0
+e2_lipid	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: feature_id, mz Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+e2_lipid	C1	whole	LCMS_Pos	n_duplicated_ids	1
+e2_lipid	C1	whole	LCMS_Pos	n_rows	2
+e2_lipid	C1	whole	LCMS_Pos	kept_pairs_digest	5b55dd30cc83b36cb0b1ca75aa1c7e9ae6506981d99ff4f5738174a6fd5b86ac
+e2_lipid	C1	whole	LCMS_Pos	kept_row:M1	1
+e2_lipid	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+e2_lipid	C1	partitioned	LCMS_Pos	n_rows	2
+e2_lipid	C1	partitioned	LCMS_Pos	kept_pairs_digest	5b55dd30cc83b36cb0b1ca75aa1c7e9ae6506981d99ff4f5738174a6fd5b86ac
+e2_lipid	C1	partitioned	LCMS_Pos	kept_row:M1	1
+e2_metab	columns		LCMS_Pos	id_column	feature_id
+e2_metab	columns		LCMS_Pos	annotation_column	mz
+e2_metab	columns		LCMS_Pos	columns	feature_id:character;mz:numeric;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+e2_metab	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+e2_metab	C2			number_of_samples	5
+e2_metab	C3	frame	LCMS_Pos	Samples	5
+e2_metab	C3	frame	LCMS_Pos	Missingness	0
+e2_metab	C5		LCMS_Pos	row:M1	11.6|7.7105792327579
+e2_metab	C5		LCMS_Pos	row:M2	35.2|23.7177630281157
+e2_metab	C5		LCMS_Pos	row:M1	28|143.747227124986
+e2_metab	C3	shell	LCMS_Pos	Samples	5
+e2_metab	C3	shell	LCMS_Pos	Missingness	0
+e2_metab	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: feature_id, mz Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+e2_metab	C1	whole	LCMS_Pos	n_duplicated_ids	1
+e2_metab	C1	whole	LCMS_Pos	n_rows	2
+e2_metab	C1	whole	LCMS_Pos	kept_pairs_digest	5b55dd30cc83b36cb0b1ca75aa1c7e9ae6506981d99ff4f5738174a6fd5b86ac
+e2_metab	C1	whole	LCMS_Pos	kept_row:M1	1
+e2_metab	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+e2_metab	C1	partitioned	LCMS_Pos	n_rows	2
+e2_metab	C1	partitioned	LCMS_Pos	kept_pairs_digest	5b55dd30cc83b36cb0b1ca75aa1c7e9ae6506981d99ff4f5738174a6fd5b86ac
+e2_metab	C1	partitioned	LCMS_Pos	kept_row:M1	1
+tie_lipid	columns		LCMS_Pos	id_column	feature_id
+tie_lipid	columns		LCMS_Pos	annotation_column	name
+tie_lipid	columns		LCMS_Pos	columns	feature_id:character;name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+tie_lipid	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+tie_lipid	C2			number_of_samples	4
+tie_lipid	C3	frame	LCMS_Pos	Samples	4
+tie_lipid	C3	frame	LCMS_Pos	Missingness	0
+tie_lipid	C5		LCMS_Pos	row:U	5|0
+tie_lipid	C5		LCMS_Pos	row:T	25|51.6397779494322
+tie_lipid	C5		LCMS_Pos	row:T	25|51.6397779494322
+tie_lipid	C3	shell	LCMS_Pos	Samples	4
+tie_lipid	C3	shell	LCMS_Pos	Missingness	0
+tie_lipid	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: feature_id, name Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+tie_lipid	C1	whole	LCMS_Pos	n_duplicated_ids	1
+tie_lipid	C1	whole	LCMS_Pos	n_rows	2
+tie_lipid	C1	whole	LCMS_Pos	kept_pairs_digest	6c5fa2cc1b5ccaa3a5eae9e2aad39917c7d5ed2995417846c4790d6f990b74d0
+tie_lipid	C1	whole	LCMS_Pos	kept_row:T	1
+tie_lipid	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+tie_lipid	C1	partitioned	LCMS_Pos	n_rows	2
+tie_lipid	C1	partitioned	LCMS_Pos	kept_pairs_digest	6c5fa2cc1b5ccaa3a5eae9e2aad39917c7d5ed2995417846c4790d6f990b74d0
+tie_lipid	C1	partitioned	LCMS_Pos	kept_row:T	1
+tie_metab	columns		LCMS_Pos	id_column	feature_id
+tie_metab	columns		LCMS_Pos	annotation_column	name
+tie_metab	columns		LCMS_Pos	columns	feature_id:character;name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+tie_metab	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+tie_metab	C2			number_of_samples	4
+tie_metab	C3	frame	LCMS_Pos	Samples	4
+tie_metab	C3	frame	LCMS_Pos	Missingness	0
+tie_metab	C5		LCMS_Pos	row:U	5|0
+tie_metab	C5		LCMS_Pos	row:T	25|51.6397779494322
+tie_metab	C5		LCMS_Pos	row:T	25|51.6397779494322
+tie_metab	C3	shell	LCMS_Pos	Samples	4
+tie_metab	C3	shell	LCMS_Pos	Missingness	0
+tie_metab	C4	ITSD		error	error: No internal standards found. Pattern: ITSD Columns searched: feature_id, name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+tie_metab	C1	whole	LCMS_Pos	n_duplicated_ids	1
+tie_metab	C1	whole	LCMS_Pos	n_rows	2
+tie_metab	C1	whole	LCMS_Pos	kept_pairs_digest	6c5fa2cc1b5ccaa3a5eae9e2aad39917c7d5ed2995417846c4790d6f990b74d0
+tie_metab	C1	whole	LCMS_Pos	kept_row:T	1
+tie_metab	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+tie_metab	C1	partitioned	LCMS_Pos	n_rows	2
+tie_metab	C1	partitioned	LCMS_Pos	kept_pairs_digest	6c5fa2cc1b5ccaa3a5eae9e2aad39917c7d5ed2995417846c4790d6f990b74d0
+tie_metab	C1	partitioned	LCMS_Pos	kept_row:T	1
+e9_metab	columns		LCMS_Pos	id_column	Name
+e9_metab	columns		LCMS_Pos	annotation_column	Average Mz
+e9_metab	columns		LCMS_Pos	columns	Name:character;Average Mz:numeric;ctrl_1:integer;ctrl_2:integer;treat_1:integer;treat_2:integer
+e9_metab	columns		LCMS_Pos	design_samples	ctrl_1;ctrl_2;treat_1;treat_2
+e9_metab	C2			number_of_samples	5
+e9_metab	C3	frame	LCMS_Pos	Samples	5
+e9_metab	C3	frame	LCMS_Pos	Missingness	0
+e9_metab	C5		LCMS_Pos	row:ITSD_Leucine_d10	25668.42864|55.5938407872928
+e9_metab	C5		LCMS_Pos	row:ITSD_Caffeine_d9	38760.6256|55.6102385043878
+e9_metab	C5		LCMS_Pos	row:Metab_002	11777.82912|68.5892492181685
+e9_metab	C5		LCMS_Pos	row:Metab_001	19000.81798|69.0420685889884
+e9_metab	C5		LCMS_Pos	row:Sucrose	23388.6248|69.0833780332006
+e9_metab	C5		LCMS_Pos	row:Glucose	32436.21466|69.4455277089888
+e9_metab	C5		LCMS_Pos	row:Glutamine	43189.41528|69.509815842729
+e9_metab	C5		LCMS_Pos	row:Fructose	26976.21466|69.8378163662072
+e9_metab	C3	shell	LCMS_Pos	Samples	5
+e9_metab	C3	shell	LCMS_Pos	Missingness	0
+e9_metab	C4	ITSD	LCMS_Pos	mean:ITSD_Caffeine_d9	38760.6256
+e9_metab	C4	ITSD	LCMS_Pos	cv:ITSD_Caffeine_d9	55.6102385043878
+e9_metab	C4	ITSD	LCMS_Pos	mean:ITSD_Leucine_d10	25668.42864
+e9_metab	C4	ITSD	LCMS_Pos	cv:ITSD_Leucine_d10	55.5938407872928
+e9_metab	C4	ITSD		cv_over_30	2
+e9_metab	C4	ITSD		result_text_cv_line	  IS with CV > 30%: 2
+e9_metab	C4	ITSD		long_samples	Average Mz;ctrl_1;ctrl_2;treat_1;treat_2
+e9_metab	C1	whole	LCMS_Pos	n_duplicated_ids	0
+e9_metab	C1	whole	LCMS_Pos	n_rows	8
+e9_metab	C1	whole	LCMS_Pos	kept_pairs_digest	cc2c8adf4778b4e9875a89264817407b6f90771a3a2f2d1116cd3f07452a1734
+e9_metab	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+e9_metab	C1	partitioned	LCMS_Pos	n_rows	8
+e9_metab	C1	partitioned	LCMS_Pos	kept_pairs_digest	cc2c8adf4778b4e9875a89264817407b6f90771a3a2f2d1116cd3f07452a1734
+text_sample_lipid	columns		LCMS_Pos	id_column	lipid_id
+text_sample_lipid	columns		LCMS_Pos	annotation_column	lipid
+text_sample_lipid	columns		LCMS_Pos	columns	lipid_id:character;lipid:character;LipidClass:character;S1:character;S2:numeric;S3:numeric;S4:numeric
+text_sample_lipid	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+text_sample_lipid	columns		LCMS_Neg	id_column	lipid_id
+text_sample_lipid	columns		LCMS_Neg	annotation_column	lipid
+text_sample_lipid	columns		LCMS_Neg	columns	lipid_id:character;lipid:character;LipidClass:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+text_sample_lipid	columns		LCMS_Neg	design_samples	S1;S2;S3;S4
+text_sample_lipid	C2			number_of_samples	3
+text_sample_lipid	C3	frame	LCMS_Pos	Samples	3
+text_sample_lipid	C3	frame	LCMS_Pos	Missingness	7.7
+text_sample_lipid	C3	frame	LCMS_Neg	Samples	4
+text_sample_lipid	C3	frame	LCMS_Neg	Missingness	1.9
+text_sample_lipid	C5		LCMS_Pos	row:IS_PC_34_1	1001.66666666667|1.03910116445897
+text_sample_lipid	C5		LCMS_Pos	row:IS_PC_34_1_ALT	901.666666666667|1.15434343778159
+text_sample_lipid	C5		LCMS_Pos	row:L_NAME_IS	520|1.92307692307692
+text_sample_lipid	C5		LCMS_Pos	row:L_missing	100|0
+text_sample_lipid	C5		LCMS_Pos	row:L_TIE	50|0
+text_sample_lipid	C5		LCMS_Pos	row:L_TIE	50|0
+text_sample_lipid	C5		LCMS_Pos	row:L_ANN_B	84|2.38095238095238
+text_sample_lipid	C5		LCMS_Pos	row:L_DUP	100|5
+text_sample_lipid	C5		LCMS_Pos	row:L_keep	120|8.33333333333333
+text_sample_lipid	C5		LCMS_Pos	row:L_ANN_A	24|8.33333333333333
+text_sample_lipid	C5		LCMS_Pos	row:L_DUP	20|25
+text_sample_lipid	C5		LCMS_Pos	row:L_boundary	70|74.230748895809
+text_sample_lipid	C5		LCMS_Pos	row:L_zero	0|NA
+text_sample_lipid	C5		LCMS_Neg	row:IS_PC_34_1	1006.25|0.848608759085681
+text_sample_lipid	C5		LCMS_Neg	row:IS_PC_34_1_ALT	906.25|0.942248346295136
+text_sample_lipid	C5		LCMS_Neg	row:L_NAME_IS	520|2.48268163218424
+text_sample_lipid	C5		LCMS_Neg	row:L_zero	5|0
+text_sample_lipid	C5		LCMS_Neg	row:L_missing	105|0
+text_sample_lipid	C5		LCMS_Neg	row:L_TIE	55|0
+text_sample_lipid	C5		LCMS_Neg	row:L_TIE	55|0
+text_sample_lipid	C5		LCMS_Neg	row:L_ANN_B	88|2.93407829258138
+text_sample_lipid	C5		LCMS_Neg	row:L_DUP	102.5|6.29753389627222
+text_sample_lipid	C5		LCMS_Neg	row:L_ANN_A	28|9.22138891954147
+text_sample_lipid	C5		LCMS_Neg	row:L_keep	120|10.7582870727984
+text_sample_lipid	C5		LCMS_Neg	row:L_DUP	22.5|28.6887655274623
+text_sample_lipid	C5		LCMS_Neg	row:L_boundary	60|86.6025403784439
+text_sample_lipid	C3	shell	LCMS_Pos	Samples	3
+text_sample_lipid	C3	shell	LCMS_Pos	Missingness	7.7
+text_sample_lipid	C3	shell	LCMS_Neg	Samples	4
+text_sample_lipid	C3	shell	LCMS_Neg	Missingness	1.9
+text_sample_lipid	C4	^IS_	LCMS_Pos	mean:IS_PC_34_1	1001.66666666667
+text_sample_lipid	C4	^IS_	LCMS_Pos	cv:IS_PC_34_1	1.03910116445897
+text_sample_lipid	C4	^IS_	LCMS_Pos	mean:IS_PC_34_1_ALT	901.666666666667
+text_sample_lipid	C4	^IS_	LCMS_Pos	cv:IS_PC_34_1_ALT	1.15434343778159
+text_sample_lipid	C4	^IS_	LCMS_Neg	mean:IS_PC_34_1	1006.25
+text_sample_lipid	C4	^IS_	LCMS_Neg	cv:IS_PC_34_1	0.848608759085681
+text_sample_lipid	C4	^IS_	LCMS_Neg	mean:IS_PC_34_1_ALT	906.25
+text_sample_lipid	C4	^IS_	LCMS_Neg	cv:IS_PC_34_1_ALT	0.942248346295136
+text_sample_lipid	C4	^IS_		cv_over_30	0
+text_sample_lipid	C4	^IS_		result_text_cv_line	  IS with CV > 30%: 0
+text_sample_lipid	C4	^IS_		long_samples	S1;S2;S3;S4
+text_sample_lipid	C1	whole	LCMS_Pos	n_duplicated_ids	2
+text_sample_lipid	C1	whole	LCMS_Pos	n_rows	11
+text_sample_lipid	C1	whole	LCMS_Pos	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+text_sample_lipid	C1	whole	LCMS_Pos	kept_row:L_DUP	6
+text_sample_lipid	C1	whole	LCMS_Pos	kept_row:L_TIE	7
+text_sample_lipid	C1	whole	LCMS_Neg	n_duplicated_ids	2
+text_sample_lipid	C1	whole	LCMS_Neg	n_rows	11
+text_sample_lipid	C1	whole	LCMS_Neg	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+text_sample_lipid	C1	whole	LCMS_Neg	kept_row:L_DUP	6
+text_sample_lipid	C1	whole	LCMS_Neg	kept_row:L_TIE	7
+text_sample_lipid	C1	partitioned	LCMS_Pos	n_duplicated_ids	2
+text_sample_lipid	C1	partitioned	LCMS_Pos	n_rows	11
+text_sample_lipid	C1	partitioned	LCMS_Pos	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+text_sample_lipid	C1	partitioned	LCMS_Pos	kept_row:L_DUP	6
+text_sample_lipid	C1	partitioned	LCMS_Pos	kept_row:L_TIE	7
+text_sample_lipid	C1	partitioned	LCMS_Neg	n_duplicated_ids	2
+text_sample_lipid	C1	partitioned	LCMS_Neg	n_rows	11
+text_sample_lipid	C1	partitioned	LCMS_Neg	kept_pairs_digest	b99fd470e7785ce5e3019d2ed0d8158b34813c832add6bced34c73fe5bed623e
+text_sample_lipid	C1	partitioned	LCMS_Neg	kept_row:L_DUP	6
+text_sample_lipid	C1	partitioned	LCMS_Neg	kept_row:L_TIE	7
+text_sample_metab	columns		LCMS_Pos	id_column	database_identifier
+text_sample_metab	columns		LCMS_Pos	annotation_column	Name
+text_sample_metab	columns		LCMS_Pos	columns	database_identifier:character;metabolite:character;Name:character;S1:character;S2:numeric;S3:numeric;S4:numeric
+text_sample_metab	columns		LCMS_Pos	design_samples	S1;S2;S3;S4
+text_sample_metab	columns		LCMS_Neg	id_column	database_identifier
+text_sample_metab	columns		LCMS_Neg	annotation_column	Name
+text_sample_metab	columns		LCMS_Neg	columns	database_identifier:character;metabolite:character;Name:character;S1:numeric;S2:numeric;S3:numeric;S4:numeric
+text_sample_metab	columns		LCMS_Neg	design_samples	S1;S2;S3;S4
+text_sample_metab	C2			number_of_samples	3
+text_sample_metab	C3	frame	LCMS_Pos	Samples	3
+text_sample_metab	C3	frame	LCMS_Pos	Missingness	7.7
+text_sample_metab	C3	frame	LCMS_Neg	Samples	4
+text_sample_metab	C3	frame	LCMS_Neg	Missingness	1.9
+text_sample_metab	C5		LCMS_Pos	row:IS_A	1001.66666666667|1.03910116445897
+text_sample_metab	C5		LCMS_Pos	row:IS_A2	901.666666666667|1.15434343778159
+text_sample_metab	C5		LCMS_Pos	row:M_NAME_IS	520|1.92307692307692
+text_sample_metab	C5		LCMS_Pos	row:M_missing	100|0
+text_sample_metab	C5		LCMS_Pos	row:M_TIE	50|0
+text_sample_metab	C5		LCMS_Pos	row:M_TIE	50|0
+text_sample_metab	C5		LCMS_Pos	row:M_ANN_B	84|2.38095238095238
+text_sample_metab	C5		LCMS_Pos	row:M_DUP	100|5
+text_sample_metab	C5		LCMS_Pos	row:M_keep	120|8.33333333333333
+text_sample_metab	C5		LCMS_Pos	row:M_ANN_A	24|8.33333333333333
+text_sample_metab	C5		LCMS_Pos	row:M_DUP	20|25
+text_sample_metab	C5		LCMS_Pos	row:M_boundary	70|74.230748895809
+text_sample_metab	C5		LCMS_Pos	row:M_zero	0|NA
+text_sample_metab	C5		LCMS_Neg	row:IS_A	1006.25|0.848608759085681
+text_sample_metab	C5		LCMS_Neg	row:IS_A2	906.25|0.942248346295136
+text_sample_metab	C5		LCMS_Neg	row:M_NAME_IS	520|2.48268163218424
+text_sample_metab	C5		LCMS_Neg	row:M_zero	5|0
+text_sample_metab	C5		LCMS_Neg	row:M_missing	105|0
+text_sample_metab	C5		LCMS_Neg	row:M_TIE	55|0
+text_sample_metab	C5		LCMS_Neg	row:M_TIE	55|0
+text_sample_metab	C5		LCMS_Neg	row:M_ANN_B	88|2.93407829258138
+text_sample_metab	C5		LCMS_Neg	row:M_DUP	102.5|6.29753389627222
+text_sample_metab	C5		LCMS_Neg	row:M_ANN_A	28|9.22138891954147
+text_sample_metab	C5		LCMS_Neg	row:M_keep	120|10.7582870727984
+text_sample_metab	C5		LCMS_Neg	row:M_DUP	22.5|28.6887655274623
+text_sample_metab	C5		LCMS_Neg	row:M_boundary	60|86.6025403784439
+text_sample_metab	C3	shell	LCMS_Pos	Samples	3
+text_sample_metab	C3	shell	LCMS_Pos	Missingness	7.7
+text_sample_metab	C3	shell	LCMS_Neg	Samples	4
+text_sample_metab	C3	shell	LCMS_Neg	Missingness	1.9
+text_sample_metab	C4	^IS_	LCMS_Pos	mean:IS_A	1001.66666666667
+text_sample_metab	C4	^IS_	LCMS_Pos	cv:IS_A	1.03910116445897
+text_sample_metab	C4	^IS_	LCMS_Pos	mean:IS_A2	901.666666666667
+text_sample_metab	C4	^IS_	LCMS_Pos	cv:IS_A2	1.15434343778159
+text_sample_metab	C4	^IS_	LCMS_Neg	mean:IS_A	1006.25
+text_sample_metab	C4	^IS_	LCMS_Neg	cv:IS_A	0.848608759085681
+text_sample_metab	C4	^IS_	LCMS_Neg	mean:IS_A2	906.25
+text_sample_metab	C4	^IS_	LCMS_Neg	cv:IS_A2	0.942248346295136
+text_sample_metab	C4	^IS_		cv_over_30	0
+text_sample_metab	C4	^IS_		result_text_cv_line	  IS with CV > 30%: 0
+text_sample_metab	C4	^IS_		long_samples	S1;S2;S3;S4
+text_sample_metab	C1	whole	LCMS_Pos	n_duplicated_ids	2
+text_sample_metab	C1	whole	LCMS_Pos	n_rows	11
+text_sample_metab	C1	whole	LCMS_Pos	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+text_sample_metab	C1	whole	LCMS_Pos	kept_row:M_DUP	6
+text_sample_metab	C1	whole	LCMS_Pos	kept_row:M_TIE	7
+text_sample_metab	C1	whole	LCMS_Neg	n_duplicated_ids	2
+text_sample_metab	C1	whole	LCMS_Neg	n_rows	11
+text_sample_metab	C1	whole	LCMS_Neg	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+text_sample_metab	C1	whole	LCMS_Neg	kept_row:M_DUP	6
+text_sample_metab	C1	whole	LCMS_Neg	kept_row:M_TIE	7
+text_sample_metab	C1	partitioned	LCMS_Pos	n_duplicated_ids	2
+text_sample_metab	C1	partitioned	LCMS_Pos	n_rows	11
+text_sample_metab	C1	partitioned	LCMS_Pos	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+text_sample_metab	C1	partitioned	LCMS_Pos	kept_row:M_DUP	6
+text_sample_metab	C1	partitioned	LCMS_Pos	kept_row:M_TIE	7
+text_sample_metab	C1	partitioned	LCMS_Neg	n_duplicated_ids	2
+text_sample_metab	C1	partitioned	LCMS_Neg	n_rows	11
+text_sample_metab	C1	partitioned	LCMS_Neg	kept_pairs_digest	235d983e2149b908da857fee653780b6c9f043a65e3be148e5ad6504cd2d2eb6
+text_sample_metab	C1	partitioned	LCMS_Neg	kept_row:M_DUP	6
+text_sample_metab	C1	partitioned	LCMS_Neg	kept_row:M_TIE	7
+lipid_canonical	columns		LCMS_Pos	id_column	LipidName
+lipid_canonical	columns		LCMS_Pos	annotation_column	LipidClass
+lipid_canonical	columns		LCMS_Pos	columns	LipidName:character;LipidClass:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+lipid_canonical	columns		LCMS_Pos	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+lipid_canonical	columns		LCMS_Neg	id_column	LipidName
+lipid_canonical	columns		LCMS_Neg	annotation_column	LipidClass
+lipid_canonical	columns		LCMS_Neg	columns	LipidName:character;LipidClass:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+lipid_canonical	columns		LCMS_Neg	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+lipid_canonical	C2			number_of_samples	6
+lipid_canonical	C3	frame	LCMS_Pos	Samples	6
+lipid_canonical	C3	frame	LCMS_Pos	Missingness	0
+lipid_canonical	C3	frame	LCMS_Neg	Samples	6
+lipid_canonical	C3	frame	LCMS_Neg	Missingness	0
+lipid_canonical	C5		LCMS_Pos	row:SM 34:1	78665.8333333333|30.0811419081505
+lipid_canonical	C5		LCMS_Pos	row:PC 36:2	55032|30.7853220290821
+lipid_canonical	C5		LCMS_Pos	row:CE 18:1	41709.1666666667|30.8228211359402
+lipid_canonical	C5		LCMS_Pos	row:SM 36:1	62727.1666666667|33.2082781274357
+lipid_canonical	C5		LCMS_Pos	row:PC 34:1	70609.8333333333|33.6124643752215
+lipid_canonical	C5		LCMS_Pos	row:PE 36:2	30517.8333333333|34.0595624723419
+lipid_canonical	C5		LCMS_Pos	row:TG 56:6	67173.5|34.1764241940649
+lipid_canonical	C5		LCMS_Pos	row:TG 52:3	179948.5|35.6254239290489
+lipid_canonical	C5		LCMS_Pos	row:TG 54:3	152980.666666667|36.7777186825147
+lipid_canonical	C5		LCMS_Pos	row:PE 38:3	45360.8333333333|36.9826197081791
+lipid_canonical	C5		LCMS_Neg	row:PS 36:1	33713.3333333333|34.2393328398909
+lipid_canonical	C5		LCMS_Neg	row:LPC 18:1	96272.5|34.3299928461667
+lipid_canonical	C5		LCMS_Neg	row:PS 38:4	27379|34.4451679646569
+lipid_canonical	C5		LCMS_Neg	row:LPE 18:0	39076.1666666667|35.1469105569051
+lipid_canonical	C5		LCMS_Neg	row:PG 36:2	54165.3333333333|35.4413105496362
+lipid_canonical	C5		LCMS_Neg	row:Cer 42:2	45302.6666666667|36.8382850007864
+lipid_canonical	C5		LCMS_Neg	row:PG 34:1	60539.8333333333|37.8709338359811
+lipid_canonical	C5		LCMS_Neg	row:PI 38:4	44788.8333333333|38.0169141191222
+lipid_canonical	C5		LCMS_Neg	row:Cer 34:1	75425.5|38.1370876893453
+lipid_canonical	C5		LCMS_Neg	row:PI 36:2	55924.8333333333|38.5562882234168
+lipid_canonical	C3	shell	LCMS_Pos	Samples	6
+lipid_canonical	C3	shell	LCMS_Pos	Missingness	0
+lipid_canonical	C3	shell	LCMS_Neg	Samples	6
+lipid_canonical	C3	shell	LCMS_Neg	Missingness	0
+lipid_canonical	C4	^ITSD|_d[0-9]+$		error	error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: LipidName, LipidClass Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+lipid_canonical	C1	whole	LCMS_Pos	n_duplicated_ids	0
+lipid_canonical	C1	whole	LCMS_Pos	n_rows	10
+lipid_canonical	C1	whole	LCMS_Pos	kept_pairs_digest	602cb034553dea2b213bbcb3d50658a38cfabaf976c794f40cef99ce00b6b0b4
+lipid_canonical	C1	whole	LCMS_Neg	n_duplicated_ids	0
+lipid_canonical	C1	whole	LCMS_Neg	n_rows	10
+lipid_canonical	C1	whole	LCMS_Neg	kept_pairs_digest	f432ee4c41e7e55b5bbfbcd1ee78e7918cef3b4845b3e7f9f807ac4aa977ada0
+lipid_canonical	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+lipid_canonical	C1	partitioned	LCMS_Pos	n_rows	10
+lipid_canonical	C1	partitioned	LCMS_Pos	kept_pairs_digest	602cb034553dea2b213bbcb3d50658a38cfabaf976c794f40cef99ce00b6b0b4
+lipid_canonical	C1	partitioned	LCMS_Neg	n_duplicated_ids	0
+lipid_canonical	C1	partitioned	LCMS_Neg	n_rows	10
+lipid_canonical	C1	partitioned	LCMS_Neg	kept_pairs_digest	f432ee4c41e7e55b5bbfbcd1ee78e7918cef3b4845b3e7f9f807ac4aa977ada0
+metab_lc	columns		LCMS_Pos	id_column	Feature.Name
+metab_lc	columns		LCMS_Pos	annotation_column	NA
+metab_lc	columns		LCMS_Pos	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+metab_lc	columns		LCMS_Pos	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+metab_lc	columns		LCMS_Neg	id_column	Feature.Name
+metab_lc	columns		LCMS_Neg	annotation_column	NA
+metab_lc	columns		LCMS_Neg	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+metab_lc	columns		LCMS_Neg	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+metab_lc	C2			number_of_samples	6
+metab_lc	C3	frame	LCMS_Pos	Samples	6
+metab_lc	C3	frame	LCMS_Pos	Missingness	0
+metab_lc	C3	frame	LCMS_Neg	Samples	6
+metab_lc	C3	frame	LCMS_Neg	Missingness	0
+metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_002	4963.53333333333|5.15515449986941
+metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_001	7377.45|35.8331964249208
+metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_003	3792.3|37.1435781738543
+metab_lc	C5		LCMS_Neg	row:LC_Neg_Feature_003	4963.53333333333|5.15515449986941
+metab_lc	C5		LCMS_Neg	row:LC_Neg_Feature_002	7377.45|35.8331964249208
+metab_lc	C5		LCMS_Neg	row:LC_Neg_Feature_001	3792.3|37.1435781738543
+metab_lc	C3	shell	LCMS_Pos	Samples	6
+metab_lc	C3	shell	LCMS_Pos	Missingness	0
+metab_lc	C3	shell	LCMS_Neg	Samples	6
+metab_lc	C3	shell	LCMS_Neg	Missingness	0
+metab_lc	C4	^ITSD|_d[0-9]+$		error	error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+metab_lc	C1	whole	LCMS_Pos	n_duplicated_ids	0
+metab_lc	C1	whole	LCMS_Pos	n_rows	3
+metab_lc	C1	whole	LCMS_Pos	kept_pairs_digest	36c2101250c32b430747742d84eda28e26126f4815c38b166eed5a929310906e
+metab_lc	C1	whole	LCMS_Neg	n_duplicated_ids	0
+metab_lc	C1	whole	LCMS_Neg	n_rows	3
+metab_lc	C1	whole	LCMS_Neg	kept_pairs_digest	6911405a236eb46f5c5860e159b559cad91ca55fde8533fc362e2a0b992050d1
+metab_lc	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+metab_lc	C1	partitioned	LCMS_Pos	n_rows	3
+metab_lc	C1	partitioned	LCMS_Pos	kept_pairs_digest	36c2101250c32b430747742d84eda28e26126f4815c38b166eed5a929310906e
+metab_lc	C1	partitioned	LCMS_Neg	n_duplicated_ids	0
+metab_lc	C1	partitioned	LCMS_Neg	n_rows	3
+metab_lc	C1	partitioned	LCMS_Neg	kept_pairs_digest	6911405a236eb46f5c5860e159b559cad91ca55fde8533fc362e2a0b992050d1
+metab_gc	columns		GCMS	id_column	Feature.Name
+metab_gc	columns		GCMS	annotation_column	NA
+metab_gc	columns		GCMS	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+metab_gc	columns		GCMS	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+metab_gc	C2			number_of_samples	6
+metab_gc	C3	frame	GCMS	Samples	6
+metab_gc	C3	frame	GCMS	Missingness	0
+metab_gc	C5		GCMS	row:GC_Feature_003	9956.21666666667|3.08353588891678
+metab_gc	C5		GCMS	row:GC_Feature_001	14852.9166666667|36.0512853972359
+metab_gc	C5		GCMS	row:GC_Feature_002	7550.8|36.8361373374552
+metab_gc	C3	shell	GCMS	Samples	6
+metab_gc	C3	shell	GCMS	Missingness	0
+metab_gc	C4	^ITSD|_d[0-9]+$		error	error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+metab_gc	C1	whole	GCMS	n_duplicated_ids	0
+metab_gc	C1	whole	GCMS	n_rows	3
+metab_gc	C1	whole	GCMS	kept_pairs_digest	55842ac3dcd9525ee35620cbfd4d09a83f174dfa76f1aa3b5d69b1275bd99e84
+metab_gc	C1	partitioned	GCMS	n_duplicated_ids	0
+metab_gc	C1	partitioned	GCMS	n_rows	3
+metab_gc	C1	partitioned	GCMS	kept_pairs_digest	55842ac3dcd9525ee35620cbfd4d09a83f174dfa76f1aa3b5d69b1275bd99e84
+metab_combined	columns		LCMS_Pos	id_column	Feature.Name
+metab_combined	columns		LCMS_Pos	annotation_column	NA
+metab_combined	columns		LCMS_Pos	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+metab_combined	columns		LCMS_Pos	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+metab_combined	columns		GCMS	id_column	Feature.Name
+metab_combined	columns		GCMS	annotation_column	NA
+metab_combined	columns		GCMS	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+metab_combined	columns		GCMS	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+metab_combined	C2			number_of_samples	6
+metab_combined	C3	frame	LCMS_Pos	Samples	6
+metab_combined	C3	frame	LCMS_Pos	Missingness	0
+metab_combined	C3	frame	GCMS	Samples	6
+metab_combined	C3	frame	GCMS	Missingness	0
+metab_combined	C5		LCMS_Pos	row:Combined_LC_Feature_003	7092.4|1.6460452504365
+metab_combined	C5		LCMS_Pos	row:Combined_LC_Feature_002	6891.05833333333|5.09627949621542
+metab_combined	C5		LCMS_Pos	row:Combined_LC_Feature_001	17060.9333333333|64.9876397571505
+metab_combined	C5		GCMS	row:Combined_GC_Feature_003	7066.76666666667|1.69043445428843
+metab_combined	C5		GCMS	row:Combined_GC_Feature_002	6891.05833333333|5.09627949621542
+metab_combined	C5		GCMS	row:Combined_GC_Feature_001	10281.0166666667|35.4607940409333
+metab_combined	C3	shell	LCMS_Pos	Samples	6
+metab_combined	C3	shell	LCMS_Pos	Missingness	0
+metab_combined	C3	shell	GCMS	Samples	6
+metab_combined	C3	shell	GCMS	Missingness	0
+metab_combined	C4	^ITSD|_d[0-9]+$		error	error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+metab_combined	C1	whole	LCMS_Pos	n_duplicated_ids	0
+metab_combined	C1	whole	LCMS_Pos	n_rows	3
+metab_combined	C1	whole	LCMS_Pos	kept_pairs_digest	c1d66bdb83877e1c8187b46b8a922ec04762e5529930729364628efa89d1a34a
+metab_combined	C1	whole	GCMS	n_duplicated_ids	0
+metab_combined	C1	whole	GCMS	n_rows	3
+metab_combined	C1	whole	GCMS	kept_pairs_digest	cf611f31a6dbef7c621e8f19938e1e1c162b1c83117c5aef534366e6be99bd0b
+metab_combined	C1	partitioned	LCMS_Pos	n_duplicated_ids	0
+metab_combined	C1	partitioned	LCMS_Pos	n_rows	3
+metab_combined	C1	partitioned	LCMS_Pos	kept_pairs_digest	c1d66bdb83877e1c8187b46b8a922ec04762e5529930729364628efa89d1a34a
+metab_combined	C1	partitioned	GCMS	n_duplicated_ids	0
+metab_combined	C1	partitioned	GCMS	n_rows	3
+metab_combined	C1	partitioned	GCMS	kept_pairs_digest	cf611f31a6dbef7c621e8f19938e1e1c162b1c83117c5aef534366e6be99bd0b
+a2_lipid_canonical	columns		LCMS_Pos	id_column	LipidName
+a2_lipid_canonical	columns		LCMS_Pos	annotation_column	LipidClass
+a2_lipid_canonical	columns		LCMS_Pos	columns	LipidName:character;LipidClass:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+a2_lipid_canonical	columns		LCMS_Pos	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+a2_lipid_canonical	columns		LCMS_Neg	id_column	LipidName
+a2_lipid_canonical	columns		LCMS_Neg	annotation_column	LipidClass
+a2_lipid_canonical	columns		LCMS_Neg	columns	LipidName:character;LipidClass:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+a2_lipid_canonical	columns		LCMS_Neg	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+a2_lipid_canonical	C2			number_of_samples	6
+a2_lipid_canonical	C3	frame	LCMS_Pos	Samples	6
+a2_lipid_canonical	C3	frame	LCMS_Pos	Missingness	0
+a2_lipid_canonical	C3	frame	LCMS_Neg	Samples	6
+a2_lipid_canonical	C3	frame	LCMS_Neg	Missingness	0
+a2_lipid_canonical	C5		LCMS_Pos	row:SM 34:1	78665.8333333333|30.0811419081505
+a2_lipid_canonical	C5		LCMS_Pos	row:PC 36:2	55032|30.7853220290821
+a2_lipid_canonical	C5		LCMS_Pos	row:CE 18:1	41709.1666666667|30.8228211359402
+a2_lipid_canonical	C5		LCMS_Pos	row:SM 36:1	62727.1666666667|33.2082781274357
+a2_lipid_canonical	C5		LCMS_Pos	row:PC 34:1	70609.8333333333|33.6124643752215
+a2_lipid_canonical	C5		LCMS_Pos	row:PC 34:1	35304.9166666667|33.6124643752215
+a2_lipid_canonical	C5		LCMS_Pos	row:PC 34:1	141219.666666667|33.6124643752215
+a2_lipid_canonical	C5		LCMS_Pos	row:PE 36:2	30517.8333333333|34.0595624723419
+a2_lipid_canonical	C5		LCMS_Pos	row:TG 56:6	67173.5|34.1764241940649
+a2_lipid_canonical	C5		LCMS_Pos	row:TG 52:3	179948.5|35.6254239290489
+a2_lipid_canonical	C5		LCMS_Pos	row:TG 54:3	152980.666666667|36.7777186825147
+a2_lipid_canonical	C5		LCMS_Pos	row:PE 38:3	45360.8333333333|36.9826197081791
+a2_lipid_canonical	C5		LCMS_Neg	row:PS 36:1	33713.3333333333|34.2393328398909
+a2_lipid_canonical	C5		LCMS_Neg	row:LPC 18:1	96272.5|34.3299928461667
+a2_lipid_canonical	C5		LCMS_Neg	row:PS 38:4	27379|34.4451679646569
+a2_lipid_canonical	C5		LCMS_Neg	row:LPE 18:0	39076.1666666667|35.1469105569051
+a2_lipid_canonical	C5		LCMS_Neg	row:PG 36:2	54165.3333333333|35.4413105496362
+a2_lipid_canonical	C5		LCMS_Neg	row:Cer 42:2	45302.6666666667|36.8382850007864
+a2_lipid_canonical	C5		LCMS_Neg	row:PG 34:1	60539.8333333333|37.8709338359811
+a2_lipid_canonical	C5		LCMS_Neg	row:PI 38:4	44788.8333333333|38.0169141191222
+a2_lipid_canonical	C5		LCMS_Neg	row:Cer 34:1	75425.5|38.1370876893453
+a2_lipid_canonical	C5		LCMS_Neg	row:PI 36:2	55924.8333333333|38.5562882234168
+a2_lipid_canonical	C3	shell	LCMS_Pos	Samples	6
+a2_lipid_canonical	C3	shell	LCMS_Pos	Missingness	0
+a2_lipid_canonical	C3	shell	LCMS_Neg	Samples	6
+a2_lipid_canonical	C3	shell	LCMS_Neg	Missingness	0
+a2_lipid_canonical	C4	^ITSD|_d[0-9]+$		error	error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: LipidName, LipidClass Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+a2_lipid_canonical	C1	whole	LCMS_Pos	n_duplicated_ids	1
+a2_lipid_canonical	C1	whole	LCMS_Pos	n_rows	10
+a2_lipid_canonical	C1	whole	LCMS_Pos	kept_pairs_digest	1970ceccea1ef97c9fee714aea5371ba67eadc8e4f68a7bb2bbe297db8a99919
+a2_lipid_canonical	C1	whole	LCMS_Pos	kept_row:PC 34:1	12
+a2_lipid_canonical	C1	whole	LCMS_Neg	n_duplicated_ids	0
+a2_lipid_canonical	C1	whole	LCMS_Neg	n_rows	10
+a2_lipid_canonical	C1	whole	LCMS_Neg	kept_pairs_digest	f432ee4c41e7e55b5bbfbcd1ee78e7918cef3b4845b3e7f9f807ac4aa977ada0
+a2_lipid_canonical	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+a2_lipid_canonical	C1	partitioned	LCMS_Pos	n_rows	10
+a2_lipid_canonical	C1	partitioned	LCMS_Pos	kept_pairs_digest	1970ceccea1ef97c9fee714aea5371ba67eadc8e4f68a7bb2bbe297db8a99919
+a2_lipid_canonical	C1	partitioned	LCMS_Pos	kept_row:PC 34:1	12
+a2_lipid_canonical	C1	partitioned	LCMS_Neg	n_duplicated_ids	0
+a2_lipid_canonical	C1	partitioned	LCMS_Neg	n_rows	10
+a2_lipid_canonical	C1	partitioned	LCMS_Neg	kept_pairs_digest	f432ee4c41e7e55b5bbfbcd1ee78e7918cef3b4845b3e7f9f807ac4aa977ada0
+a2_metab_lc	columns		LCMS_Pos	id_column	Feature.Name
+a2_metab_lc	columns		LCMS_Pos	annotation_column	NA
+a2_metab_lc	columns		LCMS_Pos	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+a2_metab_lc	columns		LCMS_Pos	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+a2_metab_lc	columns		LCMS_Neg	id_column	Feature.Name
+a2_metab_lc	columns		LCMS_Neg	annotation_column	NA
+a2_metab_lc	columns		LCMS_Neg	columns	Feature.Name:character;WT_1:numeric;WT_2:numeric;WT_3:numeric;KO_1:numeric;KO_2:numeric;KO_3:numeric
+a2_metab_lc	columns		LCMS_Neg	design_samples	WT_1;WT_2;WT_3;KO_1;KO_2;KO_3
+a2_metab_lc	C2			number_of_samples	6
+a2_metab_lc	C3	frame	LCMS_Pos	Samples	6
+a2_metab_lc	C3	frame	LCMS_Pos	Missingness	0
+a2_metab_lc	C3	frame	LCMS_Neg	Samples	6
+a2_metab_lc	C3	frame	LCMS_Neg	Missingness	0
+a2_metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_002	4963.53333333333|5.15515449986941
+a2_metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_001	7377.45|35.8331964249208
+a2_metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_001	3688.725|35.8331964249208
+a2_metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_001	14754.9|35.8331964249208
+a2_metab_lc	C5		LCMS_Pos	row:LC_Pos_Feature_003	3792.3|37.1435781738543
+a2_metab_lc	C5		LCMS_Neg	row:LC_Neg_Feature_003	4963.53333333333|5.15515449986941
+a2_metab_lc	C5		LCMS_Neg	row:LC_Neg_Feature_002	7377.45|35.8331964249208
+a2_metab_lc	C5		LCMS_Neg	row:LC_Neg_Feature_001	3792.3|37.1435781738543
+a2_metab_lc	C3	shell	LCMS_Pos	Samples	6
+a2_metab_lc	C3	shell	LCMS_Pos	Missingness	0
+a2_metab_lc	C3	shell	LCMS_Neg	Samples	6
+a2_metab_lc	C3	shell	LCMS_Neg	Missingness	0
+a2_metab_lc	C4	^ITSD|_d[0-9]+$		error	error: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+a2_metab_lc	C1	whole	LCMS_Pos	n_duplicated_ids	1
+a2_metab_lc	C1	whole	LCMS_Pos	n_rows	3
+a2_metab_lc	C1	whole	LCMS_Pos	kept_pairs_digest	fc0b4a7bd0de68c68401d29c54e3871c2492fd924f4bd1966ac8fb4b13336c25
+a2_metab_lc	C1	whole	LCMS_Pos	kept_row:LC_Pos_Feature_001	5
+a2_metab_lc	C1	whole	LCMS_Neg	n_duplicated_ids	0
+a2_metab_lc	C1	whole	LCMS_Neg	n_rows	3
+a2_metab_lc	C1	whole	LCMS_Neg	kept_pairs_digest	6911405a236eb46f5c5860e159b559cad91ca55fde8533fc362e2a0b992050d1
+a2_metab_lc	C1	partitioned	LCMS_Pos	n_duplicated_ids	1
+a2_metab_lc	C1	partitioned	LCMS_Pos	n_rows	3
+a2_metab_lc	C1	partitioned	LCMS_Pos	kept_pairs_digest	fc0b4a7bd0de68c68401d29c54e3871c2492fd924f4bd1966ac8fb4b13336c25
+a2_metab_lc	C1	partitioned	LCMS_Pos	kept_row:LC_Pos_Feature_001	5
+a2_metab_lc	C1	partitioned	LCMS_Neg	n_duplicated_ids	0
+a2_metab_lc	C1	partitioned	LCMS_Neg	n_rows	3
+a2_metab_lc	C1	partitioned	LCMS_Neg	kept_pairs_digest	6911405a236eb46f5c5860e159b559cad91ca55fde8533fc362e2a0b992050d1
