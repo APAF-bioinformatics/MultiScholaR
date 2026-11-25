@@ -275,3 +275,26 @@ RUV-corrected figures. The composite and the report did not use them.
   | `test-kit196-da-no-value-features.R` | `same`, 540/0 |
   | `test-module-ci-trx-da.R` | `same`, 52/1 |
   | R CMD check | identical findings |
+
+### R2' (45644271493, base 0cc18658 against head a99e051a, 284.0 job-minutes)
+
+Observed (`r2p-compare.tsv`, `r2p-compare-failures.txt`, `r2p-check-compare.txt`, `r2p-evidence-{base,head}.txt`):
+- `test-kit257-norm-own-files.R` `fixed`: base 79 passed, 40 failed; head 133 passed, 0 failed, 0 skipped. Failing on
+  base and passing on head: E1 to E7, E9, E8, E10, G3, G5 (proteomics, limpa, lipid, metab), the G2 `~` row and M1. Both
+  `~` rows ran (no skip): "path.expand('~') follows HOME: TRUE"; head "own file present: FALSE", "M1 ~ error: none".
+  E10 head: the error shown ends "... The earlier RUV figures and normalised table of this analysis were removed when
+  this run started; apply or skip the correlation filter again before Copy."
+- **E8b passed on both sides, against the prediction** (fails on base). The base is staging plus the tests only, which
+  removes nothing at all, so its files stay; E8b's failing-first value against the unconditional removal of the first
+  fix (413d739a) was not observed by any run. Head: in process and managed, at `correlation_filtered` and at
+  `ruv_covariates`, the table and the four figures present, no error.
+- `test-prot-norm-core.R` `message-changed`, 1548/306 both sides, as predicted: W1 (a)'s and W2's
+  `dia_normalization_refused` and `dia_normalization_retry` `files` move from bbfad929 (base) to 53f7545d and
+  b51063f4 (head); W2 now equals W1 on head (I03 closed). Nothing else in the file differs.
+- `same` at staging's counts: `test-kit243-summary-current-outputs.R` 246/0 (M1), `test-kit244-limpa-pass-through.R`
+  204/0, `test-workflow-saved-da.R` 776/175, `test-kit129-run-path.R` 711/0 (1 skipped), `test-prot-design-log2.R`
+  226/0, `test-workflow-native-session.R` 734/0 (2 skipped), `test-trx-da-without-ruv.R` 103/0,
+  `test-kit196-da-no-value-features.R` 540/0, `test-module-ci-trx-da.R` 52/1.
+- R CMD check: 0 errors, 3 warnings, 3 notes both sides; findings identical.
+
+Core-hours: R1 1.06 + R2 32.46 + R2' 18.94 = 52.46 of 113.67 (expected 30.0; the correction pass was used).
