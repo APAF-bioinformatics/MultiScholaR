@@ -168,9 +168,13 @@ k255Obj <- function(values, class, design = NULL) {
     if (!is.null(design)) object@design_matrix <- design
     object
 }
-k255DesignWithout <- function(runs) {
-    design <- kit172Design()
-    design[!(design$Run %in% runs), , drop = FALSE]
+#' `object` without the samples `runs`: their columns in every assay and their design rows (slot assignment; the class
+#' validity is not asked of a hand-built stand-in).
+k255Drop <- function(object, class, runs) {
+    slot <- k255Slot(class)
+    methods::slot(object, slot) <- lapply(methods::slot(object, slot), function(t) t[, setdiff(names(t), runs), drop = FALSE])
+    object@design_matrix <- object@design_matrix[!(object@design_matrix$Run %in% runs), , drop = FALSE]
+    object
 }
 
 k255Slot <- function(class) if (identical(class, "lipid")) "lipid_data" else "metabolite_data"
@@ -595,7 +599,7 @@ for (class in c("lipid", "metab")) {
     binding <- kit172Binding(class)
     values <- k255K2Values()
     kb <- k255Obj(k255Blank(values, "LCMS_Neg", S), class)
-    ka <- k255Obj(k255Without(values, S), class, k255DesignWithout(S))
+    ka <- k255Drop(k255Obj(values, class), class, S)
     k3 <- k255Obj(k255Blank(values, "LCMS_Neg", GROUP_B), class)
 
     # P-d: the exported kernel on K2-b and K2-a; the tables; B_6's cells; the residual df; the features below the minimum.
@@ -663,7 +667,7 @@ for (class in c("lipid", "metab")) {
             paste(names(factors), vapply(factors, function(f) sprintf("%s; %s; %s; %s", f$status, f$k %||% NA, if (is.null(f$W)) 0L else nrow(f$W),
                 if (is.null(f$W)) NA else S %in% rownames(f$W)), ""), sep = "=", collapse = " | "))
         b <- k255Kernel(class, k255Obj(k255Blank(full, "LCMS_Neg", S), class), factors)
-        a <- k255Kernel(class, k255Obj(k255Without(full, S), class, k255DesignWithout(S)), factors)
+        a <- k255Kernel(class, k255Drop(k255Obj(full, class), class, S), factors)
         okb <- k255RecordKernel("P-e", "K2-b-RUV", class, "kernel", b)
         oka <- k255RecordKernel("P-e", "K2-a-RUV", class, "kernel", a)
         if (okb && oka) {
