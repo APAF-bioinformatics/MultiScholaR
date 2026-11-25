@@ -710,3 +710,33 @@ test_that("KIT-236 T22 (I09): an assay whose test failed is named, and the Metho
         expect_false(k236Has(got$norm$method_details, "the results of the 2 assays are reported together"), info = name)
     }
 })
+
+# KIT-268 (VAL-312, wording VAL-314): where a comparison fell back to Benjamini-Hochberg, the sentence that names it is
+# followed by the one added sentence; the rule sentence and the no-fallback sentence are unchanged.
+k268Existing <- "where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead."
+k268Added <- paste("For these comparisons the q-value column holds Benjamini-Hochberg adjusted p-values, which equal",
+    "Storey's q-values with the proportion of unchanged features (pi0) set to 1; because pi0 could not be estimated for these",
+    "comparisons, the values are larger than Storey's q-values would be by a factor of 1/pi0 of unknown size (1 or more),",
+    "so they are more conservative than, and not on the same scale as, the q-values of the other comparisons.")
+
+test_that("KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        planted <- k236Case(name, record = k236Record(prefix, fdr = c(LCMS_Pos = "qvalue", LCMS_Neg = "BH")))
+        expect_true(k236Has(planted$norm$de_details, k268Existing), info = name)
+        expect_true(k236Has(planted$norm$de_details, paste(k268Existing, k268Added)), info = name)
+        rule <- k236Case(name, record = k236Record(prefix))
+        expect_false(k236Has(rule$norm$de_details, "not on the same scale"), info = name)
+        clean <- k236Case(name, record = k236Record(prefix, fdr = c(LCMS_Pos = "qvalue", LCMS_Neg = "qvalue")))
+        expect_false(k236Has(clean$norm$de_details, "not on the same scale"), info = name)
+    }
+    for (name in k236ProtNames) {
+        planted <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts, fdr = "BH"))
+        expect_true(k236Has(planted$de, k268Existing), info = name)
+        expect_true(k236Has(planted$de, paste(k268Existing, k268Added)), info = name)
+        rule <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts))
+        expect_false(k236Has(rule$de, "not on the same scale"), info = name)
+        clean <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts, fdr = "qvalue"))
+        expect_false(k236Has(clean$de, "not on the same scale"), info = name)
+    }
+})
