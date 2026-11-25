@@ -526,8 +526,8 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
                 percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_),
                 k_sweep = k_limits$k_sweep, k_cap = k_limits$k_cap, k_notice = k_limits$k_notice, ruv_status = ruv_status)
         },
-        # KIT-224: the rule marker of the feature levels after the correction; KIT-190: the rule markers of the control
-        # selection and of the bound on k (`workflowReplayRuleMarkers`).
+        # KIT-224: the rule marker of the feature levels after the correction (`workflowReplayRuleMarkers`).
+        # KIT-190: the rule markers of the control selection and of the bound on k.
         fixed = list(ruv_feature_levels = "restored", ruv_control_grouping = "kept", ruv_k_bound = "sample_size"))
 }
 

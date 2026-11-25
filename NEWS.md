@@ -352,34 +352,42 @@
 ### Scientific changes
 
  * Lipidomics and metabolomics, RUV-III (Automatic and Manual, the default design): the negative-control features are
-   now chosen by the one-way analysis of variance on the RUV grouping column that this step was designed to run. Before
-   this version the grouping column was removed before that analysis, so no feature was tested and the controls were
-   simply the first rows of each table (for example the first 10 % of the features with at least two values, at 10 %),
-   in the order the table held them. Proteomics was not affected.
+   now chosen from a one-way analysis of variance on the RUV grouping column, and the automatic number of factors removed
+   is capped by the number of samples. Before this version the grouping column was removed before that analysis, so no
+   feature was tested and the controls were simply the first rows of each table, in the order the table held them, and
+   the automatic search could remove up to about as many factors as there were samples per group. Proteomics was not
+   affected.
 
-   The selection keeps the features whose Benjamini-Hochberg q-value is above 0.05, highest q-value first. Features with
-   equal q-values are taken in the order of the table, and a feature measured in only one group cannot be tested and
-   counts as showing no difference (q = 1). Equal q-values are common, so most of the selection still follows the
-   table's row order: in simulated data (KIT-172's generator, 2 groups of 6, one unwanted factor not tied to the groups,
-   50 data sets per scenario) 85 % to 100 % of the controls were chosen by row order among features with equal
-   q-values, and with no real differences the controls were still mostly the first rows (93 % to 96 %). With 10 % of
-   features truly changed, the share of truly changed features among the controls fell from 10.3 % to 3.2 % (random row
-   order) and from 86.8 % to 42.2 % when the changed features came first in the table; the number of factors chosen
-   rose (1.7 to 2.5 on average); false discoveries (15.6 % to 18.0 %) and power (50 % to 56 %) did not change
-   measurably. The size on real data is shown by later validation, and calibration by its own measurement.
+   The controls are now the features with a Benjamini-Hochberg q-value above 0.05 that were measured in at least two
+   groups, taken from the highest p-value down; features with equal p-values are taken in the order of their names, so
+   the table's row order no longer decides. A feature measured in only one group is never a control.
 
-   Runs whose design names a group with 'pool' now leave those samples out of this analysis, as proteomics does. A
-   grouping column missing from the design is now refused with a message instead of the assay being skipped silently;
+   The automatic search is unchanged, but the number of factors it finds is now capped as in proteomics: at most 2 with
+   fewer than 15 samples, 3 below 40, 4 below 80, 5 above. When the cap reduces it, the step says so, naming the assay,
+   the number found and the number removed. In Manual mode the number you choose is kept, with a warning when it is above
+   the cap. The record keeps the number found, the cap and the number removed, and whether each assay was corrected.
+
+   Evidence (simulated data, KIT-172's generator, 2 groups of 6 samples, one unwanted factor; capped at 2 factors): the
+   new rule was no worse than the earlier repair with the same cap in all eight scenarios tested, by pre-declared
+   margins (0.10 on the share of data sets with any false call, 0.05 on the false discovery proportion; intersection-union
+   test at 5 %), for lipidomics and metabolomics alike. Without the cap the new rule chose 5 to 6 factors on average and
+   made many false calls (in data sets without real differences, 32 to 34 of 50 had at least one); with the cap the false
+   discovery proportion was 0.03 to 0.04 where the unwanted factor was not tied to the groups. When the unwanted
+   variation happened to line up with the groups, both rules that compare groups to choose controls still made a false
+   call in about one null data set in five (against about one in twelve for controls chosen blind to the groups). The
+   evidence was produced with the correction as it was before this version's level-keeping change (each feature shifted
+   by a constant); the search's number of factors, its percentage and its controls do not use the correction. Caps of 3
+   to 5 at larger sample sizes are not yet measured.
+
+   Runs whose design names a group with 'pool' now leave those samples out of the control analysis, as proteomics does.
+   A grouping column missing from the design is now refused with a message instead of the assay being skipped silently;
    scripts that call `getNegCtrlProtAnovaHelper()`, or the peptide percentage search, with a design lacking the grouping
-   column now get an error instead of row-order controls. The Automatic search now runs an analysis of variance for
-   every feature at each of its 20 percentages, so it takes longer: 3.4 minutes at 5,000 features in each of two
-   assays and 13.2 minutes at 20,000 (22 seconds before). Analysis records made before this version replay with the
-   controls they used.
+   column now get an error instead of row-order controls. Analysis records made before this version replay with the
+   controls and the number of factors they used.
 
    The simulation figures shown for this design in the RUV design panel (for example 47.0% false discoveries in the
-   reference scenario) were measured with the earlier selection on tables whose rows were in random order, so they
-   describe RUV-III with randomly chosen controls, not the current selection; the panel now says so, and the current
-   selection is being measured (KIT-188).
+   reference scenario) were measured with the earlier selection on tables whose rows were in random order; the panel now
+   says so.
 
  * Lipidomics and metabolomics RUV-III correction (Automatic and Manual, the default): each feature now keeps its mean
    abundance after the correction, as in proteomics. Before, every feature's corrected values were shifted by a
