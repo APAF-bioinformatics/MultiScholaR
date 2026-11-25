@@ -1,0 +1,11 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit265-organism-routes.R	0	0	0	0	absent	129	0	0	0	ok	only-on-head		
+test-kit250-organism-dialog.R	119	0	0	0	ok	119	0	0	0	ok	same		
+test-prot-01c-import-module-contracts.R	437	0	0	0	ok	438	0	0	0	ok	count-changed	counts: runProtImportMixedSpeciesAnalysisIfNeeded only runs when analysis is eligible (passed 4 -> 5, skipped 0 -> 0)	
+test-e2e-test-mode-integration.R	61	0	0	0	ok	61	0	0	0	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-prot-01d-import-module-characterization.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-prot-import-core.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-server-shared.R	226	0	0	0	ok	226	0	0	0	ok	same		
+test-workflow-ui-shared.R	178	0	0	0	ok	178	0	0	0	ok	same		
