@@ -1,0 +1,61 @@
+{
+  "requested_by": "Merge train 20 of 2026-11-26 (KIT-258), stacked on train 19 tip b6b4ed6b: head 77b67929 vs base b6b4ed6b; 35 files, check, sva; ceiling 600 job-minutes",
+  "label": "Merge train 20261126m 77b67929 vs train 19 tip b6b4ed6b",
+  "package_commit": "77b67929b5031dc3b59ddbd5bc13f5b1ab4f112c",
+  "base_commit": "b6b4ed6b76b37e2c96f00ff22f622c9ffa0149b2",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-kit201-treat-moderation.R",
+    "test-kit202-intensity-filter-samples.R",
+    "test-kit214-sample-columns.R",
+    "test-kit217-intensity-filter-missing.R",
+    "test-kit224-ruv-feature-levels.R",
+    "test-kit252-managed-failure-text.R",
+    "test-kit254-omics-correlation-skip.R",
+    "test-kit258-duplicate-completeness.R",
+    "test-lipid-01-qc-filtering-helpers.R",
+    "test-lipid-01c-qc-duplicate-module-seams.R",
+    "test-lipid-01g-qc-duplicates-module-characterization.R",
+    "test-lipid-03-s4-duplicate-helpers.R",
+    "test-metab-01b-qc-filtering-helpers-characterization.R",
+    "test-metab-01m-s4-resolve-duplicate-intensity-characterization.R",
+    "test-metab-01p-qc-duplicates-module-characterization.R",
+    "test-metab-01u-qc-duplicates-module-characterization.R",
+    "test-metab-02u-resolve-duplicate-features-characterization.R",
+    "test-metab-s4-qc-shared.R",
+    "test-module-ci-lipid-qc.R",
+    "test-module-ci-metab-qc.R",
+    "test-omics-audit-carry-overs.R",
+    "test-omics-norm-state-guards.R",
+    "test-omics-qc-core.R",
+    "test-ruv-control-anova-grouping.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-omics-application-reads.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-workflow-omics-declarations.R",
+    "test-workflow-omics-residency.R",
+    "test-workflow-omics-worker.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-partitions.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
