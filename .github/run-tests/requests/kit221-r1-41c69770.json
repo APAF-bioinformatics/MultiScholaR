@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-221 R1: tests-only commit, failing-first rows W1-W9 at base values, G4, g1.R base digests; ceiling 100 min",
+  "label": "KIT-221 R1 tests-only 41c69770 (base R/ = 176f9d3f)",
+  "package_commit": "41c69770ff0ee6346a2a02ccb9a83a465973c306",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit221-da-several-comparisons.R", "test-kit218-da-wrapper-tail.R"],
+  "shards": 1,
+  "file_timeout_minutes": 20,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-221/g1.R",
+      "args": ["kit221-g1", "base"],
+      "env": {},
+      "out": "kit221-g1",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
