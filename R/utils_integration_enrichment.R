@@ -1106,13 +1106,13 @@ INTEGRATION_ENRICHMENT_CHECKED_SAMPLES <- 11L
 integrationEnrichmentTestOfRecord <- function(n_samples) "camera"
 
 #' The enrichment's settings with their defaults (KIT-141; INT-18, INT-19), each with what settled it (`settled_by`).
-#' KIT-240: eight of the defaults chosen in KIT-141 still await the owner's confirmation and say so; the STRING false
-#' discovery rate and rank direction were decided as recorded best practice.
+#' KIT-267 (VAL-310): the owner confirmed the eight defaults chosen in KIT-141 on 2026-11-26; the STRING false discovery
+#' rate and rank direction were decided as recorded best practice. None awaits a decision, so none is marked unconfirmed.
 #' @return Named list by setting: `default`, `choices` (NULL for a number or a free value), `settled_by`.
 #' @noRd
 integrationEnrichmentParameterSpec <- function() {
-    ranked <- "KIT-141 (chosen 2026-11-21 under INT-18; awaiting the owner's confirmation; methods ledger, the ranked list)"
-    pathways <- paste("KIT-141 (chosen 2026-11-21 under INT-19; awaiting the owner's confirmation; methods ledger, KEGG and",
+    ranked <- "KIT-141 (chosen 2026-11-21 under INT-18; decided 2026-11-26, VAL-310; methods ledger, the ranked list)"
+    pathways <- paste("KIT-141 (chosen 2026-11-21 under INT-19; decided 2026-11-26, VAL-310; methods ledger, KEGG and",
         "Reactome rules)")
     string <- "KIT-141 (decided 2026-11-20 as recorded best practice; methods ledger, the STRING ranked enrichment client)"
     list(
@@ -1123,7 +1123,7 @@ integrationEnrichmentParameterSpec <- function() {
         # STRING: the species (NCBI taxon), the false discovery rate of the terms it reports, the rank direction
         # (`ge_enrichment_rank_direction`, as STRING's own example: -1).
         string_species = list(default = 9606L, choices = NULL, type = "whole",
-            settled_by = "KIT-141 (human, 9606, as the starting value; no decision recorded; awaiting the owner's decision)"),
+            settled_by = "KIT-141 (human, 9606, as the starting value; decided 2026-11-26, VAL-310)"),
         string_fdr = list(default = 0.05, choices = NULL, type = "number", settled_by = string),
         string_rank_direction = list(default = -1L, choices = NULL, type = "whole", settled_by = string),
         # KEGG and Reactome: the organism, the pathway sizes tested (measured, mapped members), the seed of the test.
