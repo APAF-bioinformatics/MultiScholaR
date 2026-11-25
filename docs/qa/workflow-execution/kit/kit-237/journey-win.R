@@ -217,8 +217,31 @@ k237Action <- function(S, spec) {
     proj0 <- k237Listing(base)
     summary_save <- identical(spec$step, paste0(S$R$summary_step %||% "S10", ".1"))
     if (summary_save) S$tmp_before <- k237TmpNames()
+    # RA-02: a screenshot at the moment a terminal signal appears (an error notification, or a modal that is neither
+    # expected nor a progress modal), before journey.R's 60-second grace lets it disappear.
+    S$terminal_shot <- ""
+    inner <- spec$hook %||% S$hooks[[spec$step]]
+    spec$hook <- function(S, el) {
+        if (is.function(inner)) inner(S, el)
+        if (nzchar(S$terminal_shot)) return(invisible(NULL))
+        seen <- k233Js(S, paste0("(function(){var K=window.__k233||{notes:[],modals:[]};",
+            "var e=K.notes.filter(function(n){return n.type==='error';}).length>0;",
+            "var m=K.modals.filter(function(x){return x.end===null&&!x.progress;});",
+            "return {error:e, modal:m.length?m[m.length-1].title:''};})()"))
+        modal <- as.character(seen$modal %||% "")
+        if (isTRUE(seen$error) || (nzchar(modal) && !modal %in% spec$modals)) {
+            path <- file.path(G$out, sprintf("%s-%02d-%s-terminal.png", S$label, S$nn, spec$step))
+            ok <- tryCatch({
+                S$driver$get_screenshot(path, selector = "viewport")
+                TRUE
+            }, error = function(e) FALSE)
+            S$terminal_shot <- if (ok) sprintf("%s at %.1f s", basename(path), el) else sprintf("failed at %.1f s", el)
+        }
+        invisible(NULL)
+    }
     res <- k233ActionKit233(S, spec)
     i <- length(G$steps)
+    G$steps[[i]]$terminal_screenshot <- S$terminal_shot
     changed <- k237Changed(runs0, k237Listing(S$run_folder))
     workers <- grep(K237_WORKER_LOG, k237Slash(changed), value = TRUE)
     G$steps[[i]]$workers <- if (length(workers)) paste(sub("\\.log$", "", basename(workers)), collapse = " ") else
@@ -259,9 +282,10 @@ k237FileCheck <- function(S, step, base, before, row) {
     patterns <- S$R$files[[step]] %||% character()
     plant <- S$plant_delete
     if (!is.null(plant) && identical(plant$step, step)) {
+        # Every copy the pattern names is deleted (WL 45605975875: one of several copies deleted left the pattern met).
         hit <- grep(plant$pattern, k237Slash(k237Listing(base)$path), value = TRUE)
-        S$planted_deleted <- if (length(hit)) hit[[1L]] else ""
-        if (length(hit)) unlink(file.path(base, hit[[1L]]))
+        S$planted_deleted <- paste(hit, collapse = " | ")
+        for (h in hit) unlink(file.path(base, h))
     }
     after <- k237Listing(base)
     rel <- k237Slash(after$path)
@@ -312,6 +336,80 @@ k237SetOmic <- function(omic, tabs_id) {
         K237_STATE_JS_KIT233, fixed = TRUE), envir = globalenv())
 }
 
+#' journey.R's chooser click-through, with the folders found (WL 45605975875: shinyFiles 0.9.3 marks a folder
+#' `.sF-directory`, a file `.sF-file`, and opens a folder on its own double-click handler, shinyFiles.js:1138, :1155;
+#' journey.R looked among `.sF-file` only, so no folder was ever found). On a miss, the names the chooser lists are kept.
+k237ChooseFile <- function(S, step, button, path) {
+    p <- k233Press(S, step, button)
+    if (!isTRUE(p$ok)) return(list(ok = FALSE, how = paste("chooser button:", p$reason)))
+    modal <- sprintf("#%s-modal", button)
+    if (!k233WaitFor(S, sprintf("document.querySelectorAll(%s).length > 0", k233Json(paste(modal, ".sF-fileList > *"))),
+        30)) {
+        return(list(ok = FALSE, how = "the file chooser listed nothing within 30 s"))
+    }
+    shot <- file.path(S$G$out, sprintf("%s-%s-chooser-%s.png", S$label, step, sub(".*-", "", button)))
+    tryCatch(S$driver$get_screenshot(shot, selector = paste(modal, ".modal-content")), error = function(e) NULL)
+    parts <- c(strsplit(dirname(path), "/", fixed = TRUE)[[1L]][-1L], basename(path))
+    rows <- function(m) sprintf("Array.prototype.slice.call(document.querySelectorAll(%s+' .sF-fileList .sF-file, '+%s+' .sF-fileList .sF-directory'))",
+        k233Json(m), k233Json(m))
+    find <- function(name) sprintf(paste0("(function(){var f=%s.filter(function(x){var d=x.querySelector('.sF-file-name>div');",
+        "return d&&d.textContent===%s;})[0];return f||null;})()"), rows(modal), k233Json(name))
+    listed <- function() paste(utils::head(as.character(unlist(k233Js(S, sprintf(paste0("%s.map(function(x){",
+        "var d=x.querySelector('.sF-file-name>div');return d?d.textContent:'';})"), rows(modal))))), 60), collapse = ", ")
+    for (i in seq_along(parts)) {
+        if (!k233WaitFor(S, sprintf("(%s) !== null", find(parts[[i]])), 20)) {
+            return(list(ok = FALSE, how = sprintf("the chooser does not list %s (it lists: %s)", parts[[i]], listed())))
+        }
+        event <- if (i < length(parts)) "dblclick" else "click"
+        k233Js(S, sprintf("(function(){var f=%s;if(!f){return false;}jQuery(f).trigger('%s');return true;})()",
+            find(parts[[i]]), event))
+        k233LogAction(S, step, paste(button, "chooser"), paste(event, parts[[i]]))
+    }
+    p <- k233Press(S, step, paste(modal, "#sF-selectButton"), "css")
+    if (!isTRUE(p$ok)) return(list(ok = FALSE, how = paste("Select:", p$reason)))
+    ok <- k233WaitFor(S, sprintf("document.querySelector(%s) === null", k233Json(modal)), 20)
+    list(ok = ok, how = "clicked through the chooser's folder list (folders and files)")
+}
+
+#' RA-03 and RA-05: the DA table of a contrast by an exact two-sided match. The contrast's two group names (from
+#' `group<A>-group<B>` or `<A>_vs_<B>`) must each equal, in order and normalised, the two sides parsed from the file's
+#' stem; the da folder is searched first, then the project (visible folders only); more than one candidate is refused.
+#' The number of candidates and the path read, relative to the project, are kept as an observation.
+k237ContrastPair <- function(x) {
+    m <- regmatches(x, regexec("^group(.+)-group(.+)$", x))[[1L]]
+    if (length(m) == 3L) return(m[2:3])
+    p <- strsplit(x, "_vs_", fixed = TRUE)[[1L]]
+    if (length(p) == 2L) p else NULL
+}
+
+k237DaFile <- function(R, contrast) {
+    want <- k237ContrastPair(contrast)
+    pick <- function(files) {
+        if (is.null(want)) return(character())
+        stems <- sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))
+        keep <- vapply(stems, function(st) {
+            got <- k237ContrastPair(st)
+            !is.null(got) && identical(k233Norm(got), k233Norm(want))
+        }, logical(1))
+        files[keep]
+    }
+    paths <- k233ProjectPaths(R)
+    hits <- pick(list.files(paths$da, "^da_proteins_.*_long_annot\\.tsv$", full.names = TRUE))
+    where <- "da folder"
+    if (!length(hits)) {
+        hits <- pick(list.files(paths$base, "^da_proteins_.*_long_annot\\.tsv$", full.names = TRUE, recursive = TRUE))
+        where <- "project"
+    }
+    G <- get0("K237_G", envir = globalenv())
+    if (is.environment(G)) {
+        rel <- substring(k237Slash(hits), nchar(k237Slash(paths$base)) + 2L)
+        k233Observation(G, R$label, sprintf("N2 table for %s (RA-03, RA-05)", contrast), sprintf(
+            "%d candidate(s) in the %s by exact two-sided match; read: %s", length(hits), where,
+            if (length(hits) == 1L) rel else "none (refused)"))
+    }
+    if (length(hits) == 1L) hits[[1L]] else NA_character_
+}
+
 k237Rebind <- function() {
     env <- globalenv()
     assign("k233ActionKit233", k233Action, envir = env)
@@ -324,7 +422,10 @@ k237Rebind <- function() {
     assign("k233Action", k237Action, envir = env)
     assign("k233StopSession", k237StopSession, envir = env)
     assign("k233ProjectPaths", k237ProjectPaths, envir = env)
-    c("k233Action -> k237Action (journey.R's action, then this ticket's records)",
+    assign("k233ChooseFile", k237ChooseFile, envir = env)
+    assign("k233DaFile", k237DaFile, envir = env)
+    c("k233ChooseFile -> k237ChooseFile (folders are .sF-directory)",
+        "k233DaFile -> k237DaFile (RA-03 exact two-sided match; RA-05 path recorded)","k233Action -> k237Action (journey.R's action, then this ticket's records)",
         "k233StopSession -> k237StopSession (tree kill, port refusal confirmed)",
         "k233ProjectPaths -> k237ProjectPaths (the folder S1 kept; the route's omic)",
         "K233_MARK_PANE_JS -> the route's workflow tabset (per session)",
@@ -643,6 +744,7 @@ k237Main <- function(args) {
     Sys.unsetenv(c("MULTISCHOLAR_TEST_FEATURES", "MULTISCHOLAR_TEST_MODE", "CHROMOTE_CHROME"))
     options(warn = 1, chromote.timeout = 60)
     G <- k233Context(phase)
+    assign("K237_G", G, envir = globalenv())
     G$workflow <- k237ReadWorkflowRecord(out)
     G$routes <- k237Routes(request$routes)
     G$runs <- k237Runs(G, a$fixtures, request)

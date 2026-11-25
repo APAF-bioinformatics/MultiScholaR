@@ -67,14 +67,21 @@ K237_ROUTES$trx_screen <- k237OmicRoute("TRANSCRIPTOMICS", "transcriptomics", "t
 #' copied to scripts/<omic>, as on proteomics), and the lane's `expected_exports` matched by name anywhere.
 k237OmicFiles <- function(omic, exports, trx = FALSE) {
     src <- sprintf("^scripts/%s/", omic)
+    prefix <- c(lipidomics = "lipid", metabolomics = "metab", transcriptomics = "trx")[[omic]]
     files <- list(
         S3 = paste0(src, c("design_matrix\\.tab$", "contrast_strings\\.tab$")),
+        S7 = paste0(src, prefix, c("_filtered_session_data_latest\\.rds$", "_filtered_session_summary\\.txt$")),
         S8.2 = sprintf("^results/%s/[^/]*/?(de|da)_[^/]*_long_annot\\.(tsv|xlsx)$", omic),
         S10.1 = paste0(src, "study_parameters\\.txt$"),
         S10.2 = sprintf("(^|/)Publication_tables/DA_results_%s\\.xlsx$", omic),
         S10.3 = sprintf("%s%s_report\\.rmd$", src, omic),
         S10.5 = c(paste0(src, "session_state_[^/]*\\.RDS$"), sprintf("(^|/)%s$", gsub(".", "\\.", exports, fixed = TRUE))))
-    if (trx) names(files)[names(files) == "S8.2"] <- "S8"
+    if (trx) {
+        # WL 45605975875: the trx DA writes results/transcriptomics/da_genes/de_results_<contrast>.csv; trx has no S7.
+        files$S8.2 <- NULL
+        files$S7 <- NULL
+        files$S8 <- "^results/transcriptomics/da_genes/de_results_[^/]*\\.csv$"
+    }
     files
 }
 
@@ -149,6 +156,17 @@ k237HasState <- function(st, omic, states) {
 #' are set and the same press made once more (WL-1's rule).
 k237Press <- function(S, spec, permissive = NULL) {
     res <- k233Action(S, spec)
+    # The application asks for the press again when another step is still running (WL 45605975875: the normalisation
+    # tab's own entry QC was running at S6.1): a user waits and presses again with the same settings; the lane's values
+    # are only for a default refused on the fixture.
+    if (identical(res$outcome, "refused") && grepl("still running", res$message %||% "", fixed = TRUE)) {
+        Sys.sleep(30)
+        again <- spec
+        again$step <- paste0(spec$step, "w")
+        again$name <- paste(spec$name, "(pressed again, as the application asks, same settings)")
+        again$prepare <- NULL
+        res <- k233Action(S, again)
+    }
     if (identical(res$outcome, "refused") && isTRUE(S$R$permissive) && is.function(permissive)) {
         retry <- spec
         retry$step <- paste0(spec$step, "r")
@@ -404,10 +422,11 @@ k237StepNormOmic <- function(S, R, step, route) {
 }
 
 k237StepExportOmic <- function(S, R, step, route) {
+    # WL 45605975875: the normalisation tab's status and stepper were already complete before the press (both signals
+    # at 0 s), so the export's own message is the signal (R/mod_omic_norm.R:650), with no digest signal.
     k233Action(S, list(step = "S7", name = step$name, target = paste0(route$prefix, "-norm-export-session"), by = "testid",
         tabs = list(k237Tab(route, "norm")),
-        digest = function(st) identical(k237Status(st, route$omic, "normalization"), "complete"),
-        dom = function(st) k233Stepper(st, 4L)))
+        dom = function(st) k233Noted(st, "Session data exported successfully", "message")))
 }
 
 k237StepDaOmic <- function(S, R, step, route) {
@@ -420,7 +439,8 @@ k237StepDaOmic <- function(S, R, step, route) {
     if (route$trx) return(k233Action(S, c(list(step = "S8"), run)))
     loaded <- k233Action(S, list(step = "S8.1", name = "load the filtered session",
         target = paste0(route$prefix, "-da-load-session"), by = "testid", tabs = tabs,
-        digest = function(st) k237HasState(st, route$omic, "loaded_for_de"),
+        # WL 45605975875: loading commits no state (the head does not change, kit-159/action-scripts.md "Declared
+        # states"), so the page's message is the signal (R/mod_omic_da.R:514), with no digest signal.
         dom = function(st) k233Noted(st, "Session loaded successfully", "message")))
     if (!identical(loaded$outcome, "complete")) return(loaded)
     ran <- k233Action(S, c(list(step = "S8.2"), run))
@@ -443,7 +463,9 @@ k237NumberN2Omic <- function(S, R, route) {
     options <- as.character(unlist(k233Js(S, sprintf(
         "Array.prototype.map.call((document.getElementById(%s)||{options:[]}).options,function(o){return o.value;})",
         k233Json(de("table_contrast"))))))
-    files <- list.files(k233ProjectPaths(R)$base, "^de_.*_long_annot\\.tsv$", full.names = TRUE, recursive = TRUE)
+    files <- list.files(k233ProjectPaths(R)$base, "^de_.*_metabolites_.*_long_annot\\.tsv$", full.names = TRUE,
+        recursive = TRUE)
+    files <- files[!duplicated(basename(files))]
     S$n2 <- list()
     for (contrast in options) {
         k233Set(S, "S8.3", de("table_contrast"), contrast)
@@ -451,8 +473,19 @@ k237NumberN2Omic <- function(S, R, route) {
         text <- as.character(k233Js(S, sprintf("(document.getElementById(%s)||{innerText:''}).innerText",
             k233Json(de("da_summary_stats")))) %||% "")
         shown <- suppressWarnings(as.integer(sub("(?s).*Significant \\([^)]*\\): ([0-9]+).*", "\\1", text, perl = TRUE)))
-        mine <- files[grepl(k233Norm(contrast), k233Norm(basename(files)), fixed = TRUE)]
-        if (!length(mine) && length(options) == 1L) mine <- files
+        # RA-03: an exact two-sided match of the contrast's group names against each file's contrast part
+        # (de_<mode>_metabolites_<contrast>_long_annot.tsv, R/func_metab_da_results_output.R:166), one file per assay.
+        want <- k237ContrastPair(contrast)
+        parts <- sub("^de_[^_]+_metabolites_(.*)_long_annot\\.tsv$", "\\1", basename(files))
+        mine <- files[vapply(parts, function(x) {
+            got <- k237ContrastPair(x)
+            !is.null(want) && !is.null(got) && identical(k233Norm(got), k233Norm(want))
+        }, logical(1))]
+        modes <- sub("^de_([^_]+)_metabolites_.*$", "\\1", basename(mine))
+        if (anyDuplicated(modes)) mine <- character()
+        k233Observation(S$G, S$label, sprintf("N2 tables for %s (RA-03, RA-05)", contrast), sprintf(
+            "%d file(s), one per assay required; read: %s", length(mine),
+            paste(substring(k237Slash(mine), nchar(k237Slash(k233ProjectPaths(R)$base)) + 2L), collapse = " + ")))
         saved <- if (!length(mine)) NA_integer_ else sum(vapply(mine, function(f) {
             t <- utils::read.delim(f, check.names = FALSE, stringsAsFactors = FALSE)
             q <- suppressWarnings(as.numeric(t$fdr_qvalue))

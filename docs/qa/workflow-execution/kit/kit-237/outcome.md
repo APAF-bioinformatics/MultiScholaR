@@ -114,9 +114,59 @@ minutes; WL ceiling 220 job-minutes (14.67 core-hours), expected 102; at most th
      their DOM signals).
   8. The whole journey finishes inside the 150-minute deadline.
 
-## Observed
+## WL, run 45605975875 (2026-11-25 11:36 to 12:57 UTC; 81 job-minutes, 5.40 core-hours)
 
-Nothing has run yet.
+Records: `wl-45605975875/` (the tables; screenshots and per-step JSON stay in the artifact `journey-windows`, 30 days).
+Binding as declared: commit under test 7327607f (early check and full check passed; the planted wrong commit stopped),
+driver 76e4b519, routes 47ef001f. Machine: `windows-2025`, R 4.6.1 ucrt, Chrome 157.0.8103.79, 4 cores (AMD64 Family
+26), LongPathsEnabled 0 read by the installed R, project root `C:/Users/runneradmin/Documents` (30 characters).
+Withheld by the check: `WL1-study_parameters.txt` and `workflow-diff.txt` (forbidden string: package names).
+
+**Verdict (`verdict.txt`): instrument not proven on Windows (49 pass, 11 fail, 1 recorded); WL-5 passed.**
+
+Observed:
+- WL-0 passes in full (launch 3.1 s, launcher `process`, attach, 40 programs firewalled, LongPathsEnabled 0, the
+  application's library the bundle's only, no test-features line).
+- WL-1 on `prot_lfq`: S1 to S10.5 reached; workers seen at every QC, normalisation and DA step; N1 to N4 equal; every
+  named file found. S9 refused offline: "Enrichment needs protein annotation and this project has none" (prediction 2
+  said a test-mode substitute: wrong; KIT-233's L met the same refusal, its expected outcome). S9.d: 0 bytes, "Unable
+  request data from server" (K1, KIT-241). Three placeholder export names missing (K2).
+- WL-1 on `trx_screen`: S1 to S10.5 reached; K222 equal; N3 equal; one kind-3 finding at S8 from a wrong named-file
+  pattern (the DA writes `results/transcriptomics/da_genes/de_results_<contrast>.csv`).
+- WL-1 on `lipid_canonical` and `metab_lc`: S5.4 refused "No internal standards found" (K12, as predicted); S6.1
+  refused "A step is still running" (the tab's entry QC), then the lane's values were applied (S6.1r) and completed;
+  S7 completed with both signals already true at the press (0 s); S8.1 timed out at 600 s although "Session loaded
+  successfully!" appeared at 0.5 s (the digest signal named a state the load never commits); the route stopped there.
+- WL-2 and WL-3 pass (port refused; S2 crashed from the browser session). WL-4 (a), (b) pass on LFQ.
+- WL-5 passes on all four routes (LFQ 9 agree, 10 DOM only; lipid and metab 9/1; trx 7/6).
+- e2e lanes: lipid 88/0, metab 190/0, trx 16/0, TMT-LFQ 162/0.
+- Paths met (RA-01): the `timeout` outcome (S8.1, with kind-1 and kind-5 findings), "not reachable as a user" (the
+  chooser). Not met: the internal deadline (41 minutes of 150 used), a progress modal over 60 s.
+
+The 11 fails and their cause (each in the instrument's mechanics; no product result is judged by them):
+1. WL-4 (c): the plant deleted one copy of `post_norm_pca.png` (`results/proteomics/protein_qc/`) while the pattern
+   still matched other copies, so no file was missing: the plant, not the check, was wrong.
+2-5. WL-0u on all four routes: the chooser opened and listed drive C: (screenshot), but journey.R's
+   `k233ChooseFile` looks for folders among `.sF-file` rows; shinyFiles 0.9.3 (the bundle's, lock file) marks folders
+   `.sF-directory` (`shinyFiles.js:1138`) and opens them on their own double-click handler (`:1155`). `k233ChooseFile`
+   had never been run before this (KIT-233's L-u was not sent).
+6-11. `lipid_canonical` and `metab_lc`: S8.1's digest signal (state `loaded_for_de`) is never committed by the load
+   (its page signal came at 0.5 s), so S8.1 timed out and the route stopped: "reached the last action", N3, N2 and
+   WL-4 (a) on `metab_lc` could not be judged.
+
+Instrument rerun 1 (VAL-54; no criterion, expected value or stop rule changed; ceiling unchanged): `journey-win.R`
+deletes every copy the plant names; `k237ChooseFile` replaces `k233ChooseFile` (folders and files, folders by their own
+double-click, the listed names kept on a miss); S8.1 and S7 on the omics routes read the page's own message, without a
+digest signal; S7 and trx S8 name the files these routes write; a "still running" refusal is pressed again with the
+same settings after 30 s (the lane's values only for a default refused on the fixture). With the result audit of
+KIT-233's L (RA-02, RA-03, RA-05): a terminal screenshot at the moment of a refusal; the DA table by an exact two-sided
+match of the contrast's group names, the candidates and the path read recorded.
+
+Predictions for rerun 1 (written before it): WL-0 as before; WL-0u passes on all four routes; WL-1 reaches S10.5 on
+all four routes, with S6.1 on lipid and metab completing at the rendered defaults after the second press (or refused by
+a default: then the lane's values, recorded); WL-4 (a) on LFQ and `metab_lc`, (b), (c) pass; N2 on `metab_lc` equal;
+WL-2, WL-3 pass; WL-5 passes on all four; known findings only (K1, K2 to K4, K12); the internal deadline and a progress
+modal over 60 s still not met (RA-01: not planted; owed before WJ', ticket section 20).
 
 ## Checked locally (no R)
 

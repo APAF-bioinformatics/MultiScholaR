@@ -1,0 +1,10 @@
+key	value
+effective_user_inner	runneradmin
+network	firewall
+network_links	ip not available
+network_closed_by	firewall (proxies http://127.0.0.1:9 where set)
+http_proxy	
+home	C:\Users\runneradmin\Documents
+libpaths	D:/a/_temp/test-tools:C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library
+application_browser	CHROMOTE_CHROME = /nonexistent/k233-no-browser-for-the-application (the application only)
+gprofiler	test mode: not called (test-mode substitute)
