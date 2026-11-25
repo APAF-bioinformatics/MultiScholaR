@@ -128,6 +128,15 @@ hold"):
 - R CMD check: findings identical, none only on head.
 Decides: whether the merged tree holds 6.2's verdicts. R3b: the coordinator's ruling (the next full-suite checkpoint).
 
+### R2b observed (45605914511, fd962ed9 against 7327607f): green, every prediction held
+
+`r2b-merge-compare.tsv`, `r2b-merge-compare-failures.txt`, `r2b-merge-check-compare.txt`. 34 files: 32 `same`
+(`test-kit220-da-threshold-consumers.R`, `test-kit218-...`, `test-kit212-...`, `test-kit215-...` and
+`test-gui-entry-proteomics.R` among them); `test-omic-da-module.R` new-failure = exactly the 13 `prot_main` summary
+values (13 distinct steps, each the one line; 211 → 198 passed); `test-kit204-prot-da-not-tested.R` only on head, 81
+passed, 0 failed. R CMD check: 0 ERROR, 3 WARNING, 3 NOTE on both sides, none only on head. 248.4 job-minutes (16.6
+core-hours); total for the ticket 132.0 core-hours of 262.7.
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
