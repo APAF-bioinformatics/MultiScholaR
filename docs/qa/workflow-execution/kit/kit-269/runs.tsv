@@ -1,1 +1,2 @@
 run_id	commit	purpose	minutes	result
+45707147607	79680e763fe5eb017e9e9da7276e261199972815	R1: tests-only commit, failing first (no base)	11.3	success; file 15 passed / 5 failed / 4 errors, as predicted (see outcome.md)

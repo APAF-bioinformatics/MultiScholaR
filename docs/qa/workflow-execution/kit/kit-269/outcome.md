@@ -44,3 +44,28 @@ to be `fixed` (not `only-on-head`) with the base failures above.
 ## Not checked (so far)
 
 Everything: no R was run; no run has been sent.
+
+## R1 (run 45707147607, tests-only commit 79680e76, no base; 11.3 minutes wall, one job)
+
+File result 15 passed, 5 failed, 4 errors: exactly the prediction. T1, T2, T4: purrr error, "Result must be length 1, not
+2" (T1, T4 at index 1 and 17 as predicted; T2 "not 3"). T3: only the seven-element row failed ("Alpha: v1, v2, v3, v4,
+v5, ..."). T5: no `Analysis Record:` line; the file held 116 lines ending at the Additional dashes (the printed
+"first six lines" showed NA, see the helper note); `Yaxis Limit: -3, 3` absent (1 failure). T6: console line present
+(pass), file returned (pass), three failures for the line after the dashes. T7: error. Stop rule 1 not triggered.
+
+Instrument defect, recorded (brief condition 3): the helper `k269After` indexed `lines[(header + 2):length(lines)]`, which
+on an empty block returns `NA` and the dashes (a descending sequence). It changed no expected value; it was replaced by
+`lines[-seq_len(header + 1L)]` (commit 50077f3a). The base values of T5 and T6 are unchanged in kind (they fail by
+value); R2's base run re-shows them with the final file. No R1 re-send.
+
+Plan re-check 1 (coordinator's message): R03 changed the failure reason to the condition's message with ANSI stripped and
+white space collapsed (`conditionMessage(e)` already holds an rlang condition's parents), so T6's parent case asserts
+the cause appears exactly once (commit 8f5c30e8, tests only). R1 ran before this edit; its expectation there was the
+parent-only line, which failed on base by value, as the changed assertion does. Ticket text not edited; for the
+coordinator: R01 (the dependency note's premise about KIT-263's test file: it runs the record path) and R02
+(section 2 `:45`, stale after F5) stand as stale ticket sentences.
+
+## R2 predictions (unchanged from above; base = 50077f3a, head = 220b1e2e)
+
+Base is the final tests-only commit, so the new file is on both sides: verdict `fixed` for it (base 15/5/4 or equal
+by value; head 24 passed expected, 0 failed). Every other file `same`. Check identical.
