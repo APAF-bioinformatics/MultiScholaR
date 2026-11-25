@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-254 R1: tests-only commit 9dc99037 on staging e0747fc1; each E row fails at G0's base value, G rows and the edited T1/T8 pass; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-254 R1 failing-first 9dc99037",
+  "package_commit": "9dc990371cf4d088de6bc075c58302b7b1f3b017",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit254-omics-correlation-skip.R", "test-omics-norm-state-guards.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
