@@ -33,6 +33,53 @@ mode"), and L-5 passes. J (PXD055981 s500) is not started: it waits for the rele
 - **KIT-251 record at S5.5** (one click): outcome `complete`; head `protein_replicate_filtered`; one "already
   running" warning; one working notice. KIT-251's defect (A2) is still present: it is not merged at `e0747fc1`.
 
+### Result audit of the fourth L (2026-11-25): scope, repairs, what is owed
+
+- **Scope of the proof (RA-01).** "Instrument proven" covers only:
+  - driver `76e4b519`, test mode;
+  - proteomics DIA on the 8-run, two-group, one-contrast fixture;
+  - Linux on run-tests, the package installed from source and started through the package tree's `entry.R` under the
+    plain launcher;
+  - a network namespace;
+  - commit `e0747fc1`.
+- **What it does not cover.** It proves nothing about user mode (the `shinyFiles` chooser, waits read from the page
+  alone), Windows, the installed bundle or Electron, any other route or omic, or the integration tabs. Paths of the
+  classifier this run never exercised:
+  - `timeout` and the internal deadline;
+  - "not reachable as a user";
+  - a progress dialog open longer than 60 s;
+  - more than one contrast;
+  - J's data phase.
+- **RA-04.** L-5 cross-checked completion on 17 DIA steps. The other 9 (S6.1, S7, S8.1, S8.3, S10.1 to S10.5) rely on
+  the page's signal alone, corroborated here by the saved files (N1 to N4, the report). Any other route needs its own
+  test-mode L-5 before a user-mode run relies on the page (VAL-216).
+- **Driver repairs made, not yet run** (commit `fe0b2742`; exercised by the next lifecycle run):
+  - RA-02: a viewport screenshot at the first terminal signal (`<session>-NN-<step>-terminal.png`, listed with the
+    step's files). Until now the refusal's notice was gone by the time of the step's screenshot: at S9 the image shows
+    no refusal and a stale "Ready for analysis".
+  - RA-03: the contrast-to-table rule is an exact two-sided match. The stem parses as `group<a>-group<b>`, and <a> and
+    <b> must equal the contrast's two group names in order; more than one candidate is refused, and the count is
+    recorded.
+  - RA-05: N2 records the compared table's path relative to the project.
+- **The old rule was safe for L and J.** The old rule found the two group names in order anywhere in the stem. It can
+  choose a contrast's reversed table only when a group name occurs inside another group name or inside the word
+  "group" (the letters g, r, o, u, p), and both the contrast and its reverse were saved. That is not the case here:
+  - L's names (KO, WT) occur in no other name and not in "group", and one contrast was saved;
+  - J's names (H1E_B to H1E_E, normalised `h1eb` to `h1ee`) contain digits, occur in no other name and not in "group",
+    and J's six contrasts include no reversed pair.
+
+  So L's N2, and J's if it had run, read the right table.
+- **Owed before journey J at the release commit.** A test-mode L (L-1 with L-4 and L-5, about 25 job-minutes) on the
+  release commit. J there does not inherit this proof: KIT-250 to KIT-253 change the signals the driver reads (S2's
+  completion before the organism dialog, S5.5, the failure texts, S6.1's state timing).
+- **Owed before any user-mode run.** The user-mode observation L-u (or L') before any user-mode run (J'; VAL-216).
+  Recommended, not required: L-u on `e0747fc1` soon, about 25 job-minutes, to try the chooser click-through before the
+  release commit.
+- **Application observations the audit routes to the coordinator** (not instrument faults):
+  - after a refused S9 the enrichment status still reads "[WAITING] Ready for analysis";
+  - S5.5's form shows "Parallel Processing Cores 4" while the result says "Parallel cores used: 1";
+  - the proteomics DA summary says "Total genes: 314".
+
 ## Observed
 
 ### Runs (`runs.tsv`)
