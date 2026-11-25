@@ -172,4 +172,71 @@ All other moved values are predicted to equal R2b's head values.
 
 ## Result
 
-(filled after the run)
+Run 45626605316 (request `merge-train-20261126a-aceb7190`, run-tests commit 2ab9d399) bound head aceb7190 against base
+42846c0e. It was sent once, completed with conclusion success, and used 884.1 job-minutes of the 2,280 ceiling (check
+29.3). The tables are in `merge-train-20261126a/`: `compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`,
+`check-summary.txt` and `meta.txt`.
+
+Of the 177 files, 168 are `same` and 9 are not. All 9 were predicted:
+
+| File | Base p/f/s | Head p/f/s | Verdict | Member, prediction |
+|---|---|---|---|---|
+| test-kit244-limpa-pass-through.R | absent | 204/0/0 | only-on-head | KIT-244, 204/0/0: held |
+| test-kit243-summary-current-outputs.R | absent | 246/0/0 | only-on-head | KIT-243, 246/0: held |
+| test-kit201-treat-moderation.R | absent | 89/0/0 | only-on-head | KIT-201, 89/0: held |
+| test-prot-ruv-factors-in-model.R | 306/1/0 | 312/0/0 | fixed | KIT-201: held |
+| test-gui-entry-proteomics.R | 189/4/0 | 168/25/0 | new-failure | KIT-201, 4 to 25: held |
+| test-omic-da-module.R | 1316/53/0 | 1289/80/0 | new-failure | KIT-201, 53 to 80: held |
+| test-omic-enrich-module.R | 1051/19/0 | 1011/59/0 | new-failure | KIT-201, 19 to 59 (the I13 leaf passed on base): held |
+| test-omics-enrich-core.R | 232/9/1 | 221/20/1 | new-failure | KIT-201, 9 to 20: held |
+| test-workflow-saved-da.R | 780/171/0 | 776/175/0 | message-changed | KIT-243 with KIT-201, combined: held (below) |
+
+### Leaf by leaf, against KIT-201's R2b
+
+I compared this run's `compare-failures.txt` with KIT-201's committed R2b `compare-failures.txt`, section by section,
+with temporary paths masked.
+- Both files have the same 24 test sections, with the same verdicts.
+- 21 sections are identical line for line. These cover every moved leaf of `test-gui-entry-proteomics.R` (including the
+  12 `prot_lfq_fragpipe` NumSig leaves), `test-omic-da-module.R` and `test-omic-enrich-module.R`.
+- Two sections differ by one trailing blank line only, an artifact of where the section ends in the file. These are
+  `test-omics-enrich-core.R` kernel_clusterprofiler and the saved-da W2 retry.
+- The saved-da W1 (a) and W2 "DIA DA clicks" sections differ only in the `files` values of KIT-243's three cases,
+  `dia_changed_arguments`, `dia_qvalue_only` and `dia_refused`:
+
+| Case | R2b's head (KIT-201 alone) | This head (KIT-201 with KIT-243) |
+|---|---|---|
+| `dia_changed_arguments` | 156d4433… | 32357209… |
+| `dia_qvalue_only` | ecc43143… | abadbba0… |
+| `dia_refused` | ecc43143… | abadbba0… |
+
+  This is exactly the combined prediction. The counts are KIT-201's (776/175), the messages are confined to KIT-201's
+  set, and KIT-243's three `files` values differ from R2b's head. `fits`, `states` and every limpa case are unchanged.
+- No other moved key: no NumSig leaf outside `prot_lfq_fragpipe.json`, and no lipid/metab, limpa or transcriptomics
+  value. KIT-201's stop rule did not fire.
+
+### Predicted `same`, observed `same`
+
+- `test-prot-norm-core.R` is 1548/306 on both sides. The body-digest block passes on each side against its own pin
+  (KIT-244).
+- `test-kit220-da-threshold-consumers.R` is 79/0 on both sides, with the switch (KIT-243 C01; KIT-201 C02).
+- The other 166 files are `same`.
+
+### R CMD check
+
+- 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides.
+- All 6 findings are identical, and none is only on head.
+- The portable-file-names NOTE lists 238 paths on each side.
+
+### Verdict
+
+Every prediction of KIT-244, KIT-243 and KIT-201 held, including the combined saved-da prediction. TRAIN GREEN.
+
+When the result was read, staging was still at 42846c0e. The rows `VAL-<train8-1>` to `VAL-<train8-4>`, and the
+stored-value row `VAL-<train8-2b>`, are numbered by the coordinator at landing.
+
+### Not checked
+
+- The trees after the run's head (docs only).
+- Files outside the 177.
+- The members' full suites. By the coordinator's ruling, these go to the staging checkpoint after this train lands,
+  which also serves KIT-201's R3b and KIT-243's R3.
