@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-250 correction pass R2'' (VAL-54 instrument rerun 1 of 3 of R2' 45611281361: E8 seam mechanics fixed, no expectation changed): base 34f3f606 (tests-only' + fix of mechanics) head 6377cde6; seven files, check; ceiling unchanged",
+  "label": "KIT-250 R2'' base 34f3f606 head 6377cde6",
+  "package_commit": "6377cde601c29f1fe536bc056cb8ba451d8af0d8",
+  "base_commit": "34f3f606e1a72caadfa8c1f153bfddab2a6dc702",
+  "tools_ref": "",
+  "tests": ["test-kit250-organism-dialog.R", "test-prot-01c-import-module-contracts.R", "test-prot-01d-import-module-characterization.R", "test-module-ci-prot-import.R", "test-module-ci-trx-app.R", "test-workflow-gui-memory-lifetimes.R", "test-workflow-server-shared.R"],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
