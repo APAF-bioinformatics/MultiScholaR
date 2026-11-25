@@ -802,7 +802,7 @@ omicNormGuardTexts <- function() {
         summary_prot = paste("the current table is not the result of a normalisation: Quality Control was reverted, or a",
             "Quality Control step was applied again, after the normalisation. Press 'Run Normalization & RUV' again, apply",
             "or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then save."),
-        summary_prot_none = paste("No normalisation has been run in this session, so there is no final table to save. Press",
+        summary_prot_none = paste("No normalisation has been run in this project, so there is no final table to save. Press",
             "'Run Normalization & RUV' (and apply or skip the correlation filter), then press this button again."),
         summary_loaded = paste("This session file was saved after Quality Control was reverted past the normalisation, so its",
             "table (\"%s\") was not normalised. Import the data again, run quality control and the normalisation, then press",

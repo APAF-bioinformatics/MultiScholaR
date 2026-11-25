@@ -78,7 +78,9 @@
    refused when the differential analysis it would use is no longer current. 'Copy to Publication Directory' still
    proceeds after a refused save, as in the other omics. To check an earlier session file: the 'Normalization' line of
    filtered_session_summary.txt was the method selected at export; the normalisation step of analysis_record.json gives
-   the method run (KIT-216).
+   the method run. Known limit (DRAFT): a session file saved by an earlier version after the enrichment, then 'Run
+   Normalization & RUV' again without a Revert, now opens, but its analysis record still lists that earlier
+   enrichment as the last step, as if it had been run on the current table (no number changes) (KIT-216).
 
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's

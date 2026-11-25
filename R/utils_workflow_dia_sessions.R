@@ -732,9 +732,9 @@ protSessionAfterEnrichmentTexts <- function() list(
         "Data Session' in the Normalisation tab, then save again."),
     not_a_table = paste("the current step '%s' is not a protein table, so it cannot be saved as a session file. Go back",
         "to the normalisation tab's result (Revert), then export."),
-    enrichment_da_stale = paste("The differential analysis these comparisons come from is no longer current: the table",
-        "was changed or reverted, or the differential analysis was run again. Run the differential analysis on the",
-        "current table, then run the enrichment."))
+    enrichment_da_stale = paste("The differential analysis these comparisons come from was run on an earlier step of the",
+        "table: the table was changed or reverted, or the differential analysis was run again. Run the differential",
+        "analysis on the current table, then run the enrichment."))
 
 #' Open a validated native archive in a new private project directory.
 #' @param path User-selected native archive; never an owned-generation shortcut.

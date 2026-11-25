@@ -113,12 +113,15 @@ assertWorkflowSummaryHeadFinal <- function(workflowData, omicType) {
 #' The head's table (the head; a result head, which only an unconverted store holds, by KIT-212's
 #' `workflowDaTableState`) must be one of the proteomics DA's states, by name; no comparison with an export (KIT-206's
 #' guard stays in the archive refresh). Refused with `summary_none` when no normalisation state is in the store,
-#' otherwise with the proteomics text. Other owners (in-memory, test fakes) pass.
+#' otherwise with the proteomics text. Other owners (in-memory, test fakes, another omic's owner) pass.
 #' @param manager The bus's state manager.
 #' @return TRUE, invisibly; otherwise a condition of class `omic_norm_correlation_input_stale`.
 #' @noRd
 assertProtSummaryHeadFinal <- function(manager) {
     if (!usesDIAReferenceStates(manager)) return(invisible(TRUE))
+    # r1.4 (audit F04): fail-safe; only an owner of another omic's binding (lipidomics, metabolomics, transcriptomics)
+    # is skipped, so every proteomics owner of any route stays guarded.
+    if (isTRUE(toupper(manager$workflow_type) %in% toupper(omicsWorkflowTypes()))) return(invisible(TRUE))
     texts <- omicNormGuardTexts()
     refusal <- withWorkflowStateScope(manager, function() {
         head <- manager$current_state

@@ -3801,7 +3801,7 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
             expect_true(commit$summaries)
             expect_true(commit$contrasts)
             expect_true(commit$plots)
-            expect_identical(seen$run$history, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
+            expect_identical(seen$run$history, "<unchanged>") # KIT-216 (VAL-175; r1.4, F06): the history is left as it was
         })
     })
 }
@@ -4252,7 +4252,7 @@ test_that("(R3, P-07) a Run with the organism filter applied completes on the ta
     expect_identical(seen$run$errors, character())
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
-    expect_identical(seen$run$history, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
+    expect_identical(seen$run$history, "<unchanged>") # KIT-216 (VAL-175; r1.4, F06): the history is left as it was
     expect_identical(omicEnrichR3Filter(seen$run), c(enabled = "TRUE", filter_applied = "TRUE", target_taxon_id = "9606",
         proteins_before = "6", proteins_after = "3", proteins_removed = "3"))
 })
@@ -4395,7 +4395,7 @@ test_that("(R3, A107-04) a service that answers with no significant terms comple
         run = omicEnrichR3RunWithGost(function(...) NULL, 1L))), live = TRUE)
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
-    expect_identical(seen$run$history, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
+    expect_identical(seen$run$history, "<unchanged>") # KIT-216 (VAL-175; r1.4, F06): the history is left as it was
     # `gost` reports its database version with a result only, so a run of no terms names no service version.
     expect_identical(seen$run$product[["service"]], "unavailable")
     expect_identical(seen$run$resources, "<unchanged>")
@@ -4412,7 +4412,8 @@ test_that("(R3, A107-08) a failed commit is shown as a warning, the tab is not m
     w1 <- omicEnrichW1CaseSpec("gprofiler", environment())[[1L]]
     seen <- omicEnrichW1Drive(w1$setup, c(w1$steps[c("da", "open", "select")], list(
         failed = function(ctx) {
-            testthat::local_mocked_bindings(saveDIAOwnerState = function(manager, ...) stop("disk full"),
+            # KIT-216 (r1.4, F07): a reference-state owner commits through `commitWorkflowEnrichmentProduct`.
+            testthat::local_mocked_bindings(commitWorkflowEnrichmentProduct = function(manager, ...) stop("disk full"),
                 .package = "MultiScholaR")
             omicEnrichW1Run(1L)(ctx)
         },

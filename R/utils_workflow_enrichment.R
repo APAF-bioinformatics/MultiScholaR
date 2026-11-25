@@ -1330,7 +1330,9 @@ restoreWorkflowEnrichment <- function(manager, config) {
     if (is.null(manager)) return(NULL)
     # KIT-216 (VAL-175): on a reference-state owner the enrichment is the current product of the head's table (a store
     # adopted from an archive written before it is converted on adoption); another owner reads it from its history.
-    if (usesDIAReferenceStates(manager)) {
+    # r1.4 (audit F01, F02): an old-shape store whose head is the enrichment state itself (not converted; in the application
+    # only test-built stores) is read from the history as before; an enrichment below a table head never is.
+    if (usesDIAReferenceStates(manager) && !identical(manager$current_state, config$state_name)) {
         if (is.null(diaEnrichmentProduct(manager))) return(NULL)
     } else if (!config$state_name %in% unlist(diaStateHistory(manager))) {
         return(NULL)
