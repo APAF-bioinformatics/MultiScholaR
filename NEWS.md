@@ -437,8 +437,13 @@
 
    The automatic search is unchanged, but the number of factors it finds is now capped as in proteomics: at most 2 with
    fewer than 15 samples, 3 below 40, 4 below 80, 5 above. When the cap reduces it, the step says so, naming the assay,
-   the number found and the number removed. In Manual mode the number you choose is kept, with a warning when it is above
-   the cap. The record keeps the number found, the cap and the number removed, and whether each assay was corrected.
+   the number found and the number removed. In Manual mode the number you choose is kept, with a warning when it is
+   above the cap. The record keeps the number found, the cap and the number removed, and whether each assay was
+   corrected. Because the controls are now the features that differ least between the groups, the automatic search can
+   find, at every percentage it tries, fewer controls measured in every sample than the number of factors it found; an
+   assay can then end with no usable percentage where the earlier row-order controls had one (in a simulated set of 24
+   samples with 5 % of values missing at random, one of two assays). Such an assay is left out of the RUV-corrected data
+   and recorded as 'dropped'; how often this happens is being measured before release.
 
    Evidence (simulated lipidomics data, KIT-172's generator, 2 groups of 6 samples, one unwanted factor, without
    internal-standard normalisation: it was requested but did not act on the simulated standards; capped at 2 factors;

@@ -1,6 +1,6 @@
-# KIT-190 outcome (implementation at d3318820; final R2 45619021147; implementation audit AUDIT-KIT-190-impl-20261126)
+# KIT-190 outcome (implementation at ea5c71ad (code) and 6b465f1e (the VAL-280 test edit); final R2 45619021147; implementation audit AUDIT-KIT-190-impl-20261126)
 
-Ticket `tickets/kit/KIT-190.md` r1.2 (C01 to C04 of the closure check applied at step 0). Branch
+Ticket `tickets/kit/KIT-190.md` r1.6 (C01 to C04 of the closure check applied at step 0). Branch
 `kit-190-ruv-control-selection` from `v0.9-staging` d4e2eb2c (the branch point). Run table: `runs.tsv`.
 
 ## Commits
@@ -457,8 +457,7 @@ design, 2 groups of 6, keeps 8 of 10. Nothing in the legacy route stops k reachi
 stated in NEWS and the ledger row. The owner decided O2 (a), VAL-289: the limit stated, the cap's rule kept; the
 degrees-of-freedom question goes to KIT-188 and KIT-262's table. O3 (the notice wording) stays a draft.
 
-**I06 / O1.** `tests/testthat/test-workflow-omics-ruv-cancor-once.R` is not edited. It is predicted to fail at `:73`
-exactly as in run 45619021147 until the owner rules on O1.
+**I06 / O1.** Decided by the owner (VAL-280, option (a)); the test edit is 6b465f1e; run 45675334261: base 14/2, head 16/0.
 
 **I08.** Draft ledger row `VAL-<merge-b>` (the KIT-094 snapshot gains two markers and four outcome fields; only the
 message of `test-workflow-omics-binding-steps.R` changes; replaced at the end-of-project re-record) for the coordinator.
@@ -534,3 +533,53 @@ applied inside the search would not have rescued it (O1 (b)). 1.57 core-hours.
 
 Correction-pass budget: 220.39 before the pass, then + 0.92 + 44.83 + 1.57 = 267.71 of 510.4 core-hours. No correction
 pass remains.
+
+## Closure check (2026-11-26): READY FOR A MERGE TRAIN
+
+The audit file's closure check found no remaining code finding. The records below follow its texts.
+
+- **CC1.** NEWS now states VAL-280's consequence. An assay can end with no usable percentage, and is then left out of
+  the RUV-corrected data and recorded as 'dropped'. KIT-242 Part B will reword this when it keeps such an assay
+  uncorrected with a notice.
+- **CC3.** The title, the ticket revision (r1.6) and the I06 / O1 paragraph are brought up to date.
+- **CC4 (note).** T9 (iv) checks the two routes only by searching their function bodies for the helper names. No test
+  drives a capped run through either route. The auditor accepted this because the delivery code is two lines per route.
+- **CC5 (note).** The NEWS limit sentence names "VAL-289" in user text. That is for the owner's wording pass and is not
+  changed here.
+- **Hand-off to KIT-242 Part B (not KIT-190's).** An assay whose search succeeded but whose correction then failed
+  (control-vector alignment, or no finite value) still has its k shown as removed in the summary and the log.
+  `ruv_status_per_assay` records "dropped" or "uncorrected", but nothing displays it. This predates KIT-190, KIT-190
+  does not make it worse, and Part B owns it (VAL-242, VAL-290).
+
+**`test-workflow-omics-declarations.R`, observed part by part by the auditor (run 45651851022; base 45/23, head 43/25).**
+- **Two new failures:** `values` (the RUV step's value) for lipidomics and metabolomics. Each gains `k_sweep`, `k_cap`,
+  `k_samples`, `k_notice` and `ruv_status`; its `best_k`, `control_count` and `percentage` are unchanged (legacy Manual,
+  k = 1, 20 %).
+- **8 of the 23 failures already present on base change their message in substance,** for both omics: the RUV-corrected
+  and correlation-filtered states, the sample correlations, and the DA results. The reason is that rule (d) picks other
+  controls at 20 %.
+- **Unchanged:** every state before the RUV step gives the same message on both sides. The registry's message is
+  unchanged; its `fixed` list was already a list on base and gains the two markers.
+- **Ledger:** draft row `VAL-<merge-c>`, in the VAL-181 form, carries the register's text.
+
+**The train's scope and predictions (from the register; base = staging).**
+
+Scope:
+- the 106 files of R2 45651851022;
+- staging's norm- and report-related test files added or changed since 828dd105: `test-kit257-norm-own-files.R`,
+  `test-workflow-saved-exports.R`, `test-kit236-report-sentences.R`, `test-kit235-lipid-metab-report-parser.R` and
+  `test-kit227-report-ruv-sentences.R`;
+- if stacked on trains 13 and 14, their files as well: `test-kit254-omics-correlation-skip.R`,
+  `test-kit248-correlation-skip-record.R`, `test-omics-norm-state-guards.R` and `test-workflow-operation-registry.R`.
+
+| File | Predicted |
+|---|---|
+| `test-ruv-control-anova-grouping.R` | only-on-head, 139/0 |
+| `test-workflow-omics-ruv-cancor-once.R` | `same` 16/0 |
+| `test-omic-norm-module.R` | `same` 639 |
+| `test-prot-norm-core.R` | message-changed, 1548/306 on both sides |
+| `test-workflow-omics-binding-steps.R` | message-changed, 58/1 on both sides |
+| `test-workflow-omics-declarations.R` | 45/23 → 43/25, the parts as above |
+| both GUI-entry files | `same` |
+| every other file | `same` |
+| R CMD check | identical |
