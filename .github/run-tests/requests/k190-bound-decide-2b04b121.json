@@ -1,0 +1,38 @@
+{
+  "requested_by": "KIT-190 the decision run of the bounded-k measurement: decide.R decide (660ebf9a), once, on the eight stage-2 journeys.tsv",
+  "label": "KIT-190 bounded-k decision 2b04b121",
+  "package_commit": "2b04b1213acfa198f8427f82d3367bb261711512",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/decide.R",
+      "args": [
+        "decide",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/eg/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/ep/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/er/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/es/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/ew/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/nr-e1/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/ns/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/nw/journeys.tsv",
+        "--",
+        "k190-decide"
+      ],
+      "out": "k190-decide",
+      "out_pattern": "^(verdicts\\.tsv|reported\\.tsv|decision\\.tsv)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
