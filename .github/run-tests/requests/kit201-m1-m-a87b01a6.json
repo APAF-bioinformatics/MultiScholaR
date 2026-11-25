@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-201 M1 kernel M (counted, declared at a87b01a6): base dd769671 against head a87b01a6, R from m1/precision.tsv",
+  "label": "KIT-201 M1 M a87b01a6",
+  "package_commit": "a87b01a629403eb52198db3d3bb3d8bdb9a400ea",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-201/m1-sim.R",
+      "args": [
+        "m1",
+        "M",
+        "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+        "docs/qa/workflow-execution/kit/kit-201/m1"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-201/m1",
+      "out_pattern": "^(rows-.*\\.tsv\\.gz|summary-.*\\.tsv|reported-.*\\.tsv|class-.*\\.tsv)$",
+      "timeout_minutes": 180
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
