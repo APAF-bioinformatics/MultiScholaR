@@ -1,0 +1,227 @@
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T1: equal df, an empty protein is reported untested and the others equal the analysis without it
+kind: failure
+message:
+  Expected T1 error (treat_lfc_cutoff NA) to be NULL.
+  Differences:
+  `actual` is a character vector ('covariate contains NA or infinite values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(...) at test-kit200-prot-da-no-value-proteins.R:360:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T1: equal df, an empty protein is reported untested and the others equal the analysis without it
+kind: failure
+message:
+  Expected T1 error (treat_lfc_cutoff 0) to be NULL.
+  Differences:
+  `actual` is a character vector ('covariate contains NA or infinite values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(...) at test-kit200-prot-da-no-value-proteins.R:360:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T2: unequal df, an empty protein is reported untested and the others are identical
+kind: failure
+message:
+  Expected T2 error (treat_lfc_cutoff NA) to be NULL.
+  Differences:
+  `actual` is a character vector ('prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(...) at test-kit200-prot-da-no-value-proteins.R:376:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T2: unequal df, an empty protein is reported untested and the others are identical
+kind: failure
+message:
+  Expected T2 error (treat_lfc_cutoff 0) to be NULL.
+  Differences:
+  `actual` is a character vector ('prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(...) at test-kit200-prot-da-no-value-proteins.R:376:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T5: input without any value is refused with KIT-196's class and the lipidomics kernel's text
+kind: error
+message:
+  Error in `.ebayes(fit = fit, proportion = proportion, stdev.coef.lim = stdev.coef.lim, trend = trend, span = span, robust = robust, winsor.tail.p = winsor.tail.p, legacy = legacy)`: No residual degrees of freedom in linear model fits
+trace (first lines):
+       ▆
+    1. ├─testthat::expect_error(refuse(x), class = "omics_da_no_observed_features") at test-kit200-prot-da-no-value-proteins.R:425:5
+    2. │ └─testthat:::expect_condition_matching_(...)
+    3. │   └─testthat:::quasi_capture(...)
+    4. │     ├─testthat (local) .capture(...)
+    5. │     │ └─base::withCallingHandlers(...)
+    6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+    7. └─refuse(x)
+    8.   ├─kit200Quiet(...) at test-kit200-prot-da-no-value-proteins.R:423:15
+    9.   │ ├─utils::capture.output(value <- suppressWarnings(suppressMessages(expr))) at test-kit200-prot-da-no-value-proteins.R:17:5
+   10.   │ │ └─base::withVisible(...elt(i))
+   11.   │ ├─base::suppressWarnings(suppressMessages(expr))
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T6: in process, replicate filter skipped, the correlation filter empties P_one and the DA completes
+kind: failure
+message:
+  Expected T6 DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, "T6 DA error") at test-kit200-prot-da-no-value-proteins.R:443:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T6 (b): replicate filter skipped, GUI defaults, groups of 3, 3 and 6, two removed samples
+kind: failure
+message:
+  Expected T6 (b) DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, "T6 (b) DA error") at test-kit200-prot-da-no-value-proteins.R:460:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T6 (c): label-free and TMT owners through T6's steps
+kind: failure
+message:
+  Expected T6 (c) LFQ DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, paste("T6 (c)", type, "DA error")) at test-kit200-prot-da-no-value-proteins.R:472:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T6 (c): label-free and TMT owners through T6's steps
+kind: failure
+message:
+  Expected T6 (c) TMT DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, paste("T6 (c)", type, "DA error")) at test-kit200-prot-da-no-value-proteins.R:472:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T6 (d): the default QC chain, normalisation with RUV skipped, four samples removed
+kind: failure
+message:
+  Expected T6 (d) DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, "T6 (d) DA error") at test-kit200-prot-da-no-value-proteins.R:488:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T7: the managed DA click on T6's chain completes on the worker
+kind: failure
+message:
+  Expected T7 managed DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, "T7 managed DA error") at test-kit200-prot-da-no-value-proteins.R:506:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T8: the declared designs (factors in the model, and none) complete with an empty protein
+kind: failure
+message:
+  Expected T8 (a) error to be NULL.
+  Differences:
+  `actual` is a character vector ('prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(run, "T8 (a) error") at test-kit200-prot-da-no-value-proteins.R:619:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T8: the declared designs (factors in the model, and none) complete with an empty protein
+kind: failure
+message:
+  Expected T8 (b) error to be NULL.
+  Differences:
+  `actual` is a character vector ('prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(run, "T8 (b) error") at test-kit200-prot-da-no-value-proteins.R:652:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T9: the scripted wrapper daAnalysisWrapperFunction completes on T2's object
+kind: failure
+message:
+  Expected T9 error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(run, "T9 error") at test-kit200-prot-da-no-value-proteins.R:673:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T10: T6's chain is recorded and replayed to the same DA tables
+kind: failure
+message:
+  Expected T10 DA error to be NULL.
+  Differences:
+  `actual` is a character vector ('`.data` must be a data frame without row names.')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(chain$da, "T10 DA error") at test-kit200-prot-da-no-value-proteins.R:682:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T11: the lipidomics and metabolomics exported differentialAbundanceAnalysis complete
+kind: failure
+message:
+  Expected T11 lipidomics error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\ni With name: Assay1.\nCaused by error in `fitFDistUnequalDF1()`:\n! prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(run, paste("T11", omic, "error")) at test-kit200-prot-da-no-value-proteins.R:726:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T11: the lipidomics and metabolomics exported differentialAbundanceAnalysis complete
+kind: failure
+message:
+  Expected T11 metabolomics error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\ni With name: Assay1.\nCaused by error in `fitFDistUnequalDF1()`:\n! prior.weights contain NA values')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(run, paste("T11", omic, "error")) at test-kit200-prot-da-no-value-proteins.R:726:9
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
