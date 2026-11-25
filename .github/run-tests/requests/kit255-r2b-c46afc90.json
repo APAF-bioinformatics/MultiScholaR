@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-255 R2 instrument rerun (VAL-54): the new test file alone after E4's stand-in object was repaired (no result on that item); head only; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-255 R2b new test file on c46afc90 (head only)",
+  "package_commit": "c46afc90e05f7e8b4d62dedd79a571ed10607eae",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit255-omics-correlation-assays.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
