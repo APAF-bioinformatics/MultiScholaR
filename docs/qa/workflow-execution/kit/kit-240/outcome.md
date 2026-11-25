@@ -1,6 +1,6 @@
-# KIT-240 outcome (branch point; post-rebase runs owed): the integration tabs on by default
+# KIT-240 outcome: the integration tabs on by default
 
-Ticket revision 1.4. Branch `kit-240` from `v0.9-staging` 3eeaf100. Every run on `run-tests` (R 4.6.1, reference
+Ticket revision 1.6. Branch `kit-240` from `v0.9-staging` 3eeaf100. Every run on `run-tests` (R 4.6.1, reference
 BLAS, ubuntu-22.04); run ids, commits and job minutes in `runs.tsv`. Evidence copies under `r1/` and `r2/`.
 
 | Commit | Content |
@@ -119,6 +119,39 @@ T9 skipped); `test-integration-results.R`, `-record.R`, `-outputs.R` `same`, 0 f
 3eeaf100: every check TRUE, counts 1, 2, 21 and 8 per mode (no new allowed substitution: the clause is server-rendered).
 78.0 job-minutes, 5.20 core-hours (declared ceiling 6.00).
 
+## After merging staging (r1.6): runs I, M and B at bded5eb2
+
+Why these runs did not wait for KIT-228 (ticket r1.6): the ticket names KIT-228 for its content and merge order only;
+it changes the omic Summary Save, nothing M, B or I observe. Staging 63143aa3 (KIT-234, KIT-239) was merged into
+`kit-240` as bded5eb2, with the conflicts resolved as AUDIT-KIT-240-impl section 6 directs (ledger: staging's rows
+VAL-226 to VAL-259 kept, KIT-240's row after them; NEWS: both entries; `R/utils_integration_results.R`: `limitations`
+then `elbo_rank`; KIT-239's `help_scaling` exactly as on staging, VAL-251). KIT-228 merges second as a partner and
+re-runs what it touches, `test-kit240-integration-default.R` and `kit-240/default-identity.R` included.
+
+- **Base against head and I (45608060716, base 63143aa3, head bded5eb2; `merged/`).** As declared: 0 `new-failure`,
+  0 `message-changed`; the new file `only-on-head` 92 passed, 0 failed, 1 skipped (T9); `test-integration-gui.R`
+  401 -> 405 and `test-integration-model.R` 263 -> 265 (`count-changed`, the moved and added assertions); 24 files
+  `same`, `test-workflow-checkpoint-harness.R`'s one error identical on both sides. R CMD check 0 ERROR, 3 WARNING,
+  3 NOTE on both, 0 only on head. Identity against the merge base: every check TRUE; per mode settings note 1, Results
+  note 2, mark 21, Enrichment insertion 8 on head and 0 on base. **A2 met.**
+- **M (45608049489, `run-mofa-smoke-k240`; `m/`).** MOFA2 1.22.0, reticulate 1.46.0, mofapy2 0.7.3. Six files, 0
+  failures; one skip, T4 (by design: all software present). The reported model's factors, weights and variance
+  explained equal `mofa_reference/` within 1e-5 (`test-integration-mofa-model.R`, `-model-tab-mofa.R`); the workbook,
+  record and Results paths pass with real MOFA2. T9 (`m/t9-elbo-lines.txt`): the five seeds' final ELBOs are
+  -45695.190153, -45695.191540, -45695.190312, -45695.191179, -45695.191303; the declared seed ranks 1 of 5; range
+  0.0014 (relative 3.0e-8): the first real-corpus evidence for I01 and VAL-252's clause (a spread far below a few
+  rounds' change). The record's Methods prints "0.00 below the highest (range over the models less than 0.01", then
+  the clause. **A3 met.**
+- **B (45608074480, stage full, both platforms; `b/`).** All nine lifecycle passes CHECK PASSED; the tile is live in
+  every pass; pass 2's R line reports the variable and `ruv_design_panel` true with no `integration_gui` key; passes 1
+  and 3 have no test-features line. The version table check passed (complete, no hard-closure package missing);
+  MOFA2 1.22.0 with its mofapy2 0.7.3 pins and `mofapy2 0.7.3` printed; uwot and Rtsne named among the bundled
+  packages; reticulate's and clusterProfiler's rows are not printed in the log (covered only by the completeness
+  check). 0 artifacts uploaded. The three jobs are red on their GUI-entry lane steps; the lane tables are identical,
+  per platform, to run 45386641894 (branch kit-167, 3c4c5c90, before KIT-240): stored laptop oracles of other
+  tickets, not KIT-240 (`b/lanes-*.tsv`). **A4 met** (lifecycle); the red lane steps are recorded, not this ticket's.
+- Job minutes: 205.3 (13.69 core-hours), 23.0 (1.53), 245.4 (16.36).
+
 ## A8: partner edits and release-checklist items
 
 Done (by the coordinator, read by the audit): KIT-170 6.8 step 2 (`KIT-170.md:664`); KIT-233 `:271` superseded
@@ -156,8 +189,10 @@ Owed (not made here):
 - **Evidence.** R1 to R5 (`runs.tsv`); M, B and the identity run after the rebase are owed; the checkpoint's
   full-suite run id is owed (A7).
 
-## Not checked (so far)
+## Not checked
 
-- Runs M and B and the identity run after the rebase (they wait for KIT-234, KIT-239, KIT-228).
+- KIT-228's own merge check (it merges second and re-runs this ticket's test file and identity script).
+- reticulate's and clusterProfiler's version rows in B (only the completeness check covers them).
+- The GUI-entry lanes' stored-oracle failures (identical to before KIT-240; other tickets').
 - The systemd controller showing the tabs (reading only; release-checklist item).
 - A7 (checkpoint full suite), A5 (owner's wording).
