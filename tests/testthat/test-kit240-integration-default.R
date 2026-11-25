@@ -251,6 +251,10 @@ test_that("KIT-240 T7: each seed's final ELBO is kept and the reported model's r
     limit <- k240Text(texts, "stability_limit")
     expect_true(!is.na(rank_sentence) && grepl(sprintf(rank_sentence, 2L, 5L, "1.00", "3.00"), intro, fixed = TRUE))
     expect_true(!is.na(limit) && grepl(limit, intro, fixed = TRUE))
+    # r1.5 (owner's decision VAL-252): the rank is kept with a clause stating the basis: differences of this size were
+    # observed between runs of one solution.
+    slack <- k240Text(texts, "stability_elbo_slack")
+    expect_true(!is.na(slack) && grepl(slack, intro, fixed = TRUE))
     # The record keeps the rank, and its methods paragraph states it, as built and from JSON.
     record <- buildWorkflowAnalysisRecord(fixture$manager)
     expect_equal(record$analyses$integration_mofa_model$integration$model$elbo_rank, seeds$elbo_rank)
@@ -260,6 +264,8 @@ test_that("KIT-240 T7: each seed's final ELBO is kept and the reported model's r
     expect_identical(integrationMethodsText(jsonlite::read_json(json, simplifyVector = FALSE)), methods)
     methods_sentence <- k240Text(integrationRecordTexts(), "methods_seeds_elbo")
     expect_true(!is.na(methods_sentence) && grepl(sprintf(methods_sentence, 2L, 5L, "1.00", "3.00"), methods, fixed = TRUE))
+    methods_slack <- k240Text(integrationRecordTexts(), "methods_seeds_elbo_slack")
+    expect_true(!is.na(methods_slack) && grepl(methods_slack, methods, fixed = TRUE))
 })
 
 test_that("KIT-240 T8: seeds trained without an ELBO give no rank and no sentence, and nothing fails", {
@@ -278,10 +284,13 @@ test_that("KIT-240 T8: seeds trained without an ELBO give no rank and no sentenc
     expect_match(intro, sprintf(integrationGuiTexts()[["stability_intro"]], 5L, paste(20261119L + 0:4, collapse = ", "),
         20261119L), fixed = TRUE)
     expect_false(grepl("ELBO", intro, fixed = TRUE))
+    # r1.5 (VAL-252): no rank, so no clause about it.
+    expect_false(grepl("where training stopped", intro, fixed = TRUE))
     record <- buildWorkflowAnalysisRecord(fixture$manager)
     expect_null(record$analyses$integration_mofa_model$integration$model$elbo_rank)
     methods <- integrationMethodsText(record)
     expect_false(grepl("ELBO", methods, fixed = TRUE))
+    expect_false(grepl("where training stopped", methods, fixed = TRUE))
     # r1.4 (I09): the stability figures' limitation is stated whenever several seeds were trained, with or without a rank.
     limit <- k240Text(integrationRecordTexts(), "methods_seeds_limit")
     expect_true(!is.na(limit) && grepl(limit, methods, fixed = TRUE))
