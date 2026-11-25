@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-234 R2: fix 652c962b against tests-only 327e4dfa, 14 scope files, check both sides, W6 on the fix; ceiling 345 job-minutes; decides stop rules 2 to 4",
+  "label": "KIT-234 R2 fix 652c962b vs 327e4dfa",
+  "package_commit": "652c962b99257049e50a1b8f37b2ee5ee607d5bb",
+  "base_commit": "327e4dfa5db6e5a6adb73c9bd49d9a59201285d9",
+  "tools_ref": "",
+  "tests": ["test-app-shell-shared.R", "test-applets-direct-shared.R", "test-enrichment-significance.R", "test-go-propagation.R", "test-integration-gui.R", "test-integration-removed-factors.R", "test-integration-workbook-mofa.R", "test-integration-workbook.R", "test-kit202-intensity-filter-samples.R", "test-module-ci-trx-app.R", "test-workflow-saved-da.R", "test-integration-workbook-api.R", "test-github-management-direct-shared.R", "test-kit234-workbooks-withdrawn.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [{"path": "docs/qa/workflow-execution/kit/kit-234/w6.R", "args": [], "timeout_minutes": 30}],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
