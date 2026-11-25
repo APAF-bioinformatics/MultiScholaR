@@ -1,0 +1,58 @@
+key	predicted	pattern	observed	held
+ip.a.color_choices	the builder's design offers group, factor1, factor2 and batch	^group,factor1,factor2,batch$	group,factor1,factor2,batch	TRUE
+ip.a.shape_choices	the same for 'Shape by'	^group,factor1,factor2,batch$	group,factor1,factor2,batch	TRUE
+ip.a.sample_id_offered	sample_id is not offered (the builder names it Run)	^FALSE$	FALSE	TRUE
+ip.a.design_columns	Run ... tech_rep_group, no sample_id column	^Run,group,.*batch.*tech_rep_group$	Run,group,factor1,factor2,factor3,batch,replicates,tech_reps,tech_rep_group	TRUE
+ip.a.zero_pair_variable	the unset batch gives no within-group pair	^batch$	factor2,batch	FALSE
+ip.a.warn	the lane runs at warn = 1 (no warning promoted)	^1$	1	TRUE
+ip.b_color.events	the pre-normalisation correlation figure fails on regeneration	plot correlation \[batch/group\] = error: .*finite	plot pca [batch/group] = ok | save pre_norm_pca.png = ok | plot rle [batch/group] = ok | save pre_norm_rle.png = ok | plot density [batch/group] = ok | save pre_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number	TRUE
+ip.b_run.head	the run commits before the figures	^normalized$	normalized	TRUE
+ip.b_run.normalization_complete	the step is not finished	^FALSE$	FALSE	TRUE
+ip.b_run.ruv_normalized_obj	set before the figures are drawn	^set$	set	TRUE
+ip.b_run.pending	the publication is left pending	^normalization:FALSE$	normalization:FALSE	TRUE
+ip.b_run.notes	the tab's error notice	Error in normalization: .*finite	[error] Error in normalization: 'from' must be a finite number	TRUE
+ip.b_run.events	the post-normalisation correlation figure is the one that fails	plot correlation \[batch/group\] = error	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save post_norm_pca.png = ok | plot rle [batch/group] = ok | save post_norm_rle.png = ok | plot density [batch/group] = ok | save post_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number	TRUE
+ip.b_apply.head	nothing moves	^normalized$	normalized	TRUE
+ip.b_apply.notes	Apply correlation is refused	normalization outputs are pending; retry that action	[error] Error in correlation filtering: normalization outputs are pending; retry that action	TRUE
+ip.b_skip.notes	Skip is refused	normalization outputs are pending; retry that action	[error] Error in correlation filtering: normalization outputs are pending; retry that action	TRUE
+ip.b_da.notes	DA is refused	outputs are pending	[error] Error loading session: No exported session data found. Please export session data from the Normalization tab first. | [default] Running differential abundance analysis... | [error] Error in DA analysis: normalization outputs are pending; retry that action	TRUE
+ip.b_reset.head	Reset reverts to the pre-normalisation table	^protein_replicate_filtered$	protein_replicate_filtered	TRUE
+ip.b_reset.notes	with its notice	Normalisation reset	[warning] Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).	TRUE
+ip.b_rerun.head	Run again (same 'Color by') commits again	^normalized$	normalized	TRUE
+ip.b_rerun.normalization_complete	and fails the same way	^FALSE$	FALSE	TRUE
+ip.b_rerun.notes	with the same notice	Error in normalization: .*finite	[error] Error in normalization: 'from' must be a finite number	TRUE
+ip.b_group_rerun.head	'Color by' = group, Run again	^normalized$	normalized	TRUE
+ip.b_group_rerun.normalization_complete	completes (a new identity)	^TRUE$	TRUE	TRUE
+ip.b_group_rerun.notes	with the completion notice	Normalization completed \(RUV skipped\)	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.	TRUE
+ipd.b_run.head	commits before the figures	^normalized$	normalized	TRUE
+ipd.b_run.normalization_complete	not finished	^FALSE$	FALSE	TRUE
+ipd.b_run.pending	publication pending	^normalization:FALSE$	normalization:FALSE	TRUE
+ipd.b_run.notes	error notice	Error in normalization: .*finite	[error 10] Error in normalization: 'from' must be a finite number	TRUE
+ipd.b_apply.notes	Apply refused	normalization outputs are pending; retry that action	[error 10] Error in correlation filtering: normalization outputs are pending; retry that action	TRUE
+ipd.b_skip.notes	Skip refused	normalization outputs are pending; retry that action	[error 10] Error in correlation filtering: normalization outputs are pending; retry that action	TRUE
+ipd.b_rerun.notes	Run again from the stranded state fails the same way	Error in normalization: .*finite	[error 10] Error in normalization: 'from' must be a finite number	TRUE
+ipd.b_rerun.normalization_complete	still unfinished	^FALSE$	FALSE	TRUE
+ipd.b_reset.head	Reset recovers	^protein_replicate_filtered$	protein_replicate_filtered	TRUE
+ipd.b_group_rerun.normalization_complete	'Color by' = group then Run completes	^TRUE$	TRUE	TRUE
+m.lifecycle.l_complete.normalization_complete	a managed run completes	^TRUE$	TRUE	TRUE
+m.lifecycle.l_complete.notes	with its completion notice	Normalization completed \(RUV skipped\)	[default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.	TRUE
+m.lifecycle.l_complete.actions	on the worker	normalization-ruv	normalization-ruv | normalization-qc-figures | normalization-qc-figures	TRUE
+m.lifecycle.l_failed.notes	a worker failure reaches the tab's failed handler	\[error 10\] Error in normalization: 	[default NULL] Applying proteomics step ... | [error 15] Error applying proteomics step: RUV-III cannot estimate 50 factors from 32 control proteins observed in every sample ℹ choose a smaller k or a larger control set, filter for completeness first, or   run normalisation without RUV | [error 10] Error in normalization: RUV-III cannot estimate 50 factors from 32 control proteins observed in every sample ℹ choose a smaller k or a larger control set, filter for completeness first, or   run normalisation without RUV	TRUE
+m.lifecycle.ok	the lifecycle check passes	^TRUE$	TRUE	TRUE
+m.b_run.head	the action commits on acceptance	^normalized$	normalized	TRUE
+m.b_run.normalization_complete	not finished	^FALSE$	FALSE	TRUE
+m.b_run.ruv_normalized_obj	publish never ran (first run)	^null$	null	TRUE
+m.b_run.pending	nothing pending	^none$	none	TRUE
+m.b_run.notes	the figures action's failure reaches the tab	Error in normalization: .*finite	[default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [error 15] Error applying proteomics step: 'from' must be a finite number | [error 10] Error in normalization: 'from' must be a finite number	TRUE
+m.b_apply.notes	Apply is refused by diaCorrelationSource	normalization must complete before correlation filtering	[error 10] Error in correlation filtering: normalization must complete before correlation filtering	TRUE
+m.b_rerun.normalization_complete	Run again fails the same way	^FALSE$	FALSE	TRUE
+m.b_reset.head	Reset recovers	^protein_replicate_filtered$	protein_replicate_filtered	TRUE
+m.b_group_rerun.normalization_complete	'Color by' = group then Run completes	^TRUE$	TRUE	TRUE
+c.direct.status	the post-normalisation PCA fails at ggsave	Insufficient values in manual scale	error: [0] <rlang_error/error/condition> Insufficient values in manual scale. 16 needed but only 15 provided.	TRUE
+c.c_entry.events	the pre-normalisation PCA fails at tab entry	save pre_norm_pca.png = error: .*Insufficient values	<none>	FALSE
+c.c_run.events	the run's request has redraw_pre FALSE	redraw_pre=FALSE	request redraw_pre=FALSE = ok | plot pca [group/group] = ok | save post_norm_pca.png = error: Insufficient values in manual scale. 16 needed but only 15 provided.	TRUE
+c.c_run.head	committed	^normalized$	normalized	TRUE
+c.c_run.normalization_complete	not finished	^FALSE$	FALSE	TRUE
+c.c_run.pending	publication pending	^normalization:FALSE$	normalization:FALSE	TRUE
+c.c_run.notes	the error notice names the shape limit	Error in normalization: .*Insufficient values	[error 10] Error in normalization: Insufficient values in manual scale. 16 needed but only 15 provided.	TRUE
+c.c_run.warn	default warn	^0$	0	TRUE

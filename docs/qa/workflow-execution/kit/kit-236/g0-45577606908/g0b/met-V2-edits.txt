@@ -1,0 +1,3 @@
+log offset 1 in the record and the file
+record offset: 1 replacement(s) with 1
+file * Offset: 1: 1 line(s) changed or added

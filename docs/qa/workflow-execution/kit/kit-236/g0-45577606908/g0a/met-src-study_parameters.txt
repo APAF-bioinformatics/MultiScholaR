@@ -1,0 +1,130 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: metab_lc
+Description: KIT-101 entry-point lane
+Timestamp: 2026-11-25 08:45:20
+
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: 10198a0
+Commit Timestamp: 2026-11-25T19:34:52+11:00
+Source: Local Git Repository
+
+Assay Information:
+-------------------
+* Number of Assays: 2
+* Assay Names: LCMS_Pos, LCMS_Neg
+* Total Metabolites: 6
+* Metabolites per Assay:
+    - LCMS_Pos: 3
+    - LCMS_Neg: 3
+
+ITSD Normalization:
+-------------------
+* Applied: Yes
+* Method Type: average_centered
+* Aggregation: median
+* Pattern Columns: NA
+* ITSD Removed After Normalization: Yes
+* Timestamp: 2026-11-25 08:44:51
+
+Log Transformation:
+------------------
+* Applied: Yes
+* Transform: log2
+
+Between-Sample Normalization:
+-----------------------------
+* Method: cyclicloess
+
+Metabolomics Metadata:
+----------------------
+* Metabolite ID Column: Feature.Name
+* Annotation ID Column: NA
+* Database Identifier Type: Unknown
+* Sample ID Column: Run
+* Group ID Column: group
+* Number of Samples: 6
+* Number of Groups: 2
+* Group Names: KO, WT
+* Internal Standard Regex: ^ITSD|_d[0-9]+$
+
+RUV-III Batch Correction:
+-------------------------
+* Status: Not Applied
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+[deAnalysisParameters]
+  formula_string = ~ 0 + group
+[metaboliteIntensityFiltering]
+  metabolites_intensity_cutoff_percentile = 10
+  metabolites_proportion_of_samples_below_cutoff = 0.5
+[ITSDNormalization]
+  applied = TRUE
+  method_type = average_centered
+  itsd_aggregation = median
+  itsd_pattern_columns = NA
+  removed_itsd = TRUE
+  timestamp = 2026-11-25 08:44:51.616567
+Additional Configuration Parameters:
+-----------------------------------
+deAnalysisParameters:
+  Formula String: ~ 0 + group
+metaboliteIntensityFiltering:
+  Metabolites Intensity Cutoff Percentile: 10
+  Metabolites Proportion of Samples Below Cutoff: 0.5
+ITSDNormalization:
+  Applied: TRUE
+  Method Type: average_centered
+  Itsd Aggregation: median
+  Itsd Pattern Columns: NA
+  Removed Itsd: TRUE
+  Timestamp: 2026-11-25 08:44:51.616567
+
+Analysis Record:
+----------------
+
+[2. metab_raw_data_s4: design_builder]
+  sample_id [unknown] = Run
+  group_id [unknown] = group
+  technical_replicate_id [unknown] = tech_rep_group
+
+[3. metab_intensity_filtered: metab_intensity_filter]
+  metabolites_intensity_cutoff_percentile [user_set] = 10
+  metabolites_proportion_of_samples_below_cutoff [default] = 0.5
+  intensity_filter_samples [fixed] = design
+
+[6. metab_itsd_norm: metab_itsd_normalisation]
+  itsd_aggregation [no_shipped_default] = median
+  itsd_feature_ids [input] = NULL
+  method [fixed] = ITSD
+
+[7. metab_log2: metab_log2]
+  offset [no_shipped_default] = 0
+
+[8. metab_normalized: metab_between_sample_normalisation]
+  normalisation_method [default] = cyclicloess
+
+[9. metab_correlation_filtered: metab_pearson_selection]
+  metab_pearson_pairs.correlation_group [no_shipped_default] = group
+  pairs [input] = 7ab4358e546c48372f20f1384a24300007611eedf2252d8f1686c318784f91bd
+  min_pearson_correlation_threshold [no_shipped_default] = 0.5
+
+[differential_abundance: metab_da_contrast]
+  formula [default] = ~ 0 + group
+  qvalue [default] = 0.050000000000000003
+  lfc [default] = 0
+
+
+Contrasts:
+----------
+   KO_vs_WT=groupKO-groupWT

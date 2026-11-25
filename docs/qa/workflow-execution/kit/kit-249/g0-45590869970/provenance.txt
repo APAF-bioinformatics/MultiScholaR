@@ -1,0 +1,8 @@
+head	dcbce79f901cd8780dfdb1a8f6e665717e7f3cbe
+R	R version 4.6.1 (2026-06-24)
+qvalue	2.44.0
+limma	3.68.4
+MultiScholaR	0.9.0 (installed, /opt/R/4.6.1/lib/R/library/MultiScholaR)
+c_shift	0
+started	2026-11-25 10:10:29
+finished	2026-11-25 10:10:44
