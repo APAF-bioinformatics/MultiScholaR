@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-267 R1: tests-only commit shown failing on the old code (T6 b 9, T10 5, T3 2), base 4d588ba3; ceiling 25 job-minutes",
+  "label": "KIT-267 R1 tests-only 8f334001 vs staging 4d588ba3",
+  "package_commit": "8f3340012616746f03bcb8934cc65563bddf110c",
+  "base_commit": "4d588ba3ed5c6fee76a5a1450c028b409ba419ba",
+  "tools_ref": "",
+  "tests": [
+    "test-kit240-integration-default.R",
+    "test-kit267-enrichment-defaults.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
