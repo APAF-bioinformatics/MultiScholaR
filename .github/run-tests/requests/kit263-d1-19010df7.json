@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-263 D1: declared diagnostic (printing only): T1 fixture file and the Summary save's proteomics file; classification in predictions.md",
+  "label": "KIT-263 D1 diagnostic 19010df7, new file alone; ceiling 45 job-minutes",
+  "package_commit": "19010df715ee18fc4e9e1458cea999e8f495679e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit263-prot-study-parameters-sections.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
