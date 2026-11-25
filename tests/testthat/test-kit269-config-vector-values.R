@@ -31,7 +31,7 @@ k269Lines <- function(config = k269Config()) {
 k269After <- function(lines) {
     header <- which(lines == "Additional Configuration Parameters:")
     expect_length(header, 1L)
-    lines[(header + 2L):length(lines)]
+    lines[-seq_len(header + 1L)]
 }
 
 test_that("(KIT-269 T1) a numeric pair is listed comma-joined", {
