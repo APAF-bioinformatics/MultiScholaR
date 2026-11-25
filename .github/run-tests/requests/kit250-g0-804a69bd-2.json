@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-250 G0: base observation of the proteomics organism dialog (Cancel by real mouse, design after Cancel, click behind dialog, Confirm, two re-imports); scripts only, R/ as v0.9-staging 16112917; ceiling 60 job-minutes; replaces kit250-g0-804a69bd (sent blank by mistake)",
+  "label": "KIT-250 G0 on kit-250-g0 804a69bd (commit under test 16112917)",
+  "package_commit": "804a69bd4c54fd604f6479248482a4a83dcad34e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-250/g0.R",
+      "args": [
+        "g0",
+        "16112917329a63ab062655f04db5bf1dd7df9729"
+      ],
+      "out": "k250-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
