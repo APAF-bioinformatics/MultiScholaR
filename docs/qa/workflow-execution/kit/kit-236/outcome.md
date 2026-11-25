@@ -198,7 +198,7 @@ The correction run's scripts job (`render.R` in this directory) runs the six GUI
 Run: correction 8fd559b2 against tests-only d06d424d, 34 files, 3 shards per side, check, and the render job. 182.8 job-minutes (12.2 core-hours) against the correction budget of 540 job-minutes. Tables in `c1-45621749264/`, the render's text in `c1-45621749264/render/`.
 
 - `test-kit236-report-sentences.R` `fixed`: base 229 passed and 60 failed, head 289 passed and 0 failed. The ten new or changed tests (T6/T6b, T1d, T1e, T20, T21/B7, T19c, T19, T22, T8, B2) each fail on base and pass on head; every other test of the file passes on both. Every other file of the 34 is `same`, KIT-227 (162/0) and KIT-235 (54/0) included; the existing failure lists unchanged. R CMD check: 6 findings, identical on both sides.
-- Render (I04): the six GUI lanes ran on the correction commit (lipid 66 s, metab 62 s, LFQ 120 s, TMT 145 s, DIA-NN 298 s, DIA with limpa 185 s) and each report was read; lipidomics and metabolomics were rendered again under V1 to V7. **All 175 checks are as predicted** (`render/checks.tsv`).
+- Render (I04): the six GUI lanes ran on the correction commit (lipid 66 s, metab 62 s, LFQ 120 s, TMT 145 s, DIA-NN 298 s, DIA with limpa 185 s) and each report was read; lipidomics and metabolomics were rendered again under V1 to V7. **All 140 checks are as predicted** (`render/checks.tsv`: lipidomics 41 on the lane and 16 in the variants, metabolomics 40 and 16, LFQ, TMT and DIA-NN 7 each, DIA with limpa 6). An earlier version of this file, the commit message of 47a8af0f and the hand-back said 175: an arithmetic error in my summary, not a figure in any output (closure check C01).
 
 Sentences this ticket changed, as they print (read in the documents; quotes straightened):
 - **Lipidomics (lipid_canonical):**
@@ -224,3 +224,33 @@ What the documents show that the tests did not predict (results, recorded; none 
 - The proteomics DA paragraph ("using the adjusted abundance matrix") is not part B's line; the DIA-with-limpa lane carries RUV-III covariates, which its limpa-route paragraph states.
 
 Core-hours, ticket total: 312.1 + 182.8 = 494.9 job-minutes = **33.0 core-hours** (expected 17.0, ceiling 278.67; the correction pass is inside the ticket's correction row of 36.0).
+
+## Closure check (2026-11-26): records
+
+The implementation audit's closure check (AUDIT-KIT-236-impl-20261125, "Closure check (2026-11-26)") found the branch ready for a merge train after or with KIT-249 and KIT-201 (no tag between), with records to correct and items carried. This section and the corrections it names are records only (no file under `R/`, `inst/` or `tests/` changed; no run).
+
+- **C01:** the render's check count is 140 (above; `runs.tsv` corrected).
+- **C02:** NEWS narrowed: no "Warning: … not found" line for the quality-control, count and volcano figures this ticket owns; the enrichment chunk's warning still prints (KIT-219's).
+- **Merge order:** KIT-249 before or with KIT-236 (I03); KIT-201 before or with KIT-236, no tag between: until KIT-201 merges, under TREAT (and for proteomics LFQ, TMT and DIA-NN already at a cutoff of 0, where the legacy route takes its TREAT branch) the p-value clause and KIT-201's "trended and robust" sentence are false; they are false on staging and on the base today, so KIT-236 does not introduce them, but the merged tree is true only with both (closure check, answer (d)).
+
+### Stated limits added
+
+- **C04, k of n under KIT-255's open defect.** Under KIT-255's defect the filter removes a sample from the design and from one assay only, and its column stays in the other assays. The union of columns does not drop, so removed = 0 and the report can say "5 of 5 samples were kept by the sample-correlation filter (threshold t)" when the filter removed one from the design and one assay. Reachable where the metabolomics DA runs on a worker (KIT-255's title). Closed by KIT-255's merge.
+- **The proteomics "not recorded" form (closure check (c)).** Kept until KIT-242: "'cyclicloess'" is printed when no method is recorded. In reports the application writes the proteomics method is always recorded (`R/func_prot_s4_norm_methods.R:63`; the record's `normalization-ruv` step), so the sentence may be false only for a hand-made or very old `study_parameters.txt` with no record. Whoever releases it edits KIT-227's G1, which pins exactly that text.
+
+### OPEN, carried to whichever of KIT-236 and KIT-242 merges second (C03; the auditor's three points, verbatim)
+
+- "(i) The per-assay counts never print. The template reads `outcomes$best_k` (lipid :1109), which the record never writes: it writes `k_per_assay` (`:1205`) and, for the declared design, `ruv_k_per_assay` (`:1238`, read at `:2220`). So "(LCMS_Pos: 2 factors; …)" never prints in a report the application writes. T20's fixture plants `best_k` and `ruv_design = "ruv3_factors"`, neither of which the application writes. `OMICS_RUV_DESIGNS` is groups_all_features, technical_replicates, supplied_controls, first_pass_nulls and none (`:540`)."
+- "(ii) An assay without factors is said to have them. Under the declared design, an assay whose RUV could not be applied (`ruv_applied_per_assay` FALSE, `:1219`) is tested on its uncorrected values without W (`R/func_lipid_da_model.R:543-560`). D10 still says "with each assay's RUV factors as covariates", while KIT-129's paragraph names that assay as not corrected. KIT-242's OD-6 ("no usable controls keeps the assay without RUV") makes this an ordinary outcome."
+- "(iii) Internal code. "(the declared RUV design 'none')" prints an internal code, and the form is missing from `wording.md`." The form is added to `wording.md` now; the code change waits (this ticket's one correction pass is used).
+
+The full carried list for the second merge of KIT-236 and KIT-242: T10b's end-to-end case; the sentence naming the method applied (D8); D19; the Figure 1 caption's method words; C03 (i) to (iii).
+
+### Routed, not this ticket's (closure check)
+
+- **C05:** the DIA-with-limpa GUI lane report describes Figure 1 ("Figure 1 shows four quality-control views at three stages …") but draws no Figure 1 (one drawing, the volcano): KIT-053/KIT-055's limpa text, plan section 13.
+- **C06:** the enrichment section's text, its warning line and the Figure 4 caption without a figure (lipidomics, metabolomics, DIA-NN): KIT-219 (VAL-187) and the proteomics enrichment owner.
+
+### Divergence from the conventions (I15, noted)
+
+The new template code uses `function(x)` lambdas (conventions/R.md:61) and lines over 100 characters (R.md:58), as the templates' existing code does; recorded here as a divergence under the existing-code scope rule (R.md:26-29). The metabolomics diff also reformats three unchanged `if(` lines to `if (` (the trend/robust lines).

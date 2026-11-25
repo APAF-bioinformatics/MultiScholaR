@@ -90,7 +90,7 @@
    placeholders are fields for the analyst. The sample details count the analysed samples and the technical
    replicates the design declares (before, 'no technical replicates' was printed whatever the design). The report names
    the results table the application writes (`DA_results_<omic>.xlsx`), and the quality-control, count and volcano
-   figures only when they exist (no 'Warning: ... not found' line in the report); the count sentence reads the table
+   figures only when they exist (no 'Warning: ... not found' line for these figures); the count sentence reads the table
    Copy writes (`da_<omic>_num_sig_de_molecules.tab`) and states the counts per comparison and assay. Proteomics: the
    technical-replicate sentence, the Benjamini-Hochberg fallback, the TREAT sentence and its p-values, the block clause
    and 'none' as above; the DIA-with-limpa report no longer says technical replicates were averaged (the application

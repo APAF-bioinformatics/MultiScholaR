@@ -36,3 +36,12 @@ Every sentence below is new in the lipidomics and metabolomics reports (L/M) or 
 Carried for the owner's pass, not changed here: the spellings the templates mix ("normalization"/"normalisation", "RUVIII-C"/"RUV-III"); the quality-control bullets frozen by G1 ("samples were checked for batch effects", a check nobody runs; "Density boxplots to assess distribution consistency", boxplots of principal-component scores; P18); the figure caption chunk's "Figure 1: QC metrics across normalization stages"; the proteomics volcano sentence "… and no log fold-change threshold" (KIT-220's threshold sentences); the sentences waiting for KIT-242 (D8, the normalisation sentence; D19, the internal-standard sentence: still the internal code `average_centered`).
 
 Notes for the owner from the implementation audit (I14): D12 prints the 64-character build hash in a sentence users paste; "k of n samples" counts runs while D5 distinguishes runs from biological samples; on TMT, D5's "measured runs" are channels. Routed to the owner, not this ticket (I17): the proteomics volcano sentence "… with a threshold of q-value < {t} and no log fold-change threshold" (all four proteomics templates, unconditional since 9c8c6830, 2025-04-08) reads against D20 at a fold-change threshold above 0. The heading "Per-Assay Quality Metrics" now heads no metrics.
+
+Added at the closure check (2026-11-26), for the owner's pass (C03 (iii), C07):
+
+| Draft | Where | Text |
+|---|---|---|
+| D10 declared "none" | L/M DA, the declared RUV design 'none' | "Differential abundance of lipids was tested separately within each assay, on the normalised abundance matrix, with no RUV factors (the declared RUV design 'none'), for the comparisons …" (prints the internal code 'none'; C03 (iii), carried) |
+| D10 declared | L/M DA, a declared RUV design | "… on the uncorrected abundance matrix, with each assay's RUV factors as covariates in the model ({assay}: {k} factors; …) …" (the per-assay counts never print today and an assay without factors is said to have them: C03 (i), (ii), carried) |
+
+C07, wording items: "there were 1 upregulated" (number agreement); "giving 1 additional runs"; under TREAT the sentence "… with the 'lmFit' function, and the variances were moderated …, and p-values were calculated …" has two "and"s; "('eBayes')" as a parenthetical function name; "(the declared RUV design 'none')" (internal code); the 64-character build hash in D12.
