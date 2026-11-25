@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-248 G0b: the (A) cases at a per-route t_hi removing one sample (coordinator's ruling on stop rule 2); staging 16112917 + script only, branch kit-248-g0; 1 job, inside G0's 90 job-minute ceiling (22.8 used)",
+  "label": "KIT-248 G0b base observation ad0622df (staging 16112917 + g0-base-values.R mode g0b)",
+  "package_commit": "ad0622df89f2254a5d6fc73d9f3afea338a621e2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-248/g0-base-values.R",
+      "args": [
+        "kit248-g0b",
+        "g0b"
+      ],
+      "env": {},
+      "out": "kit248-g0b",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
