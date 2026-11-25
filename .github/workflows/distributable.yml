@@ -30,6 +30,11 @@ name: KIT-134 distributable
 # steps of stage full up to the install and the test tools, then the harness's parity step
 # (val-parity.R), the check of its folder (parity-check) and its one admitted upload
 # (parity-results, val-out/parity/ only); no lifecycle, hosts, lanes or figures.
+# Stage probe (KIT-245 section 8, after KIT-241's pattern; dispatch only, on run-k245-* branches only, never merged): the steps of stage full
+# up to the install, then one probe step per platform (kit-245/g0-probe.R under the installed bundle's R; Linux:
+# the runner, ubuntu:22.04 and buildpack-deps:jammy-scm containers, network none, read-only mounts; Windows: the
+# shell's environment). No real token; gh::gh replaced by a recorder. Nothing uploaded; log lines only. No lifecycle, hosts,
+# test tools (Linux), lanes, e2e or figures.
 # [dist-linux] or [dist-windows] limits the run to one platform.
 
 on:
@@ -39,7 +44,7 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container, parity, kit167-engine]
+        options: [snapshot, library, full, container, parity, kit167-engine, probe]
       platform:
         description: "Platform"
         type: choice
@@ -47,6 +52,14 @@ on:
         options: [both, linux, windows]
       parity_request:
         description: "Stage parity: docs/qa/workflow-execution/kit/kit-159/parity/requests/<name>.json"
+        type: string
+        default: ""
+      probe_commit:
+        description: "Stage probe (KIT-245): the commit under test (full hash)"
+        type: string
+        default: ""
+      probe_gate:
+        description: "Stage probe (KIT-245): G0 or W1"
         type: string
         default: ""
   push:
@@ -88,6 +101,7 @@ jobs:
       kit167_engine: ${{ steps.plan.outputs.kit167_engine }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
       parity: ${{ steps.plan.outputs.parity }}
+      probe: ${{ steps.plan.outputs.probe }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -127,6 +141,8 @@ jobs:
           INPUT_STAGE: ${{ inputs.stage }}
           INPUT_PLATFORM: ${{ inputs.platform }}
           INPUT_PARITY_REQUEST: ${{ inputs.parity_request }}
+          INPUT_PROBE_COMMIT: ${{ inputs.probe_commit }}
+          INPUT_PROBE_GATE: ${{ inputs.probe_gate }}
         run: |
           if [ "$EVENT" = workflow_dispatch ]; then
             stage="$INPUT_STAGE"; platform="$INPUT_PLATFORM"
@@ -136,15 +152,23 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine|probe) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
           build=false; full=false; container=false; parity=false; kit167_engine=false; linux_runners='["ubuntu-22.04"]'
+          probe=false
           case "$stage" in
             kit167-engine) kit167_engine=true; platform=windows ;;
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
             container) build=true; container=true; platform=windows ;;
             parity) build=true; full=true; parity=true ;;
+            probe) build=true; full=true; probe=true ;;
           esac
+          if [ "$probe" = true ]; then
+            # KIT-245: dispatch only, on a run-k245-* branch, with the commit under test and the gate
+            [ "$EVENT" = workflow_dispatch ] && case "$GITHUB_REF" in refs/heads/run-k245-*) true ;; *) false ;; esac || { echo "::error::stage probe runs only by dispatch on a run-k245-* branch"; exit 1; }
+            printf '%s' "$INPUT_PROBE_COMMIT" | grep -qE '^[0-9a-f]{40}$' && git cat-file -e "$INPUT_PROBE_COMMIT^{commit}" || { echo "::error::probe_commit must be a full commit hash in this history"; exit 1; }
+            case "$INPUT_PROBE_GATE" in G0|W1) ;; *) echo "::error::probe_gate must be G0 or W1"; exit 1 ;; esac
+          fi
           if [ "$parity" = true ]; then
             # KIT-159 7.9: dispatch only, on run-val-parity, one new request file per run
             req="docs/qa/workflow-execution/kit/kit-159/parity/requests/$INPUT_PARITY_REQUEST.json"
@@ -157,7 +181,7 @@ jobs:
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "full=$full"; echo "container=$container"; echo "kit167_engine=$kit167_engine"
-            echo "linux_runners=$linux_runners"; echo "parity=$parity"
+            echo "linux_runners=$linux_runners"; echo "parity=$parity"; echo "probe=$probe"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -505,9 +529,82 @@ jobs:
           echo "DEST=$dest" >> "$GITHUB_ENV"
           echo "XDG_DATA_HOME=$XDG_DATA_HOME" >> "$GITHUB_ENV"
 
+      # KIT-245 G0 (stage probe only; ticket r1.2 section 8): the product-tree check, then kit-245/g0-probe.R under the
+      # installed application's R on this runner, in a bare ubuntu:22.04 container (no git) and in buildpack-deps:jammy-scm
+      # (git; once with the redirect, once for P2n alone with the plain configuration), both --network none. No real
+      # token exists: the four token variables are empty, gh::gh is a recorder that never calls the original, the only
+      # remote is a local bare repository; on this runner git is redirected to a local path, limited to the file
+      # protocol and given a dead proxy. Each invocation's output is printed with the dummy masked. Nothing uploaded.
+      - name: "KIT-245 probe: Push to GitHub under the installed R (this runner; ubuntu:22.04 and jammy-scm, network none)"
+        id: probe
+        if: ${{ !cancelled() && needs.plan.outputs.probe == 'true' && steps.install.outcome == 'success' }}
+        timeout-minutes: 30
+        env:
+          PROBE_COMMIT: ${{ inputs.probe_commit }}
+          PROBE_GATE: ${{ inputs.probe_gate }}
+          GITHUB_PAT: ""
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+          GITHUB_PAT_GITHUB_COM: ""
+          GIT_ALLOW_PROTOCOL: file
+          GIT_TERMINAL_PROMPT: "0"
+          GIT_CONFIG_NOSYSTEM: "1"
+          GIT_CONFIG_GLOBAL: ${{ runner.temp }}/k245/cfg-host/gitconfig-redirect
+          K245_GITCONFIG_REDIRECT: ${{ runner.temp }}/k245/cfg-host/gitconfig-redirect
+          K245_GITCONFIG_PLAIN: ${{ runner.temp }}/k245/cfg-host/gitconfig-plain
+        run: |
+          k="$RUNNER_TEMP/k245"
+          dummy=kit245-dummy-not-a-token
+          mkdir -p "$k/home" "$k/cfg-host" "$k/cfg-ctr" "$k/remote"
+          printf '[url "file://%s/"]\n\tinsteadOf = https://x-access-token:%s@github.com/\n[http]\n\tproxy = http://127.0.0.1:9\n' "$k/remote" "$dummy" > "$k/cfg-host/gitconfig-redirect"
+          printf '[url "file://%s/"]\n\tinsteadOf = https://x-access-token:%s@github.com/\n[http]\n\tproxy = http://127.0.0.1:9\n' /tmp/k245/remote "$dummy" > "$k/cfg-ctr/gitconfig-redirect"
+          : > "$k/cfg-host/gitconfig-plain"
+          : > "$k/cfg-ctr/gitconfig-plain"
+          chmod -R a+rX "$k/cfg-ctr"
+          source packaging/package-commit.sh
+          echo "KIT245 run branch head $(git rev-parse HEAD); commit under test $PROBE_COMMIT; gate $PROBE_GATE"
+          git diff --stat "$PROBE_COMMIT" HEAD
+          # shellcheck disable=SC2086
+          if git diff --quiet "$PROBE_COMMIT" HEAD -- $PKG_PATHS packaging; then echo "val_product_tree_ok"; else echo "val_product_tree_mismatch"; exit 1; fi
+          echo "KIT245 package commit of the build: ${MSR_PACKAGE_COMMIT:-unset}"
+          probe_dir="$GITHUB_WORKSPACE/docs/qa/workflow-execution/kit/kit-245"
+          rscript="$DEST/app/resources/runtime/bin/Rscript"
+          status=0
+          show() { # $1 label: the invocation's whole output with the dummy masked, and the count of unmasked dummies
+            sed "s/$dummy/<dummy>/g" "$k/raw-$1.log"
+            echo "KIT245	G0	$1	raw_output_unmasked_dummy_count	$(grep -o "$dummy" "$k/raw-$1.log" | wc -l)"
+            if ! grep -q "^G0 END " "$k/raw-$1.log"; then echo "::error::instrument fault (VAL-54): no 'G0 END' line from $1"; status=1; fi
+          }
+          cd "$RUNNER_TEMP"
+          HOME="$k/home" USERPROFILE="$k/home" K245_EXPECT_HOME="$k/home" K245_WORKSPACE="$GITHUB_WORKSPACE" \
+            "$rscript" --vanilla "$probe_dir/g0-probe.R" "$k/out-runner" linux-runner main "$k/remote" > "$k/raw-linux-runner.log" 2>&1 || status=1
+          show linux-runner
+          # Stop rule 7: this runner has network; git must never have tried it.
+          if grep -qE "Could not resolve host|unable to access|Authentication failed" "$k/raw-linux-runner.log"; then echo "::error::stop rule 7: git reached for the network on the runner"; status=1; fi
+          docker pull -q ubuntu:22.04
+          docker pull -q buildpack-deps:jammy-scm
+          ctr() { # $1 image, $2 label, $3 case set, $4 configuration file, $5 GIT_ALLOW_PROTOCOL (empty: unset)
+            allow=(); [ -n "$5" ] && allow=(--env "GIT_ALLOW_PROTOCOL=$5")
+            docker run --rm --network none --user "$(id -u):$(id -g)" --workdir /tmp \
+              --env HOME=/tmp --env K245_EXPECT_HOME=/tmp --env USERPROFILE=/tmp \
+              --env GITHUB_PAT= --env GITHUB_TOKEN= --env GH_TOKEN= --env GITHUB_PAT_GITHUB_COM= \
+              --env GIT_TERMINAL_PROMPT=0 --env GIT_CONFIG_NOSYSTEM=1 "${allow[@]}" \
+              --env "GIT_CONFIG_GLOBAL=/k245cfg/$4" \
+              --env K245_GITCONFIG_REDIRECT=/k245cfg/gitconfig-redirect --env K245_GITCONFIG_PLAIN=/k245cfg/gitconfig-plain \
+              --volume "$DEST:/opt/msr installed:ro" --volume "$probe_dir:/probe:ro" --volume "$k/cfg-ctr:/k245cfg:ro" "$1" \
+              sh -c '. /etc/os-release; echo "KIT245 container $PRETTY_NAME; git: $(command -v git || echo none)"; exec "/opt/msr installed/app/resources/runtime/bin/Rscript" --vanilla /probe/g0-probe.R /tmp/k245out "$1" "$2" /tmp/k245/remote' sh "$2" "$3" \
+              > "$k/raw-$2.log" 2>&1 || status=1
+            show "$2"
+          }
+          ctr ubuntu:22.04 linux-ubuntu-22.04 main gitconfig-redirect file
+          ctr buildpack-deps:jammy-scm linux-jammy-scm main gitconfig-redirect file
+          # P2n: no redirect, no proxy, GIT_ALLOW_PROTOCOL unset; no network by construction (stop rule 7 exempt).
+          ctr buildpack-deps:jammy-scm linux-jammy-scm-p2n p2n gitconfig-plain ""
+          exit "$status"
+
       - name: "P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)"
         id: lifecycle
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         run: |
           # ubuntu-22.04: the kernel is older than 6.12. ubuntu-24.04: every host requirement holds except a user
           # D-Bus, which a desktop session has and the hosted runner lacks (runs 44055833237, 44059705566,
@@ -545,7 +642,7 @@ jobs:
       # putting R's original file back for the "before" rows, then the build's (the only difference between the two).
       - name: "Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)"
         id: hosts
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         timeout-minutes: 60
         run: |
           status=0
@@ -578,7 +675,7 @@ jobs:
 
       - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)"
         id: testtools
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.probe != 'true' }}
         run: |
           echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
           "$DEST/app/resources/runtime/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
@@ -999,9 +1096,63 @@ jobs:
           "APP=$($application.FullName)" >> $env:GITHUB_ENV
           "APP_FOLDER=$folder" >> $env:GITHUB_ENV
 
+      # KIT-245 G0 (stage probe only; ticket r1.2 section 8): the product-tree check, then kit-245/g0-probe.R under the
+      # installed bundle's R in the shell's environment (windows-clean-run.ps1: no git on R's PATH). No real token
+      # exists: the four token variables are empty and gh::gh is a recorder that never calls the original. The output
+      # is printed with the dummy masked. Nothing uploaded.
+      - name: "KIT-245 probe: Push to GitHub under the installed R (shell's environment)"
+        id: probe
+        if: ${{ !cancelled() && needs.plan.outputs.probe == 'true' && steps.install.outcome == 'success' }}
+        timeout-minutes: 30
+        env:
+          PROBE_COMMIT: ${{ inputs.probe_commit }}
+          PROBE_GATE: ${{ inputs.probe_gate }}
+          GITHUB_PAT: ""
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+          GITHUB_PAT_GITHUB_COM: ""
+          GIT_ALLOW_PROTOCOL: file
+          GIT_TERMINAL_PROMPT: "0"
+          GIT_CONFIG_NOSYSTEM: "1"
+          GIT_CONFIG_GLOBAL: ${{ runner.temp }}\k245\gitconfig-redirect
+          K245_GITCONFIG_REDIRECT: ${{ runner.temp }}\k245\gitconfig-redirect
+          K245_GITCONFIG_PLAIN: ${{ runner.temp }}\k245\gitconfig-plain
+        run: |
+          $k = Join-Path $env:RUNNER_TEMP 'k245'
+          $dummy = 'kit245-dummy-not-a-token'
+          foreach ($d in 'home', 'remote') { New-Item -ItemType Directory -Force (Join-Path $k $d) | Out-Null }
+          $remote = (Join-Path $k 'remote') -replace '\\', '/'
+          $utf8 = [System.Text.UTF8Encoding]::new($false)
+          [IO.File]::WriteAllText($env:K245_GITCONFIG_REDIRECT, "[url `"file:///$remote/`"]`n`tinsteadOf = https://x-access-token:$dummy@github.com/`n[http]`n`tproxy = http://127.0.0.1:9`n", $utf8)
+          [IO.File]::WriteAllText($env:K245_GITCONFIG_PLAIN, '', $utf8)
+          "KIT245 run branch head $(git rev-parse HEAD); commit under test $env:PROBE_COMMIT; gate $env:PROBE_GATE"
+          git diff --stat $env:PROBE_COMMIT HEAD
+          $line = Select-String -Path packaging/package-commit.sh -Pattern '^PKG_PATHS="(.*)"$' | Select-Object -First 1
+          $paths = @($line.Matches[0].Groups[1].Value -split ' ') + 'packaging'
+          git diff --quiet $env:PROBE_COMMIT HEAD -- @paths
+          if ($LASTEXITCODE -ne 0) { "val_product_tree_mismatch"; throw "val_product_tree_mismatch" }
+          "val_product_tree_ok"
+          "KIT245 package commit of the build: $env:MSR_PACKAGE_COMMIT"
+          $clean = Join-Path $env:GITHUB_WORKSPACE 'packaging\verify\windows-clean-run.ps1'
+          $probe = Join-Path $env:GITHUB_WORKSPACE 'docs\qa\workflow-execution\kit\kit-245\g0-probe.R'
+          $log = Join-Path $k 'raw-windows-installed.log'
+          $savedPath = $env:PATH
+          $env:HOME = Join-Path $k 'home'; $env:USERPROFILE = $env:HOME; $env:K245_EXPECT_HOME = $env:HOME
+          $env:K245_WORKSPACE = $env:GITHUB_WORKSPACE
+          [Console]::OutputEncoding = $utf8
+          Push-Location $env:RUNNER_TEMP
+          & $clean -Bundle "$env:APP_FOLDER\resources\runtime" -Script $probe -NoBundleArgument -Arguments (Join-Path $k 'out-windows'), windows-installed, main, ((Join-Path $k 'remote') -replace '\\', '/') *> $log
+          $probeStatus = $LASTEXITCODE
+          Pop-Location
+          $env:PATH = $savedPath
+          $raw = Get-Content -Raw -Encoding utf8 $log
+          $raw -replace [regex]::Escape($dummy), '<dummy>'
+          "KIT245`tG0`twindows-installed`traw_output_unmasked_dummy_count`t$(([regex]::Matches($raw, [regex]::Escape($dummy))).Count)"
+          if ($raw -notmatch '(?m)^G0 END ') { "::error::instrument fault (VAL-54): no 'G0 END' line (probe exit $probeStatus)"; throw "instrument fault (VAL-54)" }
+
       - name: "P3 lifecycle: the installed application (network cut for its programs)"
         id: lifecycle
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         run: |
           Set-NetFirewallProfile -All -Enabled True
           $programs = Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe
@@ -1094,7 +1245,7 @@ jobs:
       # figures with its message (RAISED lines).
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
