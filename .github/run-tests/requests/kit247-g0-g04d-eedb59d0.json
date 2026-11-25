@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-247 G0-4 instrument rerun 3 of 3 (VAL-54, last; coordinator's ruling): rerun 45600644799 saw no completion notice in 300 s; now KIT-233's notification capture and signal, 600 s, logs and project files saved on failure; no prediction changed; 1 job, ceiling 90 job-minutes",
+  "label": "KIT-247 G0 g04d on kit-247-g0 eedb59d0 (R/ as v0.9-staging 16112917)",
+  "package_commit": "eedb59d01b0315a8e8e845a0fd68b024438abfde",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-247/g0-browser.R",
+      "args": [
+        "kit247-g0b"
+      ],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit247-g0b",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 85
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
