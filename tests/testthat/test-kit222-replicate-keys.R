@@ -674,7 +674,10 @@ kit222SameAsBase <- function(rows, samples, order, mode, typed = NULL) {
     base <- kit222BaseTechRep(base, runs, mode, number)
     head <- applyOmicsDesignTechRepAssignment(head, runs, mode, number)$designMatrix
   }
-  identical(base, head)
+  # G1's population is every base merge-free design (as C1's `merged()`): a sequence in which base merged is skipped.
+  sample <- sub("_[0-9]+$", "", base$Run)
+  merged <- any(vapply(split(sample, paste(base$group, base$replicates)), function(s) length(unique(s)) > 1L, logical(1)))
+  merged || identical(base, head)
 }
 
 test_that("KIT-222 G1: merge-free designs are byte-identical to base (exhaustive at 2 and 3 samples, 200 random at 50)", {
@@ -853,4 +856,134 @@ test_that("KIT-222 G6: every sequence of two edits on five runs keeps one markin
   kit222Obs("G6 first violation", if (is.null(first_violation)) "none" else paste(describe(first_violation[[1L]]), "then",
     describe(first_violation[[2L]])))
   expect_null(first_violation)
+})
+
+# ------------------------------------------------------------------------------------------------------------------
+# After the implementation audit (AUDIT-KIT-222-impl-20261125): E12a, E12d, the proteomics column type.
+# ------------------------------------------------------------------------------------------------------------------
+
+# The protein design of the checkpoint fixtures with D1: control_1's two runs marked 1 and 1 (two marking actions).
+kit222D1ProteinDesign <- function(design) {
+  design$tech_reps <- NA_integer_
+  design$tech_reps[design$tech_rep_group == "control_1"] <- 1L
+  design
+}
+
+kit222CatchOpen <- function(expr) {
+  seen <- new.env(parent = emptyenv())
+  seen$message <- NULL
+  seen$value <- withCallingHandlers(tryCatch(expr, error = identity),
+    warning = function(condition) {
+      if (inherits(condition, "omics_design_replicate_key_collision_open")) seen$message <- conditionMessage(condition)
+      invokeRestart("muffleWarning")
+    })
+  seen
+}
+
+# test-workflow-native-session.R:300-318 (paths, session double), copied as VAL-130 (4) asks.
+kit222NativePaths <- function(root) {
+  paths <- list(source_dir = file.path(root, "scripts", "proteomics"),
+    protein_qc_dir = file.path(root, "results", "proteomics", "protein_qc"),
+    peptide_qc_dir = file.path(root, "results", "proteomics", "peptide_qc"))
+  for (path in c(unlist(paths), file.path(dirname(paths$protein_qc_dir), "publication_graphs"))) {
+    dir.create(path, recursive = TRUE, showWarnings = FALSE)
+  }
+  paths
+}
+
+kit222NativeSession <- function() {
+  session <- new.env(parent = emptyenv())
+  session$userData <- new.env(parent = emptyenv())
+  session$onFlush <- session$onFlushed <- session$onSessionEnded <- function(...) function() invisible(NULL)
+  session
+}
+
+test_that("KIT-222 E12a: adopting a proteomics native archive whose design carries D1 names the key", {
+  skip_if_not(workflowOwnerCapable())
+  # As test-workflow-native-session.R:5-22 and :842-880: a native owner, its export, the archive opened and adopted.
+  paths <- kit222NativePaths(withr::local_tempdir())
+  output <- withr::local_tempdir()
+  manager <- newDIAStateAdapter(newWorkflowEntityStore(paths$source_dir, "native-test", "DIA"),
+    WorkflowState$new(audit_enabled = FALSE))
+  manager$setWorkflowType("DIA")
+  raw <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+  manager$saveState("raw_data_s4", raw, list(threshold = 0.01), "raw")
+  final <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+  final@design_matrix <- kit222D1ProteinDesign(final@design_matrix)
+  manager$saveState("correlation_filtered", final, list(), "final")
+  manager$.context$session_format <- "native_v1"
+  convertDIANativeLegacyCheckpoints(manager)
+  manager$.context$experiment_paths <- paths
+  metadata <- list(design_matrix = final@design_matrix,
+    contrasts_tbl = data.frame(contrasts = "B-A", friendly_names = "test"), config_list = final@args,
+    final_protein_count = nrow(final@protein_quant_table), final_sample_count = nrow(final@design_matrix),
+    workflow_type = "DIA", normalization_method = "cyclicloess", ruv_mode = "skip", ruv_applied = FALSE)
+  result <- runDIANativeSessionExport(manager, metadata, output, dependencies = resolveDIANativeDependencies(manager))
+  closeDIAStateAdapter(manager)
+  fresh <- kit222NativePaths(withr::local_tempdir())
+  imported <- openDIANativeSession(result$publication$archive_path, fresh$source_dir)
+  workflow <- list2env(list(state_manager = WorkflowState$new(audit_enabled = FALSE),
+    qc_params = list(protein_qc = list())), parent = emptyenv())
+  seen <- kit222CatchOpen(adoptDIANativeSession(imported, workflow, kit222NativeSession(), fresh$source_dir, fresh))
+  if (inherits(workflow$state_manager, "DIAStateAdapter")) withr::defer(closeDIAStateAdapter(workflow$state_manager))
+  kit222Obs("E12a", c(class(seen$value)[[1L]], seen$message %||% "no message"))
+  expect_false(inherits(seen$value, "error"))
+  expect_type(seen$message, "character")
+  if (is.character(seen$message)) expect_match(seen$message, "'control_1': run_0001, run_0002", fixed = TRUE)
+})
+
+test_that("KIT-222 E12d: opening a peptide checkpoint whose design carries D1 names the key", {
+  skip_if_not(workflowOwnerCapable())
+  # As test-workflow-native-session.R:965-1010: a checkpoint saved from an owner, then opened.
+  recipe <- readWorkflowCheckpointRecipe("small")
+  recipe$n_proteins <- 8L; recipe$n_samples <- 8L
+  recipe$peptides_per_protein <- 4L; recipe$forms_per_peptide <- 2L
+  object <- makeWorkflowCheckpointPeptide(recipe)
+  object@design_matrix <- kit222D1ProteinDesign(object@design_matrix)
+  root <- withr::local_tempdir()
+  checkpointWorkflow <- function(native) {
+    shiny::reactiveValues(state_manager = native, data_tbl = object@peptide_data, data_cln = object@peptide_data,
+      data_type = "peptide", data_format = "diann", config_list = list(globalParameters = list(workflow_type = "DIA")),
+      design_matrix = object@design_matrix, column_mapping = list(run_col = "Run", protein_col = "Protein.Group",
+        peptide_col = "Stripped.Sequence", raw_quantity_col = "Precursor.Quantity",
+        norm_quantity_col = "Precursor.Normalised"))
+  }
+  checkpointPaths <- function(name) {
+    paths <- list(source_dir = file.path(root, paste0(name, "-source")),
+      peptide_qc_dir = file.path(root, paste0(name, "-peptide")))
+    lapply(paths, dir.create)
+    paths
+  }
+  save_paths <- checkpointPaths("save")
+  writeLines("accepted output", file.path(save_paths$peptide_qc_dir, "peptide.tsv"))
+  seen <- NULL
+  shiny::testServer(function(input, output, session) {}, {
+    session$userData$peptide_checkpoint_design <- function() list(design_matrix = object@design_matrix,
+      groups = unique(object@design_matrix$group), factors = character(), contrasts = data.frame(),
+      removed_samples = character(), formula = "~ 0 + group")
+    native <- WorkflowState$new(audit_enabled = FALSE)
+    native$setWorkflowType("DIA")
+    native$saveState("raw_data_s4", object, list(), "raw_data_s4")
+    publication <- saveDIAPeptideCheckpoint(checkpointWorkflow(native), session, save_paths)
+    opening <- checkpointWorkflow(WorkflowState$new(audit_enabled = FALSE))
+    opening$state_manager$setWorkflowType("DIA")
+    seen <<- kit222CatchOpen(openDIAPeptideCheckpoint(publication$archive_path, opening, session, checkpointPaths("open")))
+  })
+  kit222Obs("E12d", c(class(seen$value)[[1L]], seen$message %||% "no message"))
+  expect_identical(seen$value, "raw_data_s4")
+  expect_type(seen$message, "character")
+  if (is.character(seen$message)) expect_match(seen$message, "'control_1': run_0001, run_0002", fixed = TRUE)
+})
+
+test_that("KIT-222 G7: the proteomics edit leaves the replicate column's type as base did", {
+  runs <- c("A_1", "A_2", "B_1", "B_2")
+  start <- applyProtDesignMetadataAssignment(kit222Design(runs), runs, "Ctrl", "", "", 1L)
+  expect_type(start$replicates, "integer")
+  # Base shifted B (a double subtraction): double. Base shifted nothing (B marked first at its own numbers): integer.
+  for (selection in list(c("A_1", "A_2"), c("B_1", "B_2"))) {
+    head <- applyProtDesignTechRepAssignment(start, selection, "lowest")$designMatrix
+    base <- kit222BaseTechRep(start, selection, "lowest")
+    kit222Obs(paste("G7", paste(selection, collapse = "+")), c(typeof(base$replicates), typeof(head$replicates)))
+    expect_identical(head, base)
+  }
 })
