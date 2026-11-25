@@ -1,0 +1,2178 @@
+== test-enrichment-significance.R | new-failure | KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+-- base:
+  <passes>
+-- head:
+  Expected `passed$significance_rule` to be identical to "qvalue".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('qvalue')
+  Expected `ran()$significance_rule` to be identical to "qvalue".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('qvalue')
+
+== test-gui-entry-proteomics.R | message-changed | KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$head`:   "correlation_filtered"
+  `expected$head`: "enrichment_completed"
+  
+  `actual$history` is length 16
+  `expected$history` is length 17
+  
+  `actual$history[[17]]` is absent
+  `expected$history[[17]]` is a character vector ('enrichment_completed')
+  
+  `actual$states` is length 16
+  `expected$states` is length 17
+  
+       names(actual$states)         | names(expected$states)           
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+  [15] "normalized"                 | "normalized"                 [15]
+  [16] "correlation_filtered"       | "correlation_filtered"       [16]
+                                    - "enrichment_completed"       [17]
+  
+  `actual$states$enrichment_completed` is absent
+  `expected$states$enrichment_completed` is a character vector ('f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705')
+  
+  lines(actual$outputs$proteomics_workflow-differential_expression-da_status) vs lines(expected$outputs$proteomics_workflow-differential_expression-da_status)
+  - "[OK] Analysis Complete"
+  - " Contrasts analyzed: 1"
+  - " Results available in all tabs"
+  + "[WAITING] Waiting for analysis..."
+  + "Click 'Run DA Analysis' to start"
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$head`:   "correlation_filtered"
+  `expected$head`: "enrichment_completed"
+  
+  `actual$history` is length 16
+  `expected$history` is length 17
+  
+  `actual$history[[17]]` is absent
+  `expected$history[[17]]` is a character vector ('enrichment_completed')
+  
+  `actual$states` is length 16
+  `expected$states` is length 17
+  
+       names(actual$states)         | names(expected$states)           
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+  [15] "normalized"                 | "normalized"                 [15]
+  [16] "correlation_filtered"       | "correlation_filtered"       [16]
+                                    - "enrichment_completed"       [17]
+  
+  `actual$states$enrichment_completed` is absent
+  `expected$states$enrichment_completed` is a character vector ('f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705')
+  
+  lines(actual$outputs$proteomics_workflow-differential_expression-da_status) vs lines(expected$outputs$proteomics_workflow-differential_expression-da_status)
+  - "[OK] Analysis Complete"
+  - " Contrasts analyzed: 1"
+  - " Results available in all tabs"
+  + "[WAITING] Waiting for analysis..."
+  + "Click 'Run DA Analysis' to start"
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$head`:   "correlation_filtered"
+  `expected$head`: "enrichment_completed"
+  
+  `actual$history` is length 16
+  `expected$history` is length 17
+  
+  `actual$history[[17]]` is absent
+  `expected$history[[17]]` is a character vector ('enrichment_completed')
+  
+  `actual$states` is length 16
+  `expected$states` is length 17
+  
+       names(actual$states)         | names(expected$states)           
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+  [15] "normalized"                 | "normalized"                 [15]
+  [16] "correlation_filtered"       | "correlation_filtered"       [16]
+                                    - "enrichment_completed"       [17]
+  
+  `actual$states$enrichment_completed` is absent
+  `expected$states$enrichment_completed` is a character vector ('f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705')
+  
+  lines(actual$outputs$proteomics_workflow-differential_expression-da_status) vs lines(expected$outputs$proteomics_workflow-differential_expression-da_status)
+  - "[OK] Analysis Complete"
+  - " Contrasts analyzed: 1"
+  - " Results available in all tabs"
+  + "[WAITING] Waiting for analysis..."
+  + "Click 'Run DA Analysis' to start"
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$head`:   "correlation_filtered"
+  `expected$head`: "enrichment_completed"
+  
+  `actual$history` is length 16
+  `expected$history` is length 17
+  
+  `actual$history[[17]]` is absent
+  `expected$history[[17]]` is a character vector ('enrichment_completed')
+  
+  `actual$states` is length 16
+  `expected$states` is length 17
+  
+       names(actual$states)         | names(expected$states)           
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+  [15] "normalized"                 | "normalized"                 [15]
+  [16] "correlation_filtered"       | "correlation_filtered"       [16]
+                                    - "enrichment_completed"       [17]
+  
+  `actual$states$enrichment_completed` is absent
+  `expected$states$enrichment_completed` is a character vector ('f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705')
+  
+  lines(actual$outputs$proteomics_workflow-differential_expression-da_status) vs lines(expected$outputs$proteomics_workflow-differential_expression-da_status)
+  - "[OK] Analysis Complete"
+  - " Contrasts analyzed: 1"
+  - " Results available in all tabs"
+  + "[WAITING] Waiting for analysis..."
+  + "Click 'Run DA Analysis' to start"
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('4318f385834b185b5a07310ab68f3098183fb908478b9bcad3ed0b56ef5019c1')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('350b5642f176e96b7e449497e271a04a9424474b0a1585112dc20afd280167c6')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('a352e685dd0d504a79ea58c17f5fa0263743c6c90ee1bf4d8019c453a55f7e1a')
+  
+  prot_dia at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$head`:   "correlation_filtered"
+  `expected$head`: "enrichment_completed"
+  
+  `actual$history` is length 16
+  `expected$history` is length 17
+  
+  `actual$history[[17]]` is absent
+  `expected$history[[17]]` is a character vector ('enrichment_completed')
+  
+  `actual$states` is length 16
+  `expected$states` is length 17
+  
+       names(actual$states)         | names(expected$states)           
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+  [15] "normalized"                 | "normalized"                 [15]
+  [16] "correlation_filtered"       | "correlation_filtered"       [16]
+                                    - "enrichment_completed"       [17]
+  
+  `actual$states$enrichment_completed` is absent
+  `expected$states$enrichment_completed` is a character vector ('f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705')
+  
+  lines(actual$outputs$proteomics_workflow-differential_expression-da_status) vs lines(expected$outputs$proteomics_workflow-differential_expression-da_status)
+  - "[OK] Analysis Complete"
+  - " Contrasts analyzed: 1"
+  - " Results available in all tabs"
+  + "[WAITING] Waiting for analysis..."
+  + "Click 'Run DA Analysis' to start"
+  
+  prot_dia at step 'enrichment' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$head`:   "correlation_filtered"
+  `expected$head`: "enrichment_completed"
+  
+  `actual$history` is length 16
+  `expected$history` is length 17
+  
+  `actual$history[[17]]` is absent
+  `expected$history[[17]]` is a character vector ('enrichment_completed')
+  
+  `actual$states` is length 16
+  `expected$states` is length 17
+  
+       names(actual$states)         | names(expected$states)           
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+  [15] "normalized"                 | "normalized"                 [15]
+  [16] "correlation_filtered"       | "correlation_filtered"       [16]
+                                    - "enrichment_completed"       [17]
+  
+  `actual$states$enrichment_completed` is absent
+  `expected$states$enrichment_completed` is a character vector ('f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705')
+  
+  lines(actual$outputs$proteomics_workflow-differential_expression-da_status) vs lines(expected$outputs$proteomics_workflow-differential_expression-da_status)
+  - "[OK] Analysis Complete"
+  - " Contrasts analyzed: 1"
+  - " Results available in all tabs"
+  + "[WAITING] Waiting for analysis..."
+  + "Click 'Run DA Analysis' to start"
+  
+  prot_dia at step 'summary_refusal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+
+== test-kit207-summary-head-guard.R | new-failure | KIT-207 G7: the guard passes proteomics and a manager that is not a session owner (head only)
+-- base:
+  <passes>
+-- head:
+  <omic_norm_correlation_input_stale/rlang_error/error/condition>
+  Error in `assertProtSummaryHeadFinal(manager)`: No normalisation has been run in this session, so there is no final table to save. Press 'Run Normalization & RUV' (and apply or skip the correlation filter), then press this button again.
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+-- base:
+  Expected `"enrichment_completed" %in% archive$stored` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `added` to have length 1.
+  Actual length: 0.
+  Expected `archive$state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  Expected `fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual`:   "enrichment_completed"
+  `expected`: "correlation_filtered"
+  Expected `is.null(archive$marker)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `log$errors` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+-- base:
+  Expected `"Study parameters saved with warnings" %in% seen$notes` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `planted` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+-- base:
+  Expected `is.null(restored)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `length(restored$all_enrichment_results) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  Expected `restored$not_tested` to be identical to `k216NotTested`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S3 object of class <data.frame>, a list
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E4 (G4, D1 (e)): an archive exported after a Revert from an enrichment opens (fails before)
+-- base:
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E11 (G6, I05): DIA with limpa, the refreshed archive states the RUV mode of the last covariates run (fails before)
+-- base:
+  Expected `archive$ruv_mode` to be identical to "correction".
+  Differences:
+  `actual`:   "covariates"
+  `expected`: "correction"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E7 (G7, I04): the archive and the reopened tab state the normalisation method that was run (fails before)
+-- base:
+  Expected `"norm_method=cyclicloess" %in% reopened$selected` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `"norm_method=quantile" %in% reopened$selected` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `archive$normalization_method` to be identical to "quantile".
+  Differences:
+  `actual`:   "cyclicloess"
+  `expected`: "quantile"   
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E7b (I04, P08): after two runs the archive states the later run's method (fails before)
+-- base:
+  Expected `archive$normalization_method` to be identical to "cyclicloess".
+  Differences:
+  `actual`:   "quantile"   
+  `expected`: "cyclicloess"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E8 (G8, D2): after a second enrichment run the Save writes the integration input and the record's input is the table (fails before)
+-- base:
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `unlist(inputs)` to be identical to `manifest$source$entity_id`.
+  Differences:
+  `actual`:   "4fb6f9be4f9e04b9bfa24cb8f59619b1c98df7744419034733bb08f2bebe8bcc"
+  `expected`: "197606e843798de317789876884e1c978ee1d58edbf1b05d458af3b51e1dbe34"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E9 (G9, I10): at a stale head Generate Report and Export Session State are refused before anything is written (fails before)
+-- base:
+  Expected `guard` to be an S3 object.
+  Actual OO type: none.
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `state$files` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E10 (G10, I10): at a stale head the Save is refused before the parameters and the record are written (fails before)
+-- base:
+  Expected `seen$args` to have length 0.
+  Actual length: 1.
+  Expected `seen$failed[[1L]]` to inherit from "omic_norm_correlation_input_stale".
+  Actual class: "prot_norm_correlation_input_stale"/"rlang_error"/"error"/"condition".
+  Expected `seen$records` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `written` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E5: a DA run again with other arguments ends the product (head only; base printed)
+-- base:
+  Expected `again` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `steps` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E5b (P03): an enrichment of an earlier table's DA after a Revert is not a product of the head (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "normalized".
+  Differences:
+  `actual`:   "enrichment_completed"
+  `expected`: "normalized"          
+  Expected `steps` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E10c (SD-1): a project never normalised is refused Save, Report and Session State (fails before)
+-- base:
+  Expected `guard` to be an S3 object.
+  Actual OO type: none.
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `seen$args` to have length 0.
+  Actual length: 1.
+  Expected `state$files` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E14 (P06): at `normalized` the Save names the `normalized` table as final (fails before)
+-- base:
+  Expected `final` to be identical to `getDIAStateReference(fixture$manager, "normalized")$entity_id`.
+  Differences:
+  `actual`:   "ea4d0417d5bf225237b1020142c522a4a5fc8bcd4902e35e6281078fbacbb022"
+  `expected`: "ce6e9dced35085e75142f968feb80c549805631ac1955e17de3c06c31b76db79"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E9b: an old-shape archive whose current state is the enrichment opens at the DA's table (fails before)
+-- base:
+  Expected `is.null(reopened$fixture$manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)
+-- base:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)
+-- base:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab has cleared its result (fails before)
+-- base:
+  Expected `any(startsWith(notes, "[warning]"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `calls` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E7c (I04, P08): DIA with limpa, the archive states the protein normalisation step's method (fails before)
+-- base:
+  Expected `archive$normalization_method` to be identical to "none".
+  Differences:
+  `actual`:   "quantile"
+  `expected`: "none"    
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E9 (P07): archives written before the fix with the enrichment as current state open at the DA's table (fails before)
+-- base:
+  Expected `is.character(reopened$view$enrichment_conversion)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  base-enrichment-1-run.msdia.tar T1
+  Expected `is.character(reopened$view$enrichment_conversion)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  base-enrichment-2-runs.msdia.tar T1
+  Expected `is.null(manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  base-enrichment-1-run.msdia.tar
+  Expected `is.null(manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  base-enrichment-2-runs.msdia.tar
+  Expected `manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  
+  base-enrichment-1-run.msdia.tar
+  Expected `manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  
+  base-enrichment-2-runs.msdia.tar
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  
+  base-enrichment-1-run.msdia.tar
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  
+  base-enrichment-2-runs.msdia.tar
+  Expected `steps` to have length 1.
+  Actual length: 0.
+  Expected `steps` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
+== test-omic-enrich-module.R | new-failure | (b) in process: gprofiler
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  gprofiler run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "61dae2e69108addd"
+  
+  gprofiler run states
+
+== test-omic-enrich-module.R | message-changed | (b) in process: clusterprofiler
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"Enrichment_results_B_vs_A_<DATE>.zip"
+    clusterProfileR_results.tsv"671ae3ed12b3c1b51526dd991311d931bca4bb1e347a492381205a28f264372b"
+  - enrichment_analysis_summary.txt"6c76b09e4b91c3c55bbcc1b24f88098e9e1d62c66f87a18065ef8e8ea4c35ff8"
+  + enrichment_analysis_summary.txt"e7a41994feeebd115b4192c86580047e7109cce09c1185306b314c0d71b7dd8b"
+  
+  clusterprofiler download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_all values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_up values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler run values
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  clusterprofiler run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "a62a41b234214817"
+  
+  clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"Enrichment_results_B_vs_A_<DATE>.zip"
+    clusterProfileR_results.tsv"671ae3ed12b3c1b51526dd991311d931bca4bb1e347a492381205a28f264372b"
+  - enrichment_analysis_summary.txt"6c76b09e4b91c3c55bbcc1b24f88098e9e1d62c66f87a18065ef8e8ea4c35ff8"
+  + enrichment_analysis_summary.txt"e7a41994feeebd115b4192c86580047e7109cce09c1185306b314c0d71b7dd8b"
+  
+  clusterprofiler download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_all values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_up values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler run values
+
+== test-omic-enrich-module.R | new-failure | (b) in process: kernel_gprofiler
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  kernel_gprofiler run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "b8448caae3e5e28b"
+  
+  kernel_gprofiler run states
+
+== test-omic-enrich-module.R | message-changed | (b) in process: kernel_clusterprofiler
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                          | expected                           
+  [1] "<list> d626c0d8d1169c12"       - "<list> 6961aaa3fc9d92d9"       [1]
+  [2] "TRUE"                          | "TRUE"                          [2]
+  [3] "clusterprofiler"               | "clusterprofiler"               [3]
+  [4] "<data.frame> bacf7b29d4777485" - "<data.frame> 3fbdfddf484f8372" [4]
+  [5] "<ref>"                         | "<ref>"                         [5]
+  [6] "B_vs_A"                        | "B_vs_A"                        [6]
+  [7] "<list> 28df520b992b4a4b"       | "<list> 28df520b992b4a4b"       [7]
+  
+  actual[10:16] vs expected[10:16]
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> d8f57c99312ad90c"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  kernel_clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[3]]) vs lines(expected[[3]])
+  - "<text> df4429afb7198599ba09e7101d22eb4a422dd839e3db2f8fce6ebece1b157aa4"
+  + "<text> 4cde847cac7e9c4ab85a093c84e945c7ddf8dfa3f4810877838ac40faaca1db2"
+  
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                          | expected                           
+  [1] "<list> d626c0d8d1169c12"       - "<list> 6961aaa3fc9d92d9"       [1]
+  [2] "TRUE"                          | "TRUE"                          [2]
+  [3] "clusterprofiler"               | "clusterprofiler"               [3]
+  [4] "<data.frame> bacf7b29d4777485" - "<data.frame> 3fbdfddf484f8372" [4]
+  [5] "<ref>"                         | "<ref>"                         [5]
+  [6] "B_vs_A"                        | "B_vs_A"                        [6]
+  [7] "<list> 28df520b992b4a4b"       | "<list> 28df520b992b4a4b"       [7]
+  
+  actual[10:16] vs expected[10:16]
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> d8f57c99312ad90c"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  kernel_clusterprofiler run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  kernel_clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[3]]) vs lines(expected[[3]])
+  - "<text> df4429afb7198599ba09e7101d22eb4a422dd839e3db2f8fce6ebece1b157aa4"
+  + "<text> 4cde847cac7e9c4ab85a093c84e945c7ddf8dfa3f4810877838ac40faaca1db2"
+  
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+
+== test-omic-enrich-module.R | new-failure | (b) in process: organism_filter
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  organism_filter mapped/run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  organism_filter no_mapping/run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "61dae2e69108addd"
+  
+  organism_filter mapped/run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "61dae2e69108addd"
+  
+  organism_filter no_mapping/run states
+
+== test-omic-enrich-module.R | new-failure | (b) in process: restore
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  restore run history
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "61dae2e69108addd"
+  
+  restore run states
+
+== test-omic-enrich-module.R | new-failure | (W3, F107-05) a Run on the live kernel (kernel_gprofiler) commits enrichment_completed with the tab's results
+-- base:
+  <passes>
+-- head:
+  Expected `seen$run$history` to be identical to `c("initial", "correlation_filtered")`.
+  Differences:
+  `actual`:   "<unchanged>"                       
+  `expected`: "initial"     "correlation_filtered"
+
+== test-omic-enrich-module.R | new-failure | (W3, F107-05) a Run on the live kernel (kernel_clusterprofiler) commits enrichment_completed with the tab's results
+-- base:
+  <passes>
+-- head:
+  Expected `seen$run$history` to be identical to `c("initial", "correlation_filtered")`.
+  Differences:
+  `actual`:   "<unchanged>"                       
+  `expected`: "initial"     "correlation_filtered"
+
+== test-omic-enrich-module.R | message-changed | (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+-- base:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+      actual$results      | expected$results       
+  [1] "EnrichmentResults" | "EnrichmentResults" [1]
+  [2] "609cb7b1bc247d2f"  - "46a64d167ddd9c1b"  [2]
+  [3] "28df520b992b4a4b"  | "28df520b992b4a4b"  [3]
+  [4] "950ddbb7d830df8c"  | "950ddbb7d830df8c"  [4]
+  [5] "28df520b992b4a4b"  | "28df520b992b4a4b"  [5]
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"1186145dadf9295c"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"ca46e08b529e2db7"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)               | names(expected$record)             
+  [13] "parameters$protein_id_column"     | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"        | "parameters$contrast_names"    [14]
+  [15] "parameters$results"               | "parameters$results"           [15]
+  [16] "parameters$go_propagation"        -                                    
+  [17] "parameters$significance_rule"     -                                    
+  [18] "parameters$enrichment_background" -                                    
+  
+  actual$record[13:18] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  - parameters$enrichment_background"fixed ; fixed ; tested"
+  
+  kernel_clusterprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"b85cc85cec7a640b"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"ca46e08b529e2db7"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)               | names(expected$record)             
+  [13] "parameters$protein_id_column"     | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"        | "parameters$contrast_names"    [14]
+  [15] "parameters$results"               | "parameters$results"           [15]
+  [16] "parameters$go_propagation"        -                                    
+  [17] "parameters$significance_rule"     -                                    
+  [18] "parameters$enrichment_background" -                                    
+  
+  actual$record[13:18] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  - parameters$enrichment_background"fixed ; fixed ; tested"
+  
+  clusterprofiler
+-- head:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+      actual$results      | expected$results       
+  [1] "EnrichmentResults" | "EnrichmentResults" [1]
+  [2] "609cb7b1bc247d2f"  - "46a64d167ddd9c1b"  [2]
+  [3] "28df520b992b4a4b"  | "28df520b992b4a4b"  [3]
+  [4] "950ddbb7d830df8c"  | "950ddbb7d830df8c"  [4]
+  [5] "28df520b992b4a4b"  | "28df520b992b4a4b"  [5]
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"1186145dadf9295c"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"ca46e08b529e2db7"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)               | names(expected$record)             
+  [13] "parameters$protein_id_column"     | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"        | "parameters$contrast_names"    [14]
+  [15] "parameters$results"               | "parameters$results"           [15]
+  [16] "parameters$go_propagation"        -                                    
+  [17] "parameters$significance_rule"     -                                    
+  [18] "parameters$enrichment_background" -                                    
+  
+  actual$record[13:18] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  - parameters$enrichment_background"fixed ; fixed ; tested"
+  
+  kernel_clusterprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"b85cc85cec7a640b"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"ca46e08b529e2db7"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)               | names(expected$record)             
+  [13] "parameters$protein_id_column"     | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"        | "parameters$contrast_names"    [14]
+  [15] "parameters$results"               | "parameters$results"           [15]
+  [16] "parameters$go_propagation"        -                                    
+  [17] "parameters$significance_rule"     -                                    
+  [18] "parameters$enrichment_background" -                                    
+  
+  actual$record[13:18] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  - parameters$enrichment_background"fixed ; fixed ; tested"
+  
+  clusterprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  gprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  kernel_gprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  organism_filter/mapped
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  organism_filter/no_mapping
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+  
+  restore
+
+== test-omic-enrich-module.R | new-failure | (R3, P-07) a Run with the organism filter applied completes on the target organism's proteins
+-- base:
+  <passes>
+-- head:
+  Expected `seen$run$history` to be identical to `c("initial", "correlation_filtered")`.
+  Differences:
+  `actual`:   "<unchanged>"                       
+  `expected`: "initial"     "correlation_filtered"
+
+== test-omic-enrich-module.R | new-failure | (R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity
+-- base:
+  <passes>
+-- head:
+  Expected `r3$d6` to be identical to `omicEnrichW113Frozen$gprofiler`.
+  Differences:
+  `actual$history`:   "initial" "correlation_filtered"                       
+  `expected$history`: "initial" "correlation_filtered" "enrichment_completed"
+
+== test-omic-enrich-module.R | new-failure | (R3, A107-04) a service that never answers fails the Run with its message and saves nothing; the next Run completes
+-- base:
+  <passes>
+-- head:
+  Expected `seen$run[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  history
+  Expected `seen$run[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "b8448caae3e5e28b"
+  
+  states
+
+== test-omic-enrich-module.R | new-failure | (R3, A107-04) a service that answers with no significant terms completes the Run, as before
+-- base:
+  <passes>
+-- head:
+  Expected `seen$run$history` to be identical to `c("initial", "correlation_filtered")`.
+  Differences:
+  `actual`:   "<unchanged>"                       
+  `expected`: "initial"     "correlation_filtered"
+
+== test-omic-enrich-module.R | new-failure | (R3, A107-08) a failed commit is shown as a warning, the tab is not marked complete, and the next Run completes
+-- base:
+  <passes>
+-- head:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `seen$run$returned[["analysis_complete"]]`: subscript out of bounds
+  Expected `seen$failed$notes` to be identical to `c(...)`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+  + "[warning 10 -] The enrichment results were not saved to the workflow state: disk full"
+    "remove enrichment_working"
+  Expected `seen$failed$returned[["analysis_complete"]]` to be identical to "FALSE".
+  Differences:
+  `actual`:   "TRUE" 
+  `expected`: "FALSE"
+  Expected `seen$failed$tab_status` to be identical to "<unchanged>".
+  Differences:
+  `names(actual)` is a character vector ('normalization', 'differential_expression', 'enrichment_analysis', 'differential_abundance')
+  `names(expected)` is absent
+  
+  `actual`:   "complete"    "complete" "complete" "complete"
+  `expected`: "<unchanged>"                                 
+  Expected `seen$failed$values[["enrichment_status"]]` to be identical to `seen$select$values[["enrichment_status"]]`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - "[OK] Analysis Complete"
+  + "[WAITING] Ready for analysis"
+    ""
+  - "Method: gprofiler2"
+  - ""
+  - "Contrast: B_vs_A"
+  - ""
+  - "Up log2FC cutoff: 0.0"
+  - ""
+  - "Down log2FC cutoff: 0.0"
+  - ""
+  - "Q-value cutoff: 0.050"
+  - ""
+  - "Organism: Homo sapiens"
+  - ""
+  - ""
+  - "Results Available:"
+  - "* gprofiler2: 10 terms"
+  - "* clusterProfileR: 0 terms"
+  - "* STRING-DB: 0 networks"
+  - ""
+  - "[OK] Results saved to workflow state"
+  + ""
+  + "Steps:"
+  + "1. Select contrast from DE results"
+  + "2. Set log fold change cutoffs"
+  + "3. Set Q-value cutoff (significance threshold)"
+  + "4. Click 'Run Enrichment Analysis'"
+  + ""
+  + "Method automatically determined by organism."
+  Expected `seen$run[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  history
+  Expected `seen$run[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "61dae2e69108addd"
+  
+  states
+  Expected `seen$run[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('normalization', 'differential_expression', 'enrichment_analysis', 'differential_abundance')
+  
+  `actual`:   "<unchanged>"                                 
+  `expected`: "complete"    "complete" "complete" "complete"
+  
+  tab_status
+
+== test-omics-enrich-core.R | new-failure | (W2, core side) runWorkflowEnrichment gives W1 (b)'s gprofiler run step
+-- base:
+  <passes>
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  gprofiler run history
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "61dae2e69108addd"
+  
+  gprofiler run states
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step
+-- base:
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  clusterprofiler run history
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "a62a41b234214817"
+  
+  clusterprofiler run states
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+
+== test-omics-enrich-core.R | new-failure | (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_gprofiler run step
+-- base:
+  <passes>
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  kernel_gprofiler run history
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "b8448caae3e5e28b"
+  
+  kernel_gprofiler run states
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+-- base:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  kernel_clusterprofiler
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "<unchanged>"                                              
+  `expected`: "initial"     "correlation_filtered" "enrichment_completed"
+  
+  kernel_clusterprofiler run history
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  kernel_clusterprofiler
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+
+== test-omics-summary-core.R | new-failure | (W4, core side) prot_native: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  <passes>
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)` is a character vector ('proteomics')
+  `names(expected)` is absent
+  
+  `actual`:   "<present>"  
+  `expected`: "<unchanged>"
+  
+  prot_native save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "[message 5 -] Saved Integration input"
+  - "[message 5 -] Study parameters saved successfully"
+  - "[warning NULL -] The session file was not updated: no session has been exported from the Normalisation tab since this project was opened or the application started (a peptide checkpoint does not count). The study parameters, the analysis record and the integration input were saved. To save a session file you can reopen later, press 'Export Filtered Data Session' in the Normalisation tab, then save again."
+  + "[warning 5 -] Study parameters saved with warnings"
+  
+  prot_native save notes
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/proteomics/features_proteomics.parquet"
+  - "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  - "integration/proteomics/samples.parquet"
+    "source/analysis_record.json"
+  
+  `actual`:   "<present>" "<present>" "<present>" "<present>" "<present>"
+  `expected`: "<present>"                                                
+  
+  prot_native save files
+
+== test-omic-summary-module.R | new-failure | (b) prot_native: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  <passes>
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)` is a character vector ('proteomics')
+  `names(expected)` is absent
+  
+  `actual`:   "<present>"  
+  `expected`: "<unchanged>"
+  
+  prot_native save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "[message 5 -] Saved Integration input"
+  - "[message 5 -] Study parameters saved successfully"
+  - "[warning NULL -] The session file was not updated: no session has been exported from the Normalisation tab since this project was opened or the application started (a peptide checkpoint does not count). The study parameters, the analysis record and the integration input were saved. To save a session file you can reopen later, press 'Export Filtered Data Session' in the Normalisation tab, then save again."
+  + "[warning 5 -] Study parameters saved with warnings"
+  
+  prot_native save notes
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "Study parameters created for: kit108 "
+  - "Description: Full protein analysis workflow with config parameters "
+  - "Timestamp: <TIME> "
+  - "File: <ROOT>/source/study_parameters.txt "
+  - "Source: Final S4 object @args + config_list "
+  - "Integration Object: proteomics/integration_input.json "
+  - "Status: Parameters saved [OK]"
+  + "Ready to save workflow parameters and generate report"
+  
+  prot_native save values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/proteomics/features_proteomics.parquet"
+  - "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  - "integration/proteomics/samples.parquet"
+    "source/analysis_record.json"
+  
+  `actual`:   "<present>" "<present>" "<present>" "<present>" "<present>"
+  `expected`: "<present>"                                                
+  
+  prot_native save files
+
+== test-workflow-dia-products.R | new-failure | after an Open the RUV grid and the enrichment tables resolve from the accepted state without rerunning their steps (KIT-024)
+-- base:
+  <passes>
+-- head:
+  <saved_entity_invalid/rlang_error/error/condition>
+  Error in `readDIADisplayTablePage(restored[[1]]$gprofiler_results_table)`: not a saved display table
+  Expected `isWorkflowTableReference(restored[[1]]$gprofiler_results_table)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `names(restored)` to be identical to `names(results@enrichment_data)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('groupB-groupA')
+  Expected `restoreProtEnrichResultsFromState(enrichment_data, workflow)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
