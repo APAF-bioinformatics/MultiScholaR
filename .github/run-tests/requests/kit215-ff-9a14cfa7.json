@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-215 closure check C2: failing-first of the audit repairs' assertions (I01 filtered summaries, I02 T7b exact) on the tests-only commit; expected 3 failures; declared in runs.tsv at 069c0cc0",
+  "label": "KIT-215 failing-first at 9a14cfa7 (new file only; ceiling 30 job-minutes)",
+  "package_commit": "9a14cfa7cf7d866eab16d950a98437efd17b335c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit215-not-tested-lists.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
