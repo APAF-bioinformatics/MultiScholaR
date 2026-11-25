@@ -149,3 +149,33 @@ prediction is the verdict (`same`), not the count, as in train 18. `test-omic-en
 - `kit-213/outcome.md` lines 13, 16, 83, 104 name `VAL-<merge>`.
 - Records owed at landing (audit I13): plan section 11 row, section 2 rows, ticket and index, DISPATCH, E-7, KIT-216 partner line, H3.
 - KIT-216 and KIT-269 merges run `tests/testthat/test-kit213-study-parameters-labels.R`.
+
+## Result
+
+Run 45716990567 (request `merge-train-20261126q-4915d322`, request commit 9d5ca71d), created by the dispatcher without error
+(no hand dispatch); green (infrastructure). Head 4915d322 vs base 176f9d3f. Tables: `merge-train-20261126q-compare.tsv`,
+`merge-train-20261126q-check-compare.txt` (same directory).
+
+**Job-minutes 307.8 = 20.52 core-hours** (job-minutes x 4 / 60) against the ceiling of 600 job-minutes (40.0 core-hours)
+and the expected about 300: tests head 43.7/52.7/41.9, tests base 27.4/55.3/57.4, check head 15.7, check base 12.9,
+plan 0.3, results 0.5 (job start to end from the run's job times).
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit213-study-parameters-labels.R | only-on-head, 56/0 | absent | 56/0/0/0 | only-on-head: HELD |
+| test-omic-summary-module.R | same, 1675/28, identical failures | 1675/28 | 1675/28 | same: HELD |
+| test-omics-summary-core.R | same, 676/25, identical failures | 676/25 (2 skipped) | 676/25 (2 skipped) | same: HELD |
+| test-kit263-prot-study-parameters-sections.R | same, 11/0 | 11/0 | 11/0 | same: HELD |
+| test-kit254-omics-correlation-skip.R | same (count read from run) | 379/0 | 379/0 | same: HELD (VAL-325's edit is on staging) |
+| test-module-ci-trx-summary.R | same | 87/1 | 87/1 | same: HELD (the known failure, identical message) |
+| test-omic-enrich-module.R | same (count read from run) | 1011/59 | 1011/59 | same: HELD (identical failures apart from digest values) |
+| the other 39 files | same | same | same | same: HELD |
+| R CMD check | identical, nothing only on head | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none; only on base: none): HELD |
+
+Totals: 47 files, 46 `same`, 1 `only-on-head` (the new file), no `new-failure`, no `message-changed`, no `count-changed`.
+Tests head: passed 8302, failed 113; base: passed 8246, failed 113 (the 56 are the new file). Four files fail on both sides
+with identical failure lists: test-module-ci-trx-summary.R, test-omic-enrich-module.R, test-omic-summary-module.R,
+test-omics-summary-core.R.
+
+**Decision.** Every prediction held. TRAIN GREEN for KIT-213: the new file passes 56/0 on head, the re-frozen leaves of
+test-omic-summary-module.R pass against the fix with the failure list unchanged, and no file or check finding moved.
