@@ -1,4 +1,4 @@
-# KIT-190 outcome (in progress; E and E3 done; T7, the replay row, R2 tests and R3 wait for KIT-187)
+# KIT-190 outcome (implementation at d3318820; final R2 45619021147; implementation audit AUDIT-KIT-190-impl-20261126)
 
 Ticket `tickets/kit/KIT-190.md` r1.2 (C01 to C04 of the closure check applied at step 0). Branch
 `kit-190-ruv-control-selection` from `v0.9-staging` d4e2eb2c (the branch point). Run table: `runs.tsv`.
@@ -129,16 +129,17 @@ Manual 22.7 s and 86.8 s. Projected Automatic step at 50,000 features: 989 s, un
 - On the T11 concentration fixture the repaired route chose 14 % and k = 7 and called 209 features with no planted
   effect, against 16 on base. One fixture, one draw; a result to put before the owner with KIT-188.
 
-## Acceptance criteria (state at this stop)
+## Acceptance criteria (final states; AUDIT-KIT-190-impl-20261126 I11)
 
-| # | State | Evidence |
-|---|---|---|
-| A1 | T1 confirmed on base with instrument checks; T2 to T6, T7 (ii) as stated on base; all pass on head. T7 (i), (iii) to (vi) not yet written | R1a, R1a-2, fix run |
-| A2 | base side met (R1a-2); head side met for the targeted run | R1a-2; fix run |
-| A3, A4, A6 | not run (R2, R3 after KIT-187 merges) | |
-| A5 | met: lifecycle as stated after VAL-100 (R1-lc3); E: F1 to F3 not triggered; `cells.tsv`, `fixtures.tsv` hold the quantities of 5.3; E3's `times.tsv` with the projection (989 s < 1,800 s) | R1-lc3, E-a, E-b, E3 |
-| A7 | NEWS, ledger: not written; `DESCRIPTION`, `NAMESPACE`, versions unchanged | diff |
-| A8 | not written | |
+| Criterion | Final state |
+|---|---|
+| A1 | met: R1a, d-first, bound-first |
+| A2 | met |
+| A3, A4 | met: final R2, with the four files of section 5 |
+| A5 | met |
+| A6 | the staging checkpoint |
+| A7 | met after I02 to I04 and I12 |
+| A8 | met at the branch point d4e2eb2c (the 2.4 and 2.5 re-read) |
 
 ## Not checked
 
@@ -339,6 +340,9 @@ classed warning `multischolar_ruv_k_notice`), `omicsRuvAssayStatus` (per-assay `
 record outcomes `k_sweep_per_assay`, `k_cap_per_assay`, `ruv_k_notice_per_assay`, `ruv_status_per_assay`, the marker
 `ruv_k_bound` (also dropped from managed new-design steps). Notice texts are drafts in `wording.md` (VAL-41).
 
+Scope of every figure here: simulated lipidomics data without internal-standard normalisation (requested, not applied;
+VAL-253, K242-P01).
+
 Inferred (for the implementation auditor): no cell of the rule-(d) evidence changes. The measured path (the untouched
 sweep, its percentage and controls, k = min(k_sweep, 2), RUV-III-C, limma) is the shipped route at n = 12, where
 `calculateAdaptiveMaxK` gives 2. Not covered: caps 3 to 5 at larger n (KIT-188).
@@ -355,10 +359,12 @@ functions (`omicsRuvKBound`, `omicsRuvAssayStatus`) kept; no other line of stagi
 ruv_feature_levels), then `ruv_control_grouping`, then `ruv_k_bound`, each with its own comment; nothing else changed.
 NEWS and the ledger merged as text; the ledger row `VAL-<merge>` follows VAL-261 and cites VAL-235.
 
-**Stated limit (for the implementation auditor).** The counted evidence behind rule (d) and the bound ran on the
-RUV-III-C correction as it was before KIT-224 (features shifted by a constant). By reading, the sweep's k, percentage and
-controls do not use the correction (it is applied after the sweep). KIT-224's audit found its change moves paired FDP and
-power by at most 0.00068; every decided cell's bound is far from its margin. Whether this suffices is for the auditor.
+Stated limit. The counted evidence ran on the RUV-III-C correction before KIT-224 (features shifted by a constant).
+The sweep's k, percentage and controls do not read the correction (by reading), and in all 3,634 bounded journeys
+k = min(k_sweep, 2) at the sweep's percentage, so the bounded arms are the shipped computation at n = 12. The FDP and
+any-call figures do depend on the correction through limma's mean-abundance trend (eBayes trend and robust); KIT-224's S1
+(unbounded k) measured a mean paired change of at most 0.0007 (per object up to 0.044), common to both arms and small
+against the smallest margin left (0.065, N-w). Implementation audit AUDIT-KIT-190-impl-20261126, I04.
 
 **R3: departure by the coordinator.** The next full-suite checkpoint on staging stands in for R3 after this merge (as for
 KIT-201, KIT-204, KIT-243).
@@ -375,6 +381,130 @@ success assertion was a property of the row-order defect; audit K190-M12); two `
 `test-workflow-omics-binding-steps.R` (its stored snapshot gains the markers and outcomes). R CMD check: no finding only
 on head. 41.06 core-hours.
 
-Open for the coordinator and the owner: the D5 re-dump of the 12 provenance fields (exception by file, D5 (a)); the two
-stored snapshots (`test-workflow-omics-binding-steps.R`, `test-prot-norm-core.R`) and `test-workflow-omics-ruv-cancor-once.R`'s
-success assertion are not changed here.
+Open at that point for the coordinator and the owner: the D5 re-dump of the 12 provenance fields (exception by file,
+D5 (a)); the two stored snapshots (`test-workflow-omics-binding-steps.R`, `test-prot-norm-core.R`) and
+`test-workflow-omics-ruv-cancor-once.R`'s success assertion. The re-dump is now applied (I07 below); the other three are
+not changed here.
+
+## Implementation audit repairs (AUDIT-KIT-190-impl-20261126; 2026-11-26)
+
+**The correction pass (coordinator's ruling).** Before this pass the ticket's correction pass had not been used:
+(1) no correction was ever applied to a result of this ticket: the two results of R2 45329435006 (T7 in
+`test-kit172-downstream.R`; the cancor-once test) were put to the owner, not repaired; (2) the bound is scope the owner
+added by decision (VAL-182, VAL-185, VAL-235), with its own tests-first run and comparison run; (3) the runs that
+`runs.tsv` labelled "the correction allowance (252.7)" are R2 repeats after the owner's scope decision (VAL-235). They
+are relabelled with a dated note that the old label was wrong. I07's re-dump is an edit the owner authorised by file
+(VAL-88 (5)), and the staging merge is mechanics; neither is a correction. **This pass (I01 and the record repairs) is
+the ticket's one correction pass; after it none is left.**
+
+**Merge of staging 828dd105 (f5ea9cc2; marker resolution as authorised, N18).** The one code conflict,
+`R/utils_workflow_analysis_record.R`. In the header, the KIT-190 clause now says "KIT-190 adds two rows,
+`ruv_control_grouping` and `ruv_k_bound`", followed by staging's clauses and KIT-201's `treat_moderation` sentence. In
+`workflowReplayRuleMarkers`, staging's `treat_moderation` row ends with a comma (the list's closing parenthesis moved),
+then `ruv_control_grouping` and `ruv_k_bound`, each with its comment, close the list. Staging's two functions after
+the list (`workflowTreatModerationCurrent`, `workflowTreatModerationRecord`) are kept unchanged. The ledger was merged as
+text; `VAL-<merge>` follows VAL-272. No other line changed.
+
+**I07, the D5 re-dump (VAL-88 (5); the D5 control of run 45619021147, 12 of 2,078 dump lines differ).** Commit
+09c08b5e changes only these 12 provenance values in `tests/testthat/test-omic-norm-module.R`, each replaced by the head
+column of `r2-final/norm-module-control.tsv`:
+
+| Line(s) | Old value | New value |
+|---|---|---|
+| 1043 | 1ab8a05076a605820dc0d14e237215f9abfaa251d04c7076ca03825877e57dc2 | 70d15badd8b75ecacecaf1a1828f9f98be516a19f6630d390d8e34a85990d090 |
+| 1095 | 0b68624dba919ae6e6852528493ba338d672d75d235b8437c2895e8c6f724bf5 | a9b7326e2a270b95a32381ae27ffff05d2ce7e032116b273a7cd983bb72c550b |
+| 1132 | 6f03ec2fff1c90a3a1728422205f6ebe8d929a0e97a02b42dc0e053b026e5942 | 56e0f5614543ba4ed0027756f65aeb31be2cf65ef3364290cd24b6c495998dec |
+| 1182 | 24204497ce33beb525005c4869fd60e6f560a7c1f6eb2293cc928049e1410ba2 | 9f3dc69aebe34ac437e7da9abd85c2bc560af6548b0fb66c698b423b04c0de69 |
+| 1234 | 667cc9562bd90c598ef04d93d5fe30d6ad1818b89c02f50d86dcfec344a11371 | 357815f322e924dde66af6e38355a135eda96220161075443076b7fc176a29dc |
+| 1271 | 279b01b63aa09b94e9ccaa8e085154e7b281eb0fd48361548782ceead23456e3 | 54190570168222bd4009ff992fe6585e852580faf7c06f8da9a741234b34a890 |
+| 1320, 1358, 1375 | 024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a | ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30 |
+| 1447, 1485, 1502 | 6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848 | e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad |
+
+**I01, the k removed and the notices in the tab.** Tests first in 5185b830: T9 (iv) in
+`tests/testthat/test-ruv-control-anova-grouping.R`. It sets up a capped Automatic value (found 8, cap 2, 12 samples).
+The tab's summary must read "Factors removed: 2 (the search found 8; at most 2 with 12 samples)" and not "Best k: 8";
+an uncapped result keeps "Best k: …". Each notice is logged and sent to the notification once. Both routes call the
+annotation and the notices. The export line must read "k=2 (found 8, at most 2 with 12 samples)". Code ea5c71ad:
+- `omicsRuvKBound` also returns the assay's sample count (`k_samples`), and the step's value carries it.
+- `omicsRuvAnnotateResults` adds `k_removed`, `k_found`, `k_cap` and `k_samples` to an assay's sweep result only
+  where the cap reduced its k. An assay the cap left alone is unchanged, so the stored `normdata` digests of
+  `test-omic-norm-module.R` (where the cap does not bind) do not move.
+- `omicNormRuvSummary` (the tab) and `omicsRuvExportSummaryLine` (the session export,
+  `R/utils_workflow_saved_exports.R`) print the k removed, and the k found and the cap where they differ.
+- `omicsRuvReportNotices` writes each notice to the tab's log and its notification (type "warning"): in process
+  through the tab's `notify`, managed through `shiny::showNotification`, as `omicsLog2ReportResult` does.
+- The notice texts are O3's: Automatic "{assay}: the automatic search found {k} unwanted factors. With {n} samples the
+  application removes at most {cap} (the limit proteomics uses), so {cap} were removed."; Manual "{assay}: you chose to
+  remove {k} unwanted factors. With {n} samples the application removes at most {cap} in Automatic mode (the limit
+  proteomics uses); your choice was kept." The earlier "leaving enough samples to judge…" is gone from the code and is
+  withdrawn in `wording.md`. The final wording remains the owner's (VAL-41).
+
+Every other place k is printed or exported, by reading (not executed with a capped run):
+
+| Place | Source | Shows |
+|---|---|---|
+| The tab's log line "RUV optimization complete. Best k per assay" (`R/utils_workflow_omics_actions.R`, both routes) | the step's `value$best_k` | the k removed (unchanged) |
+| Study parameters, RUV-III per-assay section (`R/func_general_filemgmt_study_parameter_writer.R:404`, `:601`) | the S4 object's `ruv_number_k`, set by the RUV method to the k it applied (`R/func_lipid_s4_ruv_methods.R:396`; metabolomics the same) | the k removed |
+| Study parameters, "Automatic RUV Optimization Results" (`buildWorkflowRuvOptimizationLines`, `R/func_general_filemgmt_study_parameter_support.R:256`) | the top level of the result it is given; for lipidomics and metabolomics that is the per-assay list, whose top level has no `best_k` | "N/A" as before; neither the found nor the removed k (unchanged; not repaired here) |
+| Lipidomics and metabolomics reports (`inst/reports/lipidomics/lipidomics_report.rmd:379-460`, `:589`; metabolomics `:367` on) | the study parameters' per-assay k and the S4 `ruv_number_k` | the k removed |
+| Analysis record and its viewer (`omicsRouteRecordOutcomes`; `R/utils_workflow_analysis_record.R:159`, `:184`, `:240`, `:913`) | the step's saved value: `k_per_assay`, `ruv_k` = `best_k`; also `k_sweep_per_assay`, `k_cap_per_assay`, `ruv_k_notice_per_assay` | the k removed; the found k, cap and notice are in the record's outcomes |
+| Integration (`R/utils_integration_gui.R:1185-1199`) | the record's `ruv_k` or per-view `k` | the k removed |
+
+**I05, stated limit.** The cap does not look at the number of groups. After RUV-III-C the test counts n − g residual
+degrees of freedom while k of them have been removed. With k at the cap: 2 groups of 2 keep 0 of 2; 3 groups of 2 keep
+1 of 3; 2 groups of 3 keep 2 of 4 (standard errors understated about 1.4-fold); 2 groups of 4 keep 4 of 6; the measured
+design, 2 groups of 6, keeps 8 of 10. Nothing in the legacy route stops k reaching n − g. This is not measured and is
+stated in NEWS and the ledger row. The rule is the owner's (O2).
+
+**I06 / O1.** `tests/testthat/test-workflow-omics-ruv-cancor-once.R` is not edited. It is predicted to fail at `:73`
+exactly as in run 45619021147 until the owner rules on O1.
+
+**I08.** Draft ledger row `VAL-<merge-b>` (the KIT-094 snapshot gains two markers and four outcome fields; only the
+message of `test-workflow-omics-binding-steps.R` changes; replaced at the end-of-project re-record) for the coordinator.
+
+**I09.** The two RUV result digests of `tests/testthat/test-prot-norm-core.R` (lipid_ruv pinned 0921c3d1…, base
+cc4276ca…, head 1cfd7586…; metab_ruv pinned dea4b047…, base 9ada5791…, head f7593cff…; run 45619021147) are already on
+the end-of-project re-record list under VAL-213. They move by design (the control rule; the bound is inert at k = 1).
+They are not edited.
+
+**I10.** `tests/testthat/test-workflow-omics-declarations.R`, `test-gui-entry-lipidomics.R` and
+`test-gui-entry-metabolomics.R` are added to R2's scope, with predictions declared in `r2-audit/predictions.md` before
+the run.
+
+## For the change report
+
+- **What was wrong.** Lipidomics and metabolomics RUV-III-C (Automatic, the default, and Manual) did not choose its
+  negative-control features by comparing the groups, as documented. The control method removed the design's group
+  column before calling the shared ANOVA helper, which then read that column as NULL without an error: no feature was
+  tested, every p-value became 1, and the controls were the first rows of the assay table, in table order. The
+  automatic number of factors had no upper bound (proteomics has had one since KIT-123).
+- **Who was affected.** Every lipidomics or metabolomics analysis that ran RUV-III-C in Automatic or Manual mode with
+  the RUV grouping equal to the design's group column (the default), on `main` and on staging until this change.
+  - On `main` 436cdbe8, the methods drop the group column (`R/func_lipid_s4_objects.R:1999`, `:2005`;
+    `R/func_metab_s4_objects.R:1999`, `:2005`).
+  - The helper reads the grouping (`R/func_prot_norm.R:310`), sets missing p-values to 1 (`:322`) and takes the first
+    names of a stable sort (`:344`).
+  - Automatic, the tab's default (`R/mod_lipid_norm.R:149`, `R/mod_metab_norm.R:149`), selects once at the largest
+    percentage, 20 % by default (`R/func_lipid_norm.R:415`, `:456`; metabolomics the same), so its controls were the
+    first 20 % of rows. It takes k as the K at the largest canonical-correlation gap, with no upper bound (`:491`;
+    `R/func_prot_norm.R:363-374`).
+  - Proteomics and peptide kept their grouping and were not affected.
+- **Code.** Base c4505c7f.
+  - `R/func_lipid_s4_ruv_control_methods.R`, `R/func_metab_s4_design_control_methods.R`: grouping kept; refusals.
+  - `R/func_prot_norm_optimization_helpers.R`: `candidate_rule = "p_id_two_groups"` (q > 0.05, observed in at least two
+    groups, largest p first, ties by feature name); guard; pool class.
+  - `R/utils_workflow_omics_declarations.R`: `omicsRuvKBound` (Automatic k = min(k found,
+    `calculateAdaptiveMaxK`(samples))); records.
+  - Replay markers `ruv_control_grouping`, `ruv_k_bound`.
+- **Evidence.**
+  - T1 (run 45278118848): on the base the controls were F01 to F04, every p = 1, and the grouping read NULL.
+  - Unbounded, rule (d) raised k to 5.2 to 6.0, and null data sets with a call to 32 to 34 of 50 (VAL-182).
+  - With k capped at 2, rule (d) was no worse than the capped first repair in all 8 pre-declared cells (VAL-235;
+    decide run 45574056931). Upper bounds: N-r +0.026, N-s +0.007, N-w +0.035 against 0.10; E cells −0.072 to +0.012
+    against 0.05.
+  - Scope: simulated lipidomics data, 2 groups of 6, without internal-standard normalisation (VAL-253); metabolomics
+    identical in 100 of 100 rows.
+- **Limits.** Caps of 3 to 5, and designs below 12 samples, are not measured. The measured correction was before
+  KIT-224's level restoration (I04 of the audit). Where the unwanted variation lines up with the groups, both
+  group-comparing rules gave false calls in about 20 % of null data sets, against 8 % for group-blind controls
+  (KIT-188).
