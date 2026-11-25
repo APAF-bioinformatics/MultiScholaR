@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-258 R3: the ticket's one correction pass, test E7 (mean half of VAL-284 (1)); head edb218e7 against base cf57228a (R2 base 5dfe2bc8 + E7 test file); 1 file; owner allowance VAL-306",
+  "label": "KIT-258 R3 E7; 1 shard per side, no check; ceiling 30 job-minutes",
+  "package_commit": "edb218e7bc2ab5b2cae732c08c117d4460a0eb94",
+  "base_commit": "cf57228a87befccd74f5051eb7a0a1e51b3ca922",
+  "tools_ref": "",
+  "tests": [
+    "test-kit258-duplicate-completeness.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
