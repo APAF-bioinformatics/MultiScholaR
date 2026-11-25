@@ -182,3 +182,14 @@ Predictions for the run (base = tests-only commit, head = the change):
   "weak", "every computer|any computer|on every machine", "same total variance|unit variance", "too small",
   "there was none", "no practical difference", "rose by" occurs in the four phrases).
 - R CMD check: findings identical on base and head.
+
+### Predictions restated for the run's scope (coordinator, option 1, 2026-11-26; new commit, before the run)
+
+The run is the ticket's conditional wording line: `test-integration-record.R`, `test-integration-results.R`,
+`test-integration-gui.R`, `test-integration-model.R`; one shard per side; no R CMD check in this run; base bfc57ce7,
+head 10df1d31; env MULTISCHOLAR_TRX_MANIFEST_NOTE=1; ceiling 60 job-minutes (4.00 core-hours).
+- `test-integration-record.R`: base 201 passed / 8 failed, head 209 passed / 0 failed; verdict `fixed`.
+- `test-integration-results.R`, `test-integration-gui.R`, `test-integration-model.R`: `same`.
+- No check in this run. The full 11-file scope with R CMD check rides the merge train (coordinator's ruling,
+  2026-11-26). The first predictions above that name ten `same` files and an identical check are superseded by this
+  scope.
