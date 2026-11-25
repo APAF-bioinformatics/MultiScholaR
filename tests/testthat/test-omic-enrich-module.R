@@ -1033,7 +1033,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -1066,7 +1066,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
         kernel = "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc",
         services = character(0),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters bd71e1846eddbd60",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -1081,8 +1081,8 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             `enrichment_organism_filter$proteins_removed` = "0",
             `enrichment_organism_filter$timestamp` = "<time>", uniprot_dat_cln = "5x9 13df57c377de46dc"),
         display = c(
-            `groupB-groupA/gprofiler` = "10x24 81a566f72a3062f4",
-            `groupB-groupA/gprofiler_table` = "<saved> 10 b2a4adf014f1d53e",
+            `groupB-groupA/gprofiler` = "10x23 8b713e2fe8c8dfa5",
+            `groupB-groupA/gprofiler_table` = "<saved> 10 542f2d5f5bec9ac4",
             `groupB-groupA/clusterprofiler` = "<NULL>", `groupB-groupA/stringdb` = "<NULL>"),
         files = c(
             `<store entries>..workflow-entities/entities/DA-contrast-output-<ID>` = "1",
@@ -1107,7 +1107,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             `results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
             `results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
         returned = c(
-            all_enrichment_results = "<list> 123e2a6cd1f92b90", analysis_complete = "TRUE",
+            all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
             analysis_method = "gprofiler2", clusterprofiler_results = "<NULL>",
             clusterprofiler_results_table = "<NULL>", contrasts_available = "B_vs_A",
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
@@ -1115,7 +1115,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
             enrichment_results_full = "<EnrichmentResults> 61dae2e69108addd",
             enrichment_service = "gprofiler2:gprofiler2_test_double",
-            gprofiler_results = "<data.frame> 81a566f72a3062f4", gprofiler_results_table = "<ref>",
+            gprofiler_results = "<data.frame> 8b713e2fe8c8dfa5", gprofiler_results_table = "<ref>",
             organism_supported = "TRUE", stringdb_results = "<NULL>"),
         errors = character(0)),
     filter_up = list(
@@ -1132,7 +1132,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Showing 5 up-regulated pathways\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -1166,7 +1166,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> 2298435056ffd0ee14d729802221eae1cd2986822050d9ab20040d2ab90a9a5b",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Showing 5 down-regulated pathways\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -1200,7 +1200,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -1234,7 +1234,7 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -1256,8 +1256,8 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
         errors = character(0),
         download = c(
             file = "Enrichment_results_B_vs_A_<DATE>.zip",
-            enrichment_analysis_summary.txt = "13ce7979ab166ba5faa78f9b2904c2446c580482a9a541e9afd429d04c59161f",
-            gprofiler2_results.tsv = "4182e8063b318d00af302551c715e661a12e048f244dde5ac6a76b43aac4066d")))
+            enrichment_analysis_summary.txt = "c5b5570d3304f3043b5f45de8f6cb511a96b428ef2465722b67809d6a2b5570a",
+            gprofiler2_results.tsv = "71e8ee7c32c6db160f7ae0397d29e4c62120d8a4fb1a9deaf295f371ff7406b5")))
 
 omicEnrichW1Frozen[["clusterprofiler"]] <- list(
     start = list(
@@ -1839,13 +1839,13 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             "stringdb_plot", "stringdb_results_table", "stringdb_summary_stats"),
         values = c(
             analysis_method_display = "[OK] SUPPORTED ORGANISM\n Method: gprofiler2\n Species: Homo sapiens\n All enrichment methods available",
-            clusterprofiler_plot = "<text> 991b6f09bc65802e79137a5184a1a40b1258fc2058b3328a4cfc110957e9522c",
+            clusterprofiler_plot = "<text> e29b944ad1405722099a5372cd3b0804915eb7931c9b3c3f5e9a54e6b9731948",
             clusterprofiler_results_table = "<text> 0d4a07d6c799091f4ffb5599776586a0a562cb1b8ebe148b359df3930319390f",
             clusterprofiler_summary_stats = "No clusterProfileR results available.",
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
-            gprofiler_plot = "<text> 991b6f09bc65802e79137a5184a1a40b1258fc2058b3328a4cfc110957e9522c",
-            gprofiler_results_table = "<text> 281a1e0abb3f2a5db8699c8ff6fe26dd252483b6a023ba73cf398fc1fa373202",
+            gprofiler_plot = "<text> e29b944ad1405722099a5372cd3b0804915eb7931c9b3c3f5e9a54e6b9731948",
+            gprofiler_results_table = "<text> ef47d5f9e9ef452a020dd04eb12485a66164fc491df0f831771dbff4dcecfda2",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -1880,7 +1880,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             "gost ; organism=hsapiens ; sources=GO:BP|GO:MF|GO:CC|KEGG|REAC ; user_threshold=0.05 ; correction_method=gSCS ; exclude_iea=FALSE ; domain_scope=custom ; significant=TRUE ; query=3 80f1f68e42bf388e ; custom_bg=6 b6534d4a26da9fed",
             "gost ; organism=hsapiens ; sources=GO:BP|GO:MF|GO:CC|KEGG|REAC ; user_threshold=0.05 ; correction_method=gSCS ; exclude_iea=FALSE ; domain_scope=custom ; significant=TRUE ; query=1 907fd80ff1d231f2 ; custom_bg=6 b6534d4a26da9fed"),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters ed8d744607ed6330",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e262161c5371ef44",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -1895,8 +1895,8 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             `enrichment_organism_filter$proteins_removed` = "0",
             `enrichment_organism_filter$timestamp` = "<time>", uniprot_dat_cln = "5x9 13df57c377de46dc"),
         display = c(
-            `groupB-groupA/gprofiler` = "10x23 7bb8700062d08b4b",
-            `groupB-groupA/gprofiler_table` = "<saved> 10 e4727adc23d4af92",
+            `groupB-groupA/gprofiler` = "10x22 cb4a9aea9d03ca0d",
+            `groupB-groupA/gprofiler_table` = "<saved> 10 b3c9a33ab15f1fd0",
             `groupB-groupA/clusterprofiler` = "<NULL>", `groupB-groupA/stringdb` = "<NULL>"),
         files = c(
             `<store entries>..workflow-entities/entities/DA-contrast-output-<ID>` = "1",
@@ -1920,12 +1920,12 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             `results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx` = "<present>",
             `results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html` = "<present>",
             `results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png` = "<present>",
-            `results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "51e2bf4b144de5e7f21bf42843fa1db3b9918c54b8ef8bda7e90613838efd31a",
+            `results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "a7a539d1e18d74657e648cb01e7a16014218b1d6a43c5b69fb2e284d6bf77df8",
             `results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html` = "<present>",
             `results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png` = "<present>",
-            `results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "51e2bf4b144de5e7f21bf42843fa1db3b9918c54b8ef8bda7e90613838efd31a"),
+            `results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "a7a539d1e18d74657e648cb01e7a16014218b1d6a43c5b69fb2e284d6bf77df8"),
         returned = c(
-            all_enrichment_results = "<list> 0cc1222b458d7a6c", analysis_complete = "TRUE",
+            all_enrichment_results = "<list> f49c6bf6d7f341f5", analysis_complete = "TRUE",
             analysis_method = "gprofiler2", clusterprofiler_results = "<NULL>",
             clusterprofiler_results_table = "<NULL>", contrasts_available = "B_vs_A",
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
@@ -1933,7 +1933,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
             enrichment_results_full = "<EnrichmentResults> b8448caae3e5e28b",
             enrichment_service = "gprofiler2:e2e_fake_gost",
-            gprofiler_results = "<data.frame> 7bb8700062d08b4b", gprofiler_results_table = "<ref>",
+            gprofiler_results = "<data.frame> cb4a9aea9d03ca0d", gprofiler_results_table = "<ref>",
             organism_supported = "TRUE", stringdb_results = "<NULL>"),
         errors = character(0)))
 
@@ -2345,7 +2345,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -2380,7 +2380,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
         kernel = "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc",
         services = character(0),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters bd71e1846eddbd60",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -2395,8 +2395,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             `enrichment_organism_filter$proteins_removed` = "0",
             `enrichment_organism_filter$timestamp` = "<time>", uniprot_dat_cln = "5x9 13df57c377de46dc"),
         display = c(
-            `groupB-groupA/gprofiler` = "10x24 81a566f72a3062f4",
-            `groupB-groupA/gprofiler_table` = "<saved> 10 b2a4adf014f1d53e",
+            `groupB-groupA/gprofiler` = "10x23 8b713e2fe8c8dfa5",
+            `groupB-groupA/gprofiler_table` = "<saved> 10 542f2d5f5bec9ac4",
             `groupB-groupA/clusterprofiler` = "<NULL>", `groupB-groupA/stringdb` = "<NULL>"),
         files = c(
             `<store entries>..workflow-entities/entities/DA-contrast-output-<ID>` = "1",
@@ -2421,7 +2421,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             `results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
             `results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
         returned = c(
-            all_enrichment_results = "<list> 123e2a6cd1f92b90", analysis_complete = "TRUE",
+            all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
             analysis_method = "gprofiler2", clusterprofiler_results = "<NULL>",
             clusterprofiler_results_table = "<NULL>", contrasts_available = "B_vs_A",
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
@@ -2429,7 +2429,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
             enrichment_results_full = "<EnrichmentResults> 61dae2e69108addd",
             enrichment_service = "gprofiler2:gprofiler2_test_double",
-            gprofiler_results = "<data.frame> 81a566f72a3062f4", gprofiler_results_table = "<ref>",
+            gprofiler_results = "<data.frame> 8b713e2fe8c8dfa5", gprofiler_results_table = "<ref>",
             organism_supported = "TRUE", stringdb_results = "<NULL>"),
         errors = character(0)),
     `mapped/da` = list(
@@ -2620,7 +2620,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -2654,7 +2654,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
         kernel = "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=06a3464c7746eae3 ; da_names=groupB-groupA ; da_rows=0x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc",
         services = character(0),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters bd71e1846eddbd60",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -2669,8 +2669,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             `enrichment_organism_filter$proteins_removed` = "6",
             `enrichment_organism_filter$timestamp` = "<time>", uniprot_dat_cln = "5x9 13df57c377de46dc"),
         display = c(
-            `groupB-groupA/gprofiler` = "10x24 81a566f72a3062f4",
-            `groupB-groupA/gprofiler_table` = "<saved> 10 b2a4adf014f1d53e",
+            `groupB-groupA/gprofiler` = "10x23 8b713e2fe8c8dfa5",
+            `groupB-groupA/gprofiler_table` = "<saved> 10 542f2d5f5bec9ac4",
             `groupB-groupA/clusterprofiler` = "<NULL>", `groupB-groupA/stringdb` = "<NULL>"),
         files = c(
             `<store entries>..workflow-entities/entities/DA-contrast-output-<ID>` = "1",
@@ -2695,7 +2695,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             `results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
             `results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
         returned = c(
-            all_enrichment_results = "<list> 123e2a6cd1f92b90", analysis_complete = "TRUE",
+            all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
             analysis_method = "gprofiler2", clusterprofiler_results = "<NULL>",
             clusterprofiler_results_table = "<NULL>", contrasts_available = "B_vs_A",
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
@@ -2703,7 +2703,7 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
             enrichment_results_full = "<EnrichmentResults> 61dae2e69108addd",
             enrichment_service = "gprofiler2:gprofiler2_test_double",
-            gprofiler_results = "<data.frame> 81a566f72a3062f4", gprofiler_results_table = "<ref>",
+            gprofiler_results = "<data.frame> 8b713e2fe8c8dfa5", gprofiler_results_table = "<ref>",
             organism_supported = "TRUE", stringdb_results = "<NULL>"),
         errors = character(0)))
 
@@ -3449,7 +3449,7 @@ omicEnrichW1Frozen[["restore"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -3482,7 +3482,7 @@ omicEnrichW1Frozen[["restore"]] <- list(
         kernel = "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc",
         services = character(0),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters bd71e1846eddbd60",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -3497,8 +3497,8 @@ omicEnrichW1Frozen[["restore"]] <- list(
             `enrichment_organism_filter$proteins_removed` = "0",
             `enrichment_organism_filter$timestamp` = "<time>", uniprot_dat_cln = "5x9 13df57c377de46dc"),
         display = c(
-            `groupB-groupA/gprofiler` = "10x24 81a566f72a3062f4",
-            `groupB-groupA/gprofiler_table` = "<saved> 10 b2a4adf014f1d53e",
+            `groupB-groupA/gprofiler` = "10x23 8b713e2fe8c8dfa5",
+            `groupB-groupA/gprofiler_table` = "<saved> 10 542f2d5f5bec9ac4",
             `groupB-groupA/clusterprofiler` = "<NULL>", `groupB-groupA/stringdb` = "<NULL>"),
         files = c(
             `<store entries>..workflow-entities/entities/DA-contrast-output-<ID>` = "1",
@@ -3523,7 +3523,7 @@ omicEnrichW1Frozen[["restore"]] <- list(
             `results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
             `results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
         returned = c(
-            all_enrichment_results = "<list> 123e2a6cd1f92b90", analysis_complete = "TRUE",
+            all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
             analysis_method = "gprofiler2", clusterprofiler_results = "<NULL>",
             clusterprofiler_results_table = "<NULL>", contrasts_available = "B_vs_A",
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
@@ -3531,7 +3531,7 @@ omicEnrichW1Frozen[["restore"]] <- list(
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
             enrichment_results_full = "<EnrichmentResults> 61dae2e69108addd",
             enrichment_service = "gprofiler2:gprofiler2_test_double",
-            gprofiler_results = "<data.frame> 81a566f72a3062f4", gprofiler_results_table = "<ref>",
+            gprofiler_results = "<data.frame> 8b713e2fe8c8dfa5", gprofiler_results_table = "<ref>",
             organism_supported = "TRUE", stringdb_results = "<NULL>"),
         errors = character(0)),
     restore = list(
@@ -3548,7 +3548,7 @@ omicEnrichW1Frozen[["restore"]] <- list(
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
             gprofiler_plot = "<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15",
-            gprofiler_results_table = "<text> 86bdcd67360fa73f5cb9cd2636c1a97294f8c85e4065ab1d82da77e3a81df11a",
+            gprofiler_results_table = "<text> 258d7618d36e652109d22e91f0603cfc38c88bf23edde3410223c5e50ed4711f",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
             stringdb_results_table = "<text> 6102723c1b0109d3cdf60900ead49920407f04abd755b07022ef33f47454c2ac",
@@ -3571,8 +3571,8 @@ omicEnrichW1Frozen[["restore"]] <- list(
         restore = c(
             restored = "TRUE", again = "FALSE", analysis_complete = "TRUE",
             enrichment_results_full = "61dae2e69108addd",
-            `groupB-groupA/gprofiler` = "10x24 81a566f72a3062f4",
-            `groupB-groupA/gprofiler_table` = "<saved> 10 b2a4adf014f1d53e",
+            `groupB-groupA/gprofiler` = "10x23 8b713e2fe8c8dfa5",
+            `groupB-groupA/gprofiler_table` = "<saved> 10 542f2d5f5bec9ac4",
             `groupB-groupA/clusterprofiler` = "<NULL>", `groupB-groupA/stringdb` = "<NULL>")))
 
 omicEnrichW1Frozen[["prefill"]] <- list(
