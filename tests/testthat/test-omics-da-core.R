@@ -340,7 +340,7 @@ omicsDaCoreExportFiles <- function(omic) {
     }
     files[[sprintf("publication_graphs/NumSigDeMolecules/%s_num_sig_barplot.png", noun)]] <- "<present>"
     files[[sprintf("publication_graphs/NumSigDeMolecules/%s_num_sig_de_molecules.tab", noun)]] <-
-        "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713"
+        "8f71c903c55fce63217e453cb22b8c226feafc2b66441ceb7ae717bb60d84627"
     files[[sprintf("publication_graphs/NumSigDeMolecules/%s_num_sig_de_molecules.xlsx", noun)]] <- "<present>"
     files[["publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"]] <- "<present>"
     for (assay in c("gcms", "posmode")) for (contrast in c("KO", "RES")) for (ext in c("pdf", "png")) {
