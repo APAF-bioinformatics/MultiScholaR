@@ -253,7 +253,8 @@ cancelProtImportOrganismSelection <- function(
   removeModal()
   updated_status <- clearProtImportWorkflowState(workflowData)
   logInfo("Organism selection cancelled: the import was cleared (no organism confirmed)")
-  showNotification(PROT_IMPORT_ORGANISM_CANCELLED_TEXT, type = "warning", duration = NULL)
+  showNotification(PROT_IMPORT_ORGANISM_CANCELLED_TEXT, type = "warning", duration = NULL,
+    id = PROT_IMPORT_ORGANISM_CANCELLED_ID)
 
   invisible(updated_status)
 }

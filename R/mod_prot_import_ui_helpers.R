@@ -4,6 +4,8 @@ PROT_IMPORT_ORGANISM_CANCELLED_TEXT <- paste(
   "window that follows, or untick 'Mixed species FASTA' and enter the organism yourself."
 )
 PROT_IMPORT_ORGANISM_WAITING_TEXT <- "Choose the organism in the window to finish the import."
+# The Cancel warning's fixed id: one copy at a time, removed when the next import starts (KIT-175's pattern).
+PROT_IMPORT_ORGANISM_CANCELLED_ID <- "prot_import_organism_cancelled"
 
 buildProtImportStatusUi <- function(isProcessing, dataTbl, dataFormat, dataType, waitingForOrganism = FALSE,
                                     organismUnconfirmed = FALSE) {

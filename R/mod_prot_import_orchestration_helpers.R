@@ -91,6 +91,8 @@ startProtImportProcessing <- function(
     , buildProcessingModal = buildProtImportProcessingModal
     , showModal = shiny::showModal
     , showNotification = shiny::showNotification
+    # Outside a Shiny session (the module's function-level tests) there is no notification to remove.
+    , removeNotification = function(id) if (!is.null(shiny::getDefaultReactiveDomain())) shiny::removeNotification(id)
 ) {
   # KIT-101 F-11: a refused import says which file is missing before the gate stops it.
   missing <- c("a search results file", "a FASTA file")[!c(shiny::isTruthy(searchResultsPath), shiny::isTruthy(fastaPath))]
@@ -104,6 +106,7 @@ startProtImportProcessing <- function(
   # KIT-250: a new import starts with no organism dialog waiting and no earlier Cancel shown.
   localData$waiting_for_organism_selection <- FALSE
   localData$organism_unconfirmed <- FALSE
+  removeNotification(PROT_IMPORT_ORGANISM_CANCELLED_ID)
 
   announceStart(
     searchResultsPath = searchResultsPath
