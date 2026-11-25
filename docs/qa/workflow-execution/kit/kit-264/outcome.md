@@ -21,11 +21,12 @@ No existing test edited; no `man/` or NAMESPACE change; no stored reference move
 
 ## Observed (labels: OBSERVED = in the run named)
 
-- R1, run 45684412917 on b374e2c5: E1, E2, E3, E5, E6, E7 failed at the predicted base values (entry listed, text "k = 2",
+- R1, run 45684412917 on b374e2c5 (not evidence: stop rule 1 applies to the whole run; its other rows are listed for the record only; R1-2 is the evidence): E1, E2, E3, E5, E6, E7 failed at the predicted base values (entry listed, text "k = 2",
   figure value an `include_graphics` object, `omicNormOwnFiles` returns three names, both figure files remain); L1, L2, G1,
   G2, G5, G6, G7, G8 passed; X1 observed. E8 and its control could not run: **instrument defect 1** (the helpers
   `module_ci_trx_summary_steps` and `module_ci_trx_docx_text` are defined in `test-module-ci-trx-summary.R`, not in a
-  helper; "could not find function"); no expected value, threshold or stop rule changed by the fix (VAL-54 conditions
+  helper; "could not find function"). The ticket's C2 text names the other file's `module_ci_trx_summary_steps`; E8 and its
+  control call the file's own verbatim copies (`k264SummarySteps`, `k264DocxText`, d68ec438); no expected value, threshold or stop rule changed by the fix (VAL-54 conditions
   i to iv; rerun 1 of 3).
 - R1-2, run 45687693688 on d68ec438 (the file with its own copies of the two helpers): 70 passed, 15 failed, 0 errors. Every
   E row fails at its base value, E8 included: the never-exported sentence is absent, "RUVIII (ruv::RUVIII) was applied" is
@@ -48,7 +49,7 @@ No existing test edited; no `man/` or NAMESPACE change; no stored reference move
 
 | # | Criterion | Evidence |
 |---|---|---|
-| A1 | R1: every E row fails at its base value, G and L pass, X1 observed | R1-2 (45687693688); R1 (45684412917) for the rows it could run; instrument defect 1 recorded |
+| A1 | R1: every E row fails at its base value, G and L pass, X1 observed | R1-2 (45687693688). R1 (45684412917) is not judged: under stop rule 1 (an E row's precondition not met, here instrument defect 1) no row of that run is evidence; R1-2 is |
 | A2 | The fix: every E, G and L row passes | R2 head: 85 passed, 0 failed, 0 errors, 0 skipped |
 | A3 | R2: every file `same` except the new file; check identical | R2: 66 same, new file fixed; check identical |
 | A4 | NEWS, ledger row, wording rows, this file with "For the change report" and "Not checked", X1 reported | NEWS.md; ledger `VAL-<merge>`; wording.md; below |
@@ -65,13 +66,24 @@ controls), the record **lists** it (its source is the current `trx_ruvs` state, 
 RUVIII was applied with k = 0 beside the caption "No correction for unwanted variation was applied". This is out of scope
 (ticket 2.3, R-5); whether such an export should be refused or described is the owner's decision.
 
-## Not checked
+## Not checked, and hand-offs
 
 - Whether a project saved before the fix is repaired by Save (by reading: the record is rebuilt at each Save; no run).
 - The replay of a record written before the fix that lists a stale export (pre-existing; candidate).
 - The Summary tab's in-session RUVIII status and figure after a later normalisation (candidate, ticket section 3).
 - The export's two other figures (`trx_ruviii_pca.png`, `trx_ruviii_rle.png`): delivered by nothing, left.
 - No browser; no real data; no full suite (the merge check rides a merge train).
+- I04 (hand-off; coordinator candidate, the policy is the owner's): a record written before the fix that lists a stale
+  export replays it as a NEW current export with the replayed head's k (route A: the second run's k; route B: k = 0), and
+  with RUV applied the replayed project's Save then writes an integration matrix the original analysis's Save refused;
+  such records are recognisable. By reading only; none for KIT-264.
+- I05 (information): the start-of-run removal can delete the figure of an export that is still current in two narrow
+  cases (a run refused because the PDF is locked after the PNG was removed; a failing run at a Reset head followed by the
+  QC tab's Revert); recoverable by pressing Run RUVIII Export again; KIT-257's accepted class.
+- I07 (outside scope; coordinator, KIT-207's area): a Save refused for a stale export (route A,
+  `integration_input_invalid`) leaves the integration input written by an earlier Save on disk, so VAL-286's "the
+  integration's numbers are protected" holds for the refused write, not for the earlier input left on disk. By reading
+  only.
 - Core-hours: 15.78 + 14.53 + 629.15 = 659.46 job-minutes = 43.96 core-hours (expected 51.27, ceiling 145.67), summed from
   the runs' job start and completion times.
 
@@ -88,8 +100,14 @@ New to 0.9 (transcriptomics, its analysis record and report are not on `main`; t
 - **Code.** Base 988512e6: the loop at `R/utils_workflow_analysis_record.R:532` listed every export of the head;
   `inst/reports/transcriptomics/transcriptomics_report.rmd:172-174` showed the figure file whenever it existed;
   `omicNormOwnFiles` (`R/mod_omic_norm.R:1058-1062`) did not name the figure. Fix 317c3630: `workflowRecordExportIsCurrent`
-  and the loop condition; the figure chunk follows the record's export; two names added to `omicNormOwnFiles`.
+  and the loop condition (`R/utils_workflow_analysis_record.R:343-351`, `:542-548`); the figure chunk follows the
+  record's export (template `:172-176`); two names added to `omicNormOwnFiles` (`R/mod_omic_norm.R:1059-1064`).
 - **What changed in results.** None. A report of an analysis saved earlier keeps the earlier statement until Save is
-  pressed again.
+  pressed again. A project whose normalisation was run again with an earlier version keeps the earlier export's figure
+  in `publication_graphs_dir`, so Copy still delivers it until the normalisation is run again; a project that already made
+  a report keeps its copy of the report template (`scripts/transcriptomics/transcriptomics_report.rmd`), which still
+  shows the figure until then. Before the fix the report said RUVIII had been applied with the earlier export's k and its
+  figure, beside the current run's description (a different k in route A, the no-correction caption in route B).
+  The tag v0.9.0 carries the defect; no release.
 - **Evidence.** Runs 45684412917, 45687693688, 45690457065 (tables in this folder). Synthetic data only (MCI-030
   transcriptomics corpus). Limits: no real data; not changed: an export made after a run without RUV (k = 0), see X1.

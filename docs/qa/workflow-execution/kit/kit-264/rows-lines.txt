@@ -1,3 +1,4 @@
+# R2 head (run 45690457065, 317c3630)
 ..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
 ..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
 ...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
@@ -15,6 +16,7 @@ KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  val
 ....KIT-264 E8 none-sentence: TRUE no-correction: TRUE applied-sentence: FALSE figure in the results summary: FALSE
 ....KIT-264 E8 control applied-sentence: TRUE figure in the results summary: TRUE
 KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+# R2 base (run 45690457065, d68ec438)
 ..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
 ..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
 ...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
@@ -32,6 +34,7 @@ KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  val
 ....KIT-264 E8 none-sentence: FALSE no-correction: TRUE applied-sentence: TRUE figure in the results summary: TRUE
 ....KIT-264 E8 control applied-sentence: TRUE figure in the results summary: TRUE
 KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+# R1 (run 45684412917, b374e2c5): not judged for E8 and its control, instrument defect 1
 ..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
 ..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
 ...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
@@ -48,6 +51,7 @@ KIT-264 G2 figure output: Figure not available: ruviii_before_and_after.png  val
 .KIT-264 G6 listed: TRUE k: 1 text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 1, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
 d..eKIT-264 E8 none-sentence: FALSE no-correction: FALSE applied-sentence: FALSE figure in the results summary: FALSE
 KIT-264 X1 ruv_applied=FALSE export=ok entry=listed k=0 text=RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
+# R1-2 (run 45687693688, d68ec438)
 ..KIT-264 L1 listed: TRUE text: RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it.
 ..KIT-264 G1 figure file: TRUE chunk output:  class: knit_image_paths,knit_asis
 ...KIT-264 G5 operation: trx_ruviii_export source_state: trx_ruvs k: 2 m: group controls: 18
