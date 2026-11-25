@@ -1096,14 +1096,16 @@ workflowReplayCorrelationThreshold <- function(step) {
     if (is.null(value)) "not recorded" else format(value)
 }
 
-#' A replayed omics state's design samples, and each assay's sample columns among them (KIT-254).
+#' A replayed omics state's design samples, and each assay's columns as stored (KIT-254). The columns are not limited to
+#' the state's design: after the filter a sample that failed in one assay has left the design but keeps its column in
+#' the assays where it passed, so the caller can name only the assays it failed in.
 #' @return `list(runs, columns)`, `columns` a named list per assay.
 #' @noRd
 workflowReplayDesignSamples <- function(binding, manager, state) {
     meta <- readWorkflowOmicsMetadata(binding, manager, state)
     runs <- as.character(as.data.frame(meta$design_matrix)[[meta$slots$sample_id %||% "Run"]])
     object <- readWorkflowOmicsState(binding, manager, state)
-    list(runs = runs, columns = lapply(methods::slot(object, binding$data_slot), function(assay) intersect(colnames(assay), runs)))
+    list(runs = runs, columns = lapply(methods::slot(object, binding$data_slot), colnames))
 }
 
 #' KIT-222 (owner's OD-4): the statement a replay of a record with a merged design carries in its result (DRAFT wording,
