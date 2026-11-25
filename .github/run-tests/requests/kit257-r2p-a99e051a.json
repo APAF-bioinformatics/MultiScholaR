@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-257 R2' (the correction pass, after trains 8 and 9): head a99e051a (kit-257 with I01, I02, I03, I05, M1) against base 0cc18658 (staging 828dd105 + KIT-257's tests only); 11 files + check; 3+3 shards; ceiling 785 job-minutes; decides the closure check",
+  "label": "KIT-257 R2' base 0cc18658 head a99e051a",
+  "package_commit": "a99e051ac7d796b6adf170783ee660d7b1f6ec3e",
+  "base_commit": "0cc186581134e36b40417bcb2da2c7a32b68b541",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-kit129-run-path.R",
+    "test-prot-design-log2.R",
+    "test-kit257-norm-own-files.R",
+    "test-workflow-native-session.R",
+    "test-kit243-summary-current-outputs.R",
+    "test-kit244-limpa-pass-through.R",
+    "test-workflow-saved-da.R",
+    "test-trx-da-without-ruv.R",
+    "test-kit196-da-no-value-features.R",
+    "test-module-ci-trx-da.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
