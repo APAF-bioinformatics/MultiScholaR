@@ -538,6 +538,10 @@ test_that("KIT-239 (L3): the limitations are computed from the sample table, eac
         lines <- text_of(facts_of(planted(runs = 1L), 18L, c("a", "b"), "keep_missing"), texts)
         expect_false(has(lines, texts[["limits_fixed_averaged"]]))
         expect_false(has(lines, fragment(texts[["limits_averaged_item"]])))
+        # AUDIT-KIT-239-impl I01: samples missing from a data set and nothing averaged: the sentence that no runs were
+        # averaged, which must hold beside the missing-samples sentence.
+        expect_true(has(lines, texts[["limits_averaged_none"]]))
+        expect_true(has(lines, sprintf(texts[["limits_missing_samples"]], 5L, 23L)))
         # (c) No enrichment run (the report's case): said so.
         lines <- text_of(facts_of(planted(), 18L, c("a", "b"), "keep_missing", services = character()), texts)
         expect_true(has(lines, texts[["limits_services_none"]]))
@@ -545,6 +549,15 @@ test_that("KIT-239 (L3): the limitations are computed from the sample table, eac
         # (d) One enrichment's database and release.
         lines <- text_of(facts_of(planted(), 18L, c("a", "b"), "keep_missing", services = "KEGG Release 115.0"), texts)
         expect_true(has(lines, sprintf(texts[["limits_services_report"]], "KEGG Release 115.0")))
+        # AUDIT-KIT-239-impl I03: with one database the sentence carries no plural tied to the count.
+        one <- sprintf(texts[["limits_services_report"]], "KEGG Release 115.0")
+        expect_false(grepl("these external databases|these releases", one))
+        # (h) AUDIT-KIT-239-impl I03: one sample missing from a data set: present, with no plural verb tied to the
+        # count.
+        lines <- text_of(facts_of(planted(missing = 1L), 22L, c("a", "b"), "keep_missing"), texts)
+        one <- sprintf(texts[["limits_missing_samples"]], 1L, 23L)
+        expect_true(has(lines, one))
+        expect_false(grepl("samples are missing", one, fixed = TRUE))
         # (e) No sample missing from a data set: no missing-samples sentence; the model's treatment of missing values
         # stays.
         lines <- text_of(facts_of(planted(missing = 0L), 23L, c("a", "b"), "keep_missing"), texts)
@@ -573,13 +586,21 @@ test_that("KIT-239 (L3): the limitations are computed from the sample table, eac
 test_that("KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers", {
     texts <- integrationGuiTexts()
     has <- function(key, terms) for (term in terms) expect_match(texts[[key]], term, fixed = TRUE, info = key)
-    has("limits_fixed_samples", c("20", "60", "15", "descriptive", "at most 2 of 10", "slow training"))
+    has("limits_fixed_samples", c("20", "60", "15", "descriptive", "at most 2 of 10", "slow training",
+        "recovered closely", "at least 0.9", "did not include", "7 to 10 of 10", "26 to 29 of 30"))
     has("limits_fixed_missing", "missing at random")
     has("limits_fixed_averaged", "too high")
     has("limits_fixed_model", c("one group", "Gaussian", "one input per omic", "estimated before saving"))
     has("limits_fixed_check", c("simulated", "one design"))
     has("limits_fixed_services", c("STRING", "KEGG", "Reactome"))
-    has("help_scaling", c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30"))
+    has("help_scaling", c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30", "at least 0.9", "missing"))
+    # AUDIT-KIT-239-impl I01: true whenever no data set averaged runs, samples missing or not.
+    has("limits_averaged_none", "No biological sample has more than one run in any data set")
+    # AUDIT-KIT-239-impl I02 (KIT-246 option (a), draft pending the owner): no size claimed beyond the evidence.
+    has("help_scaling", c("could not be told from none", "recovered closely in 30 of 30 either way"))
+    for (phrase in c("too small to tell from none", "there was none")) {
+        expect_false(grepl(phrase, texts[["help_scaling"]], fixed = TRUE), info = phrase)
+    }
     for (key in c("limits_fixed_samples", "help_scaling")) {
         expect_false(grepl("weak", texts[[key]], ignore.case = TRUE), info = key)
     }
