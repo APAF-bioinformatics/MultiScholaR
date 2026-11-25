@@ -1165,11 +1165,22 @@ generateDIAReferenceVolcanoProduct <- function(manifest, contrast) {
 
 #' Identity of one contrast's interactive volcano asset (KIT-016): the result table and the display
 #' threshold it was rendered at; the annotation table joins at publication and is not part of the identity.
+#' KIT-220: also the run's fold-change cutoff the page colours by (`manifest$parameters$lfc`); the result table is
+#' addressed by its content, which the cutoff does not change on a route without TREAT (DIA with limpa).
 #' @noRd
 diaInteractiveVolcanoIdentity <- function(manager, manifest, contrast, qvalue) {
     selected <- selectDIAContrastReference(manifest, contrast)
     diaComponentScientificIdentity(manager, manifest$source, "DA-volcano-interactive",
-        list(result = selected$tables$da_proteins_long$entity_id, qvalue = as.numeric(qvalue)))
+        list(result = selected$tables$da_proteins_long$entity_id, qvalue = as.numeric(qvalue),
+            lfc = diaRunLfcCutoff(manifest)))
+}
+
+#' The fold-change cutoff a DA result ran at (KIT-220): the manifest's `parameters$lfc`; `fallback` (the tab's box)
+#' for a result that records none, else 0 (the input's default).
+#' @noRd
+diaRunLfcCutoff <- function(manifest, fallback = NULL) {
+    recorded <- if (is.list(manifest)) manifest$parameters$lfc
+    as.numeric(recorded %||% fallback %||% 0)
 }
 
 #' The digest of the annotation table a page is built with (GUI audit A112-06): its displayable columns (those
@@ -1290,7 +1301,7 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         widget <- if (is.null(page)) generateProtDAVolcanoPlotGlimma(
             if (outdated) readDIAResultDisplay(manifest, contrast, expression = TRUE) else manifest, contrast,
             uniprot_tbl = annotations, args_row_id = manifest$protein_id_column,
-            da_q_val_thresh = qvalue)
+            da_q_val_thresh = qvalue, lfc_thresh = diaRunLfcCutoff(manifest))
         if (is.null(page) && is.null(widget)) {
             writeLines(diaInteractiveVolcanoUnavailableText(contrast), diaInteractiveVolcanoUnavailablePath(target, contrast))
             next
