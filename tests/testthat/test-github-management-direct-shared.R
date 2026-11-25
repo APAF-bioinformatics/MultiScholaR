@@ -154,7 +154,7 @@ test_that("github management helpers preserve directory extraction, validation, 
         captured$git_cmd <- command
         character()
       },
-      unlink = function(x, recursive = FALSE, force = FALSE) {
+      unlink = function(x, recursive = FALSE, force = FALSE, expand = TRUE) {
         captured$unlinked <- c(captured$unlinked, x)
         if (grepl(project_id, x, fixed = TRUE)) {
           captured$temp_dir <- x

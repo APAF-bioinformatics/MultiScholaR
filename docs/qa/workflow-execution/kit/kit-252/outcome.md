@@ -92,3 +92,8 @@ at base).
 - The owner's final words (QC-8).
 - Under systemd the application's own memory guards stop the whole application (AUDIT-KIT-252-impl I01); the
   low-memory sentence is mapped but not shown.
+
+## Correction (coordinator, 2026-11-26)
+
+A4's evidence cell says the ledger row `VAL-262` sits "after VAL-229". It sits after VAL-261: it
+was numbered when merge train 7 landed (42846c0e, 2026-11-26).

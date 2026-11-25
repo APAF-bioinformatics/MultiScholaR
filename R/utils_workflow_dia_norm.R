@@ -704,9 +704,11 @@ runDIAReferenceLimpaNormalisationPassThrough <- function(settings, workflow, nor
   withDIAStateScope(manager, function() {
     assertDIAExportReady(manager, allow_action = "normalization")
     source <- getDIAStateReference(manager)
-    # GUI audit P-35: pressed again on the tab's own RUV state, the button keeps the input it designated before; the
-    # RUV state as the correlation's input would let the covariates that follow compound.
-    if (manager$current_state %in% c("ruv_covariates", "ruv_corrected") &&
+    # GUI audit P-35, KIT-244 (VAL-220 (1)): pressed again on the tab's own RUV state or correlation result, the button
+    # keeps the input it designated before; the RUV state as the correlation's input would let the covariates that
+    # follow compound, and the correlation result as the input would let the filter compound (a re-applied filter
+    # acting at the higher of the two thresholds, a Skip keeping the first filter's removals).
+    if (manager$current_state %in% c("ruv_covariates", "ruv_corrected", "correlation_filtered") &&
       isSavedWorkflowReference(norm_data$normalization_input_reference)) source <- norm_data$normalization_input_reference
     norm_data$normalization_input_reference <- source
     norm_data$normalized_protein_obj <- source
@@ -730,7 +732,7 @@ runDIAReferenceLimpaNormalisationPassThrough <- function(settings, workflow, nor
 #' @return The source reference.
 #' @noRd
 diaLimpaPassThroughSource <- function(manager, norm_data) {
-  if (manager$current_state %in% c("ruv_covariates", "ruv_corrected") &&
+  if (manager$current_state %in% c("ruv_covariates", "ruv_corrected", "correlation_filtered") &&
     isSavedWorkflowReference(norm_data$normalization_input_reference)) return(norm_data$normalization_input_reference)
   getDIAStateReference(manager)
 }

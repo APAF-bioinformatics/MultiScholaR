@@ -730,8 +730,8 @@ app_ui <- function(request) {
             ),
             column(
               4,
-              # KIT-138: with the gate `MultiScholaR.integration_gui` on, the tile is live (mod_integration_*).
-              # Off (the default): the placeholder selector as before (finding m-2).
+              # KIT-138: with the gate `MultiScholaR.integration_gui` on (the default since KIT-240), the tile is live
+              # (mod_integration_*). Set FALSE: the placeholder selector as before (finding m-2).
               if (integrationGuiEnabled()) integrationHomeTile() else testid(
                 shiny::div(
                   id = "integration_box",

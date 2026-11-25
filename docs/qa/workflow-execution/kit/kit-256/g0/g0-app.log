@@ -1,0 +1,14 @@
+Loading required package: shiny
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+Running application in test mode.
+
+Listening on http://127.0.0.1:28494

@@ -34,7 +34,8 @@ integrationRecordTexts <- function() {
     c(
         # Status of a setting in the record (and its legend).
         status_decided = "decided",
-        status_provisional_default = "provisional default",
+        # KIT-240 r1.4 (AUDIT-KIT-240-impl I05): the Enrichment tab's word for a default not yet confirmed.
+        status_provisional_default = "default not yet confirmed",
         status_user_set = "set by the user",
         status_input = "from the data",
         # The study parameters' and report's sections.
@@ -76,7 +77,8 @@ integrationRecordTexts <- function() {
         col_note = "Note",
         col_status_meaning = "Meaning",
         legend_decided = "a decision recorded in the methods ledger; not expected to change",
-        legend_provisional_default = "the current default; the integration methods may still change it",
+        # KIT-240 (VAL-221 (4)): printed in every report; only a default that still waits carries this status.
+        legend_provisional_default = "a default not yet confirmed",
         legend_user_set = "changed by the user from the default",
         legend_input = "taken from the imported data",
         applies_model = "model",
@@ -181,6 +183,20 @@ integrationRecordTexts <- function() {
             "most similar pair first); the lowest agreement per factor was %s."),
         # %d: the seed.
         methods_seeds_single = "The model was trained once, from seed %d; the factors' agreement across seeds was not measured.",
+        # KIT-240 (VAL-221 (1)). %d: the rank, the models; %s: the distance below the highest final ELBO, the range of the
+        # final ELBOs (both in ELBO units).
+        # r1.4 (AUDIT-KIT-240-impl I09, I10): the ELBO defined, its units named; the limitation a sentence of its own.
+        methods_seeds_elbo = paste("By its final evidence lower bound (ELBO, MOFA2's training objective; higher is better),",
+            "the reported model ranked %d of the %d models, %s below the highest (range over the models %s, in the",
+            "objective's units)."),
+        # r1.5 (owner's decision VAL-252): the rank's basis, from KIT-062's diagnosis and KIT-151c's per-seed rows.
+        methods_seeds_elbo_slack = paste("Small differences in the final ELBO can come from where training stopped rather",
+            "than from a better solution: one model trained twice in single precision (not the shipped setting) on two",
+            "processor models, its matched factors correlated 0.999998, ended 0.676 apart when one run stopped five rounds",
+            "later, and in a simulation with 20 samples and slow training five seeds' final values spanned 0.015, with the",
+            "declared seed ranked 5 of 5."),
+        methods_seeds_limit = paste("The stability figures describe only the reported model's factors: a factor that other",
+            "seeds find but the reported model lacks is not listed."),
         # KIT-151 (INT-17). %s: the variables set.
         methods_pin_applied = paste("Training ran with the maths library on one thread and one fixed code path (%s), under",
             "which models were bit-identical across the processor models tested (three AMD models; an Intel processor not",
@@ -793,6 +809,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             stopped_by = stopped_by, converged = identical(stopped_by, "convergence_rule"),
             # KIT-151 (INT-14): the models trained, one per seed, and each factor's agreement across them.
             seeds = value$seeds$seeds, seed_models = value$seeds$models, stability = value$seeds$stability,
+            # KIT-240 (VAL-221 (1)): the reported model's rank among the seeds by final ELBO (NULL when not known).
+            elbo_rank = value$seeds$elbo_rank,
             factors_requested = as.integer(parameters$num_factors), factors_kept = ncol(value$factors) - 1L,
             elbo_last = value$elbo$last, variance_total = value$variance_total, versions = value$versions,
             # MOFA2's data, model and training options as trained (every one, the defaults included), encoded exactly.
@@ -1034,9 +1052,16 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     stability <- integrationRecordFrame(model$stability)
     if (length(seeds) > 1L && nrow(stability)) {
         sentences <- c(sentences, sprintf(texts[["methods_seeds"]], length(seeds), seeds[[1L]], seeds[[length(seeds)]],
-            seeds[[1L]], paste(sprintf("%s %.3f", stability$factor, as.numeric(stability$agreement_lowest)), collapse = ", ")))
+            seeds[[1L]], paste(sprintf("%s %.3f", stability$factor, as.numeric(stability$agreement_lowest)), collapse = ", ")),
+            texts[["methods_seeds_limit"]])
     } else if (length(seeds) == 1L) {
         sentences <- c(sentences, sprintf(texts[["methods_seeds_single"]], seeds[[1L]]))
+    }
+    # KIT-240 (VAL-221 (1)): the reported model's rank by final ELBO (nothing said for a model without the rank).
+    rank <- model$elbo_rank
+    if (length(seeds) > 1L && length(rank) && !is.na(s(rank$rank))) {
+        sentences <- c(sentences, sprintf(texts[["methods_seeds_elbo"]], as.integer(s(rank$rank)), as.integer(s(rank$of)),
+            integrationElboText(s(rank$below_best)), integrationElboText(s(rank$range))), texts[["methods_seeds_elbo_slack"]])
     }
     results <- block$results
     if (!is.null(results)) {

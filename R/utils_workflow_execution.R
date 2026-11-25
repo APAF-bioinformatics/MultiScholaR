@@ -3029,6 +3029,9 @@ publishWorkflowDaResult <- function(owner, paths, result) {
     manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
     publication <- workflowRequestPublication(paths$request_dir, "da-publication")
     workflowExecutionBoundary("publication")
+    # KIT-243 (S2 (a)): the earlier files under this DA's names removed before every publication, a retry included; the
+    # marker is cleared once the publication returns.
+    removeWorkflowDaOwnFigures(manager, experiment_paths, entry$omic_type)
     publishDIAActionOutputs(manager, reference, "da", experiment_paths[c("da_output_dir", "publication_graphs_dir")],
         function(staged) {
             for (role in names(staged)) copyWorkflowFolder(
@@ -3044,6 +3047,7 @@ publishWorkflowDaResult <- function(owner, paths, result) {
                 manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])), result$summary$annotations_digest)
             list(completed = TRUE)
         }, identity = diaDaPublicationIdentity(manifest, result$summary$annotations_digest))
+    clearWorkflowDaPublicationPending(experiment_paths)
     invisible(NULL)
 }
 
