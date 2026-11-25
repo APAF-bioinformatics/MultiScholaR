@@ -641,7 +641,8 @@ validateWorkflowAnalysisRecord <- function(record) {
 }
 
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`): for
+#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-258
+#' adds `duplicate_resolution_rank`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -661,7 +662,11 @@ workflowReplayRuleMarkers <- list(
     # KIT-214 (VAL-173 (1)): lipid and metabolite duplicate resolution averages the design's samples ("design"); records
     # made before averaged every numeric column of the assay ("numeric_columns").
     duplicate_resolution_samples = list(option = "MultiScholaR.duplicate_resolution_samples", current = "design",
-        earlier = "numeric_columns"))
+        earlier = "numeric_columns"),
+    # KIT-258 (VAL-254): among the rows of one duplicated id, the most measured row, then the highest mean of its
+    # measured values ("measured_then_mean"); records made before ranked by the mean alone ("mean").
+    duplicate_resolution_rank = list(option = "MultiScholaR.duplicate_resolution_rank", current = "measured_then_mean",
+        earlier = "mean"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).

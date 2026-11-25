@@ -299,12 +299,15 @@ resolveDuplicateFeaturesForLipidObject <- function(theObject, itsd_pattern_colum
                     dplyr::mutate(
                         avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
                     ) %>%
+                    # KIT-258: the number of measured (not missing) values the row's mean is over
+                    dplyr::mutate(n_measured = sum(!is.na(dplyr::c_across(dplyr::any_of(sample_cols))))) %>%
                     dplyr::ungroup() %>%
                     dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>%
                     dplyr::group_by(!!rlang::sym(id_col)) %>%
-                    dplyr::slice_max(order_by = .data$avg_intensity, n = 1, with_ties = FALSE) %>%
+                    # KIT-258: the most measured row, then the highest mean, then the first
+                    keepDuplicateResolutionRow() %>%
                     dplyr::ungroup() %>%
-                    dplyr::select(-avg_intensity)
+                    dplyr::select(-avg_intensity, -"n_measured")
 
                 rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                 if (rows_removed_non_itsd > 0) {

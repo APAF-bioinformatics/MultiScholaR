@@ -318,7 +318,7 @@ omicsIntensityFilterOperation <- function(binding) {
 omicsDuplicateResolutionOperation <- function(binding) {
     declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_duplicate_resolution"), "feature_group", parameters = character(),
         product_type = paste0(binding$prefix, ".duplicate_resolution_result"),
-        fixed = list(duplicate_resolution_samples = "design"),
+        fixed = list(duplicate_resolution_samples = "design", duplicate_resolution_rank = "measured_then_mean"),
         kernel = function(object, parameters, store) {
             resolved <- binding$resolve_duplicates(object)
             c(list(final = store$checkpoint(resolved$object, paste0(binding$prefix, "-duplicates-resolved"))), resolved$value)

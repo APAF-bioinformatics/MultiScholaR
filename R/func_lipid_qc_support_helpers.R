@@ -50,16 +50,17 @@ resolveLipidDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sampl
         dplyr::mutate(
             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
         ) %>%
+        # KIT-258: the number of measured (not missing) values the row's mean is over
+        dplyr::mutate(n_measured = sum(!is.na(dplyr::c_across(dplyr::any_of(sample_cols))))) %>%
         dplyr::ungroup() %>%
         # Handle cases where avg_intensity might be NaN (if all samples are NA)
         dplyr::mutate(avg_intensity = ifelse(is.nan(avg_intensity), -Inf, avg_intensity)) %>%
-        # Group by the ID and keep the one with the highest average intensity
+        # Group by the ID and keep one row per ID: the most measured, then the highest mean, then the first (KIT-258)
         dplyr::group_by(!!rlang::sym(id_col)) %>%
-        # slice_max keeps ties by default; with_ties = FALSE ensures only one row per ID
-        dplyr::slice_max(order_by = avg_intensity, n = 1, with_ties = FALSE) %>%
+        keepDuplicateResolutionRow() %>%
         dplyr::ungroup() %>%
-        # Remove the temporary average intensity column
-        dplyr::select(-avg_intensity)
+        # Remove the temporary columns
+        dplyr::select(-avg_intensity, -"n_measured")
 
     # Report how many rows were removed
     rows_removed <- nrow(assay_tibble) - nrow(resolved_tibble)

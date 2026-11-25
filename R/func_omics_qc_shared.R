@@ -95,6 +95,27 @@ validateOmicsColumnMapping <- function(data, id_column, sample_columns, omics_ty
     }
 }
 # ----------------------------------------------------------------------------
+# keepDuplicateResolutionRow
+# ----------------------------------------------------------------------------
+#' The row kept for each duplicated identifier (KIT-258, VAL-254)
+#'
+#' Among the rows of one identifier (a group of `grouped`), keeps the row with the most measured values (`n_measured`:
+#' the values that are not `NA` among the averaged columns), among those the one with the highest mean of its measured
+#' values (`avg_intensity`), and among those the first in the group's row order. Under the replay marker
+#' `duplicate_resolution_rank`'s earlier token ("mean", records made before KIT-258) the highest mean alone, then the
+#' first, as before. Shared by the two exported kernels and the non-ITSD branches of the two S4 methods.
+#' @param grouped A data frame grouped by the identifier, with the columns `avg_intensity` and `n_measured`.
+#' @return One row per group, in group order (still grouped).
+#' @noRd
+keepDuplicateResolutionRow <- function(grouped) {
+    marker <- workflowReplayRuleMarkers$duplicate_resolution_rank
+    if (!identical(getOption(marker$option), marker$earlier)) {
+        grouped <- dplyr::filter(grouped, .data$n_measured == max(.data$n_measured))
+    }
+    dplyr::slice_max(grouped, order_by = .data$avg_intensity, n = 1, with_ties = FALSE)
+}
+
+# ----------------------------------------------------------------------------
 # resolveDuplicateFeaturesByIntensity
 # ----------------------------------------------------------------------------
 #' Resolve Duplicate Features by Keeping Highest Average Intensity
@@ -146,16 +167,17 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
         dplyr::mutate(
             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
         ) %>%
+        # KIT-258: the number of measured (not missing) values the row's mean is over
+        dplyr::mutate(n_measured = sum(!is.na(dplyr::c_across(dplyr::any_of(sample_cols))))) %>%
         dplyr::ungroup() %>%
         # Handle cases where avg_intensity might be NaN (if all samples are NA)
         dplyr::mutate(avg_intensity = ifelse(is.nan(avg_intensity), -Inf, avg_intensity)) %>%
-        # Group by the ID and keep the one with the highest average intensity
+        # Group by the ID and keep one row per ID: the most measured, then the highest mean, then the first (KIT-258)
         dplyr::group_by(!!rlang::sym(id_col)) %>%
-        # slice_max keeps ties by default; with_ties = FALSE ensures only one row per ID
-        dplyr::slice_max(order_by = avg_intensity, n = 1, with_ties = FALSE) %>%
+        keepDuplicateResolutionRow() %>%
         dplyr::ungroup() %>%
-        # Remove the temporary average intensity column
-        dplyr::select(-avg_intensity)
+        # Remove the temporary columns
+        dplyr::select(-avg_intensity, -"n_measured")
 
     # Report how many rows were removed
     rows_removed <- nrow(assay_tibble) - nrow(resolved_tibble)
