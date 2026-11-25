@@ -1,0 +1,120 @@
+case	file	key	column	value
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	n_gate	20
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	r_used	380
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	r_out	20
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	no_result	FALSE
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	classification	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	class_best	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	class_worst	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S1	sensitive	FALSE
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	n_gate	20
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	r_used	380
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	r_out	20
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	no_result	FALSE
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	classification	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	class_best	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	class_worst	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S2	sensitive	FALSE
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	n_gate	20
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	r_used	380
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	r_out	20
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	no_result	FALSE
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	classification	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	class_best	meets
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	class_worst	fails
+main	conditions.tsv	L12|deciding|N0|none|LA|S5	sensitive	TRUE
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	n_gate	21
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	r_out	21
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	r_used	379
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	no_result	TRUE
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	classification	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	n_gate	21
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	r_out	21
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	r_used	379
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	no_result	TRUE
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	classification	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	n_gate	21
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	r_out	21
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	r_used	379
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	no_result	TRUE
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	classification	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	class_best	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	class_worst	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S1	sensitive	FALSE
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	class_best	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	class_worst	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	sensitive	FALSE
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	class_best	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	class_worst	no result
+main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	sensitive	FALSE
+main	phi.tsv	L12|deciding|E0|none|LA	events	0
+main	phi.tsv	L12|deciding|E0|none|LA	events_also_gate	10
+main	phi.tsv	L12|deciding|E0|none|LA	r_reached	399
+main	phi.tsv	L12|deciding|N1|none|LA	events	30
+main	phi.tsv	L12|deciding|N1|none|LA	events_also_gate	0
+main	phi.tsv	L12|deciding|N1|none|LA	r_declared	400
+main	phi.tsv	L12|deciding|N1|none|LA	r_reached	399
+main	phi.tsv	L12|deciding|N1|none|LA	phi	0.07518796992481203
+main	phi.tsv	L12|deciding|N1|none|LA	phi_all	0.075
+main	phi.tsv	L12|deciding|N1|none|LA	lan0_mark	TRUE
+main	phi.tsv	L12|deciding|E1|none|LA	events	0
+main	phi.tsv	L12|deciding|E1|vd5|LA	events	0
+main	phi.tsv	L12|deciding|E1|vd5|LA	events_also_gate	21
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S3	n_gate	22
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S3	r_out	1
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S3	r_used	399
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S3	no_result	TRUE
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S3	classification	no result
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S5	n_gate	22
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S5	r_out	1
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S5	r_used	399
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S5	no_result	TRUE
+main	conditions.tsv	L12|deciding|E1|vd5|LA|S5	classification	no result
+main	conditions.tsv	L12|deciding|E1|none|LA|S3	n_gate	6
+main	conditions.tsv	L12|deciding|E1|none|LA|S3	r_out	6
+main	conditions.tsv	L12|deciding|E1|none|LA|S3	r_used	394
+main	conditions.tsv	L12|deciding|E1|none|LA|S3	no_result	FALSE
+main	conditions.tsv	L12|deciding|E1|none|LA|S5	n_gate	6
+main	conditions.tsv	L12|deciding|E1|none|LA|S5	r_out	6
+main	conditions.tsv	L12|deciding|E1|none|LA|S5	r_used	394
+main	conditions.tsv	L12|deciding|E1|none|LA|S5	no_result	FALSE
+main	conditions.tsv	L12|deciding|N1|vd20|GA|S1	oracle_check	TRUE
+main	conditions.tsv	L12|deciding|N1|vd20|GA|S1	classification	not determined (excess over OR)
+main	conditions.tsv	L12|deciding|N1|vd20|GA|S1	n_paired_dropped	399
+main	conditions.tsv	L12|deciding|N1|vd20|GA|S1	class_best	meets (excess over OR)
+main	conditions.tsv	L12|deciding|N1|vd20|GA|S1	class_worst	fails (excess over OR)
+main	conditions.tsv	L12|deciding|N1|vd20|GA|S1	sensitive	TRUE
+main	conditions.tsv	L24|deciding|N0|none|LA|S5	role	reported
+main	conditions.tsv	L24|deciding|N0|none|LA|S5	R	100
+main	conditions.tsv	L24|deciding|N0|none|LA|S5	label	cannot meet S5 at this R (zero events give an upper limit of 0.0362)
+main	conditions.tsv	L24|deciding|N0|none|LA|S5	classification	not determined
+main	statuses.tsv	L|L12|deciding|LA|1|crashed|planted	n	49
+main	statuses.tsv	L|L12|deciding|LA|1|crashed|unit: child process exit 3, no result	n	18
+main	statuses.tsv	L|L12|deciding|LA|1|refused|multischolar_refusal	n	5
+main	statuses.tsv	L|L12|deciding|GA|1|not_run|planted not_run	n	399
+main	conditions.tsv	absent:L24	deciding_rows	0
+k1	outcome.txt	line	startswith	lipid_metab: K1 
+k2phi	outcome.txt	line	startswith	lipid_metab: K2 
+k2phi	outcome.txt	line	contains	K1's non-correction clause failed
+k2phi	outcome.txt	line	contains	GA's largest upper limit
+val248	outcome.txt	line	startswith	lipid_metab: no outcome by rule: K1 blocked by non-correction
+k3	outcome.txt	line	startswith	lipid_metab: K3 
+k4	outcome.txt	line	startswith	lipid_metab: K4 
+k1	verdicts.tsv	lipid_metab|LA	verdict	safe
+k1	verdicts.tsv	lipid_metab|GA	verdict	safe
+k1	verdicts.tsv	lipid_metab|NO	verdict	safe
+k2phi	verdicts.tsv	lipid_metab|LA	verdict	safe
+k2phi	verdicts.tsv	lipid_metab|GA	verdict	safe
+k2phi	verdicts.tsv	lipid_metab|NO	verdict	safe
+val248	verdicts.tsv	lipid_metab|LA	verdict	safe
+val248	verdicts.tsv	lipid_metab|GA	verdict	unsafe
+val248	verdicts.tsv	lipid_metab|NO	verdict	safe
+k3	verdicts.tsv	lipid_metab|LA	verdict	unsafe
+k3	verdicts.tsv	lipid_metab|GA	verdict	unsafe
+k3	verdicts.tsv	lipid_metab|NO	verdict	safe
+k4	verdicts.tsv	lipid_metab|LA	verdict	unsafe
+k4	verdicts.tsv	lipid_metab|GA	verdict	unsafe
+k4	verdicts.tsv	lipid_metab|NO	verdict	unsafe
+k2phi	phi.tsv	L12|deciding|N0|none|LA	events	30
+k2phi	phi.tsv	L12|deciding|N0|none|LA	phi_upper	0.10533763861384532
+k1	phi.tsv	L12|deciding|N0|none|LA	events	0

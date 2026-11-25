@@ -1,0 +1,10 @@
+case	rowsdir	cells	ranges	expect
+main	main	L12:deciding,L24:deciding	400,100	ok
+k1	k1	L12:deciding	400,100	ok
+k2phi	k2phi	L12:deciding	400,100	ok
+val248	val248	L12:deciding	400,100	ok
+k3	k3	L12:deciding	400,100	ok
+k4	k4	L12:deciding	400,100	ok
+itsd	itsd	L12:deciding	400,100	stop:itsd_ok
+gap	gap	L12:deciding	400,100	stop:absent without a unit row
+cellgap	k1	L12:deciding,L24:deciding	400,100	stop:L24 deciding
