@@ -7,8 +7,9 @@
 # function (`diaEnrichmentProduct`) is called only where it exists, after the base assertions. Lines starting
 # `KIT-216` are the evidence of docs/qa/workflow-execution/kit/kit-216/.
 #
-# Prepared before KIT-215 merged (ticket 15a): E3's KIT-215 fields, E9 (the base-made archives of section 4), E9b's
-# second case, E12 (G5), E7c, G11, G12, G13, G13b and G17 are added once KIT-215 has merged and R1's archives exist.
+# Written on staging 16112917 (KIT-215 and KIT-212 merged). E9 (the base-made archives of section 4) is added in a
+# second tests-only commit once R1 has made them; with `KIT216_ARCHIVE_OUT` set, the row "R1 archives" writes them.
+# G12 runs on DIA only (no LFQ or TMT native owner with a DA among the fixtures); G13 is test-go-propagation.R's.
 
 # --- Helpers copied from test-kit206-prot-norm-export-guard.R (source lines named) --------------------------------
 
@@ -141,16 +142,20 @@ k216EnrichmentResults <- function() methods::new("EnrichmentResults",
     enrichment_data = list(`grouptreated-groupcontrol` = list(up = data.frame(term_id = "GO:0008150", p_value = 0.01))),
     enrichment_plots = list(), enrichment_plotly = list(), enrichment_summaries = list())
 
+#' KIT-215's `not_tested` row shape (`diaEnrichmentNoIdentifiers`), committed in the record's config.
+k216NotTested <- data.frame(comparison = "treated_vs_control", contrast = "grouptreated-groupcontrol", direction = "up",
+    proteins = 3L, route = "gprofiler", reason = "no_gene_name", stringsAsFactors = FALSE)
+
 #' A completed enrichment through the application's commit (`saveWorkflowEnrichmentState`, the proteomics enrichment
 #' configuration), its DA manifest's source passed where the function takes it. The commit's own result.
-k216Enrich <- function(fixture, manifest = NULL, q_cutoff = 0.05) {
+k216Enrich <- function(fixture, manifest = NULL, q_cutoff = 0.05, not_tested = NULL) {
     parameters <- list(selected_contrast = "treated_vs_control", up_cutoff = 0, down_cutoff = 0, q_cutoff = q_cutoff,
         organism_taxid = "9606")
     declared <- list(taxon_id = "9606", up_cutoff = 0, down_cutoff = 0, q_cutoff = q_cutoff, correction_method = "gSCS")
     saved <- protNormCoreQuiet(k216Scope(fixture, function() k216Call(saveWorkflowEnrichmentState, list(
         workflow = fixture$workflow, config = omicGuiConfig("proteomics")$enrichment, results = k216EnrichmentResults(),
         declared = declared, method = list(method = "gprofiler", supported = TRUE), parameters = parameters,
-        pathway_dir = file.path(fixture$root, "pathway"), source = manifest$source))))
+        pathway_dir = file.path(fixture$root, "pathway"), source = manifest$source, not_tested = not_tested))))
     expect_true(isTRUE(saved$saved), info = paste("enrichment commit:", k216Text(saved$warning)))
     invisible(saved)
 }
@@ -366,7 +371,7 @@ test_that("KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enri
     exported <- k216Export(fixture, q$norm, "skip")
     expect_length(exported$errors, 0L)
     manifest <- k216RealDa(fixture)
-    k216Enrich(fixture, manifest)
+    k216Enrich(fixture, manifest, not_tested = k216NotTested)
     before <- k216Snapshot(fixture$paths)
     seen <- k216Save(fixture)
     added <- setdiff(k216Archives(fixture$paths), before$archives)
@@ -383,7 +388,8 @@ test_that("KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enri
     expect_identical(reopened$fixture$manager$current_state, "correlation_filtered")
     expect_false(is.null(restored))
     expect_true(length(restored$all_enrichment_results) > 0L)
-    # KIT-215's `not_tested` and `no_list` from the product path: added when KIT-215 has merged (ticket 15a).
+    # KIT-215's `not_tested` from the product path (3.1 item 4).
+    expect_identical(restored$not_tested, k216NotTested)
 })
 
 test_that("KIT-216 E4 (G4, D1 (e)): an archive exported after a Revert from an enrichment opens (fails before)", {
@@ -742,4 +748,193 @@ test_that("KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` 
     expect_length(seen$done, 1L)
     expect_true(file.exists(file.path(k216Input(fixture), "integration_input.json")))
     expect_true(any(seen$types == "warning" & seen$persistent))
+})
+
+# ------------------------------------------------------------------------------------------------
+# E15 (3.1 item 13; KIT-212 F3): the enrichment Run on a DA that is no longer current
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab has cleared its result (fails before)", {
+    q <- k216Normalised()
+    fixture <- q$fixture
+    manifest <- k216RealDa(fixture)
+    tab <- shiny::reactiveValues(da_results_data = manifest, current_s4_object = manifest$source)
+    fixture$workflow$da_analysis_results_list <- manifest
+    k216Revert(fixture, "normalized")
+    da_data <- new.env(parent = emptyenv())
+    da_data$da_results_list <- manifest
+    k216Scope(fixture, function() invalidateDIAVisibleResults(da_data, fixture$workflow))
+    cleared <- is.null(fixture$workflow$da_analysis_results_list)
+    calls <- 0L
+    notes <- character()
+    testthat::local_mocked_bindings(runWorkflowEnrichment = function(...) {
+        calls <<- calls + 1L
+        list(saved = list(saved = TRUE), method = list(method = "gprofiler", supported = TRUE))
+    }, holdOmicEnrichRun = function(tab, run) invisible(run), .package = "MultiScholaR")
+    testthat::local_mocked_bindings(showNotification = function(ui, action = NULL, duration = 5, closeButton = TRUE,
+        id = NULL, type = c("default", "message", "warning", "error"), session = NULL) {
+        notes <<- c(notes, sprintf("[%s] %s", type[[1L]], paste(as.character(ui), collapse = " ")))
+        invisible(id %||% "notification")
+    }, withProgress = function(expr, ...) force(expr), incProgress = function(...) invisible(NULL),
+        removeNotification = function(...) invisible(NULL), .package = "shiny")
+    input <- list(selected_contrast = "treated_vs_control", organism_taxid = "9606", up_cutoff = 0, down_cutoff = 0,
+        q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE)
+    out <- k216Error(protNormCoreQuiet(shiny::isolate(runOmicEnrichAnalysis(input, tab, fixture$workflow,
+        fixture$paths, omicGuiConfig("proteomics")$enrichment))))
+    cat(sprintf("KIT-216 E15 head=%s bus_cleared=%s run_calls=%d error=%s notes=%s\n", fixture$manager$current_state,
+        cleared, calls, if (is.null(out)) "none" else conditionMessage(out), paste(notes, collapse = " | ")))
+    expect_true(cleared)
+    expect_identical(calls, 0L)
+    expect_true(any(startsWith(notes, "[warning]")))
+})
+
+# ------------------------------------------------------------------------------------------------
+# E7c, G11, G13b, and the base-made archives of section 4 (R1)
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-216 E7c (I04, P08): DIA with limpa, the archive states the protein normalisation step's method (fails before)", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    fixture <- protNormW1LimpaOwner()
+    fixture$manager$.context$session_format <- "native_v1"
+    norm <- new.env(parent = emptyenv())
+    k216PassThrough(fixture, norm)
+    k216Correlation(fixture, norm, 0.5)
+    k216RuvCovariates(fixture, norm, "covariates")
+    before <- k216Snapshot(fixture$paths)
+    log <- k216Export(fixture, norm, "covariates", norm_method = "quantile")
+    added <- setdiff(k216Archives(fixture$paths), before$archives)
+    archive <- if (length(added) == 1L) k216Open(added) else list()
+    cat(sprintf("KIT-216 E7c export_notes=%s new_archives=%d normalization_method=%s\n", paste(log$notes,
+        collapse = " | "), length(added), k216Text(archive$normalization_method)))
+    skip_if(length(added) != 1L, "G6 feasibility: the limpa store cannot export natively without a package change")
+    expect_identical(archive$normalization_method, "none")
+})
+
+#' The record with store-local ids, timestamps and builds masked, one line per step: what G11 compares base against
+#' head (the R2 logs).
+k216RecordLines <- function(record) {
+    mask <- function(x) {
+        if (is.character(x)) {
+            x[!is.na(x) & grepl("^[a-f0-9]{16,64}$", x)] <- "<id>"
+            x[!is.na(x) & grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T", x)] <- "<time>"
+            return(x)
+        }
+        if (is.list(x)) x[] <- lapply(x, mask)
+        x
+    }
+    vapply(seq_along(record$steps), function(i) {
+        step <- mask(record$steps[[i]])
+        sprintf("step %d %s %s fields=%s sha=%s", i, step$operation, step$state, paste(names(step), collapse = ","),
+            digest::digest(step[setdiff(names(step), c("committed_at", "software"))], algo = "sha256"))
+    }, "")
+}
+
+test_that("KIT-216 G11: the default path's record keeps its steps and fields (printed for base against head)", {
+    q <- k216Normalised()
+    fixture <- q$fixture
+    exported <- k216Export(fixture, q$norm, "skip")
+    expect_length(exported$errors, 0L)
+    manifest <- k216RealDa(fixture)
+    k216Enrich(fixture, manifest)
+    record <- buildWorkflowAnalysisRecord(fixture$manager)
+    lines <- k216RecordLines(record)
+    cat(paste0("KIT-216 G11 ", lines, "\n"), sep = "")
+    cat(sprintf("KIT-216 G11 top-level fields=%s design_state=%s\n", paste(names(record), collapse = ","),
+        k216Text(record$design$state)))
+    steps <- Filter(function(step) identical(step$operation, "enrichment"), record$steps)
+    expect_length(steps, 1L)
+    expect_identical(record$steps[[length(record$steps)]]$operation, "enrichment")
+    expect_true(all(c("committed_at", "software", "defaults_sha256") %in% names(steps[[1L]])))
+})
+
+#' A DIA project as test-workflow-analysis-record.R:979-1016 builds it (the module CI's DA fixture, the DA, its
+#' publication, then `runs` enrichment runs as the tab runs them on the test double), with its record written.
+k216ReplayProject <- function(root, runs = 1L) {
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "k216-replay", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    on.exit(closeDIAStateAdapter(manager), add = TRUE)
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("DIA")
+    design <- module_ci_prot_da_design()
+    rownames(design) <- NULL
+    quant <- module_ci_prot_da_table()
+    rownames(quant) <- NULL
+    setDIAStepProvenance(manager, "design_builder")
+    manager$saveState("correlation_filtered", module_ci_prot_da_object(design = design, protein_quant_table = quant), list(),
+        "fixture")
+    paths <- list(source_dir = file.path(root, "source"), results_dir = file.path(root, "results"),
+        da_output_dir = file.path(root, "results", "da_proteins"), pathway_dir = file.path(root, "results", "pathway_enrichment"),
+        publication_graphs_dir = file.path(root, "publication_graphs"))
+    for (p in paths) dir.create(p, recursive = TRUE, showWarnings = FALSE)
+    manager$.context$experiment_paths <- paths
+    contrasts <- module_ci_prot_da_contrasts("two_group")
+    workflow <- list2env(list(state_manager = manager, contrasts_tbl = contrasts, tab_status = list(),
+        qc_params = list(protein_qc = list()), config_list = list()))
+    withDIAStateScope(manager, function() {
+        da_data <- new.env(parent = emptyenv())
+        da_data$current_s4_object <- getDIAStateReference(manager)
+        da_data$contrasts_available <- contrasts$contrasts
+        manifest <- protNormCoreQuiet(runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group",
+            da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), da_data, workflow, paths, contrasts = contrasts, publish = FALSE))
+        protNormCoreQuiet(produceDIADaPublication(manager, manifest, data.frame(), 0.05,
+            paths[c("da_output_dir", "publication_graphs_dir")], save_assets = FALSE))
+        for (run in seq_len(runs)) utils::capture.output(protNormCoreQuiet(runWorkflowEnrichment(workflow,
+            omicGuiConfig("proteomics")$enrichment, manifest, list(selected_contrast = "B_vs_A", organism_taxid = "9606",
+                up_cutoff = 0, down_cutoff = 0, q_cutoff = c(0.05, 0.01)[[run]], correction_method = "gSCS",
+                enable_organism_filter = FALSE), paths)))
+    })
+    json <- file.path(root, "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    list(record = jsonlite::read_json(json, simplifyVector = FALSE), paths = paths)
+}
+
+test_that("KIT-216 G13b (P01): records made with one and with two enrichment runs replay to completion", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    for (runs in 1:2) {
+        root <- withr::local_tempdir()
+        project <- k216ReplayProject(root, runs)
+        copy <- withr::local_tempdir()
+        stopifnot(system2("cp", c("-a", file.path(root, "."), copy)) == 0L)
+        h <- new.env(parent = globalenv())
+        sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), h)
+        api <- function(name) get(name, asNamespace("MultiScholaR"))
+        prepared <- h$kitPrepareReplayProject(copy, c("initial", "correlation_filtered"), api)
+        product <- "<not reached>"
+        replay <- k216Error(utils::capture.output(protNormCoreQuiet(replayWorkflowAnalysisRecord(project$record, prepared,
+            character(), project$paths, withr::local_tempdir(), on_step = function(step, manager) {
+                if (identical(step$operation, "enrichment")) product <<- if (exists("diaEnrichmentProduct",
+                    mode = "function")) !is.null(diaEnrichmentProduct(manager)) else "<function absent>"
+            }))))
+        cat(sprintf("KIT-216 G13b runs=%d enrichment_steps=%d replay=%s product=%s\n", runs,
+            sum(vapply(project$record$steps, function(step) identical(step$operation, "enrichment"), logical(1))),
+            if (is.null(replay)) "completed" else paste(class(replay)[[1L]], conditionMessage(replay)), format(product)))
+        expect_null(replay, info = paste("runs", runs))
+        if (exists("diaEnrichmentProduct", mode = "function")) expect_identical(product, TRUE, info = paste("runs", runs))
+    }
+})
+
+test_that("KIT-216 R1 archives (section 4): the latest archive the Summary writes after one and two enrichment runs", {
+    out <- Sys.getenv("KIT216_ARCHIVE_OUT")
+    skip_if(!nzchar(out), "made only in R1, with KIT216_ARCHIVE_OUT set")
+    dir.create(out, recursive = TRUE, showWarnings = FALSE)
+    for (runs in 1:2) {
+        q <- k216Normalised()
+        fixture <- q$fixture
+        exported <- k216Export(fixture, q$norm, "skip")
+        expect_length(exported$errors, 0L)
+        manifest <- k216RealDa(fixture)
+        for (run in seq_len(runs)) k216Enrich(fixture, manifest, q_cutoff = c(0.05, 0.01)[[run]])
+        before <- k216Snapshot(fixture$paths)
+        error <- k216Error(protNormCoreQuiet(refreshDIANativeSummaryArchive(fixture$workflow, fixture$paths$source_dir)))
+        added <- setdiff(k216Archives(fixture$paths), before$archives)
+        expect_null(error)
+        expect_length(added, 1L)
+        if (length(added) == 1L) {
+            target <- file.path(out, sprintf("base-enrichment-%d-run%s.msdia.tar", runs, if (runs > 1L) "s" else ""))
+            file.copy(added, target, overwrite = TRUE)
+            cat(sprintf("KIT-216 R1 archive runs=%d head=%s bytes=%d sha256=%s da_source=%s\n", runs,
+                fixture$manager$current_state, file.size(target), digest::digest(file = target, algo = "sha256"),
+                manifest$source$entity_id))
+        }
+    }
 })
