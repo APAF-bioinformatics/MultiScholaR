@@ -1,0 +1,594 @@
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P1: the first count table counts at the run's threshold (0.01 and 0.10), as the second table does
+kind: failure
+message:
+  Expected `kit220TableCounts(result$num_sig_da_molecules_first_go$table)` to be identical to `expected`.
+  Differences:
+    `actual`: 65 62
+  `expected`: 54 56
+  
+  t = 0.01; rows between t and 0.05: 17
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P1: the first count table counts at the run's threshold (0.01 and 0.10), as the second table does
+kind: failure
+message:
+  Expected `kit220TableCounts(result$num_sig_da_molecules_first_go$table)` to be identical to `expected`.
+  Differences:
+    `actual`: 65 62
+  `expected`: 72 65
+  
+  t = 0.1; rows between t and 0.05: 10
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P2: with TREAT at 0.5 the first count table counts at the run's threshold; the tab counts by its rule
+kind: failure
+message:
+  Expected `first` to be identical to `kit220SignCounts(long, t)`.
+  Differences:
+    `actual`: 42 41
+  `expected`: 30 30
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P2: with TREAT at 0.5 the first count table counts at the run's threshold; the tab counts by its rule
+kind: failure
+message:
+  Expected `unname(first)` to be identical to `c(tab_up, tab_down)`.
+  Differences:
+    `actual`: 42 41
+  `expected`: 30 30
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `kit220TableCounts(table)` to be identical to `expected`.
+  Differences:
+    `actual`: 65 62
+  `expected`: 54 56
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `"q_threshold" %in% names(table)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `sentence` to match string "(q-value < 0.01)".
+  Actual text:
+  x | The number of significant differentially expressed proteins is summarised in Figure 2. For the comparison treated_vs_control, there were 65 upregulated and 62 downregulated proteins.
+  DIANN_report.rmd
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `sentence` to match string "there were 54 upregulated and 56 downregulated proteins".
+  Actual text:
+  x | The number of significant differentially expressed proteins is summarised in Figure 2. For the comparison treated_vs_control, there were 65 upregulated and 62 downregulated proteins.
+  DIANN_report.rmd
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `sentence` to match string "(q-value < 0.01)".
+  Actual text:
+  x | The number of significant differentially expressed proteins is summarised in Figure 2. For the comparison treated_vs_control, there were 65 upregulated and 62 downregulated proteins.
+  LFQ_report.rmd
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `sentence` to match string "there were 54 upregulated and 56 downregulated proteins".
+  Actual text:
+  x | The number of significant differentially expressed proteins is summarised in Figure 2. For the comparison treated_vs_control, there were 65 upregulated and 62 downregulated proteins.
+  LFQ_report.rmd
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `sentence` to match string "(q-value < 0.01)".
+  Actual text:
+  x | The number of significant differentially expressed proteins is summarised in Figure 2. For the comparison treated_vs_control, there were 65 upregulated and 62 downregulated proteins.
+  TMT_report.rmd
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P3: the published count table counts at the run's threshold and states it; the report sentence too
+kind: failure
+message:
+  Expected `sentence` to match string "there were 54 upregulated and 56 downregulated proteins".
+  Actual text:
+  x | The number of significant differentially expressed proteins is summarised in Figure 2. For the comparison treated_vs_control, there were 65 upregulated and 62 downregulated proteins.
+  TMT_report.rmd
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (proteomics): at 0.01, the tab's counts (box = the run's threshold) equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Significant (q < 0.010): 127".
+  Actual text:
+  x | Total genes: 400
+    | Significant (q < 0.010): 110
+    | Up-regulated: 54
+    | Down-regulated: 56
+    | Fold-change cutoff: 0.00
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (proteomics): at 0.01, the tab's counts (box = the run's threshold) equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Up-regulated: 65".
+  Actual text:
+  x | Total genes: 400
+    | Significant (q < 0.010): 110
+    | Up-regulated: 54
+    | Down-regulated: 56
+    | Fold-change cutoff: 0.00
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (proteomics): at 0.01, the tab's counts (box = the run's threshold) equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Down-regulated: 62".
+  Actual text:
+  x | Total genes: 400
+    | Significant (q < 0.010): 110
+    | Up-regulated: 54
+    | Down-regulated: 56
+    | Fold-change cutoff: 0.00
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P5: the proteomics interactive volcano colours by the user's q and fold-change cutoff
+kind: failure
+message:
+  Expected `captured$status` to be identical to `expected`.
+  Differences:
+    `actual[1:7]`: 0  0 0  0 1 -1 0
+  `expected[1:7]`: 1 -1 1 -1 1 -1 0
+  
+  lfc = 0
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-P5: the proteomics interactive volcano colours by the user's q and fold-change cutoff
+kind: failure
+message:
+  Expected `captured$status` to be identical to `expected`.
+  Differences:
+    `actual[1:7]`: 0 0 0  0 1 -1 0
+  `expected[1:7]`: 0 0 1 -1 1 -1 0
+  
+  lfc = 0.5
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T1: the transcriptomics publication draws, counts and lists at the run's FDR threshold
+kind: failure
+message:
+  Expected `ggplot2::layer_data(plot, hline[[1L]])$yintercept` to equal `-log10(t)`.
+  Differences:
+    `actual`: 1.30
+  `expected`: 2.00
+  
+  volcano_plot_Sera_vs_RPMI
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T1: the transcriptomics publication draws, counts and lists at the run's FDR threshold
+kind: failure
+message:
+  Expected `as.character(data$significance)` to be identical to `expected`.
+  Differences:
+        actual            | expected               
+  [462] "Upregulated"     | "Upregulated"     [462]
+  [463] "Upregulated"     | "Upregulated"     [463]
+  [464] "Upregulated"     | "Upregulated"     [464]
+  [465] "Upregulated"     - "Not Significant" [465]
+  [466] "Upregulated"     - "Not Significant" [466]
+  [467] "Upregulated"     - "Not Significant" [467]
+  [468] "Downregulated"   - "Not Significant" [468]
+  [469] "Downregulated"   - "Not Significant" [469]
+  [470] "Upregulated"     - "Not Significant" [470]
+  [471] "Upregulated"     - "Not Significant" [471]
+  [472] "Upregulated"     - "Not Significant" [472]
+  [473] "Downregulated"   - "Not Significant" [473]
+  [474] "Upregulated"     - "Not Significant" [474]
+  [475] "Downregulated"   - "Not Significant" [475]
+  [476] "Downregulated"   - "Not Significant" [476]
+  [477] "Upregulated"     - "Not Significant" [477]
+  [478] "Upregulated"     - "Not Significant" [478]
+  [479] "Upregulated"     - "Not Significant" [479]
+  [480] "Downregulated"   - "Not Significant" [480]
+  [481] "Downregulated"   - "Not Significant" [481]
+  [482] "Downregulated"   - "Not Significant" [482]
+  [483] "Downregulated"   - "Not Significant" [483]
+  [484] "Downregulated"   - "Not Significant" [484]
+  [485] "Upregulated"     - "Not Significant" [485]
+  [486] "Downregulated"   - "Not Significant" [486]
+  [487] "Downregulated"   - "Not Significant" [487]
+  [488] "Downregulated"   - "Not Significant" [488]
+  [489] "Upregulated"     - "Not Significant" [489]
+  [490] "Upregulated"     - "Not Significant" [490]
+  [491] "Upregulated"     - "Not Significant" [491]
+  [492] "Downregulated"   - "Not Significant" [492]
+  [493] "Upregulated"     - "Not Significant" [493]
+  [494] "Upregulated"     - "Not Significant" [494]
+  [495] "Upregulated"     - "Not Significant" [495]
+  [496] "Upregulated"     - "Not Significant" [496]
+  [497] "Downregulated"   - "Not Significant" [497]
+  [498] "Downregulated"   - "Not Significant" [498]
+  [499] "Downregulated"   - "Not Significant" [499]
+  [500] "Upregulated"     - "Not Significant" [500]
+  [501] "Upregulated"     - "Not Significant" [501]
+  [502] "Upregulated"     - "Not Significant" [502]
+  [503] "Downregulated"   - "Not Significant" [503]
+  [504] "Upregulated"     - "Not Significant" [504]
+  [505] "Upregulated"     - "Not Significant" [505]
+  [506] "Downregulated"   - "Not Significant" [506]
+  [507] "Downregulated"   - "Not Significant" [507]
+  [508] "Downregulated"   - "Not Significant" [508]
+  [509] "Downregulated"   - "Not Significant" [509]
+  [510] "Downregulated"   - "Not Significant" [510]
+  [511] "Downregulated"   - "Not Significant" [511]
+  [512] "Downregulated"   - "Not Significant" [512]
+  [513] "Upregulated"     - "Not Significant" [513]
+  [514] "Downregulated"   - "Not Significant" [514]
+  [515] "Upregulated"     - "Not Significant" [515]
+  [516] "Upregulated"     - "Not Significant" [516]
+  [517] "Downregulated"   - "Not Significant" [517]
+  [518] "Upregulated"     - "Not Significant" [518]
+  [519] "Upregulated"     - "Not Significant" [519]
+  [520] "Downregulated"   - "Not Significant" [520]
+  [521] "Upregulated"     - "Not Significant" [521]
+  [522] "Downregulated"   - "Not Significant" [522]
+  [523] "Downregulated"   - "Not Significant" [523]
+  [524] "Upregulated"     - "Not Significant" [524]
+  [525] "Upregulated"     - "Not Significant" [525]
+  [526] "Upregulated"     - "Not Significant" [526]
+  [527] "Upregulated"     - "Not Significant" [527]
+  [528] "Downregulated"   - "Not Significant" [528]
+  [529] "Upregulated"     - "Not Significant" [529]
+  [530] "Downregulated"   - "Not Significant" [530]
+  [531] "Upregulated"     - "Not Significant" [531]
+  [532] "Downregulated"   - "Not Significant" [532]
+  [533] "Downregulated"   - "Not Significant" [533]
+  [534] "Upregulated"     - "Not Significant" [534]
+  [535] "Downregulated"   - "Not Significant" [535]
+  [536] "Upregulated"     - "Not Significant" [536]
+  [537] "Upregulated"     - "Not Significant" [537]
+  [538] "Upregulated"     - "Not Significant" [538]
+  [539] "Downregulated"   - "Not Significant" [539]
+  [540] "Upregulated"     - "Not Significant" [540]
+  [541] "Downregulated"   - "Not Significant" [541]
+  [542] "Upregulated"     - "Not Significant" [542]
+  [543] "Upregulated"     - "Not Significant" [543]
+  [544] "Upregulated"     - "Not Significant" [544]
+  [545] "Upregulated"     - "Not Significant" [545]
+  [546] "Downregulated"   - "Not Significant" [546]
+  [547] "Downregulated"   - "Not Significant" [547]
+  [548] "Upregulated"     - "Not Significant" [548]
+  [549] "Upregulated"     - "Not Significant" [549]
+  [550] "Upregulated"     - "Not Significant" [550]
+  [551] "Upregulated"     - "Not Significant" [551]
+  [552] "Upregulated"     - "Not Significant" [552]
+  [553] "Upregulated"     - "Not Significant" [553]
+  [554] "Upregulated"     - "Not Significant" [554]
+  [555] "Upregulated"     - "Not Significant" [555]
+  [556] "Downregulated"   - "Not Significant" [556]
+  [557] "Upregulated"     - "Not Significant" [557]
+  [558] "Downregulated"   - "Not Significant" [558]
+  [559] "Upregulated"     - "Not Significant" [559]
+  [560] "Upregulated"     - "Not Significant" [560]
+  [561] "Downregulated"   - "Not Significant" [561]
+  [562] "Upregulated"     - "Not Significant" [562]
+  [563] "Downregulated"   - "Not Significant" [563]
+  [564] "Upregulated"     - "Not Significant" [564]
+  [565] "Upregulated"     - "Not Significant" [565]
+  [566] "Upregulated"     - "Not Significant" [566]
+  [567] "Downregulated"   - "Not Significant" [567]
+  [568] "Downregulated"   - "Not Significant" [568]
+  [569] "Upregulated"     - "Not Significant" [569]
+  [570] "Upregulated"     - "Not Significant" [570]
+  [571] "Downregulated"   - "Not Significant" [571]
+  [572] "Upregulated"     - "Not Significant" [572]
+  [573] "Downregulated"   - "Not Significant" [573]
+  [574] "Downregulated"   - "Not Significant" [574]
+  [575] "Upregulated"     - "Not Significant" [575]
+  [576] "Upregulated"     - "Not Significant" [576]
+  [577] "Upregulated"     - "Not Significant" [577]
+  [578] "Downregulated"   - "Not Significant" [578]
+  [579] "Upregulated"     - "Not Significant" [579]
+  [580] "Upregulated"     - "Not Significant" [580]
+  [581] "Downregulated"   - "Not Significant" [581]
+  [582] "Upregulated"     - "Not Significant" [582]
+  [583] "Downregulated"   - "Not Significant" [583]
+  [584] "Upregulated"     - "Not Significant" [584]
+  [585] "Upregulated"     - "Not Significant" [585]
+  [586] "Upregulated"     - "Not Significant" [586]
+  [587] "Upregulated"     - "Not Significant" [587]
+  [588] "Downregulated"   - "Not Significant" [588]
+  [589] "Downregulated"   - "Not Significant" [589]
+  [590] "Downregulated"   - "Not Significant" [590]
+  [591] "Upregulated"     - "Not Significant" [591]
+  [592] "Downregulated"   - "Not Significant" [592]
+  [593] "Upregulated"     - "Not Significant" [593]
+  [594] "Upregulated"     - "Not Significant" [594]
+  [595] "Upregulated"     - "Not Significant" [595]
+  [596] "Upregulated"     - "Not Significant" [596]
+  [597] "Upregulated"     - "Not Significant" [597]
+  [598] "Upregulated"     - "Not Significant" [598]
+  [599] "Downregulated"   - "Not Significant" [599]
+  [600] "Downregulated"   - "Not Significant" [600]
+  [601] "Upregulated"     - "Not Significant" [601]
+  [602] "Upregulated"     - "Not Significant" [602]
+  [603] "Upregulated"     - "Not Significant" [603]
+  [604] "Upregulated"     - "Not Significant" [604]
+  [605] "Downregulated"   - "Not Significant" [605]
+  [606] "Upregulated"     - "Not Significant" [606]
+  [607] "Upregulated"     - "Not Significant" [607]
+  [608] "Upregulated"     - "Not Significant" [608]
+  [609] "Upregulated"     - "Not Significant" [609]
+  [610] "Downregulated"   - "Not Significant" [610]
+  [611] "Downregulated"   - "Not Significant" [611]
+  [612] "Downregulated"   - "Not Significant" [612]
+  [613] "Downregulated"   - "Not Significant" [613]
+  [614] "Upregulated"     - "Not Significant" [614]
+  [615] "Downregulated"   - "Not Significant" [615]
+  [616] "Upregulated"     - "Not Significant" [616]
+  [617] "Upregulated"     - "Not Significant" [617]
+  [618] "Downregulated"   - "Not Significant" [618]
+  [619] "Upregulated"     - "Not Significant" [619]
+  [620] "Not Significant" | "Not Significant" [620]
+  [621] "Not Significant" | "Not Significant" [621]
+  [622] "Not Significant" | "Not Significant" [622]
+  
+  volcano_plot_Sera_vs_RPMI
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T1: the transcriptomics publication draws, counts and lists at the run's FDR threshold
+kind: failure
+message:
+  Expected `as.integer(counts$n[counts$significance == "Upregulated"])` to be identical to `sum(volcano$FDR < t & volcano$logFC > 0)`.
+  Differences:
+    `actual`: 320
+  `expected`: 229
+  
+  summary_barplot_Sera_vs_RPMI
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T1: the transcriptomics publication draws, counts and lists at the run's FDR threshold
+kind: failure
+message:
+  Expected `as.integer(counts$n[counts$significance == "Downregulated"])` to be identical to `sum(volcano$FDR < t & volcano$logFC < 0)`.
+  Differences:
+    `actual`: 299
+  `expected`: 235
+  
+  summary_barplot_Sera_vs_RPMI
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T1 (summary line): the RUV summary's count line states and uses the run's threshold
+kind: error
+message:
+  Error in `trxSummaryText(best, 100L, "~ 0 + group + W_1", "B_vs_A", data.frame(FDR = c(0.005, 0.02, 0.2)), data.frame(), fdr_thresh = 0.01)`: unused argument (fdr_thresh = 0.01)
+trace (first lines):
+  ▆
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published
+kind: failure
+message:
+  Expected `captured$status` to be identical to `edgeR::decideTests.DGEExact(qlf, adjust.method = "BH", p.value = threshold)`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S4 object of class <TestResults>
+  
+  threshold 0.01
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published
+kind: failure
+message:
+  Expected `captured$status` to be identical to `edgeR::decideTests.DGEExact(qlf, adjust.method = "BH", p.value = threshold)`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S4 object of class <TestResults>
+  
+  threshold 0.05
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published
+kind: failure
+message:
+  Expected `captured$status` to be identical to `edgeR::decideTests.DGEExact(qlf)`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S4 object of class <TestResults>
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published
+kind: failure
+message:
+  Expected `text` to match string "Up-regulated: 320".
+  Actual text:
+  x | Total genes: 4622
+    | Significant (FDR (BH) < 0.010): 464 (10.0%)
+    |   Up-regulated: 229
+    |   Down-regulated: 235
+  summary_barplot_Sera_vs_RPMI
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-T2 and T-PAR (transcriptomics): the interactive status is edgeR's at the run's FDR; tab = published
+kind: failure
+message:
+  Expected `text` to match string "Down-regulated: 299".
+  Actual text:
+  x | Total genes: 4622
+    | Significant (FDR (BH) < 0.010): 464 (10.0%)
+    |   Up-regulated: 229
+    |   Down-regulated: 235
+  summary_barplot_Sera_vs_RPMI
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (lipidomics, metabolomics): at 0.01 the tab's counts equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Up-regulated: 0".
+  Actual text:
+  x | Total lipids: 8
+    | Significant (Q < 0.010): 4 (50.0%)
+    |   Up-regulated: 2
+    |   Down-regulated: 2
+    | Not tested (no value in a compared group): 0
+  lipidomics
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (lipidomics, metabolomics): at 0.01 the tab's counts equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Down-regulated: 0".
+  Actual text:
+  x | Total lipids: 8
+    | Significant (Q < 0.010): 4 (50.0%)
+    |   Up-regulated: 2
+    |   Down-regulated: 2
+    | Not tested (no value in a compared group): 0
+  lipidomics
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (lipidomics, metabolomics): at 0.01 the tab's counts equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Up-regulated: 0".
+  Actual text:
+  x | Total metabolites: 8
+    | Significant (Q < 0.010): 4 (50.0%)
+    |   Up-regulated: 2
+    |   Down-regulated: 2
+    | Not tested (no value in a compared group): 0
+  metabolomics
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 T-PAR (lipidomics, metabolomics): at 0.01 the tab's counts equal the published table's
+kind: failure
+message:
+  Expected `text` to match string "Down-regulated: 0".
+  Actual text:
+  x | Total metabolites: 8
+    | Significant (Q < 0.010): 4 (50.0%)
+    |   Up-regulated: 2
+    |   Down-regulated: 2
+    | Not tested (no value in a compared group): 0
+  metabolomics
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 E-7: the feature omics' summary states the run's threshold and notes a box that differs from it
+kind: error
+message:
+  Error in `omicDaSummaryText(long, "groupB-groupA", "All", 0.01, summary, runQValThresh = 0.05)`: unused argument (runQValThresh = 0.05)
+trace (first lines):
+  ▆
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 E-7 (proteomics, SD-6 (a)): the summary notes a fold-change box that differs from the run's cutoff
+kind: failure
+message:
+  Expected `differs` to match string "differs from the cutoff the analysis ran at".
+  Actual text:
+  x | Total genes: 10
+    | Significant (q < 0.050): 3
+    | Up-regulated: 2
+    | Down-regulated: 1
+    | Fold-change cutoff: 1.00
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 SD-6 (a): the interactive page is built and found with the run's fold-change cutoff
+kind: error
+message:
+  Error in `diaDaVolcanoGlimmaView(list(parameters = list(qvalue = 0.05, lfc = 0.5)), "B_vs_A", 0.05, kit220ProtObject(proteins = 20L), tempdir(), 1)`: unused argument (1)
+trace (first lines):
+  ▆
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"q_val_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  func_prot_da_model_methods.R printCountDaGenesTable(list_of_da_tables = list(nested_list_for_count), 
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"q_val_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  func_prot_da_compat.R printCountDaGenesTable(list_of_da_tables = list(contrasts_results_table), 
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"fdr_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trxVolcano trxVolcano(de$de_annotated, name)
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"fdr_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trxSignificanceBar trxSignificanceBar(de$de_annotated, name)
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"fdr_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trxAnnotateDe trxAnnotateDe(results$top_table, object@count_data[[1L]], name, 
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"fdr_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trxAnnotateDe trxAnnotateDe(entry$top_table, object@count_data[[1L]], name, 
+
+file: test-kit220-da-threshold-consumers.R
+test: KIT-220 G5: every printCountDaGenesTable call of the DA helper and the workbook route names q_val_thresh
+kind: failure
+message:
+  Expected `"fdr_thresh" %in% names(as.list(call))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trxSummaryText trxSummaryText(grid$best, length(grid$prelim_order), manifest$parameters$formula, 
+

@@ -19,54 +19,54 @@
 # results are pure reads of the stored model, so they are no declared operation; saving them to the project goes
 # through the owner's action-output publication (`publishWorkflowActionOutputs`, the journal the omics' publications
 # use), drawn in a short folder and every file checked (`withWorkflowShortStaging`, `checkWorkflowFigureFiles`;
-# KIT-052). Every choice the user's integration workbook would make (how many features, which factors, the statistic,
-# figure size and format) is a declared parameter with a provisional default in one table,
-# `integrationResultsParameterSpec()`. Enrichment on the weights is KIT-141, the record and report KIT-142 (a saved
+# KIT-052). Every choice (how many features, which factors, the statistic, figure size and format) is a declared
+# parameter with its default and the decision behind it in one table, `integrationResultsParameterSpec()`. Enrichment on the weights is KIT-141, the record and report KIT-142 (a saved
 # publication is kept with its model for the record, `integrationRecordResultsPublication`).
 
 #' The label of the results' publication on the owner's action-output journal.
 #' @noRd
 INTEGRATION_RESULTS_LABEL <- "integration-results"
 
-#' The Results tab's parameters with their provisional defaults: the one table the user's integration workbook settles
-#' (`settled_by`), in the form of `integrationMofaParameterSpec()`.
+#' The Results tab's parameters with their defaults, each with the decision that settled it (`settled_by`; KIT-240:
+#' every default kept by the owner's decision VAL-221 of 2026-11-25, the values unchanged), in the form of
+#' `integrationMofaParameterSpec()`.
 #' @return Named list by parameter: `default`, `choices` (NULL for a number or a free value), `settled_by`.
 #' @noRd
 integrationResultsParameterSpec <- function() {
-    workbook <- "workbook (provisional)"
+    kept <- "VAL-221 (decided 2026-11-25: the default kept)"
     list(
         # Which factors the figures and tables show: "all", or factor names (Factor1, ...).
-        factors_shown = list(default = "all", choices = NULL, type = "factors", settled_by = workbook),
+        factors_shown = list(default = "all", choices = NULL, type = "factors", settled_by = kept),
         # How many features per factor and data set are listed and drawn (the starter workbook's plot_weights: 10).
-        top_features = list(default = 10L, choices = NULL, type = "whole", settled_by = workbook),
+        top_features = list(default = 10L, choices = NULL, type = "whole", settled_by = kept),
         # The weights' plot: scaled by the largest absolute weight of the factor in the data set (MOFA2's
         # plot_weights(scale = TRUE)), or as estimated.
-        weight_scale = list(default = "scaled", choices = c("scaled", "raw"), settled_by = workbook),
+        weight_scale = list(default = "scaled", choices = c("scaled", "raw"), settled_by = kept),
         # The design column the factors are related to (the integration design holds the group only).
-        design_covariate = list(default = "group", choices = "group", settled_by = workbook),
+        design_covariate = list(default = "group", choices = "group", settled_by = kept),
         # The factor-design statistic: one-way analysis of variance of each factor on the group, R^2 as the effect;
         # KIT-151 (plan item E): or the Kruskal-Wallis rank test, epsilon-squared as the effect. ANOVA stays the default.
-        association_test = list(default = "anova", choices = c("anova", "kruskal_wallis"), settled_by = workbook),
+        association_test = list(default = "anova", choices = c("anova", "kruskal_wallis"), settled_by = kept),
         # The p-values' adjustment across the factors tested.
-        p_adjust_method = list(default = "BH", choices = c("BH", "holm", "bonferroni", "none"), settled_by = workbook),
-        figure_format = list(default = "png", choices = c("png", "pdf"), settled_by = workbook),
-        figure_width = list(default = 8, choices = NULL, type = "number", settled_by = workbook),
-        figure_height = list(default = 6, choices = NULL, type = "number", settled_by = workbook),
-        figure_dpi = list(default = 300L, choices = NULL, type = "whole", settled_by = workbook),
+        p_adjust_method = list(default = "BH", choices = c("BH", "holm", "bonferroni", "none"), settled_by = kept),
+        figure_format = list(default = "png", choices = c("png", "pdf"), settled_by = kept),
+        figure_width = list(default = 8, choices = NULL, type = "number", settled_by = kept),
+        figure_height = list(default = 6, choices = NULL, type = "number", settled_by = kept),
+        figure_dpi = list(default = 300L, choices = NULL, type = "whole", settled_by = kept),
         # KIT-152 (audit SCI-17; ledger row "integration: the values the top-feature scatter and heatmap show"): the
         # values handed to the model (the aligned table: runs averaged, the model's features, any per-feature scaling;
         # before MOFA2 centres and scales the data sets), the only choice.
-        feature_values = list(default = "model_input", choices = "model_input", settled_by = workbook),
+        feature_values = list(default = "model_input", choices = "model_input", settled_by = kept),
         # KIT-152 (SCI-17): the heatmap's colours, display only: each feature centred on its mean, or also scaled to
         # standard deviation 1.
-        heatmap_scaling = list(default = "centre", choices = c("centre", "centre_scale"), settled_by = workbook),
+        heatmap_scaling = list(default = "centre", choices = c("centre", "centre_scale"), settled_by = kept),
         # KIT-152 (INT-9, audit SCI-15; ledger row "integration: UMAP and t-SNE maps of the factors"): the maps are off
         # unless chosen; uwot's default number of neighbours; a perplexity valid from 17 biological samples; one seed.
-        umap = list(default = FALSE, choices = NULL, type = "flag", settled_by = workbook),
-        umap_n_neighbors = list(default = 15L, choices = NULL, type = "whole", settled_by = workbook),
-        tsne = list(default = FALSE, choices = NULL, type = "flag", settled_by = workbook),
-        tsne_perplexity = list(default = 5, choices = NULL, type = "number", settled_by = workbook),
-        map_seed = list(default = 20261119L, choices = NULL, type = "whole", settled_by = workbook))
+        umap = list(default = FALSE, choices = NULL, type = "flag", settled_by = kept),
+        umap_n_neighbors = list(default = 15L, choices = NULL, type = "whole", settled_by = kept),
+        tsne = list(default = FALSE, choices = NULL, type = "flag", settled_by = kept),
+        tsne_perplexity = list(default = 5, choices = NULL, type = "number", settled_by = kept),
+        map_seed = list(default = 20261119L, choices = NULL, type = "whole", settled_by = kept))
 }
 
 #' The Results parameter table (one row per parameter), for the ticket, the ledger and the hand-off.
@@ -343,7 +343,12 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
         claim = list(group_corrected = names(corrected)[corrected], corrections = corrections,
             uncorrected = identical(input_matrix, "uncorrected")),
         feature_values = feature_values, value_scales = integrationFeatureValueScales(object, views, model_parameters$scaling),
-        maps = maps, seeds = value$seeds$seeds, stability = stability)
+        maps = maps, seeds = value$seeds$seeds, stability = stability,
+        # KIT-239 (INT-28): the limitations of the model, with this model's own numbers.
+        limitations = integrationLimitationsText(integrationLimitationFacts(value$samples, value$shared_samples, views,
+            model_parameters$missing_samples), texts),
+        # KIT-240 (VAL-221 (1)): the reported model's rank among the seeds by final ELBO (NULL for a model trained before).
+        elbo_rank = value$seeds$elbo_rank)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -803,6 +808,68 @@ integrationClaimLimitText <- function(results, texts = integrationGuiTexts()) {
     }
     if (isTRUE(as.logical(integrationGuiScalar(claim$uncorrected)))) sentences <- c(sentences, texts[["claim_uncorrected"]])
     c(sentences, sprintf(texts[["claim_correction"]], tools::toTitleCase(names(claim$corrections)), unname(claim$corrections)))
+}
+
+#' The facts the limitations of the model are computed from (KIT-239, INT-28): the biological samples in the model and
+#' those measured in every data set, the samples missing from at least one data set, and per data set the runs that
+#' were averaged (`integrationAverageRuns`), read from the aligned sample table (`views_present`, `<view>_runs` with
+#' the runs joined by ";").
+#' @param samples The aligned sample table: the model product's `samples`, or the record's `matching$samples` (a data
+#'   frame or a list of rows).
+#' @param shared_samples The number of biological samples measured in every data set.
+#' @param views The data sets in the model.
+#' @param missing_samples The rule for a sample missing from a data set (`keep_missing` or `drop_incomplete`).
+#' @param services NULL when not known here (the Results tab); else the databases and releases the analysis's
+#'   enrichment used, `character()` for none (the report).
+#' @return `list(samples, shared, missing, averaged = data.frame(view, samples, repeated, most_runs), services)`.
+#' @noRd
+integrationLimitationFacts <- function(samples, shared_samples, views, missing_samples, services = NULL) {
+    samples <- integrationRecordFrame(samples)
+    keep <- identical(as.character(integrationRecordScalar(missing_samples)), "keep_missing")
+    missing <- if (keep) sum(as.integer(samples$views_present) < length(views), na.rm = TRUE) else 0L
+    averaged <- do.call(rbind, lapply(views, function(view) {
+        runs <- as.character(samples[[paste0(view, "_runs")]])
+        runs[is.na(runs)] <- ""
+        counts <- lengths(strsplit(runs, ";", fixed = TRUE))
+        data.frame(view = view, samples = sum(counts > 0L), repeated = sum(counts > 1L), most_runs = max(c(0L, counts)),
+            stringsAsFactors = FALSE)
+    }))
+    list(samples = nrow(samples), shared = as.integer(integrationRecordScalar(shared_samples)), missing = as.integer(missing),
+        averaged = averaged, services = services)
+}
+
+#' The limitations of the model in words (KIT-239, INT-28), one element per point in INT-28's order: (1) the samples,
+#' then what the simulations could find; (2) the samples missing from a data set when there are any, then how missing
+#' values are treated; (3) per data set whose runs were averaged its counts, then why such averages can be too high, or
+#' that no runs were averaged; (4) the model's form; (5) what the check against the analysis script covered; (6) the
+#' enrichment services (the Results tab's general sentence when `services` is NULL, else those the analysis used, or
+#' none). Without facts (a record that cannot be read), the sentences true for every run (points 1, 2, 4 and 5), then
+#' `limits_not_computed`.
+#' @param facts `integrationLimitationFacts()`, or NULL.
+#' @return A character vector.
+#' @noRd
+integrationLimitationsText <- function(facts, texts = integrationGuiTexts()) {
+    if (is.null(facts)) {
+        return(unname(texts[c("limits_fixed_samples", "limits_fixed_missing", "limits_fixed_model", "limits_fixed_check",
+            "limits_not_computed")]))
+    }
+    joined <- function(...) paste(c(...), collapse = " ")
+    averaged <- facts$averaged[facts$averaged$repeated > 0L, , drop = FALSE]
+    runs <- if (nrow(averaged)) {
+        joined(sprintf(texts[["limits_averaged_item"]], averaged$view, averaged$repeated, averaged$samples, averaged$most_runs),
+            texts[["limits_fixed_averaged"]])
+    } else {
+        texts[["limits_averaged_none"]]
+    }
+    services <- if (is.null(facts$services)) texts[["limits_fixed_services"]] else if (length(facts$services)) {
+        sprintf(texts[["limits_services_report"]], paste(facts$services, collapse = "; "))
+    } else {
+        texts[["limits_services_none"]]
+    }
+    c(joined(sprintf(texts[["limits_samples"]], facts$samples, facts$shared), texts[["limits_fixed_samples"]]),
+        joined(if (facts$missing > 0L) sprintf(texts[["limits_missing_samples"]], facts$missing, facts$samples),
+            texts[["limits_fixed_missing"]]),
+        runs, texts[["limits_fixed_model"]], texts[["limits_fixed_check"]], services)
 }
 
 # ------------------------------------------------------------------------------------------------

@@ -17,13 +17,17 @@ perform_enrichment <- function(data_subset,
                                max_retries = 5,
                                wait_time = 5,
                                protein_id_column,
-                               correction_method = "gSCS") {
+                               correction_method = "gSCS",
+                               contrast = NA_character_,
+                               direction = NA_character_) {
   
   
   
   if (nrow(data_subset) == 0) {
     return(NULL)
   }
+  # KIT-208: the list's size before the NA filter below empties `data_subset`.
+  list_size <- nrow(data_subset)
 
   # Clean data before enrichment
   protein_ids <- data_subset[[protein_id_column]]
@@ -63,6 +67,22 @@ perform_enrichment <- function(data_subset,
   }
 
   custom_bg <- unique(custom_bg)
+
+  # KIT-208 (VAL-147 (1)): g:Profiler is not asked when nothing would be tested: the list has proteins but no named
+  # identifier, or the custom background has none (`gost` answers an empty query with NULL, read as "no terms"). The
+  # classed condition, with the labels `processEnrichments` passes, does nothing unless a caller handles
+  # `multischolar_enrichment_no_identifiers` (`diaEnrichmentOperation`'s kernel refuses an empty background and reports
+  # an empty list as not tested); the return value stays NULL.
+  query_ids <- length(protein_ids)
+  background_ids <- sum(!is.na(custom_bg) & nzchar(as.character(custom_bg)))
+  if ((list_size > 0 && query_ids == 0) || (identical(domain_scope, "custom") && background_ids == 0)) {
+    signalCondition(structure(class = c("multischolar_enrichment_no_identifiers", "condition"),
+      list(message = sprintf(paste("g:Profiler was given no gene names to test: %d proteins in the list, %d named",
+        "proteins in the background"), list_size, background_ids), call = NULL, contrast = as.character(contrast),
+        direction = as.character(direction), list_size = list_size, query_ids = query_ids,
+        background_ids = background_ids)))
+    return(NULL)
+  }
 
   result <- NULL
   attempt <- 1
@@ -177,7 +197,7 @@ buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
   ggplot2::ggplot(plot_data, ggplot2::aes(x = source, y = neg_log10_p, text = paste0(
     "Term: ", term_name, "\n",
     "ID: ", term_id, "\n",
-    "P-value: ", signif(p_value, 3), "\n",
+    "Adjusted p-value: ", signif(p_value, 3), "\n",
     "Genes: ", intersection_size
   ))) +
     # Add a line for the significance threshold
@@ -205,9 +225,22 @@ buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
     ) +
     ggplot2::labs(
       title = paste0("Enrichment for ", contrast, " (", direction, "-regulated)"),
-      x = "Annotation Source", y = "-log10(p-value)"
+      x = "Annotation Source", y = "-log10(adjusted p-value)"
     ) +
     ggplot2::guides(color = "none")
+}
+
+#' The multiple-testing correction a g:Profiler answer states it applied (KIT-226)
+#'
+#' g:Profiler returns only adjusted p-values (`p_value`); the answer's metadata states the correction,
+#' `meta$query_metadata$significance_threshold_method` (for example `g_SCS`). It is copied as the service spells it,
+#' never mapped or inferred from the selection.
+#' @param gost_result A gprofiler2 `gost` answer (`result`, `meta`).
+#' @return The method as the answer states it, or `"not recorded"` when the answer states none.
+#' @noRd
+gprofilerAdjustmentMethod <- function(gost_result) {
+  method <- gost_result$meta$query_metadata$significance_threshold_method
+  if (is.character(method) && length(method) == 1L && !is.na(method) && nzchar(method)) method else "not recorded"
 }
 
 #' Carry what a clusterProfiler result's plot needs beside its table (KIT-119)
@@ -378,6 +411,8 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
   tryCatch({
     result_table <- enrichment_result$result
     result_table$parents <- sapply(result_table$parents, paste, collapse = ", ")
+    # KIT-226 (VAL-196): `p_value` is the service's adjusted value; the file names the correction applied.
+    result_table$p_adjust_method <- gprofilerAdjustmentMethod(enrichment_result)
     readr::write_tsv(result_table,
       file = file.path(pathway_dir, paste0(contrast, "_", direction, "_enrichment_results.tsv"))
     )

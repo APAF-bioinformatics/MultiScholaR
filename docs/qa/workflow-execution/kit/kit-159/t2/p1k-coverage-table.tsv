@@ -1,0 +1,9 @@
+regime	method	class	form	design	transform	n	level	status	coverage	mc_se	source	statistic	coverage_min	coverage_max	failed_condition	failed_side	zero_width	effect	half_width_ratio	se_inflation	generator
+C4e	jackknife	rank	block	NA	NA	5	0.95	conservative	0.9925	0.00192921616207204	harness	pauc_diff@matrix4840p1_block	0.9925	0.9925	NA	NA	0	0.4	2.13779204925039	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.975	conservative	0.9985	0.000865375640979091	harness	pauc_diff@matrix4840p1_block	0.9985	0.9985	NA	NA	0	0.4	2.35343485002498	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.983333333333333	conservative	0.9985	0.000865375640979091	harness	pauc_diff@matrix4840p1_block	0.9985	0.9985	NA	NA	0	0.4	2.49680949372888	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.9875	conservative	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840p1_block	0.9995	0.9995	NA	NA	0	0.4	2.60693025566633	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.991666666666667	conservative	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840p1_block	0.9995	0.9995	NA	NA	0	0.4	2.77484892848883	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.99375	conservative	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840p1_block	0.9995	0.9995	NA	NA	0	0.4	2.90362431218923	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.995833333333333	conservative	1	0	harness	pauc_diff@matrix4840p1_block	1	1	NA	NA	0	0.4	3.0997692445863	1.50912237202988	fixed_onedir
+C4e	jackknife	rank	block	NA	NA	5	0.996666666666667	conservative	1	0	harness	pauc_diff@matrix4840p1_block	1	1	NA	NA	0	0.4	3.2155081235396	1.50912237202988	fixed_onedir

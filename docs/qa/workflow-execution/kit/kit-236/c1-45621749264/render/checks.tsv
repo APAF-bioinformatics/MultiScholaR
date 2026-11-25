@@ -1,0 +1,141 @@
+lane	variant	predicted	observed	verdict	phrase
+lip	lane	present	present	as predicted	The analysis included 6 samples, each a separate biological sample (no technical replicates were declared in the design).
+lip	lane	absent	absent	as predicted	with no technical replicates.
+lip	lane	present	present	as predicted	Data analyses were performed with MultiScholaR 0.9.0 (build 
+lip	lane	present	present	as predicted	SOP reference: [to be completed by the analyst].
+lip	lane	absent	absent	as predicted	SOP xxx
+lip	lane	absent	absent	as predicted	Salesforce
+lip	lane	present	present	as predicted	Each assay was processed and tested for differential abundance separately; the results of the 2 assays are reported together.
+lip	lane	absent	absent	as predicted	before integration
+lip	lane	absent	absent	as predicted	cross-assay consistency
+lip	lane	present	present	as predicted	Intensities were log2-transformed; a value of zero was read as not detected
+lip	lane	absent	absent	as predicted	were coded as NA
+lip	lane	present	present	as predicted	Internal standard (ITSD) normalization was applied using the average_centered method with median aggregation
+lip	lane	present	present	as predicted	Between-sample normalization was performed using the 'cyclicloess' method from the 'limma' R package
+lip	lane	present	present	as predicted	Per-assay quality control: the quality-control figures were drawn separately for each assay. The assays were required to contain the same samples.
+lip	lane	present	present	as predicted	Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].
+lip	lane	present	present	as predicted	one column per stage: after filtering, on the intensities before log2 transformation (left); after cyclic loess normalisation (normalizeCyclicLoess) (right). RUV-III correction was not applied to this dataset.
+lip	lane	present	present	as predicted	this report draws no conclusion from them.
+lip	lane	absent	absent	as predicted	Cyclic loess normalization (rightmost column
+lip	lane	absent	absent	as predicted	high and consistent
+lip	lane	present	present	as predicted	Features remaining after each step (total across the 2 assays): import and design 20; intensity filter 17; duplicate resolution 17; quality-control finalisation 17; internal-standard normalisation 17; log2 transformation 17; between-sample normalisation 17; sample-correlation filter 17.
+lip	lane	present	present	as predicted	6 of 6 samples were kept by the sample-correlation filter (threshold 0.5).
+lip	lane	absent	absent	as predicted	norm complete
+lip	lane	present	present	as predicted	[To be completed by the analyst: quality-control assessment from Figure 1
+lip	lane	absent	absent	as predicted	All samples passed initial QC criteria
+lip	lane	present	present	as predicted	[To be completed by the analyst: interpretation of the results
+lip	lane	present	present	as predicted	Differential abundance of lipids was tested separately within each assay, using the adjusted abundance matrix, for the comparisons defined in the contrast table (1 comparison: KO_vs_WT).
+lip	lane	present	present	as predicted	p-values were calculated using the 'eBayes' function.
+lip	lane	present	present	as predicted	False discovery rates were estimated as q-values (Storey, 2002); where they cannot be computed, Benjamini-Hochberg adjusted p-values are used.
+lip	lane	present	present	as predicted	Each comparison was tested for any difference from zero log2 fold change.
+lip	lane	present	present	as predicted	Differentially abundant lipids were those with a q-value below 0.05.
+lip	lane	absent	absent	as predicted	Volcano plots of differentially abundant lipids are shown in Figure 3
+lip	lane	present	present	as predicted	Full details of all lipids are provided in the supplementary results table DA_results_lipidomics.xlsx
+lip	lane	absent	absent	as predicted	DE_lipids_results.xlsx
+lip	lane	absent	absent	as predicted	Figure 3: Volcano plots
+lip	lane	absent	absent	as predicted	Volcano Plots directory not found
+lip	lane	absent	absent	as predicted	NumSigDeMolecules directory not found
+lip	lane	absent	absent	as predicted	Composite QC figure not found
+lip	lane	absent	absent	as predicted	test could not be computed
+lip	lane	present	present	as predicted	The number of significant differentially abundant lipids is summarised in Figure 2 (q-value < 0.05). For the comparison KO_vs_WT in LCMS_Pos, there were
+lip	lane	present	present	as predicted	Figure 2: Number of significant differentially abundant lipids
+lip	lane	absent	absent	as predicted	groupKO-groupWT
+met	lane	present	present	as predicted	The analysis included 6 samples, each a separate biological sample (no technical replicates were declared in the design).
+met	lane	absent	absent	as predicted	with no technical replicates.
+met	lane	present	present	as predicted	Data analyses were performed with MultiScholaR 0.9.0 (build 
+met	lane	present	present	as predicted	SOP reference: [to be completed by the analyst].
+met	lane	absent	absent	as predicted	SOP xxx
+met	lane	absent	absent	as predicted	Salesforce
+met	lane	present	present	as predicted	Each assay was processed and tested for differential abundance separately; the results of the 2 assays are reported together.
+met	lane	absent	absent	as predicted	before integration
+met	lane	absent	absent	as predicted	cross-assay consistency
+met	lane	present	present	as predicted	Intensities were log2-transformed; a value of zero was read as not detected
+met	lane	absent	absent	as predicted	were coded as NA
+met	lane	present	present	as predicted	Internal standard (ITSD) normalization was applied using the average_centered method with median aggregation
+met	lane	present	present	as predicted	Between-sample normalization was performed using the 'cyclicloess' method from the 'limma' R package
+met	lane	present	present	as predicted	Per-assay quality control: the quality-control figures were drawn separately for each assay. The assays were required to contain the same samples.
+met	lane	present	present	as predicted	Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].
+met	lane	present	present	as predicted	one column per stage: after filtering, on the intensities before log2 transformation (left); after cyclic loess normalisation (normalizeCyclicLoess) (right). RUV-III correction was not applied to this dataset.
+met	lane	present	present	as predicted	this report draws no conclusion from them.
+met	lane	absent	absent	as predicted	Cyclic loess normalization (rightmost column
+met	lane	absent	absent	as predicted	high and consistent
+met	lane	present	present	as predicted	Features remaining after each step (total across the 2 assays): import and design 6; intensity filter 6; duplicate resolution 6; quality-control finalisation 6; internal-standard normalisation 6; log2 transformation 6; between-sample normalisation 6; sample-correlation filter 6.
+met	lane	present	present	as predicted	6 of 6 samples were kept by the sample-correlation filter (threshold 0.5).
+met	lane	absent	absent	as predicted	norm complete
+met	lane	present	present	as predicted	[To be completed by the analyst: quality-control assessment from Figure 1
+met	lane	absent	absent	as predicted	All samples passed initial QC criteria
+met	lane	present	present	as predicted	[To be completed by the analyst: interpretation of the results
+met	lane	present	present	as predicted	Differential abundance of metabolites was tested separately within each assay, using the adjusted abundance matrix, for the comparisons defined in the contrast table (1 comparison: KO_vs_WT).
+met	lane	present	present	as predicted	p-values were calculated using the 'eBayes' function.
+met	lane	present	present	as predicted	False discovery rates were estimated as q-values (Storey, 2002); where they cannot be computed, Benjamini-Hochberg adjusted p-values are used.
+met	lane	present	present	as predicted	Each comparison was tested for any difference from zero log2 fold change.
+met	lane	present	present	as predicted	Differentially abundant metabolites were those with a q-value below 0.05.
+met	lane	absent	absent	as predicted	Volcano plots of differentially abundant metabolites are shown in Figure 3
+met	lane	present	present	as predicted	Full details of all metabolites are provided in the supplementary results table DA_results_metabolomics.xlsx
+met	lane	absent	absent	as predicted	DE_metabolites_results.xlsx
+met	lane	absent	absent	as predicted	Figure 3: Volcano plots
+met	lane	absent	absent	as predicted	Volcano Plots directory not found
+met	lane	absent	absent	as predicted	NumSigDeMolecules directory not found
+met	lane	absent	absent	as predicted	Composite QC figure not found
+met	lane	absent	absent	as predicted	test could not be computed
+met	lane	absent	absent	as predicted	is summarised in Figure 2
+met	lane	absent	absent	as predicted	Figure 2: Number of significant
+lfq	lane	absent	absent	as predicted	biological samples with no technical replicates.
+lfq	lane	absent	absent	as predicted	The design is not available to this report.
+lfq	lane	present	present	as predicted	False discovery rates were estimated as q-values (Storey, 2002)
+lfq	lane	absent	absent	as predicted	The standard empirical Bayes method was used to test for any deviation from zero log-fold-change.
+lfq	lane	absent	absent	as predicted	Technical replicate averaging
+lfq	lane	absent	absent	as predicted	'none' method from the 'limma'
+lfq	lane	present	present	as predicted	Each comparison was tested for any difference from zero log2 fold change.
+tmt	lane	absent	absent	as predicted	biological samples with no technical replicates.
+tmt	lane	absent	absent	as predicted	The design is not available to this report.
+tmt	lane	present	present	as predicted	False discovery rates were estimated as q-values (Storey, 2002)
+tmt	lane	absent	absent	as predicted	The standard empirical Bayes method was used to test for any deviation from zero log-fold-change.
+tmt	lane	absent	absent	as predicted	Technical replicate averaging
+tmt	lane	absent	absent	as predicted	'none' method from the 'limma'
+tmt	lane	present	present	as predicted	Each comparison was tested for any difference from zero log2 fold change.
+dia	lane	absent	absent	as predicted	biological samples with no technical replicates.
+dia	lane	absent	absent	as predicted	The design is not available to this report.
+dia	lane	present	present	as predicted	False discovery rates were estimated as q-values (Storey, 2002)
+dia	lane	absent	absent	as predicted	The standard empirical Bayes method was used to test for any deviation from zero log-fold-change.
+dia	lane	absent	absent	as predicted	Technical replicate averaging
+dia	lane	absent	absent	as predicted	'none' method from the 'limma'
+dia	lane	present	present	as predicted	Each comparison was tested for any difference from zero log2 fold change.
+dial	lane	absent	absent	as predicted	biological samples with no technical replicates.
+dial	lane	absent	absent	as predicted	The design is not available to this report.
+dial	lane	present	present	as predicted	False discovery rates were estimated as q-values (Storey, 2002)
+dial	lane	absent	absent	as predicted	The standard empirical Bayes method was used to test for any deviation from zero log-fold-change.
+dial	lane	absent	absent	as predicted	Technical replicate averaging
+dial	lane	absent	absent	as predicted	'none' method from the 'limma'
+lip	V1	present	present	as predicted	No between-sample normalisation was applied.
+lip	V1	present	present	as predicted	after the normalisation step, at which no normalisation was applied (right)
+lip	V1	absent	absent	as predicted	'none' method from
+lip	V2	present	present	as predicted	intensities were transformed as log2(x + 1). Negative values were set to zero before the transformation, zeros were transformed with the offset, and cells with no value stayed missing.
+lip	V2	absent	absent	as predicted	were coded as NA
+lip	V3	present	present	as predicted	The analysis included 6 measured runs from 5 biological samples; 1 biological sample was measured more than once (technical replicates), giving 1 additional runs.
+lip	V4	present	present	as predicted	Volcano plots of differentially abundant lipids are shown in Figure 3, with a threshold of q-value < 0.05.
+lip	V4	present	present	as predicted	Figure 3: Volcano plots of differentially abundant lipids
+lip	V4	present	present	as predicted	Figure 2: Number of significant differentially abundant lipids
+lip	V5	absent	absent	as predicted	supplementary results table
+lip	V6	present	present	as predicted	on the intensities before internal-standard normalisation and log2 transformation (left)
+lip	V6	present	present	as predicted	Internal standard (ITSD) normalization was applied using the average_centered method
+lip	V7	present	present	as predicted	Each comparison was tested against a log2 fold-change threshold of 0.5 with limma's TREAT method (McCarthy and Smyth, 2009).
+lip	V7	present	present	as predicted	p-values were calculated with limma's TREAT test against the fold-change threshold
+lip	V7	present	present	as predicted	Differentially abundant lipids were those with a q-value below 0.05 and an absolute log2 fold change of at least 0.5.
+lip	V7	absent	absent	as predicted	p-values were calculated using the 'eBayes' function
+met	V1	present	present	as predicted	No between-sample normalisation was applied.
+met	V1	present	present	as predicted	after the normalisation step, at which no normalisation was applied (right)
+met	V1	absent	absent	as predicted	'none' method from
+met	V2	present	present	as predicted	intensities were transformed as log2(x + 1). Negative values were set to zero before the transformation, zeros were transformed with the offset, and cells with no value stayed missing.
+met	V2	absent	absent	as predicted	were coded as NA
+met	V3	present	present	as predicted	The analysis included 6 measured runs from 5 biological samples; 1 biological sample was measured more than once (technical replicates), giving 1 additional runs.
+met	V4	present	present	as predicted	Volcano plots of differentially abundant metabolites are shown in Figure 3, with a threshold of q-value < 0.05.
+met	V4	present	present	as predicted	Figure 3: Volcano plots of differentially abundant metabolites
+met	V4	present	present	as predicted	Figure 2: Number of significant differentially abundant metabolites
+met	V5	absent	absent	as predicted	supplementary results table
+met	V6	present	present	as predicted	on the intensities before internal-standard normalisation and log2 transformation (left)
+met	V6	present	present	as predicted	Internal standard (ITSD) normalization was applied using the average_centered method
+met	V7	present	present	as predicted	Each comparison was tested against a log2 fold-change threshold of 0.5 with limma's TREAT method (McCarthy and Smyth, 2009).
+met	V7	present	present	as predicted	p-values were calculated with limma's TREAT test against the fold-change threshold
+met	V7	present	present	as predicted	Differentially abundant metabolites were those with a q-value below 0.05 and an absolute log2 fold change of at least 0.5.
+met	V7	absent	absent	as predicted	p-values were calculated using the 'eBayes' function

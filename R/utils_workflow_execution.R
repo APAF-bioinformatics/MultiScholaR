@@ -812,6 +812,51 @@ readManagedPeptideResult <- function(manager, result, workflow_data) {
     value
 }
 
+#' What the user is told when a managed step's poll ends in a status other than `complete` (KIT-252, KIT-233 A3): the
+#' worker's own error when it wrote one (GUI audit A111-03), otherwise one sentence per cause, saying what happened,
+#' whether the step's result was saved and what to do. The sentences are drafts for the owner's wording pass (VAL-41,
+#' row QC-8). An unknown status gets the internal sentence; the status itself is logged by the caller.
+#' @param result The poll's receipt: `status`, `error` and `worker` (the worker unit's state; `Result` is `"timeout"`
+#'   for a worker stopped at its time limit).
+#' @param minutes The step's time limit in minutes; read only for a worker stopped at it.
+#' @return One sentence, shown after "Error applying <step>: ".
+#' @noRd
+workflowManagedFailureText <- function(result, minutes) {
+    status <- result$status
+    error <- result$error
+    if (identical(status, "worker_failed") && is.character(error) && length(error) == 1L && nzchar(error)) return(error)
+    texts <- c(
+        memory_limit = paste("the step needed more memory than the application allows for one step (at most 16 GB, less",
+            "when the computer has less free memory), so it was stopped before it finished. Its result was not saved.",
+            "Closing other programs may help; if it stops again, this data set is too large for this step on this computer."),
+        low_memory = paste("the computer's free memory fell below 2 GB, so the step was stopped to protect the computer.",
+            "Its result was not saved. Close other programs and press the button again."),
+        time_limit = paste("the step reached its time limit of %s minutes and was stopped. Its result was not saved.",
+            "Running it again on the same data will stop at the same limit."),
+        stopped = paste("the step's process stopped before it finished (for example, the computer ran out of memory or the",
+            "process was closed). Its result was not saved. Press the button again; if it stops again, the application's",
+            "log has the details."),
+        not_started = paste("the step could not be started (too little free memory, or its process could not start).",
+            "It did not run. Close other programs and press the button again."),
+        publication_pending = paste("the result was saved, but its tables and figures could not be written to the project",
+            "folder. Press the button again to write them; the step is not run again."),
+        changed = paste("the table or the project changed while the step ran, so its result was not used.",
+            "Press the button again."),
+        internal = paste("the step's result could not be received (an internal check failed). Its result was not saved.",
+            "Press the button again; if it happens again, the application's log has the details."),
+        not_closed = paste("the step's process could not be closed cleanly. Its result may have been saved; check this tab",
+            "before running the step again, and restart the application if this happens again."))
+    families <- c(memory_guard = "memory_limit", host_headroom = "low_memory", admission_refused = "not_started",
+        monitor_start_timeout = "not_started", publication_pending = "publication_pending", stale = "changed",
+        project_replaced = "changed", cleanup_failed = "not_closed", duplicate = "not_closed")
+    if (identical(status, "worker_failed")) {
+        if (identical(result$worker$Result, "timeout")) return(sprintf(texts[["time_limit"]], format(minutes)))
+        return(texts[["stopped"]])
+    }
+    known <- is.character(status) && length(status) == 1L && !is.na(status) && status %in% names(families)
+    texts[[if (known) families[[status]] else "internal"]]
+}
+
 #' Install one module's managed-step state machine (KIT-008: the reference module pattern shared by the
 #' precursor rollup and the sample filter). The step reserves the application's one heavy action, runs
 #' the registered operation on the managed worker, polls it, delivers the accepted product to the module's
@@ -897,7 +942,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             shiny::showNotification(paste("A", ui$label, "action is already running"), type = "warning")
             return(invisible(NULL))
         }
-        action <- list(owner = NULL, phase = "starting")
+        action <- list(owner = NULL, phase = "starting", operation = operation_name)
         action$reservation <- tryCatch(beginWorkflowGUIAction(application, workflow_data$state_manager,
             operation_name, if (is.function(publication)) publication() else publication), error = function(error) error)
         if (inherits(action$reservation, "error")) {
@@ -958,10 +1003,12 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         if (inherits(result, "error")) { fail(action, result); return() }
         if (result$status %in% c("admitting", "running")) return()
         if (!identical(result$status, "complete")) {
-            # GUI audit A111-03: a worker that failed with its own error gives that reason, as the same step in process.
-            reason <- if (identical(result$status, "worker_failed") && is.character(result$error) &&
-                length(result$error) == 1L && nzchar(result$error)) result$error else paste("managed action ended:", result$status)
-            fail(action, simpleError(reason), result$status)
+            # KIT-252: the internal code stays in the log; the user is told the cause in plain words, or (GUI audit A111-03)
+            # the worker's own error, as the same step in process.
+            logger::log_error(paste("managed action", action$operation, "ended:", result$status))
+            minutes <- if (identical(result$worker$Result, "timeout"))
+                workflowActionWorkerDeadline(action$operation, action$owner$application$config$policy) / 60 else NA_real_
+            fail(action, simpleError(workflowManagedFailureText(result, minutes)), result$status)
             return()
         }
         tryCatch({
@@ -2982,6 +3029,9 @@ publishWorkflowDaResult <- function(owner, paths, result) {
     manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
     publication <- workflowRequestPublication(paths$request_dir, "da-publication")
     workflowExecutionBoundary("publication")
+    # KIT-243 (S2 (a)): the earlier files under this DA's names removed before every publication, a retry included; the
+    # marker is cleared once the publication returns.
+    removeWorkflowDaOwnFigures(manager, experiment_paths, entry$omic_type)
     publishDIAActionOutputs(manager, reference, "da", experiment_paths[c("da_output_dir", "publication_graphs_dir")],
         function(staged) {
             for (role in names(staged)) copyWorkflowFolder(
@@ -2997,6 +3047,7 @@ publishWorkflowDaResult <- function(owner, paths, result) {
                 manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])), result$summary$annotations_digest)
             list(completed = TRUE)
         }, identity = diaDaPublicationIdentity(manifest, result$summary$annotations_digest))
+    clearWorkflowDaPublicationPending(experiment_paths)
     invisible(NULL)
 }
 

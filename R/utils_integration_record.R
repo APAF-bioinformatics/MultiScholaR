@@ -34,7 +34,8 @@ integrationRecordTexts <- function() {
     c(
         # Status of a setting in the record (and its legend).
         status_decided = "decided",
-        status_provisional_default = "provisional default",
+        # KIT-240 r1.4 (AUDIT-KIT-240-impl I05): the Enrichment tab's word for a default not yet confirmed.
+        status_provisional_default = "default not yet confirmed",
         status_user_set = "set by the user",
         status_input = "from the data",
         # The study parameters' and report's sections.
@@ -52,6 +53,8 @@ integrationRecordTexts <- function() {
         section_variance = "Variance explained in each data set's selected features (all factors together)",
         section_results = "Saved results",
         section_notes = "Notes from the model",
+        # KIT-239 (INT-28): the report's section after the Methods draft (its sentences: `integrationGuiTexts()`).
+        section_limitations = "Limitations",
         section_legend = "What the status of a setting means",
         none_recorded = "None recorded.",
         # Table headers.
@@ -74,7 +77,8 @@ integrationRecordTexts <- function() {
         col_note = "Note",
         col_status_meaning = "Meaning",
         legend_decided = "a decision recorded in the methods ledger; not expected to change",
-        legend_provisional_default = "the current default; the integration methods may still change it",
+        # KIT-240 (VAL-221 (4)): printed in every report; only a default that still waits carries this status.
+        legend_provisional_default = "a default not yet confirmed",
         legend_user_set = "changed by the user from the default",
         legend_input = "taken from the imported data",
         applies_model = "model",
@@ -179,6 +183,20 @@ integrationRecordTexts <- function() {
             "most similar pair first); the lowest agreement per factor was %s."),
         # %d: the seed.
         methods_seeds_single = "The model was trained once, from seed %d; the factors' agreement across seeds was not measured.",
+        # KIT-240 (VAL-221 (1)). %d: the rank, the models; %s: the distance below the highest final ELBO, the range of the
+        # final ELBOs (both in ELBO units).
+        # r1.4 (AUDIT-KIT-240-impl I09, I10): the ELBO defined, its units named; the limitation a sentence of its own.
+        methods_seeds_elbo = paste("By its final evidence lower bound (ELBO, MOFA2's training objective; higher is better),",
+            "the reported model ranked %d of the %d models, %s below the highest (range over the models %s, in the",
+            "objective's units)."),
+        # r1.5 (owner's decision VAL-252): the rank's basis, from KIT-062's diagnosis and KIT-151c's per-seed rows.
+        methods_seeds_elbo_slack = paste("Small differences in the final ELBO can come from where training stopped rather",
+            "than from a better solution: one model trained twice in single precision (not the shipped setting) on two",
+            "processor models, its matched factors correlated 0.999998, ended 0.676 apart when one run stopped five rounds",
+            "later, and in a simulation with 20 samples and slow training five seeds' final values spanned 0.015, with the",
+            "declared seed ranked 5 of 5."),
+        methods_seeds_limit = paste("The stability figures describe only the reported model's factors: a factor that other",
+            "seeds find but the reported model lacks is not listed."),
         # KIT-151 (INT-17). %s: the variables set.
         methods_pin_applied = paste("Training ran with the maths library on one thread and one fixed code path (%s), under",
             "which models were bit-identical across the processor models tested (three AMD models; an Intel processor not",
@@ -367,6 +385,34 @@ integrationRecordTexts <- function() {
             "(camera, correlation estimated, allow.neg.cor = FALSE)"),
         enrich_ranking_value_permutation = paste("correlation of each feature with the factor over %d biological samples",
             "(features measured in all of them: %d); permutation test of the factor's values (PCGSE)"),
+        # KIT-184 (VAL-53 (1), VAL-62; proposed wording, VAL-41): a test with the removed RUV factors in its design.
+        # %d: the removed factors, biological samples, residual degrees of freedom, features used.
+        enrich_ranking_value_camera_ruv = paste("regression of each feature on the factor and %d removed unwanted factor(s)",
+            "over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "correlation-adjusted test (camera, correlation estimated)"),
+        enrich_ranking_value_camera_pr_ruv = paste("regression of each feature on the factor and %d removed unwanted",
+            "factor(s) over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "pre-ranked test with an assumed correlation of 0.01 (cameraPR)"),
+        enrich_ranking_value_camera_floor_ruv = paste("regression of each feature on the factor and %d removed unwanted",
+            "factor(s) over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "correlation-adjusted test, negative correlations counted as zero (camera, correlation estimated,",
+            "allow.neg.cor = FALSE)"),
+        # The words that stand for "an intercept and no other covariate" in a test's settings fragment. %d: the removed
+        # factors, the features they were computed on; %s: the SHA-256 of their file; %d: the residual degrees of freedom.
+        methods_test_covariates_ruv = paste("an intercept and the %d unwanted factors that the RUV correction removed from",
+            "this data set (a basis of the difference between the normalised and the corrected values over the %d features",
+            "measured in every run, averaged per biological sample; SHA-256 %s; %d residual degrees of freedom)"),
+        methods_test_covariates_ruv_off = paste("an intercept and no other covariate (without the adjustment for the",
+            "removed RUV factors, which is optional: variation the correction removed stays in the values tested)"),
+        # An approximate set of factors (VAL-58 (6); implementation audit K184-I03), after the fragment above. %s: the
+        # share of what the correction removed that lies within the factors, as the tab prints it.
+        methods_test_covariates_ruv_approximate = paste0("; approximate: %s of what the correction removed lies within",
+            " these factors (runs were removed after the correction), so they do not match the corrected values exactly"),
+        methods_test_covariates_model_uncorrected = paste0("; the model was trained on the values before RUV, and the",
+            " adjustment was switched on for this result"),
+        # The inputs sheet's correction cell, for a model trained on RUV-corrected values, per data set in the model.
+        # %d: the factors written; %s: the data set, their status, the SHA-256 of their file.
+        input_removed_factors = "; %d unwanted factors recorded as removed from %s (%s; SHA-256 %s)",
         methods_test_name_camera_floor = paste("a competitive gene-set test that allows for the correlation between a",
             "term's features, negative estimates counted as zero (limma camera with allow.neg.cor = FALSE; Wu and Smyth",
             "2012), applied to the regression of each feature's values on the oriented factor"),
@@ -424,12 +470,50 @@ integrationRecordTexts <- function() {
         methods_enrich_limits_clause = paste("the %s, on %s, called terms with no link to the factor in %s of cases",
             "against values unrelated to the data, terms made only of the most variable features, those the model",
             "selects, in %s, and, on factors weaker than the main effect, %s in up to %s"),
+        # KIT-184: the closing in three parts: the values the tests read; for a record whose model was trained on
+        # RUV-corrected values, the clause on the removed RUV factors; the adjustment of p-values.
         methods_enrich_limits_end = paste("The correlation-adjusted and permutation tests use only features measured in",
             "every biological sample, which favours abundant features and leaves out features that fall below detection",
             "in some samples, often those that change most. The tests used read each data set's normalised values before",
-            "RUV correction, the values the model is trained on by default; for a model trained on RUV-corrected values,",
-            "variation the correction removed stays in the values tested. P-values were adjusted within each factor, data",
-            "set and database (and Gene Ontology aspect), not across them."),
+            "RUV correction, the values the model is trained on by default."),
+        # A DRAFT for the owner's wording pass (VAL-41; verbatim in kit-184/wording.md). Printed when the model was trained on
+        # RUV-corrected values or any KEGG or Reactome entry has the adjustment (implementation audit K184-I02). The
+        # adjustment is optional and off unless chosen (VAL-160). The numbers are the counted simulation's (run
+        # 45353248796; kit-184/results.md). The claim is for the kinds of sets the check decided on, with the other null
+        # sets of the same simulation printed beside it (VAL-178 (1); K184-I01); the limit with its condition, per data
+        # set (genes, proteins in their two compositions, metabolites), with and without the adjustment and with the
+        # planted factors (the results audit's K184-R12); identity only where no run was removed after the correction
+        # (K184-I03); the correction that was simulated (K184-I06 (b)).
+        methods_enrich_limits_ruv = paste("The correlation-adjusted tests can add to their model the unwanted factors the",
+            "RUV correction removed from each data set (the adjustment for removed RUV factors, a setting that is off",
+            "unless chosen); for a model trained on RUV-corrected values and features measured in every run where no run",
+            "was removed after the correction, this is identical to fitting that model (the factor and the removed",
+            "factors) to the corrected values; those factors were estimated from the same data and are treated as known.",
+            "Each result names the form used: a result without the adjustment tests the values before RUV as they are (its",
+            "degrees of freedom are counted correctly; variation the correction removed stays in the values tested), and a",
+            "result with it on a model trained on the values before RUV counts a feature for what it shares with the",
+            "factor beyond the removed factors. The pre-ranked and permutation tests do not use them: variation the",
+            "correction removed stays in the values they rank. In a check on simulated data with 12 biological samples and",
+            "2 removed factors (RUV-III with the groups as replicate sets and every feature a control; the legacy routes'",
+            "choice of controls and of the number of factors was not simulated), with the removed factors in the model,",
+            "sets with no link to what was tested, of the kinds the check decided on (random sets, correlated blocks of",
+            "features, sets of low-abundance features and sets of features sharing unwanted variation, against a covariate",
+            "drawn independently of the data; the first three also against the model's main factor), were called at the",
+            "5 % level in at most 5.4 % (95 % interval of that largest figure 4.5 to 6.4 %) of cases; against such a",
+            "covariate, sets made only of the most variable features, those the model selects, were called in up to 9.4 %",
+            "(6.8 % without the adjustment, 9.8 % had the true unwanted factors been known), a property of the",
+            "correlation-adjusted test on such sets, and sets in which half the features truly followed the main factor in",
+            "up to 8.6 % (up to 7.0 % without the adjustment, up to 8.5 % had the true unwanted factors been known); true",
+            "terms were found more often than without the adjustment. Sets of features that share unwanted variation and",
+            "have no link to the simulated biology were called on the model's main factor in at most 4.1 % of cases with",
+            "the adjustment when that variation was unrelated to the groups, and, when it followed the groups (correlation",
+            "0.6), in 8.1 to 29.6 % with the adjustment (genes 29.6 %, 95 % interval 27.8 to 31.3 %; proteins 11.2 % (sets",
+            "of 10 and 30 features) and 13.3 % (sets of 100 included); metabolites 8.1 %; more often for larger sets), 2.0",
+            "to 11.2 % without it (genes 2.0 %; proteins 7.3 % (sets of 10 and 30 features) and 11.2 % (sets of 100",
+            "included), 95 % interval of the larger figure 9.8 to 12.6 %; metabolites 10.1 %), and 1.6 to 2.8 % had the",
+            "true unwanted factors been known."),
+        methods_enrich_limits_family = paste("P-values were adjusted within each factor, data set and database (and Gene",
+            "Ontology aspect), not across them."),
         # VAL-115 (3): the permutation's floor in its Methods sentence (%s: the exact fraction (1 + d)/(1 + B); %d: the
         # pathways tested, the smallest number BH can call together); the _none form when the floor is above 0.05.
         methods_enrich_permutation_floor = paste("The smallest attainable p-value was %s ((1 + d)/(1 + B), d the",
@@ -679,7 +763,11 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             scale = integrationGuiScalar(manifest$scale), source_state = integrationGuiScalar(manifest$source_state$name),
             biological_sample_column = entry$biological_sample_column, correction = manifest$correction,
             correction_text = integrationCorrectionText(manifest, gui),
-            group_corrected = any(corrected[intersect(as.character(entry$views), views)]))
+            group_corrected = any(corrected[intersect(as.character(entry$views), views)]),
+            # KIT-184: the removed unwanted factors of each of the omic's data sets in the model (their number, status,
+            # share, features and the SHA-256 of their file; never the factors themselves).
+            removed_factors = lapply(entry$removed_factors[intersect(names(entry$removed_factors), views)],
+                function(removed) removed[c("k", "status", "share", "features", "sha256")]))
     })
     match <- parameters$sample_match_table
     iterations <- as.integer(value$elbo$iterations)
@@ -721,6 +809,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             stopped_by = stopped_by, converged = identical(stopped_by, "convergence_rule"),
             # KIT-151 (INT-14): the models trained, one per seed, and each factor's agreement across them.
             seeds = value$seeds$seeds, seed_models = value$seeds$models, stability = value$seeds$stability,
+            # KIT-240 (VAL-221 (1)): the reported model's rank among the seeds by final ELBO (NULL when not known).
+            elbo_rank = value$seeds$elbo_rank,
             factors_requested = as.integer(parameters$num_factors), factors_kept = ncol(value$factors) - 1L,
             elbo_last = value$elbo$last, variance_total = value$variance_total, versions = value$versions,
             # MOFA2's data, model and training options as trained (every one, the defaults included), encoded exactly.
@@ -751,10 +841,18 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     word <- function(value) if (isTRUE(as.logical(s(value)))) texts[["yes"]] else texts[["no"]]
     text <- function(value) { value <- s(value); if (is.na(value)) texts[["not_recorded"]] else as.character(value) }
     framed <- function(names, rows) stats::setNames(as.data.frame(rows, stringsAsFactors = FALSE), names)
+    # KIT-184: for a model trained on RUV-corrected values the correction cell names each data set's removed factors.
+    removed_text <- function(input) {
+        if (!identical(integrationRecordValuesKey(input), "values_corrected")) return("")
+        removed <- input$removed_factors %||% list()
+        paste(vapply(names(removed), function(view) sprintf(texts[["input_removed_factors"]], as.integer(s(removed[[view]]$k)),
+            view, as.character(s(removed[[view]]$status)), as.character(s(removed[[view]]$sha256))), character(1)),
+            collapse = "")
+    }
     inputs <- lapply(block$inputs, function(input) data.frame(omic = s(input$omic),
         views = paste(unlist(input$views_in_model), collapse = ", "),
         values = texts[[integrationRecordValuesKey(input)]],
-        correction = text(input$correction_text), group_corrected = word(input$group_corrected),
+        correction = paste0(text(input$correction_text), removed_text(input)), group_corrected = word(input$group_corrected),
         checksum = text(input$manifest_sha256), stringsAsFactors = FALSE))
     inputs <- do.call(rbind, inputs)
     names(inputs) <- unname(texts[c("col_omic", "col_datasets_in_model", "col_values", "col_correction",
@@ -954,9 +1052,16 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     stability <- integrationRecordFrame(model$stability)
     if (length(seeds) > 1L && nrow(stability)) {
         sentences <- c(sentences, sprintf(texts[["methods_seeds"]], length(seeds), seeds[[1L]], seeds[[length(seeds)]],
-            seeds[[1L]], paste(sprintf("%s %.3f", stability$factor, as.numeric(stability$agreement_lowest)), collapse = ", ")))
+            seeds[[1L]], paste(sprintf("%s %.3f", stability$factor, as.numeric(stability$agreement_lowest)), collapse = ", ")),
+            texts[["methods_seeds_limit"]])
     } else if (length(seeds) == 1L) {
         sentences <- c(sentences, sprintf(texts[["methods_seeds_single"]], seeds[[1L]]))
+    }
+    # KIT-240 (VAL-221 (1)): the reported model's rank by final ELBO (nothing said for a model without the rank).
+    rank <- model$elbo_rank
+    if (length(seeds) > 1L && length(rank) && !is.na(s(rank$rank))) {
+        sentences <- c(sentences, sprintf(texts[["methods_seeds_elbo"]], as.integer(s(rank$rank)), as.integer(s(rank$of)),
+            integrationElboText(s(rank$below_best)), integrationElboText(s(rank$range))), texts[["methods_seeds_elbo_slack"]])
     }
     results <- block$results
     if (!is.null(results)) {
@@ -992,6 +1097,27 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     changed <- by_status("user_set")
     if (length(changed)) sentences <- c(sentences, sprintf(texts[["methods_user_set"]], paste(changed, collapse = "; ")))
     paste(sentences[nzchar(sentences)], collapse = " ")
+}
+
+#' The facts of the report's Limitations section (KIT-239, INT-28), from the record only: the matched samples and the
+#' runs averaged (`integrationLimitationFacts`), and the databases with the releases the analysis's enrichment used, read
+#' from the record's enrichment table (`integrationRecordEnrichmentTables`; its columns by their headers, its rows of
+#' the external databases STRING, KEGG and Reactome; none gives `character()`, and enrichment entries of which none is
+#' readable give NULL, the services not known).
+#' @param record An analysis record of an integration store (built or read from JSON).
+#' @return `integrationLimitationFacts()`'s value; NULL without a complete integration block.
+#' @noRd
+integrationRecordLimitationFacts <- function(record, texts = integrationRecordTexts()) {
+    block <- integrationRecordAnalysisOf(record)$integration
+    if (is.null(block) || !isTRUE(integrationRecordScalar(block$complete))) return(NULL)
+    m <- block$matching
+    summary <- integrationRecordEnrichmentTables(block, texts)$summary
+    external <- summary[[texts[["col_enrich_database"]]]] %in% c("STRING", "KEGG", "Reactome")
+    services <- unique(as.character(summary[[texts[["col_enrich_release"]]]][external]))
+    # AUDIT-KIT-239-impl I06: entries recorded but none readable: the services are not known (not "none was run").
+    if (!length(services) && length(block$enrichment)) services <- NULL
+    integrationLimitationFacts(m$samples, m$shared_samples, as.character(integrationRecordFrame(m$view_summary)$view),
+        m$missing_samples, services)
 }
 
 #' The methods paragraph's sentences on the further figures (KIT-152; audits SCI-15 to SCI-17), from the record: how the

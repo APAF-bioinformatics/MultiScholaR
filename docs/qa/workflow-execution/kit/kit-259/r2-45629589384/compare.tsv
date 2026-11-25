@@ -1,0 +1,44 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-prot-norm-worker-figures.R	71	0	0	0	ok	71	0	0	0	ok	same		
+test-kit259-pearson-histogram-figure-failure.R	39	32	0	0	failed	85	0	0	0	ok	fixed	fixed: KIT-259 A-E1: the rebuilt proteomics histogram draws all 20 pairs of a bin holding more than 4; fixed: KIT-259 A-E2: the native plotPearson histogram draws all 20 pairs of a bin holding more than 4; fixed: KIT-259 A-E3: plotPearson with no within-group pair (an unset batch) returns a labelled empty figure; fixed: KIT-259 A-E4: the figure drawn from a saved reference with no within-group pair is labelled and its product saved; fixed: KIT-259 A-E5: every within-group correlation NA gives a labelled empty figure, native and rebuilt; fixed: KIT-259 A3-E1/E2 (lipid): a negative within-group correlation is drawn; fixed: KIT-259 A3-E4 (lipid): a pair with no correlation is counted in a subtitle; fixed: KIT-259 A3-E1/E2 (metab): a negative within-group correlation is drawn; fixed: KIT-259 A3-E4 (metab): a pair with no correlation is counted in a subtitle; fixed: KIT-259 B-E1: the post-normalisation generator replaces a figure it cannot draw by a placeholder; fixed: KIT-259 B-E2, B-E6: in process, a figure that cannot be drawn completes the step with one warning; Apply then runs; fixed: KIT-259 B-E3: managed, a stage figure failing on the worker completes the chain with one warning; fixed: KIT-259 B-E4: a failing run replaces the earlier run's figure by its placeholder; fixed: KIT-259 B-E5: 16 groups with the default 'Shape by' give a PCA placeholder naming the shape limit; the step completes; counts: KIT-259 A-E1: the rebuilt proteomics histogram draws all 20 pairs of a bin holding more than 4 (passed 1 -> 3, skipped 0 -> 0); counts: KIT-259 A-E2: the native plotPearson histogram draws all 20 pairs of a bin holding more than 4 (passed 0 -> 2, skipped 0 -> 0); counts: KIT-259 A-E3: plotPearson with no within-group pair (an unset batch) returns a labelled empty figure (passed 0 -> 3, skipped 0 -> 0); counts: KIT-259 A-E4: the figure drawn from a saved reference with no within-group pair is labelled and its product saved (passed 0 -> 3, skipped 0 -> 0); counts: KIT-259 A-E5: every within-group correlation NA gives a labelled empty figure, native and rebuilt (passed 0 -> 6, skipped 0 -> 0); counts: KIT-259 A3-E1/E2 (lipid): a negative within-group correlation is drawn (passed 2 -> 4, skipped 0 -> 0); counts: KIT-259 A3-E1/E2 (metab): a negative within-group correlation is drawn (passed 2 -> 4, skipped 0 -> 0); counts: KIT-259 A3-E4 (lipid): a pair with no correlation is counted in a subtitle (passed 2 -> 3, skipped 0 -> 0); counts: KIT-259 A3-E4 (metab): a pair with no correlation is counted in a subtitle (passed 2 -> 3, skipped 0 -> 0); counts: KIT-259 B-E1: the post-normalisation generator replaces a figure it cannot draw by a placeholder (passed 0 -> 8, skipped 0 -> 0); counts: KIT-259 B-E2, B-E6: in process, a figure that cannot be drawn completes the step with one warning; Apply then runs (passed 1 -> 7, skipped 0 -> 0); counts: KIT-259 B-E3: managed, a stage figure failing on the worker completes the chain with one warning (passed 1 -> 5, skipped 0 -> 0); counts: KIT-259 B-E4: a failing run replaces the earlier run's figure by its placeholder (passed 2 -> 3, skipped 0 -> 0); counts: KIT-259 B-E5: 16 groups with the default 'Shape by' give a PCA placeholder naming the shape limit; the step completes (passed 1 -> 6, skipped 0 -> 0)	
+test-lipid-05-s4-correlation-helpers.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-metab-01k-s4-plot-pearson-characterization.R	16	1	0	0	failed	17	0	0	0	ok	fixed	fixed: metabolomics S4 plotPearson source retains histogram guards and correlation delegation; counts: metabolomics S4 plotPearson source retains histogram guards and correlation delegation (passed 4 -> 5, skipped 0 -> 0)	
+test-metab-norm-standalone-shared.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-omics-cyclic-loess-minimum.R	72	0	0	0	ok	72	0	0	0	ok	same		
+test-kit212-da-current.R	309	0	0	0	ok	309	0	0	0	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	116	0	0	0	ok	same		
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-kit225-prot-norm-reset-source.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-workflow-omics-figures.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-omics-norm-core.R	62	0	0	14	ok	62	0	0	14	ok	same		
+test-workflow-figure-paths.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-omics-binding-steps.R	58	1	0	0	failed	58	1	0	0	failed	same		
+test-trx-norm-core.R	58	0	0	0	ok	58	0	0	0	ok	same		
+test-workflow-saved-qc.R	120	0	0	0	ok	120	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-omics-norm-itsd-selection.R	22	0	0	0	ok	22	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-metab-03d-norm-module-characterization.R	13	0	0	3	ok	13	0	0	3	ok	same		
+test-workflow-saved-exports.R	271	0	1	4	failed	261	10	1	4	failed	new-failure	new-failure: ten small normalization revert style export cycles release action resources; counts: ten small normalization revert style export cycles release action resources (passed 110 -> 100, skipped 0 -> 0)	
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-workflow-gui-diagnostic.R	65	0	3	3	failed	65	0	3	3	failed	same		
+test-workflow-operation-registry.R	1095	2	0	0	failed	1095	2	0	0	failed	same		
+test-kit174-ruv-grouping.R	77	0	0	0	ok	77	0	0	0	ok	same		
+test-prot-04-design.R	488	0	0	118	ok	488	0	0	118	ok	same		
+test-prot-s4-qc-direct-shared.R	72	0	0	0	ok	72	0	0	0	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-lipid-12a-norm-module-characterization.R	5	0	0	5	ok	5	0	0	5	ok	same		
+test-prot-05b-norm-module-contracts.R	440	0	0	22	ok	440	0	0	22	ok	same		
+test-prot-04d-peptide-s4-normalization-characterization.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-metab-s4-qc-shared.R	32	0	0	0	ok	32	0	0	0	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-metab-03b-norm-module-helper-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-12-norm-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		

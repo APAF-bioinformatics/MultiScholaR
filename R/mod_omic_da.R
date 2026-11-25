@@ -131,7 +131,36 @@ runOmicDaServer <- function(input, output, session, workflowData, experimentPath
         shiny::observeEvent(input$save_heatmap, saveOmicDaHeatmap(input, tab, experimentPaths, da))
     }
     registerOmicDaTableOutputs(output, input, tab, da, binding)
+    # KIT-212 (VAL-172 (4); E-8): the tab follows the head, as proteomics' does.
+    shiny::observeEvent(workflowData$state_update_trigger, omicDaFollowHead(workflowData, tab, da))
     invisible(tab)
+}
+
+#' KIT-212 (VAL-172 (4); E-8): on a head change, the shown results are cleared (with the heatmap Save Heatmap would save,
+#' and the status set pending, as the managed run's `invalidate`) when the DA was run on another table or the store holds
+#' no DA (a session adopted into a new owner); and a state the session load named is forgotten once the head is another
+#' state, so that the next run takes the head (KIT-194's head rule, as the managed DA requires). Only on a
+#' reference-state session owner.
+#' @noRd
+omicDaFollowHead <- function(workflowData, tab, da) {
+    manager <- workflowData$state_manager
+    if (!usesWorkflowReferenceStates(manager)) return(invisible(NULL))
+    if (!is.null(tab$da_results_list) && (is.null(manager$.context$snapshot$da_results) ||
+        identical(workflowDaResultStatus(manager), "stale"))) {
+        tab$da_results_list <- NULL
+        tab$analysis_complete <- FALSE
+        tab$current_heatmap_plot <- NULL
+        tab$current_row_clusters <- tab$current_col_clusters <- NULL
+        status <- workflowData$tab_status
+        status[[da$status_key]] <- "pending"
+        workflowData$tab_status <- status
+    }
+    loaded <- tab$current_state_name
+    if (!is.null(loaded) && !identical(getWorkflowStateReference(manager, loaded)$entity_id,
+        getWorkflowStateReference(manager)$entity_id)) {
+        tab$current_state_name <- NULL
+    }
+    invisible(NULL)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -234,7 +263,10 @@ registerOmicDaTableOutputs <- function(output, input, tab, da, binding) {
         results <- tab$da_results_list
         shiny::req(results)
         cat(omicDaSummaryText(results[[binding$long_table]], input$table_contrast, input$table_assay, input$da_q_val_thresh,
-            da$summary, da$table_filter))
+            da$summary, da$table_filter, runQValThresh = results$da_q_val_thresh,
+            # KIT-220 E-7 (I04): transcriptomics' interactive page is coloured at the box too (trxVolcanoWidget's p.value).
+            boxConsumers = if (identical(binding$omic_type, "transcriptomics")) "the table filter and both volcano plots" else
+                "the table filter and the static volcano plot"))
     })
     output$da_results_table <- DT::renderDT({
         results <- tab$da_results_list
@@ -388,7 +420,7 @@ executeOmicDaRun <- function(tab, workflowData, session, experimentPaths, settin
         runner <- workflowOmicsManagedActions(binding$omic_type)
         if (!is.null(runner)) {
             if (is.function(da$model$formula)) settings$formula_string <- da$model$formula(manager, source)
-            da$run$managed(binding, runner, manager, source, settings, contrasts,
+            da$run$managed(binding, runner, manager, source, settings, contrasts, experiment_paths = experimentPaths,
                 deliver = function(results, export) {
                     completeOmicDaRun(results, tab, workflowData, session, experimentPaths, da, binding,
                         export = if (is.function(da$run$export_report)) da$run$export_report(export) else export)
@@ -466,6 +498,8 @@ completeOmicDaRun <- function(results, tab, workflowData, session, experimentPat
     }
     logger::log_info("   Writing DA results to disk...")
     export <- if (!is.null(export)) reportWorkflowOmicsDaExport(export) else exportOmicDaInProcess(workflowData, experimentPaths, da, binding)
+    # KIT-243 (part D): the publication completed on either path, so its marker is cleared.
+    if (identical(export$status, "completed")) clearWorkflowDaPublicationPending(experimentPaths)
     invisible(c(choices, list(export = export)))
 }
 
@@ -477,8 +511,12 @@ exportOmicDaInProcess <- function(workflowData, experimentPaths, da, binding) {
         logger::log_warn("   Output directories not configured, skipping file output")
         return(list(status = "skipped", success = FALSE))
     }
-    display <- tryCatch(runWorkflowOmicsPublicationInProcess(binding, workflowData$state_manager, paste0(binding$prefix, "_da_publication"),
-        list(), experimentPaths), error = function(e) list(success = FALSE, message = conditionMessage(e)))
+    # KIT-243 (S3): the earlier files under this DA's names removed first; a failure is the export's warning.
+    display <- tryCatch({
+        removeWorkflowDaOwnFigures(workflowData$state_manager, experimentPaths, binding$omic_type)
+        runWorkflowOmicsPublicationInProcess(binding, workflowData$state_manager, paste0(binding$prefix, "_da_publication"),
+            list(), experimentPaths)
+    }, error = function(e) list(success = FALSE, message = conditionMessage(e)))
     if (is.function(da$run$export_report)) display <- da$run$export_report(display)
     reportWorkflowOmicsDaExport(display, shiny::showNotification)
 }
@@ -532,12 +570,19 @@ saveOmicDaHeatmap <- function(input, tab, experimentPaths, da) {
         color_scheme = input$heatmap_color_scheme, tree_cut_method = input$heatmap_tree_cut_method,
         n_clusters = input$heatmap_n_clusters, cut_height = input$heatmap_cut_height,
         min_cluster_size = input$heatmap_min_cluster_size)
-    prefix <- gsub("[^A-Za-z0-9_]", "_", paste0(da$views$heatmap$save_prefix, input$heatmap_contrast))
+    prefix <- omicDaHeatmapSavePrefix(da$views$heatmap$save_prefix, input$heatmap_contrast)
     save_heatmap_products(heatmap_obj = plot, row_clusters = clusters, params_list = params,
         output_dir = experimentPaths$publication_graphs_dir, file_prefix = prefix)
     shiny::showNotification("Heatmap and cluster info saved to publication_graphs/Heatmap", type = "message", duration = 5)
     invisible(list(params = params, prefix = prefix))
 }
+
+#' The file prefix of a heatmap saved with Save Heatmap (KIT-212: made callable so the Summary can tell a saved heatmap's
+#' contrast; the name is unchanged): the group's prefix and the contrast, every other character an underscore.
+#' @param save_prefix The group's `views$heatmap$save_prefix` (`prot_`, `lipid_`, `metab_`).
+#' @param contrast The heatmap's contrast.
+#' @noRd
+omicDaHeatmapSavePrefix <- function(save_prefix, contrast) gsub("[^A-Za-z0-9_]", "_", paste0(save_prefix, contrast))
 
 # ------------------------------------------------------------------------------------------------
 # The plugin registry: an omic whose group names `plugins` (proteomics, KIT-106 W5, D5).
@@ -598,7 +643,7 @@ registerOmicDaPluginVolcanoOutputs <- function(output, input, tab, experimentPat
     output$volcano_glimma <- shiny::renderUI({
         shiny::req(isTRUE(input$volcano_interactive))
         diaDaVolcanoGlimmaView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, tab$current_s4_object,
-            experimentPaths$da_output_dir)
+            experimentPaths$da_output_dir, input$treat_lfc_cutoff)
     })
     output[[da$views$static_volcano$output]] <- shiny::renderPlot(alt = function() tab$volcano_plot_identity %||% NA_character_,
         diaDaStaticVolcanoView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, input$treat_lfc_cutoff,

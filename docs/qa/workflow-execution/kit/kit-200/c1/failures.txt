@@ -1,0 +1,430 @@
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `rownames(got)` to have the same values as `as.character(1:61)`.
+  Actual: "13", "15", "16", "11", "12", "14", "18", "36", "38", ...
+  Expected: "1", "2", "3", "4", "5", "6", "7", "8", "9", ...
+  Needs: "310"
+  Absent: "61"
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `all(is.na(unlist(got["3", kit200Columns])))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  groupB-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `as.list(got[as.character(c(1:2, 4:61)), kit200Columns])` to be identical to `as.list(ref[as.character(1:60), kit200Columns])`.
+  Differences:
+    `actual$logFC[1:5]`: 0.1323 0.1010         0.1199 0.2155 -0.2772
+  `expected$logFC[1:6]`: 0.1323 0.1010 -0.1677 0.1199 0.2155 -0.2772
+  
+    `actual$logFC[57:60]`: 0.3222 -0.1378 -0.2594 NA
+  `expected$logFC[58:60]`: 0.3222 -0.1378 -0.2594   
+  
+    `actual$AveExpr[1:5]`: 17.82 18.23       19.02 21.18 18.65
+  `expected$AveExpr[1:6]`: 17.82 18.23 18.27 19.02 21.18 18.65
+  
+    `actual$AveExpr[57:60]`: 22.03 18.37 20.41 NA
+  `expected$AveExpr[58:60]`: 22.03 18.37 20.41   
+  
+    `actual$t[1:5]`: 0.546 0.487        0.614 1.113 -1.419
+  `expected$t[1:6]`: 0.546 0.487 -0.685 0.614 1.113 -1.419
+  
+    `actual$t[57:60]`: 1.542 -0.710 -1.224 NA
+  `expected$t[58:60]`: 1.542 -0.710 -1.224   
+  
+      actual$raw_pvalue | expected$raw_pvalue    
+  [1] 0.589076          | 0.589076            [1]
+  [2] 0.629548          | 0.629548            [2]
+                        - 0.498838            [3]
+  [3] 0.543715          | 0.543715            [4]
+  [4] 0.273740          | 0.273740            [5]
+  [5] 0.165505          | 0.165505            [6]
+  
+    `actual$raw_pvalue[57:60]`: 0.132798 0.482720 0.229822 NA
+  `expected$raw_pvalue[58:60]`: 0.132798 0.482720 0.229822   
+  
+      actual$fdr_value_bh_adjustment | expected$fdr_value_bh_adjustment    
+  [1] 0.75546                        | 0.75546                          [1]
+  [2] 0.75546                        | 0.75546                          [2]
+  [3] 0.75546                        | 0.75546                          [3]
+                                     - 0.75546                          [4]
+  [4] 0.64490                        | 0.64490                          [5]
+  [5] 0.60469                        | 0.60469                          [6]
+  [6] 0.75546                        | 0.75546                          [7]
+  
+    `actual$fdr_value_bh_adjustment[57:60]`: 0.58508 0.75546 0.62164 NA
+  `expected$fdr_value_bh_adjustment[58:60]`: 0.58508 0.75546 0.62164   
+  
+  groupB-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `rownames(got)` to have the same values as `as.character(1:61)`.
+  Actual: "13", "19", "26", "44", "37", "33", "31", "43", "20", ...
+  Expected: "1", "2", "3", "4", "5", "6", "7", "8", "9", ...
+  Needs: "310"
+  Absent: "61"
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `all(is.na(unlist(got["3", kit200Columns])))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  groupC-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `as.list(got[as.character(c(1:2, 4:61)), kit200Columns])` to be identical to `as.list(ref[as.character(1:60), kit200Columns])`.
+  Differences:
+    `actual$logFC[1:5]`: 0.0847 0.2359         0.1149 0.1132 -0.2132
+  `expected$logFC[1:6]`: 0.0847 0.2359 -0.0206 0.1149 0.1132 -0.2132
+  
+    `actual$logFC[57:60]`: 0.0392 -0.0046 -0.2007 NA
+  `expected$logFC[58:60]`: 0.0392 -0.0046 -0.2007   
+  
+    `actual$AveExpr[1:5]`: 17.82 18.23       19.02 21.18 18.65
+  `expected$AveExpr[1:6]`: 17.82 18.23 18.27 19.02 21.18 18.65
+  
+    `actual$AveExpr[57:60]`: 22.03 18.37 20.41 NA
+  `expected$AveExpr[58:60]`: 22.03 18.37 20.41   
+  
+    `actual$t[1:5]`: 0.349 1.137        0.545 0.585 -1.091
+  `expected$t[1:6]`: 0.349 1.137 -0.084 0.545 0.585 -1.091
+  
+    `actual$t[57:60]`: 0.187 -0.024 -0.947 NA
+  `expected$t[58:60]`: 0.187 -0.024 -0.947   
+  
+    `actual$raw_pvalue[1:5]`: 0.7292 0.2640        0.5899 0.5627 0.2832
+  `expected$raw_pvalue[1:6]`: 0.7292 0.2640 0.9336 0.5899 0.5627 0.2832
+  
+    `actual$raw_pvalue[57:60]`: 0.8525 0.9811 0.3507 NA
+  `expected$raw_pvalue[58:60]`: 0.8525 0.9811 0.3507   
+  
+    `actual$fdr_qvalue[1:5]`: 0.9548 0.8844        0.9548 0.9548 0.8870
+  `expected$fdr_qvalue[1:6]`: 0.9548 0.8844 0.9807 0.9548 0.9548 0.8870
+  
+    `actual$fdr_qvalue[57:60]`: 0.9572 0.9807 0.9548 NA
+  `expected$fdr_qvalue[58:60]`: 0.9572 0.9807 0.9548   
+  
+      actual$fdr_value_bh_adjustment | expected$fdr_value_bh_adjustment    
+  [1] 0.9627                         | 0.9627                           [1]
+  [2] 0.8917                         | 0.8917                           [2]
+                                     - 0.9888                           [3]
+  [3] 0.9627                         | 0.9627                           [4]
+  [4] 0.9627                         | 0.9627                           [5]
+  [5] 0.8943                         | 0.8943                           [6]
+  
+    `actual$fdr_value_bh_adjustment[57:60]`: 0.9651 0.9888 0.9627 NA
+  `expected$fdr_value_bh_adjustment[58:60]`: 0.9651 0.9888 0.9627   
+  
+  groupC-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `rownames(got)` to have the same values as `as.character(1:61)`.
+  Actual: "15", "14", "12", "13", "16", "11", "33", "10", "36", ...
+  Expected: "1", "2", "3", "4", "5", "6", "7", "8", "9", ...
+  Needs: "310"
+  Absent: "61"
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `all(is.na(unlist(got["3", kit200Columns])))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  groupC-groupB
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `as.list(got[as.character(c(1:2, 4:61)), kit200Columns])` to be identical to `as.list(ref[as.character(1:60), kit200Columns])`.
+  Differences:
+    `actual$logFC[1:5]`: -0.04763 0.13484         -0.00501 -0.10230 0.06399
+  `expected$logFC[1:6]`: -0.04763 0.13484 0.14712 -0.00501 -0.10230 0.06399
+  
+    `actual$logFC[57:60]`: -0.28305 0.13320 0.05872 NA
+  `expected$logFC[58:60]`: -0.28305 0.13320 0.05872   
+  
+    `actual$AveExpr[1:5]`: 17.82 18.23       19.02 21.18 18.65
+  `expected$AveExpr[1:6]`: 17.82 18.23 18.27 19.02 21.18 18.65
+  
+    `actual$AveExpr[57:60]`: 22.03 18.37 20.41 NA
+  `expected$AveExpr[58:60]`: 22.03 18.37 20.41   
+  
+    `actual$t[1:5]`: -0.196 0.702       -0.024 -0.529 0.328
+  `expected$t[1:6]`: -0.196 0.702 0.562 -0.024 -0.529 0.328
+  
+    `actual$t[57:60]`: -1.355 0.686 0.277 NA
+  `expected$t[58:60]`: -1.355 0.686 0.277   
+  
+      actual$raw_pvalue | expected$raw_pvalue    
+  [1] 0.8455310         | 0.8455310           [1]
+  [2] 0.4876274         | 0.4876274           [2]
+                        - 0.5784325           [3]
+  [3] 0.9812105         | 0.9812105           [4]
+  [4] 0.6007404         | 0.6007404           [5]
+  [5] 0.7453808         | 0.7453808           [6]
+  
+    `actual$raw_pvalue[57:60]`: 0.1849472 0.4974332 0.7834917 NA
+  `expected$raw_pvalue[58:60]`: 0.1849472 0.4974332 0.7834917   
+  
+    `actual$fdr_qvalue[1:5]`: 0.7114 0.7114        0.7520 0.7114 0.7114
+  `expected$fdr_qvalue[1:6]`: 0.7114 0.7114 0.7114 0.7520 0.7114 0.7114
+  
+    `actual$fdr_qvalue[57:60]`: 0.5003 0.7114 0.7114 NA
+  `expected$fdr_qvalue[58:60]`: 0.5003 0.7114 0.7114   
+  
+      actual$fdr_value_bh_adjustment | expected$fdr_value_bh_adjustment    
+  [1] 0.9282                         | 0.9282                           [1]
+  [2] 0.9282                         | 0.9282                           [2]
+                                     - 0.9282                           [3]
+  [3] 0.9812                         | 0.9812                           [4]
+  [4] 0.9282                         | 0.9282                           [5]
+  [5] 0.9282                         | 0.9282                           [6]
+  
+    `actual$fdr_value_bh_adjustment[57:60]`: 0.6528 0.9282 0.9282 NA
+  `expected$fdr_value_bh_adjustment[58:60]`: 0.6528 0.9282 0.9282   
+  
+  groupC-groupB
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `rownames(got)` to have the same values as `as.character(1:61)`.
+  Actual: "13", "15", "16", "11", "12", "14", "18", "36", "38", ...
+  Expected: "1", "2", "3", "4", "5", "6", "7", "8", "9", ...
+  Needs: "310"
+  Absent: "61"
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `all(is.na(unlist(got["3", kit200Columns])))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  groupB-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `as.list(got[as.character(c(1:2, 4:61)), kit200Columns])` to be identical to `as.list(ref[as.character(1:60), kit200Columns])`.
+  Differences:
+    `actual$logFC[1:5]`: 0.1323 0.1010         0.1199 0.2155 -0.2772
+  `expected$logFC[1:6]`: 0.1323 0.1010 -0.1677 0.1199 0.2155 -0.2772
+  
+    `actual$logFC[57:60]`: 0.3222 -0.1378 -0.2594 NA
+  `expected$logFC[58:60]`: 0.3222 -0.1378 -0.2594   
+  
+    `actual$AveExpr[1:5]`: 17.82 18.23       19.02 21.18 18.65
+  `expected$AveExpr[1:6]`: 17.82 18.23 18.27 19.02 21.18 18.65
+  
+    `actual$AveExpr[57:60]`: 22.03 18.37 20.41 NA
+  `expected$AveExpr[58:60]`: 22.03 18.37 20.41   
+  
+    `actual$t[1:5]`: 0.546 0.487        0.614 1.113 -1.419
+  `expected$t[1:6]`: 0.546 0.487 -0.685 0.614 1.113 -1.419
+  
+    `actual$t[57:60]`: 1.542 -0.710 -1.224 NA
+  `expected$t[58:60]`: 1.542 -0.710 -1.224   
+  
+      actual$raw_pvalue | expected$raw_pvalue    
+  [1] 0.589076          | 0.589076            [1]
+  [2] 0.629548          | 0.629548            [2]
+                        - 0.498838            [3]
+  [3] 0.543715          | 0.543715            [4]
+  [4] 0.273740          | 0.273740            [5]
+  [5] 0.165505          | 0.165505            [6]
+  
+    `actual$raw_pvalue[57:60]`: 0.132798 0.482720 0.229822 NA
+  `expected$raw_pvalue[58:60]`: 0.132798 0.482720 0.229822   
+  
+      actual$fdr_value_bh_adjustment | expected$fdr_value_bh_adjustment    
+  [1] 0.75546                        | 0.75546                          [1]
+  [2] 0.75546                        | 0.75546                          [2]
+  [3] 0.75546                        | 0.75546                          [3]
+                                     - 0.75546                          [4]
+  [4] 0.64490                        | 0.64490                          [5]
+  [5] 0.60469                        | 0.60469                          [6]
+  [6] 0.75546                        | 0.75546                          [7]
+  
+    `actual$fdr_value_bh_adjustment[57:60]`: 0.58508 0.75546 0.62164 NA
+  `expected$fdr_value_bh_adjustment[58:60]`: 0.58508 0.75546 0.62164   
+  
+  groupB-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `rownames(got)` to have the same values as `as.character(1:61)`.
+  Actual: "13", "19", "26", "44", "37", "33", "31", "43", "20", ...
+  Expected: "1", "2", "3", "4", "5", "6", "7", "8", "9", ...
+  Needs: "310"
+  Absent: "61"
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `all(is.na(unlist(got["3", kit200Columns])))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  groupC-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `as.list(got[as.character(c(1:2, 4:61)), kit200Columns])` to be identical to `as.list(ref[as.character(1:60), kit200Columns])`.
+  Differences:
+    `actual$logFC[1:5]`: 0.0847 0.2359         0.1149 0.1132 -0.2132
+  `expected$logFC[1:6]`: 0.0847 0.2359 -0.0206 0.1149 0.1132 -0.2132
+  
+    `actual$logFC[57:60]`: 0.0392 -0.0046 -0.2007 NA
+  `expected$logFC[58:60]`: 0.0392 -0.0046 -0.2007   
+  
+    `actual$AveExpr[1:5]`: 17.82 18.23       19.02 21.18 18.65
+  `expected$AveExpr[1:6]`: 17.82 18.23 18.27 19.02 21.18 18.65
+  
+    `actual$AveExpr[57:60]`: 22.03 18.37 20.41 NA
+  `expected$AveExpr[58:60]`: 22.03 18.37 20.41   
+  
+    `actual$t[1:5]`: 0.349 1.137        0.545 0.585 -1.091
+  `expected$t[1:6]`: 0.349 1.137 -0.084 0.545 0.585 -1.091
+  
+    `actual$t[57:60]`: 0.187 -0.024 -0.947 NA
+  `expected$t[58:60]`: 0.187 -0.024 -0.947   
+  
+    `actual$raw_pvalue[1:5]`: 0.7292 0.2640        0.5899 0.5627 0.2832
+  `expected$raw_pvalue[1:6]`: 0.7292 0.2640 0.9336 0.5899 0.5627 0.2832
+  
+    `actual$raw_pvalue[57:60]`: 0.8525 0.9811 0.3507 NA
+  `expected$raw_pvalue[58:60]`: 0.8525 0.9811 0.3507   
+  
+    `actual$fdr_qvalue[1:5]`: 0.9548 0.8844        0.9548 0.9548 0.8870
+  `expected$fdr_qvalue[1:6]`: 0.9548 0.8844 0.9807 0.9548 0.9548 0.8870
+  
+    `actual$fdr_qvalue[57:60]`: 0.9572 0.9807 0.9548 NA
+  `expected$fdr_qvalue[58:60]`: 0.9572 0.9807 0.9548   
+  
+      actual$fdr_value_bh_adjustment | expected$fdr_value_bh_adjustment    
+  [1] 0.9627                         | 0.9627                           [1]
+  [2] 0.8917                         | 0.8917                           [2]
+                                     - 0.9888                           [3]
+  [3] 0.9627                         | 0.9627                           [4]
+  [4] 0.9627                         | 0.9627                           [5]
+  [5] 0.8943                         | 0.8943                           [6]
+  
+    `actual$fdr_value_bh_adjustment[57:60]`: 0.9651 0.9888 0.9627 NA
+  `expected$fdr_value_bh_adjustment[58:60]`: 0.9651 0.9888 0.9627   
+  
+  groupC-groupA
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `rownames(got)` to have the same values as `as.character(1:61)`.
+  Actual: "15", "14", "12", "13", "16", "11", "33", "10", "36", ...
+  Expected: "1", "2", "3", "4", "5", "6", "7", "8", "9", ...
+  Needs: "310"
+  Absent: "61"
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `all(is.na(unlist(got["3", kit200Columns])))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  groupC-groupB
+
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 audit I05: without row names, every row keeps its input position as its label
+kind: failure
+message:
+  Expected `as.list(got[as.character(c(1:2, 4:61)), kit200Columns])` to be identical to `as.list(ref[as.character(1:60), kit200Columns])`.
+  Differences:
+    `actual$logFC[1:5]`: -0.04763 0.13484         -0.00501 -0.10230 0.06399
+  `expected$logFC[1:6]`: -0.04763 0.13484 0.14712 -0.00501 -0.10230 0.06399
+  
+    `actual$logFC[57:60]`: -0.28305 0.13320 0.05872 NA
+  `expected$logFC[58:60]`: -0.28305 0.13320 0.05872   
+  
+    `actual$AveExpr[1:5]`: 17.82 18.23       19.02 21.18 18.65
+  `expected$AveExpr[1:6]`: 17.82 18.23 18.27 19.02 21.18 18.65
+  
+    `actual$AveExpr[57:60]`: 22.03 18.37 20.41 NA
+  `expected$AveExpr[58:60]`: 22.03 18.37 20.41   
+  
+    `actual$t[1:5]`: -0.196 0.702       -0.024 -0.529 0.328
+  `expected$t[1:6]`: -0.196 0.702 0.562 -0.024 -0.529 0.328
+  
+    `actual$t[57:60]`: -1.355 0.686 0.277 NA
+  `expected$t[58:60]`: -1.355 0.686 0.277   
+  
+      actual$raw_pvalue | expected$raw_pvalue    
+  [1] 0.8455310         | 0.8455310           [1]
+  [2] 0.4876274         | 0.4876274           [2]
+                        - 0.5784325           [3]
+  [3] 0.9812105         | 0.9812105           [4]
+  [4] 0.6007404         | 0.6007404           [5]
+  [5] 0.7453808         | 0.7453808           [6]
+  
+    `actual$raw_pvalue[57:60]`: 0.1849472 0.4974332 0.7834917 NA
+  `expected$raw_pvalue[58:60]`: 0.1849472 0.4974332 0.7834917   
+  
+    `actual$fdr_qvalue[1:5]`: 0.7114 0.7114        0.7520 0.7114 0.7114
+  `expected$fdr_qvalue[1:6]`: 0.7114 0.7114 0.7114 0.7520 0.7114 0.7114
+  
+    `actual$fdr_qvalue[57:60]`: 0.5003 0.7114 0.7114 NA
+  `expected$fdr_qvalue[58:60]`: 0.5003 0.7114 0.7114   
+  
+      actual$fdr_value_bh_adjustment | expected$fdr_value_bh_adjustment    
+  [1] 0.9282                         | 0.9282                           [1]
+  [2] 0.9282                         | 0.9282                           [2]
+                                     - 0.9282                           [3]
+  [3] 0.9812                         | 0.9812                           [4]
+  [4] 0.9282                         | 0.9282                           [5]
+  [5] 0.9282                         | 0.9282                           [6]
+  
+    `actual$fdr_value_bh_adjustment[57:60]`: 0.6528 0.9282 0.9282 NA
+  `expected$fdr_value_bh_adjustment[58:60]`: 0.6528 0.9282 0.9282   
+  
+  groupC-groupB
+

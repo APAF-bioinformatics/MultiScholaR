@@ -235,9 +235,10 @@ trxGlimmaInputs <- function(de_annotated, qlf, contrast_name) {
 #' @param total_features The number of filtered genes.
 #' @param design_formula,contrast_entry trxDaContrast's products.
 #' @param de_annotated trxAnnotateDe's `de_annotated`.
+#' @param fdr_thresh The FDR (BH) threshold of the count line (KIT-220: the analysis's threshold; 0.05 by default).
 #' @return A list: `lines` (the second is the timestamp) and `grid_table`.
 #' @noRd
-trxSummaryText <- function(best, total_features, design_formula, contrast_entry, de_annotated, grid_summary) {
+trxSummaryText <- function(best, total_features, design_formula, contrast_entry, de_annotated, grid_summary, fdr_thresh = 0.05) {
     lines <- c(
         "=== MultiScholaR RUV Parameter Optimization Summary ===",
         paste("Timestamp:", Sys.time()),
@@ -250,7 +251,7 @@ trxSummaryText <- function(best, total_features, design_formula, contrast_entry,
         paste("MultiScholaR Composite Score:", round(best$composite_score, 4)),
         paste("Dynamic edgeR Model Formula:", design_formula),
         paste("Evaluated Contrast:", contrast_entry),
-        paste("Differentially Expressed Genes (FDR < 0.05):", sum(de_annotated$FDR < 0.05)),
+        paste("Differentially Expressed Genes (FDR <", paste0(fdr_thresh, "):"), sum(de_annotated$FDR < fdr_thresh)),
         "",
         "--- Full Grid Search Summary ---")
     list(lines = lines, grid_table = grid_summary)

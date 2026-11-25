@@ -8,16 +8,19 @@
 #' @param min_metabolite_intensity_threshold The calculated minimum intensity value. Metabolites in samples below this threshold are considered 'below threshold'.
 #' @param metabolites_proportion_of_samples_below_cutoff The maximum allowed proportion (0 to 1) of samples where a metabolite can be below the threshold. If a metabolite exceeds this proportion, it's removed.
 #' @param metabolite_id_column A string specifying the name of the column containing the unique metabolite identifiers.
+#' @param sample_columns Optional. The sample columns to count. Without it, every numeric column other than the identifier column is taken as a sample: pass the design's samples when the table holds other numeric columns (retention time, m/z, scores).
 #' @return A filtered wide data frame containing only the metabolites that pass the filter.
 #' @export
 metaboliteIntensityFilteringHelper <- function(
   assay_table,
   min_metabolite_intensity_threshold,
   metabolites_proportion_of_samples_below_cutoff,
-  metabolite_id_column
+  metabolite_id_column,
+  sample_columns = NULL
 ) {
-    # Identify numeric columns representing sample intensities
-    sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+    # KIT-202 (VAL-118 (1), VAL-130): the columns counted as samples are the ones given; without them, every numeric
+    # column except the identifier, with a classed warning naming them (the package always passes them).
+    sample_cols <- omicsIntensityFilterHelperColumns(assay_table, metabolite_id_column, sample_columns)
     num_samples <- length(sample_cols)
 
     if (num_samples == 0) {

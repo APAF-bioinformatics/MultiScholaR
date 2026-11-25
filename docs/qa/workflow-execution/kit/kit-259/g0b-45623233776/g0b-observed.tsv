@@ -1,0 +1,283 @@
+key	value
+env.R	R version 4.6.1 (2026-06-24)
+env.ggplot2	4.0.3
+env.warn_outside	0
+env.owner_capable	TRUE
+ip.a.color_choices	group,factor1,factor2,batch
+ip.a.shape_choices	group,factor1,factor2,batch
+ip.a.sample_id_offered	FALSE
+ip.a.design_columns	Run,group,factor1,factor2,factor3,batch,replicates,tech_reps,tech_rep_group
+ip.a.design.group	KO,KO,KO,KO,KO,WT,WT,WT,WT,WT
+ip.a.design.factor1	KO,KO,KO,KO,KO,WT,WT,WT,WT,WT
+ip.a.design.factor2	,,,,,,,,,
+ip.a.design.factor3	NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+ip.a.design.batch	NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+ip.a.pairs_per_choice	group=20,factor1=20,factor2=0,batch=0
+ip.a.zero_pair_variable	factor2,batch
+ip.a.warn	1
+ip.a.color_input	group
+ip.a.shape_input	group
+ip.a.warn	1
+ip.a.normalization_complete	FALSE
+ip.a.ruv_normalized_obj	null
+ip.a.normalized_protein_obj	null
+ip.a.head	protein_replicate_filtered
+ip.a.pending	protein-qc:TRUE
+ip.a.events	<none>
+ip.b_color.warn	1
+ip.b_color.normalization_complete	FALSE
+ip.b_color.ruv_normalized_obj	null
+ip.b_color.normalized_protein_obj	null
+ip.b_color.head	protein_replicate_filtered
+ip.b_color.pending	protein-qc:TRUE
+ip.b_color.events	plot pca [batch/group] = ok | save pre_norm_pca.png = ok | plot rle [batch/group] = ok | save pre_norm_rle.png = ok | plot density [batch/group] = ok | save pre_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number
+ip.b_run.warn	1
+ip.b_run.normalization_complete	FALSE
+ip.b_run.ruv_normalized_obj	set
+ip.b_run.normalized_protein_obj	set
+ip.b_run.head	normalized
+ip.b_run.pending	normalization:FALSE
+ip.b_run.events	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save post_norm_pca.png = ok | plot rle [batch/group] = ok | save post_norm_rle.png = ok | plot density [batch/group] = ok | save post_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number
+ip.b_apply.warn	1
+ip.b_apply.normalization_complete	FALSE
+ip.b_apply.ruv_normalized_obj	set
+ip.b_apply.normalized_protein_obj	set
+ip.b_apply.head	normalized
+ip.b_apply.pending	normalization:FALSE
+ip.b_apply.events	<none>
+ip.b_skip.warn	1
+ip.b_skip.normalization_complete	FALSE
+ip.b_skip.ruv_normalized_obj	set
+ip.b_skip.normalized_protein_obj	set
+ip.b_skip.head	normalized
+ip.b_skip.pending	normalization:FALSE
+ip.b_skip.events	<none>
+ip.b_da.warn	1
+ip.b_da.normalization_complete	FALSE
+ip.b_da.ruv_normalized_obj	set
+ip.b_da.normalized_protein_obj	set
+ip.b_da.head	normalized
+ip.b_da.pending	normalization:FALSE
+ip.b_da.events	<none>
+ip.b_reset.warn	1
+ip.b_reset.normalization_complete	FALSE
+ip.b_reset.ruv_normalized_obj	null
+ip.b_reset.normalized_protein_obj	null
+ip.b_reset.head	protein_replicate_filtered
+ip.b_reset.pending	protein-qc:TRUE
+ip.b_reset.events	<none>
+ip.b_rerun.warn	1
+ip.b_rerun.normalization_complete	FALSE
+ip.b_rerun.ruv_normalized_obj	set
+ip.b_rerun.normalized_protein_obj	set
+ip.b_rerun.head	normalized
+ip.b_rerun.pending	normalization:FALSE
+ip.b_rerun.events	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save post_norm_pca.png = ok | plot rle [batch/group] = ok | save post_norm_rle.png = ok | plot density [batch/group] = ok | save post_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number
+ip.b_group_color.warn	1
+ip.b_group_color.normalization_complete	FALSE
+ip.b_group_color.ruv_normalized_obj	set
+ip.b_group_color.normalized_protein_obj	set
+ip.b_group_color.head	normalized
+ip.b_group_color.pending	normalization:FALSE
+ip.b_group_color.events	plot pca [group/group] = ok | save pre_norm_pca.png = ok | plot rle [group/group] = ok | save pre_norm_rle.png = ok | plot density [group/group] = ok | save pre_norm_density.png = ok | plot correlation [group/group] = ok | save pre_norm_correlation.png = ok
+ip.b_group_rerun.warn	1
+ip.b_group_rerun.normalization_complete	TRUE
+ip.b_group_rerun.ruv_normalized_obj	set
+ip.b_group_rerun.normalized_protein_obj	set
+ip.b_group_rerun.head	normalized
+ip.b_group_rerun.pending	normalization:TRUE
+ip.b_group_rerun.events	request redraw_pre=FALSE = ok | plot pca [group/group] = ok | save post_norm_pca.png = ok | plot rle [group/group] = ok | save post_norm_rle.png = ok | plot density [group/group] = ok | save post_norm_density.png = ok | plot correlation [group/group] = ok | save post_norm_correlation.png = ok
+ip.norm_captured	TRUE
+ip.steps	import_refusal,import,design_refusal,design,qc_protein_cleanup,qc_protein_intensity_filter_refusal,qc_protein_intensity_filter,qc_protein_duplicate_removal,qc_protein_replicate_filter,da_refusal,norm_refusal,a,b_color,b_run,b_apply,b_skip,b_da,b_reset,b_rerun,b_group_color,b_group_rerun
+ip.import_refusal.notes	[warning] Please choose a search results file and a FASTA file before processing the data.
+ip.import_refusal.lane_head	initial
+ip.import.notes	[message] Sample names sanitized for R compatibility. | [message] Copied default config.ini to scripts directory. | [message] Data import successful!
+ip.import.lane_head	initial
+ip.design_refusal.notes	[warning] No samples have been assigned to groups. Please assign metadata before saving.
+ip.design_refusal.lane_head	initial
+ip.design.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+ip.design.lane_head	protein_s4_initial
+ip.qc_protein_cleanup.notes	[default] Applying protein accession cleanup... | [message] Protein accession cleanup completed
+ip.qc_protein_cleanup.lane_head	protein_accession_cleaned
+ip.qc_protein_intensity_filter_refusal.notes	[default] Applying protein intensity filter... | [error] Error applying protein intensity filter: intensity percentile must lie in [0, 100]
+ip.qc_protein_intensity_filter_refusal.lane_head	protein_accession_cleaned
+ip.qc_protein_intensity_filter.notes	[default] Applying protein intensity filter... | [message] Protein intensity filter applied successfully
+ip.qc_protein_intensity_filter.lane_head	protein_intensity_filtered
+ip.qc_protein_duplicate_removal.notes	[default] Removing duplicate proteins... | [message] Duplicate protein removal completed successfully
+ip.qc_protein_duplicate_removal.lane_head	duplicates_removed
+ip.qc_protein_replicate_filter.notes	[default] Applying protein replicate filter... | [message] Protein replicate filter applied successfully. Pipeline complete!
+ip.qc_protein_replicate_filter.lane_head	protein_replicate_filtered
+ip.da_refusal.notes	[warning] Please complete the normalization (with or without RUV) and correlation filtering steps before accessing differential abundance analysis. | [error] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+ip.da_refusal.lane_head	protein_replicate_filtered
+ip.norm_refusal.notes	[warning] Please complete correlation filtering before exporting session data.
+ip.norm_refusal.lane_head	protein_replicate_filtered
+ip.a.notes	<none>
+ip.a.lane_head	protein_replicate_filtered
+ip.b_color.notes	<none>
+ip.b_color.lane_head	protein_replicate_filtered
+ip.b_run.notes	[error] Error in normalization: 'from' must be a finite number
+ip.b_run.lane_head	normalized
+ip.b_apply.notes	[error] Error in correlation filtering: normalization outputs are pending; retry that action
+ip.b_apply.lane_head	normalized
+ip.b_skip.notes	[error] Error in correlation filtering: normalization outputs are pending; retry that action
+ip.b_skip.lane_head	normalized
+ip.b_da.notes	[error] Error loading session: No exported session data found. Please export session data from the Normalization tab first. | [default] Running differential abundance analysis... | [error] Error in DA analysis: normalization outputs are pending; retry that action
+ip.b_da.lane_head	normalized
+ip.b_reset.notes	[warning] Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).
+ip.b_reset.lane_head	protein_replicate_filtered
+ip.b_rerun.notes	[error] Error in normalization: 'from' must be a finite number
+ip.b_rerun.lane_head	normalized
+ip.b_group_color.notes	<none>
+ip.b_group_color.lane_head	normalized
+ip.b_group_rerun.notes	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+ip.b_group_rerun.lane_head	normalized
+ipd.b_run.warn	0
+ipd.b_run.normalization_complete	FALSE
+ipd.b_run.ruv_normalized_obj	set
+ipd.b_run.normalized_protein_obj	set
+ipd.b_run.head	normalized
+ipd.b_run.pending	normalization:FALSE
+ipd.b_run.notes	[error 10] Error in normalization: 'from' must be a finite number
+ipd.b_run.events	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save post_norm_pca.png = ok | plot rle [batch/group] = ok | save post_norm_rle.png = ok | plot density [batch/group] = ok | save post_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number
+ipd.b_run.actions	<none>
+ipd.b_apply.warn	0
+ipd.b_apply.normalization_complete	FALSE
+ipd.b_apply.ruv_normalized_obj	set
+ipd.b_apply.normalized_protein_obj	set
+ipd.b_apply.head	normalized
+ipd.b_apply.pending	normalization:FALSE
+ipd.b_apply.notes	[error 10] Error in correlation filtering: normalization outputs are pending; retry that action
+ipd.b_apply.events	<none>
+ipd.b_apply.actions	<none>
+ipd.b_skip.warn	0
+ipd.b_skip.normalization_complete	FALSE
+ipd.b_skip.ruv_normalized_obj	set
+ipd.b_skip.normalized_protein_obj	set
+ipd.b_skip.head	normalized
+ipd.b_skip.pending	normalization:FALSE
+ipd.b_skip.notes	[error 10] Error in correlation filtering: normalization outputs are pending; retry that action
+ipd.b_skip.events	<none>
+ipd.b_skip.actions	<none>
+ipd.b_rerun.warn	0
+ipd.b_rerun.normalization_complete	FALSE
+ipd.b_rerun.ruv_normalized_obj	set
+ipd.b_rerun.normalized_protein_obj	set
+ipd.b_rerun.head	normalized
+ipd.b_rerun.pending	normalization:FALSE
+ipd.b_rerun.notes	[error 10] Error in normalization: 'from' must be a finite number
+ipd.b_rerun.events	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save post_norm_pca.png = ok | plot rle [batch/group] = ok | save post_norm_rle.png = ok | plot density [batch/group] = ok | save post_norm_density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number
+ipd.b_rerun.actions	<none>
+ipd.b_reset.warn	0
+ipd.b_reset.normalization_complete	FALSE
+ipd.b_reset.ruv_normalized_obj	null
+ipd.b_reset.normalized_protein_obj	null
+ipd.b_reset.head	protein_replicate_filtered
+ipd.b_reset.pending	none
+ipd.b_reset.notes	[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).
+ipd.b_reset.events	<none>
+ipd.b_reset.actions	<none>
+ipd.b_group_rerun.warn	0
+ipd.b_group_rerun.normalization_complete	TRUE
+ipd.b_group_rerun.ruv_normalized_obj	set
+ipd.b_group_rerun.normalized_protein_obj	set
+ipd.b_group_rerun.head	normalized
+ipd.b_group_rerun.pending	normalization:TRUE
+ipd.b_group_rerun.notes	[message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+ipd.b_group_rerun.events	request redraw_pre=FALSE = ok | plot pca [group/group] = ok | save post_norm_pca.png = ok | plot rle [group/group] = ok | save post_norm_rle.png = ok | plot density [group/group] = ok | save post_norm_density.png = ok | plot correlation [group/group] = ok | save post_norm_correlation.png = ok
+ipd.b_group_rerun.actions	<none>
+m.lifecycle.l_complete.warn	0
+m.lifecycle.l_complete.normalization_complete	TRUE
+m.lifecycle.l_complete.ruv_normalized_obj	set
+m.lifecycle.l_complete.normalized_protein_obj	set
+m.lifecycle.l_complete.head	normalized
+m.lifecycle.l_complete.pending	normalization:TRUE
+m.lifecycle.l_complete.notes	[default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+m.lifecycle.l_complete.events	request redraw_pre=FALSE = ok | plot pca [group/group] = ok | save pca.png = ok | plot rle [group/group] = ok | save rle.png = ok | plot density [group/group] = ok | save density.png = ok | plot correlation [group/group] = ok | save correlation.png = ok | plot pca [group/group] = ok | save post_norm_pca.png = ok | plot rle [group/group] = ok | save post_norm_rle.png = ok | plot density [group/group] = ok | save post_norm_density.png = ok | plot correlation [group/group] = ok | save post_norm_correlation.png = ok | plot pca [group/group] = ok | save post_norm_pca.png = ok | plot rle [group/group] = ok | save post_norm_rle.png = ok | plot density [group/group] = ok | save post_norm_density.png = ok | plot correlation [group/group] = ok | save post_norm_correlation.png = ok
+m.lifecycle.l_complete.actions	normalization-ruv | normalization-qc-figures | normalization-qc-figures
+m.lifecycle.l_failed.warn	0
+m.lifecycle.l_failed.normalization_complete	TRUE
+m.lifecycle.l_failed.ruv_normalized_obj	set
+m.lifecycle.l_failed.normalized_protein_obj	set
+m.lifecycle.l_failed.head	normalized
+m.lifecycle.l_failed.pending	normalization:TRUE
+m.lifecycle.l_failed.notes	[default NULL] Applying proteomics step ... | [error 15] Error applying proteomics step: RUV-III cannot estimate 50 factors from 32 control proteins observed in every sample ℹ choose a smaller k or a larger control set, filter for completeness first, or   run normalisation without RUV | [error 10] Error in normalization: RUV-III cannot estimate 50 factors from 32 control proteins observed in every sample ℹ choose a smaller k or a larger control set, filter for completeness first, or   run normalisation without RUV
+m.lifecycle.l_failed.events	request redraw_pre=FALSE = ok
+m.lifecycle.l_failed.actions	normalization-ruv
+m.lifecycle.ok	TRUE
+m.b_run.warn	0
+m.b_run.normalization_complete	FALSE
+m.b_run.ruv_normalized_obj	null
+m.b_run.normalized_protein_obj	null
+m.b_run.head	normalized
+m.b_run.pending	none
+m.b_run.notes	[default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [error 15] Error applying proteomics step: 'from' must be a finite number | [error 10] Error in normalization: 'from' must be a finite number
+m.b_run.events	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save pca.png = ok | plot rle [batch/group] = ok | save rle.png = ok | plot density [batch/group] = ok | save density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number | save correlation.png = error: 'from' must be a finite number
+m.b_run.actions	normalization-ruv | normalization-qc-figures
+m.b_apply.warn	0
+m.b_apply.normalization_complete	FALSE
+m.b_apply.ruv_normalized_obj	null
+m.b_apply.normalized_protein_obj	null
+m.b_apply.head	normalized
+m.b_apply.pending	none
+m.b_apply.notes	[error 10] Error in correlation filtering: normalization must complete before correlation filtering
+m.b_apply.events	<none>
+m.b_apply.actions	<none>
+m.b_skip.warn	0
+m.b_skip.normalization_complete	FALSE
+m.b_skip.ruv_normalized_obj	null
+m.b_skip.normalized_protein_obj	null
+m.b_skip.head	normalized
+m.b_skip.pending	none
+m.b_skip.notes	[error 10] Error in correlation filtering: normalization must complete before correlation filtering
+m.b_skip.events	<none>
+m.b_skip.actions	<none>
+m.b_rerun.warn	0
+m.b_rerun.normalization_complete	FALSE
+m.b_rerun.ruv_normalized_obj	null
+m.b_rerun.normalized_protein_obj	null
+m.b_rerun.head	normalized
+m.b_rerun.pending	none
+m.b_rerun.notes	[default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [error 15] Error applying proteomics step: 'from' must be a finite number | [error 10] Error in normalization: 'from' must be a finite number
+m.b_rerun.events	request redraw_pre=FALSE = ok | plot pca [batch/group] = ok | save pca.png = ok | plot rle [batch/group] = ok | save rle.png = ok | plot density [batch/group] = ok | save density.png = ok | plot correlation [batch/group] = error: 'from' must be a finite number | save correlation.png = error: 'from' must be a finite number
+m.b_rerun.actions	normalization-ruv | normalization-qc-figures
+m.b_reset.warn	0
+m.b_reset.normalization_complete	FALSE
+m.b_reset.ruv_normalized_obj	null
+m.b_reset.normalized_protein_obj	null
+m.b_reset.head	protein_replicate_filtered
+m.b_reset.pending	none
+m.b_reset.notes	[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).
+m.b_reset.events	<none>
+m.b_reset.actions	<none>
+m.b_group_rerun.warn	0
+m.b_group_rerun.normalization_complete	TRUE
+m.b_group_rerun.ruv_normalized_obj	set
+m.b_group_rerun.normalized_protein_obj	set
+m.b_group_rerun.head	normalized
+m.b_group_rerun.pending	normalization:TRUE
+m.b_group_rerun.notes	[default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+m.b_group_rerun.events	request redraw_pre=FALSE = ok | plot pca [group/group] = ok | save pca.png = ok | plot rle [group/group] = ok | save rle.png = ok | plot density [group/group] = ok | save density.png = ok | plot correlation [group/group] = ok | save correlation.png = ok | plot pca [group/group] = ok | save post_norm_pca.png = ok | plot rle [group/group] = ok | save post_norm_rle.png = ok | plot density [group/group] = ok | save post_norm_density.png = ok | plot correlation [group/group] = ok | save post_norm_correlation.png = ok | plot pca [group/group] = ok | save post_norm_pca.png = ok | plot rle [group/group] = ok | save post_norm_rle.png = ok | plot density [group/group] = ok | save post_norm_density.png = ok | plot correlation [group/group] = ok | save post_norm_correlation.png = ok
+m.b_group_rerun.actions	normalization-ruv | normalization-qc-figures | normalization-qc-figures
+c.direct.status	error: [0] <rlang_error/error/condition> Insufficient values in manual scale. 16 needed but only 15 provided.
+c.direct.events	save post_norm_pca.png = error: Insufficient values in manual scale. 16 needed but only 15 provided.
+c.direct.files	post_norm_pca.png (5187 bytes)
+c.direct.warn	0
+c.c_entry.warn	0
+c.c_entry.normalization_complete	FALSE
+c.c_entry.ruv_normalized_obj	null
+c.c_entry.normalized_protein_obj	null
+c.c_entry.head	protein_replicate_filtered
+c.c_entry.pending	none
+c.c_entry.notes	<none>
+c.c_entry.events	<none>
+c.c_entry.actions	<none>
+c.c_run.warn	0
+c.c_run.normalization_complete	FALSE
+c.c_run.ruv_normalized_obj	set
+c.c_run.normalized_protein_obj	set
+c.c_run.head	normalized
+c.c_run.pending	normalization:FALSE
+c.c_run.notes	[error 10] Error in normalization: Insufficient values in manual scale. 16 needed but only 15 provided.
+c.c_run.events	request redraw_pre=FALSE = ok | plot pca [group/group] = ok | save post_norm_pca.png = error: Insufficient values in manual scale. 16 needed but only 15 provided.
+c.c_run.actions	<none>
+c.c_run.qc_files	<none>

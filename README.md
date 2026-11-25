@@ -20,7 +20,7 @@
 - **Modular Architecture:** Flexible object-oriented design for easy tool integration.
 - **Reproducibility:** Standardized workflows with automated, publication-ready reporting.
 - **Advanced Quality Control:** Stringent measures including FDR thresholds, intensity filtering, and automated batch effect correction (RUV-IIIc).
-- **Multi-Omics Integration:** Seamlessly integrate Proteomics, Metabolomics, and Lipidomics data.
+- **Multi-Omics Integration:** combine proteomics, metabolomics, lipidomics and transcriptomics processed in one project (MOFA2).
 
 </td>
 </tr>
@@ -58,10 +58,10 @@ graph TD
         LipEnrich --> LipReport["Lipidomics Report"]
     end
 
-    %% Multi-Omics Integration (Union)
-    ProtDE -.-> Integration["Multi-Omics Integration<br/>(MOFA2 / MixOmics)"]
-    MetDE -.-> Integration
-    LipDE -.-> Integration
+    %% Multi-Omics Integration (the normalised matrices saved at each omic's Summary tab)
+    ProtQC -.-> Integration["Multi-Omics Integration<br/>(MOFA2)"]
+    MetQC -.-> Integration
+    LipQC -.-> Integration
 
     %% Styling
     style Integration fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
@@ -86,18 +86,7 @@ For a **code-free, interactive experience**, use the standalone launcher.
 
 ### 2. R Markdown Workflows (Advanced)
 
-For **programmatic, reproducible analyses**, typically for advanced users or batch processing.
-
-1.  **Install Prerequisites**: R (4.4.3+), RStudio, and Rtools (Windows).
-2.  **Setup Project**: Download and run the setup script to generate a structured project with all necessary templates.
-
-    <a href="https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/project_setup.R" download="project_setup.R">
-        <img src="https://img.shields.io/badge/Download-Setup_Script-276DC3?style=for-the-badge&logo=r" alt="Download Setup Script">
-    </a>
-
-3.  **Run Workflows**: Open the generated `.Rmd` templates (Proteomics, Metabolomics, etc.) in `inst/workbooks/` and execute chunks sequentially.
-
-> **Need Help?** Visit the [Multiomics Masterclass](https://zenodo.org/records/15573343) for a comprehensive guide and tutorial data.
+The R Markdown workbooks of earlier versions are archived and not supported in this version; use the application. The integration can also be run from R with the package's `integration*` functions (see `?integrationFindInputs`, and the limitations in `?integrationTrainModel`).
 
 ## Supported Workflows
 
@@ -106,7 +95,7 @@ For **programmatic, reproducible analyses**, typically for advanced users or bat
 | **Proteomics**   | DIA-NN, TMT-PD, LFQ-Fragpipe | Peptide rollup (IQ), Auto-RUV-IIIc, Mixed Species support |
 | **Metabolomics** | LC-MS, GC-MS (MS-Dial)       | Intensity QC, Internal Standard Normalization             |
 | **Lipidomics**   | MS-Dial, LipidSearch         | Lipid-class specific analysis, QC & filtering             |
-| **Integration**  | MOFA2, MixOmics              | Multi-view factor analysis, Cross-omics enrichment        |
+| **Integration**  | MOFA2                        | Shared factors across two or more omics processed in the same project (the Integration tabs); for each data set, pathway enrichment of the features that follow a factor: STRING for protein and gene data sets (your own STRING key), KEGG and Reactome for metabolite and lipid data sets |
 
 ## Contributors
 

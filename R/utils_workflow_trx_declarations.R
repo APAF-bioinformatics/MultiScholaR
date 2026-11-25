@@ -893,16 +893,20 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
         object <- readWorkflowOmicsState(transcriptomicsDeclarationBinding, manager, manifest$source)
         da_dir <- omicsStagedPublicationDir(request, "da_output_dir")
         graphs <- omicsStagedPublicationDir(request, "publication_graphs_dir")
+        # KIT-220 (VAL-191 (1)): the figures, the top genes and the summary line at the run's threshold.
+        qvalue <- manifest$parameters$qvalue
         annotated <- list()
         for (contrast in names(manifest$results)) {
             entry <- manifest$results[[contrast]]
             if (is.null(entry$products$da_contrast)) next
             results <- hydrateSavedWorkflowEntity(context$store, entry$products$da_contrast)$value$assays[[1L]]$results
             name <- entry$comparison
-            de <- trxAnnotateDe(results$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column)
-            utils::write.csv(de$de_annotated, file.path(da_dir, paste0("de_results_", name, ".csv")), row.names = FALSE)
-            trxSaveFigure(trxVolcano(de$de_annotated, name)$plot, file.path(graphs, "Volcano_Plots"), paste0("volcano_plot_", name), 8, 7)
-            trxSaveFigure(trxSignificanceBar(de$de_annotated, name)$plot, file.path(graphs, "NumSigDeMolecules"), paste0("summary_barplot_", name), 7, 5)
+            de <- trxAnnotateDe(results$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column,
+                fdr_thresh = qvalue)
+            files <- trxDaPublicationNames(name)
+            utils::write.csv(de$de_annotated, file.path(da_dir, files$table), row.names = FALSE)
+            trxSaveFigure(trxVolcano(de$de_annotated, name, fdr_thresh = qvalue)$plot, file.path(graphs, "Volcano_Plots"), files$volcano, 8, 7)
+            trxSaveFigure(trxSignificanceBar(de$de_annotated, name, fdr_thresh = qvalue)$plot, file.path(graphs, "NumSigDeMolecules"), files$bar, 7, 5)
             annotated[[contrast]] <- de
         }
         if (!length(annotated)) cli::cli_abort("no contrast has a result", class = "workflow_execution_invalid")
@@ -912,10 +916,21 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
         # write (as the RUV publication, above); its choices are in the analysis record and the report.
         if (is.null(grid[["ruv_design", exact = TRUE]])) {
             trxWriteSummaryText(trxSummaryText(grid$best, length(grid$prelim_order), manifest$parameters$formula, names(annotated)[[1L]],
-                annotated[[1L]]$de_annotated, grid$grid_summary), request$parameters$dataset, file.path(da_dir, "ruv_optimization_summary.txt"))
+                annotated[[1L]]$de_annotated, grid$grid_summary, fdr_thresh = qvalue), request$parameters$dataset,
+                file.path(da_dir, "ruv_optimization_summary.txt"))
         }
         list(saved = TRUE)
     })
+}
+
+#' The names the DE publication writes for one contrast (KIT-212: made callable so the Summary can list the files a DA
+#' made; the names are unchanged): the DE CSV in the DA folder, and the bases of the volcano (`Volcano_Plots`) and the
+#' significance bar (`NumSigDeMolecules`), each written as `.png` and `.pdf`.
+#' @param name The contrast's comparison name (the manifest entry's `comparison`).
+#' @return `list(table, volcano, bar)`.
+#' @noRd
+trxDaPublicationNames <- function(name) {
+    list(table = paste0("de_results_", name, ".csv"), volcano = paste0("volcano_plot_", name), bar = paste0("summary_barplot_", name))
 }
 
 #' Write the summary text as the notebook does (rmd:756-775), the dataset line the project's.
@@ -947,8 +962,24 @@ trxWriteIntegrationExport <- function(manager, parameters, path) {
         abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
     }
     newY <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value$newY
+    # KIT-224 (OD-2): each gene keeps its TMM logCPM level in the file.
+    newY <- trxRuviiiExportRestoredValues(manager, export, newY)
     vroom::vroom_write(as.data.frame(newY) |> tibble::rownames_to_column("Run"), path)
     invisible(path)
+}
+
+#' The accepted RUVIII export's values with each gene's level restored (KIT-224, the owner's decision OD-2 of
+#' 2026-11-25): RUV-III estimates W from the controls' uncentred logCPM, so every gene is shifted by a constant; the
+#' export file and the integration input add it back (`restoreRuvFeatureLevels`), so that each gene's mean over the runs
+#' is its TMM logCPM mean there and differences between runs are RUV-III's. The reference is the logCPM the export read,
+#' from the export's own source state (the export records no `logcpm`). The product `newY` is not changed.
+#' @param export The accepted export (`snapshot$exports$trx_ruviii_export`).
+#' @param newY The export's `newY`, samples by genes.
+#' @return `newY` with each gene's level restored, samples by genes.
+#' @noRd
+trxRuviiiExportRestoredValues <- function(manager, export, newY) {
+    log_cpm <- trxSavedMatrix(manager, trxProductValue(manager, trxStateRuvs(manager, export$source)$logcpm)$log_cpm)
+    t(restoreRuvFeatureLevels(t(newY), log_cpm[colnames(newY), rownames(newY), drop = FALSE]))
 }
 
 #' The head lineage's RUVs state (KIT-136): its reference, record and product, and whether it applied RUV (the
@@ -1011,7 +1042,8 @@ trxIntegrationInputSource <- function(manager) {
             abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
         }
         export$value <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value
-        values <- t(export$value$newY)
+        # KIT-224 (OD-2): each gene keeps its TMM logCPM level (the manifest's `correction$levels`).
+        values <- t(trxRuviiiExportRestoredValues(manager, export, export$value$newY))
         product <- list(type = "trx.ruviii", entity_id = export$reference$entity_id, sha256 = export$reference$payload$sha256)
     } else {
         values <- trxSavedMatrix(manager, trxProductValue(manager, state$ruvs$logcpm)$log_cpm)
@@ -1078,7 +1110,7 @@ trxIntegrationInputCorrection <- function(manager, state, export, samples, techn
     correction <- list(id = "C3b", method = "RUVIII", m_source = value$m_source, k = value$k,
         control_count = value$control_count %||% sum(value$ctl_mask), control_source = value$control_source,
         replicate_structure = if (by_technical) "technical_replicates" else "group", grouping_variable = grouping,
-        matrix = "ruviii_export_values", da_tests = "counts_with_ruvs_factors_in_model")
+        matrix = "ruviii_export_values", levels = "restored_to_tmm_logcpm", da_tests = "counts_with_ruvs_factors_in_model")
     outcomes <- workflowRecordStepOutcomes(manager$.context, "trx_ruvs", "trx_ruvs", state$record, list())
     if (all(RUV_DESIGN_RECORD_FIELDS %in% names(outcomes))) correction <- c(correction, outcomes[RUV_DESIGN_RECORD_FIELDS])
     correction <- lapply(correction, function(value) if (is.null(value)) NA else value)
@@ -1089,15 +1121,19 @@ trxIntegrationInputCorrection <- function(manager, state, export, samples, techn
 
 #' The interactive volcano of one contrast (rmd:673-693; the binding's `volcano_widget`): Glimma on the contrast's DGELRT
 #' with the annotation aligned to its order. A failure is the page action's recorded message.
+#' KIT-220 (VAL-191 (1)): the status is Glimma's documented default (`edgeR::decideTests.DGEExact`, BH) at the given
+#' threshold, not at its fixed 0.05.
 #' @noRd
 trxVolcanoWidget <- function(da_results_list, selected_contrast, selected_assay, da_q_val_thresh = 0.05) {
     entry <- da_results_list$contrasts_results[[selected_assay]]$results[[selected_contrast]]
     if (is.null(entry)) return(NULL)
     name <- trxParseContrastEntry(selected_contrast)$name
     object <- da_results_list$theObject
-    de <- trxAnnotateDe(entry$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column)$de_annotated
+    de <- trxAnnotateDe(entry$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column,
+        fdr_thresh = da_q_val_thresh)$de_annotated
     inputs <- trxGlimmaInputs(de, entry$qlf, name)
-    Glimma::glimmaVolcano(entry$qlf, main = inputs$main, anno = inputs$anno, display.columns = inputs$display_columns)
+    Glimma::glimmaVolcano(entry$qlf, main = inputs$main, anno = inputs$anno, display.columns = inputs$display_columns,
+        status = edgeR::decideTests.DGEExact(entry$qlf, adjust.method = "BH", p.value = da_q_val_thresh))
 }
 
 #' The tab's final PCA (the binding's `final_pca`) on the RUVs display matrix.

@@ -1,0 +1,21 @@
+== job 139184126330 (Linux ubuntu-22.04), run 45608074480
+rows: 440 (lockfile 417, bundle 405)
+in both: 381; same version: 357; different version: 24 (hard closure 8, compiled 15)
+in the lockfile, not bundled: 31 (brew, brio, covr, credentials, desc, devtools, diffobj, downlit, ellipsis, fansi, gert, miniUI, pak, pingr, pkgbuild, pkgdown, pkgload, praise, profvis, rcmdcheck, rex, roxygen2, rversions, sessioninfo, shinytest2, testthat, urlchecker, usethis, waldo, whisker, xopen)
+bundled, not in the lockfile: 23 (basilisk, biocmake, class, datasets, dir.expiry, dqrng, FNN, foreign, h5mread, HDF5Array, irlba, MultiScholaR, pheatmap, RcppAnnoy, rhdf5, rhdf5filters, Rhdf5lib, rpart, Rtsne, sitmo, spatial, tcltk, uwot)
+bundled packages built from source: Glimma, GO.db, limpa, MultiScholaR, nanoarrow, RUVIIIC
+KIT-134 CHECK PASSED: version table complete; no hard-closure package missing; duckdb 1.5.5 
+== job 139184126170 (Linux ubuntu-24.04), run 45608074480
+rows: 440 (lockfile 417, bundle 405)
+in both: 381; same version: 357; different version: 24 (hard closure 8, compiled 15)
+in the lockfile, not bundled: 31 (brew, brio, covr, credentials, desc, devtools, diffobj, downlit, ellipsis, fansi, gert, miniUI, pak, pingr, pkgbuild, pkgdown, pkgload, praise, profvis, rcmdcheck, rex, roxygen2, rversions, sessioninfo, shinytest2, testthat, urlchecker, usethis, waldo, whisker, xopen)
+bundled, not in the lockfile: 23 (basilisk, biocmake, class, datasets, dir.expiry, dqrng, FNN, foreign, h5mread, HDF5Array, irlba, MultiScholaR, pheatmap, RcppAnnoy, rhdf5, rhdf5filters, Rhdf5lib, rpart, Rtsne, sitmo, spatial, tcltk, uwot)
+bundled packages built from source: Glimma, GO.db, limpa, MultiScholaR, nanoarrow, RUVIIIC
+KIT-134 CHECK PASSED: version table complete; no hard-closure package missing; duckdb 1.5.5 
+== job 139184125916 (Windows windows-2025), run 45608074480
+rows: 440 (lockfile 417, bundle 405)
+in both: 381; same version: 357; different version: 24 (hard closure 8, compiled 15)
+in the lockfile, not bundled: 31 (brew, brio, covr, credentials, desc, devtools, diffobj, downlit, ellipsis, fansi, gert, miniUI, pak, pingr, pkgbuild, pkgdown, pkgload, praise, profvis, rcmdcheck, rex, roxygen2, rversions, sessioninfo, shinytest2, testthat, urlchecker, usethis, waldo, whisker, xopen)
+bundled, not in the lockfile: 23 (basilisk, biocmake, class, datasets, dir.expiry, dqrng, FNN, foreign, h5mread, HDF5Array, irlba, MultiScholaR, pheatmap, RcppAnnoy, rhdf5, rhdf5filters, Rhdf5lib, rpart, Rtsne, sitmo, spatial, tcltk, uwot)
+bundled packages built from source: Glimma, GO.db, limpa, MultiScholaR, nanoarrow, RUVIIIC
+KIT-134 CHECK PASSED: version table complete; no hard-closure package missing; duckdb 1.5.5 

@@ -1,0 +1,26 @@
+case	observable	predicted
+SCAN	kept at 0.5 and 0.9	all 12 samples on the classic routes (fixture: baseline sd 2, noise sd 0.35, so between-sample r near 0.97); limpa not predicted numerically
+SCAN	kept at 0.99	classic: most or all samples removed; limpa not predicted
+SCAN	kept at 0.95; t	not predicted (stop rule 2 may apply)
+B	prov_operation	legacy (no provenance pending at the Skip's commit; takeDIAStepProvenance)
+B	record_operation	legacy; parameters = the state's args with provenance unknown
+B	record_incomplete	contains 'legacy step: correlation_filtered'
+B	record_outcomes	skipped = TRUE
+B	study_params_correlation	<none> (a legacy step is skipped by the writer)
+B	live_config	min_pearson_correlation_threshold=0;skipped=TRUE
+B	live_samples	all 12 (the Skip commits the normalised source)
+B	replay_outcome	error [workflow_replay_unsupported] 'step correlation_filtered cannot be replayed: operation legacy'
+A	prov_operation	pearson-selection (the Apply's entry kept by the keep rule, R/utils_workflow_dia_state.R:838); values threshold = t; preceded_by pearson-pairs
+A	record_operation	pearson-selection; parameters include threshold = t; preceded_by pearson-pairs
+A	record_outcomes	skipped = TRUE
+A	record_incomplete	no 'legacy step: correlation_filtered'
+A	study_params_correlation	a '[n. correlation_filtered: pearson-selection]' block with the pairs parameters and threshold = t; nothing about the skip
+A	live_config	min_pearson_correlation_threshold=0;skipped=TRUE
+A	live_samples	all 12
+A	replay_outcome	completed
+A	replay_prov_operation	pearson-selection
+A	replay_samples	the samples kept at t (fewer than live when t removes a sample)
+A	da_equal	FALSE when t removes a sample; TRUE when it removes none (stop rule 2)
+A (limpa)	ruv_design_equal	FALSE when t removes a sample
+A worker	all of A's	as A (INFERRED: the managed completion writes the request's operation pearson-selection)
+A2	all of A's	as A (the second normalisation commits normalized/ruv_corrected without truncating; the Skip then keeps the pearson-selection entry)

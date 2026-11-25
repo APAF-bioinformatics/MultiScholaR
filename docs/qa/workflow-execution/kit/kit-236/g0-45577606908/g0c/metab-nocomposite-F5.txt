@@ -1,0 +1,6 @@
+template: inst/reports/metabolomics/metabolomics_report.rmd
+check: Composite QC figure not found
+observed: present
+== text
+header: ```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalization stages"}
+Warning: Composite QC figure not found at /tmp/RtmpOhKGUh/kit236-g0c/metab-nocomposite/empty_qc/metabolomics_composite_QC_figure.png

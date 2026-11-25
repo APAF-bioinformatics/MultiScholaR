@@ -1,0 +1,16 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-kit235-lipid-metab-report-parser.R	21	29	0	0	failed	50	0	0	0	ok	fixed	fixed: KIT-235 T1: a writer file (M metab, L2 lipid) reaches the Methods through Main; fixed: KIT-235 T2: the per-assay RUV lines are read as the assays they name (M); fixed: KIT-235 T3: the writer's fields are read (M, extractor, no record); fixed: KIT-235 T3b: the record's ITSD aggregation is kept through the overlay (M with a record); fixed: KIT-235 T4: the single RUV form (L1) reaches the Methods without a false k; fixed: KIT-235 T5: a writer file with RUV not applied says so (S lipid, S metab); fixed: KIT-235 T6: '•' and '-' files print the base text, and the same text as the '*' file (M, L1); counts: KIT-235 T1: a writer file (M metab, L2 lipid) reaches the Methods through Main (passed 2 -> 7, skipped 0 -> 0); counts: KIT-235 T2: the per-assay RUV lines are read as the assays they name (M) (passed 1 -> 4, skipped 0 -> 0); counts: KIT-235 T3: the writer's fields are read (M, extractor, no record) (passed 1 -> 10, skipped 0 -> 0); counts: KIT-235 T3b: the record's ITSD aggregation is kept through the overlay (M with a record) (passed 1 -> 2, skipped 0 -> 0); counts: KIT-235 T4: the single RUV form (L1) reaches the Methods without a false k (passed 2 -> 7, skipped 0 -> 0); counts: KIT-235 T5: a writer file with RUV not applied says so (S lipid, S metab) (passed 2 -> 4, skipped 0 -> 0); counts: KIT-235 T6: '•' and '-' files print the base text, and the same text as the '*' file (M, L1) (passed 12 -> 16, skipped 0 -> 0)	
+test-kit227-report-ruv-sentences.R	166	0	0	0	ok	166	0	0	0	ok	same		
+test-general-filemgmt-s4-contracts.R	30	0	0	0	ok	30	0	0	0	ok	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-15-summary-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-lipid-summary.R	14	0	0	6	ok	14	0	0	6	ok	same		
+test-module-ci-metab-summary.R	12	0	0	6	ok	12	0	0	6	ok	same		
+test-module-ci-sentinels.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		

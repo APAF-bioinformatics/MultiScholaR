@@ -37,6 +37,9 @@
 mod_omic_summary_ui <- function(id, config) {
     ns <- shiny::NS(id)
     tp <- config$testid
+    # KIT-245 (b) (VAL-244): "Push to GitHub" is not offered in the installed application, recognised by MSR_BUNDLE
+    # (its Windows shell, its Linux launcher and its systemd units set it); elsewhere the panel is unchanged.
+    installed_application <- nzchar(Sys.getenv("MSR_BUNDLE"))
 
     shiny::tagList(
         shiny::fluidPage(
@@ -106,8 +109,15 @@ mod_omic_summary_ui <- function(id, config) {
                 shiny::column(6,
                     shiny::wellPanel(
                         shiny::h4("Version Control (Optional)"),
-                        shiny::checkboxInput(ns("enable_github"), "Enable GitHub Push", FALSE),
-                        shiny::conditionalPanel(
+                        if (installed_application) {
+                            shiny::p(paste("Pushing to GitHub is not available in the installed application.",
+                                "To keep this analysis under version control, use your usual Git tool; note that",
+                                "the project's scripts folder holds copies of your input files and analysis data,",
+                                "which you may not be allowed to share."))
+                        } else {
+                            shiny::checkboxInput(ns("enable_github"), "Enable GitHub Push", FALSE)
+                        },
+                        if (!installed_application) shiny::conditionalPanel(
                             condition = paste0("input['", ns("enable_github"), "']"),
                             shiny::textInput(ns("github_org"), "GitHub Organization:", ""),
                             shiny::textInput(ns("github_email"), "GitHub Email:", ""),
@@ -175,6 +185,9 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
     if (!is.null(experimentLabel)) shiny::updateTextInput(session, "experiment_label", value = experimentLabel)
     values <- shiny::reactiveValues(workflow_args_saved = FALSE, files_copied = FALSE, report_generated = FALSE,
         report_path = NULL)
+    # KIT-212 (VAL-172; implementation audit K212-I02): the DA the last successful Copy was made under, kept outside
+    # `values` (whose fields the Summary captures record).
+    copied <- new.env(parent = emptyenv())
 
     output$template_status <- shiny::renderText({
         shiny::req(projectDirs)
@@ -189,11 +202,14 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
 
     shiny::observeEvent(input$copy_to_publication, {
         shiny::req(input$experiment_label)
-        omicSummaryCopy(output, values, input$experiment_label, input$description, projectDirs, omicType, workflowData,
-            config)
+        copied_result <- omicSummaryCopy(output, values, input$experiment_label, input$description, projectDirs, omicType,
+            workflowData, config)
+        if (is.null(copied_result$error)) copied$da <- omicSummaryDaReference(workflowData)
     }, ignoreInit = TRUE)
 
     shiny::observeEvent(input$generate_report, {
+        # KIT-212 (K212-I02): a DA run since the last Copy makes the copied files another analysis's; Copy is asked for again.
+        if (isTRUE(values$files_copied) && !identical(copied$da, omicSummaryDaReference(workflowData))) values$files_copied <- FALSE
         # KIT-101 F-11: a refused report says why before the gate stops it.
         if (!shiny::isTruthy(input$experiment_label)) {
             shiny::showNotification("Please enter an experiment label before generating the report.", type = "warning")
@@ -208,6 +224,8 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
     })
 
     shiny::observeEvent(input$push_to_github, {
+        # KIT-245 (b), audit I04: the installed application offers no push, whatever inputs a client sends.
+        if (nzchar(Sys.getenv("MSR_BUNDLE"))) return(invisible(NULL))
         shiny::req(input$enable_github, input$github_org, input$github_email, input$github_username, input$project_id)
         shiny::req(values$report_generated)
         omicSummaryGithub(output, input$experiment_label, input$description, input$github_org, input$github_email,
@@ -229,6 +247,15 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
     shiny::outputOptions(output, "report_ready", suspendWhenHidden = FALSE)
 
     invisible(values)
+}
+
+#' KIT-212 (VAL-172; K212-I02): the store's current DA manifest (its entity id), or NULL without a reference-state owner or a
+#' DA: what a Copy was made under, so that the Report asks for Copy again after a later DA.
+#' @noRd
+omicSummaryDaReference <- function(workflowData) {
+    manager <- shiny::isolate(workflowData$state_manager)
+    if (!usesWorkflowReferenceStates(manager)) return(NULL)
+    manager$.context$snapshot$da_results$entity_id
 }
 
 #' The core's notifications, shown.

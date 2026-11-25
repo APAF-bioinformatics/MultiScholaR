@@ -1,0 +1,7 @@
+== test-di10k.R :: DI10K: the confirmatory cell has its own index; T-COV's catalogue does not hold it (3 not passed)
+Expected `nrow(conf)` to be identical to `nrow(cells) + 1L`.
+Differences:
+  `actual`: 171
+`expected`: 170
+
+

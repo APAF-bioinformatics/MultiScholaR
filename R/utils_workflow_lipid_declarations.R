@@ -51,18 +51,21 @@ lipidomicsDeclarationBinding <- list(
             lipids_intensity_cutoff_percentile = parameters$lipids_intensity_cutoff_percentile,
             lipids_proportion_of_samples_below_cutoff = parameters$lipids_proportion_of_samples_below_cutoff)
     },
-    # Per assay, the row with the highest mean intensity is kept; the module reads the row counts before and after.
+    # Per assay, the row with the highest mean intensity over the design's samples is kept (KIT-214: every numeric column
+    # under a record's earlier rule); the module reads the row counts before and after.
     resolve_duplicates = function(object) {
         resolveLipidDuplicateFeaturesByIntensityFn <- resolveLipidDuplicateFeaturesByIntensity
         assays <- object@lipid_data
         names(assays) <- names(assays) %||% paste0("Assay_", seq_along(assays))
         before <- vapply(assays, nrow, integer(1))
-        resolved <- lapply(assays, function(assay) {
-            sample_cols <- names(assay)[vapply(assay, is.numeric, logical(1))]
-            if (!length(sample_cols)) return(assay)
-            resolveLipidDuplicateFeaturesByIntensityFn(assay_tibble = assay, id_col = object@lipid_id_column,
-                sample_cols = sample_cols)
-        })
+        design_samples <- object@design_matrix[[object@sample_id]]
+        resolved <- Map(function(assay, assay_name) {
+            numeric_columns <- names(assay)[vapply(assay, is.numeric, logical(1))]
+            if (!length(numeric_columns)) return(assay)
+            input <- omicsDuplicateResolutionInput(assay, numeric_columns, design_samples, object@lipid_id_column, assay_name)
+            resolveLipidDuplicateFeaturesByIntensityFn(assay_tibble = input$table, id_col = object@lipid_id_column,
+                sample_cols = input$columns)
+        }, assays, names(assays))
         object@lipid_data <- resolved
         list(object = object, value = list(counts = list(before = before, after = vapply(resolved, nrow, integer(1)))))
     },
@@ -94,8 +97,9 @@ lipidomicsDeclarationBinding <- list(
     da_format = function(...) formatLipidDaContrastTable(...),
     da_count = function(...) countLipidDaSignificant(...),
     # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
-    filter_intensity_page = function(page, threshold, proportion, id_column) lipidIntensityFilteringHelper(assay_table = page,
-        min_lipid_intensity_threshold = threshold, lipids_proportion_of_samples_below_cutoff = proportion, lipid_id_column = id_column),
+    filter_intensity_page = function(page, threshold, proportion, id_column, sample_columns) lipidIntensityFilteringHelper(assay_table = page,
+        min_lipid_intensity_threshold = threshold, lipids_proportion_of_samples_below_cutoff = proportion, lipid_id_column = id_column,
+        sample_columns = sample_columns),
     resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveLipidDuplicateFeaturesByIntensity(assay_tibble = batch,
         id_col = id_column, sample_cols = sample_columns),
     duplicate_value = function(before, after, without_samples) list(counts = list(before = before, after = after)),

@@ -337,6 +337,100 @@ omicNormReadRuvDesign <- function(input, omic, addLog, route = NULL) {
         })
 }
 
+#' The values of the RUV grouping column whose samples belong to more than one group
+#' (KIT-174 (a), VAL-29). NA is counted as a value.
+#' @param design_matrix The design table.
+#' @param column The RUV grouping column, or NULL (an omic without the selector).
+#' @param group_column The design's group column.
+#' @return The spanning values (character; NA for the missing value), empty when none or when
+#'   `column` is NULL.
+#' @noRd
+omicNormRuvGroupingSpansGroups <- function(design_matrix, column, group_column = "group") {
+    if (is.null(column) || !is.data.frame(design_matrix) ||
+        !all(c(column, group_column) %in% names(design_matrix))) {
+        return(character())
+    }
+    values <- factor(as.character(design_matrix[[column]]), exclude = NULL)
+    groups <- as.character(design_matrix[[group_column]])
+    spans <- vapply(split(groups, values), \(group) length(unique(group)) > 1L, logical(1))
+    levels(values)[spans]
+}
+
+#' The RUV grouping warning's text (KIT-174 (a), VAL-29; proposed wording, implemented as
+#' proposed, the owner edits before release, VAL-41): the column, the number of its values that
+#' span groups, the number of its values.
+#' @noRd
+omicNormRuvGroupingWarningText <- function() {
+    paste(
+        "The RUV grouping column '%s' puts samples of different groups together (%d of its %d",
+        "values contain samples of more than one group). RUV-III treats samples with the same",
+        "value as replicates, so the correction would be built from the differences between your",
+        "groups. Choose 'group' unless each value of the column lies inside one group."
+    )
+}
+
+#' Whether the RUV grouping column gives RUV-III's replicate sets in this run (KIT-174 (a),
+#' 3 item 2): the mode is not `skip`; under the RUV design gate the design is not `none` or
+#' `technical_replicates`; on proteomics, declared technical replicates do not take the column's
+#' place (they do on DIA with limpa under every design, and on the classic routes except under
+#' `groups_all_features` and `supplied_controls`, which withdraw the declaration for the RUV
+#' step, `protRuvGroupReplicateObject`).
+#' @param mode The run's RUV mode.
+#' @param design The gate's design id, or NULL with the gate off.
+#' @param technical Whether the head state's design declares technical replicates (proteomics).
+#' @param classic TRUE on the classic proteomics routes.
+#' @return One logical.
+#' @noRd
+omicNormRuvGroupingIsReplicateSets <- function(mode, design = NULL, technical = FALSE,
+                                               classic = FALSE) {
+    if (is.null(mode) || identical(mode, "skip")) return(FALSE)
+    if (isTRUE(design %in% c("none", "technical_replicates"))) return(FALSE)
+    withdrawn <- classic && isTRUE(design %in% c("groups_all_features", "supplied_controls"))
+    !(isTRUE(technical) && !withdrawn)
+}
+
+#' The head state's design table and group column (KIT-174 (a)): the table the run reads, from
+#' the state's metadata (as `omicNormRuvHeadTechnicalReplicates`); NULL without a session state
+#' or when it cannot be read.
+#' @noRd
+omicNormRuvHeadDesign <- function(manager) {
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    tryCatch(withWorkflowStateScope(manager, function() {
+        reference <- getWorkflowStateReference(manager)
+        if (is.null(reference)) return(NULL)
+        spec <- readWorkflowStateMetadata(manager, reference)$data
+        design <- materializeWorkflowTable(manager$.context, spec$components$design_matrix)
+        list(design = as.data.frame(design), group_id = spec$slots$group_id %||% "group")
+    }), error = function(error) NULL)
+}
+
+#' The RUV grouping warning at a run action (KIT-174 (a), VAL-29): when the column gives
+#' RUV-III's replicate sets (`omicNormRuvGroupingIsReplicateSets`) and one of its values holds
+#' samples of more than one group, one warning notification and one log line with the same text
+#' (and a line in the tab's log where the tab has one). The run proceeds; RUV is unchanged. The
+#' design is the head state's, else the session's design table.
+#' @param column The RUV grouping column (NULL: no warning).
+#' @param addLog The tab's log, or NULL.
+#' @return The spanning values, invisibly.
+#' @noRd
+omicNormWarnRuvGrouping <- function(workflowData, column, mode, design = NULL, technical = FALSE,
+                                    classic = FALSE, showNotificationFn = shiny::showNotification,
+                                    addLog = NULL) {
+    if (is.null(column) || !omicNormRuvGroupingIsReplicateSets(mode, design, technical, classic)) {
+        return(invisible(character()))
+    }
+    head <- omicNormRuvHeadDesign(shiny::isolate(workflowData$state_manager))
+    table <- head$design %||% shiny::isolate(workflowData$design_matrix)
+    spans <- omicNormRuvGroupingSpansGroups(table, column, head$group_id %||% "group")
+    if (!length(spans)) return(invisible(spans))
+    text <- sprintf(omicNormRuvGroupingWarningText(), column, length(spans),
+        length(unique(as.character(table[[column]]))))
+    showNotificationFn(text, type = "warning", duration = NULL)
+    logger::log_warn(text)
+    if (is.function(addLog)) addLog(paste("WARNING:", text))
+    invisible(spans)
+}
+
 #' The normalisation pipeline: the managed sequence with a runner (KIT-078), else the in-process twin under the progress
 #' display (KIT-105 D6, D9); then the tab's completion.
 #' @noRd
@@ -352,12 +446,25 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
     manager <- workflowData$state_manager
     ruv_design <- omicNormReadRuvDesign(input, binding$omic_type, addLog)
     if (!ruv_design$ok) return(invisible(FALSE))
-    # KIT-194: the run rule (a refusal, or the previous run's start selected), after every other refusal (7.3).
-    started <- omicNormApplyRunStart(binding, manager, normData, addLog)
+    # KIT-194: the run rule (a refusal, or the previous run's start selected), after every other refusal (7.3). KIT-257:
+    # then the earlier RUV-corrected figures are removed; the assays are the tab's, else the head's (R1-03).
+    own_files <- function() {
+        assays <- shiny::isolate(normData$assay_names)
+        if (!length(assays) && inherits(manager, "DIAStateAdapter")) assays <- config$binding$read_metadata(manager)$assay_names
+        omicNormOwnFiles(binding, experimentPaths, assays)
+    }
+    started <- omicNormApplyRunStart(binding, manager, normData, addLog, remove = own_files)
     if (inherits(started, "error")) {
         shiny::showNotification(conditionMessage(started), type = "error", duration = 15)
         return(invisible(FALSE))
     }
+    # KIT-174 (a), VAL-29: the RUV grouping warning (a new design's mode is its id; a legacy
+    # design keeps the tab's mode).
+    choice <- ruv_design$choice
+    new_design <- !is.null(choice) && !isTRUE(choice$legacy)
+    ruv_mode <- if (new_design) choice$ruv_design else input$ruv_mode
+    omicNormWarnRuvGrouping(workflowData, input$ruv_grouping_variable, ruv_mode, choice$ruv_design,
+        addLog = addLog)
     runner <- workflowOmicsManagedActions(binding$omic_type)
     if (!is.null(runner)) {
         aesthetics <- getPlotAesthetics()
@@ -467,9 +574,13 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
     addLog(paste("Applying correlation filter (threshold:", threshold, ")"))
     shiny::showNotification("Applying correlation filter...", id = "corr_working", duration = NULL)
     binding <- config$binding$binding
+    manager <- workflowData$state_manager
+    # KIT-254: whether this press returned the history to the run's result; a failure after it clears the tab's fields.
+    pressed <- new.env(parent = emptyenv())
+    pressed$cut <- FALSE
     tryCatch({
         # KIT-194: only the last run's result, or a correlation-step state made from it (7.4).
-        assertOmicNormHeadIsResult(binding, workflowData$state_manager, normData)
+        assertOmicNormHeadIsResult(binding, manager, normData)
         shiny::req(normData$ruv_corrected_obj %||% normData$post_norm_obj)
         logger::log_info("Calculating Pearson correlations per sample pair...")
         finish <- function(corr_results, reference) {
@@ -483,8 +594,15 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
         }
         runner <- workflowOmicsManagedActions(binding$omic_type)
         if (!is.null(runner)) {
+            # KIT-254: the check and the return to the run's result when the actions start (a press queued behind a running
+            # action reads what that action left; KIT-194 A02's idiom).
+            start <- function() {
+                assertOmicNormHeadIsResult(binding, manager, normData)
+                pressed$cut <- omicNormCorrelationStart(manager, normData, addLog)
+            }
             config$norm$correlation$managed(binding, runner, input$ruv_grouping_variable, threshold, workflowData$config_list, finish,
                 function(error) {
+                    if (isTRUE(pressed$cut)) clearOmicNormCorrelation(normData)
                     addLog(paste("ERROR in correlation filtering:", conditionMessage(error)))
                     logger::log_error(paste("Correlation filtering error:", conditionMessage(error)))
                     shiny::removeNotification("corr_working")
@@ -492,13 +610,15 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
                     if (isTRUE(config$norm$managed_correlation_notify)) {
                         shiny::showNotification(paste("Error:", conditionMessage(error)), type = "error")
                     }
-                })
+                }, start)
             return(invisible(TRUE))
         }
-        config$norm$correlation$in_process(binding, workflowData$state_manager, input$ruv_grouping_variable, threshold,
+        pressed$cut <- omicNormCorrelationStart(manager, normData, addLog)
+        config$norm$correlation$in_process(binding, manager, input$ruv_grouping_variable, threshold,
             workflowData$config_list, finish)
         invisible(TRUE)
     }, error = function(e) {
+        if (isTRUE(pressed$cut)) clearOmicNormCorrelation(normData)
         addLog(paste("ERROR in correlation filtering:", e$message))
         logger::log_error(paste("Correlation filtering error:", e$message))
         shiny::removeNotification("corr_working")
@@ -516,7 +636,13 @@ skipOmicNormCorrelation <- function(workflowData, normData, addLog, config) {
     shiny::req(workflowData$state_manager)
     shiny::req(normData$ruv_complete || normData$normalization_complete)
     # KIT-194: only the last run's result, or a correlation-step state made from it (7.4); refused before any flag is set.
-    allowed <- tryCatch(assertOmicNormHeadIsResult(config$binding$binding, workflowData$state_manager, normData), error = function(e) {
+    # KIT-254: then, at a correlation-step state, the history returns to the run's result, so the Skip commits it.
+    cut_back <- FALSE
+    allowed <- tryCatch({
+        assertOmicNormHeadIsResult(config$binding$binding, workflowData$state_manager, normData)
+        cut_back <- omicNormCorrelationStart(workflowData$state_manager, normData, addLog)
+        TRUE
+    }, error = function(e) {
         addLog(paste("ERROR:", conditionMessage(e)))
         shiny::showNotification(paste("Error:", conditionMessage(e)), type = "error")
         FALSE
@@ -537,7 +663,8 @@ skipOmicNormCorrelation <- function(workflowData, normData, addLog, config) {
             "Normalization complete (correlation filtering skipped)")
         TRUE
     }, error = function(e) {
-        set_flags(held$obj, held$complete)
+        # KIT-254: after a return to the run's result the head is that table, so the tab's fields are cleared, not put back.
+        if (cut_back) clearOmicNormCorrelation(normData) else set_flags(held$obj, held$complete)
         addLog(paste("ERROR:", conditionMessage(e)))
         logger::log_error(paste("Skip correlation filtering error:", conditionMessage(e)))
         shiny::showNotification(paste("Error:", conditionMessage(e)), type = "error")
@@ -680,6 +807,14 @@ omicNormGuardTexts <- function() {
             "is left in this session, so it cannot be filtered or normalised again here. To change quality control or",
             "normalisation, import the data again."),
         busy = "A step is still running. Press \"Run Normalization Pipeline\" again when it has finished.",
+        # KIT-257 (VAL-250): a run's earlier file that could not be removed (`%s` the paths; drafts, VAL-41).
+        norm_unremoved = paste("An earlier file of the normalisation could not be removed, so this normalisation was not",
+            "run: %s. Close any program that has it open, then run the normalisation again."),
+        correlation_unremoved = paste("An earlier file of the normalisation could not be removed, so this correlation filter",
+            "was not run: %s. Close any program that has it open, then apply or skip the correlation filter again."),
+        # AUDIT-KIT-257-impl I05 (the coordinator's ruling): proteomics, a run that stops after its start removed files.
+        removed_then_stopped = paste("The earlier RUV figures and normalised table of this analysis were removed when this run",
+            "started; apply or skip the correlation filter again before Copy."),
         correlation = paste("the current table is not the one the last normalisation produced (Quality Control was reverted since),",
             "so the correlation filter would not use the normalised table the analysis reports. Press \"Run Normalization",
             "Pipeline\" again, then apply or skip the correlation filter."),
@@ -699,7 +834,27 @@ omicNormGuardTexts <- function() {
             "normalisation (and the correlation filter or its Skip), then press this button again."),
         summary_loaded = paste("This session file was saved after Quality Control was reverted past the normalisation, so its",
             "table (\"%s\") was not normalised. Import the data again, run quality control and the normalisation, then press",
-            "this button again."))
+            "this button again."),
+        # KIT-212 (VAL-172 (1), (5)): the Summary's refusals of a differential analysis not run on the current table, and of
+        # DA files no analysis of this session made (drafts for the owner's wording pass, VAL-41); `%s` is the folder and
+        # the files.
+        summary_da_stale = paste("The differential analysis was run on an earlier table, not the current one: the table changed",
+            "after the analysis ran (a new normalisation run, a Revert, or the correlation filter applied again). Run the",
+            "differential analysis again, then press 'Save Workflow Arguments' before copying or generating the report."),
+        summary_da_files_unmade = paste("The results folder %s holds differential analysis files that no differential analysis",
+            "of this session made (%s): they are from an earlier session, an opened session file, or a contrast the last analysis",
+            "did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save",
+            "Workflow Arguments' before copying or generating the report."),
+        # KIT-243 (VAL-212 (2); part D): the Summary's refusals of a Save that does not describe the current analysis, and of
+        # a differential analysis whose files were not all written (drafts for the owner's wording pass, VAL-41).
+        summary_save_stale = paste("The saved workflow parameters do not describe the current analysis: a step or the",
+            "differential analysis was run, reverted or changed after the analysis record (analysis_record.json) was last",
+            "saved, or it was saved by another version of MultiScholaR. Press 'Save Workflow Arguments' again, then copy the",
+            "results or generate the report. If this message returns after saving, the analysis record could not be written:",
+            "see the warning shown when saving."),
+        da_publication_pending = paste("The files of the last differential analysis were not all written to the project",
+            "folder, so it may still hold files of an earlier analysis. Run the differential analysis again, then copy the",
+            "results or generate the report."))
 }
 
 #' Whether the binding is transcriptomics' (one normalisation state, `trx_ruvs`).
@@ -869,11 +1024,18 @@ omicNormRunStart <- function(binding, manager, normData) {
 
 #' The run rule applied before a run: a refusal is logged and returned as an error (the caller shows it); a remembered
 #' start is selected (the history truncated there, as Revert to it would) and logged.
+#' KIT-257 (VAL-250): after the rule's refusals and before anything moves, the run's own earlier files are removed; a file
+#' that cannot be removed is a refusal of the run (`workflow_figure_unwritten`), returned as the rule's are.
+#' @param remove NULL, or `function()` giving the paths of the stage's own files (`omicNormOwnFiles`).
 #' @return TRUE when the run may go on, else the condition.
 #' @noRd
-omicNormApplyRunStart <- function(binding, manager, normData, addLog) {
+omicNormApplyRunStart <- function(binding, manager, normData, addLog, remove = NULL) {
     tryCatch({
         start <- omicNormRunStart(binding, manager, normData)
+        if (is.function(remove)) {
+            removed <- removeWorkflowOwnFiles(remove(), omicNormGuardTexts()$norm_unremoved)
+            if (length(removed)) addLog(paste("Removed the earlier run's files this run replaces:", paste(basename(removed), collapse = ", ")))
+        }
         if (!is.null(start)) {
             selectWorkflowStateReference(manager, start)
             addLog(sprintf("Normalisation runs again from '%s', the table the previous run started from", start))
@@ -883,6 +1045,56 @@ omicNormApplyRunStart <- function(binding, manager, normData, addLog) {
         addLog(paste("ERROR:", conditionMessage(e)))
         e
     })
+}
+
+#' KIT-257 (VAL-250): the normalisation stage's files that a run writes only conditionally, by exact name in the omic's
+#' own folders: transcriptomics' CCA panels and grid workbook (legacy grid only), lipidomics' and metabolomics'
+#' RUV-corrected QC figures per assay (RUV only; the safe name of the figure writers).
+#' @param binding The omic's declaration binding.
+#' @param experimentPaths The omic's project paths.
+#' @param assayNames The assay names (lipidomics, metabolomics).
+#' @return Paths, possibly none.
+#' @noRd
+omicNormOwnFiles <- function(binding, experimentPaths, assayNames = NULL) {
+    if (omicNormIsTrx(binding)) {
+        return(file.path(experimentPaths$publication_graphs_dir, c("canonical_correlation_panels.png",
+            "canonical_correlation_panels.pdf", "canonical_correlation_optimization_summary.xlsx")))
+    }
+    safe <- gsub("[^A-Za-z0-9]", "_", tolower(as.character(assayNames)))
+    file.path(experimentPaths[[binding$qc_dir_role]],
+        sprintf("%s_ruv_corrected_%s.png", rep(safe, each = 4L), c("pca", "density", "rle", "correlation")))
+}
+
+#' KIT-254: before a correlation Apply or Skip at a correlation-step head (one `assertOmicNormHeadIsResult` accepted),
+#' the active history returns to the state holding the run's result (selected as Revert to it would, as
+#' `omicNormApplyRunStart` selects a remembered start), so the Apply reads, and the Skip commits, the table the filter
+#' first received. The correlation-step states after it leave the active history; no state record is deleted. A no-op on
+#' a manager that is not a session owner, on a tab whose final is not a saved reference, and at the run's result.
+#' @return TRUE when the history was cut, else FALSE; a condition of class `omic_norm_correlation_input_stale` when no
+#'   state of the active history holds the run's result.
+#' @noRd
+omicNormCorrelationStart <- function(manager, normData, addLog) {
+    if (!inherits(manager, "DIAStateAdapter")) return(FALSE)
+    final <- shiny::isolate(normData$ruv_corrected_obj %||% normData$post_norm_obj)
+    if (!isSavedWorkflowReference(final)) return(FALSE)
+    if (identical(getWorkflowStateReference(manager)$entity_id, final$entity_id)) return(FALSE)
+    history <- as.character(unlist(manager$getHistory()))
+    # The state in the active history whose current reference is the run's result (as `omicNormRunStart` finds a start).
+    name <- Find(\(state) identical(getWorkflowStateReference(manager, state)$entity_id, final$entity_id), history)
+    if (is.null(name)) rlang::abort(omicNormGuardTexts()$correlation, class = "omic_norm_correlation_input_stale")
+    selectWorkflowStateReference(manager, name)
+    addLog(sprintf("Correlation filter starts again from '%s', the table the normalisation produced", name))
+    TRUE
+}
+
+#' KIT-254: the tab's correlation fields at their initial values (`omicNormReactiveState`) after a failure that followed
+#' the return to the run's result, so the summary and the final PCA show the table the head and the analysis now hold.
+#' @noRd
+clearOmicNormCorrelation <- function(normData) {
+    normData$correlation_results <- list()
+    normData$correlation_filtered_obj <- NULL
+    normData$correlation_filtering_complete <- FALSE
+    invisible(normData)
 }
 
 #' The correlation and export guard (7.4, lipidomics and metabolomics): the head must be the last run's result, or a

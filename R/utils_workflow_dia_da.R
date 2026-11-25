@@ -66,6 +66,233 @@ invalidateDIAVisibleResults <- function(da_data, workflow) {
     invisible(NULL)
 }
 
+# ------------------------------------------------------------------------------------------------
+# KIT-212 (VAL-172): whether the differential analysis the store holds was run on the current table, and which DA files
+# in the project folder it made. The Summary's Save, Report and Copy, the lipid, metab and trx DA tab and the replay read
+# these. Recorded divergence: a read error makes the status "none", logged at warn (as KIT-182 and KIT-207's Report guard),
+# over conventions/R.md's specific conditions, so that a guard never stops an action for an unreadable record.
+# ------------------------------------------------------------------------------------------------
+
+#' The components that identify the table of a state of `class`: proteomics' three (as `invalidateDIAVisibleResults`),
+#' every other class's assay component and design.
+#' @param class A declared assay class.
+#' @return Component names.
+#' @noRd
+workflowDaTableFields <- function(class) {
+    if (identical(class, "ProteinQuantitativeData")) return(c("protein_quant_table", "design_matrix", "protein_id_table"))
+    c(workflowClassDeclaration(class)$assay, "design_matrix")
+}
+
+#' The head's table state: the head, or, when the head's class is a declared result class (the proteomics enrichment),
+#' the last state of the active history whose class is an assay class. Never through the result's `previous_state`: a
+#' result committed again on itself names itself (KIT-206 audit I01). Inside the owner's state scope.
+#' @param manager A reference-state session owner.
+#' @return `list(reference, record)`; an error when the head has no table state.
+#' @noRd
+workflowDaTableState <- function(manager) {
+    snapshot <- manager$.context$snapshot
+    head <- getWorkflowStateReference(manager)
+    if (is.null(head)) cli::cli_abort("the store has no current state", class = "saved_entity_missing")
+    record <- readComponentMetadata(manager, head)
+    if (!isTRUE(record$data$class %in% workflowDeclaredClassNames("result"))) return(list(reference = head, record = record))
+    for (state in rev(as.character(unlist(snapshot$state_history)))) {
+        reference <- snapshot$states[[state]]
+        if (is.null(reference)) next
+        candidate <- tryCatch(readComponentMetadata(manager, reference), saved_entity_unsupported = function(error) NULL)
+        if (isTRUE(candidate$data$class %in% workflowDeclaredClassNames("assay"))) {
+            return(list(reference = reference, record = candidate))
+        }
+    }
+    cli::cli_abort("the active history holds no table state", class = "saved_entity_missing")
+}
+
+#' Whether a DA's source state and a table state hold different tables (their components compared with `identical()`).
+#' @param source The source state's reference.
+#' @param table `workflowDaTableState()`'s value.
+#' @noRd
+workflowDaTablesDiffer <- function(manager, source, table) {
+    fields <- workflowDaTableFields(table$record$data$class)
+    !identical(readComponentMetadata(manager, source)$data$components[fields], table$record$data$components[fields])
+}
+
+#' KIT-212 (VAL-172 (2)): whether the store's last DA was run on the current table. "current" when its source belongs to
+#' this store, is a state of the active history, and has the head's table components; "stale" otherwise; "none" when
+#' the manager is not a reference-state session owner, the store holds no DA, or a record cannot be read. Opens its own
+#' state scope.
+#' @param manager The bus's state manager.
+#' @return `"none"`, `"current"` or `"stale"`.
+#' @noRd
+workflowDaResultStatus <- function(manager) {
+    if (!usesWorkflowReferenceStates(manager)) return("none")
+    tryCatch(withWorkflowStateScope(manager, function() {
+        context <- manager$.context
+        snapshot <- context$snapshot
+        if (!isSavedWorkflowReference(snapshot$da_results)) return("none")
+        source <- resolveWorkflowStateValue(context, snapshot$da_results)$source
+        if (!identical(source$owner, context$store$identity)) return("stale")
+        history <- as.character(unlist(snapshot$state_history))
+        if (!any(vapply(history, function(state) identical(snapshot$states[[state]]$entity_id, source$entity_id), logical(1)))) {
+            return("stale")
+        }
+        if (workflowDaTablesDiffer(manager, source, workflowDaTableState(manager))) "stale" else "current"
+    }), error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("The differential analysis status could not be read:",
+            conditionMessage(error))))
+        "none"
+    })
+}
+
+#' The DA files of an omic's project folder that the Summary's Copy collects and that match the DA publication's naming
+#' (G0): the tables of Copy's pattern (`copyToResultsSummary`), and in the figure folders Copy copies the files named as
+#' the publication names its per-contrast, per-assay and per-run files, and (proteomics) the heatmaps Save Heatmap writes.
+#' Any other file there is not a candidate.
+#' @param paths The omic's project paths (`da_output_dir`, `publication_graphs_dir`).
+#' @param omicType The omic.
+#' @return Paths, as `file.path(<folder>, <name>)`.
+#' @noRd
+workflowDaCandidateFiles <- function(paths, omicType) {
+    found <- function(dir, pattern) {
+        if (is.null(dir) || !dir.exists(dir)) return(character())
+        file.path(dir, sort(list.files(dir, pattern = pattern)))
+    }
+    graphs <- function(folder) if (is.null(paths$publication_graphs_dir)) NULL else file.path(paths$publication_graphs_dir, folder)
+    tables <- found(paths$da_output_dir, if (identical(omicType, "transcriptomics")) "^de_results_.+\\.csv$" else
+        "(da|de)_.+_long_annot\\.xlsx$")
+    figures <- switch(omicType,
+        proteomics = c(found(graphs("Volcano_Plots"), "\\.(png|pdf)$"),
+            found(graphs("Interactive_Volcano_Plots"), "(\\.html|\\.unavailable\\.txt)$"),
+            found(graphs("NumSigDaMolecules"), "^da_proteins_num_sig_da_molecules\\.(tab|xlsx|png|pdf)$"),
+            found(graphs("Heatmap"), "_(heatmap\\.(png|pdf)|heatmap_methods\\.md|clusters\\.csv)$")),
+        lipidomics = c(found(graphs("Heatmaps"), "(_heatmap\\.(png|pdf)|^all_heatmaps_combined\\.pdf)$"),
+            found(graphs("NumSigDeMolecules"), "^lipids_num_sig_(de_molecules\\.(tab|xlsx)|barplot\\.png)$")),
+        metabolomics = found(graphs("Heatmaps"), "(_heatmap\\.(png|pdf)|^all_heatmaps_combined\\.pdf)$"),
+        transcriptomics = c(found(graphs("Volcano_Plots"), "^volcano_plot_.+\\.(png|pdf)$"),
+            found(graphs("NumSigDeMolecules"), "^summary_barplot_.+\\.(png|pdf)$")),
+        character())
+    c(tables, figures)
+}
+
+#' The files the store's last DA's publication writes, from its manifest by the writers' own naming (lipid and metab
+#' `omicsDaFileNames`, trx `trxDaPublicationNames`, proteomics `diaDaPublicationFiles` and
+#' `diaInteractiveVolcanoFileName`), its per-run files, and (proteomics) the Save Heatmap files of its contrasts. Inside
+#' the owner's state scope.
+#' @param manager A reference-state session owner holding a DA.
+#' @param paths,omicType As `workflowDaCandidateFiles`.
+#' @return Paths.
+#' @noRd
+workflowDaMadeFiles <- function(manager, paths, omicType) {
+    manifest <- resolveWorkflowStateValue(manager$.context, manager$.context$snapshot$da_results)
+    da <- paths$da_output_dir %||% ""
+    graphs <- function(folder) file.path(paths$publication_graphs_dir %||% "", folder)
+    if (identical(omicType, "proteomics")) {
+        contrasts <- as.data.frame(manifest$contrasts, stringsAsFactors = FALSE)
+        friendly <- as.character(contrasts$friendly_names %||% character())
+        saved <- unique(as.character(unlist(contrasts[intersect(c("contrasts", "friendly_names", "full_format"), names(contrasts))])))
+        prefixes <- vapply(saved, function(contrast) omicDaHeatmapSavePrefix("prot_", contrast), "")
+        return(c(diaDaPublicationFiles(manifest, list(da_output_dir = da, publication_graphs_dir = paths$publication_graphs_dir %||% "")),
+            file.path(graphs("Interactive_Volcano_Plots"), vapply(friendly, diaInteractiveVolcanoFileName, "")),
+            vapply(friendly, function(contrast) diaInteractiveVolcanoUnavailablePath(graphs("Interactive_Volcano_Plots"), contrast), ""),
+            file.path(graphs("NumSigDaMolecules"), paste0("da_proteins_num_sig_da_molecules.", c("png", "pdf"))),
+            file.path(graphs("Heatmap"), as.vector(outer(prefixes, c("_heatmap.png", "_heatmap.pdf", "_heatmap_methods.md",
+                "_clusters.csv"), paste0)))))
+    }
+    if (identical(omicType, "transcriptomics")) {
+        names_of <- unlist(lapply(manifest$results, function(entry) if (!is.null(entry$products$da_contrast)) entry$comparison))
+        return(unlist(lapply(as.character(names_of), function(name) {
+            files <- trxDaPublicationNames(name)
+            c(file.path(da, files$table), file.path(graphs("Volcano_Plots"), paste0(files$volcano, c(".png", ".pdf"))),
+                file.path(graphs("NumSigDeMolecules"), paste0(files$bar, c(".png", ".pdf"))))
+        })))
+    }
+    noun <- c(lipidomics = "lipids", metabolomics = "metabolites")[[omicType]]
+    per_contrast <- unlist(lapply(names(manifest$results), function(contrast) {
+        lapply(Filter(function(entry) isTRUE((entry$rows %||% 0L) > 0L), manifest$results[[contrast]]$assays), function(entry) {
+            files <- omicsDaFileNames(noun, entry$assay, contrast)
+            c(file.path(da, paste0(files$table, ".xlsx")), file.path(graphs("Heatmaps"), paste0(files$plot, c("_heatmap.png", "_heatmap.pdf"))))
+        })
+    }))
+    c(per_contrast, file.path(graphs("Heatmaps"), "all_heatmaps_combined.pdf"),
+        file.path(graphs("NumSigDeMolecules"), c("lipids_num_sig_de_molecules.tab", "lipids_num_sig_de_molecules.xlsx",
+            "lipids_num_sig_barplot.png")))
+}
+
+#' KIT-212 (VAL-172 (5)): the DA files of the project folder that no DA of this session made: every candidate
+#' (`workflowDaCandidateFiles`) when the store holds no current DA, otherwise the candidates its publication does not
+#' write. Only for a reference-state session owner (on every application manager KIT-207's rule); another manager (a test
+#' fake, the legacy ingest's staging state) is not checked.
+#' @param manager The bus's state manager.
+#' @param paths,omicType As `workflowDaCandidateFiles`.
+#' @return Paths, possibly none.
+#' @noRd
+workflowDaFilesUnmade <- function(manager, paths, omicType) {
+    if (!usesWorkflowReferenceStates(manager)) return(character())
+    candidates <- workflowDaCandidateFiles(paths, omicType)
+    if (!length(candidates) || !identical(workflowDaResultStatus(manager), "current")) return(candidates)
+    made <- withWorkflowStateScope(manager, function() workflowDaMadeFiles(manager, paths, omicType))
+    setdiff(candidates, made)
+}
+
+#' KIT-243 (part D): the marker that the newest DA's publication has not completed, at the root of the publication folder,
+#' which neither Copy (named subfolders), KIT-212's candidates, the proteomics session archive nor Push reads.
+#' @param paths The omic's project paths.
+#' @return The marker's path, or NULL when the publication folder is unset.
+#' @noRd
+workflowDaPublicationMarker <- function(paths) {
+    folder <- paths$publication_graphs_dir
+    if (!is.character(folder) || length(folder) != 1L || is.na(folder) || !nzchar(folder)) return(NULL)
+    file.path(folder, ".multischolar_da_publication_pending")
+}
+
+#' KIT-243 (VAL-212 (1)): before a DA publication writes into the project, remove the files the newest DA's publication
+#' writes by name (`workflowDaMadeFiles`, the accepted manifest's) that an earlier DA left in the publication folder or a
+#' folder directly under it, Save Heatmap's `Heatmap/` excepted (told apart by folder: the publications write
+#' `Heatmaps/`). Part D's marker is written first, so a failure here or in the publication leaves Copy and the Report
+#' refused until a publication completes (`clearWorkflowDaPublicationPending`). A path that is a directory is never
+#' deleted: it counts as not removed. A no-op for a manager that is not a reference-state session owner, and when the
+#' publication folder is unset.
+#' @param manager The session owner, the newest DA's manifest accepted on its head.
+#' @param paths The omic's project paths (`publication_graphs_dir`, `da_output_dir`).
+#' @param omicType The omic.
+#' @return The removed files, invisibly. A condition of class `workflow_figure_unwritten` when the marker cannot be written
+#'   (nothing is then removed) or a file is still present.
+#' @noRd
+removeWorkflowDaOwnFigures <- function(manager, paths, omicType) {
+    marker <- workflowDaPublicationMarker(paths)
+    if (!usesWorkflowReferenceStates(manager) || is.null(marker)) return(invisible(character()))
+    graphs <- paths$publication_graphs_dir
+    dir.create(graphs, recursive = TRUE, showWarnings = FALSE)
+    written <- suppressWarnings(file.create(marker))
+    checkWorkflowFigureFiles(marker, copied = isTRUE(written))
+    made <- withWorkflowStateScope(manager, function() {
+        if (isSavedWorkflowReference(manager$.context$snapshot$da_results)) workflowDaMadeFiles(manager, paths, omicType) else
+            character()
+    })
+    # dirname() returns "/" separators on Windows (and keeps a network share's "\\"): compare in that form.
+    root <- dirname(file.path(graphs, "."))
+    folders <- dirname(made)
+    own <- made[(folders == root | dirname(folders) == root) & folders != dirname(file.path(graphs, "Heatmap", "."))]
+    # KIT-257 (AUDIT-KIT-257-impl M1): the shared core (`removeWorkflowOwnFiles`: a leading `~` expanded, no pattern read).
+    removeWorkflowOwnFiles(own, paste0("An earlier file of the differential analysis could not be removed before this ",
+        "analysis's files were written: %s. Close any program that has it open, then run the differential analysis again."))
+}
+
+#' KIT-243 (part D): delete the marker once the DA's publication has completed. The deletion is checked; a marker still
+#' present is a warning naming it (logged, and shown on a Shiny session), and Copy and the Report keep refusing.
+#' @param paths The omic's project paths.
+#' @return TRUE when no marker is left, invisibly; FALSE otherwise.
+#' @noRd
+clearWorkflowDaPublicationPending <- function(paths) {
+    marker <- workflowDaPublicationMarker(paths)
+    if (is.null(marker) || !file.exists(marker)) return(invisible(TRUE))
+    unlink(marker)
+    if (!file.exists(marker)) return(invisible(TRUE))
+    text <- paste0("The differential analysis completed, but ", marker, " could not be removed, so Copy and the Report still ",
+        "refuse. Remove that file, or run the differential analysis again.")
+    logger::log_warn(logger::skip_formatter(text))
+    if (!is.null(shiny::getDefaultReactiveDomain())) shiny::showNotification(text, type = "warning", duration = NULL)
+    invisible(FALSE)
+}
+
 #' Reuse the exact uncontrasted native limma fit inside an explicit DA action.
 #' @param data,design_m,design,samples Existing runTestsContrasts execution inputs.
 #' @param formula,weights Existing model identity, including the scalar NA policy.
@@ -379,12 +606,18 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         # (`da_publication`); in process the publication runs here as before.
         # KIT-052 (KIT-134 run 44275615462): drawn in a short folder and copied into the action staging folder, as the
         # worker does; drawn in place, ggsave's PNG device on Windows wrote nothing, and said nothing, from 260 characters.
-        if (publish) publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
-            paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
-                withWorkflowShortStaging(staged, function(short)
-                    produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, short),
-                    "the DA publication's files could not be copied into the project's staging folder"),
-            identity = diaDaPublicationIdentity(manifest, diaAnnotationDigest(request$annotations)))
+        # KIT-243 (S1): the earlier files under this DA's names removed first, on every publication (a retry or an identical
+        # repeated request, whose `produce` is skipped, included); the marker is cleared once the publication returns.
+        if (publish) {
+            removeWorkflowDaOwnFigures(manager, paths, "proteomics")
+            publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
+                paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
+                    withWorkflowShortStaging(staged, function(short)
+                        produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, short),
+                        "the DA publication's files could not be copied into the project's staging folder"),
+                identity = diaDaPublicationIdentity(manifest, diaAnnotationDigest(request$annotations)))
+            clearWorkflowDaPublicationPending(paths)
+        }
         if (publish) completeDIADaDisplay(da_data, workflow, manifest)
         manifest
     })
@@ -600,16 +833,25 @@ produceDIADaPublication <- function(manager, manifest, annotations, qvalue, stag
     list(completed = TRUE)
 }
 
-#' The files a DA publication must have staged, by contrast (the exports, the figures, the pages).
+#' The files a DA publication must stage from a manifest, by contrast (the exports and the static figures; KIT-212: the
+#' list `assertDIADaPublicationFiles` checks, made callable so the Summary can list the files a DA made).
+#' @param manifest Accepted `dia.da_results.v1` manifest.
+#' @param staged `list(da_output_dir, publication_graphs_dir)`.
+#' @return Paths.
 #' @noRd
-assertDIADaPublicationFiles <- function(manifest, staged, interactive_files) {
+diaDaPublicationFiles <- function(manifest, staged) {
     safe <- gsub("[^A-Za-z0-9_-]", "_", names(manifest$results))
-    required <- c(file.path(staged$da_output_dir, as.vector(outer(
+    c(file.path(staged$da_output_dir, as.vector(outer(
         paste0("da_proteins_", safe, "_long_annot"), c("tsv", "xlsx"), paste, sep = "."))),
         file.path(staged$publication_graphs_dir, "Volcano_Plots", as.vector(outer(safe, c("png", "pdf"), paste, sep = "."))),
         file.path(staged$publication_graphs_dir, "Volcano_Plots", "all_volcano_plots_combined.pdf"),
-        file.path(staged$publication_graphs_dir, "NumSigDaMolecules", paste0("da_proteins_num_sig_da_molecules.", c("tab", "xlsx"))),
-        interactive_files)
+        file.path(staged$publication_graphs_dir, "NumSigDaMolecules", paste0("da_proteins_num_sig_da_molecules.", c("tab", "xlsx"))))
+}
+
+#' The files a DA publication must have staged, by contrast (the exports, the figures, the pages).
+#' @noRd
+assertDIADaPublicationFiles <- function(manifest, staged, interactive_files) {
+    required <- c(diaDaPublicationFiles(manifest, staged), interactive_files)
     missing <- required[!file.exists(required) | file.size(required) <= 0]
     if (length(missing)) cli::cli_abort(c("required DA files are incomplete", i = paste(basename(missing), collapse = ", ")),
         class = "saved_entity_outputs_pending")
@@ -657,6 +899,16 @@ diaEnrichmentServiceIdentity <- function(results) {
 #' GUI audit R3, P-28: the organism filter is declared (`organism_filter_enabled`, `organism_filter_taxon`). A run
 #' with the filter off declares the first nine names only (`diaEnrichmentDeclaredNames`), so its identity, its product
 #' and its record are what they were before the filter was declared.
+#' KIT-208 (VAL-147 (1)): the lists `perform_enrichment` did not send to g:Profiler for want of a named identifier
+#' (`multischolar_enrichment_no_identifiers`) are collected beside the service failures and judged after the process
+#' returns (`diaEnrichmentNoIdentifiers`): a comparison whose background has no named protein refuses the run (class
+#' `workflow_enrichment_no_identifiers`) before any product or state is saved; otherwise the lists are returned as
+#' `not_tested`, absent when there are none. A service failure is reported first.
+#' KIT-215 (VAL-170): the same class carries `processEnrichments`' signals of both routes, judged by their `reason`: a
+#' GO comparison with lists and no annotated tested protein or no term of 10 to 500 of them is refused (class
+#' `workflow_enrichment_no_identifiers`), an error inside a list's test or a comparison's processing is refused (class
+#' `workflow_enrichment_test_error`), a GO list without an annotated protein is returned in `not_tested` beside
+#' g:Profiler's, and the directions with no list are returned as `no_list` (absent when every direction has a list).
 #' @noRd
 diaEnrichmentOperation <- function() {
     newWorkflowOperation("enrichment", "ProteinQuantitativeData", fields = "design_matrix", unit = "whole_matrix",
@@ -682,17 +934,111 @@ diaEnrichmentOperation <- function() {
             # KIT-203: the significance rule, likewise.
             if (!is.null(parameters$significance_rule)) arguments$significance_rule <- parameters$significance_rule
             failures <- character()
+            unnamed <- list()
             results <- withCallingHandlers(do.call(process, arguments),
                 multischolar_enrichment_service_failure = function(condition)
-                    failures <<- c(failures, conditionMessage(condition)))
+                    failures <<- c(failures, conditionMessage(condition)),
+                multischolar_enrichment_no_identifiers = function(condition)
+                    unnamed[[length(unnamed) + 1L]] <<- condition)
             if (length(failures)) {
                 rlang::abort(paste("The enrichment service did not answer, so nothing was saved.",
                     paste(unique(failures), collapse = "; ")), class = "workflow_enrichment_service")
             }
+            judged <- diaEnrichmentNoIdentifiers(unnamed, parameters$da_results)
             if (!methods::is(results, "EnrichmentResults"))
                 cli::cli_abort("enrichment kernel returned no EnrichmentResults", class = "workflow_operation_output")
-            list(results = results, service = diaEnrichmentServiceIdentity(results))
+            value <- list(results = results, service = diaEnrichmentServiceIdentity(results))
+            value$not_tested <- judged$not_tested
+            value$no_list <- judged$no_list # KIT-215: absent when every direction has a list
+            value
         })
+}
+
+#' The display name of each DA table name (KIT-208): the contrasts table's `friendly_names` where its `contrasts`
+#' column holds the name, otherwise the name itself.
+#' @param contrasts_tbl The contrasts table (`da_results@contrasts`, or the run's), or NULL.
+#' @param ids The `da_data` names.
+#' @return A character vector as long as `ids`.
+#' @noRd
+enrichmentContrastDisplayNames <- function(contrasts_tbl, ids) {
+    ids <- as.character(ids)
+    if (!is.data.frame(contrasts_tbl) || !all(c("contrasts", "friendly_names") %in% names(contrasts_tbl))) return(ids)
+    shown <- as.character(contrasts_tbl$friendly_names)[match(ids, as.character(contrasts_tbl$contrasts))]
+    ifelse(is.na(shown) | !nzchar(shown), ids, shown)
+}
+
+#' The enrichment lists not tested, the comparisons refused and the directions with no list (KIT-208, VAL-147 (1);
+#' KIT-215, VAL-170)
+#'
+#' Judged by each signal's `reason` (a signal without one is KIT-208's `perform_enrichment` signal, `"no_gene_name"`).
+#' Refused (class `workflow_enrichment_no_identifiers`): a g:Profiler comparison whose background (its tested rows,
+#' `enrichmentTestedRows`) has no named protein; a GO comparison with lists whose background has no annotated protein
+#' (`"no_go_annotation_background"`) or no term of 10 to 500 annotated tested proteins (`"no_tested_term"`). Then
+#' refused (class `workflow_enrichment_test_error`): a test or a comparison's processing that raised an error
+#' (`"error"`). Otherwise a list whose proteins are all unnamed (g:Profiler) or all unannotated (GO,
+#' `"no_go_annotation"`) is not tested and returned, and a direction with no list (`"no_list"`) is returned apart.
+#' @param signals The `multischolar_enrichment_no_identifiers` conditions the kernel signalled, in order.
+#' @param da_results The run's `da_results_for_enrichment` (its contrasts table and DA tables name and count).
+#' @return `list(not_tested, no_list)`, each NULL when empty. `not_tested`: one row per list in signal order,
+#'   `comparison` (display name), `direction` ("up" or "down"), `proteins` (the list's size), `contrast` (the `da_data`
+#'   name), `route` ("gprofiler2" or "clusterprofiler"). `no_list`: `comparison`, `contrast`, `direction`.
+#' @noRd
+diaEnrichmentNoIdentifiers <- function(signals, da_results) {
+    if (!length(signals)) return(list(not_tested = NULL, no_list = NULL))
+    contrasts_tbl <- tryCatch(da_results@contrasts, error = function(e) NULL)
+    tables <- tryCatch(da_results@da_data, error = function(e) list())
+    label <- function(signal, field) as.character(signal[[field]] %||% NA_character_)[[1L]]
+    raw <- vapply(signals, label, "", field = "contrast")
+    reason <- vapply(signals, function(signal) as.character(signal$reason %||% "no_gene_name")[[1L]], "")
+    count <- function(signal) as.integer(signal$background_ids %||% NA_integer_)[[1L]]
+    shown <- function(name) enrichmentContrastDisplayNames(contrasts_tbl, name)
+    # KIT-205 alignment (KIT-208 audit I08): n counts the comparison's tested rows, the background in force.
+    tested <- function(name) {
+        table <- if (!is.na(name)) tables[[name]]
+        if (is.null(table)) 0L else NROW(enrichmentTestedRows(table)$rows)
+    }
+    empty <- reason == "no_gene_name" & vapply(signals, function(signal) identical(as.numeric(signal$background_ids), 0),
+        NA)
+    unannotated <- reason == "no_go_annotation_background"
+    no_term <- reason == "no_tested_term"
+    if (any(empty | unannotated | no_term)) {
+        sentences <- c(
+            vapply(unique(raw[empty]), function(name) sprintf(paste("g:Profiler tests gene names, and none of the",
+                "tested proteins of comparison %s has one (0 of %d tested proteins named), so nothing would be tested."),
+                shown(name), tested(name)), ""),
+            vapply(unique(raw[unannotated]), function(name) sprintf(paste("None of the tested proteins of comparison",
+                "%s has a Gene Ontology annotation that this analysis tests (0 of %d tested proteins annotated), so",
+                "nothing would be tested."), shown(name), tested(name)), ""))
+        if (any(empty | unannotated)) {
+            sentences <- c(sentences, "Check that the protein annotation was retrieved for this organism (save the",
+                "design again). This happens when the annotation was not retrieved for these proteins, or when their",
+                "identifiers are not UniProt accessions.")
+        }
+        sentences <- c(sentences, vapply(which(no_term), function(i) sprintf(paste("In comparison %s, %d of the tested",
+            "proteins have a Gene Ontology annotation, and no Gene Ontology term holds between 10 and 500 of them, so",
+            "no term could be tested."), shown(raw[[i]]), count(signals[[i]])), ""))
+        rlang::abort(paste(sentences, collapse = " "), class = "workflow_enrichment_no_identifiers")
+    }
+    failed <- reason == "error"
+    if (any(failed)) {
+        rlang::abort(paste(vapply(which(failed), function(i) {
+            direction <- label(signals[[i]], "direction")
+            sprintf("The enrichment test of comparison %s%s stopped with an error, so the run was not completed: %s.",
+                shown(raw[[i]]), if (is.na(direction)) "" else paste0(", ", direction),
+                conditionMessage(signals[[i]]))
+        }, ""), collapse = " "), class = "workflow_enrichment_test_error")
+    }
+    rows <- function(keep) {
+        if (!any(keep)) return(NULL)
+        data.frame(comparison = shown(raw[keep]), direction = vapply(signals[keep], label, "", field = "direction"),
+            proteins = vapply(signals[keep], function(signal) as.integer(signal$list_size), 1L),
+            contrast = raw[keep], route = vapply(signals[keep], function(signal)
+                as.character(signal$route %||% "gprofiler2")[[1L]], ""), stringsAsFactors = FALSE)
+    }
+    no_list <- reason == "no_list"
+    list(not_tested = rows(reason %in% c("no_gene_name", "no_go_annotation")),
+        no_list = if (any(no_list)) data.frame(comparison = shown(raw[no_list]), contrast = raw[no_list],
+            direction = vapply(signals[no_list], label, "", field = "direction"), stringsAsFactors = FALSE))
 }
 
 #' The declared parameter names one enrichment run uses (GUI audit R3, P-28): the organism filter's two only when the
@@ -731,9 +1077,11 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
 #'   only) is declared when it is not `"none"`; otherwise the kernel receives it as an undeclared extra, so a record
 #'   made before KIT-173 replays with the sets it was made with and the same identity.
 #' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
-#' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
+#' @return `list(results, service, reference, parameters)`: the `EnrichmentResults`, the reported service identity,
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
-#'   parameters and the service identity; rooted on the source and the result tables).
+#'   parameters and the service identity; rooted on the source and the result tables) and the declared values; and
+#'   `not_tested` (KIT-208) when g:Profiler lists were not sent for want of a named identifier, or GO lists had no
+#'   annotated protein (KIT-215), and `no_list` (KIT-215) when a direction had no list (`diaEnrichmentNoIdentifiers`).
 #' @noRd
 runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn = NULL) {
     manager <- workflow$state_manager
@@ -773,8 +1121,11 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
             if (identical(parts[[1L]], "clusterProfiler")) "package_version" else "database_version",
             query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
     }
-    list(results = value$results, service = value$service, reference = reference,
+    out <- list(results = value$results, service = value$service, reference = reference,
         parameters = declared_values) # KIT-107 D4 (F-16): the declared values the identity used
+    out$not_tested <- value$not_tested # KIT-208: absent when every list was sent; neither identity nor product
+    out$no_list <- value$no_list # KIT-215: absent when every direction has a list; neither identity nor product
+    out
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's
@@ -807,11 +1158,22 @@ generateDIAReferenceVolcanoProduct <- function(manifest, contrast) {
 
 #' Identity of one contrast's interactive volcano asset (KIT-016): the result table and the display
 #' threshold it was rendered at; the annotation table joins at publication and is not part of the identity.
+#' KIT-220: also the run's fold-change cutoff the page colours by (`manifest$parameters$lfc`); the result table is
+#' addressed by its content, which the cutoff does not change on a route without TREAT (DIA with limpa).
 #' @noRd
 diaInteractiveVolcanoIdentity <- function(manager, manifest, contrast, qvalue) {
     selected <- selectDIAContrastReference(manifest, contrast)
     diaComponentScientificIdentity(manager, manifest$source, "DA-volcano-interactive",
-        list(result = selected$tables$da_proteins_long$entity_id, qvalue = as.numeric(qvalue)))
+        list(result = selected$tables$da_proteins_long$entity_id, qvalue = as.numeric(qvalue),
+            lfc = diaRunLfcCutoff(manifest)))
+}
+
+#' The fold-change cutoff a DA result ran at (KIT-220): the manifest's `parameters$lfc`; `fallback` (the tab's box)
+#' for a result that records none, else 0 (the input's default).
+#' @noRd
+diaRunLfcCutoff <- function(manifest, fallback = NULL) {
+    recorded <- if (is.list(manifest)) manifest$parameters$lfc
+    as.numeric(recorded %||% fallback %||% 0)
 }
 
 #' The digest of the annotation table a page is built with (GUI audit A112-06): its displayable columns (those
@@ -898,6 +1260,12 @@ diaInteractiveVolcanoUnavailablePath <- function(directory, contrast) {
     file.path(directory, paste0(gsub("[^A-Za-z0-9_-]", "_", contrast), ".unavailable.txt"))
 }
 
+#' The interactive volcano page's file name of one contrast (KIT-212: made callable so the Summary can list the files a DA
+#' made; the name is unchanged).
+#' @param contrast The contrast's friendly name.
+#' @noRd
+diaInteractiveVolcanoFileName <- function(contrast) paste0(gsub("[^A-Za-z0-9_-]", "_", contrast), ".html")
+
 #' Export linked-expression volcano widgets from accepted result references.
 #' @param manifest Accepted DIA result manifest.
 #' @param directory Owned publication staging directory.
@@ -926,12 +1294,12 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         widget <- if (is.null(page)) generateProtDAVolcanoPlotGlimma(
             if (outdated) readDIAResultDisplay(manifest, contrast, expression = TRUE) else manifest, contrast,
             uniprot_tbl = annotations, args_row_id = manifest$protein_id_column,
-            da_q_val_thresh = qvalue)
+            da_q_val_thresh = qvalue, lfc_thresh = diaRunLfcCutoff(manifest))
         if (is.null(page) && is.null(widget)) {
             writeLines(diaInteractiveVolcanoUnavailableText(contrast), diaInteractiveVolcanoUnavailablePath(target, contrast))
             next
         }
-        filename <- paste0(gsub("[^A-Za-z0-9_-]", "_", contrast), ".html")
+        filename <- diaInteractiveVolcanoFileName(contrast)
         # One self-contained file, written in R (KIT-036): saveWidget's pandoc pass over this page is the DA
         # step's memory peak (KIT-017 audit PH-01). Only the HTML belongs to the durable publication inventory.
         html <- file.path(temporary, filename)
