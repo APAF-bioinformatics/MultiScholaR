@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-262 M1 (VAL-280): rejection reason per percentage on the cancor-once fixture, unhooked then hooked sweep; one run; ceiling 30 job-minutes",
+  "label": "KIT-262 M1 b35b17d0",
+  "package_commit": "b35b17d0a0e19bb71a8cc602c06cd95e30e1fe8c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m1-k262.R",
+      "args": [
+        "k262-m1"
+      ],
+      "env": {},
+      "out": "k262-m1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
