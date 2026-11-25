@@ -529,7 +529,7 @@ jobs:
           echo "DEST=$dest" >> "$GITHUB_ENV"
           echo "XDG_DATA_HOME=$XDG_DATA_HOME" >> "$GITHUB_ENV"
 
-      # KIT-245 G0 (stage probe only; ticket r1.2 section 8): the product-tree check, then kit-245/g0-probe.R under the
+      # KIT-245 G0/W1 (stage probe only; ticket r1.3 section 8; W1 also redirects the token-free URL of Part S): the product-tree check, then kit-245/g0-probe.R under the
       # installed application's R on this runner, in a bare ubuntu:22.04 container (no git) and in buildpack-deps:jammy-scm
       # (git; once with the redirect, once for P2n alone with the plain configuration), both --network none. No real
       # token exists: the four token variables are empty, gh::gh is a recorder that never calls the original, the only
@@ -556,8 +556,8 @@ jobs:
           k="$RUNNER_TEMP/k245"
           dummy=kit245-dummy-not-a-token
           mkdir -p "$k/home" "$k/cfg-host" "$k/cfg-ctr" "$k/remote"
-          printf '[url "file://%s/"]\n\tinsteadOf = https://x-access-token:%s@github.com/\n[http]\n\tproxy = http://127.0.0.1:9\n' "$k/remote" "$dummy" > "$k/cfg-host/gitconfig-redirect"
-          printf '[url "file://%s/"]\n\tinsteadOf = https://x-access-token:%s@github.com/\n[http]\n\tproxy = http://127.0.0.1:9\n' /tmp/k245/remote "$dummy" > "$k/cfg-ctr/gitconfig-redirect"
+          printf '[url "file://%s/"]\n\tinsteadOf = https://x-access-token:%s@github.com/\n\tinsteadOf = https://github.com/\n[http]\n\tproxy = http://127.0.0.1:9\n' "$k/remote" "$dummy" > "$k/cfg-host/gitconfig-redirect"
+          printf '[url "file://%s/"]\n\tinsteadOf = https://x-access-token:%s@github.com/\n\tinsteadOf = https://github.com/\n[http]\n\tproxy = http://127.0.0.1:9\n' /tmp/k245/remote "$dummy" > "$k/cfg-ctr/gitconfig-redirect"
           : > "$k/cfg-host/gitconfig-plain"
           : > "$k/cfg-ctr/gitconfig-plain"
           chmod -R a+rX "$k/cfg-ctr"
@@ -1096,7 +1096,7 @@ jobs:
           "APP=$($application.FullName)" >> $env:GITHUB_ENV
           "APP_FOLDER=$folder" >> $env:GITHUB_ENV
 
-      # KIT-245 G0 (stage probe only; ticket r1.2 section 8): the product-tree check, then kit-245/g0-probe.R under the
+      # KIT-245 G0/W1 (stage probe only; ticket r1.3 section 8; W1 also redirects the token-free URL of Part S): the product-tree check, then kit-245/g0-probe.R under the
       # installed bundle's R in the shell's environment (windows-clean-run.ps1: no git on R's PATH). No real token
       # exists: the four token variables are empty and gh::gh is a recorder that never calls the original. The output
       # is printed with the dummy masked. Nothing uploaded.
@@ -1123,7 +1123,7 @@ jobs:
           foreach ($d in 'home', 'remote') { New-Item -ItemType Directory -Force (Join-Path $k $d) | Out-Null }
           $remote = (Join-Path $k 'remote') -replace '\\', '/'
           $utf8 = [System.Text.UTF8Encoding]::new($false)
-          [IO.File]::WriteAllText($env:K245_GITCONFIG_REDIRECT, "[url `"file:///$remote/`"]`n`tinsteadOf = https://x-access-token:$dummy@github.com/`n[http]`n`tproxy = http://127.0.0.1:9`n", $utf8)
+          [IO.File]::WriteAllText($env:K245_GITCONFIG_REDIRECT, "[url `"file:///$remote/`"]`n`tinsteadOf = https://x-access-token:$dummy@github.com/`n`tinsteadOf = https://github.com/`n[http]`n`tproxy = http://127.0.0.1:9`n", $utf8)
           [IO.File]::WriteAllText($env:K245_GITCONFIG_PLAIN, '', $utf8)
           "KIT245 run branch head $(git rev-parse HEAD); commit under test $env:PROBE_COMMIT; gate $env:PROBE_GATE"
           git diff --stat $env:PROBE_COMMIT HEAD
