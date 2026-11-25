@@ -359,3 +359,19 @@ test_that("KIT-249 E7 (b): the scripted wrapper daAnalysisWrapperFunction (KIT-2
     kit249ExpectFallback(captured$result$value$contrasts_results_table[[kit249Full[["B_vs_A"]]]], "E7 (b) returned B_vs_A",
         checks = c("ii", "iii", "v", "vi"))
 })
+
+# G1b (AUDIT-KIT-249-impl I03; a guard on both commits): qvalue() replaced by a double that succeeds with q = min(1, 1.5 p),
+# so Storey's path is told from BH by a factor, not by rounding. A fix that assigned BH on the success path would put
+# p.adjust(raw_pvalue, "BH") here (for the planted proteins about 30/6 p, not 1.5 p), and qvalue_warnings would stay empty:
+# this expectation would then fail on every comparison of both branches.
+test_that("KIT-249 G1b: a q-value that qvalue() returns is assigned as returned, on both branches", {
+    for (lfc in c(NA, 0)) {
+        run <- module_ci_prot_da_with_namespace_bindings(list(qvalue = \(p) list(q = pmin(1, 1.5 * p))), kit249Run(lfc))
+        if (!kit249Completed(run, paste("G1b error", lfc))) next
+        expect_identical(length(run$value$qvalue_warnings), 0L, label = paste("G1b qvalue_warnings", lfc))
+        for (cmp in names(kit249Full)) {
+            table <- run$value$results[[kit249Full[[cmp]]]]
+            expect_identical(table$fdr_qvalue, pmin(1, 1.5 * table$raw_pvalue), label = paste("G1b", cmp, lfc))
+        }
+    }
+})
