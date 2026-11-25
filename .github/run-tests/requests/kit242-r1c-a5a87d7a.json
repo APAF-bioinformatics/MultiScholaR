@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-242 R1c (ticket r1.6): the correction pass's new rows failing first on tests-only commit a5a87d7a (Part A's fix dc75de69 without the correction, plus the new rows and the declared worker-test edit); decides stop rule 1 for these rows; 1 job, ceiling 60 minutes",
+  "label": "KIT-242 R1c tests-only a5a87d7a",
+  "package_commit": "a5a87d7ab678ba92213ae5820f61d0352123a6f6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit242-normalisation-fallback.R", "test-workflow-omics-worker.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
