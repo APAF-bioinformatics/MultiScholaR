@@ -656,3 +656,37 @@ test_that("KIT-260 I05: a record from a build before KIT-260 whose ITSD used sta
     for (assay in names(a)) expect_identical(as.data.frame(b[[assay]]), as.data.frame(a[[assay]]), info = paste(state, assay))
   }
 })
+
+test_that("KIT-260 I10: E6's managed arm through the worker's own delivery (the tab's observers, omicsManagedChainMocks)", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  fixture <- kit172Quiet(kit172Owner(file.path(root, "tab"), kit260Object("metab", 1L), "metab"))
+  owner <- fixture$owner
+  withr::defer(closeDIAStateAdapter(owner))
+  probe <- new.env()
+  notes <- new.env()
+  notes$updates <- list(); notes$notes <- list(); notes$modals <- integer(); notes$choices <- list()
+  guiEntryInstallBrowserDouble(notes)
+  omicsManagedChainMocks(fixture, probe)
+  kit172Quiet(utils::capture.output(shiny::testServer(omicsTabServer(fixture, "metabolomics", probe, TRUE), {
+    session$userData$probe_owner <- owner
+    inputs <- omicsTabInputs()
+    inputs[c("apply_itsd", "itsd_aggregation", "norm_method", "ruv_mode", "log_offset")] <- list(TRUE, "median", "cyclicloess", "skip", 0)
+    do.call(session$setInputs, inputs)
+    commitWorkflowOmicsStoreStep(owner, "metab_qc_finalize", "metab_qc_complete", list(), "QC processing complete - ready for normalization")
+    session$setInputs(run_normalization = 1)
+    for (i in seq_len(10L)) {
+      session$elapse(200)
+      session$flushReact()
+    }
+  })))
+  expect_true("metab_itsd_normalisation" %in% probe$operations)
+  rows <- paste("IS_Caffeine (Alignment ID 41); Caffeine_d9 (Alignment ID 42); Caffeine-ISTD (Alignment ID 43);",
+    "IS-Leucine (Alignment ID 44); PC 15:0_18:1(d7) (Alignment ID 53)")
+  for (assay in c("A1", "A2")) {
+    line <- sprintf("ITSD, assay %s: 5 rows used as internal standards, then removed: %s", assay, rows)
+    expect_identical(sum(probe$log == line), 1L, info = paste(assay, paste(probe$log, collapse = " | ")))
+  }
+  text <- "Internal-standard normalisation used 5 (A1) and 5 (A2) rows as internal standards and removed them; the log names them."
+  expect_identical(sum(vapply(notes$notes, function(note) identical(note$message, text), logical(1))), 1L)
+})
