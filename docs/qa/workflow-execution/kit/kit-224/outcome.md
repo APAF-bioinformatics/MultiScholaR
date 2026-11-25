@@ -1,4 +1,4 @@
-# KIT-224 outcome (r1.2; stopped at R2 by stop rule 2, before the full suite)
+# KIT-224 outcome (r1.2; R2 stop rule 2 ruled by the coordinator 2026-11-25: three files to the owner, merge waits)
 
 Branch `kit-224` from `origin/v0.9-staging` cf8af245. Commits: cea72da6 (tests first, nothing under `R/`), 12205bd4 (the
 fix, NEWS, ledger), 5f261d89 (stored references accepted by file, OD-4), the provenance re-dump of
@@ -66,11 +66,104 @@ missing in one assay only (see the unrelated finding below).
 
 - A1: met (G0 plus R1 for E5).
 - A2: met. R1 failed at the stated values; R2 head passes.
-- A3: partly met. (vi) is met; (i) to (iii) are met on law `level` only; (iv), (v), (a) and (b) await the S1
-  instrument rerun.
-- A4: not met. Three unapproved files moved (stop rule 2). The edited tests (5f261d89, re-dump) have not yet been run.
+- A3: met (R2: (vi); R2c: (i) to (v), with (a) and (b) reported).
+- A4: met for every file except three: `test-prot-norm-core.R`, `test-omics-summary-core.R` and `test-omic-summary-module.R` are with the owner (coordinator ruling, 2026-11-25), and the merge waits for that answer. The edited tests pass (R2c).
 - A5: not run.
 - A6: NEWS, ledger row and M8's status are done; `man/`, `NAMESPACE` and `DESCRIPTION` are unchanged.
+
+## Coordinator rulings of 2026-11-25 and what was done
+
+### The three files not in the owner's approved list (to the owner by file; the merge waits; nothing edited or re-frozen)
+
+| File | Leaves whose message changed (R2, run 45510911807) | Why the decided fix moves them | Base |
+|---|---|---|---|
+| `test-prot-norm-core.R` | test "the lipid and metab RUV declaration give the recorded result through the moved owner stripper": `expect_identical(found, pinned[[key]], info = key)` (`:73`) for `key = "lipid_ruv"` and `key = "metab_ruv"`; the actual digest moves from 4ed0ad71... to 9ada5791... and from 5065333a... to cc4276ca... (2 leaves) | the digest is taken over the legacy `lipid_ruv` / `metab_ruv` declaration's result, whose corrected assays now carry restored feature levels (M8, OD-0) | already fails on base (306 failing on both; the pinned values are laptop-recorded) |
+| `test-omics-summary-core.R` | tests "(W3, core side) trx_main ..." and "(W3, core side) trx_managed ...": the `save` step's `files` capture, leaf `integration/transcriptomics_normalized_data.tsv` (digest e0e8d896... on base, 7b9d35db... expected; head's value differs from both) (2 leaves) | the file is the transcriptomics RUVIII export, which under OD-2 T-a' keeps each gene's TMM logCPM level, so its bytes change | already fails on base (25 failing on both) |
+| `test-omic-summary-module.R` | tests "(b) trx_main ..." and "(b) trx_managed ...": the `save` step's `files` capture, the same leaf (2 leaves) | as above (T-a') | already fails on base (28 failing on both) |
+
+If the owner accepts, these join the end-of-project re-record list, beside the KIT-073 and KIT-094 fixtures.
+Correction to E-3a (the KIT-225 shared-file list): `test-prot-norm-core.R` **does** change under KIT-224 (the two
+leaves above). KIT-224's declared differences in the shared files are therefore `test-omic-norm-module.R` (12
+`provenance` fields) and `test-prot-norm-core.R` (`lipid_ruv`, `metab_ruv` result digests); `test-kit129-run-path.R`
+stays `same`.
+
+### Merge of staging 67569959 (merge commit ac312e59)
+
+Three files conflicted; everything else merged without conflict.
+- `R/utils_workflow_analysis_record.R`: in `workflowReplayRuleMarkers`, KIT-202's row `intensity_filter_samples` and
+  KIT-224's row `ruv_feature_levels` are both kept, KIT-224's last. The roxygen header names both.
+- The `fixed` lines did not clash. KIT-202 fixes `intensity_filter_samples = "design"` on the intensity-filter
+  declaration (`R/utils_workflow_omics_declarations.R:204` after the merge), while KIT-224 fixes
+  `ruv_feature_levels = "restored"` on `omicsRuvOperation` (`:444`). Both behaviours are kept unchanged.
+- `NEWS.md`: both entries are kept under `### Scientific changes`, KIT-224's first.
+- `docs/methods-decision-ledger.md`: staging's rows to VAL-210 are kept. KIT-224's row stays `VAL-<merge>` after them
+  and now cites VAL-206, the coordinator's record of the owner's KIT-224 decisions.
+
+### S1 instrument rerun 1 of 3 (VAL-54)
+
+**Failure.** In R2, the declared-path part (v) raised `omics_ruv_correction_failed` on both sides. It ran on a KIT-172
+object, whose design carries `tech_rep_group`. The cause is not established. It shared the journey's error trap, so it
+discarded every `k185` journey.
+
+**Fix** (commit 7110c7ab, script mechanics only):
+- The declared object is built as test-kit224's G2 builds it.
+- The declared part runs in its own error trap.
+- A failure after the RUV step is recorded in `downstream-errors.tsv`, and the RUV state is kept.
+
+No expected value, threshold, criterion or stop rule changed. The run binds the merged head 7110c7ab against staging
+67569959 (R2c, run 45521043460).
+
+### R2c (run 45521043460): edited tests and S1 instrument rerun 1, on 7110c7ab against staging 67569959
+
+- **Edited stored-reference tests.** Every one passes on the head.
+  - `test-omic-norm-module.R` is `same`, 639 passed and 0 failed on both sides, after the re-dump.
+  - The new file passes 69 of 69.
+  - The two characterization files, `test-kit127`, `test-integration-input-transcriptomics.R`,
+    `test-workflow-trx-declarations.R` and `test-module-ci-trx-summary.R` gain passes. Their remaining failures are
+    laptop-pinned digests that already fail on base: `trxDeclSha` products, and `kit127LegacyDigests`.
+- **S1 synthetic** (`s1-r1/`; the first attempt's tables stay in `s1/`). All 748 criterion rows pass: (i) 200, (ii) 198,
+  (iii) 200, (iv) 50, (v) 100. Object 16 under the `level` law gives the head-side downstream error described below.
+  It is reported in `downstream-errors.tsv`; its (i) and (iii) rows pass.
+- **Calls changed at q < 0.05** (cutoff 0): `k185` 31 of 50 objects, `level` 36 of 49. No object changed a call at
+  cutoff 0.5, as expected: `treat` has no trend. The correlation filter kept the same samples in every judged object.
+- **Rates (b)**, Monte Carlo 95 % intervals of the paired difference, head minus base:
+
+  | Law | FDP | Power | Null share with any call |
+  |---|---|---|---|
+  | `k185` | +0.0003 (-0.003 to 0.004) | +0.0007 (-0.001 to 0.003) | 0 |
+  | `level` | -0.0003 (-0.007 to 0.007) | -0.0003 (-0.004 to 0.004) | -0.04 (-0.12 to 0.04) |
+
+  On these synthetic objects the repair changes which features are called, but the false discovery proportion and power
+  stay the same within Monte Carlo error.
+- **The legacy route itself, both sides (descriptive; not this ticket's).** FDP was about 0.36 (`k185`) and 0.42
+  (`level`) at nominal q < 0.05. Null objects had a call 60 to 67 % of the time. The likely reason is that the
+  corrected values are tested with full residual df (VAL-53 (1)); KIT-188 and KIT-210 own this.
+
+### The unrelated correlation-filter observation (for a ticket to reproduce)
+
+**Seen in R2's S1** (run 45510911807), on the head side (12205bd4) only.
+
+**Inputs.** Object r = 16 under the `level` variance law of `levels-control.R`:
+- seed 224000016;
+- 5 % of values missing, because r is even;
+- no planted effect;
+- two assays, `LCMS_Pos` and `LCMS_Neg`, 300 features each, runs A_1..A_6 and B_1..B_6.
+
+**Route.**
+1. Intensity filter (percentile 1, proportion 0.5).
+2. log2 with offset 0.
+3. Cyclic loess.
+4. Legacy RUV Automatic (`kit172LegacyRuv("automatic")`).
+5. Correlation filter (`group`, threshold 0.5).
+6. DA.
+
+**Result.** The DA step failed with `Assay 'LCMS_Neg' has sample column(s) missing from design: A_6`, raised at
+`R/func_omics_design_shared.R:142`. The correlation filter (`filterSamplesByLipidCorrelationThreshold` through
+`lipidomicsDeclarationBinding$filter_correlation`) removed A_6 from the design while `LCMS_Neg` kept that column.
+
+**Reproduce.** Generate the inputs with the `values(16, "level")` function in `levels-control.R` and run the route
+above. The data this repair restores made the filter drop a sample in one assay only; the defect is the filter's
+handling of a sample dropped in one assay, not this change. Not fixed here.
 
 ## Hand-off to KIT-188 (OD-5 (c))
 
@@ -85,7 +178,7 @@ a sample from the design while one assay keeps its column. The object then fails
 
 ## Not checked
 
-The full suite (R3, shared with KIT-225); the edited tests on the fix; S1 (iv), (v), (a), (b); Windows; real data.
+Windows; real data; R3 until it is recorded below.
 
 ## For the change report
 
