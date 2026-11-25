@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-255 G1 instrument rerun 1 of 3 (VAL-54): run 45685635354 stopped at the K2-a class validity, no result; script mechanics fixed, no prediction changed; staging 988512e6 + tools/kit255/g1.R, branch kit-255-g1; 1 job, ceiling 75 job-minutes",
+  "label": "KIT-255 G1 instrument rerun 1 f4d9c5e7 (staging 988512e6 + tools/kit255/g1.R)",
+  "package_commit": "f4d9c5e7b2e279aa6272a98506afa366efd27193",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit255/g1.R",
+      "args": [
+        "kit255-g1"
+      ],
+      "env": {},
+      "out": "kit255-g1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
