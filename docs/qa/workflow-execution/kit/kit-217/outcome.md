@@ -151,3 +151,29 @@ Then R2 again (correction pass) and R3.
 - GUI-entry: 16 of 35 per lane fail, the steps from `qc_intensity` on, in all four lanes (G7 as corrected in r1.7).
 - `test-lipid-01k-…` and `test-metab-01q-…` `same` (item 3 holds). Check findings identical (0 only on head).
 - **Stopped (the coordinator's rule: anything outside the prediction stops; no further correction).** R3 not sent.
+- **Coordinator's ruling (after the fact):** the registry file's `count-changed` is a declaration omission, not a result
+  outside the ticket: failures identical on base and head; the extra passes are one per new declared parameter in the
+  two per-parameter checks (354 -> 358, 264 -> 268), already visible in the first R2. The R2-again declaration is
+  corrected accordingly (registry: `count-changed` with those counts); R3 may be sent.
+
+## R3, declared before sending
+
+- Merge of staging 16112917 (merge train 3: KIT-212, KIT-215, KIT-174 (a), KIT-225) as 0cf6e9e4: one conflict, the
+  ledger; staging's rows kept through VAL-229, `VAL-<merge>` after them. No other conflict.
+- Does train 3 change a prediction? By reading `git diff 3eeaf100 16112917 -- R/ inst/ tests/`: it touches no function
+  of this ticket. `R/utils_workflow_analysis_record.R` gains `assertWorkflowReplayDaSource` (DA replay; T7's replays
+  carry no DA) and a report-source entry (`enrichment_lists_not_tested`); `test-workflow-omics-binding-steps.R` strips
+  that entry from the KIT-094 comparison: the file already fails on base (VAL-189) and stays `message-changed` here.
+  Publication, normalisation-reset, summary and enrichment code (KIT-212, KIT-225, KIT-215) and the RUV grouping text
+  (KIT-174 (a)) are off this ticket's route; the four new test files (`test-kit174-ruv-grouping.R`,
+  `test-kit212-da-current.R`, `test-kit215-not-tested-lists.R`, `test-kit225-prot-norm-reset-source.R`) are on base and
+  head alike and predicted `same`. One uncertainty: if train 3 moved the GUI-entry lanes' base oracles, the two
+  GUI-entry files may read `message-changed` instead of `new-failure`; either way head's failures must be the 16 steps
+  per lane from `qc_intensity` and nothing else.
+- **R3:** full suite, 20+20 shards, check, head = this commit (kit-217 after the merge), base = staging 16112917, same
+  runner image; ceiling 2,980 job-minutes. Prediction: new file `only-on-head` (344 passed); `test-metab-qc-shared.R`
+  `count-changed` without failure; `test-workflow-operation-registry.R` `count-changed` with the same failures and passes
+  354 -> 358 and 264 -> 268; `test-omic-qc-module.R` `new-failure` limited to test (b)'s four expectations; the two
+  GUI-entry files limited to the 16 steps per lane from `qc_intensity`; `test-workflow-omics-declarations.R` and
+  `test-workflow-omics-binding-steps.R` `message-changed`; every other file `same`; check findings only on head: none.
+  Decides A5; then the implementation audit.
