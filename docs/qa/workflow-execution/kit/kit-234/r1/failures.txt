@@ -1,0 +1,191 @@
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W1: the source tree holds no workbooks folder that system.file finds
+kind: failure
+message:
+  Expected `system.file("workbooks", package = "MultiScholaR")` to be identical to "".
+  Differences:
+  `actual`:   "/home/runner/work/MultiScholaR/MultiScholaR/pkg/inst/workbooks"
+  `expected`: ""                                                              
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W2: a new proteomics and metabolomics project gets its scripts folders and no workbook
+kind: failure
+message:
+  Expected `k234Rmd(dir)` to be identical to `character()`.
+  Differences:
+      actual                               | expected 
+  [1] "DIA_workflow_experienced.rmd"       -          
+  [2] "DIA_workflow_limpa.rmd"             -          
+  [3] "DIA_workflow_limpa_experienced.rmd" -          
+  [4] "DIA_workflow_limpa_starter.rmd"     -          
+  [5] "DIA_workflow_starter.rmd"           -          
+  
+  proteomics
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W2: a new proteomics and metabolomics project gets its scripts folders and no workbook
+kind: failure
+message:
+  Expected `k234Rmd(dir)` to be identical to `character()`.
+  Differences:
+      actual                                  | expected 
+  [1] "metabolomics_workflow_experienced.rmd" -          
+  [2] "metabolomics_workflow_starter.rmd"     -          
+  
+  metabolomics
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W3: Use Existing leaves a user's edited workbook copy and own file byte for byte
+kind: failure
+message:
+  Expected `unname(after)` to be identical to `unname(before)`.
+  Differences:
+      actual                             | expected                              
+  [1] "de72a6fe900b9cdd279f9e338a1741b6" - "af7f06025966ca3e9822e4b106c3eb5a" [1]
+  [2] "ebc3d1f2d8e82a75e22f7fb441348933" | "ebc3d1f2d8e82a75e22f7fb441348933" [2]
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W4: with the integration tab on, scripts/integration is made and holds no workbook
+kind: failure
+message:
+  Expected `k234Rmd(dir)` to be identical to `character()`.
+  Differences:
+  `actual`:   "integration_workflow_starter.rmd"
+  `expected`:                                   
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W7 (guard, E-5): Use Existing recreates deleted scripts folders, empty, before the module servers
+kind: failure
+message:
+  Expected `captured$at_call[[omic]]$rmd` to be identical to `character()`.
+  Differences:
+      actual                               | expected 
+  [1] "DIA_workflow_experienced.rmd"       -          
+  [2] "DIA_workflow_limpa.rmd"             -          
+  [3] "DIA_workflow_limpa_experienced.rmd" -          
+  [4] "DIA_workflow_limpa_starter.rmd"     -          
+  [5] "DIA_workflow_starter.rmd"           -          
+  
+  proteomics
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W7 (guard, E-5): Use Existing recreates deleted scripts folders, empty, before the module servers
+kind: failure
+message:
+  Expected `captured$at_call[[omic]]$rmd` to be identical to `character()`.
+  Differences:
+      actual                                  | expected 
+  [1] "metabolomics_workflow_experienced.rmd" -          
+  [2] "metabolomics_workflow_starter.rmd"     -          
+  
+  metabolomics
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W8: Push to GitHub refuses a project with no R Markdown file and uses its one report template
+kind: failure
+message:
+  Expected `conditionMessage(a$error)` to match string "No R Markdown files (.Rmd, .rmd, .RMD) found recursively in".
+  Actual text:
+  x | menu() cannot be used non-interactively
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W8: Push to GitHub refuses a project with no R Markdown file and uses its one report template
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Multiple R Markdown files found. Please select one to use as the main project workflow:
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W8: Push to GitHub refuses a project with no R Markdown file and uses its one report template
+kind: failure
+message:
+  Expected `conditionMessage(b$error)` to match string "R project file does not exist".
+  Actual text:
+  x | menu() cannot be used non-interactively
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W8: Push to GitHub refuses a project with no R Markdown file and uses its one report template
+kind: failure
+message:
+  Expected `unname(tools::md5sum(pushed))` to be identical to `unname(tools::md5sum(template))`.
+  Differences:
+  `actual`:   NA                                
+  `expected`: "ec86fe33322c250b9b00482fdac9582a"
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl("\\section{Limitations}", train, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl(term, section, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  20 samples
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl(term, section, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  missing at random
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl(term, section, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Gaussian
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl(term, section, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  synthetic
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl(term, section, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  STRING
+
+file: test-kit234-workbooks-withdrawn.R
+test: KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

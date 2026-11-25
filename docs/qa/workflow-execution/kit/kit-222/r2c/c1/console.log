@@ -1,0 +1,10 @@
+-------------------------------------------------------------------
+Welcome to MultiScholaR!
+
+IMPORTANT: Please run MultiScholaR::loadDependencies() 
+           to ensure all required packages are installed and loaded.
+-------------------------------------------------------------------
+G1: 54024 sequences, 50488 identical, base merged 1640, head merged 0
+  side explored depth                        violation
+1 base      240     2 lowest(r1,r2) then lowest(r1,r3)
+2 head   140910     3                             none
