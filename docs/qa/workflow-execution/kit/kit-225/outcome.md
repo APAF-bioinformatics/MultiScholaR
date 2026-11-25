@@ -40,6 +40,36 @@ Guards: G3 (KIT-182 T5, T6) and G4 (05d history-read error) are `same` in R2 (in
 
 - In the application the manager is always a reference owner, so the refusal and the no-op are reached as in the tests.
 - The managed path records the same source (`normalization_input_reference`), so the same selection follows.
+- DIA with limpa, 'Run Normalization & RUV' pressed again while the correlation filter's result is current: the
+  pass-through keeps its earlier input only at `ruv_covariates` or `ruv_corrected` (`R/utils_workflow_dia_norm.R:604`,
+  `:628`), so the recorded starting table becomes the `correlation_filtered` state itself. A Reset then selects that
+  state (the recorded source, as VAL-203 decides), changes no state, clears the tab, and its notice names '(the
+  peptide quality-control steps)', which is not true. Base returned `precursor_rollup`. Not tested. Candidate (not
+  this ticket): add `correlation_filtered` to the pass-through's kept-input list at both lines; that also changes the
+  table a correlation filter re-applied after such a press reads (a results change for that sequence, the owner's).
+- E3 on base (stop rule 3) shows a defect outside this ticket that stays reachable after the fix: on DIA with limpa,
+  when the pass-through designates a peptide table (on base after every Reset; before and after the fix whenever 'Run
+  Normalization & RUV' is pressed before DPC Quantification, which the tab allows with a warning, VAL-44), the
+  correlation Apply refuses with a class message, the Skip commits the peptide table as `correlation_filtered` (U2)
+  and stops in its publication, which writes the protein table (`R/utils_workflow_dia_products.R:1935`), and the RUV
+  covariates then refuse with 'correlation outputs are pending; retry that action', which retrying cannot cure. No
+  numbers result. Reset (now returning the designated peptide state) or a Quality Control Revert is the way out. The
+  fix removes only the Reset route into it. Candidate (with U2): the pass-through refuses a peptide-class designation
+  in words.
+- Design saved again after a normalisation, with no new run (audit I08, read only): a name re-committed by Save Design
+  keeps its earlier history position (`R/utils_workflow_state.R:114-117`), so Reset returns the recorded (previous
+  design's) table, as base does by name, or refuses with the true reason when the source's own name was re-committed.
+  A rarer order (a normalisation from the design table, a Save Design, new QC names appended after `normalized`, a
+  run, then Reset) can leave `normalized` before the head, so a second Reset refuses instead of reporting nothing to
+  undo. Whether Save Design can follow a normalisation in the application is not verified; no repair proposed.
+
+## Candidates for the owner (not this ticket)
+
+- I01 (audit AUDIT-KIT-225-impl-20261125): the limpa pass-through keeps its earlier input at `correlation_filtered` as
+  at the RUV states (`R/utils_workflow_dia_norm.R:604`, `:628`); a results change for that sequence, the owner's to
+  decide.
+- I02 (with U2): the pass-through refuses a peptide-class designation in words, and the class messages are reworded;
+  no numbers change.
 
 ## Not checked
 
@@ -47,20 +77,37 @@ Guards: G3 (KIT-182 T5, T6) and G4 (05d history-read error) are `same` in R2 (in
 - Sessions saved before KIT-182 and legacy RDS projects (the restore's name fill, F1).
 - Whether "Save Design" is reachable after normalisation in the application (E5 is at the function level).
 - R3 (full suite).
+- Not exercised by any test (audit I09; traced by reading only): RUV-mode runs (every new test uses RUV "skip"), the
+  managed path, a reopened project, selection through the `qc_sources$pre_normalization` fallback, and the refusal's
+  text (E7 asserts the class only).
+
+## Hand-off to KIT-223
+
+- T4 (a) also applies to `buildProtNormResetNotificationMessage` (`R/mod_prot_norm_session_helpers.R:467-471` after
+  KIT-225), which carries its own copy of the fallback for a state without a title: the same return rule (an untitled
+  state other than `initial` returns its own name). `test-kit225-prot-norm-reset-source.R` joins KIT-223's R2. Note
+  I01: the Reset notice can also reach the fallback with `correlation_filtered` on DIA with limpa.
 
 ## For the change report
 
-- **What was wrong.** The proteomics Reset went back to the newest of ten fixed state names, not to the table the
-  normalisation started from. Label-free (MaxQuant, FragPipe, Spectronaut) and TMT users who normalised before the
-  Protein Replicate Filter and then pressed Reset were returned to the design table; the next normalisation, RUV, DA
-  and enrichment ran on unfiltered data with no warning, while the report's Methods still described the filters.
-  DIA with limpa users lost five Quality Control steps on every Reset (later steps then refused; no numbers). DIA (iq)
-  users normalised before the replicate filter lost the protein roll-up and protein QC (the next run was refused).
-  Reset before any normalisation also cut Quality Control back; after a design saved again it could return the
-  previous design's table.
-- **Code.** Base cf8af245: `R/mod_prot_norm_session_helpers.R:352-392` (revert by name list), `:443-454` (notice),
-  `:467-470` (call). Fix 17643d77: `:364-400` (revert by recorded source identity; no-op without a normalisation-tab
-  state; refusal `prot_norm_reset_source_unknown`), `:457-474` (notice), `:486-490` (call passes `normData`).
+- **What was wrong (legacy, on `main`).** The proteomics Reset went back to the newest of ten fixed state names, not
+  to the table the normalisation started from (`main:R/mod_prot_norm.R:2559-2640`; the list at `:2569`, the choice at
+  `:2571`), and the next normalisation reads the current table (`main:R/mod_prot_norm.R:1318-1319`). Label-free
+  (MaxQuant, FragPipe, Spectronaut: every import other than TMT and DIA-NN, `main:R/mod_prot_import.R:699-705`) and
+  TMT users who normalised before the Protein Replicate Filter and then pressed Reset were returned to the design
+  table; the next normalisation, RUV, DA and enrichment ran on unfiltered data with no warning, while the report's
+  Methods still described the filters. DIA-NN (iq) users who normalised before the replicate filter were returned to a
+  peptide table, losing the protein roll-up and protein Quality Control (on the development branch the next run was
+  then refused; what it did on `main` was not checked). Reset pressed before any normalisation also cut Quality
+  Control back. After a design saved again it could return the previous design's table (by reading; whether Save
+  Design can follow a normalisation in the application is not verified).
+- **On the development branch only.** The DIA with limpa route was added during development (KIT-041, KIT-046) and
+  does not exist on `main`. On it, every Reset after the precursor roll-up undid five Quality Control steps (the later
+  steps then refused; no numbers). Fixed by the same change, before release.
+- **Code.** Legacy: `main:R/mod_prot_norm.R:2559-2640`. Development base cf8af245:
+  `R/mod_prot_norm_session_helpers.R:352-392` (revert by name list), `:443-454` (notice), `:467-470` (call). Fix
+  17643d77: `:364-400` (revert by recorded source identity; no change without a normalisation-tab state; refusal
+  `prot_norm_reset_source_unknown`), `:457-474` (notice), `:486-490` (call passes `normData`).
 - **What changed in results.** Only for the affected users: the table after Reset, hence every later number.
   Unchanged where the source was the newest listed name (QC complete on DIA, label-free, TMT: G1, G2, KIT-182 T5).
 - **Evidence.** G0 45506246515 / 45508719013, R1 45508723674, R2 45510988952; synthetic "small" recipe fixtures;

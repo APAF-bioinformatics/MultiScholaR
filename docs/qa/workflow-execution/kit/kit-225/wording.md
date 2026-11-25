@@ -12,3 +12,15 @@ Drafts under VAL-41, from the ticket's section 7. Each is shown in the proteomic
 
 Replaced: "Normalization has been reset to pre-normalization state (<internal state name>)" and
 "Normalization has been reset (no valid previous state found)".
+
+## Open for the owner's wording pass (VAL-41; audit AUDIT-KIT-225-impl-20261125, I07)
+
+The texts in `R/` are unchanged; these are suggestions only.
+
+- The "nothing to undo" notice: its first clause ("no normalisation result was current") is arguable on DIA with
+  limpa after the pass-through alone (the user has just pressed "Run Normalization & RUV" and seen its completion
+  notice; the pass-through committed no state, so this branch fires and the tab is cleared). The no-manager path shows
+  the same sentence. Suggested text, true in every case the branch fires: "Normalisation reset: the normalisation tab
+  was cleared; the Quality Control steps were left as they are."
+- The error notice reads "Error resetting normalization: the table this normalisation started from ...": it mixes
+  "normalization" and "normalisation", and the button is "Reset to Pre-Normalization". One spelling to be chosen.
