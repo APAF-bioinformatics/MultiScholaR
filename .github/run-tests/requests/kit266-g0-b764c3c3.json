@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-266 gate G0: observe the base (staging 894b9cc82 + driver files only): P1 to P7 on the limpa GUI-entry lane, per-step oracle comparison (information only), memory of the combined figure in fresh processes; ceiling 45 job-minutes",
+  "label": "KIT-266 G0 on kit-266-g0 b764c3c3 (894b9cc82 + docs/qa/.../kit-266/g0)",
+  "package_commit": "b764c3c3033bd82d7238157cd7cb4dbe5e784a55",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-266/g0/g0.R",
+      "args": [],
+      "out": "kit266-g0",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
