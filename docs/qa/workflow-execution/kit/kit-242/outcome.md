@@ -167,3 +167,29 @@ No stored value was edited.
 
 Budget: 210.78 expected / 782.0 ceiling core-hours, as the coordinator told the owner. Used to date: G0 2.76, R1a 0.66,
 R1b-A 0.93, R2a 49.77, R1c 1.44, R2a-2 54.33 = 109.89.
+
+## Part B (the coordinator's rulings of 2026-11-26; base 0020144c)
+
+Ceiling: 901.33 core-hours for the ticket, accepted by the owner (ledger VAL-329 on origin/v0.9-staging 176f9d3f).
+Rows fixed at the branch point: R1b-B 2.0 expected; P0 28.0 expected; R2 59.33 / 120.0; R3 77.7 / 186.67. Order: tests
+first, R1b-B, the fix, P0, then the moved-expectation list and the three by-file questions to the coordinator before R2.
+
+Tests-only commit fb5eee2b (nothing under `R/`): Part B's rows at the end of `test-kit242-normalisation-fallback.R`
+(E14, E15, E16, E18, E19, E20, E22, E23, E24 with the tab managed and in process, E25, E25e (VAL-290) with the tab in
+process, NA3, E11c, the row of ruling (7), G4, G5, G8, G9; seeds 242000 + k with k = 14, 15, 16, 18, 19, 20, 22, 23, 24,
+25, 125, 127, 12, 44, 48, 45, 49), and the two ITSD `fixed` pins re-pinned (VAL-303 (2)). `kit242Tab` also returns
+`ruv_complete` and the tab's RUV results.
+
+### Predictions for R1b-B, written before the run (fb5eee2b: base code 0020144c plus the tests; the new file only)
+
+- Every row written before Part B (Part A, the correction pass) passes, as on R2a-2's head.
+- Each of these Part B tests fails, per class (17 per class, 34 in all), at the base value named: E14 (A2 absent from
+  the returned object; no `omics_ruv_not_applied`), E15 (no classed warning), E16 (no error), E18 (the step completes
+  with A2 absent), E19 (`omics_ruv_insufficient_controls` stops the step), E20 (A2 has no complete feature, so the typed
+  k is refused and stops: `ruv_k_above_limit`; the ticket's "refused per assay" is the automatic rule's form of the same
+  refusal), E22 and E23 (A2 absent), E24 (A2 absent; no per-assay record), E24 tab managed and in process (no "RUV-III
+  was not applied to assay A2" line), E25 (no error: A2 dropped), E25e (both assays dropped and the input returned;
+  `ruv_applied` TRUE), E25e tab (the log says "RUV-III correction applied"), ruling (7) (`ruv_complete` TRUE), NA3 (A2
+  absent from the RUV state), E11c (no `ruv_fallback` marker).
+- G4, G5, G8 and G9 pass (8 tests).
+- Stop rule 1: a Part B E, NA, E11c or ruling (7) row passing on base, or a guard failing, stops before the fix.
