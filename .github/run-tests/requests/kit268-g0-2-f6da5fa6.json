@@ -1,0 +1,73 @@
+{
+  "requested_by": "KIT-268 G0 attempt 2 (instrument rerun 1, coordinator ruling 2026-11-26): same script with absolute output path; ceiling 45 job-minutes",
+  "label": "KIT-268 G0 attempt 2 on kit-268 f6da5fa6 (base 4d588ba3 + docs only)",
+  "package_commit": "f6da5fa6a6760579a3a1b6439acf24bfb8513671",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-268/g0/g0-observe.R",
+      "args": [
+        "control"
+      ],
+      "env": {},
+      "out": "kit268-g0",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 4
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-268/g0/g0-observe.R",
+      "args": [
+        "test-gui-entry-lipidomics.R"
+      ],
+      "env": {},
+      "out": "kit268-g0",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 5
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-268/g0/g0-observe.R",
+      "args": [
+        "test-gui-entry-metabolomics.R"
+      ],
+      "env": {},
+      "out": "kit268-g0",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 8
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-268/g0/g0-observe.R",
+      "args": [
+        "test-omic-summary-module.R"
+      ],
+      "env": {},
+      "out": "kit268-g0",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 7
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-268/g0/g0-observe.R",
+      "args": [
+        "test-omic-da-module.R"
+      ],
+      "env": {},
+      "out": "kit268-g0",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
