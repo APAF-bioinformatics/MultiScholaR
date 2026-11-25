@@ -515,7 +515,8 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
         methodInfo = method(), organismTaxid = used$organism_taxid %||% input$organism_taxid,
         upCutoff = used$up_cutoff %||% input$up_cutoff, downCutoff = used$down_cutoff %||% input$down_cutoff,
         qCutoff = used$q_cutoff %||% input$q_cutoff, gprofilerResults = tab$gprofiler_results,
-        clusterprofilerResults = tab$clusterprofiler_results, stringdbResults = tab$stringdb_results)
+        clusterprofilerResults = tab$clusterprofiler_results, stringdbResults = tab$stringdb_results,
+        notTested = tab$enrichment_not_tested, noList = tab$enrichment_no_list) # KIT-215
     })
 
   tab
@@ -676,7 +677,24 @@ holdOmicEnrichRun <- function(tab, run) {
   tab$analysis_complete <- isTRUE(run$saved$saved) # A107-08: complete means committed
   tab$analysis_method <- run$method$method
   tab$organism_supported <- run$method$supported
+  holdOmicEnrichOptionalFields(tab, run) # KIT-215
   invisible(run)
+}
+
+#' The lists not tested and the directions with no list (KIT-215, VAL-170), held beside `enrichment_results_full`:
+#' each field is assigned when the run, or the restored record, has it, and set to NULL only when the tab already holds
+#' the field, so a session that never had such a list keeps the tab's other fields only.
+#' @param tab The tab's reactive values.
+#' @param source The run (`runWorkflowEnrichment`) or the restored record (`restoreWorkflowEnrichment`).
+#' @noRd
+holdOmicEnrichOptionalFields <- function(tab, source) {
+  held <- shiny::isolate(names(tab))
+  fields <- c(not_tested = "enrichment_not_tested", no_list = "enrichment_no_list")
+  for (name in names(fields)) {
+    value <- source[[name]]
+    if (!is.null(value) || fields[[name]] %in% held) tab[[fields[[name]]]] <- value
+  }
+  invisible(tab)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -712,7 +730,9 @@ registerOmicEnrichResultOutputs <- function(output, input, tab, workflowData, co
       directionFilter = function() input$gprofiler_direction_filter,
       gprofilerResultsTable = function() tab$gprofiler_results_table)
     output$gprofiler_summary_stats <- shiny::renderText(formatProtEnrichGprofilerSummaryText(
-      gprofilerResults = tab$gprofiler_results, directionFilter = input$gprofiler_direction_filter))
+      gprofilerResults = tab$gprofiler_results, directionFilter = input$gprofiler_direction_filter,
+      notTested = tab$enrichment_not_tested, noList = tab$enrichment_no_list,
+      selectedContrast = input$selected_contrast)) # KIT-215
   }
   if ("clusterprofiler" %in% services) {
     output$clusterprofiler_results_table <- renderProtEnrichClusterProfilerResultsTable(
@@ -720,7 +740,9 @@ registerOmicEnrichResultOutputs <- function(output, input, tab, workflowData, co
       directionFilter = function() input$clusterprofiler_direction_filter,
       clusterprofilerResultsTable = function() tab$clusterprofiler_results_table)
     output$clusterprofiler_summary_stats <- shiny::renderText(formatProtEnrichClusterProfilerSummaryText(
-      clusterprofilerResults = tab$clusterprofiler_results, directionFilter = input$clusterprofiler_direction_filter))
+      clusterprofilerResults = tab$clusterprofiler_results, directionFilter = input$clusterprofiler_direction_filter,
+      notTested = tab$enrichment_not_tested, noList = tab$enrichment_no_list,
+      selectedContrast = input$selected_contrast)) # KIT-215
   }
   if ("stringdb" %in% services) {
     # KIT-064 (roar BUG-07): the threshold is the tab's declared `q_cutoff` control (default 0.05).
@@ -738,14 +760,16 @@ registerOmicEnrichResultOutputs <- function(output, input, tab, workflowData, co
       analysisComplete = function() tab$analysis_complete,
       enrichmentResultsFull = function() tab$enrichment_results_full,
       rawContrast = raw_contrast,
-      directionFilter = function() input$gprofiler_direction_filter)
+      directionFilter = function() input$gprofiler_direction_filter,
+      notTested = function() tab$enrichment_not_tested) # KIT-215
   }
   if ("clusterprofiler" %in% services) {
     output$clusterprofiler_plot <- renderProtEnrichClusterProfilerPlot(
       analysisComplete = function() tab$analysis_complete,
       enrichmentResultsFull = function() tab$enrichment_results_full,
       rawContrast = raw_contrast,
-      directionFilter = function() input$clusterprofiler_direction_filter)
+      directionFilter = function() input$clusterprofiler_direction_filter,
+      notTested = function() tab$enrichment_not_tested) # KIT-215
   }
   if ("stringdb" %in% services) output$stringdb_plot <- renderProtEnrichStringDbPlot()
   invisible(output)

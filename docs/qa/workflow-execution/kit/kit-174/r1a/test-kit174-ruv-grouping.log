@@ -1,0 +1,89 @@
+kit174-ruv-grouping: 1230%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+..KIT-174 T2 observed: before group 0.9779 batch 0.6890; with 'group' (30 controls) group 0.9771 batch 0.0015; with 'batch' (30 controls) group 0.0013 batch 0.6893 
+.........45..67.........89.a.....b.cd........
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit174-ruv-grouping.R:242:5'): T1 (KIT-174 (a)): the proteo
+Expected `help` to be identical to `kit174HelpText`.
+Differences:
+actual vs expected
+- "Experimental factor to preserve during batch correction. RUV-III will remove unwanted variation while preserving differences between groups defined by this variable. For TMT workflows with batches, select 'batch' to remove batch effects."
++ "Choose the column that holds your experimental groups (normally 'group'). Samples that share a value in this column are treated as replicates of each other: RUV-III takes what differs between them to be unwanted variation and builds its correction from it. In the Automatic and Manual modes, and in both RUV modes of DIA with limpa, the same column is also used to pick the control proteins (those that differ least between its values), and, except in Manual mode, the number of factors; the sample-correlation filter on this tab compares samples within it. Do not choose 'batch', or any column in which a value contains samples of more than one group: the correction would then be built from the differences between your groups, and the differences between batches would stay in the data. If you know each sample's batch, add it to the Model Formula on the Differential Expression tab instead, for example ~ 0 + group + batch. If the design declares technical replicates, those are the replicates RUV-III uses; this column still picks the control proteins."
+
+
+── 2. Failure ('test-kit174-ruv-grouping.R:243:5'): T1 (KIT-174 (a)): the proteo
+Expected `grepl("select 'batch'", help, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 3. Failure ('test-kit174-ruv-grouping.R:244:5'): T1 (KIT-174 (a)): the proteo
+Expected `grepl(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 4. Failure ('test-kit174-ruv-grouping.R:328:5'): T10 (KIT-174 (a), VAL-29): t
+Expected `kit174HasCheck()` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 5. Failure ('test-kit174-ruv-grouping.R:342:5'): T10 (KIT-174 (a), VAL-29): c
+Expected `kit174HasCheck()` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 6. Failure ('test-kit174-ruv-grouping.R:347:5'): T10 (KIT-174 (a), VAL-29): c
+Expected `kit174Count(crossed, batch)` to be identical to `kit174Once`.
+Differences:
+  `actual`: 0 0 0
+`expected`: 1 1 1
+
+
+── 7. Failure ('test-kit174-ruv-grouping.R:349:5'): T10 (KIT-174 (a), VAL-29): c
+Expected `kit174Count(partly, kit174WarningText("partly", 1L, 2L))` to be identical to `kit174Once`.
+Differences:
+  `actual`: 0 0 0
+`expected`: 1 1 1
+
+
+── 8. Failure ('test-kit174-ruv-grouping.R:369:5'): T10 (KIT-174 (a), VAL-29): c
+Expected `kit174Count(recommended, batch)` to be identical to `kit174Once`.
+Differences:
+  `actual`: 0 0 0
+`expected`: 1 1 1
+
+
+── 9. Failure ('test-kit174-ruv-grouping.R:373:5'): T10 (KIT-174 (a), VAL-29): D
+Expected `kit174HasCheck()` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 10. Failure ('test-kit174-ruv-grouping.R:377:5'): T10 (KIT-174 (a), VAL-29): 
+Expected `kit174Count(crossed, batch)` to be identical to `kit174Once`.
+Differences:
+  `actual`: 0 0 0
+`expected`: 1 1 1
+
+  ... and 3 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Frustration is a natural part of programming :)
+
+COUNTS test-kit174-ruv-grouping.R pass 37 fail 13 error 0 skip 0 warn 0

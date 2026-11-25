@@ -61,6 +61,49 @@
 
 ### Fixes
 
+ * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
+   correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
+   'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
+   refused Save also removes this omic's earlier integration input. 'Generate Report' and 'Copy' also refuse when the
+   results folder holds differential analysis files that no analysis of this session made (from an earlier session,
+   an opened session file, or a contrast the last analysis did not produce), and name them. The differential-analysis
+   tab of lipidomics, metabolomics and transcriptomics now clears its results when the table changes, as proteomics
+   already did, and after a session file is loaded and the table then moves, the next analysis runs on the current
+   table. Before, the saved parameters, the report and the publication folder could combine one table's parameters
+   with another table's differential analysis. They still can if the analysis is run again and Copy or the Report is
+   pressed without pressing 'Save Workflow Arguments' first; the Summary does not check this. 'Generate Report' after
+   the analysis was run again since the last 'Copy' now asks for 'Copy' first. A saved analysis record whose
+   differential analysis was run on another table than its final one no longer replays. To check an earlier save: in
+   analysis_record.json, the differential_abundance entry's source_state should be the last step's state, or, for
+   proteomics with enrichment, the last state before enrichment_completed; if it is empty or names another state, run
+   the differential analysis again and save again (KIT-212).
+ * Proteomics enrichment: a list of up- or down-regulated proteins that could not be tested (on g:Profiler none of its
+   proteins has a gene name; on the Gene Ontology route none has a Gene Ontology annotation that the analysis tests) is
+   now shown in the tab, the download and the report as 'Not tested', with the reason, and is recorded in the analysis
+   record; a direction in which no protein passed the cutoffs now says 'no list'. Before, both looked like a list in
+   which no term was enriched. A list that was tested and in which no tested term holds one of its proteins is shown,
+   as before, as tested with no term. On the Gene Ontology route a comparison that has a list but no tested protein
+   with an annotation, or no Gene Ontology term of 10 to 500 tested proteins, is now refused with a message, as is a
+   run in which the test of a list stops with an error (on both routes); records of such runs made before this change
+   no longer replay. On g:Profiler, a list with no significant term cannot be told apart from a list in which the
+   service recognised none of the gene names; the report says so (KIT-215).
+
+ * The help for the RUV grouping variable in proteomics advised selecting 'batch' for TMT. That advice was wrong: with
+   'batch' the correction is built from the differences between your groups and the differences between batches stay.
+   To check an earlier analysis, look for 'RUV grouping variable' in its study_parameters.txt (or the normalisation step
+   of its analysis record); if it is not 'group', run the normalisation again with 'group' and, if you know the batches,
+   add batch to the model formula. The normalisation tab now warns when the chosen column puts samples of different
+   groups together (KIT-174).
+ * Proteomics: 'Reset to Pre-Normalization' now returns to the table the normalisation started from. Before, it
+   returned to the newest of a fixed list of step names. When the normalisation had started before the Protein
+   Replicate Filter, that was, on label-free (MaxQuant, FragPipe, Spectronaut) and TMT data, the design table (so the
+   next normalisation ran without the quality-control filters), and on DIA with iq a peptide table (undoing the protein
+   roll-up and protein Quality Control; the next normalisation then failed). On DIA with limpa every Reset returned the
+   precursor roll-up (undoing Log2 Matrix, Peptide Accession Cleanup, DPC Quantification, Between-Sample Normalisation
+   and the Peptide Count Filter). Reset pressed before any normalisation also undid Quality Control steps; it now leaves
+   Quality Control as it is. When the starting table can no longer be found, Reset now changes nothing and says so
+   (KIT-225).
+
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session
@@ -220,8 +263,8 @@
    g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
    proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
    (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
-   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab still shows
-   such a list like a tested list that found no terms, until KIT-215 changes the tab. The analysis record also states,
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab, the download
+   and the report show such a list as 'Not tested' (KIT-215). The analysis record also states,
    for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
    background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
    change, no longer replays; it is refused with the same message. The first change does not affect data imported in
