@@ -1,0 +1,202 @@
+== test-kit225-prot-norm-reset-source.R | fixed | KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  LFQ
+  Expected `fixture$manager$current_state` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  TMT
+  Expected `kit225Head(fixture)$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "6910f0843417c5bc2446248d1988ea72a62e2dadde2b105c41c3761e290ebebc"
+  `expected`: "67390c815d2768e46dadbaf07f1d50e119f0c234cc6539075966730817e2831f"
+  
+  LFQ
+  Expected `kit225Head(fixture)$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "b1f73610bb17511b2332d3703918a74a5f9adcbed57c796522953a306dd2088f"
+  `expected`: "0ad383f55c5442581a679e1598eb12ea54104ba30157dfa8e444f7aaea0c33f1"
+  
+  TMT
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "6910f0843417c5bc2446248d1988ea72a62e2dadde2b105c41c3761e290ebebc"
+  `expected`: "67390c815d2768e46dadbaf07f1d50e119f0c234cc6539075966730817e2831f"
+  
+  LFQ
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `p3$entity_id`.
+  Differences:
+  `actual`:   "b1f73610bb17511b2332d3703918a74a5f9adcbed57c796522953a306dd2088f"
+  `expected`: "0ad383f55c5442581a679e1598eb12ea54104ba30157dfa8e444f7aaea0c33f1"
+  
+  TMT
+  Expected `reset$notes` to be identical to `kit225NoticeText("Duplicate Removal")`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Duplicate Removal)."
+  
+  LFQ
+  Expected `reset$notes` to be identical to `kit225NoticeText("Duplicate Removal")`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Duplicate Removal)."
+  
+  TMT
+  Expected `reset$result$previousState` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  LFQ
+  Expected `reset$result$previousState` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_s4_initial"
+  `expected`: "duplicates_removed"
+  
+  TMT
+-- head:
+  <passes>
+
+== test-kit225-prot-norm-reset-source.R | fixed | KIT-225 E3: DIA with limpa at its normal ending, Reset returns the Peptide Count Filter's table (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "precursor_rollup"      
+  `expected`: "peptide_count_filtered"
+  Expected `kit225Head(fixture)$entity_id` to be identical to `l7$entity_id`.
+  Differences:
+  `actual`:   "c6f6c2631d63d83d256ea22da5847ca2eefb0cd5766c8b07a5d1f7f40321d815"
+  `expected`: "e323820e88bdd1450858e6e31b5b2411ffb968279615f02c41d96b1b0272ad6e"
+  Expected `reset$notes` to be identical to `kit225NoticeText("Peptide Count Filter")`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (precursor_rollup)"
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter)."
+-- head:
+  <passes>
+
+== test-kit225-prot-norm-reset-source.R | fixed | KIT-225 E4: DIA (iq) normalised before the replicate filter, Reset returns the protein table (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "protein_intensity_filtered".
+  Differences:
+  `actual`:   "imputed"                   
+  `expected`: "protein_intensity_filtered"
+  Expected `kit225Head(fixture)$entity_id` to be identical to `d3$entity_id`.
+  Differences:
+  `actual`:   "5112bcdbff0de6422b7af4fde0c703a7e90a98931e263b154087c825f0b62e4e"
+  `expected`: "a80c4e730fbb6f1c53c92c54b255063207549feb4c4fc0f4090a235f2f419a82"
+-- head:
+  <passes>
+
+== test-kit225-prot-norm-reset-source.R | fixed | KIT-225 E5: after a design saved again, Reset returns the second run's source by identity, not by name (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "duplicates_removed".
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "duplicates_removed"        
+  Expected `kit225Head(fixture)$entity_id` to be identical to `p3b$entity_id`.
+  Differences:
+  `actual`:   "4711a1f4b2216e2faccfcdace4e3b23ed7dceb91a04d989d1f404ff009ebe1f6"
+  `expected`: "c8c607831c7db532c3767f9936e01b5c278a733da4fc9205595adbb96c94414c"
+-- head:
+  <passes>
+
+== test-kit225-prot-norm-reset-source.R | fixed | KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before)
+-- base:
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "19ae731e01888edb1a9ec7c116d6ba0311cba7f6a578c635de234946302239e8"
+  `expected`: "98bf56304daf3404f8b6e84ea278be6716e75d2e43dce49749607c2cf49c11b4"
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "3a8072e551b947aaa4f460a40a0488c7a9bcca5d44413feab0dadd7cf04df805"
+  `expected`: "f5cf78a77ab7c2f82c2acb4659acfbf6436d124f0a7a18bc1b5a680579db0a9f"
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "d470dbc930f385a497cd04a7e48dcc80a66db513524cf4c6624a078a582ab548"
+  `expected`: "de69e360783d1a387b4a4abc0120a2dbe484da8e2681405980ebeb77128ebbc0"
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+  Expected `reset$notes` to be identical to `kit225NothingText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are."
+  Expected `reset$notes` to be identical to `kit225NothingText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are."
+  Expected `reset$notes` to be identical to `kit225NothingText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)"
+  + "[warning 5] Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are."
+  Expected `reset$result$previousState` to be NULL.
+  Differences:
+  `actual` is a character vector ('protein_s4_initial')
+  `expected` is NULL
+-- head:
+  <passes>
+
+== test-kit225-prot-norm-reset-source.R | fixed | KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "normalized".
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "normalized"                
+  Expected `kit225Head(fixture)$entity_id` to be identical to `head$entity_id`.
+  Differences:
+  `actual`:   "2ac0ffaf961a296366b71bb50b056a92d449938f5743443e22d91919f0567e8f"
+  `expected`: "c093bf521f25ba29dc0efc184ea15c73a6ba22c660f7c614c08b92c1499a01f5"
+  Expected `kit225History(fixture)` to be identical to `history`.
+  Differences:
+  `actual`:   "initial" "protein_replicate_filtered"             
+  `expected`: "initial" "protein_replicate_filtered" "normalized"
+  Expected `kit225Reset(fixture, norm)` to throw a error with class <prot_norm_reset_source_unknown>.
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `unknown$entity_id`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('0000000000000000000000000000000000000000000000000000000000000000')
+-- head:
+  <passes>
+
+== test-prot-05b-norm-module-contracts.R | fixed | runProtNormResetWorkflow sequences reset helpers and notification
+-- base:
+  Expected `calls$revert$normData` to be identical to `norm_data`.
+  Differences:
+  `actual` is NULL
+  `expected` is an environment
+-- head:
+  <passes>
+

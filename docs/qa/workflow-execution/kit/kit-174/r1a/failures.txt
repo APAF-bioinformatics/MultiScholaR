@@ -1,0 +1,118 @@
+file: test-kit174-ruv-grouping.R
+test: T1 (KIT-174 (a)): the proteomics RUV grouping help is the approved text
+kind: failure
+message:
+  Expected `help` to be identical to `kit174HelpText`.
+  Differences:
+  actual vs expected
+  - "Experimental factor to preserve during batch correction. RUV-III will remove unwanted variation while preserving differences between groups defined by this variable. For TMT workflows with batches, select 'batch' to remove batch effects."
+  + "Choose the column that holds your experimental groups (normally 'group'). Samples that share a value in this column are treated as replicates of each other: RUV-III takes what differs between them to be unwanted variation and builds its correction from it. In the Automatic and Manual modes, and in both RUV modes of DIA with limpa, the same column is also used to pick the control proteins (those that differ least between its values), and, except in Manual mode, the number of factors; the sample-correlation filter on this tab compares samples within it. Do not choose 'batch', or any column in which a value contains samples of more than one group: the correction would then be built from the differences between your groups, and the differences between batches would stay in the data. If you know each sample's batch, add it to the Model Formula on the Differential Expression tab instead, for example ~ 0 + group + batch. If the design declares technical replicates, those are the replicates RUV-III uses; this column still picks the control proteins."
+
+file: test-kit174-ruv-grouping.R
+test: T1 (KIT-174 (a)): the proteomics RUV grouping help is the approved text
+kind: failure
+message:
+  Expected `grepl("select 'batch'", help, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit174-ruv-grouping.R
+test: T1 (KIT-174 (a)): the proteomics RUV grouping help is the approved text
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): the check names the column's values that span groups
+kind: failure
+message:
+  Expected `kit174HasCheck()` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): classic proteomics warns once, only for replicate sets
+kind: failure
+message:
+  Expected `kit174HasCheck()` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): classic proteomics warns once, only for replicate sets
+kind: failure
+message:
+  Expected `kit174Count(crossed, batch)` to be identical to `kit174Once`.
+  Differences:
+    `actual`: 0 0 0
+  `expected`: 1 1 1
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): classic proteomics warns once, only for replicate sets
+kind: failure
+message:
+  Expected `kit174Count(partly, kit174WarningText("partly", 1L, 2L))` to be identical to `kit174Once`.
+  Differences:
+    `actual`: 0 0 0
+  `expected`: 1 1 1
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): classic proteomics warns once, only for replicate sets
+kind: failure
+message:
+  Expected `kit174Count(recommended, batch)` to be identical to `kit174Once`.
+  Differences:
+    `actual`: 0 0 0
+  `expected`: 1 1 1
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): DIA with limpa warns once at the RUV-covariates action
+kind: failure
+message:
+  Expected `kit174HasCheck()` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): DIA with limpa warns once at the RUV-covariates action
+kind: failure
+message:
+  Expected `kit174Count(crossed, batch)` to be identical to `kit174Once`.
+  Differences:
+    `actual`: 0 0 0
+  `expected`: 1 1 1
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): the shared frame warns once (lipidomics); trx never
+kind: failure
+message:
+  Expected `kit174HasCheck()` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): the shared frame warns once (lipidomics); trx never
+kind: failure
+message:
+  Expected `kit174Count(crossed, batch)` to be identical to `kit174Once`.
+  Differences:
+    `actual`: 0 0 0
+  `expected`: 1 1 1
+
+file: test-kit174-ruv-grouping.R
+test: T10 (KIT-174 (a), VAL-29): the shared frame warns once (lipidomics); trx never
+kind: failure
+message:
+  Expected `sum(grepl(batch, crossed$log, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+

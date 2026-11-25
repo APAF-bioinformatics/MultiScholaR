@@ -1,0 +1,12 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit218-da-wrapper-tail.R	64	0	0	2	0	13.6	ok
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	0	339.4	ok
+test-kit196-da-no-value-features.R	540	0	0	0	1	175.5	ok
+test-lipid-07-s4-da-plot-methods.R	16	0	0	0	0	6.6	ok
+test-metab-02k-da-numsig-barplot-characterization.R	4	0	0	0	0	6.3	ok
+test-prot-07c-da-results-characterization.R	23	0	0	0	0	6.6	ok
+test-prot-07c-da-results-output-shared.R	38	0	0	0	0	7.2	ok
+test-prot-07-da-analysis.R	3	0	0	1	0	6.8	ok
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	1	10.6	ok
+test-prot-da-compat-shared.R	16	0	0	0	0	6.6	ok
+test-prot-ruv-factors-in-model.R	306	1	0	0	2	145.3	failed

@@ -628,7 +628,11 @@ test_that("KIT-207 E11: lipid, the Summary tab mounted: a refused Save, then Cop
     cat(sprintf("KIT-207 E11 lipid\tstudy_parameters=%s\tnotes=%s\n", file.exists(params), paste(seen$notes, collapse = " | ")))
     info <- paste("E11", paste(seen$notes, collapse = " | "))
     expect_true(k194Noted(seen, paste("[error]", k207Refused(k207Texts$summary))), info = info)
-    expect_true(k194Noted(seen, "Copy error: Required publication artifacts missing: Study Parameters"), info = info)
+    # KIT-212: Copy refuses the DA of an earlier table before it checks the publication artifacts.
+    expect_true(k194Noted(seen, paste("Copy error:", paste("The differential analysis was run on an earlier table, not the",
+        "current one: the table changed after the analysis ran (a new normalisation run, a Revert, or the correlation filter",
+        "applied again). Run the differential analysis again, then press 'Save Workflow Arguments' before copying or",
+        "generating the report."))), info = info)
     expect_false(file.exists(params), info = info)
 })
 

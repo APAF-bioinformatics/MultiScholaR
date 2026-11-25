@@ -95,18 +95,8 @@ outputLipidDaResultsAllContrasts <- function(
     logger::log_info(sprintf("   Found %d assays: %s", length(assays), paste(assays, collapse = ", ")))
     logger::log_info(sprintf("   Found %d contrasts: %s", length(contrasts), paste(contrasts, collapse = ", ")))
 
-    # Map assay names to mode prefixes
-    # LCMS_Pos -> posmode, LCMS_Neg -> negmode
-    get_mode_prefix <- function(assay_name) {
-        if (grepl("pos", assay_name, ignore.case = TRUE)) {
-            return("posmode")
-        } else if (grepl("neg", assay_name, ignore.case = TRUE)) {
-            return("negmode")
-        } else {
-            # Fallback: use sanitized assay name
-            return(gsub("[^A-Za-z0-9]", "", tolower(assay_name)))
-        }
-    }
+    # KIT-212: the file naming (mode prefix, table and figure bases) is `omicsDaFileNames`, callable, so the Summary can
+    # list the files a DA made; the names are unchanged.
 
     # What every heatmap is drawn with: part of its identity, since the data alone would serve the old colours.
     heatmap_parameters <- list(top_n = heatmap_top_n, clustering = heatmap_clustering, color_scheme = heatmap_color_scheme, q = da_q_val_thresh)
@@ -118,7 +108,7 @@ outputLipidDaResultsAllContrasts <- function(
 
     # Process each ASSAY x CONTRAST combination
     for (assay_name in assays) {
-        mode_prefix <- get_mode_prefix(assay_name)
+        mode_prefix <- omicsDaModePrefix(assay_name)
         logger::log_info(sprintf("   Processing assay: %s (mode: %s)", assay_name, mode_prefix))
 
         for (contrast_name in contrasts) {
@@ -161,7 +151,7 @@ outputLipidDaResultsAllContrasts <- function(
                     output_data <- assay_contrast_data[, final_col_order, drop = FALSE]
 
                     # Build filename: de_{mode}_lipids_{contrast}_long_annot
-                    file_base <- paste0("de_", mode_prefix, "_lipids_", contrast_name, "_long_annot")
+                    file_base <- omicsDaFileNames("lipids", assay_name, contrast_name)$table
 
                     # Write TSV
                     tsv_path <- file.path(da_output_dir, paste0(file_base, ".tsv"))
@@ -205,7 +195,7 @@ outputLipidDaResultsAllContrasts <- function(
                         n_labels = 15
                     ))
                     volcano_content <- digest::digest(assay_contrast_data, algo = "sha256")
-                    volcano_base <- paste0(mode_prefix, "_", contrast_name)
+                    volcano_base <- omicsDaFileNames("lipids", assay_name, contrast_name)$plot
                     write_volcano <- function(path) {
                         writeWorkflowOmicsFigure(path, function(target) {
                             plot <- volcano_plot()
@@ -262,7 +252,7 @@ outputLipidDaResultsAllContrasts <- function(
                         da_q_val_thresh = da_q_val_thresh
                     ))
                     heatmap_content <- omicsDaHeatmapContent(assay_contrast_data, da_results_list$theObject, "lipid_data", assay_name)
-                    heatmap_base <- paste0(mode_prefix, "_", contrast_name)
+                    heatmap_base <- omicsDaFileNames("lipids", assay_name, contrast_name)$plot
                     write_heatmap <- function(path, device) {
                         writeWorkflowOmicsFigure(path, function(target) {
                             # KIT-077: the generator returns list(plot, row_clusters, col_clusters); the export draws the plot.
@@ -307,13 +297,16 @@ outputLipidDaResultsAllContrasts <- function(
             tryCatch(
                 {
                     sig_summary <- assay_contrast_data |>
+                        # KIT-220 (r1.3, I01): up and down are counted before `significant` is replaced by its count;
+                        # summarise() let the new count mask the column, so both were always 0.
                         dplyr::summarise(
                             total = dplyr::n(),
-                            significant = sum(significant != "NS", na.rm = TRUE),
                             up_regulated = sum(significant == "Up", na.rm = TRUE),
                             down_regulated = sum(significant == "Down", na.rm = TRUE),
+                            significant = sum(significant != "NS", na.rm = TRUE),
                             .groups = "drop"
                         ) |>
+                        dplyr::relocate(dplyr::all_of("significant"), .after = dplyr::all_of("total")) |>
                         dplyr::mutate(
                             assay = assay_name,
                             mode = mode_prefix,
@@ -438,4 +431,29 @@ outputLipidDaResultsAllContrasts <- function(
 
     logger::log_info("--- Exiting outputLipidDaResultsAllContrasts ---")
     return(TRUE)
+}
+
+#' The mode prefix of an assay in the lipidomics and metabolomics DA publication's file names (KIT-212: the closure
+#' `get_mode_prefix` of `outputLipidDaResultsAllContrasts` and `outputMetabDaResultsAllContrasts`, made callable; the
+#' names are unchanged): `posmode`, `negmode`, else the assay name in lower case without other characters.
+#' @param assay_name An assay name (`LCMS_Pos`).
+#' @return A string.
+#' @noRd
+omicsDaModePrefix <- function(assay_name) {
+    if (grepl("pos", assay_name, ignore.case = TRUE)) return("posmode")
+    if (grepl("neg", assay_name, ignore.case = TRUE)) return("negmode")
+    gsub("[^A-Za-z0-9]", "", tolower(assay_name))
+}
+
+#' The per-contrast and per-assay file bases the lipidomics and metabolomics DA publication writes (KIT-212: the
+#' writers' `file_base`, `volcano_base` and `heatmap_base`, made callable so the Summary can list the files a DA made).
+#' @param noun `lipids` or `metabolites`.
+#' @param assay_name,contrast_name The assay and the contrast (the long table's `assay` and `comparison`).
+#' @return `list(table, plot)`: the table base (`.tsv`, `.xlsx`) and the figure base (the volcano `<plot>.png`, the
+#'   heatmap `<plot>_heatmap.png`).
+#' @noRd
+omicsDaFileNames <- function(noun, assay_name, contrast_name) {
+    mode_prefix <- omicsDaModePrefix(assay_name)
+    list(table = paste0("de_", mode_prefix, "_", noun, "_", contrast_name, "_long_annot"),
+        plot = paste0(mode_prefix, "_", contrast_name))
 }

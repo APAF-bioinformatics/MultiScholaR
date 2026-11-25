@@ -153,7 +153,8 @@ kit095WithoutTranscriptomics <- function(current, expected) {
         "enrichment_go_annotation_go_source_date", "enrichment_go_pairs_direct", "enrichment_go_pairs_propagated",
         "enrichment_go_root_only_proteins", "enrichment_go_unreviewed_share", "enrichment_correction_method",
         "enrichment_significance_rule", # KIT-203
-        "enrichment_background") # KIT-205
+        "enrichment_background", # KIT-205
+        "enrichment_lists_not_tested") # KIT-215
     testthat::expect_true(all(kit173 %in% names(current$report_sources)))
     testthat::expect_false(any(kit173 %in% names(expected$report_sources)))
     stripped$report_sources[kit173] <- NULL
