@@ -1,0 +1,5 @@
+path	stored	head
+summary_save > artifacts > integration/proteomics/removed_proteomics.parquet	<absent>	"<present>"
+summary_copy > artifacts > integration/proteomics/removed_proteomics.parquet	<absent>	"<present>"
+summary_report > artifacts > integration/proteomics/removed_proteomics.parquet	<absent>	"<present>"
+summary_export > artifacts > integration/proteomics/removed_proteomics.parquet	<absent>	"<present>"

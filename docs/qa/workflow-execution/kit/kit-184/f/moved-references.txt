@@ -1,0 +1,102 @@
+Extract of the full suite's compare-failures.txt (run 45402062487): the rows in which the file removed_<data set>.parquet appears.
+
+== == test-gui-entry-proteomics.R | new-failure | KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route
+-- base:
+  <passes>
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+    "integration/proteomics/matrix_proteomics.parquet"
+  - "integration/proteomics/removed_proteomics.parquet"
+    "integration/proteomics/samples.parquet"
+  
+  `actual$artifacts$integration/proteomics/removed_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/removed_proteomics.parquet` is absent
+  
+  prot_dia_limpa at step 'summary_save' (oracle 84ec739515b1a44cc4dc8d1edc78d199f95016a7)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+    "integration/proteomics/matrix_proteomics.parquet"
+  - "integration/proteomics/removed_proteomics.parquet"
+    "integration/proteomics/samples.parquet"
+  
+  `actual$artifacts$integration/proteomics/removed_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/removed_proteomics.parquet` is absent
+  
+  prot_dia_limpa at step 'summary_copy' (oracle 84ec739515b1a44cc4dc8d1edc78d199f95016a7)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+    "integration/proteomics/matrix_proteomics.parquet"
+  - "integration/proteomics/removed_proteomics.parquet"
+    "integration/proteomics/samples.parquet"
+  
+  `actual$artifacts$integration/proteomics/removed_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/removed_proteomics.parquet` is absent
+  
+  prot_dia_limpa at step 'summary_report' (oracle 84ec739515b1a44cc4dc8d1edc78d199f95016a7)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+    "integration/proteomics/matrix_proteomics.parquet"
+  - "integration/proteomics/removed_proteomics.parquet"
+    "integration/proteomics/samples.parquet"
+  
+  `actual$artifacts$integration/proteomics/removed_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/removed_proteomics.parquet` is absent
+  
+  prot_dia_limpa at step 'summary_export' (oracle 84ec739515b1a44cc4dc8d1edc78d199f95016a7)
+
+
+== test-omic-summary-module.R | message-changed | (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  trx_main save files
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+
+== test-omic-summary-module.R | message-changed | (b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  trx_managed save files
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+
+== test-omics-summary-core.R | message-changed | (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  trx_main save files
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+
+== test-omics-summary-core.R | message-changed | (W3, core side) trx_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  trx_managed save files
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+
+== test-gui-entry-transcriptomics.R | message-changed | KIT-101 entry lane trx_screen: the KIT-040 count corpus, 12 samples, 300 genes
+(added 2026-11-25, implementation audit K184-I08; from the same compare-failures.txt)
+The stored reference tests/testdata/gui-entry/trx_screen.json fails on staging already (13 expectations, the old TSV
+form of the integration input). On the head its messages also list, among the artifacts present and not expected,
+  "integration/transcriptomics/removed_transcriptomics.parquet"
+When that reference is re-frozen under its own ticket it will list the file. It is not re-frozen by KIT-184.

@@ -1,0 +1,2 @@
+check	rows_here	rows_l1	rows_matched	sets_equal	replicates_equal	rows_with_T_differing	equal
+cell A, every size summed and nothing left out, against L1's error rates	2237	2237	2237	TRUE	TRUE	0	TRUE

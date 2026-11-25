@@ -1,0 +1,2 @@
+enrichment	mode	ranking_equal	terms_equal	terms_identical	terms_only_recorded	terms_only_repeated	note
+Factor1|metabolomics_GCMS|kegg|camera|adjusted	recorded	TRUE	TRUE	TRUE	0	0	

@@ -292,9 +292,11 @@ test_that("KIT-138: the correction for unwanted variation each input names is st
     manifest$matrix_role <- "normalised"
     manifest$correction <- list(state = "ruv_covariates", id = "C2", method = "RUVIII", k = 2L, ruv_design = "groups_all_features",
         ruv_k = 2L, replicate_structure = "group", grouping_variable = "group", ruv_k_estimate = NA)
-    writeIntegrationInput(file.path(project$paths$integration_dir, "proteomics"), manifest, input$samples,
+    # KIT-184: equal matrices hold no removed direction: the writer's classed warning, and no factors file.
+    expect_warning(writeIntegrationInput(file.path(project$paths$integration_dir, "proteomics"), manifest, input$samples,
         lapply(input$views, `[[`, "matrix"), lapply(input$views, `[[`, "features"),
-        corrected = lapply(input$views, `[[`, "matrix"))
+        corrected = lapply(input$views, `[[`, "matrix")), class = "integration_input_removed_factors_undetermined")
+    expect_false(file.exists(file.path(project$paths$integration_dir, "proteomics", "removed_proteomics.parquet")))
     scan <- integrationScanProject(project$paths$integration_dir)
     row <- scan$omics[scan$omics$omic == "proteomics", ]
     expect_identical(row$values, texts[["values_both"]])
