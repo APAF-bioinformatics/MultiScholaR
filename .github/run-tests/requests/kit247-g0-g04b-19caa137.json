@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-247 G0-4 instrument rerun 1 of 3 (VAL-54): run 45594085728 produced no observation (timed out waiting for the normalisation status after Run+Skip pressed with no wait); presses now waited for by head state and export notice; no prediction changed; 1 job, ceiling 90 job-minutes",
+  "label": "KIT-247 G0 g04b on kit-247-g0 19caa137 (R/ as v0.9-staging 16112917)",
+  "package_commit": "19caa137dfe566fd76e4886a38879501bb6e9b85",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-247/g0-browser.R",
+      "args": [
+        "kit247-g0b"
+      ],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit247-g0b",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 85
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
