@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-233 run L, instrument rerun 1 of 3 (VAL-54: 45523435786 gave no step outcome, AppDriver skipped on NOT_CRAN); lifecycle L-0 to L-5; ceiling 60 job-minutes",
+  "label": "KIT-233 L rerun 1 on kit-233-journey 4793c9e8 (commit under test 67569959)",
+  "package_commit": "4793c9e8bbaf1d750b031f25d89616f6394a1df7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-233/journey.R",
+      "args": [
+        "lifecycle",
+        "6756995954684128d617ab92dab983bdcaa05394"
+      ],
+      "out": "k233-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log|html|md)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
