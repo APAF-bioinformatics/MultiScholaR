@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-242 G0, VAL-54 instrument rerun 1 of 3: case C9 only (run 45584784285's proteomics arms failed in the script's object builder before any result); within G0's 120-minute ceiling",
+  "label": "KIT-242 G0 C9 rerun on kit-242-g0 2942615f",
+  "package_commit": "2942615fdbabfe7cad9880b6dd3200a035a16cc0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "tools/kit242/g0.R", "args": ["kit242-g0", "c9"], "out": "kit242-g0", "out_pattern": "\\.(tsv|txt|json)$", "timeout_minutes": 15}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
