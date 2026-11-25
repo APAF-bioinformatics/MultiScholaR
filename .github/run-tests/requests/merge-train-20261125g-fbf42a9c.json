@@ -1,0 +1,43 @@
+{
+  "requested_by": "Merge train 7 of 2026-11-25 (KIT-252, KIT-250): check on the merged tree, head fbf42a9c vs staging c4505c7f; union of the merge-check lists (22 files) and check; ceiling 1,200 job-minutes",
+  "label": "Merge train 20261125g fbf42a9c vs staging c4505c7f",
+  "package_commit": "fbf42a9c4182cda1202dd2ad8ef592a897d431cf",
+  "base_commit": "c4505c7f0fdda79692f1baaafa636b2c710d7a19",
+  "tools_ref": "",
+  "tests": [
+    "test-kit252-managed-failure-text.R",
+    "test-prot-norm-core.R",
+    "test-prot-norm-input-current.R",
+    "test-omic-da-module.R",
+    "test-workflow-omics-application-reads.R",
+    "test-workflow-execution-process.R",
+    "test-workflow-execution.R",
+    "test-perf-107.R",
+    "test-perf-003.R",
+    "test-perf107-audit.R",
+    "test-prot-07b-da-handlers-compat.R",
+    "test-workflow-core-harness.R",
+    "test-workflow-kit-harness.R",
+    "test-workflow-execution-adapters.R",
+    "test-kit251-replicate-filter-one-click.R",
+    "test-kit250-organism-dialog.R",
+    "test-prot-01c-import-module-contracts.R",
+    "test-prot-01d-import-module-characterization.R",
+    "test-module-ci-prot-import.R",
+    "test-module-ci-trx-app.R",
+    "test-workflow-gui-memory-lifetimes.R",
+    "test-workflow-server-shared.R"
+  ],
+  "shards": 4,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
