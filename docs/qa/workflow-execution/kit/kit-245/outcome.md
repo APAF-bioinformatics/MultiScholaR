@@ -277,3 +277,9 @@ host (recorder, `insteadOf` of https://github.com/ to a local bare repository, `
   R1c showed (with S7's accepted rows passing on both: the R1c instrument correction's observation); the eleven
   other files `same`; `R CMD check` nothing only on head. Ceiling 300 job-minutes (Part S's correction, unspent).
   Decides AS2 and A2 after the correction; stop rule 4.
+- Result, run 45626340616 (`r2c-compare.tsv`, `r2c-check-compare.txt`): met. `test-kit245-github-push-safety.R`
+  `fixed` (base 68 passed, 19 failed: R1c's 21 failures less S7's two accepted-ID rows, which now pass on both sides,
+  the observation of R1c's instrument correction; head 87 passed, 0 failed); `test-kit245-github-panel.R` `fixed`
+  (base 41/1, E2; head 42/0); the eleven other files `same` (the pre-existing stored-reference failures identical:
+  `test-omic-summary-module.R` 28, `test-module-ci-trx-summary.R` 2 after KIT-214/KIT-224, `test-optional-packages.R`
+  1); `R CMD check` six findings identical, none only on head. 79.8 job-minutes. AS2 and A2 hold after the correction.
