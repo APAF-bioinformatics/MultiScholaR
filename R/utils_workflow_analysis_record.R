@@ -641,7 +641,7 @@ validateWorkflowAnalysisRecord <- function(record) {
 }
 
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`): for
+#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -657,6 +657,10 @@ workflowReplayRuleMarkers <- list(
     # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
     # made before counted every numeric column of the assay ("numeric_columns").
     intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
+        earlier = "numeric_columns"),
+    # KIT-214 (VAL-173 (1)): lipid and metabolite duplicate resolution averages the design's samples ("design"); records
+    # made before averaged every numeric column of the assay ("numeric_columns").
+    duplicate_resolution_samples = list(option = "MultiScholaR.duplicate_resolution_samples", current = "design",
         earlier = "numeric_columns"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
