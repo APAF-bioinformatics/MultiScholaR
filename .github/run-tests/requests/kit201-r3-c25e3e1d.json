@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-201 R3: full suite base dd769671 against the fix c25e3e1d (moved references listed for plan section 11)",
+  "label": "KIT-201 R3 full base dd769671 head c25e3e1d",
+  "package_commit": "c25e3e1d25ba5935cca705309e54f9c46f6cddf7",
+  "base_commit": "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
