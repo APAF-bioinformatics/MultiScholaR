@@ -234,18 +234,28 @@
    intensity trend and robust estimation, as the analysis record and report always stated). Before, it used one prior
    variance for all features without the robust step, so the stated settings had no effect on TREAT results. This
    applies to lipidomics and metabolomics when a log fold-change threshold above 0 is set, and to every proteomics
-   analysis of DIA without limpa, label-free and TMT data with the Skip or legacy RUV options (TREAT runs there at the
-   default threshold of 0). Results of those analyses change. In simulations with known truth (18 settings per omic:
-   variance with and without an abundance trend and hypervariable features, with and without missing values, 3 to 6
-   samples per group), the changed test was no worse on every pre-declared check: among unchanged features of the
-   lowest-abundance third, the share with p below 0.05 fell from up to 9.6 % to at most 5.8 % in proteomics (8.1 % to
-   5.2 % in lipidomics and metabolomics); in the highest-abundance third it rose from as low as 3.0 % to about 5 %; the
-   false discovery proportion changed by -1.3 to +0.7 percentage points and power by -1.3 to +3.0. A new analysis with these options no longer reproduces an earlier version's statistics; saved analyses replay
-   as they were made, and in scripts the earlier statistics are obtained with the trend and robust options off. Reports
-   re-rendered from an analysis saved before this change still describe its TREAT step as trended and robust; that step
-   used one prior variance. The RUV panel's "Approach of earlier versions" row for classic proteomics is restated from
-   the measurement of this test: worst cell 0.389 (was 0.385), 10.1 % false discoveries in the reference scenario (was
-   9.8 %). (KIT-201; methods ledger VAL-127, VAL-131)
+   analysis of DIA without limpa, label-free and TMT data with the Skip or legacy RUV options (TREAT runs there at
+   the default threshold of 0). Results of those analyses change. In simulations with known truth (18 settings for
+   proteomics and 18 for lipidomics and metabolomics, which received the same simulated data and, running the same
+   code, gave identical results: variance with and without an abundance trend and hypervariable features, with and
+   without 20 % missing values that depend on abundance, 2 to 4 groups of 3 to 6 samples, no RUV), the changed test
+   was no worse on every one of 982 pre-declared checks. Where variance depends on abundance, the earlier test made
+   too many false calls among low-abundance features and too few among high-abundance ones. In proteomics, among
+   unchanged features of the lowest-abundance third, the share with p below 0.05 fell from up to 9.6 % to at most 5.8
+   %; in the highest third it rose from as low as 3.0 % to about 5 %. In lipidomics and metabolomics, among features
+   whose true change equals the threshold, the shares moved from up to 8.1 % to at most 5.2 %, and from as low as 3.4
+   % to about 5 %. Without missing values the changed test gave 4.7 % to 5.2 % in every abundance third. With missing
+   values that depend on abundance, proteomics at the default threshold still made slightly more false calls than the
+   5 % target (up to 5.8 % in the lowest third, false discovery proportion up to 5.7 %, against up to 9.6 % and 6.7 %
+   before). Where variance does not depend on abundance, it made slightly more false calls than the earlier test
+   (false discovery proportion up to 0.7 percentage points higher). Overall the false discovery proportion changed by
+   -1.3 to +0.7 percentage points and power by -1.3 to +3.0. A new analysis with these options no longer reproduces
+   an earlier version's statistics; saved analyses replay as they were made, and in scripts the earlier statistics
+   are obtained with the trend and robust options off. Reports re-rendered from an analysis saved before this change
+   still describe its TREAT step as trended and robust; that step used one prior variance. The RUV panel's "Approach
+   of earlier versions" row for classic proteomics is restated from the measurement of this test: worst cell 0.389
+   (was 0.385), 10.1 % false discoveries in the reference scenario (was 9.8 %). (KIT-201; methods ledger VAL-127,
+   VAL-131)
 
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
