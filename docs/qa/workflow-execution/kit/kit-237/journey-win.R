@@ -653,8 +653,9 @@ k237WLprime <- function(G) {
         guard("WL-5", k237L5(G, label))
     }
     # W06 (b): the chooser in user mode on each of the four routes (as WL's WL-0u); (d): on LFQ the user-mode session
-    # goes on to S8 (the only lifecycle use of user mode beyond S2; its later steps are recorded, not judged).
-    for (id in names(routes)) {
+    # goes on to S8 (the only lifecycle use of user mode beyond S2; its later steps are recorded, not judged). DC-1: the
+    # three judged chooser sessions run first, so a stall later in the unjudged LFQ session cannot fail them.
+    for (id in c(setdiff(names(routes), "prot_lfq"), "prot_lfq")) {
         label <- paste0("WPu-", id)
         Su <- k237RunSession(G, routes[[id]], G$runs[[id]](paste0("k237_wlpu_", id)), label, test_mode = FALSE,
             upto = if (identical(id, "prot_lfq")) "S8" else "S2")

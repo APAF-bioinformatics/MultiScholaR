@@ -191,14 +191,11 @@ jobs:
             journey_e2e="$(jq -r '.e2e' "$req")"; journey_gui_entry="$(jq -r '.gui_entry' "$req")"
             case "$journey_e2e:$journey_gui_entry" in true:true|true:false|false:true|false:false) ;; *) echo "::error::$req must say e2e and gui_entry true or false"; exit 1 ;; esac
             [ "$(jq -r '.platforms | join(",")' "$req")" = windows ] || { echo "::error::$req: this commit runs the journey on windows only"; exit 1; }
-            # W11: the run kind, the internal deadline within the step's timeout, and both source commits as full hashes.
-            case "$(jq -r '.run' "$req")" in WL|WLprime) ;; *) echo "::error::$req: run must be WL or WLprime"; exit 1 ;; esac
-            for c in journey_commit route_commit; do jq -r ".$c" "$req" | grep -qE '^[0-9a-f]{40}$' || { echo "::error::$req: $c must be a 40-character commit"; exit 1; }; done
+            # W11 / DC-2: one whole-value check, so no request value is ever evaluated by the shell.
+            jq -e '(.run == "WL" or .run == "WLprime") and ([.journey_commit, .route_commit] | all(type == "string" and length == 40 and test("^[0-9a-f]{40}$"))) and (.deadline_minutes | type == "number" and . == floor and . >= 1) and ((.timeout_minutes // 160) | type == "number" and . == floor and . >= 10 and . <= 160) and (.deadline_minutes + 5 <= (.timeout_minutes // 160))' "$req" > /dev/null || { echo "::error::$req: run, journey_commit, route_commit, deadline_minutes or timeout_minutes not valid"; exit 1; }
             # KIT-237 r1.5: the journey step's timeout from the request (WL' declares its own), 10 to 160 minutes.
             journey_timeout="$(jq -r '.timeout_minutes // 160' "$req")"
             printf '%s' "$journey_timeout" | grep -qE '^[0-9]+$' && [ "$journey_timeout" -ge 10 ] && [ "$journey_timeout" -le 160 ] || { echo "::error::$req: timeout_minutes must be 10 to 160"; exit 1; }
-            deadline="$(jq -r '.deadline_minutes' "$req")"
-            printf '%s' "$deadline" | grep -qE '^[0-9]+$' && [ $((deadline + 5)) -le "$journey_timeout" ] || { echo "::error::$req: deadline_minutes must be an integer with deadline_minutes + 5 <= timeout_minutes"; exit 1; }
           fi
           linux=false; windows=false
           case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
@@ -1316,26 +1313,30 @@ jobs:
           $fwlog = Join-Path $env:SystemRoot 'System32\LogFiles\Firewall\pfirewall.log'
           # W03 (b): allowed connections are logged too during the test only, so the control's attempt is seen (ALLOW).
           Set-NetFirewallProfile -All -LogBlocked True -LogAllowed True -LogFileName '%systemroot%\system32\LogFiles\Firewall\pfirewall.log' -LogMaxSizeKilobytes 4096
-          Start-Sleep -Seconds 5
-          $rSaid = (& "$env:APP_FOLDER\resources\runtime\R\bin\Rscript.exe" --vanilla -e "x <- tryCatch({ con <- socketConnection('192.0.2.1', 47011, blocking = TRUE, open = 'r+', timeout = 8); close(con); 'connected' }, error = function(e) paste('failed:', conditionMessage(e)), warning = function(w) paste('failed:', conditionMessage(w))); cat(x)" 2>&1 | Out-String).Trim()
-          $client = [System.Net.Sockets.TcpClient]::new()
-          $controlConnected = $false
-          try { $controlConnected = $client.ConnectAsync('192.0.2.1', 47012).Wait(8000) } catch { } finally { $client.Dispose() }
-          # W03 (a): the log is read every 5 s for up to 60 s until the R attempt's DROP is there, then once more.
-          function Read-FirewallLog {
-            if (-not (Test-Path -LiteralPath $fwlog)) { return '' }
-            $stream = [IO.File]::Open($fwlog, 'Open', 'Read', 'ReadWrite')
-            try { return [IO.StreamReader]::new($stream).ReadToEnd() } finally { $stream.Dispose() }
-          }
-          $logText = ''
-          for ($waited = 0; $waited -le 60; $waited += 5) {
+          try {
+            Start-Sleep -Seconds 5
+            $rSaid = (& "$env:APP_FOLDER\resources\runtime\R\bin\Rscript.exe" --vanilla -e "x <- tryCatch({ con <- socketConnection('192.0.2.1', 47011, blocking = TRUE, open = 'r+', timeout = 8); close(con); 'connected' }, error = function(e) paste('failed:', conditionMessage(e)), warning = function(w) paste('failed:', conditionMessage(w))); cat(x)" 2>&1 | Out-String).Trim()
+            $client = [System.Net.Sockets.TcpClient]::new()
+            $controlConnected = $false
+            try { $controlConnected = $client.ConnectAsync('192.0.2.1', 47012).Wait(8000) } catch { } finally { $client.Dispose() }
+            # W03 (a): the log is read every 5 s for up to 60 s until the R attempt's DROP is there, then once more.
+            function Read-FirewallLog {
+              if (-not (Test-Path -LiteralPath $fwlog)) { return '' }
+              $stream = [IO.File]::Open($fwlog, 'Open', 'Read', 'ReadWrite')
+              try { return [IO.StreamReader]::new($stream).ReadToEnd() } finally { $stream.Dispose() }
+            }
+            $logText = ''
+            for ($waited = 0; $waited -le 60; $waited += 5) {
+              Start-Sleep -Seconds 5
+              $logText = Read-FirewallLog
+              if ($logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47011 ') { break }
+            }
             Start-Sleep -Seconds 5
             $logText = Read-FirewallLog
-            if ($logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47011 ') { break }
+          } finally {
+            # Allowed connections are logged for the test only, even if the step fails in between.
+            Set-NetFirewallProfile -All -LogAllowed False
           }
-          Start-Sleep -Seconds 5
-          $logText = Read-FirewallLog
-          Set-NetFirewallProfile -All -LogAllowed False
           $dropR = $logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47011 '
           $dropC = $logText -match 'DROP TCP \S+ 192\.0\.2\.1 \d+ 47012 '
           $allowC = $logText -match 'ALLOW TCP \S+ 192\.0\.2\.1 \d+ 47012 '
@@ -1344,8 +1345,9 @@ jobs:
           Add-Record outbound_drop_r $(if ($dropR) { 'yes' } else { 'no' })
           Add-Record outbound_drop_control $(if ($dropC) { 'yes' } else { 'no' })
           Add-Record outbound_allow_control $(if ($allowC) { 'yes' } else { 'no' })
+          # outbound_log_polled_seconds: seconds from the attempts to the read the R DROP was first found in (70 when it never was; the final read is 5 s later).
           Add-Record outbound_log_polled_seconds ($waited + 5)
-          Add-Record outbound_method "Windows Firewall dropped-packet log ($fwlog, $(if (Test-Path -LiteralPath $fwlog) { 'present' } else { 'absent' })); R port 47011, control port 47012, address 192.0.2.1"
+          Add-Record outbound_method "Windows Firewall log of dropped and (for the test only) allowed connections ($fwlog, $(if (Test-Path -LiteralPath $fwlog) { 'present' } else { 'absent' })); R port 47011, control port 47012, address 192.0.2.1"
           # Windows' default on a desktop installation (5.3), for the rest of this disposable runner's job.
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
           $longPathsBefore = (Get-ItemProperty $key).LongPathsEnabled

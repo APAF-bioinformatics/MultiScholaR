@@ -351,6 +351,9 @@ start count); no WL criterion read the column.
     - WPd: S2 kind 5. WPm: PM kind 1 timeout, planted.
     - WP5-lipid_canonical and WP5-metab_lc: S5.4 refused 'No internal standards found' (K12); S6.1 refused 'A step is
       still running…' then S6.1w complete (K14), with the S6.1 terminal screenshot at about 0.5 s.
+    - WPu-prot_lfq (user mode) S3 to S8: any finding there is recorded, not judged (the session's purpose there is
+      observation; only its S2 is judged, in WL-0u). The judged chooser sessions on lipid, metab and trx run before it
+      (DC-1).
 - **Limits stated now:** WL-D's former "tables written" clause was vacuous (the tables exist from WL-0 on) and is
   removed; the plant shows the step-level deadline handling, not the job-level end at a deadline (the driver exiting 0
   with every table, then the check and upload), which occurs only if the real 35-minute deadline is reached (W08).
