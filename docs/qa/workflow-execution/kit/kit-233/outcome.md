@@ -111,9 +111,8 @@ changed before J, as section 14 allows.
 
 ## For the coordinator
 
-1. **Decision needed:** a fourth L run, outside VAL-54's three instrument reruns. The fix is in the driver only: map the
-   tab's contrast to the table by its two group tokens in order. Alternatively, rule how to proceed.
-   Remaining discovery ceiling: 64.0 − 5.63 = 58.4 core-hours.
+1. Decided by the owner (VAL-234): one fourth L run, made as 45601782272, which proved the instrument. Discovery use so
+   far: (84.4 + 21.3) job-minutes x 4 / 60 = 7.05 core-hours of the 64.0 ceiling.
 2. KIT-159 (information only): `Rscript --vanilla -e '…; source("packaging/electron/entry.R")' <port> <run folder>
    <pid>` passes its arguments. The plain launcher starts. `shinytest2::AppDriver$new(<url>)` attaches by URL on
    ubuntu-22.04. It needs `NOT_CRAN=true`, or AppDriver skips with "On CRAN".
