@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-247 R1c (VAL-54 instrument rerun 1 of 3 for E13's mechanics): R1 45604461406's E13 pressed Revert once and never went below the run's start; test file on 526ec2aa + the fix to E13's presses; E13 expected to fail at its base value (lipid_reset); 1 job, ceiling 60 job-minutes",
+  "label": "KIT-247 R1c failing-first (E13 mechanics) on kit-247-r1c 5909d0e8",
+  "package_commit": "5909d0e8ef391f8fd8798d4548eeda77e173b8a0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit247-design-resave.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit247-design-resave.R": 55
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
