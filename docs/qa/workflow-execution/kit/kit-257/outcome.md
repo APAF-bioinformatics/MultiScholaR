@@ -12,7 +12,7 @@ runner (`run-tests`).
 | 1e1b0cee | tests only: `tests/testthat/test-kit257-norm-own-files.R` (nothing under `R/`) |
 | 413d739a | the fix (`R/`), NEWS, ledger row `VAL-<merge>` |
 | 5ad937e4 | records: R1, wording drafts |
-| (next) | records: R2, outcome, runs |
+| 0705e897 and the next | records: R2, outcome, runs |
 
 ## What changed (at 413d739a)
 
@@ -66,13 +66,53 @@ G1 (trx, proteomics, lipid) and G2 (trx and proteomics user files; lipid users' 
 Inferred: the reading of every omic was right (stop rule 1 not met); E7's sequence is reachable in the application
 (the proteomics DA accepts `normalized`), so the proteomics defect is not hypothetical.
 
-### R2
+### R2 (45622679825, base 1e1b0cee against head 5ad937e4, same runner image, 4+4 shards and check, 486.8 job-minutes)
 
-(to be filled from the run)
+Declared before sending: the ticket's 37 files (KIT-243's file is not on staging), the new file, and 17 direct
+dependents of the functions this fix changed that the ticket's grep does not reach (`test-prot-norm-input-current.R`,
+`test-kit206-prot-norm-export-guard.R`, `test-kit225-prot-norm-reset-source.R`, `test-kit174-ruv-grouping.R`,
+`test-omic-norm-ruv-design.R`, `test-prot-05c-norm-module-seams.R`, `test-prot-05d-norm-module-characterization.R`,
+`test-lipid-12-norm-module-contracts.R`, `test-lipid-12a-norm-module-characterization.R`,
+`test-metab-03c-norm-module-seams.R`, `test-metab-03d-norm-module-characterization.R`, `test-workflow-saved-qc.R`,
+`test-workflow-gui-memory-lifetimes.R`, `test-module-ci-trx-app.R`, `test-workflow-kit-harness.R`,
+`test-workflow-server-shared.R`, `test-workflow-omics-application-reads.R`): 55 files (`r2-files.txt`), balanced by
+the longest observed per-file minutes. Not run (single runs, for the merge train): `test-kit129-run-path.R`,
+`test-prot-design-log2.R`, `test-workflow-native-session.R`, `test-workflow-saved-da.R`.
+
+Observed (`r2-compare.tsv`, `r2-check-compare.txt`, `r2-compare-failures.txt`, `r2-evidence-head.txt`):
+- 53 files `same`, including all four GUI-entry lanes (no per-step file listing moved).
+- `test-kit257-norm-own-files.R` `fixed`: 101 passed, 0 failed, 0 errors, 0 skipped on head.
+- `test-prot-norm-core.R` `message-changed` (1548 passed, 306 failed on both sides; the failures are the laptop-recorded
+  stored references that fail on runners on both sides). One test's message changed, "KIT-111 W1 (a): the DIA
+  normalisation and correlation clicks give the recorded states, products, provenance, files and display", in two
+  fields only:
+
+  | Case (frozen at) | Field | Frozen | Base actual | Head actual |
+  |---|---|---|---|---|
+  | `dia_normalization_refused` (`tests/testthat/test-prot-norm-core.R:767`) | `files` | f7b72868... | bbfad929... | 53f7545d... |
+  | `dia_normalization_retry` (`tests/testthat/test-prot-norm-core.R:801`) | `files` | f7b72868... | bbfad929... | b51063f4... |
+
+  Every other field of every case, and both sides' `files` digest after the correlation steps (`bbfad929...`), are
+  identical base against head.
+- R CMD check: base and head 0 ERRORs, 3 WARNINGs, 3 NOTEs; findings identical, none only on head.
+
+Inferred (not observed beyond the digest): the W1 (a) sequence ends with a correlation Skip, then a normalisation
+refused by the kernel after its start (manual k 50; `runSavedOperation` 1, commit 0), then a valid manual run. The
+digest (`protNormCoreFiles`) lists the project's files and the md5 of each TSV. On head the refused run removes the
+earlier correlation's results table at its start (R1-02's case: a proteomics normalisation that fails after it has
+started leaves the earlier normalised table absent), and the retry, which runs no correlation, leaves it absent. That
+is the ticket's intended behaviour (section 3, R1-02), but section 6 predicted no stored reference to move: **stop
+rule 3**. Declared here by file and line; the stored value is not edited (it already fails on runners on both sides;
+whether it waits for the end-of-project re-record, VAL-181 and VAL-189, is the coordinator's ruling).
 
 ## Acceptance criteria
 
-(to be filled from R2)
+| # | Criterion | Status | Evidence |
+|---|---|---|---|
+| A1 | Tests-only commit: E1 to E9, G3, G5 fail by assertion at their base values; G1, G2 pass (G4 not applicable) | met | R1 45618988736 |
+| A2 | All pass on the fix | met | R2 head: 101 passed, 0 failed |
+| A3 | R2 base against head: every file `same` except the new file | not met as stated: one stored digest moved (stop rule 3, above) | R2 `test-prot-norm-core.R` `message-changed` |
+| A4 | NEWS, ledger; `outcome.md` with "For the change report" | met (ledger row numbered at merge; F1's route left `<owner/ticket>`) | 413d739a, this file |
 
 ## Not checked
 
@@ -129,7 +169,10 @@ RUV-corrected figures. The composite and the report did not use them.
   leaves the removed files absent until the step is run again; the same after a proteomics normalisation or correlation
   that fails after it has started.
 - A file that cannot be removed now refuses the run with a message naming it.
-- Evidence: R1 45618988736 (base values above); R2 (below).
+- Evidence: R1 45618988736 (base values above); R2 45622679825 (the new tests pass on the fix; 53 regression files
+  unchanged; one stored file-list digest of a proteomics sequence moved as the fix intends, declared above). Limits:
+  synthetic fixtures (the "small" proteomics recipe, F172, MCI-030), a recording runner for the managed dispatch, a
+  directory standing in for a locked file; no Windows run.
 - Not in this ticket: F1, the transcriptomics RUVIII export is never cleared, so after a later normalisation without
   RUV the report can still state that RUVIII was applied with an earlier k and show its figure. Routed to its own
   ticket (parked-20261125 row 38 (2)); until it has an owner this report states it.
