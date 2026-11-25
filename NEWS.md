@@ -80,6 +80,12 @@
    internal code such as 'managed action ended: memory_guard'. The wording is a draft for the owner's review
    (KIT-252).
 
+ * Proteomics import with 'Mixed species FASTA': when the 'Select Primary Organism' window appears, the import now
+   finishes only when an organism is confirmed there; Cancel clears the import and says so, and the data must be
+   imported again. Before, the import counted as finished before the
+   choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
+   annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
+   with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

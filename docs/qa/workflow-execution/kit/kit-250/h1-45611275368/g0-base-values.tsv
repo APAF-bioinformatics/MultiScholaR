@@ -1,0 +1,288 @@
+case	moment	field	predicted	observed	verdict	session	utc
+h1a	import	how	(recorded)	organism dialog shown	recorded	A	2026-11-25T12:22:29Z
+h1a	dialog_open	modal_open	Select Primary Organism	Select Primary Organism	as predicted	A	2026-11-25T12:22:31Z
+h1a	dialog_open	setup_import	incomplete	incomplete	as predicted	A	2026-11-25T12:22:31Z
+h1a	dialog_open	design_matrix	disabled	disabled	as predicted	A	2026-11-25T12:22:31Z
+h1a	dialog_open	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	setup_log_taxon_id	10090	10090	as predicted	A	2026-11-25T12:22:31Z
+h1a	dialog_open	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	import_status	Choose the organism in the window to finish the import.	Choose the organism in the window to finish the import.	as predicted	A	2026-11-25T12:22:31Z
+h1a	dialog_open	data_summary	~Organism: not confirmed	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: not confirmed	as predicted	A	2026-11-25T12:22:31Z
+h1a	dialog_open	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Copied default config.ini to scripts directory.	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	notice_success	(recorded)	absent	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	notice_error	(recorded)	none	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	setup_log_timestamp	(recorded)	2026-11-25 12:22:27	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	screenshot	(recorded)	g0-h1a-dialog_open.png	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	w1_count	(recorded)	0	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	dialog_text	(recorded)	Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Organism Taxon ID Proteins % Homo sapiens 9606 400 100 Previous1Next Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	dialog_selected	(recorded)	9606	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	dialog_filter	(recorded)	FALSE	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	import_status_success	(recorded)	FALSE	recorded	A	2026-11-25T12:22:31Z
+h1a	dialog_open	summary_names_form_organism	FALSE	FALSE	as predicted	A	2026-11-25T12:22:31Z
+h1a	after_esc	modal_open	Select Primary Organism	Select Primary Organism	as predicted	A	2026-11-25T12:22:34Z
+h1a	after_esc	setup_import	(recorded)	incomplete	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	design_matrix	(recorded)	disabled	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	setup_log_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	import_status	(recorded)	Choose the organism in the window to finish the import.	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: not confirmed	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	notices	(recorded)	none	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	notice_success	(recorded)	absent	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	notice_error	(recorded)	none	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	setup_log_timestamp	(recorded)	2026-11-25 12:22:27	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	screenshot	(recorded)	g0-h1a-after_esc.png	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	w1_count	(recorded)	0	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	key_dispatch	(recorded)	chromote Input.dispatchKeyEvent	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	import_status_success	(recorded)	FALSE	recorded	A	2026-11-25T12:22:34Z
+h1a	after_esc	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:22:34Z
+h1a	after_backdrop	modal_open	Select Primary Organism	Select Primary Organism	as predicted	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	setup_import	incomplete	incomplete	as predicted	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	design_matrix	(recorded)	disabled	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	setup_log_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	import_status	(recorded)	Choose the organism in the window to finish the import.	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: not confirmed	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	notices	(recorded)	none	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	notice_success	(recorded)	absent	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	notice_error	(recorded)	none	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	setup_log_timestamp	(recorded)	2026-11-25 12:22:27	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	screenshot	(recorded)	g0-h1a-after_backdrop.png	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	w1_count	(recorded)	0	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	backdrop_click	(recorded)	mouse at 10 10 on div#shiny-modal	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	import_status_success	(recorded)	FALSE	recorded	A	2026-11-25T12:22:37Z
+h1a	after_backdrop	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:22:37Z
+h1a	after_cancel	modal_open	none	none	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	setup_import	incomplete	incomplete	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	design_matrix	disabled	disabled	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	later_tabs	all disabled	all disabled	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	setup_log_taxon_id	(absent)	(absent)	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	setup_log_organism	(recorded)	(absent)	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	import_status	~^Import not finished: no organism was chosen\. Press 'Process Imported Data' again	Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	data_summary			as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	notices	~\[warning\] Import not finished: no organism was chosen\.	[warning] Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	notice_success	absent	absent	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	notice_error	(recorded)	none	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	notice_naming_organism	(recorded)	[warning] Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	setup_log_timestamp	(recorded)	(absent)	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	screenshot	(recorded)	g0-h1a-after_cancel.png	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	w1_count	1	1	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	cancel_hit_button	TRUE	TRUE	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	cancel_button_text	(recorded)	Cancel	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	cancel_top_element	(recorded)	span.action-label	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	cancel_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	cancel_point	(recorded)	983.6406,556.7344	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	dialog_closed	(recorded)	TRUE	recorded	A	2026-11-25T12:22:40Z
+h1a	after_cancel	import_status_success	FALSE	FALSE	as predicted	A	2026-11-25T12:22:40Z
+h1a	after_cancel	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:22:40Z
+h1a	design_after_cancel	modal_open	(recorded)	none	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	setup_import	(recorded)	incomplete	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	design_matrix	disabled	disabled	as predicted	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	setup_log_taxon_id	(recorded)	(absent)	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	setup_log_organism	(recorded)	(absent)	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	import_status	(recorded)	Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	data_summary	(recorded)		recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	notices	(recorded)	none	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	notice_success	(recorded)	absent	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	notice_error	(recorded)	none	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	setup_log_timestamp	(recorded)	(absent)	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	screenshot	(recorded)	g0-h1a-design_after_cancel.png	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	w1_count	(recorded)	1	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	design_tab	(recorded)	proteomics_workflow-workflow_tabs = Design Matrix: active	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	design_tab_active	TRUE	TRUE	as predicted	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	data_available	FALSE	FALSE	as predicted	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	save_design_visible	FALSE	FALSE	as predicted	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	import_existing_design_visible	TRUE	TRUE	as predicted	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	import_status_success	(recorded)	FALSE	recorded	A	2026-11-25T12:22:44Z
+h1a	design_after_cancel	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:22:44Z
+h1a	reimport_dialog_open	modal_open	Select Primary Organism	Select Primary Organism	as predicted	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	setup_import	incomplete	incomplete	as predicted	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	design_matrix	(recorded)	disabled	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	setup_log_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	import_status	(recorded)	Choose the organism in the window to finish the import.	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: not confirmed	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	notices	(recorded)	[message] Sample names sanitized for R compatibility.	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	notice_success	(recorded)	absent	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	notice_error	none	none	as predicted	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	setup_log_timestamp	(recorded)	2026-11-25 12:22:46	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	screenshot	(recorded)	g0-h1a-reimport_dialog_open.png	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	w1_count	0	0	as predicted	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	reimport_how	(recorded)	organism dialog shown	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	import_status_success	(recorded)	FALSE	recorded	A	2026-11-25T12:22:50Z
+h1a	reimport_dialog_open	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:22:50Z
+h1a	after_cancel2	modal_open	none	none	as predicted	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	setup_import	incomplete	incomplete	as predicted	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	design_matrix	(recorded)	disabled	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	setup_log_taxon_id	(recorded)	(absent)	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	setup_log_organism	(recorded)	(absent)	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	import_status	(recorded)	Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	data_summary	(recorded)		recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	notices	(recorded)	[warning] Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	notice_success	(recorded)	absent	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	notice_primary	(recorded)	absent	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	notice_error	(recorded)	none	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	notice_naming_organism	(recorded)	[warning] Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	setup_log_timestamp	(recorded)	(absent)	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	screenshot	(recorded)	g0-h1a-after_cancel2.png	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	w1_count	1	1	as predicted	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	cancel_hit_button	(recorded)	TRUE	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	cancel_button_text	(recorded)	Cancel	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	cancel_top_element	(recorded)	span.action-label	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	cancel_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	cancel_point	(recorded)	983.6406,556.7344	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	dialog_closed	(recorded)	TRUE	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	import_status_success	(recorded)	FALSE	recorded	A	2026-11-25T12:22:52Z
+h1a	after_cancel2	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:22:52Z
+h1a	after_confirm	modal_open	none	none	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	setup_import	complete	complete	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	design_matrix	pending	pending	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	setup_log_taxon_id	9606	9606	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	setup_log_organism	Homo sapiens	Homo sapiens	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	mixed_species_selection	9606	9606	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	mixed_filter_applied	(recorded)	FALSE	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	data_summary	~Organism: Homo sapiens \(taxon: 9606 \)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Homo sapiens (taxon: 9606 )	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	form_taxon_id	(recorded)	9606	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	form_organism_name	(recorded)	Homo sapiens	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Primary organism set to: Homo sapiens (Taxon: 9606) || [message] Data import successful! || [message] Multi-species FASTA detected. Filtering to Homo sapiens enabled.	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	notice_success	present	present	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	notice_primary	present	present	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	notice_error	none	none	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	notice_naming_organism	(recorded)	[message] Primary organism set to: Homo sapiens (Taxon: 9606) || [message] Multi-species FASTA detected. Filtering to Homo sapiens enabled.	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	setup_log_timestamp	(recorded)	2026-11-25 12:22:54	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	screenshot	(recorded)	g0-h1a-after_confirm.png	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	w1_count	0	0	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	reimport_how	(recorded)	organism dialog shown	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	confirm_pressed	(recorded)	TRUE	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	dialog_closed	(recorded)	TRUE	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	design_data_available	TRUE	TRUE	as predicted	A	2026-11-25T12:23:01Z
+h1a	after_confirm	import_status_success	(recorded)	TRUE	recorded	A	2026-11-25T12:23:01Z
+h1a	after_confirm	summary_names_form_organism	(recorded)	FALSE	recorded	A	2026-11-25T12:23:01Z
+h1d2	import	how	(recorded)	organism dialog shown	recorded	D2	2026-11-25T12:23:17Z
+h1d2	after_cancel	modal_open	(recorded)	none	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	setup_import	incomplete	incomplete	as predicted	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	design_matrix	(recorded)	disabled	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	later_tabs	(recorded)	all disabled	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	setup_log_taxon_id	(recorded)	(absent)	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	setup_log_organism	(recorded)	(absent)	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	mixed_species_selection	(recorded)	absent	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	mixed_filter_applied	(recorded)	absent	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	import_status	(recorded)	Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	data_summary	(recorded)		recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	form_taxon_id	(recorded)	10090	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	form_organism_name	(recorded)	Mus musculus	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	form_mixed_species	(recorded)	TRUE	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	form_taxon_disabled	(recorded)	TRUE	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	notices	(recorded)	[warning] Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	notice_success	(recorded)	absent	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	notice_primary	(recorded)	absent	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	notice_error	(recorded)	none	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	notice_naming_organism	(recorded)	[warning] Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the window that follows, or untick 'Mixed species FASTA' and enter the organism yourself.	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	setup_log_timestamp	(recorded)	(absent)	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	screenshot	(recorded)	g0-h1d2-after_cancel.png	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	w1_count	1	1	as predicted	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	cancel_hit_button	(recorded)	TRUE	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	cancel_button_text	(recorded)	Cancel	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	cancel_top_element	(recorded)	span.action-label	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	cancel_dispatch	(recorded)	chromote Input.dispatchMouseEvent	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	cancel_point	(recorded)	983.6406,556.7344	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	dialog_closed	(recorded)	TRUE	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	import_status_success	(recorded)	FALSE	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_cancel	summary_names_form_organism	(recorded)	FALSE	recorded	D2	2026-11-25T12:23:20Z
+h1d2	after_reimport	modal_open	none	none	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	setup_import	complete	complete	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	design_matrix	pending	pending	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	later_tabs	(recorded)	all disabled	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	setup_log_taxon_id	10090	10090	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	setup_log_organism	Mus musculus	Mus musculus	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	mixed_species_selection	absent	absent	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	mixed_filter_applied	(recorded)	absent	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	form_taxon_id	(recorded)	10090	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	form_organism_name	(recorded)	Mus musculus	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	form_mixed_species	FALSE	FALSE	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	form_taxon_disabled	(recorded)	FALSE	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Data import successful!	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	notice_success	present	present	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	notice_primary	(recorded)	absent	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	notice_error	none	none	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	notice_naming_organism	(recorded)	none	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	setup_log_timestamp	(recorded)	2026-11-25 12:23:21	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	screenshot	(recorded)	g0-h1d2-after_reimport.png	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	w1_count	0	0	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	import_completed	TRUE	TRUE	as predicted	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	reimport_how	(recorded)	the import's completion line logged	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	import_status_success	(recorded)	TRUE	recorded	D2	2026-11-25T12:23:26Z
+h1d2	after_reimport	summary_names_form_organism	(recorded)	TRUE	recorded	D2	2026-11-25T12:23:26Z

@@ -1,0 +1,62 @@
+case	moment	field	predicted	basis
+h1a	dialog_open	modal_open	Select Primary Organism	the window is shown
+h1a	dialog_open	setup_import	incomplete	fix: not complete while the window is open
+h1a	dialog_open	design_matrix	disabled	fix: no status written
+h1a	dialog_open	import_status	Choose the organism in the window to finish the import.	W2
+h1a	dialog_open	data_summary	~Organism: not confirmed	W3
+h1a	dialog_open	summary_names_form_organism	FALSE	W3: no name, no taxon
+h1a	dialog_open	setup_log_taxon_id	10090	the setup log is written before the window
+h1a	after_esc	modal_open	Select Primary Organism	I03: keyboard off
+h1a	after_backdrop	modal_open	Select Primary Organism	I03: static backdrop
+h1a	after_backdrop	setup_import	incomplete	nothing ran
+h1a	after_cancel	cancel_hit_button	TRUE	the button is the topmost element at its centre
+h1a	after_cancel	modal_open	none	Cancel removes the window
+h1a	after_cancel	setup_import	incomplete	Cancel clears the import
+h1a	after_cancel	design_matrix	disabled	no status written
+h1a	after_cancel	later_tabs	all disabled	nothing ran
+h1a	after_cancel	setup_log_taxon_id	(absent)	the setup log cleared
+h1a	after_cancel	import_status	~^Import not finished: no organism was chosen\. Press 'Process Imported Data' again	W1 in the status panel
+h1a	after_cancel	import_status_success	FALSE	no success text
+h1a	after_cancel	data_summary		no Data Summary (req(dataTbl))
+h1a	after_cancel	w1_count	1	W1 once, under its fixed id
+h1a	after_cancel	notices	~\[warning\] Import not finished: no organism was chosen\.	W1 as a warning
+h1a	after_cancel	notice_success	absent	not finished
+h1a	design_after_cancel	design_tab_active	TRUE	statuses close no tab
+h1a	design_after_cancel	data_available	FALSE	data_tbl and config_list cleared
+h1a	design_after_cancel	save_design_visible	FALSE	no design can be saved
+h1a	design_after_cancel	import_existing_design_visible	TRUE	outside data_available; own organism
+h1a	design_after_cancel	design_matrix	disabled	no design saved
+h1a	reimport_dialog_open	modal_open	Select Primary Organism	the option still ticked
+h1a	reimport_dialog_open	w1_count	0	I02: removed when the import starts
+h1a	reimport_dialog_open	setup_import	incomplete	not complete while the window is open
+h1a	reimport_dialog_open	notice_error	none	the re-import with the owner attached works
+h1a	after_cancel2	modal_open	none	the re-bound button fires
+h1a	after_cancel2	w1_count	1	I02: one copy, not two
+h1a	after_cancel2	setup_import	incomplete	cleared again
+h1a	after_confirm	modal_open	none	Confirm removes the window
+h1a	after_confirm	setup_import	complete	Confirm completes the import
+h1a	after_confirm	design_matrix	pending	completeOmicImport
+h1a	after_confirm	setup_log_taxon_id	9606	the confirmed organism
+h1a	after_confirm	setup_log_organism	Homo sapiens	the confirmed organism
+h1a	after_confirm	mixed_species_selection	9606	Confirm
+h1a	after_confirm	notice_primary	present	Confirm
+h1a	after_confirm	notice_success	present	Confirm
+h1a	after_confirm	notice_error	none	no error
+h1a	after_confirm	w1_count	0	I02
+h1a	after_confirm	import_status	~^\[OK\] Data imported successfully!	the import finished
+h1a	after_confirm	data_summary	~Organism: Homo sapiens \(taxon: 9606 \)	the confirmed organism
+h1a	after_confirm	design_data_available	TRUE	the builder can be used after Confirm
+h1d2	after_cancel	setup_import	incomplete	Cancel clears the import
+h1d2	after_cancel	w1_count	1	W1
+h1d2	after_reimport	import_completed	TRUE	the unticked import completes
+h1d2	after_reimport	modal_open	none	P01 fixed: the processing window closes
+h1d2	after_reimport	setup_import	complete	completes
+h1d2	after_reimport	design_matrix	pending	completeOmicImport
+h1d2	after_reimport	setup_log_taxon_id	10090	the form's organism, now entered by the user
+h1d2	after_reimport	setup_log_organism	Mus musculus	the form's organism
+h1d2	after_reimport	mixed_species_selection	absent	no window
+h1d2	after_reimport	form_mixed_species	FALSE	unticked
+h1d2	after_reimport	notice_success	present	P01 fixed
+h1d2	after_reimport	notice_error	none	no error
+h1d2	after_reimport	w1_count	0	I02
+h1d2	after_reimport	import_status	~^\[OK\] Data imported successfully!	the import finished
