@@ -23,3 +23,6 @@
 **Stop rules.** Any of P1 to P7 false: stop rule 1 (record and report, no interpretation). A blind control: stop and report. Instrument defects (driver mechanics, no observation) may be fixed and re-sent under the brief's four conditions, at most three; an observed-false prediction is a result and is never re-run.
 
 **Budget.** One scripts job (4 cores): expected 25, ceiling 45 job-minutes (script timeout 40); core-hours = job-minutes x 4 / 60 (expected 1.67, ceiling 3.00).
+
+## Instrument defect 1 (run 45711141374, 2026-11-26), recorded under VAL-54
+The run stopped at the positive controls, by design: the artifacts trace fired and wrote (events.log: `type=capture; n_qc=2; qc=post_norm_pca.png,pre_norm_pca.png`) but the step id read `NA`, because `parent.frame()` inside a trace's tracer does not return the caller. Mechanics only: no lane reading was taken. Fix: the capture frame is found by scanning `sys.frames()` for the frame holding `step` and `refusal_before`. No prediction, threshold or stop rule changed. Records: `run1-45711141374/`.

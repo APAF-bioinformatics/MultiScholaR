@@ -80,7 +80,11 @@ endOfLane <- function(caller) {
     invisible(NULL)
 }
 
-onArtifacts <- function(base_dir, caller) {
+onArtifacts <- function(base_dir, caller_unused) {
+    # The capture frame is found by its variables (parent.frame() inside a trace's tracer is not the caller).
+    caller <- NULL
+    for (f in rev(sys.frames())) if (exists("step", envir = f, inherits = FALSE) && exists("refusal_before", envir = f, inherits = FALSE)) { caller <- f; break }
+    if (is.null(caller)) { rec("capture", step = NA_character_, error = "no capture frame"); return(invisible(NULL)) }
     step <- tryCatch(as.character(get("step", envir = caller)$id)[[1L]], error = function(e) NA_character_)
     files <- list.files(base_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE)
     qc <- sort(basename(files[grepl("^results/proteomics/protein_qc/[^/]+$", files)]))
@@ -109,7 +113,7 @@ safeTrace <- function(what, where, ...) {
     traceStatus[[what]] <<- if (ok) "installed" else "FAILED"
     invisible(ok)
 }
-safeTrace("guiEntryArtifacts", runLane, tracer = bquote({ .g0caller <- parent.frame(); .(onArtifacts)(base_dir, .g0caller) }))
+safeTrace("guiEntryArtifacts", runLane, tracer = bquote(.(onArtifacts)(base_dir, NULL)))
 safeTrace("runProtNormTabEntryWorkflow", ns, tracer = bquote(.(onTab)(selectedTab, workflowData)),
     exit = bquote(.(onTabExit)(returnValue("<no return>"))))
 safeTrace("copyToResultsSummary", ns, tracer = bquote(.(onCopy)(omic_type)),
@@ -129,7 +133,7 @@ logLines <- function() if (file.exists(events_log)) readLines(events_log) else c
 ctrlDir <- file.path(tempdir(), "kit266-control")
 dir.create(file.path(ctrlDir, "results", "proteomics", "protein_qc"), recursive = TRUE)
 for (f in c("post_norm_pca.png", "pre_norm_pca.png")) file.create(file.path(ctrlDir, "results", "proteomics", "protein_qc", f))
-controlCapture <- function(step) helperFn("guiEntryArtifacts")(ctrlDir, character())
+controlCapture <- function(step, refusal_before = NULL) helperFn("guiEntryArtifacts")(ctrlDir, character())
 tryCatch(controlCapture(list(id = "control-step")), error = function(e) say("control capture error: ", conditionMessage(e)))
 ev <- eventsOf("capture")
 ctrl("artifacts_trace", length(ev) == 1L && identical(ev[[1L]]$step, "control-step") && identical(ev[[1L]]$qc, c("post_norm_pca.png", "pre_norm_pca.png")) &&

@@ -1,0 +1,34 @@
+Warning message:
+── Conflicts ───────────────────────────────────────── MultiScholaR conflicts
+──
+✖ `%||%` masks `MultiScholaR::%||%()`.
+ℹ Did you accidentally source a file rather than using `load_all()`?
+  Run `rm(list = c("%||%"))` to remove the conflicts. 
+traces: guiEntryArtifacts=installed; runProtNormTabEntryWorkflow=installed; copyToResultsSummary=installed; generateProtNormPreNormalizationQcArtifacts=installed
+$`<store entries>`
+list()
+
+$`results/proteomics/protein_qc/post_norm_pca.png`
+[1] "<present>"
+
+$`results/proteomics/protein_qc/pre_norm_pca.png`
+[1] "<present>"
+
+CONTROL artifacts_trace: BLIND (events: 1 ; step: NA ; log lines: 1)
+CONTROL tab_entry_trace: PASS (entry events: 1 ; exit events: 1 ; exit returned: FALSE)
+CONTROL copy_trace: PASS (entry events: 1 ; exit events: 1 ; exit class: character)
+CONTROL lane_harness: PASS (memscript: TRUE)
+mode: control
+BEFORE
+VmPeak:	  110428 kB
+VmSize:	  110428 kB
+VmHWM:	   54632 kB
+VmRSS:	   54632 kB
+AFTER
+VmPeak:	  347380 kB
+VmSize:	  347380 kB
+VmHWM:	  291644 kB
+VmRSS:	  291644 kB
+MEMORY_CONTROL rise_GiB=0.226 (allocated 3e7 doubles = 0.224 GiB) verdict=PASS
+CONTROL memory_measure: PASS (MEMORY_CONTROL rise_GiB=0.226 (allocated 3e7 doubles = 0.224 GiB) verdict=PASS)
+INSTRUMENT BLIND: a positive control failed or a trace did not install; the lane is not run. Stop and report.
