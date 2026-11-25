@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-254 R1b (OD-1 (a), VAL-247): follow-up tests-only commit ba383de2 on kit-254 merged with staging c4505c7f; predicted: only the 8 E8-statement assertions fail; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-254 R1b failing-first ba383de2",
+  "package_commit": "ba383de23fbbeaf6f30704befc4ec4c66e71af25",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit254-omics-correlation-skip.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
