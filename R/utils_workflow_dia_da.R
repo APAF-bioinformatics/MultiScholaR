@@ -837,6 +837,11 @@ diaEnrichmentServiceIdentity <- function(results) {
 #' returns (`diaEnrichmentNoIdentifiers`): a comparison whose background has no named protein refuses the run (class
 #' `workflow_enrichment_no_identifiers`) before any product or state is saved; otherwise the lists are returned as
 #' `not_tested`, absent when there are none. A service failure is reported first.
+#' KIT-215 (VAL-170): the same class carries `processEnrichments`' signals of both routes, judged by their `reason`: a
+#' GO comparison with lists and no annotated tested protein or no term of 10 to 500 of them is refused (class
+#' `workflow_enrichment_no_identifiers`), an error inside a list's test or a comparison's processing is refused (class
+#' `workflow_enrichment_test_error`), a GO list without an annotated protein is returned in `not_tested` beside
+#' g:Profiler's, and the directions with no list are returned as `no_list` (absent when every direction has a list).
 #' @noRd
 diaEnrichmentOperation <- function() {
     newWorkflowOperation("enrichment", "ProteinQuantitativeData", fields = "design_matrix", unit = "whole_matrix",
@@ -872,11 +877,12 @@ diaEnrichmentOperation <- function() {
                 rlang::abort(paste("The enrichment service did not answer, so nothing was saved.",
                     paste(unique(failures), collapse = "; ")), class = "workflow_enrichment_service")
             }
-            not_tested <- diaEnrichmentNoIdentifiers(unnamed, parameters$da_results)
+            judged <- diaEnrichmentNoIdentifiers(unnamed, parameters$da_results)
             if (!methods::is(results, "EnrichmentResults"))
                 cli::cli_abort("enrichment kernel returned no EnrichmentResults", class = "workflow_operation_output")
             value <- list(results = results, service = diaEnrichmentServiceIdentity(results))
-            value$not_tested <- not_tested
+            value$not_tested <- judged$not_tested
+            value$no_list <- judged$no_list # KIT-215: absent when every direction has a list
             value
         })
 }
@@ -894,41 +900,78 @@ enrichmentContrastDisplayNames <- function(contrasts_tbl, ids) {
     ifelse(is.na(shown) | !nzchar(shown), ids, shown)
 }
 
-#' The g:Profiler lists not sent for want of a named identifier (KIT-208, VAL-147 (1))
+#' The enrichment lists not tested, the comparisons refused and the directions with no list (KIT-208, VAL-147 (1);
+#' KIT-215, VAL-170)
 #'
-#' A comparison whose background (its tested rows, `enrichmentTestedRows`) has no named protein refuses the run: nothing
-#' it could test would be tested. A list
-#' whose proteins are all unnamed, in a comparison with named proteins, is not tested and returned.
-#' @param signals The `multischolar_enrichment_no_identifiers` conditions `perform_enrichment` signalled, in order.
+#' Judged by each signal's `reason` (a signal without one is KIT-208's `perform_enrichment` signal, `"no_gene_name"`).
+#' Refused (class `workflow_enrichment_no_identifiers`): a g:Profiler comparison whose background (its tested rows,
+#' `enrichmentTestedRows`) has no named protein; a GO comparison with lists whose background has no annotated protein
+#' (`"no_go_annotation_background"`) or no term of 10 to 500 annotated tested proteins (`"no_tested_term"`). Then
+#' refused (class `workflow_enrichment_test_error`): a test or a comparison's processing that raised an error
+#' (`"error"`). Otherwise a list whose proteins are all unnamed (g:Profiler) or all unannotated (GO,
+#' `"no_go_annotation"`) is not tested and returned, and a direction with no list (`"no_list"`) is returned apart.
+#' @param signals The `multischolar_enrichment_no_identifiers` conditions the kernel signalled, in order.
 #' @param da_results The run's `da_results_for_enrichment` (its contrasts table and DA tables name and count).
-#' @return NULL when nothing was signalled; otherwise a data frame, one row per list in signal order: `comparison`
-#'   (display name), `direction` ("up" or "down"), `proteins` (the list's size). A background without a named protein
-#'   is refused (class `workflow_enrichment_no_identifiers`).
+#' @return `list(not_tested, no_list)`, each NULL when empty. `not_tested`: one row per list in signal order,
+#'   `comparison` (display name), `direction` ("up" or "down"), `proteins` (the list's size), `contrast` (the `da_data`
+#'   name), `route` ("gprofiler2" or "clusterprofiler"). `no_list`: `comparison`, `contrast`, `direction`.
 #' @noRd
 diaEnrichmentNoIdentifiers <- function(signals, da_results) {
-    if (!length(signals)) return(NULL)
+    if (!length(signals)) return(list(not_tested = NULL, no_list = NULL))
     contrasts_tbl <- tryCatch(da_results@contrasts, error = function(e) NULL)
     tables <- tryCatch(da_results@da_data, error = function(e) list())
     label <- function(signal, field) as.character(signal[[field]] %||% NA_character_)[[1L]]
     raw <- vapply(signals, label, "", field = "contrast")
-    empty <- vapply(signals, function(signal) identical(as.numeric(signal$background_ids), 0), NA)
-    if (any(empty)) {
-        refused <- unique(raw[empty])
-        # KIT-205 alignment (KIT-208 audit I08): n counts the comparison's tested rows, the background in force.
-        tested <- function(name) {
-            table <- if (!is.na(name)) tables[[name]]
-            if (is.null(table)) 0L else NROW(enrichmentTestedRows(table)$rows)
-        }
-        sentences <- vapply(refused, function(name) sprintf(paste("g:Profiler tests gene names, and none of the tested",
-            "proteins of comparison %s has one (0 of %d tested proteins named), so nothing would be tested."),
-            enrichmentContrastDisplayNames(contrasts_tbl, name), tested(name)), "")
-        rlang::abort(paste(c(sentences, "Check that the protein annotation was retrieved for this organism (save the",
-            "design again). This happens when the annotation was not retrieved for these proteins, or when their",
-            "identifiers are not UniProt accessions."), collapse = " "), class = "workflow_enrichment_no_identifiers")
+    reason <- vapply(signals, function(signal) as.character(signal$reason %||% "no_gene_name")[[1L]], "")
+    count <- function(signal) as.integer(signal$background_ids %||% NA_integer_)[[1L]]
+    shown <- function(name) enrichmentContrastDisplayNames(contrasts_tbl, name)
+    # KIT-205 alignment (KIT-208 audit I08): n counts the comparison's tested rows, the background in force.
+    tested <- function(name) {
+        table <- if (!is.na(name)) tables[[name]]
+        if (is.null(table)) 0L else NROW(enrichmentTestedRows(table)$rows)
     }
-    data.frame(comparison = enrichmentContrastDisplayNames(contrasts_tbl, raw),
-        direction = vapply(signals, label, "", field = "direction"),
-        proteins = vapply(signals, function(signal) as.integer(signal$list_size), 1L), stringsAsFactors = FALSE)
+    empty <- reason == "no_gene_name" & vapply(signals, function(signal) identical(as.numeric(signal$background_ids), 0),
+        NA)
+    unannotated <- reason == "no_go_annotation_background"
+    no_term <- reason == "no_tested_term"
+    if (any(empty | unannotated | no_term)) {
+        sentences <- c(
+            vapply(unique(raw[empty]), function(name) sprintf(paste("g:Profiler tests gene names, and none of the",
+                "tested proteins of comparison %s has one (0 of %d tested proteins named), so nothing would be tested."),
+                shown(name), tested(name)), ""),
+            vapply(unique(raw[unannotated]), function(name) sprintf(paste("None of the tested proteins of comparison",
+                "%s has a Gene Ontology annotation that this analysis tests (0 of %d tested proteins annotated), so",
+                "nothing would be tested."), shown(name), tested(name)), ""))
+        if (any(empty | unannotated)) {
+            sentences <- c(sentences, "Check that the protein annotation was retrieved for this organism (save the",
+                "design again). This happens when the annotation was not retrieved for these proteins, or when their",
+                "identifiers are not UniProt accessions.")
+        }
+        sentences <- c(sentences, vapply(which(no_term), function(i) sprintf(paste("In comparison %s, %d of the tested",
+            "proteins have a Gene Ontology annotation, and no Gene Ontology term holds between 10 and 500 of them, so",
+            "no term could be tested."), shown(raw[[i]]), count(signals[[i]])), ""))
+        rlang::abort(paste(sentences, collapse = " "), class = "workflow_enrichment_no_identifiers")
+    }
+    failed <- reason == "error"
+    if (any(failed)) {
+        rlang::abort(paste(vapply(which(failed), function(i) {
+            direction <- label(signals[[i]], "direction")
+            sprintf("The enrichment test of comparison %s%s stopped with an error, so the run was not completed: %s.",
+                shown(raw[[i]]), if (is.na(direction)) "" else paste0(", ", direction),
+                conditionMessage(signals[[i]]))
+        }, ""), collapse = " "), class = "workflow_enrichment_test_error")
+    }
+    rows <- function(keep) {
+        if (!any(keep)) return(NULL)
+        data.frame(comparison = shown(raw[keep]), direction = vapply(signals[keep], label, "", field = "direction"),
+            proteins = vapply(signals[keep], function(signal) as.integer(signal$list_size), 1L),
+            contrast = raw[keep], route = vapply(signals[keep], function(signal)
+                as.character(signal$route %||% "gprofiler2")[[1L]], ""), stringsAsFactors = FALSE)
+    }
+    no_list <- reason == "no_list"
+    list(not_tested = rows(reason %in% c("no_gene_name", "no_go_annotation")),
+        no_list = if (any(no_list)) data.frame(comparison = shown(raw[no_list]), contrast = raw[no_list],
+            direction = vapply(signals[no_list], label, "", field = "direction"), stringsAsFactors = FALSE))
 }
 
 #' The declared parameter names one enrichment run uses (GUI audit R3, P-28): the organism filter's two only when the
@@ -970,8 +1013,8 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
 #' @return `list(results, service, reference, parameters)`: the `EnrichmentResults`, the reported service identity,
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
 #'   parameters and the service identity; rooted on the source and the result tables) and the declared values; and
-#'   `not_tested` (KIT-208) when g:Profiler lists were not sent for want of a named identifier
-#'   (`diaEnrichmentNoIdentifiers`).
+#'   `not_tested` (KIT-208) when g:Profiler lists were not sent for want of a named identifier, or GO lists had no
+#'   annotated protein (KIT-215), and `no_list` (KIT-215) when a direction had no list (`diaEnrichmentNoIdentifiers`).
 #' @noRd
 runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn = NULL) {
     manager <- workflow$state_manager
@@ -1014,6 +1057,7 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
     out <- list(results = value$results, service = value$service, reference = reference,
         parameters = declared_values) # KIT-107 D4 (F-16): the declared values the identity used
     out$not_tested <- value$not_tested # KIT-208: absent when every list was sent; neither identity nor product
+    out$no_list <- value$no_list # KIT-215: absent when every direction has a list; neither identity nor product
     out
 }
 

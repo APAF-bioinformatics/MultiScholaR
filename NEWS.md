@@ -77,6 +77,17 @@
    analysis_record.json, the differential_abundance entry's source_state should be the last step's state, or, for
    proteomics with enrichment, the last state before enrichment_completed; if it is empty or names another state, run
    the differential analysis again and save again (KIT-212).
+ * Proteomics enrichment: a list of up- or down-regulated proteins that could not be tested (on g:Profiler none of its
+   proteins has a gene name; on the Gene Ontology route none has a Gene Ontology annotation that the analysis tests) is
+   now shown in the tab, the download and the report as 'Not tested', with the reason, and is recorded in the analysis
+   record; a direction in which no protein passed the cutoffs now says 'no list'. Before, both looked like a list in
+   which no term was enriched. A list that was tested and in which no tested term holds one of its proteins is shown,
+   as before, as tested with no term. On the Gene Ontology route a comparison that has a list but no tested protein
+   with an annotation, or no Gene Ontology term of 10 to 500 tested proteins, is now refused with a message, as is a
+   run in which the test of a list stops with an error (on both routes); records of such runs made before this change
+   no longer replay. On g:Profiler, a list with no significant term cannot be told apart from a list in which the
+   service recognised none of the gene names; the report says so (KIT-215).
+
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session
@@ -236,8 +247,8 @@
    g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
    proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
    (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
-   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab still shows
-   such a list like a tested list that found no terms, until KIT-215 changes the tab. The analysis record also states,
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab, the download
+   and the report show such a list as 'Not tested' (KIT-215). The analysis record also states,
    for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
    background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
    change, no longer replays; it is refused with the same message. The first change does not affect data imported in
