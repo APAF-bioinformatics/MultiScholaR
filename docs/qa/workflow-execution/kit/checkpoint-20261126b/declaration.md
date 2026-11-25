@@ -90,3 +90,50 @@ As the previous checkpoint's:
 - An unfavourable valid result is never re-run.
 - An instrument defect with no result judged may be re-sent under VAL-54, at most three times, and is recorded.
 - Nothing is fixed here.
+
+## Result
+
+Run 45712202804 (request `checkpoint-20261126b-15d86bd4`, run-tests commit 9ab38c67, dispatched normally by the
+push) was sent once and finished with conclusion success. Package commit 15d86bd4, base 828dd105, 516 files, 20
+shards per side, no scripts job. 45 jobs used 1,325.4 job-minutes (88.4 core-hours) of the 1,692.4 ceiling (112.8
+core-hours); the check jobs 26.9. Tables beside this file: `compare.tsv`, `tests.tsv`, `tests-base.tsv`,
+`check-compare.txt`, `check-summary.txt`, `meta.txt`. The one `gh run watch` ended early on an HTTP 403 (rate limit,
+not a run failure); the run was read afterwards by status only.
+
+Cross-check: the base side of this run equals run 45644467847's head table in all 505 files (counts, failed, errors,
+skipped), so the environment is unchanged.
+
+### Verdicts, 516 files
+
+| Verdict | Files | Predicted |
+|---|---|---|
+| same | 488 | 489 |
+| only-on-head | 11 | 11 |
+| count-changed | 7 | 7 |
+| message-changed | 5 | 5 |
+| new-failure | 5 | 4 |
+
+All 27 predicted files differ, each at exactly its predicted head count (see `predictions.tsv`). One further file
+differs: UNPREDICTED.
+
+### Unpredicted difference
+
+`test-omics-module-globals.R`: base 14/0/0/0, head 13/1/0/0, `new-failure`. Failing test: "KIT-030: the
+super-assignments in the lipid and metab code are the listed local closures". Message (`unpredicted-omics-module-globals.txt`):
+
+    Expected `setdiff(files_hit, allowed_files)` to be identical to `character(0)`.
+    `actual`:   "mod_omic_norm.R"
+    `expected`:  (empty)
+
+Not interpreted, not fixed, not re-run. No train scope held this file.
+
+### Flakes
+
+Neither named flake appeared: `test-workflow-figure-paths.R` is `same` 181/0; no 9-hexadecimal-character export id
+appears in the failures of `test-gui-entry-metabolomics.R` on either side (its counts, 57/48, are as predicted).
+
+### R CMD check
+
+0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base. This is
+the previous checkpoint's result. The portable-file-names NOTE lists the same paths as the previous checkpoint's
+(240 by a line count of both `check-summary.txt` files, equal).
