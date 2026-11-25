@@ -1,0 +1,4 @@
+normalisation 'none' in the record and the file
+record normalisation_method: 1 replacement(s) with "none"
+file * Method: none: 1 line(s) changed or added
+encodeWorkflowRecordValue('none') = {"type":"character","value":"none","length":1}

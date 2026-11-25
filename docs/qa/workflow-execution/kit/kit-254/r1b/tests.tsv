@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit254-omics-correlation-skip.R	309	8	0	0	0	449.5	failed

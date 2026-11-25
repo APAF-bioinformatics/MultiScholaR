@@ -1,0 +1,57 @@
+template: inst/reports/proteomics/TMT_report.rmd
+check: 'none' method from the 'limma' R package
+observed: present
+== text
+normalisation_method: "none"
+
+METHOD DETAILS  
+
+Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
+SOP reference: [to be completed by the analyst].  
+
+**Data import and protein quantification**
+
+Protein-level quantification data was imported from Proteome Discoverer TMT 
+workflow output. The data contains isobaric tag-based (TMT) quantification 
+values for identified proteins across all samples. TMT-based quantification 
+provides relative abundance measurements through reporter ion intensities in 
+MS/MS spectra, with proteins already quantified at the protein level by the 
+upstream Proteome Discoverer workflow.
+
+**Protein quality control and filtering**
+
+Protein identifications were filtered to ensure high-confidence quantification 
+and reliable downstream statistical analysis. 
+
+**FASTA reference and protein accession cleanup**
+
+Protein identifications were validated against the provided FASTA reference database to ensure accurate annotation.
+
+Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present. Duplicate protein entries were removed to prevent redundancy in quantification.
+
+Proteins were then filtered on missing values within experimental groups. Intensities below the 
+1st percentile of all intensities in the table were treated as missing. 
+Within each group a protein failed if the share of its values that were missing exceeded the allowed share, 60% (shown rounded to three decimals); a protein was retained if the share of experimental groups in which it failed did not exceed the allowed share, 60% (shown rounded to three decimals).
+
+Proteins appearing in only one replicate across all groups were also excluded 
+to ensure measurement reproducibility and reliable quantification across biological 
+replicates.
+
+**Normalisation and batch effect correction**
+
+Using the protein intensity matrix, zero values were replaced with NA to denote 
+missing values. The data matrix was log (base 2) transformed and between-sample 
+normalisation was performed using the 'none' method from the 'limma' 
+R package (Ritchie et al., 2015). This normalisation approach adjusts for 
+systematic technical variation while preserving biological differences.
+
+Whether RUV-III batch correction was applied is not recorded for this analysis.
+
+At each stage of the data normalisation, the samples were checked for batch effects 
+using principal component analysis (PCA) plots, density boxplots, relative 
+log-expression (RLE) plots, and the distribution of Pearson correlation between 
+replicate samples within groups. These quality control visualisations allow 
+assessment of technical variation removal while ensuring biological signal is 
+retained.
+
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].  

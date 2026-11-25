@@ -1,0 +1,1526 @@
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_correlation_filtered") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:396:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `same` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E1 components lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_true(same, info = paste("E1 components", label)) at test-kit254-omics-correlation-skip.R:397:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E1 design lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:398:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_pearson_selection") %in% kit254Steps(out$record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4 record lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:402:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E4 replay design lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:403:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `da_runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E2 lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:413:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `all(counts == length(kit254All))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 integration object lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:425:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `threshold` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_length(threshold, 0L) at test-kit254-omics-correlation-skip.R:426:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_correlation_filtered") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:396:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `same` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E1 components lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_true(same, info = paste("E1 components", label)) at test-kit254-omics-correlation-skip.R:397:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E1 design lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:398:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_pearson_selection") %in% kit254Steps(out$record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4 record lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:402:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E4 replay design lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:403:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `da_runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E2 lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:413:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `all(counts == length(kit254All))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 integration object lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:425:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 lipid managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `threshold` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_length(threshold, 0L) at test-kit254-omics-correlation-skip.R:426:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_correlation_filtered") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:396:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `same` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E1 components metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_true(same, info = paste("E1 components", label)) at test-kit254-omics-correlation-skip.R:397:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E1 design metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:398:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_pearson_selection") %in% kit254Steps(out$record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4 record metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:402:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E4 replay design metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:403:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `da_runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E2 metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:413:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `all(counts == length(kit254All))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 integration object metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:425:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `threshold` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_length(threshold, 0L) at test-kit254-omics-correlation-skip.R:426:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_correlation_filtered") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:396:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `same` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E1 components metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_true(same, info = paste("E1 components", label)) at test-kit254-omics-correlation-skip.R:397:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E1 design metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:398:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_pearson_selection") %in% kit254Steps(out$record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4 record metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:402:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E4 replay design metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:403:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `da_runs` to be identical to `kit254All`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E2 metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:413:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `all(counts == length(kit254All))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 integration object metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:425:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E1 to E4 metab managed: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `threshold` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:458:9
+   2.   └─testthat::expect_length(threshold, 0L) at test-kit254-omics-correlation-skip.R:426:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E7 (E1 to E4 with RUV) lipid_ruv in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_correlation_filtered") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 lipid_ruv in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:396:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E7 (E1 to E4 with RUV) lipid_ruv in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `paste0(prefix, "_pearson_selection") %in% kit254Steps(out$record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4 record lipid_ruv in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:402:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E7 (E1 to E4 with RUV) lipid_ruv in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `threshold` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSkipAfterApply(...) at test-kit254-omics-correlation-skip.R:442:9
+   2.   └─testthat::expect_length(threshold, 0L) at test-kit254-omics-correlation-skip.R:426:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 lipid in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `source` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "284faa04032fb43035e5700a245174e20698ab48b406c003a914f37acc3a20fa"
+  `expected`: "e484255d12d5e33a0d692ba0fd3d94c00ecec3c92b1ff73131f53eaa82b5a49e"
+  
+  E5 source lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:472:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 lipid in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[name]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E5 design lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:473:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 lipid in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `runs`.
+  Differences:
+  `actual[2:8]`:   "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  `expected[2:7]`: "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  
+  E6 replay equals live lipid in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:476:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 lipid managed: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `source` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "9b39461a59eba8e6ccbe1d5e528391085a870930a0784aa3f89ce65bea5dbe29"
+  `expected`: "cd0f79fe44a577996fd0cdbc423680576f294a36c4aa631aa7933cfe8687ce92"
+  
+  E5 source lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:508:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:472:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 lipid managed: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[name]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E5 design lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:508:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:473:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 lipid managed: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `runs`.
+  Differences:
+  `actual[2:8]`:   "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  `expected[2:7]`: "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  
+  E6 replay equals live lipid managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:508:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:476:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 metab in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `source` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "881e35b2e5a059fdac3d0f3f37325f08be68afc2737206d9de5f4be95d390385"
+  `expected`: "ee7d849d736827c6cf66ccf7c2b494bd05d624eaafa56ddefa251d1adf2c8263"
+  
+  E5 source metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:472:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 metab in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[name]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E5 design metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:473:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 metab in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `runs`.
+  Differences:
+  `actual[2:8]`:   "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  `expected[2:7]`: "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  
+  E6 replay equals live metab in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:476:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 metab managed: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `source` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "4053cc348aa1bc987394ced3e9491b24aacb8df491722aad716ba0232e9bdc90"
+  `expected`: "00db4b329a43919b54f39164d2e4546f1dddbeae9863958addd408908d1baa67"
+  
+  E5 source metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:508:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:472:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 metab managed: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[name]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E5 design metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:508:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:473:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E5, E6 metab managed: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `out$runs` to be identical to `runs`.
+  Differences:
+  `actual[2:8]`:   "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  `expected[2:7]`: "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  
+  E6 replay equals live metab managed
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:508:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:476:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E7 (E5, E6 with RUV) lipid_ruv in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `source` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "363746d83826fb0374c7f8575dd4141195f361206891827278b2d64df8900a6c"
+  `expected`: "08b2703ac09d8eb9fe03a4544e8f21c00874bab3b875ed0492f116924ee692a4"
+  
+  E5 source lipid_ruv in_process
+trace (first lines):
+      ▆
+   1. └─kit254ExpectReapplied(...) at test-kit254-omics-correlation-skip.R:493:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:472:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E12: lipid managed: an Apply queued behind a running Apply reads the run's result
+kind: failure
+message:
+  Expected `pairs[[2L]]` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "6ec1ff049539681169b637bdb648475f29bdcbca80969de4d17266994a7baa30"
+  `expected`: "fa913dcd75f9ee7f328bff6c031b751c2df22dcdbf0e0f263f7de1468adccbaa"
+  
+  E12 source lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E12: lipid managed: an Apply queued behind a running Apply reads the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[name]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E12 design lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E12: metab managed: an Apply queued behind a running Apply reads the run's result
+kind: failure
+message:
+  Expected `pairs[[2L]]` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "044b2fe59fd622ce0cbe4b2888d24a72fa6031a41e53e7f829c2c84bb59b159d"
+  `expected`: "38697b1d0af2fdd2bc69ca1c79a9b28bb971250c91f96ab776867e75d836a668"
+  
+  E12 source metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E12: metab managed: an Apply queued behind a running Apply reads the run's result
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[name]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E12 design metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E9: lipid two assays: applying the filter again at the same threshold removes no further sample
+kind: failure
+message:
+  Expected `kit254Removed(runs)` to be identical to "A_1".
+  Differences:
+  `actual`:   "A_1" "A_2"
+  `expected`: "A_1"      
+  
+  E9 lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E9: metab two assays: applying the filter again at the same threshold removes no further sample
+kind: failure
+message:
+  Expected `kit254Removed(runs)` to be identical to "A_1".
+  Differences:
+  `actual`:   "A_1" "A_2"
+  `expected`: "A_1"      
+  
+  E9 metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `kit254Ref(fx)$entity_id` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "d6c508bf9cf4420152ac55558980b9b7a65024b70d8daed7b149ab58acf26936"
+  `expected`: "44a904cabbd75c8e0fb5db9adfe17a31400356023da9565bfaa6e2c0701a5c68"
+  
+  E10 lipid head
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:600:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `paste0(fx$prefix, "_correlation_filtered") %in% kit254History(fx)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E10 lipid history
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:601:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$complete` to be identical to FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E10 lipid complete
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:602:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$obj` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  E10 lipid filtered object
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_null(fields$obj, info = paste(row, label, "filtered object")) at test-kit254-omics-correlation-skip.R:603:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$results` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_length(fields$results, 0L) at test-kit254-omics-correlation-skip.R:604:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `kit254Ref(fx)$entity_id` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "15304e7c0fcd4a03430cdbd986892a5b52cf58696b5107b1739a3f201dbf68f9"
+  `expected`: "e0e5f209ff16db15ebce999215e9b5ea74c6e8ec4b5dbae06603f2e56c026c45"
+  
+  E11 lipid head
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:600:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `paste0(fx$prefix, "_correlation_filtered") %in% kit254History(fx)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E11 lipid history
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:601:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$complete` to be identical to FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E11 lipid complete
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:602:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$obj` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  E11 lipid filtered object
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_null(fields$obj, info = paste(row, label, "filtered object")) at test-kit254-omics-correlation-skip.R:603:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: lipid a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$results` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_length(fields$results, 0L) at test-kit254-omics-correlation-skip.R:604:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `kit254Ref(fx)$entity_id` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "2d1a81d98c1cf3f7ffbc7d0d8e9d90e37aaf4ca4207e0841e51abff4f64fadf5"
+  `expected`: "751dff613fbe5f3a8863211e6f947cde2e2549fba167fccfb6411db2c681010f"
+  
+  E10 metab head
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:600:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `paste0(fx$prefix, "_correlation_filtered") %in% kit254History(fx)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E10 metab history
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:601:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$complete` to be identical to FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E10 metab complete
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:602:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$obj` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  E10 metab filtered object
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_null(fields$obj, info = paste(row, label, "filtered object")) at test-kit254-omics-correlation-skip.R:603:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$results` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E10", class) at test-kit254-omics-correlation-skip.R:620:9
+   2.   └─testthat::expect_length(fields$results, 0L) at test-kit254-omics-correlation-skip.R:604:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `kit254Ref(fx)$entity_id` to be identical to `final$entity_id`.
+  Differences:
+  `actual`:   "11da970fcc7b828abf26544e55962229d1270f5408590f8ad63195c56cd43502"
+  `expected`: "24811c0fa3daf4ab8251729ba3e523f4bd3a285666ef3fc97e3446639d9e9869"
+  
+  E11 metab head
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:600:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `paste0(fx$prefix, "_correlation_filtered") %in% kit254History(fx)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E11 metab history
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:601:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$complete` to be identical to FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E11 metab complete
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:602:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$obj` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  E11 metab filtered object
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_null(fields$obj, info = paste(row, label, "filtered object")) at test-kit254-omics-correlation-skip.R:603:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E10, E11: metab a failure after the return to the run's result leaves the tab on that table
+kind: failure
+message:
+  Expected `fields$results` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit254ExpectCleared(q$fx, q$nd, "E11", class) at test-kit254-omics-correlation-skip.R:629:9
+   2.   └─testthat::expect_length(fields$results, 0L) at test-kit254-omics-correlation-skip.R:604:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `paste0(q$fx$prefix, "_norm_complete") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E13 history lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[class]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E13 design lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `out$runs` to be identical to `runs`.
+  Differences:
+  `actual[2:8]`:   "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  `expected[2:7]`: "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  
+  E13 replay equals live lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `status` to be identical to "stale".
+  Differences:
+  `actual`:   "current"
+  `expected`: "stale"  
+  
+  E14 DA status lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `... %in% rec$notes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E14 lipid | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:137:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `rec$done` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  E14 lipid | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_identical(rec$done, 0L, info = info) at test-kit254-omics-correlation-skip.R:138:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `length(rec$failed) == 1L && inherits(rec$failed[[1L]], "workflow_summary_da_stale")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E14 lipid | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:139:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `file.exists(file.path(source_dir, "study_parameters.txt"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E14 lipid | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:140:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: lipid Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `file.exists(file.path(source_dir, "analysis_record.json"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E14 lipid | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:141:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `paste0(q$fx$prefix, "_norm_complete") %in% history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E13 history metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `runs` to be identical to `kit254LoRuns[[class]]`.
+  Differences:
+  `actual[2:7]`:   "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  `expected[2:8]`: "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  
+  E13 design metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `out$runs` to be identical to `runs`.
+  Differences:
+  `actual[2:8]`:   "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2"
+  `expected[2:7]`: "A_2" "A_3" "A_4"       "A_6" "B_1" "B_2"
+  
+  E13 replay equals live metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `status` to be identical to "stale".
+  Differences:
+  `actual`:   "current"
+  `expected`: "stale"  
+  
+  E14 DA status metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `... %in% rec$notes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E14 metab | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:137:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `rec$done` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  E14 metab | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_identical(rec$done, 0L, info = info) at test-kit254-omics-correlation-skip.R:138:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `length(rec$failed) == 1L && inherits(rec$failed[[1L]], "workflow_summary_da_stale")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E14 metab | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:139:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `file.exists(file.path(source_dir, "study_parameters.txt"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E14 metab | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:140:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E13, E14: metab Apply, Skip, Apply; and a DA between Apply and Skip becomes stale
+kind: failure
+message:
+  Expected `file.exists(file.path(source_dir, "analysis_record.json"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E14 metab | notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─kit254ExpectSaveRefused(...) at test-kit254-omics-correlation-skip.R:667:9
+   2.   └─testthat::expect_false(...) at test-kit254-omics-correlation-skip.R:141:5
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E14: lipid, the DA tab's results are cleared when a Skip after its DA returns to the run's result
+kind: failure
+message:
+  Expected `isTRUE(out$results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E14 tab results
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E14: lipid, the DA tab's results are cleared when a Skip after its DA returns to the run's result
+kind: failure
+message:
+  Expected `out$complete` to be identical to FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E14 tab analysis_complete
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `is.character(statement) && length(statement) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names A_5, left out of the design, failing in LCMS_Pos lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl(format(hi), statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names the threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E8 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `is.character(statement) && length(statement) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names A_5, left out of the design, failing in LCMS_Pos metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl(format(hi), statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names the threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E8 warning metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E15 the second statement with the recorded threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E15 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E16 the second statement with the recorded threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E16 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E15 the second statement with the recorded threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E15 warning metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E16 the second statement with the recorded threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E16 warning metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E18, G13: with a merged design too, both statements and both warnings; the replayed states are unchanged
+kind: failure
+message:
+  Expected `is.character(out$value$correlation_statement)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E18 the correlation statement beside it
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E18, G13: with a merged design too, both statements and both warnings; the replayed states are unchanged
+kind: failure
+message:
+  Expected `out$warned` to have length 1.
+  Actual length: 0.
+

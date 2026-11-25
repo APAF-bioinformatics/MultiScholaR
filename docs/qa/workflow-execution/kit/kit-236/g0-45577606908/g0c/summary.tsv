@@ -1,0 +1,59 @@
+case	template	check	observed	predicted	verdict
+lipid-ruv-S1	lipidomics_report.rmd	The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal	present	present	as predicted
+lipid-ruv-S2	lipidomics_report.rmd	Initial log2 data showed notable batch effects	present	present	as predicted
+lipid-ruv-S3	lipidomics_report.rmd	After cyclic loess normalization, batch effects remained in PC1 but were reduced in PC2	present	present	as predicted
+lipid-ruv-S4	lipidomics_report.rmd	batches merged effectively, suggesting successful removal of unwanted variations	present	present	as predicted
+lipid-ruv-S5	lipidomics_report.rmd	the distribution of the PC1 and PC2 values for each group are similar.	present	present	as predicted
+lipid-ruv-S6	lipidomics_report.rmd	Successive rounds of normalization have reduced the variability in the PC1 and PC2 values	present	present	as predicted
+lipid-ruv-S7	lipidomics_report.rmd	The RLE plots (Figures 1g-i) show progressive improvement in data quality	present	present	as predicted
+lipid-ruv-S8	lipidomics_report.rmd	Smaller interquartile ranges (IQR) after normalization indicate reduced technical variation	present	present	as predicted
+lipid-ruv-S9	lipidomics_report.rmd	Final normalized data shows consistent median values near zero	present	present	as predicted
+lipid-ruv-S10	lipidomics_report.rmd	biological samples was high and consistent across all normalization methods	present	present	as predicted
+lipid-ruv-M5	lipidomics_report.rmd	Figure 1 shows the QC metrics across three stages of data processing	present	present	as predicted
+lipid-3groups-M7	lipidomics_report.rmd	comparing each pair of experimental groups	present	present	as predicted
+lipid-block-single	lipidomics_report.rmd	duplicateCorrelation	absent	absent	as predicted
+lipid-block-joined	lipidomics_report.rmd	duplicateCorrelation	absent	absent	as predicted
+lipid-nocomposite-F5	lipidomics_report.rmd	Composite QC figure not found	present	present	as predicted
+metab-ruv-S1	metabolomics_report.rmd	The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal	present	present	as predicted
+metab-ruv-S2	metabolomics_report.rmd	Initial log2 data showed notable batch effects	present	present	as predicted
+metab-ruv-S3	metabolomics_report.rmd	After cyclic loess normalization, batch effects remained in PC1 but were reduced in PC2	present	present	as predicted
+metab-ruv-S4	metabolomics_report.rmd	batches merged effectively, suggesting successful removal of unwanted variations	present	present	as predicted
+metab-ruv-S5	metabolomics_report.rmd	the distribution of the PC1 and PC2 values for each group are similar.	present	present	as predicted
+metab-ruv-S6	metabolomics_report.rmd	Successive rounds of normalization have reduced the variability in the PC1 and PC2 values	present	present	as predicted
+metab-ruv-S7	metabolomics_report.rmd	The RLE plots (Figures 1g-i) show progressive improvement in data quality	present	present	as predicted
+metab-ruv-S8	metabolomics_report.rmd	Smaller interquartile ranges (IQR) after normalization indicate reduced technical variation	present	present	as predicted
+metab-ruv-S9	metabolomics_report.rmd	Final normalized data shows consistent median values near zero	present	present	as predicted
+metab-ruv-S10	metabolomics_report.rmd	biological samples was high and consistent across all normalization methods	present	present	as predicted
+metab-ruv-M5	metabolomics_report.rmd	Figure 1 shows the QC metrics across three stages of data processing	present	present	as predicted
+metab-3groups-M7	metabolomics_report.rmd	comparing each pair of experimental groups	present	present	as predicted
+metab-block-single	metabolomics_report.rmd	duplicateCorrelation	absent	absent	as predicted
+metab-block-joined	metabolomics_report.rmd	duplicateCorrelation	absent	absent	as predicted
+metab-nocomposite-F5	metabolomics_report.rmd	Composite QC figure not found	present	present	as predicted
+LFQ-default	LFQ_report.rmd	default text (recorded)	present	record	recorded
+LFQ-B1	LFQ_report.rmd	with no technical replicates	present	present	as predicted
+LFQ-B2	LFQ_report.rmd	'none' method from the 'limma' R package	present	present	as predicted
+LFQ-B3	LFQ_report.rmd	Benjamini	absent	absent	as predicted
+LFQ-B4	LFQ_report.rmd	test for any deviation from zero log-fold-change	present	present	as predicted
+LFQ-B5	LFQ_report.rmd	duplicateCorrelation	absent	absent	as predicted
+TMT-default	TMT_report.rmd	default text (recorded)	present	record	recorded
+TMT-B1	TMT_report.rmd	with no technical replicates	present	present	as predicted
+TMT-B2	TMT_report.rmd	'none' method from the 'limma' R package	present	present	as predicted
+TMT-B3	TMT_report.rmd	Benjamini	absent	absent	as predicted
+TMT-B4	TMT_report.rmd	test for any deviation from zero log-fold-change	present	present	as predicted
+TMT-B5	TMT_report.rmd	duplicateCorrelation	absent	absent	as predicted
+DIANN-default	DIANN_report.rmd	default text (recorded)	present	record	recorded
+DIANN-B1	DIANN_report.rmd	with no technical replicates	present	present	as predicted
+DIANN-B2	DIANN_report.rmd	'none' method from the 'limma' R package	present	present	as predicted
+DIANN-B3	DIANN_report.rmd	Benjamini	absent	absent	as predicted
+DIANN-B4	DIANN_report.rmd	test for any deviation from zero log-fold-change	present	present	as predicted
+DIANN-B5	DIANN_report.rmd	duplicateCorrelation	absent	absent	as predicted
+DIANN_limpa-default	DIANN_limpa_report.rmd	default text (recorded)	present	record	recorded
+DIANN_limpa-B1	DIANN_limpa_report.rmd	with no technical replicates	present	present	as predicted
+DIANN_limpa-B2	DIANN_limpa_report.rmd	'none' method from the 'limma' R package	present	present	as predicted
+DIANN_limpa-B3	DIANN_limpa_report.rmd	Benjamini	absent	absent	as predicted
+DIANN_limpa-B4	DIANN_limpa_report.rmd	test for any deviation from zero log-fold-change	present	present	as predicted
+DIANN_limpa-B5	DIANN_limpa_report.rmd	duplicateCorrelation	absent	absent	as predicted
+DIANN_limpa-B6	DIANN_limpa_report.rmd	Technical replicate averaging	present	present	as predicted
+DIANN_limpa-B6-block	DIANN_limpa_report.rmd	Technical replicate averaging	present	present	as predicted
+DIANN_limpa-N03a	DIANN_limpa_report.rmd	TREAT sentence printed: standard empirical Bayes sentence	absent	record	recorded
+DIANN_limpa-N03b	DIANN_limpa_report.rmd	TREAT sentence printed: standard empirical Bayes sentence	absent	record	recorded

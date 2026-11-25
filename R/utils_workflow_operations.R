@@ -453,6 +453,7 @@ workflowOperationDefaults <- local({
             ruv_k = key("ruvIII_C_Varying", "ruv_number_k"), grouping = key("ruvIII_C_Varying", "ruv_grouping_variable")),
         `pearson-pairs` = list(group = "no_shipped_default", tech_rep_remove_regex = key("pearsonCorForSamplePairs", "tech_rep_remove_regex")),
         `pearson-selection` = list(pairs = "input", threshold = "no_shipped_default"),
+        `pearson-skip` = list(), # KIT-248: no parameters (the fixed constant skipped = TRUE)
         `DA-contrast-output` = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
             weights = "no_shipped_default", contrast = "input", annotations = "input"),
@@ -851,7 +852,8 @@ registerBuiltinWorkflowOperations <- function() {
     # KIT-024: the whole-matrix declarations that run in process only (KIT-004, KIT-016) are registered too, so the
     # registry is the one place an operation is named (KIT-007); a dispatch of one to the worker is refused.
     # KIT-112 D3: the DA contrast left this loop for the omics one below; the enrichment stays in process (KIT-113).
-    for (declaration in list(diaEnrichmentOperation())) {
+    # KIT-248 (VAL-238): the correlation filter's Skip, a controller step with no parameters and one fixed constant.
+    for (declaration in list(diaEnrichmentOperation(), diaPearsonSkipOperation())) {
         registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
             compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),
