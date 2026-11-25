@@ -1,0 +1,2 @@
+run_id	commit	purpose	job_minutes	result
+45583972146	1a9ffe4caa889413bb478ed44d8694e0b04c9f23	G0 base values: (A) at 0.5 and t_hi, B1, B2; origin/kit-225 600dcc6e plus the script (branch kit-244-g0)	17.1	ok; no instrument error; t_hi 0.96361269349912604; stop rules 1, 5, 6 not triggered
