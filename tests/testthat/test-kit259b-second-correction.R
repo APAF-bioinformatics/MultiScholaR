@@ -180,7 +180,9 @@ test_that("KIT-259 I04-E2: managed, a pre-normalisation figure redrawn because t
         protNormFiguresAction = function(source, aesthetics, figures = "stage", deliver = function(result) invisible(NULL),
             composite = NULL) list(source = source, deliver = deliver),
         .package = "MultiScholaR")
-    runner <- list(run = function(actions, done = NULL, failed = NULL) captured$actions <- actions)
+    # KIT-257: the runner may receive a function giving the actions when they start.
+    runner <- list(run = function(actions, done = NULL, failed = NULL)
+        captured$actions <- if (is.function(actions)) actions() else actions)
     preQc <- function() {
         rlang::warn("The QC figure 'pre_norm_pca.png' could not be drawn: injected", class = "prot_norm_figure_unavailable",
             figure = "pre_norm_pca.png", reason = "injected")
@@ -273,11 +275,14 @@ for (name in names(k259bTemplates)) {
         chunk <- k259bChunk(file, "QC_metrics_placeholders")
         without <- if (is.null(chunk)) region else region[!seq_along(region) %in%
             (match(chunk[[1L]], region) + seq_along(chunk) - 1L)]
+        # One folder for both knits: the chunk's message names it.
+        qc_figures <- withr::local_tempdir()
+        feature_qc <- withr::local_tempdir()
         knit <- function(text) {
             env <- new.env(parent = globalenv())
             env$params <- list(omic_type = "proteomics")
-            env$report_qc_figures_dir <- withr::local_tempdir()
-            env$current_project_paths <- list(feature_qc_dir = withr::local_tempdir())
+            env$report_qc_figures_dir <- qc_figures
+            env$current_project_paths <- list(feature_qc_dir = feature_qc)
             env$results_data <- list(numbers = list(ruv_applied = TRUE))
             out <- suppressMessages(knitr::knit(text = paste(text, collapse = "\n"), envir = env, quiet = TRUE))
             gsub("\n{2,}", "\n\n", trimws(out))
