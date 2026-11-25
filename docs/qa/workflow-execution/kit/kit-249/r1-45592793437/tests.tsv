@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit249-prot-da-qvalue-fallback.R	76	49	0	0	0	72.2	failed

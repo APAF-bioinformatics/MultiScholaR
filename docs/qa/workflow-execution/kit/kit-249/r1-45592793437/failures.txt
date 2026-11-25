@@ -1,0 +1,1233 @@
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1: topTable branch, qvalue() fails on B_vs_A and fdr_qvalue holds the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1 B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:96:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1: topTable branch, qvalue() fails on B_vs_A and fdr_qvalue holds the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1 B_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.5      [7] 
+   [8] NA     - 0.5      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.6      [15]
+  [16] NA     - 0.6      [16]
+  [17] NA     - 0.6      [17]
+  [18] NA     - 0.6      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.7      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:96:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1: topTable branch, qvalue() fails on B_vs_A and fdr_qvalue holds the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1 B_vs_A (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.5      [7] 
+   [8] NA     - 0.5      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.6      [15]
+  [16] NA     - 0.6      [16]
+  [17] NA     - 0.6      [17]
+  [18] NA     - 0.6      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.7      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:96:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1: topTable branch, qvalue() fails on B_vs_A and fdr_qvalue holds the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1 B_vs_A (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:96:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1b: any qvalue() error, not only the pi0 one, keeps the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1b B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:106:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1b: any qvalue() error, not only the pi0 one, keeps the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1b B_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.5      [7] 
+   [8] NA     - 0.5      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.6      [15]
+  [16] NA     - 0.6      [16]
+  [17] NA     - 0.6      [17]
+  [18] NA     - 0.6      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.7      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:106:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1b: any qvalue() error, not only the pi0 one, keeps the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1b B_vs_A (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.5      [7] 
+   [8] NA     - 0.5      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.6      [15]
+  [16] NA     - 0.6      [16]
+  [17] NA     - 0.6      [17]
+  [18] NA     - 0.6      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.7      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:106:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1b: any qvalue() error, not only the pi0 one, keeps the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1b C_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:106:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1b: any qvalue() error, not only the pi0 one, keeps the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1b C_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 1.0      [7] 
+   [8] NA     - 1.0      [8] 
+   [9] NA     - 1.0      [9] 
+  [10] NA     - 1.0      [10]
+  [11] NA     - 1.0      [11]
+  [12] NA     - 1.0      [12]
+  [13] NA     - 1.0      [13]
+  [14] NA     - 1.0      [14]
+  [15] NA     - 1.0      [15]
+  [16] NA     - 1.0      [16]
+  [17] NA     - 1.0      [17]
+  [18] NA     - 1.0      [18]
+  [19] NA     - 1.0      [19]
+  [20] NA     - 1.0      [20]
+  [21] NA     - 1.0      [21]
+  [22] NA     - 1.0      [22]
+  [23] NA     - 1.0      [23]
+  [24] NA     - 1.0      [24]
+  [25] NA     - 1.0      [25]
+  [26] NA     - 1.0      [26]
+  [27] NA     - 1.0      [27]
+  [28] NA     - 1.0      [28]
+  [29] NA     - 1.0      [29]
+  [30] NA     - 1.0      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:106:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E1b: any qvalue() error, not only the pi0 one, keeps the Benjamini-Hochberg values
+kind: failure
+message:
+  Expected E1b C_vs_A (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 1.0      [7] 
+   [8] NA     - 1.0      [8] 
+   [9] NA     - 1.0      [9] 
+  [10] NA     - 1.0      [10]
+  [11] NA     - 1.0      [11]
+  [12] NA     - 1.0      [12]
+  [13] NA     - 1.0      [13]
+  [14] NA     - 1.0      [14]
+  [15] NA     - 1.0      [15]
+  [16] NA     - 1.0      [16]
+  [17] NA     - 1.0      [17]
+  [18] NA     - 1.0      [18]
+  [19] NA     - 1.0      [19]
+  [20] NA     - 1.0      [20]
+  [21] NA     - 1.0      [21]
+  [22] NA     - 1.0      [22]
+  [23] NA     - 1.0      [23]
+  [24] NA     - 1.0      [24]
+  [25] NA     - 1.0      [25]
+  [26] NA     - 1.0      [26]
+  [27] NA     - 1.0      [27]
+  [28] NA     - 1.0      [28]
+  [29] NA     - 1.0      [29]
+  [30] NA     - 1.0      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:106:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E2: topTreat branch (the application's TREAT cutoff 0), the same
+kind: failure
+message:
+  Expected E2 B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:114:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E2: topTreat branch (the application's TREAT cutoff 0), the same
+kind: failure
+message:
+  Expected E2 B_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:114:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E2: topTreat branch (the application's TREAT cutoff 0), the same
+kind: failure
+message:
+  Expected E2 B_vs_A (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:114:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E2: topTreat branch (the application's TREAT cutoff 0), the same
+kind: failure
+message:
+  Expected E2 B_vs_A (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:114:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E3: S4 differentialAbundanceAnalysis on a label-free object, one comparison per call
+kind: failure
+message:
+  Expected E3 B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:128:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E3: S4 differentialAbundanceAnalysis on a label-free object, one comparison per call
+kind: failure
+message:
+  Expected E3 B_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:128:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E3: S4 differentialAbundanceAnalysis on a label-free object, one comparison per call
+kind: failure
+message:
+  Expected E3 B_vs_A (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:128:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E3: S4 differentialAbundanceAnalysis on a label-free object, one comparison per call
+kind: failure
+message:
+  Expected E3 count table, Significant and Up to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 DIA B_vs_A results (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 DIA B_vs_A results (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 DIA B_vs_A results (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 DIA B_vs_A results (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 DIA B_vs_A da_proteins_long (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 DIA B_vs_A da_proteins_long (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E6 B_vs_A saved fdr_qvalue to be identical to `b$fdr_value_bh_adjustment`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 LFQ B_vs_A results (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 LFQ B_vs_A results (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 LFQ B_vs_A results (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 LFQ B_vs_A results (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 LFQ B_vs_A da_proteins_long (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 LFQ B_vs_A da_proteins_long (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 TMT B_vs_A results (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 TMT B_vs_A results (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 TMT B_vs_A results (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 TMT B_vs_A results (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 TMT B_vs_A da_proteins_long (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E4 and E6: the DA tab in process on DIA, label-free and TMT owners, and the analysis record
+kind: failure
+message:
+  Expected E4 TMT B_vs_A da_proteins_long (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, paste("E4", type)) at test-kit249-prot-da-qvalue-fallback.R:276:9
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E5: the managed DA click on the worker
+kind: failure
+message:
+  Expected E5 B_vs_A results (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, "E5") at test-kit249-prot-da-qvalue-fallback.R:296:5
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E5: the managed DA click on the worker
+kind: failure
+message:
+  Expected E5 B_vs_A results (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, "E5") at test-kit249-prot-da-qvalue-fallback.R:296:5
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E5: the managed DA click on the worker
+kind: failure
+message:
+  Expected E5 B_vs_A results (iv) fdr_qvalue to be identical to `stats::p.adjust(p, "BH")`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, "E5") at test-kit249-prot-da-qvalue-fallback.R:296:5
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:72:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E5: the managed DA click on the worker
+kind: failure
+message:
+  Expected E5 B_vs_A results (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, "E5") at test-kit249-prot-da-qvalue-fallback.R:296:5
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:261:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E5: the managed DA click on the worker
+kind: failure
+message:
+  Expected E5 B_vs_A da_proteins_long (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, "E5") at test-kit249-prot-da-qvalue-fallback.R:296:5
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E5: the managed DA click on the worker
+kind: failure
+message:
+  Expected E5 B_vs_A da_proteins_long (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectTab(run, "E5") at test-kit249-prot-da-qvalue-fallback.R:296:5
+   2.   └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:262:5
+   3.     └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E7: the scripted wrapper protein_deAnalysisWrapperFunction
+kind: failure
+message:
+  Expected E7 B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:327:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E7: the scripted wrapper protein_deAnalysisWrapperFunction
+kind: failure
+message:
+  Expected E7 B_vs_A (v) planted significant to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:327:5
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:73:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E8: the lipidomics and metabolomics exported differentialAbundanceAnalysis
+kind: failure
+message:
+  Expected E8 lipidomics B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:346:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E8: the lipidomics and metabolomics exported differentialAbundanceAnalysis
+kind: failure
+message:
+  Expected E8 lipidomics B_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:346:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E8: the lipidomics and metabolomics exported differentialAbundanceAnalysis
+kind: failure
+message:
+  Expected E8 metabolomics B_vs_A (ii) missing fdr_qvalue to be identical to 0L.
+  Differences:
+    `actual`: 30
+  `expected`:  0
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:346:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:70:5
+
+file: test-kit249-prot-da-qvalue-fallback.R
+test: KIT-249 E8: the lipidomics and metabolomics exported differentialAbundanceAnalysis
+kind: failure
+message:
+  Expected E8 metabolomics B_vs_A (iii) fdr_qvalue to be identical to `table[[bh]]`.
+  Differences:
+       actual | expected     
+   [1] NA     - 0.0      [1] 
+   [2] NA     - 0.0      [2] 
+   [3] NA     - 0.0      [3] 
+   [4] NA     - 0.0      [4] 
+   [5] NA     - 0.0      [5] 
+   [6] NA     - 0.0      [6] 
+   [7] NA     - 0.4      [7] 
+   [8] NA     - 0.4      [8] 
+   [9] NA     - 0.5      [9] 
+  [10] NA     - 0.5      [10]
+  [11] NA     - 0.5      [11]
+  [12] NA     - 0.5      [12]
+  [13] NA     - 0.5      [13]
+  [14] NA     - 0.5      [14]
+  [15] NA     - 0.5      [15]
+  [16] NA     - 0.5      [16]
+  [17] NA     - 0.5      [17]
+  [18] NA     - 0.5      [18]
+  [19] NA     - 0.6      [19]
+  [20] NA     - 0.6      [20]
+  [21] NA     - 0.6      [21]
+  [22] NA     - 0.6      [22]
+  [23] NA     - 0.6      [23]
+  [24] NA     - 0.6      [24]
+  [25] NA     - 0.7      [25]
+  [26] NA     - 0.7      [26]
+  [27] NA     - 0.7      [27]
+  [28] NA     - 0.7      [28]
+  [29] NA     - 0.7      [29]
+  [30] NA     - 0.8      [30]
+trace (first lines):
+      ▆
+   1. └─kit249ExpectFallback(...) at test-kit249-prot-da-qvalue-fallback.R:346:9
+   2.   └─testthat::expect_identical(...) at test-kit249-prot-da-qvalue-fallback.R:71:5
+
