@@ -329,8 +329,12 @@ test_that("KIT-245 S7: Project IDs that name no plain folder are refused before 
         expect_identical(calls$n, 0L, info = label)
     }
     expect_length(rec$calls, 0L)
+    # Accepted IDs stay inside tempdir(): the real unlink and dir.create, so the call reaches the .Rproj check
+    # (run 45617558634: with the stand-ins it stopped earlier, writing .gitignore into a folder never created).
+    accept <- k245WithOverrides(pushProjectToGithub, list(Sys.which = k245GitPath, system = k245PushOk))
     for (project_id in c("-x", "a.b")) {
-        err <- k245Push(push, fx, project_id)
+        withr::defer(unlink(file.path(tempdir(), project_id), recursive = TRUE, force = TRUE, expand = FALSE))
+        err <- k245Push(accept, fx, project_id)
         expect_false(inherits(err, "multischolar_github_project_id_invalid"), info = project_id)
         expect_match(k245Text(err), "R project file does not exist", fixed = TRUE, info = project_id)
     }
