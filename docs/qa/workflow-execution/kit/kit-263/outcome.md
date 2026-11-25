@@ -111,8 +111,8 @@ better than stated.
   `:802-888` and the merged configuration at `:937-980`; the copy at `R/func_prot_import_detection.R:249-266` and
   `R/mod_prot_design_import_helpers.R:181-209`. Legacy on `main`: `main:R/mod_prot_import.R:908-917`,
   `main:R/func_general_filemgmt.R:5180`, `:5379`. Fix (447bdf29): the constant `studyParameterForeignSections` above the
-  writer (`:1-6`), the argument `omic_type` and the filter after the `config_list` is resolved (`:98-107`, local copies
-  only), the Summary save passing `omic_type = omicType` (`R/utils_workflow_summary.R:264-267`), the Rd.
+  writer (`:1-6`), the argument `omic_type` and the filter after the `config_list` is resolved (`:101-107`, local copies
+  only), the Summary save passing `omic_type = omicType` (`R/utils_workflow_summary.R:266-267`), the Rd.
 - **What changed in results.** None. Only the printed file: for proteomics the four sections of config.ini's
   Metabolomics and Transcriptomics blocks are left out of both printed blocks. The object's `@args`, the copied
   `config.ini`, the analysis record, reports and replay are unchanged. The foreign settings still show in the project's
