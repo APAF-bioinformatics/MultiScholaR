@@ -163,6 +163,12 @@ OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in al
 - Stop rule: any other count or failure is a result: stop and report; no code change and no second run (an HTTP 500 or
   502 at dispatch with no run created: one manual start, recorded).
 
+OBSERVED (run 45697803497, head edb218e7, base cf57228a; 24.8 job-minutes = 1.65 core-hours; tables in `r3/`): every
+prediction held. `test-kit258-duplicate-completeness.R`: head 162 passed, 0 failed; base 112 passed, 50 failed (the 42
+known failures plus E7's 8 kept-row expectations: 4 on the declared step, 2 on the kernels, 2 on the S4 methods, all
+keeping B); verdict `fixed`; clean under the rule. E7's other 12 expectations pass on both sides. The ticket's
+correction pass is spent; the total is 17.97 + 1.65 = 19.62 core-hours, within the ceiling of 705 job-minutes.
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
