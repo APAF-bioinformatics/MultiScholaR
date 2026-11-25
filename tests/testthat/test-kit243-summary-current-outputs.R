@@ -1041,6 +1041,52 @@ for (case in list(list(row = "E1", class = "lipid", managed = FALSE), list(row =
 }
 
 # ------------------------------------------------------------------------------------------------
+# Implementation audit AUDIT-KIT-243-impl-20261125, failing first on 4e2f1575: I01 (the folder filter compared dirname()
+# output with the raw folder string; a trailing "/" stands on Linux for Windows' backslashes) and I02 (unlink() expanded
+# a contrast name's wildcard characters).
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-243 E15 (I01): lipid in process, a publication folder given with a trailing separator: the earlier heatmaps are removed", {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    seen <- k194Notes()
+    q <- k207Normalised(file.path(root, "fixture"), "lipid")
+    owner <- k194Owner(q$fx)
+    paths <- k212Dirs(file.path(root, "project"), "lipidomics")$lipidomics
+    paths$publication_graphs_dir <- paste0(paths$publication_graphs_dir, "/")
+    run <- function() k243Da(q$fx$workflow, paths, q$fx$config$da, q$fx$binding, kit172Contrasts())
+    expect_identical(run()$status, "success", info = "E15 DA1 precondition")
+    heatmaps <- grep("/Heatmaps/", k243Made(owner, paths, "lipidomics"), value = TRUE, fixed = TRUE)
+    expect_gt(length(heatmaps), 1L)
+    k243Plant(heatmaps)
+    expect_identical(run()$status, "success", info = "E15 DA2 precondition")
+    left <- k243PlantedOf(heatmaps)
+    k243Line("E15", "lipid", sprintf("folder=%s", basename(paths$publication_graphs_dir)), sprintf("left=%s", paste(left, collapse = ",")),
+        sprintf("marker=%s", file.exists(k243Marker(paths))))
+    expect_identical(left, character(), info = "E15 planted heatmaps left")
+    expect_false(file.exists(k243Marker(paths)), info = "E15 marker after a completed publication")
+})
+
+test_that("KIT-243 E16 (I02): a contrast name holding '*' or '?': its own file is removed, a sibling the pattern matches is not", {
+    root <- withr::local_tempdir()
+    graphs <- file.path(root, "publication_graphs")
+    own <- file.path(graphs, "Heatmaps", c("posmode_0.5*groupB-groupA_heatmap.png", "posmode_groupB-group?_heatmap.png"))
+    siblings <- file.path(graphs, "Heatmaps", c("posmode_0.5_other_groupB-groupA_heatmap.png", "posmode_groupB-groupC_heatmap.png"))
+    k243Plant(c(own, siblings))
+    # The removal on an owner whose accepted manifest's names are `own` (a weighted contrast's raw name, as lipidomics,
+    # metabolomics and transcriptomics write it).
+    testthat::local_mocked_bindings(usesWorkflowReferenceStates = function(manager) TRUE,
+        isSavedWorkflowReference = function(reference) TRUE, workflowDaMadeFiles = function(manager, paths, omicType) own,
+        .package = "MultiScholaR")
+    manager <- list(.context = list(snapshot = list(da_results = list(entity_id = "kit243"))))
+    removeWorkflowDaOwnFigures(manager, list(publication_graphs_dir = graphs), "lipidomics")
+    k243Line("E16", "removal", sprintf("own_left=%s", paste(basename(own[file.exists(own)]), collapse = ",")),
+        sprintf("siblings_left=%s", paste(k243PlantedOf(siblings), collapse = ",")))
+    expect_identical(basename(own[file.exists(own)]), character(), info = "E16 the analysis's own files")
+    expect_identical(k243PlantedOf(siblings), basename(siblings), info = "E16 siblings the pattern matches")
+})
+
+# ------------------------------------------------------------------------------------------------
 # Part A, E4, E4b, E4m (failing first) with G8 (proteomics): the count barplot and the interactive page-or-note pair.
 # ------------------------------------------------------------------------------------------------
 
