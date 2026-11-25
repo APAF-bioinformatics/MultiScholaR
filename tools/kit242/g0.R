@@ -546,10 +546,14 @@ caseC9 <- function(root) {
     matrix(stats::rnorm(60L * length(RUNS), 0, 0.25), 60L)
   counts <- matrix(stats::rpois(100L * 6L, rep(exp(stats::runif(100L, 2, 8)), 6L)), 100L, dimnames = list(sprintf("G%03d", 1:100), sprintf("S%d", 1:6)))
   dimnames(y) <- list(sprintf("P%03d", 1:60), RUNS)
-  protObject <- function(m) methods::new("ProteinQuantitativeData",
-    protein_quant_table = data.frame(Protein.Ids = rownames(m), as.data.frame(m, check.names = FALSE), check.names = FALSE, stringsAsFactors = FALSE),
-    protein_id_column = "Protein.Ids", design_matrix = kit172Design(), sample_id = "Run", group_id = "group",
-    technical_replicate_id = "tech_rep_group", args = list())
+  # VAL-54 instrument repair 1 (run 45584784285: the table kept the matrix's row names, which column_to_rownames refuses
+  # with "`.data` must be a data frame without row names"; no result was produced): the row names are dropped.
+  protObject <- function(m) {
+    table <- data.frame(Protein.Ids = rownames(m), as.data.frame(m, check.names = FALSE), check.names = FALSE, stringsAsFactors = FALSE)
+    rownames(table) <- NULL
+    methods::new("ProteinQuantitativeData", protein_quant_table = table, protein_id_column = "Protein.Ids",
+      design_matrix = kit172Design(), sample_id = "Run", group_id = "group", technical_replicate_id = "tech_rep_group", args = list())
+  }
   empty <- y
   empty[, S] <- NA_real_
   one <- y
@@ -989,6 +993,7 @@ runGroup <- function(group, tree, out_dir) {
     runCase("C12", function() caseC12(root))
     runCase("C14", function() caseC14(root))
   }
+  if (identical(group, "c9")) runCase("C9", function() caseC9(root))
   if (identical(group, "tab")) runCase("tab", function() caseTab(root))
   if (identical(group, "replay")) runCase("C8", function() caseC8(root, tree))
   if (identical(group, "lanes")) {
@@ -1089,7 +1094,7 @@ k188_sim <- file.path(tempdir(), "sim-k188.R")
 if (!is.na(k188_ref)) system2("git", c("show", paste0(k188_ref, ":", K188_SIM)), stdout = k188_sim)
 provenance <- c(provenance, sprintf("k188_commit\t%s", k188_ref),
   sprintf("k188_sim_sha256\t%s", if (file.exists(k188_sim)) digest::digest(file = k188_sim, algo = "sha256") else NA))
-minutes <- c(core = 30, tab = 15, replay = 12, lanes = 30, k188 = 12)
+minutes <- c(core = 30, c9 = 10, tab = 15, replay = 12, lanes = 30, k188 = 12)
 rscript <- file.path(R.home("bin"), "Rscript")
 status <- list()
 collected <- list()
