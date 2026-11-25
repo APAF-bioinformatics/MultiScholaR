@@ -13,6 +13,9 @@ run below is a GitHub-hosted `run-tests` run (R 4.6.1, KIT-134 snapshot library,
 | b5bf4b5c | the fix (7.1), `man/` pages, NEWS, ledger row `VAL-<merge>` |
 | 29848a2f | the one correction after R2: the three barplot filters leave out "Not significant" and "Not tested" |
 | (this commit) | records |
+| 89ce2a1f | merge with staging 7327607f (KIT-220 conflicts as the audit register's section 6) |
+| d1bdcfe3 | merge with staging abfc99ac (ledger only resolved by hand; see "Second merge") |
+| d792847f | R2d declared before sending |
 
 ## Runs (`runs.tsv`)
 
@@ -212,6 +215,34 @@ The step attribution is read from the failure records, where each expectation's 
 result is not re-run; an instrument defect with no result may be fixed and re-sent on the brief's four conditions, at
 most three times.
 
+### R2d observed (45666442643, d792847f against abfc99ac): ready for a merge train; one base-side finding
+
+`r2d-merge-compare.tsv`, `r2d-merge-compare-failures.txt`, `r2d-merge-check-compare.txt`. Every head count is as
+predicted.
+
+| File | Predicted | Observed | Held |
+|---|---|---|---|
+| `test-kit204-prot-da-not-tested.R` | only on head, 81/0 | only on head, 81/0 | yes |
+| `test-omic-da-module.R` | 1289/80 → 1288/81; 12 values message-changed, `volcano_unticked values` newly failing | 1289/80 → 1288/81; `prot_main` 189 → 188 passed; the 12 values gain exactly the one line beside KIT-201's `<ui>` difference, `volcano_unticked values` fails by exactly the one line; every other block identical | yes (the tool labels the file `message-changed`, not `new-failure`, because the `prot_main` test already fails on base) |
+| `test-kit201-treat-moderation.R` | same 89/0 | same 89/0 | yes |
+| `test-prot-ruv-factors-in-model.R` | same 312/0 | same 312/0 | yes |
+| `test-workflow-saved-da.R`, `test-gui-entry-proteomics.R`, `test-omic-enrich-module.R`, `test-omic-summary-module.R` | same at 776/175, 168/25, 1011/59, 1675/28 | same at those counts | yes |
+| `test-kit243-...`, `kit220`, `kit218`, `kit212`, `kit215` | same 246, 79, 80, 309, 112 passed | same at those counts | yes |
+| `test-workflow-figure-paths.R` | same 181/0 | base 179/2, head 181/0 (`fixed`) | **no: a finding on the base side** |
+| the other 23 files | same at the checkpoint's counts | same at those counts | yes |
+| R CMD check | identical | 0 E, 3 W, 3 N both sides; 6 findings identical, none only on head or only on base | yes |
+
+**Finding (base side only; recorded, not re-run).** On base (staging abfc99ac), two expectations of
+`test-workflow-figure-paths.R` ("the figure check names the missing files and, on Windows, the over-long path") failed
+with `expect_no_match(..., "259")`. The messages quote the R session's temporary folder, `/tmp/RtmpZBB2x8/file13648562592ac`,
+whose random name contains "259". The over-long-path warning itself was absent. Head passed 181/0, as did staging in
+the checkpoint and in train 10. Reading (INFERRED): the test is flaky whenever a random temporary name contains
+"259". KIT-204 does not touch this file or the code it tests. A test-mechanics defect on staging for the coordinator;
+not this ticket's to fix.
+
+Cost: 252.5 job-minutes (16.8 core-hours) of the 600 ceiling; longest job 45.7 minutes. Ticket total 148.8 core-hours
+of 262.7.
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
@@ -292,6 +323,19 @@ data only: KIT-200's 60-protein, three-group fixture (seed 200001) with one prot
 missing everywhere. Limits: no real data; Windows not run; the GUI-entry lanes hold no untested protein (no digest
 moved), so the published `.tab` change is shown by N9 on fixtures only.
 
+**On the merged tree (d792847f, staging abfc99ac merged).** This section still holds. The behaviour is unchanged and
+R2d 45666442643 reproduces the new file's 81/0 and the same 13 summary values. The same places sit at different
+lines on the merged tree:
+- display counts: `R/utils_workflow_dia_da.R:1604` (v2), `:1613`, `:1618`, `:1626`;
+- tab summary: `R/utils_workflow_dia_da_views.R:302`, `:318`;
+- count function: `R/func_prot_da_results_summary.R:27`, `:39`, `:47`, filter `:202`;
+- S4 method: `R/func_prot_da_model_methods.R:512-518`, `:607`, `:621`, `:624`;
+- publication figure: `R/func_prot_da_results_methods.R:366-368`.
+
+KIT-201's TREAT moderation now runs before these counts on the legacy route. It changes q-values but not which rows
+lack a p-value, so the "Not tested" counts are the same under either moderation (INFERRED; R2d's new-file pass is
+consistent with it).
+
 ## Not checked
 
 - Real data; Windows.
@@ -302,3 +346,5 @@ moved), so the published `.tab` change is shown by N9 on fixtures only.
   `q_val_thresh` and then this ticket's `p_value_column` (`countStatDaGenes` and `countStatDaGenesHelper` are not
   touched by KIT-220); three files under `R/` and one Rd page conflict, so the merger's rule (ticket 6.4) asks for
   R2b and R3b on the merge.
+- The second merge (abfc99ac): no full suite on the merged tree. R2d covered the 37 files only; the shared method
+  `differentialAbundanceAnalysisHelper` was judged by reading plus R2d's guard files.
