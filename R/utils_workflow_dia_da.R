@@ -267,11 +267,13 @@ removeWorkflowDaOwnFigures <- function(manager, paths, omicType) {
         if (isSavedWorkflowReference(manager$.context$snapshot$da_results)) workflowDaMadeFiles(manager, paths, omicType) else
             character()
     })
+    # dirname() returns "/" separators on Windows (and keeps a network share's "\\"): compare in that form.
+    root <- dirname(file.path(graphs, "."))
     folders <- dirname(made)
-    own <- made[(folders == graphs | dirname(folders) == graphs) & folders != file.path(graphs, "Heatmap")]
+    own <- made[(folders == root | dirname(folders) == root) & folders != dirname(file.path(graphs, "Heatmap", "."))]
     present <- own[file.exists(own)]
     files <- present[!dir.exists(present)]
-    unlink(files)
+    unlink(files, expand = FALSE)
     left <- present[file.exists(present)]
     if (length(left)) {
         rlang::abort(paste0("An earlier file of the differential analysis could not be removed before this analysis's files ",
