@@ -394,7 +394,10 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
             omicNormSetRuvDesignResult(normData, omicsRuvDesignResult(result$value))
             # A new design's product has no sweep (KIT-129 integration item 1).
             if (!is.null(result$value$optimisation))
-                normData$ruv_optimization_results <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
+                normData$ruv_optimization_results <- omicsRuvAnnotateResults(
+                    hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value, result$value)
+            # KIT-190 I01: the cap's notice and the Manual warning reach the tab.
+            omicsRuvReportNotices(result$value, addLog, function(text) shiny::showNotification(text, type = "warning"))
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(result$value$best_k), "=", unlist(result$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- result$stateReference
@@ -505,7 +508,9 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
             addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
             ruv <- runWorkflowOmicsReferenceRuv(binding, manager, settings$ruv_parameters, config)
             omicNormSetRuvDesignResult(normData, omicsRuvDesignResult(ruv$value))
-            normData$ruv_optimization_results <- ruv$optimisation
+            normData$ruv_optimization_results <- omicsRuvAnnotateResults(ruv$optimisation, ruv$value)
+            # KIT-190 I01: the cap's notice and the Manual warning reach the tab through its notification.
+            omicsRuvReportNotices(ruv$value, addLog, function(text) notify(text, type = "warning"))
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(ruv$value$best_k), "=", unlist(ruv$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- ruv$reference

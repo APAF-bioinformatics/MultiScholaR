@@ -524,7 +524,8 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
                 percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_),
-                k_sweep = k_limits$k_sweep, k_cap = k_limits$k_cap, k_notice = k_limits$k_notice, ruv_status = ruv_status)
+                k_sweep = k_limits$k_sweep, k_cap = k_limits$k_cap, k_samples = k_limits$k_samples, k_notice = k_limits$k_notice,
+                ruv_status = ruv_status)
         },
         # KIT-224: the rule marker of the feature levels after the correction (`workflowReplayRuleMarkers`).
         # KIT-190: the rule markers of the control selection and of the bound on k.
@@ -535,12 +536,12 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
 #' per assay becomes min(k, `calculateAdaptiveMaxK`(the assay's samples)) (`boundOmicsRuvSweepK`), with a plain-language
 #' notice where it is reduced; in Manual mode the user's k is kept and a k above the cap gives a classed warning. Under
 #' the earlier rule of a record made before the bound (option `MultiScholaR.ruv_k_bound` = `"none"`) nothing changes.
-#' @return `list(best_k, k_sweep, k_cap, k_notice)`, each per assay (`k_notice` NULL where there is none).
+#' @return `list(best_k, k_sweep, k_cap, k_samples, k_notice)`, each per assay (`k_notice` NULL where there is none).
 #' @noRd
 omicsRuvKBound <- function(object, ruv_results, ruv_mode, best_k) {
     marker <- workflowReplayRuleMarkers$ruv_k_bound
     if (identical(getOption(marker$option), marker$earlier)) {
-        return(list(best_k = best_k, k_sweep = best_k, k_cap = NULL, k_notice = NULL))
+        return(list(best_k = best_k, k_sweep = best_k, k_cap = NULL, k_samples = NULL, k_notice = NULL))
     }
     bound <- boundOmicsRuvSweepK(object, ruv_results)
     slots <- omicsRuvAssaySlots(object)
@@ -553,12 +554,11 @@ omicsRuvKBound <- function(object, ruv_results, ruv_mode, best_k) {
         cap <- bound$limit[[assay]]
         if (is.na(k) || k <= cap) next
         notice[[assay]] <- if (automatic) {
-            sprintf(paste("%s: the automatic search found %d unwanted factors. With %d samples, at most %d can be removed",
-                "while leaving enough samples to judge the differences between groups, so %d were removed."),
-                assay, k, samples[[assay]], cap, cap)
+            sprintf(paste("%s: the automatic search found %d unwanted factors. With %d samples the application removes at",
+                "most %d (the limit proteomics uses), so %d were removed."), assay, k, samples[[assay]], cap, cap)
         } else {
-            sprintf(paste("%s: you chose to remove %d unwanted factors. With %d samples, at most %d are advised, to leave",
-                "enough samples to judge the differences between groups. Your choice was kept."), assay, k, samples[[assay]], cap)
+            sprintf(paste("%s: you chose to remove %d unwanted factors. With %d samples the application removes at most %d",
+                "in Automatic mode (the limit proteomics uses); your choice was kept."), assay, k, samples[[assay]], cap)
         }
         rlang::warn(notice[[assay]], class = "multischolar_ruv_k_notice")
     }
@@ -566,7 +566,57 @@ omicsRuvKBound <- function(object, ruv_results, ruv_mode, best_k) {
         b <- bound$k[[assay]]
         if (is.null(b) || is.na(b)) best_k[[assay]] else b
     }), names(best_k))
-    list(best_k = best_k, k_sweep = bound$sweep_k, k_cap = bound$limit, k_notice = notice)
+    list(best_k = best_k, k_sweep = bound$sweep_k, k_cap = bound$limit, k_samples = samples, k_notice = notice)
+}
+
+#' The sweep's per-assay results with the k removed (KIT-190 I01): where the cap reduced an assay's k, its result gains
+#' `k_removed` (the step's k), `k_found` (the sweep's), `k_cap` and `k_samples`, so the tab and the export show the k
+#' actually removed. An assay the cap left alone is returned unchanged.
+#' @param results The sweep's per-assay results (the optimisation product).
+#' @param value The RUV step's value (`best_k`, `k_sweep`, `k_cap`, `k_samples`).
+#' @noRd
+omicsRuvAnnotateResults <- function(results, value) {
+    if (!is.list(results)) return(results)
+    for (assay in names(results)) {
+        removed <- value$best_k[[assay]]
+        found <- value$k_sweep[[assay]]
+        if (!is.list(results[[assay]]) || is.null(removed) || is.null(found) || is.na(removed) || is.na(found) ||
+            identical(as.integer(removed), as.integer(found))) next
+        results[[assay]]$k_removed <- removed
+        results[[assay]]$k_found <- found
+        results[[assay]]$k_cap <- value$k_cap[[assay]]
+        results[[assay]]$k_samples <- value$k_samples[[assay]]
+    }
+    results
+}
+
+#' The RUV step's notices to the tab (KIT-190 I01): each non-empty notice (the cap reducing an Automatic k; a Manual k
+#' above the cap) as a log line and a notification of type "warning", on both routes, as the log step's notice.
+#' @param value The RUV step's value.
+#' @param addLog The tab's log.
+#' @param warn `function(text)`, the notification.
+#' @noRd
+omicsRuvReportNotices <- function(value, addLog, warn) {
+    for (text in unlist(value$k_notice)) {
+        if (!is.character(text) || !nzchar(text)) next
+        addLog(paste("Warning:", text))
+        warn(text)
+    }
+    invisible(TRUE)
+}
+
+#' One assay's line in the session-export summary (KIT-190 I01): the k removed, with the k found and the cap where the
+#' cap reduced it.
+#' @noRd
+omicsRuvExportSummaryLine <- function(assay_name, result) {
+    k <- result$k_removed %||% result$best_k
+    found <- result$k_found %||% k
+    note <- if (!is.null(result$k_cap) && !is.na(found) && !is.na(k) && found != k) {
+        sprintf(" (found %d, at most %d with %d samples)", as.integer(found), as.integer(result$k_cap),
+            as.integer(result$k_samples %||% NA_integer_))
+    } else ""
+    sprintf("\n  %s: k=%d%s, %%=%.1f, controls=%d", assay_name, as.integer(k), note, result$best_percentage,
+        sum(result$control_genes_index, na.rm = TRUE))
 }
 
 #' Per-assay RUV status of a legacy lipidomics or metabolomics RUV step (KIT-190, the KIT-242 hand-off, R1-N01):
