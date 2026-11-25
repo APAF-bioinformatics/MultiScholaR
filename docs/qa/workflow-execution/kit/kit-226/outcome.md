@@ -1,13 +1,17 @@
 # KIT-226 outcome (ticket r1.2; owner's decisions VAL-196)
 
-State: R1 and R2 done. Stopped, as ordered, **before** the control C, any re-freeze commit and the shared full
-suite (KIT-215, KIT-216 and KIT-220 move stored captures in the same files; the coordinator orders the re-dumps).
+State: R1, R2, the merge of staging 16112917 (KIT-215 in), control C and the re-freeze are done. The merge check rides
+a merge train and the shared full suite is pending (no own full suite, coordinator).
 
 ## Commits (branch `kit-226`, from `origin/v0.9-staging` cf8af245)
 
 | Commit | What |
 |---|---|
 | 09d92168 | tests only: new `tests/testthat/test-kit226-gprofiler-columns.R` (T1 to T5, G1 to G3); the three declared expectations `test-prot-11-enrichment-module-contracts.R:1709`, `:1711`, `:1712`; the declared fourth `test-enrichment-significance.R:497` (archive line, OD-5) |
+| (merge) | staging 16112917 merged; ledger only conflicted (staging's rows kept, this row after VAL-229) |
+| 257349af | control C script `redump.R` (records only) |
+| da3ca8d0 | records: prediction before control C |
+| 1e2641be | re-freeze: exactly the 49 leaves control C showed (VAL-196 with VAL-208) |
 | 77ab881f | fix: `R/utils_workflow_enrichment.R` (builder, `@noRd` block), `R/func_general_enrichment_engine_helpers.R` (`gprofilerAdjustmentMethod`, figure labels, published TSV column), `R/mod_omic_enrich_panels.R:596` (archive line); `NEWS.md`; ledger `VAL-<merge>` |
 
 ## Observed
@@ -60,7 +64,9 @@ cover the same behaviour. Stop rule 1 not triggered (no failing-first row passed
 | `test-enrichment-significance.R:497` | met | fails on base, passes on head |
 | R2 files: no verdict change outside stored leaves | met (by field) | `r2/compare.tsv` |
 | R CMD check unchanged | met | `r2/check-compare.txt` |
-| Control C, re-freeze, shared R3 | pending | held for the coordinator |
+| Control C (stop rule 2) | met | 45587822866, 45587827135, 45587831399; `control/leaves.tsv` |
+| Re-freeze of exactly the changed leaves | met | 1e2641be (49 lines) |
+| Merge check, shared R3 | pending | rides a merge train |
 
 ## Stored references awaiting re-freeze (not edited)
 
@@ -124,9 +130,30 @@ conflict). Read, not run:
 - Prediction therefore unchanged: the same 49 leaves, with R2's head values. Any other leaf that differs base/head is
   stop rule 2.
 
+## Control C (coordinator's word; observed)
+
+Script `redump.R` (KIT-220's form: each test file in its own process with `MULTISCHOLAR_KIT107_W1_DUMP` and
+`MULTISCHOLAR_GUI_ENTRY_RECORD_DIR`); files `test-omic-enrich-module.R` and `test-gui-entry-proteomics.R`. Base
+3a48351b = staging 16112917 plus the script only (run 45587822866); head da3ca8d0 = `kit-226` merged with 16112917
+plus the script, twice in separate jobs (45587827135, 45587831399). Compared leaf by leaf by `compare_dumps.py`
+(text parse of the dumps and JSON; no R), table `control/leaves.tsv` (100 differing leaves):
+- **Changed base/head: exactly 49 leaves**, the 43 W1 leaves and 6 `prot_dia.json` leaves listed above; at each the
+  base dump equals the stored value, the two heads are equal, and the head value is R2's (e.g. table
+  `<text> 258d7618…`, kernel plots `e29b944a…` ×2, pathway TSVs `a7a539d1…` ×2, summary `c5b5570d…`, archive TSV
+  `71e8ee7c…`).
+- **No other leaf changed**: 51 pre-existing differences (stored ≠ base = head): 27 W1 (the clusterProfiler and
+  kernel_clusterprofiler cases: status text, notes, product parameters, display, files, returned, services, states,
+  plots; one clusterprofiler download summary) and 24 `prot_dia` (the four summary steps' integration `.tsv` against
+  `.parquet` artifacts). Left as they are.
+- The two head W1 dumps are byte-identical; the `omicEnrichW1FrozenUi` dump is identical on all three runs.
+- Test counts inside the script (both files): base 1263 expectations, 23 failed; heads 1263, 55 failed each (the
+  32 extra are the not-yet-re-frozen leaves).
+- Stop rule 2 not triggered. The re-freeze 1e2641be edits exactly those 49 lines; re-running the comparison with the
+  re-frozen files against head 1 leaves only the 51 pre-existing differences.
+
 ## Core-hours
 
-R1 0.92, R2 11.13: 12.05 against 17.0 expected for R1 and R2 (ticket 23.0 with C), ceiling 304.67.
+R1 0.92, R2 11.13, C 7.54 (113.0 job-minutes): 19.59 against 23.0 expected, ceiling 304.67.
 
 ## Not checked
 
