@@ -176,3 +176,32 @@ Code waits for the owner's OD-1 and OD-3 and for KIT-244's merge.
 - The GUI observers themselves: the runners were called directly, as the tests call them.
 - FragPipe and Spectronaut imports: their label-free route was represented by the LFQ type.
 - Windows; real data.
+
+## Implementation (branch kit-248 from staging 828dd105, after KIT-244's merge; owner's decision VAL-238)
+
+### R1 predictions (tests-only commit on the base code; written and committed before R1 is sent)
+
+The tests-only commit adds `tests/testthat/test-kit248-correlation-skip-record.R` and the two declared list entries
+(`tests/testthat/test-workflow-operation-registry.R:6-18`, `:97-117`; VAL-238 (ii), by file); nothing under `R/`.
+Base = staging 828dd105 (KIT-244 merged). t_hi by the G0b rule, computed in the test: classic about 0.974016 (removes
+run_0008), limpa about 0.963613 (removes run_0001).
+
+| Row | Predicted on the base code (each fails at this value) |
+|---|---|
+| E1, E7 (LFQ, TMT, DIA) | entry `pearson-selection` (not `pearson-skip`); no fixed constant; one `preceded_by`; record step `pearson-selection` with `threshold`; no `skipped` parameter; study block `[4. correlation_filtered: pearson-selection]` with a threshold line |
+| G2 (inside E1) | passes: config threshold 0, skipped TRUE; components = the normalised source's |
+| G3 (inside E1) | after DA the entry is `pearson-selection` (fails; G3's base) |
+| E2 | replay completes; replayed entry `pearson-selection`; 11 samples against live 12; table differs |
+| E3 | replayed DA table differs from live (G0b: classic 2f75288c… live, 98a76f0e… replay) |
+| E4 | entry and record step `legacy`; incomplete lists "legacy step: correlation_filtered"; no study block |
+| E5 | replay refused: `workflow_replay_unsupported`, 'step "correlation_filtered" cannot be replayed: operation "legacy"' |
+| E8 | as E1 (record part) |
+| E12 | as E1 (record part); live 12 samples (passes) |
+| E11 | first assertion: entry `legacy` (LFQ and limpa); the other assertions pass |
+| E6 | as E1 (record part); replay entry `pearson-selection`; 11 samples; covariates design and DA differ |
+| E10 (I06: base on a tree holding KIT-244) | live components = L7's, 12 samples (passes); record step `pearson-selection`; replay 11 samples, table differs; in process and worker |
+| E9 | the constructed pre-fix record is `pearson-selection` with outcome skipped (passes); replay completes; entry `pearson-selection`; config threshold t_hi; 11 samples |
+| E13 | the constructed pre-fix step is `legacy` with outcome skipped (passes); replay refused ("operation legacy"); the earlier-legacy refusal names `normalized` (passes) |
+| G1 | passes |
+| E10b (G row) | passes: record `pearson-selection` at 0.5; replay 12 samples equal to live |
+| registry lists | the two exact-list expectations fail on base (no `pearson-skip`), declared |
