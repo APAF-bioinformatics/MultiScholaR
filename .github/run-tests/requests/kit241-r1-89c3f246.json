@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-241 R1: tests-only commit, failing-first (E1-E3 fail by assertion; E4, G1 guards pass)",
+  "label": "KIT-241 R1 tests-only 89c3f246",
+  "package_commit": "89c3f246fbd59d9f8e55849872f167d6e81e8ffc",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit241-enrich-download-zip.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
