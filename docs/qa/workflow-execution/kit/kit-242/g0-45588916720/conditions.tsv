@@ -1,0 +1,4 @@
+case	class	arm	step	kind	cls	text
+C9	prot	proteomics empty column quantile	normaliseBetweenSamples	error	simpleError,error,condition	'x' and 'y' lengths differ
+C9	prot	proteomics one value quantile	normaliseBetweenSamples	error	simpleError,error,condition	need at least two non-NA values to interpolate
+C9	trx	TMM planted error	trxTmmLogCpm	error	simpleError,error,condition	planted

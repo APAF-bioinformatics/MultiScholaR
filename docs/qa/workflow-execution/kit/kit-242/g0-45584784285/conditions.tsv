@@ -1,0 +1,760 @@
+case	class	arm	step	kind	cls	text
+C1	lipid	declaration	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C1	lipid	declaration	between_sample	message	message	   Assay 'A1' normalization complete. 
+C1	metab	declaration	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C1	metab	declaration	between_sample	message	message	   Assay 'A1' normalization complete. 
+C2	lipid	declaration quantile_one_value	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': Error during 'quantile' normalization: need at least two non-NA values to interpolate. Returning unnormalized data for this assay.
+C2	lipid	declaration quantile_one_value	between_sample	message	message	   Assay 'A1' normalization complete. 
+C2	lipid	declaration quantile_one_value	between_sample	message	message	   Assay 'A2' normalization complete. 
+C2	lipid	declaration planted_cyclicloess	between_sample	warning	simpleWarning,warning,condition	Assay 'A1': Error during 'cyclicloess' normalization: planted. Returning unnormalized data for this assay.
+C2	lipid	declaration planted_cyclicloess	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': Error during 'cyclicloess' normalization: planted. Returning unnormalized data for this assay.
+C2	lipid	declaration planted_cyclicloess	between_sample	message	message	   Assay 'A1' normalization complete. 
+C2	lipid	declaration planted_cyclicloess	between_sample	message	message	   Assay 'A2' normalization complete. 
+C2	metab	declaration quantile_one_value	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': Error during 'quantile' normalization: need at least two non-NA values to interpolate. Returning unnormalized data for this assay.
+C2	metab	declaration quantile_one_value	between_sample	message	message	   Assay 'A1' normalization complete. 
+C2	metab	declaration quantile_one_value	between_sample	message	message	   Assay 'A2' normalization complete. 
+C2	metab	declaration planted_cyclicloess	between_sample	warning	simpleWarning,warning,condition	Assay 'A1': Error during 'cyclicloess' normalization: planted. Returning unnormalized data for this assay.
+C2	metab	declaration planted_cyclicloess	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': Error during 'cyclicloess' normalization: planted. Returning unnormalized data for this assay.
+C2	metab	declaration planted_cyclicloess	between_sample	message	message	   Assay 'A1' normalization complete. 
+C2	metab	declaration planted_cyclicloess	between_sample	message	message	   Assay 'A2' normalization complete. 
+C3	lipid	declaration A2_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C3	lipid	declaration A2_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C3	lipid	declaration A2_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+C3	lipid	declaration A2_unmatched	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C3	lipid	declaration A2_unmatched	itsd	message	message	Using default annotation column 'LipidClass' to identify ITSDs. 
+C3	lipid	declaration A2_unmatched	itsd	message	message	   Identified 5 ITSD features via regex. 
+C3	lipid	declaration A2_unmatched	itsd	message	message	   Using 5 ITSD features for normalization. 
+C3	lipid	declaration A2_unmatched	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C3	lipid	declaration A2_unmatched	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C3	lipid	declaration A2_unmatched	itsd	message	message	   Assay 'A1' normalization complete. 
+C3	lipid	declaration A2_unmatched	itsd	message	message	   Stored ITSD feature names for 1 assays 
+C3	lipid	declaration A2_unmatched	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C3	lipid	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C3	lipid	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A1': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+C3	lipid	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C3	lipid	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+C3	lipid	declaration both_unmatched	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C3	lipid	declaration both_unmatched	itsd	message	message	Using default annotation column 'LipidClass' to identify ITSDs. 
+C3	lipid	declaration both_unmatched	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C3m	lipid	declaration	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C3m	lipid	declaration	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C3m	lipid	declaration	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.
+C3m	lipid	declaration	itsd	message	message	Applying Internal Standard (ITSD) normalization using MANUAL feature selection and 'median' aggregation. 
+C3m	lipid	declaration	itsd	message	message	   Using 5 manually selected ITSD features. 
+C3m	lipid	declaration	itsd	message	message	   Using 5 ITSD features for normalization. 
+C3m	lipid	declaration	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C3m	lipid	declaration	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C3m	lipid	declaration	itsd	message	message	   Assay 'A1' normalization complete. 
+C3m	lipid	declaration	itsd	message	message	   Stored ITSD feature names for 1 assays 
+C3m	lipid	declaration	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C3	metab	declaration A2_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C3	metab	declaration A2_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C3	metab	declaration A2_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+C3	metab	declaration A2_unmatched	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C3	metab	declaration A2_unmatched	itsd	message	message	Using default annotation column 'Ontology' to identify ITSDs. 
+C3	metab	declaration A2_unmatched	itsd	message	message	   Identified 5 ITSD features via regex. 
+C3	metab	declaration A2_unmatched	itsd	message	message	   Using 5 ITSD features for normalization. 
+C3	metab	declaration A2_unmatched	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C3	metab	declaration A2_unmatched	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C3	metab	declaration A2_unmatched	itsd	message	message	   Assay 'A1' normalization complete. 
+C3	metab	declaration A2_unmatched	itsd	message	message	   Stored ITSD feature names for 1 assays 
+C3	metab	declaration A2_unmatched	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C3	metab	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C3	metab	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A1': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+C3	metab	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C3	metab	declaration both_unmatched	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+C3	metab	declaration both_unmatched	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C3	metab	declaration both_unmatched	itsd	message	message	Using default annotation column 'Ontology' to identify ITSDs. 
+C3	metab	declaration both_unmatched	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C3m	metab	declaration	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C3m	metab	declaration	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C3m	metab	declaration	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No manual ITSD features provided in itsd_feature_ids. Skipping normalization.
+C3m	metab	declaration	itsd	message	message	Applying Internal Standard (ITSD) normalization using MANUAL feature selection and 'median' aggregation. 
+C3m	metab	declaration	itsd	message	message	   Using 5 manually selected ITSD features. 
+C3m	metab	declaration	itsd	message	message	   Using 5 ITSD features for normalization. 
+C3m	metab	declaration	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C3m	metab	declaration	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C3m	metab	declaration	itsd	message	message	   Assay 'A1' normalization complete. 
+C3m	metab	declaration	itsd	message	message	   Stored ITSD feature names for 1 assays 
+C3m	metab	declaration	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C4	lipid	declaration chain	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C4	lipid	declaration chain	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C4	lipid	declaration chain	itsd	warning	simpleWarning,warning,condition	Assay 'A2': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: B_6. Normalized values will be NA for these samples.
+C4	lipid	declaration chain	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C4	lipid	declaration chain	itsd	message	message	Using default annotation column 'LipidClass' to identify ITSDs. 
+C4	lipid	declaration chain	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4	lipid	declaration chain	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4	lipid	declaration chain	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4	lipid	declaration chain	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4	lipid	declaration chain	itsd	message	message	   Assay 'A1' normalization complete. 
+C4	lipid	declaration chain	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4	lipid	declaration chain	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4	lipid	declaration chain	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4	lipid	declaration chain	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4	lipid	declaration chain	itsd	message	message	   Assay 'A2' normalization complete. 
+C4	lipid	declaration chain	itsd	message	message	   Stored ITSD feature names for 2 assays 
+C4	lipid	declaration chain	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C4	lipid	declaration chain	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C4	lipid	declaration chain	between_sample	message	message	   Assay 'A1' normalization complete. 
+C4	lipid	declaration chain	ruv_legacy_automatic	warning	lifecycle_warning_deprecated,rlang_warning,warning,condition	`aes_string()` was deprecated in ggplot2 3.0.0. ℹ Please use tidy evaluation idioms with `aes()`. ℹ See also `vignette("ggplot2-in-packages")` for more information. ℹ The deprecated feature was likely used in the ruv package.   Please report the issue to the authors.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 1 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 1 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 1 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 1 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 1 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 1 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 2 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 2 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 2 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 2 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 2 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 2 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 3 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 3 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 3 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 3 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A1': Selected 4 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:28]   Assay 'A2': Selected 4 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:28] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 4 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 4 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 4 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 4 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 5 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 5 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 5 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 5 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 5 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 5 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 6 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 6 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 6 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 7 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 7 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 7 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 7 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 7 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 7 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 8 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 8 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 8 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A1': Selected 8 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]   Assay 'A2': Selected 8 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:29]    Assay 'A1': Using 8 control features for cancor plot.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:29] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:30] RUV: no valid percentage for assay: A2
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:30]    Assay 'A1': Using 6 control features.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:30]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 40x12, After: 40x12
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:30] Assay 'A2': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C4	lipid	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:30] Cleaning design matrix to match remaining samples after RUV...
+C4	lipid	declaration chain	correlation_0.5	warning	simpleWarning,warning,condition	.local: 'tech_rep_remove_regex' is not defined. 
+C4	lipid	declaration chain	correlation_0.5	warning	simpleWarning,warning,condition	many-to-many relationship detected while pairing samples by `group`
+C4	metab	declaration chain	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C4	metab	declaration chain	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C4	metab	declaration chain	itsd	warning	simpleWarning,warning,condition	Assay 'A2': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: B_6. Normalized values will be NA for these samples.
+C4	metab	declaration chain	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C4	metab	declaration chain	itsd	message	message	Using default annotation column 'Ontology' to identify ITSDs. 
+C4	metab	declaration chain	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4	metab	declaration chain	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4	metab	declaration chain	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4	metab	declaration chain	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4	metab	declaration chain	itsd	message	message	   Assay 'A1' normalization complete. 
+C4	metab	declaration chain	itsd	message	message	   Identified 5 ITSD features via regex. 
+C4	metab	declaration chain	itsd	message	message	   Using 5 ITSD features for normalization. 
+C4	metab	declaration chain	itsd	message	message	   Applying normalization to 40 non-ITSD features... 
+C4	metab	declaration chain	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C4	metab	declaration chain	itsd	message	message	   Assay 'A2' normalization complete. 
+C4	metab	declaration chain	itsd	message	message	   Stored ITSD feature names for 2 assays 
+C4	metab	declaration chain	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C4	metab	declaration chain	between_sample	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C4	metab	declaration chain	between_sample	message	message	   Assay 'A1' normalization complete. 
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 1 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 1 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 1 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 1 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 1 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 1 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 2 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 2 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 2 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 2 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 2 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 2 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 3 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 3 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 3 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 3 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 4 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 4 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 4 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 4 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 4 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 4 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 5 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 5 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]    Assay 'A1': Using 5 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 5 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 5 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]    Assay 'A1': Using 5 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A1': Selected 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]   Assay 'A2': Selected 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:42]    Assay 'A1': Using 6 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:42] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A1': Selected 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A2': Selected 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 6 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A1': Selected 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A2': Selected 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 6 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A1': Selected 7 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A2': Selected 7 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 7 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A1': Selected 7 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A2': Selected 7 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 7 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A1': Selected 8 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A2': Selected 8 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 8 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A1': Selected 8 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]   Assay 'A2': Selected 8 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 8 control features for cancor plot.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] RUV: no valid percentage for assay: A2
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': Using 6 control features.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 40x12, After: 40x12
+C4	metab	declaration chain	ruv_legacy_automatic	logger	WARN	WARN [2026-11-25 09:35:43] Assay 'A2': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C4	metab	declaration chain	ruv_legacy_automatic	logger	INFO	INFO [2026-11-25 09:35:43] Cleaning design matrix to match remaining samples after RUV...
+C4	metab	declaration chain	correlation_0.5	warning	simpleWarning,warning,condition	.local: 'tech_rep_remove_regex' is not defined. 
+C6	lipid	declaration	between_sample	message	message	   Assay 'A1' normalization complete. 
+C6	lipid	declaration	between_sample	error	omics_cyclic_loess_too_few_features,rlang_error,error,condition	Cyclic loess normalisation was not run: assay "A2" has only 3 lipids with a measured value in sample "A_1", and the method needs at least 10 in every sample. ℹ Cyclic loess fits a curve through the lipids of each sample. With so few points the curve is not meaningful, and its result can differ from one computer to another. ℹ Choose another between-sample method under 'Normalization Method' (Quantile, Scale (Median Absolute Values) or None) and run the normalisation again.
+C11	lipid	declaration	between_sample	message	message	   Assay 'A1' normalization complete. 
+C11	lipid	declaration	between_sample	error	omics_cyclic_loess_too_few_features,rlang_error,error,condition	Cyclic loess normalisation was not run: assay "A2" has only 0 lipids with a measured value in sample "B_6", and the method needs at least 10 in every sample. ℹ Cyclic loess fits a curve through the lipids of each sample. With so few points the curve is not meaningful, and its result can differ from one computer to another. ℹ Choose another between-sample method under 'Normalization Method' (Quantile, Scale (Median Absolute Values) or None) and run the normalisation again.
+C6	metab	declaration	between_sample	message	message	   Assay 'A1' normalization complete. 
+C6	metab	declaration	between_sample	error	omics_cyclic_loess_too_few_features,rlang_error,error,condition	Cyclic loess normalisation was not run: assay "A2" has only 3 metabolites with a measured value in sample "A_1", and the method needs at least 10 in every sample. ℹ Cyclic loess fits a curve through the metabolites of each sample. With so few points the curve is not meaningful, and its result can differ from one computer to another. ℹ Choose another between-sample method under 'Normalization Method' (Quantile, Scale (Median Absolute Values) or None) and run the normalisation again.
+C11	metab	declaration	between_sample	message	message	   Assay 'A1' normalization complete. 
+C11	metab	declaration	between_sample	error	omics_cyclic_loess_too_few_features,rlang_error,error,condition	Cyclic loess normalisation was not run: assay "A2" has only 0 metabolites with a measured value in sample "B_6", and the method needs at least 10 in every sample. ℹ Cyclic loess fits a curve through the metabolites of each sample. With so few points the curve is not meaningful, and its result can differ from one computer to another. ℹ Choose another between-sample method under 'Normalization Method' (Quantile, Scale (Median Absolute Values) or None) and run the normalisation again.
+C7	lipid	declaration	da	warning	simpleWarning,warning,condition	Partial NA coefficients for 8 probe(s)
+C7	lipid	declaration	da	logger	WARN	WARN [2026-11-25 09:36:05]       qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+C7	metab	declaration	da	warning	simpleWarning,warning,condition	Partial NA coefficients for 8 probe(s)
+C7	metab	declaration	da	logger	WARN	WARN [2026-11-25 09:36:10]       qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+C9	prot	proteomics empty column cyclicloess	normaliseBetweenSamples	error	tibble_error_already_has_rownames,tibble_error,rlang_error,error,condition	`.data` must be a data frame without row names.
+C9	prot	proteomics empty column quantile	normaliseBetweenSamples	error	tibble_error_already_has_rownames,tibble_error,rlang_error,error,condition	`.data` must be a data frame without row names.
+C9	prot	proteomics empty column scale	normaliseBetweenSamples	error	tibble_error_already_has_rownames,tibble_error,rlang_error,error,condition	`.data` must be a data frame without row names.
+C9	prot	proteomics one value quantile	normaliseBetweenSamples	error	tibble_error_already_has_rownames,tibble_error,rlang_error,error,condition	`.data` must be a data frame without row names.
+C9	trx	TMM planted error	trxTmmLogCpm	error	simpleError,error,condition	planted
+C12	lipid	S4	between_sample	message	message	   Assay 'A1' normalization complete. 
+C12	lipid	S4	between_sample	message	message	   Assay 'A2' normalization complete. 
+C12	lipid	S4 a_A1_only	ruvIII_C_Varying	logger	INFO	INFO [2026-11-25 09:36:18]    Assay 'A1': Using 8 control features.
+C12	lipid	S4 a_A1_only	ruvIII_C_Varying	logger	INFO	INFO [2026-11-25 09:36:18]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 45x12, After: 45x12
+C12	lipid	S4 a_A1_only	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:18] Assay 'A2': No control features identified after resolution. Skipping.
+C12	lipid	S4 a_A1_only	ruvIII_C_Varying	logger	INFO	INFO [2026-11-25 09:36:18] Cleaning design matrix to match remaining samples after RUV...
+C12	lipid	S4 b_neither	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:18] Assay 'A1': No control features identified after resolution. Skipping.
+C12	lipid	S4 b_neither	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:18] Assay 'A2': No control features identified after resolution. Skipping.
+C12	lipid	S4 b_neither	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:18] No assays were successfully processed by RUV-III. Returning original object.
+C12	lipid	declaration a-decl (A2 without a complete feature)	between_sample	message	message	   Assay 'A1' normalization complete. 
+C12	lipid	declaration a-decl (A2 without a complete feature)	between_sample	message	message	   Assay 'A2' normalization complete. 
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 1 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 1 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 1 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 1 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 1 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 1 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 2 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 2 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 2 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 2 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 3 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 3 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 3 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 3 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 4 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 4 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 4 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 4 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 4 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 4 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:22] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 5 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 5 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]    Assay 'A1': Using 5 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]    Assay 'A2': Using 5 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 5 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 5 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]    Assay 'A1': Using 5 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]    Assay 'A2': Using 5 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A1': Selected 6 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]   Assay 'A2': Selected 6 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]    Assay 'A1': Using 6 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:22]    Assay 'A2': Using 6 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 6 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 6 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 6 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 6 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 7 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 7 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 7 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 7 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 7 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 7 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 7 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 7 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 8 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 8 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 8 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 8 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 8 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 8 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 8 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 8 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 9 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 9 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 9 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 9 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A1': Selected 9 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]   Assay 'A2': Selected 9 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A1': Using 9 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:23]    Assay 'A2': Using 9 control features for cancor plot.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:24] RUV: no valid percentage for assay: A2
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:24]    Assay 'A1': Using 6 control features.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:24]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 45x12, After: 45x12
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:24] Assay 'A2': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C12	lipid	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:24] Cleaning design matrix to match remaining samples after RUV...
+C12	metab	S4	between_sample	message	message	   Assay 'A1' normalization complete. 
+C12	metab	S4	between_sample	message	message	   Assay 'A2' normalization complete. 
+C12	metab	S4 a_A1_only	ruvIII_C_Varying	logger	INFO	INFO [2026-11-25 09:36:32]    Assay 'A1': Using 8 control features.
+C12	metab	S4 a_A1_only	ruvIII_C_Varying	logger	INFO	INFO [2026-11-25 09:36:32]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 45x12, After: 45x12
+C12	metab	S4 a_A1_only	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:32] Assay 'A2': No control features identified after resolution. Skipping.
+C12	metab	S4 a_A1_only	ruvIII_C_Varying	logger	INFO	INFO [2026-11-25 09:36:32] Cleaning design matrix to match remaining samples after RUV...
+C12	metab	S4 b_neither	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:32] Assay 'A1': No control features identified after resolution. Skipping.
+C12	metab	S4 b_neither	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:32] Assay 'A2': No control features identified after resolution. Skipping.
+C12	metab	S4 b_neither	ruvIII_C_Varying	logger	WARN	WARN [2026-11-25 09:36:32] No assays were successfully processed by RUV-III. Returning original object.
+C12	metab	declaration a-decl (A2 without a complete feature)	between_sample	message	message	   Assay 'A1' normalization complete. 
+C12	metab	declaration a-decl (A2 without a complete feature)	between_sample	message	message	   Assay 'A2' normalization complete. 
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:36]   Assay 'A1': Selected 1 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 1 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 1 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 1 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 1 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 1 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 2 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 2 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 2 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 2 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 3 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 3 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 3 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 3 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 4 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 4 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 4 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 4 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 4 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 4 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:37] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 5 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 5 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 5 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A2': Using 5 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 5 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 5 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 5 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A2': Using 5 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 6 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 6 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 6 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A2': Using 6 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 6 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 6 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 6 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A2': Using 6 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 7 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 7 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 7 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A2': Using 7 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 7 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 7 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 7 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A2': Using 7 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A1': Selected 8 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]   Assay 'A2': Selected 8 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:37]    Assay 'A1': Using 8 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A2': Using 8 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]   Assay 'A1': Selected 8 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]   Assay 'A2': Selected 8 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A1': Using 8 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A2': Using 8 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]   Assay 'A1': Selected 9 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]   Assay 'A2': Selected 9 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A1': Using 9 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A2': Using 9 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]   Assay 'A1': Selected 9 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]   Assay 'A2': Selected 9 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A1': Using 9 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A2': Using 9 control features for cancor plot.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:38] RUV: no valid percentage for assay: A2
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A1': Using 6 control features.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 45x12, After: 45x12
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	WARN	WARN [2026-11-25 09:36:38] Assay 'A2': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C12	metab	declaration a-decl (A2 without a complete feature)	ruv	logger	INFO	INFO [2026-11-25 09:36:38] Cleaning design matrix to match remaining samples after RUV...
+C14	metab	ITSD regex mode, median	itsd	warning	simpleWarning,warning,condition	Assay 'A1' is not a tibble. Attempting to coerce.
+C14	metab	ITSD regex mode, median	itsd	warning	simpleWarning,warning,condition	Assay 'A2' is not a tibble. Attempting to coerce.
+C14	metab	ITSD regex mode, median	itsd	warning	simpleWarning,warning,condition	Assay 'A2': No ITSD features identified using regex '^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:' in columns 'Metabolite name'. Skipping normalization.
+C14	metab	ITSD regex mode, median	itsd	message	message	Applying Internal Standard (ITSD) normalization using REGEX pattern and 'median' aggregation. 
+C14	metab	ITSD regex mode, median	itsd	message	message	Using default annotation column 'Metabolite name' to identify ITSDs. 
+C14	metab	ITSD regex mode, median	itsd	message	message	   Identified 5 ITSD features via regex. 
+C14	metab	ITSD regex mode, median	itsd	message	message	   Using 5 ITSD features for normalization. 
+C14	metab	ITSD regex mode, median	itsd	message	message	   Applying normalization to 35 non-ITSD features... 
+C14	metab	ITSD regex mode, median	itsd	message	message	   Removed 5 ITSD features after normalization. 
+C14	metab	ITSD regex mode, median	itsd	message	message	   Assay 'A1' normalization complete. 
+C14	metab	ITSD regex mode, median	itsd	message	message	   Stored ITSD feature names for 1 assays 
+C14	metab	ITSD regex mode, median	itsd	message	message	ITSD normalization process complete for all applicable assays. 
+C14	metab	integration input, ITSD unticked	between_sample	message	message	   Assay 'A1' normalization complete. 
+C14	metab	integration input, ITSD unticked	between_sample	message	message	   Assay 'A2' normalization complete. 
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:00]   Assay 'A1': Selected 1 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:00]   Assay 'A2': Selected 1 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:00] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:00] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:00]   Assay 'A1': Selected 1 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:00]   Assay 'A2': Selected 1 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 1 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 1 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 2 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 2 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 2 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 2 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 3 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 3 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 3 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 3 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 4 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 4 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 4 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 4 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 4 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 4 control features.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:01] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 5 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 5 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A1': Using 5 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A2': Using 5 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 5 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 5 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A1': Using 5 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A2': Using 5 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 6 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 6 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A1': Using 6 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A2': Using 6 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 6 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 6 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A1': Using 6 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A2': Using 6 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 7 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 7 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A1': Using 7 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A2': Using 7 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A1': Selected 7 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]   Assay 'A2': Selected 7 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:01]    Assay 'A1': Using 7 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A2': Using 7 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A1': Selected 8 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A2': Selected 8 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A1': Using 8 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A2': Using 8 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A1': Selected 8 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A2': Selected 8 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A1': Using 8 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A2': Using 8 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A1': Selected 9 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A2': Selected 9 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A1': Using 9 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A2': Using 9 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A1': Selected 9 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]   Assay 'A2': Selected 9 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A1': Using 9 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:02]    Assay 'A2': Using 9 control features for cancor plot.
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:03] RUV: no valid percentage for assay: A2
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:03]    Assay 'A1': Using 6 control features.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:03]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 45x12, After: 45x12
+C12	lipid	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:38:03] Assay 'A2': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C12	lipid	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:38:03] Cleaning design matrix to match remaining samples after RUV...
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:07]   Assay 'A1': Selected 1 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:07]   Assay 'A2': Selected 1 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:07] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:07] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 1 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 1 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 1 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 1 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (1). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 2 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 2 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 2 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 2 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (2). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 3 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 3 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 3 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 3 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (3). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 4 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 4 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 4 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 4 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 4 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 4 control features.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A1': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:08] Assay 'A2': Fewer than 5 negative control features found/specified for this assay (4). RUV results may be unreliable. Skipping cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 5 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 5 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A1': Using 5 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A2': Using 5 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 5 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 5 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A1': Using 5 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A2': Using 5 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 6 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 6 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A1': Using 6 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A2': Using 6 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 6 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 6 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A1': Using 6 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A2': Using 6 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A1': Selected 7 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]   Assay 'A2': Selected 7 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:08]    Assay 'A1': Using 7 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A2': Using 7 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A1': Selected 7 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A2': Selected 7 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A1': Using 7 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A2': Using 7 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A1': Selected 8 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A2': Selected 8 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A1': Using 8 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A2': Using 8 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A1': Selected 8 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A2': Selected 8 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A1': Using 8 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A2': Using 8 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A1': Selected 9 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A2': Selected 9 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A1': Using 9 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A2': Using 9 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A1': Selected 9 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]   Assay 'A2': Selected 9 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A1': Using 9 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:09]    Assay 'A2': Using 9 control features for cancor plot.
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:10] RUV: no valid percentage for assay: A2
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:10]    Assay 'A1': Using 6 control features.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:10]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 45x12, After: 45x12
+C12	metab	managed tab	run_normalization	logger	WARN	WARN [2026-11-25 09:39:10] Assay 'A2': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C12	metab	managed tab	run_normalization	logger	INFO	INFO [2026-11-25 09:39:10] Cleaning design matrix to match remaining samples after RUV...
+C8	lipid	record and replay	between_sample (origin)	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C8	lipid	record and replay	between_sample (origin)	message	message	   Assay 'A1' normalization complete. 
+C8	lipid	record and replay	replay	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C8	lipid	record and replay	replay	message	message	   Assay 'A1' normalization complete. 
+C8	lipid	record and replay	replay	logger	WARN	WARN [2026-11-25 09:39:33] Source script directory not found for lipidomics: /tmp/Rtmp84Z8rD/g0-replay/c8/lipid-scratch/progress/scripts/lipidomics. No scripts copied.
+C8	metab	record and replay	between_sample (origin)	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C8	metab	record and replay	between_sample (origin)	message	message	   Assay 'A1' normalization complete. 
+C8	metab	record and replay	replay	warning	simpleWarning,warning,condition	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+C8	metab	record and replay	replay	message	message	   Assay 'A1' normalization complete. 
+C8	metab	record and replay	replay	logger	WARN	WARN [2026-11-25 09:39:48] Source script directory not found for metabolomics: /tmp/Rtmp84Z8rD/g0-replay/c8/metab-scratch/progress/scripts/metabolomics. No scripts copied.
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:40:01] Source script directory not found for lipidomics: /tmp/RtmpDd5M4p/gui-entry-lipid_canonical-b1f74b21431e/project/lipid_canonical/scripts/lipidomics. No scripts copied.
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:40:03] Could not detect assay names: state requires explicit legacy conversion
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	ERROR	ERROR [2026-11-25 09:40:05] Error processing import: Primary lipidomics assay name is required
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:40:07] Could not detect assay names: state requires explicit legacy conversion
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	ERROR	ERROR [2026-11-25 09:40:31] Error analyzing internal standards: No internal standards found. Pattern: ^IS_|ISTD|Internal|_IS Columns searched: LipidName, LipidClass Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:22]       qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:23]       qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:32]    No significant lipids found
+C5	lipid	lipid_canonical	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:32]       No significant lipids for heatmap: LCMS_Neg / groupKO-groupWT
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:54] Source script directory not found for metabolomics: /tmp/RtmpDd5M4p/gui-entry-metab_lc-b1f745f23e81/project/metab_lc/scripts/metabolomics. No scripts copied.
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:55] Could not detect assay names: state requires explicit legacy conversion
+C5	metab	metab_lc	guiEntryRunLane	logger	ERROR	ERROR [2026-11-25 09:41:56] Error processing import: Metabolomics import requires non-empty assay names.
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:41:57] Could not detect assay names: state requires explicit legacy conversion
+C5	metab	metab_lc	guiEntryRunLane	logger	ERROR	ERROR [2026-11-25 09:42:20] Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:42:35] Could not read the ITSD candidate tables: Can't extract column with `annotation_cols[1]`. ✖ Subscript `annotation_cols[1]` must be a location, not a character `NA`.
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:43:15]    No significant metabolites found
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:43:15]       No significant metabolites for heatmap: LCMS_Pos / groupKO-groupWT
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:43:16]    No significant metabolites found
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:43:16]       No significant metabolites for heatmap: LCMS_Neg / groupKO-groupWT
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:43:18]    No significant metabolites found
+C5	metab	metab_lc	guiEntryRunLane	logger	WARN	WARN [2026-11-25 09:43:18]    No significant metabolites found
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Some assay features not found in named logical 'ctrl' vector. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Error during NIPALS imputation: Some rows or columns are entirely missing: remove them first.. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] RUV: no valid percentage for assay: LCMS_Neg
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] RUV: no valid percentage for assay: LCMS_Pos
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Neg': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] Assay 'LCMS_Pos': Invalid K value resolved (NA). Must be a non-negative integer. Skipping.
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journeyL	logger	WARN	WARN [2026-11-25 09:43:54] No assays were successfully processed by RUV-III. Returning original object.

@@ -1,0 +1,10 @@
+head	4a82ddff88da4a7216fb2c215d1350a880d31ae1
+R	R version 4.6.1 (2026-06-24)
+started	2026-11-25 08:54:50
+k190_commit	e344c69142269110b7c9918f8e01940d78a9120b
+k190_worktree	Preparing worktree (detached HEAD e344c691) HEAD is now at e344c691 KIT-190 bounded-k declaration revision 9: R4-01 accepted (VAL-192), text only
+k190_effect_sha256	7d76467a37c9fcf890a557efa0ba8b26498052301f18f15f9231f87177cc5b5a
+k190_effect_sha256_expected	7d76467a37c9fcf890a557efa0ba8b26498052301f18f15f9231f87177cc5b5a
+k188_commit	e2d18a79a7bcacf5aacb717e0d263c3cf9f8a0bd
+k188_sim_sha256	dcb760c9118ff771385841c4944f4d436bdfe5796f6521587a0185c53e867f33
+finished	2026-11-25 08:56:17

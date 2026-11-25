@@ -1,0 +1,670 @@
+case	class	arm	item	value
+C1	lipid	declaration	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C1	lipid	declaration	between-sample A1 dims in -> out	45x12 -> 45x12
+C1	lipid	declaration	between-sample A1 IS_ rows in -> out	5 -> 5
+C1	lipid	declaration	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C1	lipid	declaration	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C1	lipid	declaration	between-sample A2 dims in -> out	45x12 -> 45x12
+C1	lipid	declaration	between-sample A2 IS_ rows in -> out	5 -> 5
+C1	lipid	declaration	between-sample A2 sample B_6 finite values in -> out	0 -> 0
+C1	lipid	declaration	kernel product applied	TRUE
+C1	lipid	declaration	S4 args normalisation_method	cyclicloess
+C1	lipid	declaration	record lipid_normalized operation	lipid_between_sample_normalisation
+C1	lipid	declaration	record lipid_normalized parameters	normalisation_method=cyclicloess
+C1	lipid	declaration	record lipid_normalized outcomes	{"rows":90,"columns":14}
+C1	lipid	declaration	DA source state	lipid_normalized
+C1	lipid	declaration	DA groupB-groupA assays with a table	A1;A2
+C1	lipid	declaration	DA groupB-groupA rows per assay	45;45
+C1	lipid	declaration	DA groupB-groupA errors	none
+C1	lipid	declaration	DA groupB-groupA qvalue_warnings	none
+C1	lipid	worker	handoff status	complete
+C1	lipid	worker	handoff error	none
+C1	lipid	worker	handoff result fields	checkpoint;reference ;display   ;operation ;roots     ;owned     
+C1	lipid	worker	handoff 'applied' values found	[]
+C1	lipid	worker	handoff holds the text 'Skipping normalization' or 'only NA'	FALSE
+C1	lipid	worker	handoff holds any 'warning' field	0
+C1	metab	declaration	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C1	metab	declaration	between-sample A1 dims in -> out	45x12 -> 45x12
+C1	metab	declaration	between-sample A1 IS_ rows in -> out	5 -> 5
+C1	metab	declaration	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C1	metab	declaration	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C1	metab	declaration	between-sample A2 dims in -> out	45x12 -> 45x12
+C1	metab	declaration	between-sample A2 IS_ rows in -> out	5 -> 5
+C1	metab	declaration	between-sample A2 sample B_6 finite values in -> out	0 -> 0
+C1	metab	declaration	kernel product applied	TRUE
+C1	metab	declaration	S4 args normalisation_method	cyclicloess
+C1	metab	declaration	record metab_normalized operation	metab_between_sample_normalisation
+C1	metab	declaration	record metab_normalized parameters	normalisation_method=cyclicloess
+C1	metab	declaration	record metab_normalized outcomes	{"rows":90,"columns":14}
+C1	metab	declaration	DA source state	metab_normalized
+C1	metab	declaration	DA groupB-groupA assays with a table	A1;A2
+C1	metab	declaration	DA groupB-groupA rows per assay	45;45
+C1	metab	declaration	DA groupB-groupA errors	none
+C1	metab	declaration	DA groupB-groupA qvalue_warnings	none
+C1	metab	worker	handoff status	complete
+C1	metab	worker	handoff error	none
+C1	metab	worker	handoff result fields	checkpoint;reference ;display   ;operation ;roots     ;owned     
+C1	metab	worker	handoff 'applied' values found	[]
+C1	metab	worker	handoff holds the text 'Skipping normalization' or 'only NA'	FALSE
+C1	metab	worker	handoff holds any 'warning' field	0
+C2	lipid	declaration quantile_one_value	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C2	lipid	declaration quantile_one_value	between-sample A1 dims in -> out	45x12 -> 45x12
+C2	lipid	declaration quantile_one_value	between-sample A1 IS_ rows in -> out	5 -> 5
+C2	lipid	declaration quantile_one_value	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C2	lipid	declaration quantile_one_value	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C2	lipid	declaration quantile_one_value	between-sample A2 dims in -> out	45x12 -> 45x12
+C2	lipid	declaration quantile_one_value	between-sample A2 IS_ rows in -> out	5 -> 5
+C2	lipid	declaration quantile_one_value	between-sample A2 sample B_6 finite values in -> out	1 -> 1
+C2	lipid	declaration quantile_one_value	kernel product applied	TRUE
+C2	lipid	declaration quantile_one_value	record lipid_normalized operation	lipid_between_sample_normalisation
+C2	lipid	declaration quantile_one_value	record lipid_normalized parameters	normalisation_method=quantile
+C2	lipid	declaration quantile_one_value	record lipid_normalized outcomes	{"rows":90,"columns":14}
+C2	lipid	declaration planted_cyclicloess	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C2	lipid	declaration planted_cyclicloess	between-sample A1 dims in -> out	45x12 -> 45x12
+C2	lipid	declaration planted_cyclicloess	between-sample A1 IS_ rows in -> out	5 -> 5
+C2	lipid	declaration planted_cyclicloess	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C2	lipid	declaration planted_cyclicloess	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C2	lipid	declaration planted_cyclicloess	between-sample A2 dims in -> out	45x12 -> 45x12
+C2	lipid	declaration planted_cyclicloess	between-sample A2 IS_ rows in -> out	5 -> 5
+C2	lipid	declaration planted_cyclicloess	between-sample A2 sample B_6 finite values in -> out	45 -> 45
+C2	lipid	declaration planted_cyclicloess	kernel product applied	TRUE
+C2	lipid	declaration planted_cyclicloess	instrument: a warning carries 'planted'	TRUE
+C2	lipid	declaration planted_cyclicloess	record lipid_normalized operation	lipid_between_sample_normalisation
+C2	lipid	declaration planted_cyclicloess	record lipid_normalized parameters	normalisation_method=cyclicloess
+C2	lipid	declaration planted_cyclicloess	record lipid_normalized outcomes	{"rows":90,"columns":14}
+C2	metab	declaration quantile_one_value	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C2	metab	declaration quantile_one_value	between-sample A1 dims in -> out	45x12 -> 45x12
+C2	metab	declaration quantile_one_value	between-sample A1 IS_ rows in -> out	5 -> 5
+C2	metab	declaration quantile_one_value	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C2	metab	declaration quantile_one_value	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C2	metab	declaration quantile_one_value	between-sample A2 dims in -> out	45x12 -> 45x12
+C2	metab	declaration quantile_one_value	between-sample A2 IS_ rows in -> out	5 -> 5
+C2	metab	declaration quantile_one_value	between-sample A2 sample B_6 finite values in -> out	1 -> 1
+C2	metab	declaration quantile_one_value	kernel product applied	TRUE
+C2	metab	declaration quantile_one_value	record metab_normalized operation	metab_between_sample_normalisation
+C2	metab	declaration quantile_one_value	record metab_normalized parameters	normalisation_method=quantile
+C2	metab	declaration quantile_one_value	record metab_normalized outcomes	{"rows":90,"columns":14}
+C2	metab	declaration planted_cyclicloess	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C2	metab	declaration planted_cyclicloess	between-sample A1 dims in -> out	45x12 -> 45x12
+C2	metab	declaration planted_cyclicloess	between-sample A1 IS_ rows in -> out	5 -> 5
+C2	metab	declaration planted_cyclicloess	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C2	metab	declaration planted_cyclicloess	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C2	metab	declaration planted_cyclicloess	between-sample A2 dims in -> out	45x12 -> 45x12
+C2	metab	declaration planted_cyclicloess	between-sample A2 IS_ rows in -> out	5 -> 5
+C2	metab	declaration planted_cyclicloess	between-sample A2 sample B_6 finite values in -> out	45 -> 45
+C2	metab	declaration planted_cyclicloess	kernel product applied	TRUE
+C2	metab	declaration planted_cyclicloess	instrument: a warning carries 'planted'	TRUE
+C2	metab	declaration planted_cyclicloess	record metab_normalized operation	metab_between_sample_normalisation
+C2	metab	declaration planted_cyclicloess	record metab_normalized parameters	normalisation_method=cyclicloess
+C2	metab	declaration planted_cyclicloess	record metab_normalized outcomes	{"rows":90,"columns":14}
+C3	lipid	declaration A2_unmatched	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C3	lipid	declaration A2_unmatched	ITSD A1 dims in -> out	45x12 -> 40x12
+C3	lipid	declaration A2_unmatched	ITSD A1 IS_ rows in -> out	5 -> 0
+C3	lipid	declaration A2_unmatched	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C3	lipid	declaration A2_unmatched	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	lipid	declaration A2_unmatched	ITSD A2 dims in -> out	45x12 -> 45x12
+C3	lipid	declaration A2_unmatched	ITSD A2 IS_ rows in -> out	5 -> 5
+C3	lipid	declaration A2_unmatched	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3	lipid	declaration A2_unmatched	args ITSDNormalization applied	TRUE
+C3	lipid	declaration A2_unmatched	args ITSDNormalization method_type	average_centered
+C3	lipid	declaration A2_unmatched	args itsd_features_per_assay (assays)	A1
+C3	lipid	declaration A2_unmatched	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C3	lipid	declaration A2_unmatched	args itsd_counts_per_assay	{"A1":5}
+C3	lipid	declaration A2_unmatched	record lipid_itsd_norm operation	lipid_itsd_normalisation
+C3	lipid	declaration A2_unmatched	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C3	lipid	declaration A2_unmatched	record lipid_itsd_norm outcomes	{"rows":85,"columns":14,"itsd_applied":true}
+C3	lipid	declaration both_unmatched	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	lipid	declaration both_unmatched	ITSD A1 dims in -> out	45x12 -> 45x12
+C3	lipid	declaration both_unmatched	ITSD A1 IS_ rows in -> out	5 -> 5
+C3	lipid	declaration both_unmatched	ITSD A1 sample B_6 finite values in -> out	45 -> 45
+C3	lipid	declaration both_unmatched	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	lipid	declaration both_unmatched	ITSD A2 dims in -> out	45x12 -> 45x12
+C3	lipid	declaration both_unmatched	ITSD A2 IS_ rows in -> out	5 -> 5
+C3	lipid	declaration both_unmatched	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3	lipid	declaration both_unmatched	args ITSDNormalization applied	TRUE
+C3	lipid	declaration both_unmatched	args ITSDNormalization method_type	average_centered
+C3	lipid	declaration both_unmatched	args itsd_features_per_assay (assays)	none
+C3	lipid	declaration both_unmatched	args itsd_counts_per_assay	absent (no such field at base)
+C3	lipid	declaration both_unmatched	record lipid_itsd_norm operation	lipid_itsd_normalisation
+C3	lipid	declaration both_unmatched	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C3	lipid	declaration both_unmatched	record lipid_itsd_norm outcomes	{"rows":90,"columns":14,"itsd_applied":true}
+C3m	lipid	declaration	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C3m	lipid	declaration	ITSD A1 dims in -> out	45x12 -> 40x12
+C3m	lipid	declaration	ITSD A1 IS_ rows in -> out	5 -> 0
+C3m	lipid	declaration	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C3m	lipid	declaration	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3m	lipid	declaration	ITSD A2 dims in -> out	45x12 -> 45x12
+C3m	lipid	declaration	ITSD A2 IS_ rows in -> out	5 -> 5
+C3m	lipid	declaration	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3m	lipid	declaration	args ITSDNormalization applied	TRUE
+C3m	lipid	declaration	args ITSDNormalization method_type	average_centered
+C3m	lipid	declaration	args itsd_features_per_assay (assays)	A1
+C3m	lipid	declaration	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C3m	lipid	declaration	args itsd_counts_per_assay	{"A1":5}
+C3m	lipid	declaration	record lipid_itsd_norm operation	lipid_itsd_normalisation
+C3m	lipid	declaration	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids={"A1":["IS_A1_1","IS_A1_2","IS_A1_3","IS_A1_4","IS_A1_5"]}; method=ITSD
+C3m	lipid	declaration	record lipid_itsd_norm outcomes	{"rows":85,"columns":14,"itsd_applied":true}
+C3	metab	declaration A2_unmatched	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C3	metab	declaration A2_unmatched	ITSD A1 dims in -> out	45x12 -> 40x12
+C3	metab	declaration A2_unmatched	ITSD A1 IS_ rows in -> out	5 -> 0
+C3	metab	declaration A2_unmatched	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C3	metab	declaration A2_unmatched	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	metab	declaration A2_unmatched	ITSD A2 dims in -> out	45x12 -> 45x12
+C3	metab	declaration A2_unmatched	ITSD A2 IS_ rows in -> out	5 -> 5
+C3	metab	declaration A2_unmatched	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3	metab	declaration A2_unmatched	args ITSDNormalization applied	TRUE
+C3	metab	declaration A2_unmatched	args ITSDNormalization method_type	average_centered
+C3	metab	declaration A2_unmatched	args itsd_features_per_assay (assays)	A1
+C3	metab	declaration A2_unmatched	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C3	metab	declaration A2_unmatched	args itsd_counts_per_assay	{"A1":5}
+C3	metab	declaration A2_unmatched	record metab_itsd_norm operation	metab_itsd_normalisation
+C3	metab	declaration A2_unmatched	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C3	metab	declaration A2_unmatched	record metab_itsd_norm outcomes	{"rows":85,"columns":14,"itsd_applied":true}
+C3	metab	declaration both_unmatched	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	metab	declaration both_unmatched	ITSD A1 dims in -> out	45x12 -> 45x12
+C3	metab	declaration both_unmatched	ITSD A1 IS_ rows in -> out	5 -> 5
+C3	metab	declaration both_unmatched	ITSD A1 sample B_6 finite values in -> out	45 -> 45
+C3	metab	declaration both_unmatched	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	metab	declaration both_unmatched	ITSD A2 dims in -> out	45x12 -> 45x12
+C3	metab	declaration both_unmatched	ITSD A2 IS_ rows in -> out	5 -> 5
+C3	metab	declaration both_unmatched	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3	metab	declaration both_unmatched	args ITSDNormalization applied	TRUE
+C3	metab	declaration both_unmatched	args ITSDNormalization method_type	average_centered
+C3	metab	declaration both_unmatched	args itsd_features_per_assay (assays)	none
+C3	metab	declaration both_unmatched	args itsd_counts_per_assay	absent (no such field at base)
+C3	metab	declaration both_unmatched	record metab_itsd_norm operation	metab_itsd_normalisation
+C3	metab	declaration both_unmatched	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C3	metab	declaration both_unmatched	record metab_itsd_norm outcomes	{"rows":90,"columns":14,"itsd_applied":true}
+C3m	metab	declaration	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C3m	metab	declaration	ITSD A1 dims in -> out	45x12 -> 40x12
+C3m	metab	declaration	ITSD A1 IS_ rows in -> out	5 -> 0
+C3m	metab	declaration	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C3m	metab	declaration	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3m	metab	declaration	ITSD A2 dims in -> out	45x12 -> 45x12
+C3m	metab	declaration	ITSD A2 IS_ rows in -> out	5 -> 5
+C3m	metab	declaration	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3m	metab	declaration	args ITSDNormalization applied	TRUE
+C3m	metab	declaration	args ITSDNormalization method_type	average_centered
+C3m	metab	declaration	args itsd_features_per_assay (assays)	A1
+C3m	metab	declaration	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C3m	metab	declaration	args itsd_counts_per_assay	{"A1":5}
+C3m	metab	declaration	record metab_itsd_norm operation	metab_itsd_normalisation
+C3m	metab	declaration	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids={"A1":["IS_A1_1","IS_A1_2","IS_A1_3","IS_A1_4","IS_A1_5"]}; method=ITSD
+C3m	metab	declaration	record metab_itsd_norm outcomes	{"rows":85,"columns":14,"itsd_applied":true}
+C4	lipid	declaration chain	qc_finalize result	completed
+C4	lipid	declaration chain	qc_finalize design samples	12; B_6 in design: TRUE
+C4	lipid	declaration chain	qc_finalize A1	45 features x 12 samples; B_6 column: present, 45 finite
+C4	lipid	declaration chain	qc_finalize A2	45 features x 12 samples; B_6 column: present, 40 finite
+C4	lipid	declaration chain	qc_finalize assays	A1;A2
+C4	lipid	declaration chain	itsd result	completed
+C4	lipid	declaration chain	itsd design samples	12; B_6 in design: TRUE
+C4	lipid	declaration chain	itsd A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	lipid	declaration chain	itsd A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4	lipid	declaration chain	itsd assays	A1;A2
+C4	lipid	declaration chain	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	lipid	declaration chain	ITSD A1 dims in -> out	45x12 -> 40x12
+C4	lipid	declaration chain	ITSD A1 IS_ rows in -> out	5 -> 0
+C4	lipid	declaration chain	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C4	lipid	declaration chain	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	lipid	declaration chain	ITSD A2 dims in -> out	45x12 -> 40x12
+C4	lipid	declaration chain	ITSD A2 IS_ rows in -> out	5 -> 0
+C4	lipid	declaration chain	ITSD A2 sample B_6 finite values in -> out	40 -> 0
+C4	lipid	declaration chain	args ITSDNormalization applied	TRUE
+C4	lipid	declaration chain	args ITSDNormalization method_type	average_centered
+C4	lipid	declaration chain	args itsd_features_per_assay (assays)	A1;A2
+C4	lipid	declaration chain	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C4	lipid	declaration chain	args itsd_features_per_assay A2	IS_A2_1;IS_A2_2;IS_A2_3;IS_A2_4;IS_A2_5
+C4	lipid	declaration chain	args itsd_counts_per_assay	{"A1":5,"A2":5}
+C4	lipid	declaration chain	record lipid_itsd_norm operation	lipid_itsd_normalisation
+C4	lipid	declaration chain	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C4	lipid	declaration chain	record lipid_itsd_norm outcomes	{"rows":80,"columns":14,"itsd_applied":true}
+C4	lipid	declaration chain	log2 result	completed
+C4	lipid	declaration chain	log2 design samples	12; B_6 in design: TRUE
+C4	lipid	declaration chain	log2 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	lipid	declaration chain	log2 A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4	lipid	declaration chain	log2 assays	A1;A2
+C4	lipid	declaration chain	between_sample result	completed
+C4	lipid	declaration chain	between_sample design samples	12; B_6 in design: TRUE
+C4	lipid	declaration chain	between_sample A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	lipid	declaration chain	between_sample A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4	lipid	declaration chain	between_sample assays	A1;A2
+C4	lipid	declaration chain	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	lipid	declaration chain	between-sample A1 dims in -> out	40x12 -> 40x12
+C4	lipid	declaration chain	between-sample A1 IS_ rows in -> out	0 -> 0
+C4	lipid	declaration chain	between-sample A1 sample B_6 finite values in -> out	40 -> 40
+C4	lipid	declaration chain	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C4	lipid	declaration chain	between-sample A2 dims in -> out	40x12 -> 40x12
+C4	lipid	declaration chain	between-sample A2 IS_ rows in -> out	0 -> 0
+C4	lipid	declaration chain	between-sample A2 sample B_6 finite values in -> out	0 -> 0
+C4	lipid	declaration chain	record lipid_normalized operation	lipid_between_sample_normalisation
+C4	lipid	declaration chain	record lipid_normalized parameters	normalisation_method=cyclicloess
+C4	lipid	declaration chain	record lipid_normalized outcomes	{"rows":80,"columns":14}
+C4	lipid	declaration chain	ruv_legacy_automatic result	completed
+C4	lipid	declaration chain	ruv_legacy_automatic design samples	12; B_6 in design: TRUE
+C4	lipid	declaration chain	ruv_legacy_automatic A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	lipid	declaration chain	ruv_legacy_automatic assays	A1
+C4	lipid	declaration chain	RUV best_k	{"A1":1,"A2":"NA"}
+C4	lipid	declaration chain	RUV control_count	{"A1":6,"A2":"NA"}
+C4	lipid	declaration chain	RUV logged dimensions before/after cleaning (:713-726)	INFO [2026-11-25 09:35:30]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 40x12, After: 40x12
+C4	lipid	declaration chain	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	lipid	declaration chain	RUV A1 dims in -> out	40x12 -> 40x12
+C4	lipid	declaration chain	RUV A1 IS_ rows in -> out	0 -> 0
+C4	lipid	declaration chain	RUV A1 sample B_6 finite values in -> out	40 -> 40
+C4	lipid	declaration chain	RUV A2	assay absent from the returned object
+C4	lipid	declaration chain	record lipid_ruv_corrected operation	lipid_ruv
+C4	lipid	declaration chain	record lipid_ruv_corrected parameters	ruv_mode=automatic; ruv_grouping_variable=group; percentage_min=1; percentage_max=20; separation_metric=max_difference; k_penalty_weight=0.5; adaptive_k_penalty=TRUE; manual_k=2; manual_percentage=5
+C4	lipid	declaration chain	record lipid_ruv_corrected outcomes	{"rows":40,"columns":14,"ruv_applied":true,"k":1,"k_per_assay":{"A1":1,"A2":"NA"},"negative_control_count":6,"negative_control_count_per_assay":{"A1":6,"A2":"NA"},"negative_control_percentage":14,"negative_control_percentage_per_assay":{"A1":14,"A2":"NA"}}
+C4	lipid	declaration chain	correlation_0.5 result	completed
+C4	lipid	declaration chain	correlation_0.5 design samples	12; B_6 in design: TRUE
+C4	lipid	declaration chain	correlation_0.5 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	lipid	declaration chain	correlation_0.5 assays	A1
+C4	lipid	declaration chain	DA source state	lipid_correlation_filtered
+C4	lipid	declaration chain	DA groupB-groupA assays with a table	A1
+C4	lipid	declaration chain	DA groupB-groupA rows per assay	40
+C4	lipid	declaration chain	DA groupB-groupA errors	none
+C4	lipid	declaration chain	DA groupB-groupA qvalue_warnings	none
+C4	metab	declaration chain	qc_finalize result	completed
+C4	metab	declaration chain	qc_finalize design samples	12; B_6 in design: TRUE
+C4	metab	declaration chain	qc_finalize A1	45 features x 12 samples; B_6 column: present, 45 finite
+C4	metab	declaration chain	qc_finalize A2	45 features x 12 samples; B_6 column: present, 40 finite
+C4	metab	declaration chain	qc_finalize assays	A1;A2
+C4	metab	declaration chain	itsd result	completed
+C4	metab	declaration chain	itsd design samples	12; B_6 in design: TRUE
+C4	metab	declaration chain	itsd A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	metab	declaration chain	itsd A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4	metab	declaration chain	itsd assays	A1;A2
+C4	metab	declaration chain	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	metab	declaration chain	ITSD A1 dims in -> out	45x12 -> 40x12
+C4	metab	declaration chain	ITSD A1 IS_ rows in -> out	5 -> 0
+C4	metab	declaration chain	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C4	metab	declaration chain	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	metab	declaration chain	ITSD A2 dims in -> out	45x12 -> 40x12
+C4	metab	declaration chain	ITSD A2 IS_ rows in -> out	5 -> 0
+C4	metab	declaration chain	ITSD A2 sample B_6 finite values in -> out	40 -> 0
+C4	metab	declaration chain	args ITSDNormalization applied	TRUE
+C4	metab	declaration chain	args ITSDNormalization method_type	average_centered
+C4	metab	declaration chain	args itsd_features_per_assay (assays)	A1;A2
+C4	metab	declaration chain	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C4	metab	declaration chain	args itsd_features_per_assay A2	IS_A2_1;IS_A2_2;IS_A2_3;IS_A2_4;IS_A2_5
+C4	metab	declaration chain	args itsd_counts_per_assay	{"A1":5,"A2":5}
+C4	metab	declaration chain	record metab_itsd_norm operation	metab_itsd_normalisation
+C4	metab	declaration chain	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C4	metab	declaration chain	record metab_itsd_norm outcomes	{"rows":80,"columns":14,"itsd_applied":true}
+C4	metab	declaration chain	log2 result	completed
+C4	metab	declaration chain	log2 design samples	12; B_6 in design: TRUE
+C4	metab	declaration chain	log2 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	metab	declaration chain	log2 A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4	metab	declaration chain	log2 assays	A1;A2
+C4	metab	declaration chain	between_sample result	completed
+C4	metab	declaration chain	between_sample design samples	12; B_6 in design: TRUE
+C4	metab	declaration chain	between_sample A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	metab	declaration chain	between_sample A2	40 features x 12 samples; B_6 column: present, 0 finite
+C4	metab	declaration chain	between_sample assays	A1;A2
+C4	metab	declaration chain	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	metab	declaration chain	between-sample A1 dims in -> out	40x12 -> 40x12
+C4	metab	declaration chain	between-sample A1 IS_ rows in -> out	0 -> 0
+C4	metab	declaration chain	between-sample A1 sample B_6 finite values in -> out	40 -> 40
+C4	metab	declaration chain	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C4	metab	declaration chain	between-sample A2 dims in -> out	40x12 -> 40x12
+C4	metab	declaration chain	between-sample A2 IS_ rows in -> out	0 -> 0
+C4	metab	declaration chain	between-sample A2 sample B_6 finite values in -> out	0 -> 0
+C4	metab	declaration chain	record metab_normalized operation	metab_between_sample_normalisation
+C4	metab	declaration chain	record metab_normalized parameters	normalisation_method=cyclicloess
+C4	metab	declaration chain	record metab_normalized outcomes	{"rows":80,"columns":14}
+C4	metab	declaration chain	ruv_legacy_automatic result	completed
+C4	metab	declaration chain	ruv_legacy_automatic design samples	12; B_6 in design: TRUE
+C4	metab	declaration chain	ruv_legacy_automatic A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	metab	declaration chain	ruv_legacy_automatic assays	A1
+C4	metab	declaration chain	RUV best_k	{"A1":1,"A2":"NA"}
+C4	metab	declaration chain	RUV control_count	{"A1":6,"A2":"NA"}
+C4	metab	declaration chain	RUV logged dimensions before/after cleaning (:713-726)	INFO [2026-11-25 09:35:43]    Assay 'A1': RUV correction applied. Dimensions before cleaning: 40x12, After: 40x12
+C4	metab	declaration chain	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C4	metab	declaration chain	RUV A1 dims in -> out	40x12 -> 40x12
+C4	metab	declaration chain	RUV A1 IS_ rows in -> out	0 -> 0
+C4	metab	declaration chain	RUV A1 sample B_6 finite values in -> out	40 -> 40
+C4	metab	declaration chain	RUV A2	assay absent from the returned object
+C4	metab	declaration chain	record metab_ruv_corrected operation	metab_ruv
+C4	metab	declaration chain	record metab_ruv_corrected parameters	ruv_mode=automatic; ruv_grouping_variable=group; percentage_min=1; percentage_max=20; separation_metric=max_difference; k_penalty_weight=0.5; adaptive_k_penalty=TRUE; manual_k=2; manual_percentage=5
+C4	metab	declaration chain	record metab_ruv_corrected outcomes	{"rows":40,"columns":14,"ruv_applied":true,"k":1,"k_per_assay":{"A1":1,"A2":"NA"},"negative_control_count":6,"negative_control_count_per_assay":{"A1":6,"A2":"NA"},"negative_control_percentage":14,"negative_control_percentage_per_assay":{"A1":14,"A2":"NA"}}
+C4	metab	declaration chain	correlation_0.5 result	completed
+C4	metab	declaration chain	correlation_0.5 design samples	12; B_6 in design: TRUE
+C4	metab	declaration chain	correlation_0.5 A1	40 features x 12 samples; B_6 column: present, 40 finite
+C4	metab	declaration chain	correlation_0.5 assays	A1
+C4	metab	declaration chain	DA source state	metab_correlation_filtered
+C4	metab	declaration chain	DA groupB-groupA assays with a table	A1
+C4	metab	declaration chain	DA groupB-groupA rows per assay	40
+C4	metab	declaration chain	DA groupB-groupA errors	none
+C4	metab	declaration chain	DA groupB-groupA qvalue_warnings	none
+C6	lipid	declaration	error classes	omics_cyclic_loess_too_few_features;rlang_error                        ;error                              ;condition                          
+C6	lipid	declaration	error fields	{"assay":"A2","sample":"A_1","fewest":3,"minimum":10}
+C6	lipid	declaration	warnings raised before the error	none
+C6	lipid	worker	handoff status	failed
+C6	lipid	worker	handoff error	Cyclic loess normalisation was not run: assay "A2" has only 3 lipids with a measured value in sample "A_1", and the method needs at least 10 in every sample. ℹ Cyclic loess fits a curve through the lipids of each sample. With so few points the curve is not meaningful, and its result can differ from one computer to another. ℹ Choose another between-sample method under 'Normalization Method' (Quantile, Scale (Median Absolute Values) or None) and run the normalisation again.
+C11	lipid	declaration	error classes	omics_cyclic_loess_too_few_features;rlang_error                        ;error                              ;condition                          
+C11	lipid	declaration	error fields	{"assay":"A2","sample":"B_6","fewest":0,"minimum":10}
+C11	lipid	declaration	warnings raised before the error	none
+C6	metab	declaration	error classes	omics_cyclic_loess_too_few_features;rlang_error                        ;error                              ;condition                          
+C6	metab	declaration	error fields	{"assay":"A2","sample":"A_1","fewest":3,"minimum":10}
+C6	metab	declaration	warnings raised before the error	none
+C6	metab	worker	handoff status	failed
+C6	metab	worker	handoff error	Cyclic loess normalisation was not run: assay "A2" has only 3 metabolites with a measured value in sample "A_1", and the method needs at least 10 in every sample. ℹ Cyclic loess fits a curve through the metabolites of each sample. With so few points the curve is not meaningful, and its result can differ from one computer to another. ℹ Choose another between-sample method under 'Normalization Method' (Quantile, Scale (Median Absolute Values) or None) and run the normalisation again.
+C11	metab	declaration	error classes	omics_cyclic_loess_too_few_features;rlang_error                        ;error                              ;condition                          
+C11	metab	declaration	error fields	{"assay":"A2","sample":"B_6","fewest":0,"minimum":10}
+C11	metab	declaration	warnings raised before the error	none
+C7	lipid	declaration	DA source state	lipid_log2
+C7	lipid	declaration	DA groupB-groupA assays with a table	A1;A2
+C7	lipid	declaration	DA groupB-groupA rows per assay	40;10
+C7	lipid	declaration	DA groupB-groupA errors	none
+C7	lipid	declaration	DA groupB-groupA qvalue_warnings	{"A1":{"groupB-groupA":true},"A2":{"groupB-groupA":true}}
+C7	lipid	declaration	record DA entry groupB-groupA / A1 fields	contrast ;assay    ;entity_id;rows     
+C7	lipid	declaration	record DA entry groupB-groupA / A1 fdr_method	absent
+C7	lipid	declaration	record DA entry groupB-groupA / A2 fields	contrast ;assay    ;entity_id;rows     
+C7	lipid	declaration	record DA entry groupB-groupA / A2 fdr_method	absent
+C7	metab	declaration	DA source state	metab_log2
+C7	metab	declaration	DA groupB-groupA assays with a table	A1;A2
+C7	metab	declaration	DA groupB-groupA rows per assay	40;10
+C7	metab	declaration	DA groupB-groupA errors	none
+C7	metab	declaration	DA groupB-groupA qvalue_warnings	{"A1":{"groupB-groupA":true},"A2":{"groupB-groupA":true}}
+C7	metab	declaration	record DA entry groupB-groupA / A1 fields	contrast ;assay    ;entity_id;rows     
+C7	metab	declaration	record DA entry groupB-groupA / A1 fdr_method	absent
+C7	metab	declaration	record DA entry groupB-groupA / A2 fields	contrast ;assay    ;entity_id;rows     
+C7	metab	declaration	record DA entry groupB-groupA / A2 fdr_method	absent
+C9	prot	proteomics empty column cyclicloess	result	stopped: `.data` must be a data frame without row names.
+C9	prot	proteomics empty column quantile	result	stopped: `.data` must be a data frame without row names.
+C9	prot	proteomics empty column scale	result	stopped: `.data` must be a data frame without row names.
+C9	prot	proteomics one value quantile	result	stopped: `.data` must be a data frame without row names.
+C9	trx	TMM control	result	completed
+C9	trx	TMM planted error	result	stopped: planted
+C12	lipid	S4 a_A1_only	assays returned	A1
+C12	lipid	S4 a_A1_only	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C12	lipid	S4 a_A1_only	RUV A1 dims in -> out	45x12 -> 45x12
+C12	lipid	S4 a_A1_only	RUV A1 IS_ rows in -> out	5 -> 5
+C12	lipid	S4 a_A1_only	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	lipid	S4 a_A1_only	RUV A2	assay absent from the returned object
+C12	lipid	S4 a_A1_only	warning() conditions raised	0
+C12	lipid	S4 a_A1_only	logger WARN lines	WARN [2026-11-25 09:36:18] Assay 'A2': No control features identified after resolution. Skipping.
+C12	lipid	S4 b_neither	assays returned	A1;A2
+C12	lipid	S4 b_neither	RUV A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C12	lipid	S4 b_neither	RUV A1 dims in -> out	45x12 -> 45x12
+C12	lipid	S4 b_neither	RUV A1 IS_ rows in -> out	5 -> 5
+C12	lipid	S4 b_neither	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	lipid	S4 b_neither	RUV A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C12	lipid	S4 b_neither	RUV A2 dims in -> out	45x12 -> 45x12
+C12	lipid	S4 b_neither	RUV A2 IS_ rows in -> out	5 -> 5
+C12	lipid	S4 b_neither	RUV A2 sample B_6 finite values in -> out	45 -> 45
+C12	lipid	S4 b_neither	warning() conditions raised	0
+C12	lipid	S4 b_neither	logger WARN lines	WARN [2026-11-25 09:36:18] Assay 'A1': No control features identified after resolution. Skipping.      ;WARN [2026-11-25 09:36:18] Assay 'A2': No control features identified after resolution. Skipping.      ;WARN [2026-11-25 09:36:18] No assays were successfully processed by RUV-III. Returning original object.
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV best_k	{"A1":1,"A2":"NA"}
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV control_count	{"A1":6,"A2":"NA"}
+C12	lipid	declaration a-decl (A2 without a complete feature)	optimisation success per assay	{"A1":true,"A2":false}
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV A1 dims in -> out	45x12 -> 45x12
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV A1 IS_ rows in -> out	5 -> 5
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	lipid	declaration a-decl (A2 without a complete feature)	RUV A2	assay absent from the returned object
+C12	lipid	declaration a-decl (A2 without a complete feature)	record lipid_ruv_corrected operation	lipid_ruv
+C12	lipid	declaration a-decl (A2 without a complete feature)	record lipid_ruv_corrected parameters	ruv_mode=automatic; ruv_grouping_variable=group; percentage_min=1; percentage_max=20; separation_metric=max_difference; k_penalty_weight=0.5; adaptive_k_penalty=TRUE; manual_k=2; manual_percentage=5
+C12	lipid	declaration a-decl (A2 without a complete feature)	record lipid_ruv_corrected outcomes	{"rows":45,"columns":14,"ruv_applied":true,"k":1,"k_per_assay":{"A1":1,"A2":"NA"},"negative_control_count":6,"negative_control_count_per_assay":{"A1":6,"A2":"NA"},"negative_control_percentage":13,"negative_control_percentage_per_assay":{"A1":13,"A2":"NA"}}
+C12	lipid	declaration a-decl (A2 without a complete feature)	DA source state	lipid_ruv_corrected
+C12	lipid	declaration a-decl (A2 without a complete feature)	DA groupB-groupA assays with a table	A1
+C12	lipid	declaration a-decl (A2 without a complete feature)	DA groupB-groupA rows per assay	45
+C12	lipid	declaration a-decl (A2 without a complete feature)	DA groupB-groupA errors	none
+C12	lipid	declaration a-decl (A2 without a complete feature)	DA groupB-groupA qvalue_warnings	none
+C12	metab	S4 a_A1_only	assays returned	A1
+C12	metab	S4 a_A1_only	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C12	metab	S4 a_A1_only	RUV A1 dims in -> out	45x12 -> 45x12
+C12	metab	S4 a_A1_only	RUV A1 IS_ rows in -> out	5 -> 5
+C12	metab	S4 a_A1_only	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	metab	S4 a_A1_only	RUV A2	assay absent from the returned object
+C12	metab	S4 a_A1_only	warning() conditions raised	0
+C12	metab	S4 a_A1_only	logger WARN lines	WARN [2026-11-25 09:36:32] Assay 'A2': No control features identified after resolution. Skipping.
+C12	metab	S4 b_neither	assays returned	A1;A2
+C12	metab	S4 b_neither	RUV A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C12	metab	S4 b_neither	RUV A1 dims in -> out	45x12 -> 45x12
+C12	metab	S4 b_neither	RUV A1 IS_ rows in -> out	5 -> 5
+C12	metab	S4 b_neither	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	metab	S4 b_neither	RUV A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C12	metab	S4 b_neither	RUV A2 dims in -> out	45x12 -> 45x12
+C12	metab	S4 b_neither	RUV A2 IS_ rows in -> out	5 -> 5
+C12	metab	S4 b_neither	RUV A2 sample B_6 finite values in -> out	45 -> 45
+C12	metab	S4 b_neither	warning() conditions raised	0
+C12	metab	S4 b_neither	logger WARN lines	WARN [2026-11-25 09:36:32] Assay 'A1': No control features identified after resolution. Skipping.      ;WARN [2026-11-25 09:36:32] Assay 'A2': No control features identified after resolution. Skipping.      ;WARN [2026-11-25 09:36:32] No assays were successfully processed by RUV-III. Returning original object.
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV best_k	{"A1":1,"A2":"NA"}
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV control_count	{"A1":6,"A2":"NA"}
+C12	metab	declaration a-decl (A2 without a complete feature)	optimisation success per assay	{"A1":true,"A2":false}
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV A1 dims in -> out	45x12 -> 45x12
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV A1 IS_ rows in -> out	5 -> 5
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	metab	declaration a-decl (A2 without a complete feature)	RUV A2	assay absent from the returned object
+C12	metab	declaration a-decl (A2 without a complete feature)	record metab_ruv_corrected operation	metab_ruv
+C12	metab	declaration a-decl (A2 without a complete feature)	record metab_ruv_corrected parameters	ruv_mode=automatic; ruv_grouping_variable=group; percentage_min=1; percentage_max=20; separation_metric=max_difference; k_penalty_weight=0.5; adaptive_k_penalty=TRUE; manual_k=2; manual_percentage=5
+C12	metab	declaration a-decl (A2 without a complete feature)	record metab_ruv_corrected outcomes	{"rows":45,"columns":14,"ruv_applied":true,"k":1,"k_per_assay":{"A1":1,"A2":"NA"},"negative_control_count":6,"negative_control_count_per_assay":{"A1":6,"A2":"NA"},"negative_control_percentage":13,"negative_control_percentage_per_assay":{"A1":13,"A2":"NA"}}
+C12	metab	declaration a-decl (A2 without a complete feature)	DA source state	metab_ruv_corrected
+C12	metab	declaration a-decl (A2 without a complete feature)	DA groupB-groupA assays with a table	A1
+C12	metab	declaration a-decl (A2 without a complete feature)	DA groupB-groupA rows per assay	45
+C12	metab	declaration a-decl (A2 without a complete feature)	DA groupB-groupA errors	none
+C12	metab	declaration a-decl (A2 without a complete feature)	DA groupB-groupA qvalue_warnings	none
+C14	metab	ITSD regex mode, median	object regex / annotation column	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:;Metabolite name                 
+C14	metab	ITSD regex mode, median	'w/o MS2:' rows present after ITSD	<empty>
+C14	metab	ITSD regex mode, median	'(d7)' rows present after ITSD	A1_F006;A1_F007
+C14	metab	ITSD regex mode, median	A1 rows in -> out	40 -> 35
+C14	metab	ITSD regex mode, median	A1 other features changed by ITSD	TRUE
+C14	metab	ITSD regex mode, median	args itsd_features_per_assay A1	A1_F001;A1_F002;A1_F003;A1_F004;A1_F005
+C14	metab	ITSD regex mode, median	args itsd_features_per_assay (assays)	A1
+C14	metab	ITSD regex mode, median	args itsd_counts_per_assay	{"A1":5}
+C14	metab	ITSD regex mode, median	record metab_itsd_norm operation	metab_itsd_normalisation
+C14	metab	ITSD regex mode, median	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C14	metab	ITSD regex mode, median	record metab_itsd_norm outcomes	{"rows":75,"columns":14,"itsd_applied":true}
+C14	metab	integration input, ITSD unticked	features table columns metabolomics_A1	feature_id          ;display_name        ;assay               ;is_internal_standard;Alignment ID        ;Metabolite name     
+C14	metab	integration input, ITSD unticked	rows marked is_internal_standard metabolomics_A1	A1_F001;A1_F002;A1_F003;A1_F004;A1_F005
+C14	metab	integration input, ITSD unticked	features table columns metabolomics_A2	feature_id          ;display_name        ;assay               ;is_internal_standard;Alignment ID        ;Metabolite name     
+C14	metab	integration input, ITSD unticked	rows marked is_internal_standard metabolomics_A2	none
+C14	metab	integration input, ITSD unticked	manifest standards rule	[{"regex":"^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:","columns":["Alignment ID","Metabolite name"],"selected_by_hand":false,"selected_count":0}]
+C1	lipid	managed tab	notifications shown	5
+C1	lipid	managed tab	normalization_complete	TRUE
+C1	lipid	managed tab	ruv_complete	TRUE
+C1	lipid	managed tab	worker operations	lipid_qc_figures                  ;lipid_log2                        ;lipid_between_sample_normalisation;lipid_qc_figures                  
+C1	lipid	managed tab	history	initial          ;lipid_raw_data_s4;lipid_qc_complete;lipid_log2       ;lipid_normalized 
+C1	lipid	managed tab	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C1	lipid	managed tab	between-sample A1 dims in -> out	45x12 -> 45x12
+C1	lipid	managed tab	between-sample A1 IS_ rows in -> out	5 -> 5
+C1	lipid	managed tab	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C1	lipid	managed tab	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C1	lipid	managed tab	between-sample A2 dims in -> out	45x12 -> 45x12
+C1	lipid	managed tab	between-sample A2 IS_ rows in -> out	5 -> 5
+C1	lipid	managed tab	between-sample A2 sample B_6 finite values in -> out	0 -> 0
+C1	lipid	managed tab	record lipid_normalized operation	lipid_between_sample_normalisation
+C1	lipid	managed tab	record lipid_normalized parameters	normalisation_method=cyclicloess
+C1	lipid	managed tab	record lipid_normalized outcomes	{"rows":90,"columns":14}
+C3	lipid	managed tab	notifications shown	6
+C3	lipid	managed tab	normalization_complete	TRUE
+C3	lipid	managed tab	ruv_complete	TRUE
+C3	lipid	managed tab	worker operations	lipid_qc_figures                  ;lipid_itsd_normalisation          ;lipid_log2                        ;lipid_between_sample_normalisation;lipid_qc_figures                  
+C3	lipid	managed tab	history	initial          ;lipid_raw_data_s4;lipid_qc_complete;lipid_itsd_norm  ;lipid_log2       ;lipid_normalized 
+C3	lipid	managed tab	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	lipid	managed tab	ITSD A1 dims in -> out	45x12 -> 45x12
+C3	lipid	managed tab	ITSD A1 IS_ rows in -> out	5 -> 5
+C3	lipid	managed tab	ITSD A1 sample B_6 finite values in -> out	45 -> 45
+C3	lipid	managed tab	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	lipid	managed tab	ITSD A2 dims in -> out	45x12 -> 45x12
+C3	lipid	managed tab	ITSD A2 IS_ rows in -> out	5 -> 5
+C3	lipid	managed tab	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3	lipid	managed tab	args ITSDNormalization applied	TRUE
+C3	lipid	managed tab	args ITSDNormalization method_type	average_centered
+C3	lipid	managed tab	args itsd_features_per_assay (assays)	none
+C3	lipid	managed tab	args itsd_counts_per_assay	absent (no such field at base)
+C3	lipid	managed tab	record lipid_itsd_norm operation	lipid_itsd_normalisation
+C3	lipid	managed tab	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C3	lipid	managed tab	record lipid_itsd_norm outcomes	{"rows":90,"columns":14,"itsd_applied":true}
+C3m	lipid	managed tab	notifications shown	6
+C3m	lipid	managed tab	normalization_complete	TRUE
+C3m	lipid	managed tab	ruv_complete	TRUE
+C3m	lipid	managed tab	worker operations	lipid_qc_figures                  ;lipid_itsd_normalisation          ;lipid_log2                        ;lipid_between_sample_normalisation;lipid_qc_figures                  
+C3m	lipid	managed tab	history	initial          ;lipid_raw_data_s4;lipid_qc_complete;lipid_itsd_norm  ;lipid_log2       ;lipid_normalized 
+C3m	lipid	managed tab	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C3m	lipid	managed tab	ITSD A1 dims in -> out	45x12 -> 40x12
+C3m	lipid	managed tab	ITSD A1 IS_ rows in -> out	5 -> 0
+C3m	lipid	managed tab	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C3m	lipid	managed tab	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3m	lipid	managed tab	ITSD A2 dims in -> out	45x12 -> 45x12
+C3m	lipid	managed tab	ITSD A2 IS_ rows in -> out	5 -> 5
+C3m	lipid	managed tab	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3m	lipid	managed tab	args ITSDNormalization applied	TRUE
+C3m	lipid	managed tab	args ITSDNormalization method_type	average_centered
+C3m	lipid	managed tab	args itsd_features_per_assay (assays)	A1
+C3m	lipid	managed tab	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C3m	lipid	managed tab	args itsd_counts_per_assay	{"A1":5}
+C3m	lipid	managed tab	record lipid_itsd_norm operation	lipid_itsd_normalisation
+C3m	lipid	managed tab	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids={"A1":["IS_A1_1","IS_A1_2","IS_A1_3","IS_A1_4","IS_A1_5"]}; method=ITSD
+C3m	lipid	managed tab	record lipid_itsd_norm outcomes	{"rows":85,"columns":14,"itsd_applied":true}
+C12	lipid	managed tab	notifications shown	7
+C12	lipid	managed tab	normalization_complete	TRUE
+C12	lipid	managed tab	ruv_complete	TRUE
+C12	lipid	managed tab	worker operations	lipid_qc_figures                  ;lipid_log2                        ;lipid_between_sample_normalisation;lipid_qc_figures                  ;lipid_ruv                         ;lipid_qc_figures                  
+C12	lipid	managed tab	history	initial            ;lipid_raw_data_s4  ;lipid_qc_complete  ;lipid_log2         ;lipid_normalized   ;lipid_ruv_corrected
+C12	lipid	managed tab	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C12	lipid	managed tab	RUV A1 dims in -> out	45x12 -> 45x12
+C12	lipid	managed tab	RUV A1 IS_ rows in -> out	5 -> 5
+C12	lipid	managed tab	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	lipid	managed tab	RUV A2	assay absent from the returned object
+C12	lipid	managed tab	record lipid_ruv_corrected operation	lipid_ruv
+C12	lipid	managed tab	record lipid_ruv_corrected parameters	ruv_mode=automatic; ruv_grouping_variable=group; percentage_min=1; percentage_max=20; separation_metric=max_difference; k_penalty_weight=0.5; adaptive_k_penalty=TRUE; manual_k=1; manual_percentage=20
+C12	lipid	managed tab	record lipid_ruv_corrected outcomes	{"rows":45,"columns":14,"ruv_applied":true,"k":1,"k_per_assay":{"A1":1,"A2":"NA"},"negative_control_count":6,"negative_control_count_per_assay":{"A1":6,"A2":"NA"},"negative_control_percentage":13,"negative_control_percentage_per_assay":{"A1":13,"A2":"NA"}}
+C1	metab	managed tab	notifications shown	5
+C1	metab	managed tab	normalization_complete	TRUE
+C1	metab	managed tab	ruv_complete	TRUE
+C1	metab	managed tab	worker operations	metab_qc_figures                  ;metab_log2                        ;metab_between_sample_normalisation;metab_qc_figures                  
+C1	metab	managed tab	history	initial          ;metab_raw_data_s4;metab_qc_complete;metab_log2       ;metab_normalized 
+C1	metab	managed tab	between-sample A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C1	metab	managed tab	between-sample A1 dims in -> out	45x12 -> 45x12
+C1	metab	managed tab	between-sample A1 IS_ rows in -> out	5 -> 5
+C1	metab	managed tab	between-sample A1 sample B_6 finite values in -> out	45 -> 45
+C1	metab	managed tab	between-sample A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C1	metab	managed tab	between-sample A2 dims in -> out	45x12 -> 45x12
+C1	metab	managed tab	between-sample A2 IS_ rows in -> out	5 -> 5
+C1	metab	managed tab	between-sample A2 sample B_6 finite values in -> out	0 -> 0
+C1	metab	managed tab	record metab_normalized operation	metab_between_sample_normalisation
+C1	metab	managed tab	record metab_normalized parameters	normalisation_method=cyclicloess
+C1	metab	managed tab	record metab_normalized outcomes	{"rows":90,"columns":14}
+C3	metab	managed tab	notifications shown	6
+C3	metab	managed tab	normalization_complete	TRUE
+C3	metab	managed tab	ruv_complete	TRUE
+C3	metab	managed tab	worker operations	metab_qc_figures                  ;metab_itsd_normalisation          ;metab_log2                        ;metab_between_sample_normalisation;metab_qc_figures                  
+C3	metab	managed tab	history	initial          ;metab_raw_data_s4;metab_qc_complete;metab_itsd_norm  ;metab_log2       ;metab_normalized 
+C3	metab	managed tab	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	metab	managed tab	ITSD A1 dims in -> out	45x12 -> 45x12
+C3	metab	managed tab	ITSD A1 IS_ rows in -> out	5 -> 5
+C3	metab	managed tab	ITSD A1 sample B_6 finite values in -> out	45 -> 45
+C3	metab	managed tab	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3	metab	managed tab	ITSD A2 dims in -> out	45x12 -> 45x12
+C3	metab	managed tab	ITSD A2 IS_ rows in -> out	5 -> 5
+C3	metab	managed tab	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3	metab	managed tab	args ITSDNormalization applied	TRUE
+C3	metab	managed tab	args ITSDNormalization method_type	average_centered
+C3	metab	managed tab	args itsd_features_per_assay (assays)	none
+C3	metab	managed tab	args itsd_counts_per_assay	absent (no such field at base)
+C3	metab	managed tab	record metab_itsd_norm operation	metab_itsd_normalisation
+C3	metab	managed tab	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+C3	metab	managed tab	record metab_itsd_norm outcomes	{"rows":90,"columns":14,"itsd_applied":true}
+C3m	metab	managed tab	notifications shown	6
+C3m	metab	managed tab	normalization_complete	TRUE
+C3m	metab	managed tab	ruv_complete	TRUE
+C3m	metab	managed tab	worker operations	metab_qc_figures                  ;metab_itsd_normalisation          ;metab_log2                        ;metab_between_sample_normalisation;metab_qc_figures                  
+C3m	metab	managed tab	history	initial          ;metab_raw_data_s4;metab_qc_complete;metab_itsd_norm  ;metab_log2       ;metab_normalized 
+C3m	metab	managed tab	ITSD A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C3m	metab	managed tab	ITSD A1 dims in -> out	45x12 -> 40x12
+C3m	metab	managed tab	ITSD A1 IS_ rows in -> out	5 -> 0
+C3m	metab	managed tab	ITSD A1 sample B_6 finite values in -> out	45 -> 40
+C3m	metab	managed tab	ITSD A2 equal to input (non-IS rows; all.equal tol 0)	TRUE
+C3m	metab	managed tab	ITSD A2 dims in -> out	45x12 -> 45x12
+C3m	metab	managed tab	ITSD A2 IS_ rows in -> out	5 -> 5
+C3m	metab	managed tab	ITSD A2 sample B_6 finite values in -> out	45 -> 45
+C3m	metab	managed tab	args ITSDNormalization applied	TRUE
+C3m	metab	managed tab	args ITSDNormalization method_type	average_centered
+C3m	metab	managed tab	args itsd_features_per_assay (assays)	A1
+C3m	metab	managed tab	args itsd_features_per_assay A1	IS_A1_1;IS_A1_2;IS_A1_3;IS_A1_4;IS_A1_5
+C3m	metab	managed tab	args itsd_counts_per_assay	{"A1":5}
+C3m	metab	managed tab	record metab_itsd_norm operation	metab_itsd_normalisation
+C3m	metab	managed tab	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids={"A1":["IS_A1_1","IS_A1_2","IS_A1_3","IS_A1_4","IS_A1_5"]}; method=ITSD
+C3m	metab	managed tab	record metab_itsd_norm outcomes	{"rows":85,"columns":14,"itsd_applied":true}
+C12	metab	managed tab	notifications shown	7
+C12	metab	managed tab	normalization_complete	TRUE
+C12	metab	managed tab	ruv_complete	TRUE
+C12	metab	managed tab	worker operations	metab_qc_figures                  ;metab_log2                        ;metab_between_sample_normalisation;metab_qc_figures                  ;metab_ruv                         ;metab_qc_figures                  
+C12	metab	managed tab	history	initial            ;metab_raw_data_s4  ;metab_qc_complete  ;metab_log2         ;metab_normalized   ;metab_ruv_corrected
+C12	metab	managed tab	RUV A1 equal to input (non-IS rows; all.equal tol 0)	FALSE
+C12	metab	managed tab	RUV A1 dims in -> out	45x12 -> 45x12
+C12	metab	managed tab	RUV A1 IS_ rows in -> out	5 -> 5
+C12	metab	managed tab	RUV A1 sample B_6 finite values in -> out	45 -> 45
+C12	metab	managed tab	RUV A2	assay absent from the returned object
+C12	metab	managed tab	record metab_ruv_corrected operation	metab_ruv
+C12	metab	managed tab	record metab_ruv_corrected parameters	ruv_mode=automatic; ruv_grouping_variable=group; percentage_min=1; percentage_max=20; separation_metric=max_difference; k_penalty_weight=0.5; adaptive_k_penalty=TRUE; manual_k=1; manual_percentage=20
+C12	metab	managed tab	record metab_ruv_corrected outcomes	{"rows":45,"columns":14,"ruv_applied":true,"k":1,"k_per_assay":{"A1":1,"A2":"NA"},"negative_control_count":6,"negative_control_count_per_assay":{"A1":6,"A2":"NA"},"negative_control_percentage":13,"negative_control_percentage_per_assay":{"A1":13,"A2":"NA"}}
+C8	lipid	record and replay	origin: empty-column warnings	1
+C8	lipid	record and replay	record valid	TRUE
+C8	lipid	record and replay	replay preconditions	initial          ;lipid_raw_data_s4
+C8	lipid	record and replay	replay inputs (roles)	lipid_assay_1;lipid_assay_2;design_file  
+C8	lipid	record and replay	replay: empty-column warnings	1
+C8	lipid	record and replay	replay states equal history	TRUE
+C8	lipid	record and replay	replay mismatches	none
+C8	lipid	record and replay	replayed operations	lipid_qc_finalize                 ;lipid_log2                        ;lipid_between_sample_normalisation;lipid_da_contrast                 
+C8	metab	record and replay	origin: empty-column warnings	1
+C8	metab	record and replay	record valid	TRUE
+C8	metab	record and replay	replay preconditions	initial          ;metab_raw_data_s4
+C8	metab	record and replay	replay inputs (roles)	metab_assay_1;metab_assay_2;design_file  
+C8	metab	record and replay	replay: empty-column warnings	1
+C8	metab	record and replay	replay states equal history	TRUE
+C8	metab	record and replay	replay mismatches	none
+C8	metab	record and replay	replayed operations	metab_qc_finalize                 ;metab_log2                        ;metab_between_sample_normalisation;metab_da_contrast                 
+C5	lipid	lipid_canonical	history	initial                   ;lipid_raw_data_s4         ;lipid_intensity_filtered  ;lipid_duplicates_resolved ;lipid_qc_complete         ;lipid_itsd_norm           ;lipid_log2                ;lipid_normalized          ;lipid_correlation_filtered
+C5	lipid	lipid_canonical	record lipid_itsd_norm outcomes	{"rows":17,"columns":8,"itsd_applied":true}
+C5	lipid	lipid_canonical	record lipid_itsd_norm parameters	itsd_aggregation=median;itsd_feature_ids=NULL  ;method=ITSD            
+C5	lipid	lipid_canonical	record lipid_normalized outcomes	{"rows":17,"columns":8}
+C5	lipid	lipid_canonical	record lipid_normalized parameters	normalisation_method=cyclicloess
+C5	lipid	lipid_canonical	args ITSDNormalization	{"applied":true,"method_type":"average_centered","itsd_pattern_columns":"LipidClass"}
+C5	lipid	lipid_canonical	args itsd_features_per_assay (assays)	none
+C13	lipid	lipid_canonical	object regex	^IS_|ISTD|Internal|_IS
+C13	lipid	lipid_canonical	object annotation column	LipidClass
+C13	lipid	lipid_canonical	LCMS_Pos rows matched by the object's regex in the annotation column	0
+C13	lipid	lipid_canonical	LCMS_Pos candidates flagged by the ITSD Selection builder	0 of 9 ()
+C13	lipid	lipid_canonical	LCMS_Neg rows matched by the object's regex in the annotation column	0
+C13	lipid	lipid_canonical	LCMS_Neg candidates flagged by the ITSD Selection builder	0 of 8 ()
+C5	lipid	lipid_canonical	file results_summary/lipidomics/Study_report/study_parameters.txt	ITSD Normalization: | ------------------- | * Applied: Yes | * Method Type: average_centered | * ITSD Removed After Normalization: Yes | * Timestamp: 2026-11-25 09:40:49 |  | Log Transformation: | Between-Sample Normalization: | ----------------------------- | * Method: cyclicloess |  | * Internal Standard Regex: ^IS_|ISTD|Internal|_IS |  | RUV-III Batch Correction: | ------------------------- | [ITSDNormalization] |   applied = TRUE |   method_type = average_centered |   itsd_aggregation = median |   itsd_pattern_columns = LipidClass |   removed_itsd = TRUE |   timestamp = 2026-11-25 09:40:49.287285 | Additional Configuration Parameters: | ----------------------------------- | ITSDNormalization: |   Applied: TRUE |   Method Type: average_centered |   Itsd Aggregation: median |   Itsd Pattern Columns: LipidClass |   Removed Itsd: TRUE |   Timestamp: 2026-11-25 09:40:49.287285 |  | Analysis Record: | [6. lipid_itsd_norm: lipid_itsd_normalisation] |   itsd_aggregation [no_shipped_default] = median |   itsd_feature_ids [input] = NULL |   method [fixed] = ITSD |  | [7. lipid_log2: lipid_log2] |   offset [no_shipped_default] = 0 | [8. lipid_normalized: lipid_between_sample_normalisation] |   normalisation_method [default] = cyclicloess |  | [9. lipid_correlation_filtered: lipid_pearson_selection] |   lipid_pearson_pairs.correlation_group [no_shipped_default] = group
+C5	lipid	lipid_canonical	file scripts/lipidomics/lipid_filtered_session_summary.txt	Normalization Parameters: | - Method: cyclicloess | - ITSD applied: Yes | - ITSD aggregation: median | - Log2 offset: 0 | - RUV mode: skip | - RUV grouping variable: group
+C5	lipid	lipid_canonical	file scripts/lipidomics/study_parameters.txt	ITSD Normalization: | ------------------- | * Applied: Yes | * Method Type: average_centered | * ITSD Removed After Normalization: Yes | * Timestamp: 2026-11-25 09:40:49 |  | Log Transformation: | Between-Sample Normalization: | ----------------------------- | * Method: cyclicloess |  | * Internal Standard Regex: ^IS_|ISTD|Internal|_IS |  | RUV-III Batch Correction: | ------------------------- | [ITSDNormalization] |   applied = TRUE |   method_type = average_centered |   itsd_aggregation = median |   itsd_pattern_columns = LipidClass |   removed_itsd = TRUE |   timestamp = 2026-11-25 09:40:49.287285 | Additional Configuration Parameters: | ----------------------------------- | ITSDNormalization: |   Applied: TRUE |   Method Type: average_centered |   Itsd Aggregation: median |   Itsd Pattern Columns: LipidClass |   Removed Itsd: TRUE |   Timestamp: 2026-11-25 09:40:49.287285 |  | Analysis Record: | [6. lipid_itsd_norm: lipid_itsd_normalisation] |   itsd_aggregation [no_shipped_default] = median |   itsd_feature_ids [input] = NULL |   method [fixed] = ITSD |  | [7. lipid_log2: lipid_log2] |   offset [no_shipped_default] = 0 | [8. lipid_normalized: lipid_between_sample_normalisation] |   normalisation_method [default] = cyclicloess |  | [9. lipid_correlation_filtered: lipid_pearson_selection] |   lipid_pearson_pairs.correlation_group [no_shipped_default] = group
+C5	lipid	lipid_canonical	output at step norm lipidomics_workflow-norm-norm_log	[<TIME>] Starting normalization pipeline... [<TIME>] Post-filtering state captured [<TIME>] Pre-normalization QC plots generated [<TIME>] Applying ITSD normalization (aggregation: median ) [<TIME>] ITSD normalization complete [<TIME>] Applying log2 transformation [<TIME>] Log2 transformation complete [<TIME>] Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; LCMS_Neg 0 non-positive, 0 non-finite [<TIME>] Applying between-sample normalization (method: cyclicloess ) [<TIME>] Between-sample normalization complete [<TIME>] Post-normalization QC plots generated [<TIME>] RUV-III skipped [<TIME>] Generating composite QC figure... [<TIME>] Composite QC figure saved to: <ROOT>/project/lipid_canonical/results/lipidomics/lipid_qc/composite_QC_figure [<TIME>] Normalization pipeline complete!
+C5	lipid	lipid_canonical	output at step correlation lipidomics_workflow-norm-norm_log	[<TIME>] Starting normalization pipeline... [<TIME>] Post-filtering state captured [<TIME>] Pre-normalization QC plots generated [<TIME>] Applying ITSD normalization (aggregation: median ) [<TIME>] ITSD normalization complete [<TIME>] Applying log2 transformation [<TIME>] Log2 transformation complete [<TIME>] Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; LCMS_Neg 0 non-positive, 0 non-finite [<TIME>] Applying between-sample normalization (method: cyclicloess ) [<TIME>] Between-sample normalization complete [<TIME>] Post-normalization QC plots generated [<TIME>] RUV-III skipped [<TIME>] Generating composite QC figure... [<TIME>] Composite QC figure saved to: <ROOT>/project/lipid_canonical/results/lipidomics/lipid_qc/composite_QC_figure [<TIME>] Normalization pipeline complete! [<TIME>] Applying correlation filter (threshold: 0.5 ) [<TIME>] Correlation filtering complete
+C5	lipid	lipid_canonical	lane seconds	112
+C5	metab	metab_lc	history	initial                   ;metab_raw_data_s4         ;metab_intensity_filtered  ;metab_duplicates_resolved ;metab_qc_complete         ;metab_itsd_norm           ;metab_log2                ;metab_normalized          ;metab_correlation_filtered
+C5	metab	metab_lc	record metab_itsd_norm outcomes	{"rows":6,"columns":7,"itsd_applied":true}
+C5	metab	metab_lc	record metab_itsd_norm parameters	itsd_aggregation=median;itsd_feature_ids=NULL  ;method=ITSD            
+C5	metab	metab_lc	record metab_normalized outcomes	{"rows":6,"columns":7}
+C5	metab	metab_lc	record metab_normalized parameters	normalisation_method=cyclicloess
+C5	metab	metab_lc	args ITSDNormalization	{"applied":true,"method_type":"average_centered","itsd_pattern_columns":"NA"}
+C5	metab	metab_lc	args itsd_features_per_assay (assays)	none
+C13	metab	metab_lc	object regex	^ITSD|_d[0-9]+$
+C13	metab	metab_lc	object annotation column	NA
+C13	metab	metab_lc	LCMS_Pos rows matched by the object's regex in the annotation column	NA
+C13	metab	metab_lc	LCMS_Pos candidates flagged by the ITSD Selection builder	builder failed: replacement has 0 rows, data has 3
+C13	metab	metab_lc	LCMS_Neg rows matched by the object's regex in the annotation column	NA
+C13	metab	metab_lc	LCMS_Neg candidates flagged by the ITSD Selection builder	builder failed: replacement has 0 rows, data has 3
+C5	metab	metab_lc	file results_summary/metabolomics/Study_report/study_parameters.txt	ITSD Normalization: | ------------------- | * Applied: Yes | * Method Type: average_centered | * ITSD Removed After Normalization: Yes | * Timestamp: 2026-11-25 09:42:37 |  | Log Transformation: | Between-Sample Normalization: | ----------------------------- | * Method: cyclicloess |  | * Internal Standard Regex: ^ITSD|_d[0-9]+$ |  | RUV-III Batch Correction: | ------------------------- | [ITSDNormalization] |   applied = TRUE |   method_type = average_centered |   itsd_aggregation = median |   itsd_pattern_columns = NA |   removed_itsd = TRUE |   timestamp = 2026-11-25 09:42:37.108362 | Additional Configuration Parameters: | ----------------------------------- | ITSDNormalization: |   Applied: TRUE |   Method Type: average_centered |   Itsd Aggregation: median |   Itsd Pattern Columns: NA |   Removed Itsd: TRUE |   Timestamp: 2026-11-25 09:42:37.108362 |  | Analysis Record: | [6. metab_itsd_norm: metab_itsd_normalisation] |   itsd_aggregation [no_shipped_default] = median |   itsd_feature_ids [input] = NULL |   method [fixed] = ITSD |  | [7. metab_log2: metab_log2] |   offset [no_shipped_default] = 0 | [8. metab_normalized: metab_between_sample_normalisation] |   normalisation_method [default] = cyclicloess |  | [9. metab_correlation_filtered: metab_pearson_selection] |   metab_pearson_pairs.correlation_group [no_shipped_default] = group
+C5	metab	metab_lc	file scripts/metabolomics/metab_filtered_session_summary.txt	Normalization Parameters: | - Method: cyclicloess | - ITSD applied: Yes | - ITSD aggregation: median | - Log2 offset: 0 | - RUV mode: skip | - RUV grouping variable: group
+C5	metab	metab_lc	file scripts/metabolomics/study_parameters.txt	ITSD Normalization: | ------------------- | * Applied: Yes | * Method Type: average_centered | * ITSD Removed After Normalization: Yes | * Timestamp: 2026-11-25 09:42:37 |  | Log Transformation: | Between-Sample Normalization: | ----------------------------- | * Method: cyclicloess |  | * Internal Standard Regex: ^ITSD|_d[0-9]+$ |  | RUV-III Batch Correction: | ------------------------- | [ITSDNormalization] |   applied = TRUE |   method_type = average_centered |   itsd_aggregation = median |   itsd_pattern_columns = NA |   removed_itsd = TRUE |   timestamp = 2026-11-25 09:42:37.108362 | Additional Configuration Parameters: | ----------------------------------- | ITSDNormalization: |   Applied: TRUE |   Method Type: average_centered |   Itsd Aggregation: median |   Itsd Pattern Columns: NA |   Removed Itsd: TRUE |   Timestamp: 2026-11-25 09:42:37.108362 |  | Analysis Record: | [6. metab_itsd_norm: metab_itsd_normalisation] |   itsd_aggregation [no_shipped_default] = median |   itsd_feature_ids [input] = NULL |   method [fixed] = ITSD |  | [7. metab_log2: metab_log2] |   offset [no_shipped_default] = 0 | [8. metab_normalized: metab_between_sample_normalisation] |   normalisation_method [default] = cyclicloess |  | [9. metab_correlation_filtered: metab_pearson_selection] |   metab_pearson_pairs.correlation_group [no_shipped_default] = group
+C5	metab	metab_lc	output at step norm metabolomics_workflow-norm-norm_log	[<TIME>] Starting normalization pipeline... [<TIME>] Post-filtering state captured [<TIME>] Pre-normalization QC plots generated [<TIME>] Applying ITSD normalization (aggregation: median ) [<TIME>] ITSD normalization complete [<TIME>] Applying log2 transformation [<TIME>] Log2 transformation complete [<TIME>] Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; LCMS_Neg 0 non-positive, 0 non-finite [<TIME>] Applying between-sample normalization (method: cyclicloess ) [<TIME>] Between-sample normalization complete [<TIME>] Post-normalization QC plots generated [<TIME>] RUV-III skipped [<TIME>] Generating composite QC figure... [<TIME>] Composite QC figure saved to: <ROOT>/project/metab_lc/results/metabolomics/metabolite_qc/composite_QC_figure [<TIME>] Normalization pipeline complete!
+C5	metab	metab_lc	output at step correlation metabolomics_workflow-norm-norm_log	[<TIME>] Starting normalization pipeline... [<TIME>] Post-filtering state captured [<TIME>] Pre-normalization QC plots generated [<TIME>] Applying ITSD normalization (aggregation: median ) [<TIME>] ITSD normalization complete [<TIME>] Applying log2 transformation [<TIME>] Log2 transformation complete [<TIME>] Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; LCMS_Neg 0 non-positive, 0 non-finite [<TIME>] Applying between-sample normalization (method: cyclicloess ) [<TIME>] Between-sample normalization complete [<TIME>] Post-normalization QC plots generated [<TIME>] RUV-III skipped [<TIME>] Generating composite QC figure... [<TIME>] Composite QC figure saved to: <ROOT>/project/metab_lc/results/metabolomics/metabolite_qc/composite_QC_figure [<TIME>] Normalization pipeline complete! [<TIME>] Applying correlation filter (threshold: 0.5 ) [<TIME>] Correlation filtering complete
+C5	metab	metab_lc	lane seconds	104
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journey status (KIT-188 rule)	uncorrected
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journey class	NA
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	journey step	NA
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	missing share	0.1983333
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	RUV best_k	NA;NA
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	RUV best_k assays	LCMS_Neg;LCMS_Pos
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	RUV control_count	NA;NA
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	optimisation success per assay	FALSE;FALSE
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	optimisation error per assay	No valid percentage found;No valid percentage found
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	assays into RUV	LCMS_Neg;LCMS_Pos
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	assays out of RUV	LCMS_Neg;LCMS_Pos
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	assays equal in -> out	TRUE;TRUE
+C12	lipid	c KIT-188 L12 N1 401 vd20 LA	logger lines total	535

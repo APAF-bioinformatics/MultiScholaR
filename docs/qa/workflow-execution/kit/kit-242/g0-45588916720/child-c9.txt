@@ -1,0 +1,6 @@
+case C9 ...
+[1] "normalisation_method = cyclicloess"
+[1] "normalisation_method = quantile"
+[1] "normalisation_method = scale"
+[1] "normalisation_method = quantile"
+case C9: ok in 0.9 s

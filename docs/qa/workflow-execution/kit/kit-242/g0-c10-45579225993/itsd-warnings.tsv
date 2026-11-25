@@ -1,0 +1,20 @@
+case	index	text
+decl_lipid	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+decl_lipid	2	Assay 'LCMS_Neg': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+decl_metab	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+decl_metab	2	Assay 'GCMS': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+k172_f172_lipid	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k172_conc_lipid	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k172_f172_metab	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+k172_conc_metab	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+k188_L12_N1_401_none	1	Assay 'LCMS_Neg': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_L12_N1_401_none	2	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_L12_N1_401_vd20	1	Assay 'LCMS_Neg': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_L12_N1_401_vd20	2	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_L64_N1_401_none	1	Assay 'LCMS_Neg': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_L64_N1_401_none	2	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_K172c_lipid	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k188_K172c_metab	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+k190_Nr_r1_lipid	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.
+k190_Nr_r1_metab	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'Ontology'. Skipping normalization.
+k190_Nw_r1_lipid	1	Assay 'LCMS_Pos': No ITSD features identified using regex '^IS_' in columns 'LipidClass'. Skipping normalization.

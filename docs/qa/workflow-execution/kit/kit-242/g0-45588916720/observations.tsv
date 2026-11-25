@@ -1,0 +1,19 @@
+case	class	arm	item	value
+C9	prot	proteomics empty column cyclicloess	result	completed
+C9	prot	proteomics empty column cyclicloess	S4 args normalisation_method	absent
+C9	prot	proteomics empty column cyclicloess	finite values in the whole table (of 720)	660
+C9	prot	proteomics empty column cyclicloess	every value missing	FALSE
+C9	prot	proteomics empty column cyclicloess	finite values in the other samples (of 660)	660
+C9	prot	proteomics empty column cyclicloess	finite values in sample S	0
+C9	prot	proteomics empty column cyclicloess	other samples changed (max abs diff)	1.065296
+C9	prot	proteomics empty column quantile	result	stopped: 'x' and 'y' lengths differ
+C9	prot	proteomics empty column scale	result	completed
+C9	prot	proteomics empty column scale	S4 args normalisation_method	absent
+C9	prot	proteomics empty column scale	finite values in the whole table (of 720)	0
+C9	prot	proteomics empty column scale	every value missing	TRUE
+C9	prot	proteomics empty column scale	finite values in the other samples (of 660)	0
+C9	prot	proteomics empty column scale	finite values in sample S	0
+C9	prot	proteomics empty column scale	other samples changed (max abs diff)	NA
+C9	prot	proteomics one value quantile	result	stopped: need at least two non-NA values to interpolate
+C9	trx	TMM control	result	completed
+C9	trx	TMM planted error	result	stopped: planted

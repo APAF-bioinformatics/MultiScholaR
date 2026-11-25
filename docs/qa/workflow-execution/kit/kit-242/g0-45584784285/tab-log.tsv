@@ -1,0 +1,109 @@
+case	class	arm	index	line
+C1	lipid	managed tab	1	Starting normalization pipeline...
+C1	lipid	managed tab	2	Post-filtering state captured
+C1	lipid	managed tab	3	Pre-normalization QC plots generated
+C1	lipid	managed tab	4	ITSD normalization skipped
+C1	lipid	managed tab	5	Applying log2 transformation
+C1	lipid	managed tab	6	Log2 transformation complete
+C1	lipid	managed tab	7	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C1	lipid	managed tab	8	Applying between-sample normalization (method: cyclicloess )
+C1	lipid	managed tab	9	Between-sample normalization complete
+C1	lipid	managed tab	10	Post-normalization QC plots generated
+C1	lipid	managed tab	11	RUV-III skipped
+C1	lipid	managed tab	12	Normalization pipeline complete!
+C3	lipid	managed tab	1	Starting normalization pipeline...
+C3	lipid	managed tab	2	Post-filtering state captured
+C3	lipid	managed tab	3	Pre-normalization QC plots generated
+C3	lipid	managed tab	4	Applying ITSD normalization (aggregation: median )
+C3	lipid	managed tab	5	ITSD normalization complete
+C3	lipid	managed tab	6	Applying log2 transformation
+C3	lipid	managed tab	7	Log2 transformation complete
+C3	lipid	managed tab	8	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C3	lipid	managed tab	9	Applying between-sample normalization (method: cyclicloess )
+C3	lipid	managed tab	10	Between-sample normalization complete
+C3	lipid	managed tab	11	Post-normalization QC plots generated
+C3	lipid	managed tab	12	RUV-III skipped
+C3	lipid	managed tab	13	Normalization pipeline complete!
+C3m	lipid	managed tab	1	Starting normalization pipeline...
+C3m	lipid	managed tab	2	Assay A1 : 5 ITSD features selected
+C3m	lipid	managed tab	3	Post-filtering state captured
+C3m	lipid	managed tab	4	Pre-normalization QC plots generated
+C3m	lipid	managed tab	5	Applying ITSD normalization (aggregation: median )
+C3m	lipid	managed tab	6	ITSD normalization complete
+C3m	lipid	managed tab	7	Applying log2 transformation
+C3m	lipid	managed tab	8	Log2 transformation complete
+C3m	lipid	managed tab	9	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C3m	lipid	managed tab	10	Applying between-sample normalization (method: cyclicloess )
+C3m	lipid	managed tab	11	Between-sample normalization complete
+C3m	lipid	managed tab	12	Post-normalization QC plots generated
+C3m	lipid	managed tab	13	RUV-III skipped
+C3m	lipid	managed tab	14	Normalization pipeline complete!
+C12	lipid	managed tab	1	Starting normalization pipeline...
+C12	lipid	managed tab	2	Post-filtering state captured
+C12	lipid	managed tab	3	Pre-normalization QC plots generated
+C12	lipid	managed tab	4	ITSD normalization skipped
+C12	lipid	managed tab	5	Applying log2 transformation
+C12	lipid	managed tab	6	Log2 transformation complete
+C12	lipid	managed tab	7	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C12	lipid	managed tab	8	Applying between-sample normalization (method: cyclicloess )
+C12	lipid	managed tab	9	Between-sample normalization complete
+C12	lipid	managed tab	10	Post-normalization QC plots generated
+C12	lipid	managed tab	11	Running RUV-III (mode: automatic )
+C12	lipid	managed tab	12	RUV optimization complete. Best k per assay: A1 = 1, A2 = NA
+C12	lipid	managed tab	13	RUV-III correction applied
+C12	lipid	managed tab	14	RUV QC plots generated
+C12	lipid	managed tab	15	Normalization pipeline complete!
+C1	metab	managed tab	1	Starting normalization pipeline...
+C1	metab	managed tab	2	Post-filtering state captured
+C1	metab	managed tab	3	Pre-normalization QC plots generated
+C1	metab	managed tab	4	ITSD normalization skipped
+C1	metab	managed tab	5	Applying log2 transformation
+C1	metab	managed tab	6	Log2 transformation complete
+C1	metab	managed tab	7	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C1	metab	managed tab	8	Applying between-sample normalization (method: cyclicloess )
+C1	metab	managed tab	9	Between-sample normalization complete
+C1	metab	managed tab	10	Post-normalization QC plots generated
+C1	metab	managed tab	11	RUV-III skipped
+C1	metab	managed tab	12	Normalization pipeline complete!
+C3	metab	managed tab	1	Starting normalization pipeline...
+C3	metab	managed tab	2	Post-filtering state captured
+C3	metab	managed tab	3	Pre-normalization QC plots generated
+C3	metab	managed tab	4	Applying ITSD normalization (aggregation: median )
+C3	metab	managed tab	5	ITSD normalization complete
+C3	metab	managed tab	6	Applying log2 transformation
+C3	metab	managed tab	7	Log2 transformation complete
+C3	metab	managed tab	8	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C3	metab	managed tab	9	Applying between-sample normalization (method: cyclicloess )
+C3	metab	managed tab	10	Between-sample normalization complete
+C3	metab	managed tab	11	Post-normalization QC plots generated
+C3	metab	managed tab	12	RUV-III skipped
+C3	metab	managed tab	13	Normalization pipeline complete!
+C3m	metab	managed tab	1	Starting normalization pipeline...
+C3m	metab	managed tab	2	Assay A1 : 5 ITSD features selected
+C3m	metab	managed tab	3	Post-filtering state captured
+C3m	metab	managed tab	4	Pre-normalization QC plots generated
+C3m	metab	managed tab	5	Applying ITSD normalization (aggregation: median )
+C3m	metab	managed tab	6	ITSD normalization complete
+C3m	metab	managed tab	7	Applying log2 transformation
+C3m	metab	managed tab	8	Log2 transformation complete
+C3m	metab	managed tab	9	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C3m	metab	managed tab	10	Applying between-sample normalization (method: cyclicloess )
+C3m	metab	managed tab	11	Between-sample normalization complete
+C3m	metab	managed tab	12	Post-normalization QC plots generated
+C3m	metab	managed tab	13	RUV-III skipped
+C3m	metab	managed tab	14	Normalization pipeline complete!
+C12	metab	managed tab	1	Starting normalization pipeline...
+C12	metab	managed tab	2	Post-filtering state captured
+C12	metab	managed tab	3	Pre-normalization QC plots generated
+C12	metab	managed tab	4	ITSD normalization skipped
+C12	metab	managed tab	5	Applying log2 transformation
+C12	metab	managed tab	6	Log2 transformation complete
+C12	metab	managed tab	7	Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite
+C12	metab	managed tab	8	Applying between-sample normalization (method: cyclicloess )
+C12	metab	managed tab	9	Between-sample normalization complete
+C12	metab	managed tab	10	Post-normalization QC plots generated
+C12	metab	managed tab	11	Running RUV-III (mode: automatic )
+C12	metab	managed tab	12	RUV optimization complete. Best k per assay: A1 = 1, A2 = NA
+C12	metab	managed tab	13	RUV-III correction applied
+C12	metab	managed tab	14	RUV QC plots generated
+C12	metab	managed tab	15	Normalization pipeline complete!

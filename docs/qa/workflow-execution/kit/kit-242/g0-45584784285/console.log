@@ -1,0 +1,11 @@
+group core: exit 0, 158 s, ok
+group tab: exit 0, 145 s, ok
+group replay: exit 0, 39 s, ok
+group lanes: exit 0, 224 s, ok
+group k188: exit 0, 22 s, ok
+group	exit	seconds	error
+core	0	158.1	
+tab	0	144.9	
+replay	0	38.9	
+lanes	0	224.5	
+k188	0	22.4	
