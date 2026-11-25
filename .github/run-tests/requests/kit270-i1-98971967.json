@@ -1,0 +1,52 @@
+{
+  "requested_by": "KIT-270 instrument re-send 1 of 3 (VAL-54): scripts job only, guards-check.R ListReporter file name fix; ceiling 70 job-minutes",
+  "label": "KIT-270 instrument 1: scripts only on kit-270 98971967",
+  "package_commit": "989719676d68e4cb7cf6461c4ddb42e4cdd88637",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-270/guards-check.R",
+      "args": [
+        "fc3657f96ffde6a9a359c03b3df50ee3b24e07e1",
+        "repeat",
+        "5000"
+      ],
+      "out": "kit270-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-270/guards-check.R",
+      "args": [
+        "ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1",
+        "repeat",
+        "5000"
+      ],
+      "out": "kit270-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-270/guards-check.R",
+      "args": [
+        "fc3657f96ffde6a9a359c03b3df50ee3b24e07e1,ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1",
+        "seeded,mutant",
+        "1"
+      ],
+      "out": "kit270-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
