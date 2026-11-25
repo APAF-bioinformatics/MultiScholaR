@@ -39,4 +39,28 @@ Coordinator's instruction after train 1 landed (staging 185ebf75): same procedur
 
 ## Result
 
-(filled after the run)
+Run 45518533965 (request `merge-train-20261125b-6f206314`, run-tests commit 271c3c6d), head
+6f206314 against base 185ebf75, sent once; conclusion success; 315.0 job-minutes of the 540
+ceiling (tests 282.5, check 31.7, plan and results 0.7). Tables in `merge-train-20261125b/`
+(`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`).
+
+Observed, 47 files: 46 `same`, 1 `only-on-head`:
+
+| file | base p/f | head p/f | verdict |
+|---|---|---|---|
+| test-kit200-prot-da-no-value-proteins.R | absent | 538/0 | only-on-head |
+| test-gui-entry-proteomics.R | 189/4 | 189/4 | same |
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides, all 6 findings identical, none only on
+head.
+
+Verdict: KIT-200 meets its declaration exactly (the same verdicts as R2b on 0cf0e440). TRAIN
+GREEN.
+
+Staging had moved to 67569959 (ledger rows VAL-201 to VAL-210 only) by the time the result was
+read, so the train lands by a merge, not a fast-forward; the ledger row stays `VAL-<train2-1>`
+for the coordinator to number.
+
+Not checked: the trees after the run's head (docs only); any file outside the 47; the merge with
+staging 67569959.
