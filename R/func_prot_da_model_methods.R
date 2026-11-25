@@ -411,6 +411,9 @@ setMethod(
         eBayes_robust = as.logical(eBayes_robust)
       )
     }
+    # KIT-201 (D3): the legacy test records the TREAT moderation it ran under (the replay rule marker); the declared
+    # designs' and limpa's records carry none (their TREAT already had the settings, or there is no TREAT step).
+    if (is.null(ruv_model)) da_model <- c(da_model, workflowTreatModerationRecord())
     }
 
 

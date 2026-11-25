@@ -1,0 +1,427 @@
+run_id	gate	host	key	value
+45606206919	W1	linux-runner	step0.case_set	main
+45606206919	W1	linux-runner	step0.GITHUB_PAT	unset or empty
+45606206919	W1	linux-runner	step0.GITHUB_TOKEN	unset or empty
+45606206919	W1	linux-runner	step0.GH_TOKEN	unset or empty
+45606206919	W1	linux-runner	step0.GITHUB_PAT_GITHUB_COM	unset or empty
+45606206919	W1	linux-runner	step0.token_shaped_variables	<none>
+45606206919	W1	linux-runner	step0.GIT_CONFIG_COUNT	unset
+45606206919	W1	linux-runner	step0.GIT_CONFIG_PARAMETERS	unset
+45606206919	W1	linux-runner	step0.GIT_ALLOW_PROTOCOL	file
+45606206919	W1	linux-runner	step0.GIT_TERMINAL_PROMPT	0
+45606206919	W1	linux-runner	step0.GIT_CONFIG_NOSYSTEM	1
+45606206919	W1	linux-runner	step0.GIT_CONFIG_GLOBAL	/home/runner/work/_temp/k245/cfg-host/gitconfig-redirect
+45606206919	W1	linux-runner	step0.config_in_force	gitconfig-redirect
+45606206919	W1	linux-runner	step0.config_file_content	[url "file:///home/runner/work/_temp/k245/remote/"] ;  | insteadOf = https://x-access-token:<dummy>@github.com/ ;  | insteadOf = https://github.com/ ; [http] ;  | proxy = http://127.0.0.1:9
+45606206919	W1	linux-runner	step0.HOME	/home/runner/work/_temp/k245/home
+45606206919	W1	linux-runner	step0.getwd	/home/runner/work/_temp
+45606206919	W1	linux-runner	step0.git_config_global_url_http	url.file:///home/runner/work/_temp/k245/remote/.insteadof https://x-access-token:<dummy>@github.com/ ; url.file:///home/runner/work/_temp/k245/remote/.insteadof https://github.com/ ; http.proxy http://127.0.0.1:9
+45606206919	W1	linux-runner	step0.git_config_system	safe.directory=* ; filter.lfs.clean=git-lfs clean -- %f ; filter.lfs.smudge=git-lfs smudge -- %f ; filter.lfs.process=git-lfs filter-process ; filter.lfs.required=true
+45606206919	W1	linux-runner	step0.git_config_list_status	0
+45606206919	W1	linux-runner	step0.git_config_all_with_origin	file:/home/runner/work/_temp/k245/cfg-host/gitconfig-redirect | url.file:///home/runner/work/_temp/k245/remote/.insteadof=https://x-access-token:<dummy>@github.com/ ; file:/home/runner/work/_temp/k245/cfg-host/gitconfig-redirect | url.file:///home/runner/work/_temp/k245/remote/.insteadof=https://github.com/ ; file:/home/runner/work/_temp/k245/cfg-host/gitconfig-redirect | http.proxy=http://127.0.0.1:9
+45606206919	W1	linux-runner	step0	passed
+45606206919	W1	linux-runner	R	R version 4.6.1 (2026-06-24)
+45606206919	W1	linux-runner	os	Linux 6.8.0-1070-azure
+45606206919	W1	linux-runner	interactive()	FALSE
+45606206919	W1	linux-runner	Sys.which(git)	/usr/bin/git
+45606206919	W1	linux-runner	git --version	git version 2.56.1
+45606206919	W1	linux-runner	PATH	/usr/bin:/bin
+45606206919	W1	linux-runner	MSR_BUNDLE	set
+45606206919	W1	linux-runner	tempdir()	/tmp/Rtmp7eIljS
+45606206919	W1	linux-runner	packageVersion(git2r)	0.36.2
+45606206919	W1	linux-runner	find.package(git2r)	/home/runner/work/_temp/scratch-install/share/multischolar/0.9.0/app/resources/runtime/R/library/git2r
+45606206919	W1	linux-runner	packageVersion(gh)	1.6.1
+45606206919	W1	linux-runner	find.package(gh)	/home/runner/work/_temp/scratch-install/share/multischolar/0.9.0/app/resources/runtime/R/library/gh
+45606206919	W1	linux-runner	packageVersion(gitcreds)	0.1.2
+45606206919	W1	linux-runner	find.package(gitcreds)	/home/runner/work/_temp/scratch-install/share/multischolar/0.9.0/app/resources/runtime/R/library/gitcreds
+45606206919	W1	linux-runner	packageVersion(MultiScholaR)	0.9.0
+45606206919	W1	linux-runner	find.package(MultiScholaR)	/home/runner/work/_temp/scratch-install/share/multischolar/0.9.0/app/resources/runtime/R/library/MultiScholaR
+45606206919	W1	linux-runner	MultiScholaR SourceCommit	e824eefcf83c2418909a572cfcfe2c8205eff207
+45606206919	W1	linux-runner	git2r::libgit2_features()	threads=TRUE ; https=TRUE ; ssh=TRUE
+45606206919	W1	linux-runner	recorder	gh::gh replaced in gh's namespace
+45606206919	W1	linux-runner	T0.gh_token_class	gh_pat
+45606206919	W1	linux-runner	T0.gh_token	empty
+45606206919	W1	linux-runner	T0.push.status	error
+45606206919	W1	linux-runner	T0.push.error_class	simpleError ; error ; condition
+45606206919	W1	linux-runner	T0.push.error_message	DEBUG: Failed to retrieve GitHub token from gh::gh_token()
+45606206919	W1	linux-runner	T0.push.messages	<none>
+45606206919	W1	linux-runner	T0.push.recorder_calls	0
+45606206919	W1	linux-runner	T0.push.recorder	<none>
+45606206919	W1	linux-runner	T0.push.staged_folder_remains	no
+45606206919	W1	linux-runner	T0.push.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-runner	T0.push.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-runner	token.gh_token_with_dummy	not the dummy
+45606206919	W1	linux-runner	token.route	gh::gh_token stood in to return the dummy
+45606206919	W1	linux-runner	P1.status	error
+45606206919	W1	linux-runner	P1.error_class	simpleError ; error ; condition
+45606206919	W1	linux-runner	P1.error_message	R project file does not exist: /home/runner/work/_temp/k245/out-runner/project-k245-p1/k245-p1.Rproj
+45606206919	W1	linux-runner	P1.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45606206919	W1	linux-runner	P1.recorder_calls	0
+45606206919	W1	linux-runner	P1.recorder	<none>
+45606206919	W1	linux-runner	P1.staged_folder_remains	no
+45606206919	W1	linux-runner	P1.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-runner	P1.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-runner	P2.status	error
+45606206919	W1	linux-runner	P2.error_class	multischolar_github_push_failed ; rlang_error ; error ; condition
+45606206919	W1	linux-runner	P2.error_message	the repository kit245-probe-no-such-org/k245-p2 was created on GitHub | but the files could not be sent (system('git push') failed with exit code: | 128). It is empty: delete it on GitHub or use another Project ID.
+45606206919	W1	linux-runner	P2.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd |  ; warning: running command 'git -C '/tmp/Rtmp7eIljS/k245-p2' push origin refs/heads/main' had status 128
+45606206919	W1	linux-runner	P2.recorder_calls	1
+45606206919	W1	linux-runner	P2.recorder	POST /orgs/{org}/repos [.token=dummy; org=kit245-probe-no-such-org; name=k245-p2; private=TRUE; auto_init=FALSE]
+45606206919	W1	linux-runner	P2.staged_folder_remains	no
+45606206919	W1	linux-runner	P2.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-runner	P2.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-runner	P2.git_rerun	skipped: no staged folder
+45606206919	W1	linux-runner	P2g.status	returned TRUE
+45606206919	W1	linux-runner	P2g.error_class	<none>
+45606206919	W1	linux-runner	P2g.error_message	<none>
+45606206919	W1	linux-runner	P2g.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd |  ; Successfully pushed files to https://github.com/kit245-probe-no-such-org/k245-p2g |  ; Repository created at: https://github.com/kit245-probe-no-such-org/k245-p2g |  ; Workflow file renamed to: k245-p2g.Rmd | 
+45606206919	W1	linux-runner	P2g.recorder_calls	1
+45606206919	W1	linux-runner	P2g.recorder	POST /orgs/{org}/repos [.token=dummy; org=kit245-probe-no-such-org; name=k245-p2g; private=TRUE; auto_init=FALSE]
+45606206919	W1	linux-runner	P2g.staged_folder_remains	no
+45606206919	W1	linux-runner	P2g.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-runner	P2g.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-runner	P2g.pushed_tree_git_ls_tree	.gitignore ; k245-p2g.Rproj ; scripts/proteomics/data_cln_LCMS_Pos.tab ; scripts/proteomics/design_matrix.tab ; scripts/proteomics/filtered_session_x.msdia.tar ; scripts/proteomics/import_sources/x.tsv ; scripts/proteomics/k245-p2g.Rmd ; scripts/proteomics/session_state_x.RDS ; scripts/proteomics/study_parameters.txt
+45606206919	W1	linux-runner	P2g.pushed_tree_git2r_ls_tree	.gitignore ; k245-p2g.Rproj ; scripts/proteomics/data_cln_LCMS_Pos.tab ; scripts/proteomics/design_matrix.tab ; scripts/proteomics/filtered_session_x.msdia.tar ; scripts/proteomics/import_sources/x.tsv ; scripts/proteomics/k245-p2g.Rmd ; scripts/proteomics/session_state_x.RDS ; scripts/proteomics/study_parameters.txt
+45606206919	W1	linux-runner	P2g.remote_files_holding_dummy	<none>
+45606206919	W1	linux-runner	P3.status	error
+45606206919	W1	linux-runner	P3.error_class	simpleError ; error ; condition
+45606206919	W1	linux-runner	P3.error_message	menu() cannot be used non-interactively
+45606206919	W1	linux-runner	P3.messages	Multiple R Markdown files found. Please select one to use as the main project workflow: | 
+45606206919	W1	linux-runner	P3.recorder_calls	0
+45606206919	W1	linux-runner	P3.recorder	<none>
+45606206919	W1	linux-runner	P3.staged_folder_remains	no
+45606206919	W1	linux-runner	P3.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-runner	P3.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-runner	P4.git2r_push	pushed
+45606206919	W1	linux-runner	P4.remote_branches	master
+45606206919	W1	linux-runner	P5.proteomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-runner	P5.lipidomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-runner	P5.metabolomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-runner	P5.transcriptomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-runner	after.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-runner	raw_output_unmasked_dummy_count	0
+45606206919	W1	linux-ubuntu-22.04	step0.case_set	main
+45606206919	W1	linux-ubuntu-22.04	step0.GITHUB_PAT	unset or empty
+45606206919	W1	linux-ubuntu-22.04	step0.GITHUB_TOKEN	unset or empty
+45606206919	W1	linux-ubuntu-22.04	step0.GH_TOKEN	unset or empty
+45606206919	W1	linux-ubuntu-22.04	step0.GITHUB_PAT_GITHUB_COM	unset or empty
+45606206919	W1	linux-ubuntu-22.04	step0.token_shaped_variables	<none>
+45606206919	W1	linux-ubuntu-22.04	step0.GIT_CONFIG_COUNT	unset
+45606206919	W1	linux-ubuntu-22.04	step0.GIT_CONFIG_PARAMETERS	unset
+45606206919	W1	linux-ubuntu-22.04	step0.GIT_ALLOW_PROTOCOL	file
+45606206919	W1	linux-ubuntu-22.04	step0.GIT_TERMINAL_PROMPT	0
+45606206919	W1	linux-ubuntu-22.04	step0.GIT_CONFIG_NOSYSTEM	1
+45606206919	W1	linux-ubuntu-22.04	step0.GIT_CONFIG_GLOBAL	/k245cfg/gitconfig-redirect
+45606206919	W1	linux-ubuntu-22.04	step0.config_in_force	gitconfig-redirect
+45606206919	W1	linux-ubuntu-22.04	step0.config_file_content	[url "file:///tmp/k245/remote/"] ;  | insteadOf = https://x-access-token:<dummy>@github.com/ ;  | insteadOf = https://github.com/ ; [http] ;  | proxy = http://127.0.0.1:9
+45606206919	W1	linux-ubuntu-22.04	step0.HOME	/tmp
+45606206919	W1	linux-ubuntu-22.04	step0.getwd	/tmp
+45606206919	W1	linux-ubuntu-22.04	step0	passed
+45606206919	W1	linux-ubuntu-22.04	R	R version 4.6.1 (2026-06-24)
+45606206919	W1	linux-ubuntu-22.04	os	Linux 6.8.0-1070-azure
+45606206919	W1	linux-ubuntu-22.04	interactive()	FALSE
+45606206919	W1	linux-ubuntu-22.04	Sys.which(git)	<none>
+45606206919	W1	linux-ubuntu-22.04	PATH	/usr/bin:/bin
+45606206919	W1	linux-ubuntu-22.04	MSR_BUNDLE	set
+45606206919	W1	linux-ubuntu-22.04	tempdir()	/tmp/Rtmp9miYd2
+45606206919	W1	linux-ubuntu-22.04	packageVersion(git2r)	0.36.2
+45606206919	W1	linux-ubuntu-22.04	find.package(git2r)	/opt/msr installed/app/resources/runtime/R/library/git2r
+45606206919	W1	linux-ubuntu-22.04	packageVersion(gh)	1.6.1
+45606206919	W1	linux-ubuntu-22.04	find.package(gh)	/opt/msr installed/app/resources/runtime/R/library/gh
+45606206919	W1	linux-ubuntu-22.04	packageVersion(gitcreds)	0.1.2
+45606206919	W1	linux-ubuntu-22.04	find.package(gitcreds)	/opt/msr installed/app/resources/runtime/R/library/gitcreds
+45606206919	W1	linux-ubuntu-22.04	packageVersion(MultiScholaR)	0.9.0
+45606206919	W1	linux-ubuntu-22.04	find.package(MultiScholaR)	/opt/msr installed/app/resources/runtime/R/library/MultiScholaR
+45606206919	W1	linux-ubuntu-22.04	MultiScholaR SourceCommit	e824eefcf83c2418909a572cfcfe2c8205eff207
+45606206919	W1	linux-ubuntu-22.04	git2r::libgit2_features()	threads=TRUE ; https=TRUE ; ssh=TRUE
+45606206919	W1	linux-ubuntu-22.04	recorder	gh::gh replaced in gh's namespace
+45606206919	W1	linux-ubuntu-22.04	T0.gh_token_class	gh_pat
+45606206919	W1	linux-ubuntu-22.04	T0.gh_token	empty
+45606206919	W1	linux-ubuntu-22.04	T0.push.status	error
+45606206919	W1	linux-ubuntu-22.04	T0.push.error_class	simpleError ; error ; condition
+45606206919	W1	linux-ubuntu-22.04	T0.push.error_message	DEBUG: Failed to retrieve GitHub token from gh::gh_token()
+45606206919	W1	linux-ubuntu-22.04	T0.push.messages	<none>
+45606206919	W1	linux-ubuntu-22.04	T0.push.recorder_calls	0
+45606206919	W1	linux-ubuntu-22.04	T0.push.recorder	<none>
+45606206919	W1	linux-ubuntu-22.04	T0.push.staged_folder_remains	no
+45606206919	W1	linux-ubuntu-22.04	T0.push.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-ubuntu-22.04	T0.push.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-ubuntu-22.04	token.gh_token_with_dummy	not the dummy
+45606206919	W1	linux-ubuntu-22.04	token.route	gh::gh_token stood in to return the dummy
+45606206919	W1	linux-ubuntu-22.04	P1.status	error
+45606206919	W1	linux-ubuntu-22.04	P1.error_class	simpleError ; error ; condition
+45606206919	W1	linux-ubuntu-22.04	P1.error_message	R project file does not exist: /tmp/k245out/project-k245-p1/k245-p1.Rproj
+45606206919	W1	linux-ubuntu-22.04	P1.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45606206919	W1	linux-ubuntu-22.04	P1.recorder_calls	0
+45606206919	W1	linux-ubuntu-22.04	P1.recorder	<none>
+45606206919	W1	linux-ubuntu-22.04	P1.staged_folder_remains	no
+45606206919	W1	linux-ubuntu-22.04	P1.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-ubuntu-22.04	P1.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-ubuntu-22.04	P2.status	error
+45606206919	W1	linux-ubuntu-22.04	P2.error_class	multischolar_github_git_missing ; rlang_error ; error ; condition
+45606206919	W1	linux-ubuntu-22.04	P2.error_message	pushing needs the git program, which was not found on this computer, so | nothing was created on GitHub. Install Git (git-scm.com), start R again and | press Push again.
+45606206919	W1	linux-ubuntu-22.04	P2.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45606206919	W1	linux-ubuntu-22.04	P2.recorder_calls	0
+45606206919	W1	linux-ubuntu-22.04	P2.recorder	<none>
+45606206919	W1	linux-ubuntu-22.04	P2.staged_folder_remains	no
+45606206919	W1	linux-ubuntu-22.04	P2.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-ubuntu-22.04	P2.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-ubuntu-22.04	P2.git_rerun	skipped: no git
+45606206919	W1	linux-ubuntu-22.04	P2g	skipped: no git
+45606206919	W1	linux-ubuntu-22.04	P3.status	error
+45606206919	W1	linux-ubuntu-22.04	P3.error_class	simpleError ; error ; condition
+45606206919	W1	linux-ubuntu-22.04	P3.error_message	menu() cannot be used non-interactively
+45606206919	W1	linux-ubuntu-22.04	P3.messages	Multiple R Markdown files found. Please select one to use as the main project workflow: | 
+45606206919	W1	linux-ubuntu-22.04	P3.recorder_calls	0
+45606206919	W1	linux-ubuntu-22.04	P3.recorder	<none>
+45606206919	W1	linux-ubuntu-22.04	P3.staged_folder_remains	no
+45606206919	W1	linux-ubuntu-22.04	P3.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-ubuntu-22.04	P3.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-ubuntu-22.04	P4.git2r_push	pushed
+45606206919	W1	linux-ubuntu-22.04	P4.remote_branches	master
+45606206919	W1	linux-ubuntu-22.04	P5.proteomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-ubuntu-22.04	P5.lipidomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-ubuntu-22.04	P5.metabolomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-ubuntu-22.04	P5.transcriptomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-ubuntu-22.04	after.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-ubuntu-22.04	raw_output_unmasked_dummy_count	0
+45606206919	W1	linux-jammy-scm	step0.case_set	main
+45606206919	W1	linux-jammy-scm	step0.GITHUB_PAT	unset or empty
+45606206919	W1	linux-jammy-scm	step0.GITHUB_TOKEN	unset or empty
+45606206919	W1	linux-jammy-scm	step0.GH_TOKEN	unset or empty
+45606206919	W1	linux-jammy-scm	step0.GITHUB_PAT_GITHUB_COM	unset or empty
+45606206919	W1	linux-jammy-scm	step0.token_shaped_variables	<none>
+45606206919	W1	linux-jammy-scm	step0.GIT_CONFIG_COUNT	unset
+45606206919	W1	linux-jammy-scm	step0.GIT_CONFIG_PARAMETERS	unset
+45606206919	W1	linux-jammy-scm	step0.GIT_ALLOW_PROTOCOL	file
+45606206919	W1	linux-jammy-scm	step0.GIT_TERMINAL_PROMPT	0
+45606206919	W1	linux-jammy-scm	step0.GIT_CONFIG_NOSYSTEM	1
+45606206919	W1	linux-jammy-scm	step0.GIT_CONFIG_GLOBAL	/k245cfg/gitconfig-redirect
+45606206919	W1	linux-jammy-scm	step0.config_in_force	gitconfig-redirect
+45606206919	W1	linux-jammy-scm	step0.config_file_content	[url "file:///tmp/k245/remote/"] ;  | insteadOf = https://x-access-token:<dummy>@github.com/ ;  | insteadOf = https://github.com/ ; [http] ;  | proxy = http://127.0.0.1:9
+45606206919	W1	linux-jammy-scm	step0.HOME	/tmp
+45606206919	W1	linux-jammy-scm	step0.getwd	/tmp
+45606206919	W1	linux-jammy-scm	step0.git_config_global_url_http	url.file:///tmp/k245/remote/.insteadof https://x-access-token:<dummy>@github.com/ ; url.file:///tmp/k245/remote/.insteadof https://github.com/ ; http.proxy http://127.0.0.1:9
+45606206919	W1	linux-jammy-scm	step0.git_config_system	fatal: unable to read config file '/etc/gitconfig': No such file or directory
+45606206919	W1	linux-jammy-scm	step0.git_config_list_status	0
+45606206919	W1	linux-jammy-scm	step0.git_config_all_with_origin	file:/k245cfg/gitconfig-redirect | url.file:///tmp/k245/remote/.insteadof=https://x-access-token:<dummy>@github.com/ ; file:/k245cfg/gitconfig-redirect | url.file:///tmp/k245/remote/.insteadof=https://github.com/ ; file:/k245cfg/gitconfig-redirect | http.proxy=http://127.0.0.1:9
+45606206919	W1	linux-jammy-scm	step0	passed
+45606206919	W1	linux-jammy-scm	R	R version 4.6.1 (2026-06-24)
+45606206919	W1	linux-jammy-scm	os	Linux 6.8.0-1070-azure
+45606206919	W1	linux-jammy-scm	interactive()	FALSE
+45606206919	W1	linux-jammy-scm	Sys.which(git)	/usr/bin/git
+45606206919	W1	linux-jammy-scm	git --version	git version 2.34.1
+45606206919	W1	linux-jammy-scm	PATH	/usr/bin:/bin
+45606206919	W1	linux-jammy-scm	MSR_BUNDLE	set
+45606206919	W1	linux-jammy-scm	tempdir()	/tmp/RtmpqsSnpb
+45606206919	W1	linux-jammy-scm	packageVersion(git2r)	0.36.2
+45606206919	W1	linux-jammy-scm	find.package(git2r)	/opt/msr installed/app/resources/runtime/R/library/git2r
+45606206919	W1	linux-jammy-scm	packageVersion(gh)	1.6.1
+45606206919	W1	linux-jammy-scm	find.package(gh)	/opt/msr installed/app/resources/runtime/R/library/gh
+45606206919	W1	linux-jammy-scm	packageVersion(gitcreds)	0.1.2
+45606206919	W1	linux-jammy-scm	find.package(gitcreds)	/opt/msr installed/app/resources/runtime/R/library/gitcreds
+45606206919	W1	linux-jammy-scm	packageVersion(MultiScholaR)	0.9.0
+45606206919	W1	linux-jammy-scm	find.package(MultiScholaR)	/opt/msr installed/app/resources/runtime/R/library/MultiScholaR
+45606206919	W1	linux-jammy-scm	MultiScholaR SourceCommit	e824eefcf83c2418909a572cfcfe2c8205eff207
+45606206919	W1	linux-jammy-scm	git2r::libgit2_features()	threads=TRUE ; https=TRUE ; ssh=TRUE
+45606206919	W1	linux-jammy-scm	recorder	gh::gh replaced in gh's namespace
+45606206919	W1	linux-jammy-scm	T0.gh_token_class	gh_pat
+45606206919	W1	linux-jammy-scm	T0.gh_token	empty
+45606206919	W1	linux-jammy-scm	T0.push.status	error
+45606206919	W1	linux-jammy-scm	T0.push.error_class	simpleError ; error ; condition
+45606206919	W1	linux-jammy-scm	T0.push.error_message	DEBUG: Failed to retrieve GitHub token from gh::gh_token()
+45606206919	W1	linux-jammy-scm	T0.push.messages	<none>
+45606206919	W1	linux-jammy-scm	T0.push.recorder_calls	0
+45606206919	W1	linux-jammy-scm	T0.push.recorder	<none>
+45606206919	W1	linux-jammy-scm	T0.push.staged_folder_remains	no
+45606206919	W1	linux-jammy-scm	T0.push.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-jammy-scm	T0.push.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	token.gh_token_with_dummy	not the dummy
+45606206919	W1	linux-jammy-scm	token.route	gh::gh_token stood in to return the dummy
+45606206919	W1	linux-jammy-scm	P1.status	error
+45606206919	W1	linux-jammy-scm	P1.error_class	simpleError ; error ; condition
+45606206919	W1	linux-jammy-scm	P1.error_message	R project file does not exist: /tmp/k245out/project-k245-p1/k245-p1.Rproj
+45606206919	W1	linux-jammy-scm	P1.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45606206919	W1	linux-jammy-scm	P1.recorder_calls	0
+45606206919	W1	linux-jammy-scm	P1.recorder	<none>
+45606206919	W1	linux-jammy-scm	P1.staged_folder_remains	no
+45606206919	W1	linux-jammy-scm	P1.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-jammy-scm	P1.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	P2.status	error
+45606206919	W1	linux-jammy-scm	P2.error_class	multischolar_github_push_failed ; rlang_error ; error ; condition
+45606206919	W1	linux-jammy-scm	P2.error_message	the repository kit245-probe-no-such-org/k245-p2 was created on GitHub | but the files could not be sent (system('git push') failed with exit code: | 128). It is empty: delete it on GitHub or use another Project ID.
+45606206919	W1	linux-jammy-scm	P2.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd |  ; warning: running command 'git -C '/tmp/RtmpqsSnpb/k245-p2' push origin refs/heads/main' had status 128
+45606206919	W1	linux-jammy-scm	P2.recorder_calls	1
+45606206919	W1	linux-jammy-scm	P2.recorder	POST /orgs/{org}/repos [.token=dummy; org=kit245-probe-no-such-org; name=k245-p2; private=TRUE; auto_init=FALSE]
+45606206919	W1	linux-jammy-scm	P2.staged_folder_remains	no
+45606206919	W1	linux-jammy-scm	P2.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-jammy-scm	P2.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	P2.git_rerun	skipped: no staged folder
+45606206919	W1	linux-jammy-scm	P2g.status	returned TRUE
+45606206919	W1	linux-jammy-scm	P2g.error_class	<none>
+45606206919	W1	linux-jammy-scm	P2g.error_message	<none>
+45606206919	W1	linux-jammy-scm	P2g.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd |  ; Successfully pushed files to https://github.com/kit245-probe-no-such-org/k245-p2g |  ; Repository created at: https://github.com/kit245-probe-no-such-org/k245-p2g |  ; Workflow file renamed to: k245-p2g.Rmd | 
+45606206919	W1	linux-jammy-scm	P2g.recorder_calls	1
+45606206919	W1	linux-jammy-scm	P2g.recorder	POST /orgs/{org}/repos [.token=dummy; org=kit245-probe-no-such-org; name=k245-p2g; private=TRUE; auto_init=FALSE]
+45606206919	W1	linux-jammy-scm	P2g.staged_folder_remains	no
+45606206919	W1	linux-jammy-scm	P2g.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-jammy-scm	P2g.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	P2g.pushed_tree_git_ls_tree	.gitignore ; k245-p2g.Rproj ; scripts/proteomics/data_cln_LCMS_Pos.tab ; scripts/proteomics/design_matrix.tab ; scripts/proteomics/filtered_session_x.msdia.tar ; scripts/proteomics/import_sources/x.tsv ; scripts/proteomics/k245-p2g.Rmd ; scripts/proteomics/session_state_x.RDS ; scripts/proteomics/study_parameters.txt
+45606206919	W1	linux-jammy-scm	P2g.pushed_tree_git2r_ls_tree	.gitignore ; k245-p2g.Rproj ; scripts/proteomics/data_cln_LCMS_Pos.tab ; scripts/proteomics/design_matrix.tab ; scripts/proteomics/filtered_session_x.msdia.tar ; scripts/proteomics/import_sources/x.tsv ; scripts/proteomics/k245-p2g.Rmd ; scripts/proteomics/session_state_x.RDS ; scripts/proteomics/study_parameters.txt
+45606206919	W1	linux-jammy-scm	P2g.remote_files_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	P3.status	error
+45606206919	W1	linux-jammy-scm	P3.error_class	simpleError ; error ; condition
+45606206919	W1	linux-jammy-scm	P3.error_message	menu() cannot be used non-interactively
+45606206919	W1	linux-jammy-scm	P3.messages	Multiple R Markdown files found. Please select one to use as the main project workflow: | 
+45606206919	W1	linux-jammy-scm	P3.recorder_calls	0
+45606206919	W1	linux-jammy-scm	P3.recorder	<none>
+45606206919	W1	linux-jammy-scm	P3.staged_folder_remains	no
+45606206919	W1	linux-jammy-scm	P3.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-jammy-scm	P3.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	P4.git2r_push	pushed
+45606206919	W1	linux-jammy-scm	P4.remote_branches	master
+45606206919	W1	linux-jammy-scm	P5.proteomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-jammy-scm	P5.lipidomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-jammy-scm	P5.metabolomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-jammy-scm	P5.transcriptomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	linux-jammy-scm	after.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm	raw_output_unmasked_dummy_count	0
+45606206919	W1	linux-jammy-scm-p2n	step0.case_set	p2n
+45606206919	W1	linux-jammy-scm-p2n	step0.GITHUB_PAT	unset or empty
+45606206919	W1	linux-jammy-scm-p2n	step0.GITHUB_TOKEN	unset or empty
+45606206919	W1	linux-jammy-scm-p2n	step0.GH_TOKEN	unset or empty
+45606206919	W1	linux-jammy-scm-p2n	step0.GITHUB_PAT_GITHUB_COM	unset or empty
+45606206919	W1	linux-jammy-scm-p2n	step0.token_shaped_variables	<none>
+45606206919	W1	linux-jammy-scm-p2n	step0.GIT_CONFIG_COUNT	unset
+45606206919	W1	linux-jammy-scm-p2n	step0.GIT_CONFIG_PARAMETERS	unset
+45606206919	W1	linux-jammy-scm-p2n	step0.GIT_ALLOW_PROTOCOL	unset
+45606206919	W1	linux-jammy-scm-p2n	step0.GIT_TERMINAL_PROMPT	0
+45606206919	W1	linux-jammy-scm-p2n	step0.GIT_CONFIG_NOSYSTEM	1
+45606206919	W1	linux-jammy-scm-p2n	step0.GIT_CONFIG_GLOBAL	/k245cfg/gitconfig-plain
+45606206919	W1	linux-jammy-scm-p2n	step0.config_in_force	gitconfig-plain
+45606206919	W1	linux-jammy-scm-p2n	step0.config_file_content	<empty>
+45606206919	W1	linux-jammy-scm-p2n	step0.HOME	/tmp
+45606206919	W1	linux-jammy-scm-p2n	step0.getwd	/tmp
+45606206919	W1	linux-jammy-scm-p2n	step0.git_config_global_url_http	<none>
+45606206919	W1	linux-jammy-scm-p2n	step0.git_config_system	fatal: unable to read config file '/etc/gitconfig': No such file or directory
+45606206919	W1	linux-jammy-scm-p2n	step0.git_config_list_status	0
+45606206919	W1	linux-jammy-scm-p2n	step0.git_config_all_with_origin	<none>
+45606206919	W1	linux-jammy-scm-p2n	step0	passed
+45606206919	W1	linux-jammy-scm-p2n	R	R version 4.6.1 (2026-06-24)
+45606206919	W1	linux-jammy-scm-p2n	os	Linux 6.8.0-1070-azure
+45606206919	W1	linux-jammy-scm-p2n	interactive()	FALSE
+45606206919	W1	linux-jammy-scm-p2n	Sys.which(git)	/usr/bin/git
+45606206919	W1	linux-jammy-scm-p2n	git --version	git version 2.34.1
+45606206919	W1	linux-jammy-scm-p2n	PATH	/usr/bin:/bin
+45606206919	W1	linux-jammy-scm-p2n	MSR_BUNDLE	set
+45606206919	W1	linux-jammy-scm-p2n	tempdir()	/tmp/RtmpnuA1lk
+45606206919	W1	linux-jammy-scm-p2n	packageVersion(git2r)	0.36.2
+45606206919	W1	linux-jammy-scm-p2n	find.package(git2r)	/opt/msr installed/app/resources/runtime/R/library/git2r
+45606206919	W1	linux-jammy-scm-p2n	packageVersion(gh)	1.6.1
+45606206919	W1	linux-jammy-scm-p2n	find.package(gh)	/opt/msr installed/app/resources/runtime/R/library/gh
+45606206919	W1	linux-jammy-scm-p2n	packageVersion(gitcreds)	0.1.2
+45606206919	W1	linux-jammy-scm-p2n	find.package(gitcreds)	/opt/msr installed/app/resources/runtime/R/library/gitcreds
+45606206919	W1	linux-jammy-scm-p2n	packageVersion(MultiScholaR)	0.9.0
+45606206919	W1	linux-jammy-scm-p2n	find.package(MultiScholaR)	/opt/msr installed/app/resources/runtime/R/library/MultiScholaR
+45606206919	W1	linux-jammy-scm-p2n	MultiScholaR SourceCommit	e824eefcf83c2418909a572cfcfe2c8205eff207
+45606206919	W1	linux-jammy-scm-p2n	git2r::libgit2_features()	threads=TRUE ; https=TRUE ; ssh=TRUE
+45606206919	W1	linux-jammy-scm-p2n	recorder	gh::gh replaced in gh's namespace
+45606206919	W1	linux-jammy-scm-p2n	token.route	gh::gh_token stood in to return the dummy
+45606206919	W1	linux-jammy-scm-p2n	P2n.status	error
+45606206919	W1	linux-jammy-scm-p2n	P2n.error_class	multischolar_github_push_failed ; rlang_error ; error ; condition
+45606206919	W1	linux-jammy-scm-p2n	P2n.error_message	the repository kit245-probe-no-such-org/k245-p2n was created on GitHub | but the files could not be sent (system('git push') failed with exit code: | 128). It is empty: delete it on GitHub or use another Project ID.
+45606206919	W1	linux-jammy-scm-p2n	P2n.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd |  ; warning: running command 'git -C '/tmp/RtmpnuA1lk/k245-p2n' push origin refs/heads/main' had status 128
+45606206919	W1	linux-jammy-scm-p2n	P2n.recorder_calls	1
+45606206919	W1	linux-jammy-scm-p2n	P2n.recorder	POST /orgs/{org}/repos [.token=dummy; org=kit245-probe-no-such-org; name=k245-p2n; private=TRUE; auto_init=FALSE]
+45606206919	W1	linux-jammy-scm-p2n	P2n.staged_folder_remains	no
+45606206919	W1	linux-jammy-scm-p2n	P2n.staged_git_config_holds_dummy	no file
+45606206919	W1	linux-jammy-scm-p2n	P2n.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm-p2n	P2n.git_rerun	skipped: no staged folder
+45606206919	W1	linux-jammy-scm-p2n	after.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	linux-jammy-scm-p2n	raw_output_unmasked_dummy_count	0
+45606206919	W1	windows-installed	step0.case_set	main
+45606206919	W1	windows-installed	step0.GITHUB_PAT	unset or empty
+45606206919	W1	windows-installed	step0.GITHUB_TOKEN	unset or empty
+45606206919	W1	windows-installed	step0.GH_TOKEN	unset or empty
+45606206919	W1	windows-installed	step0.GITHUB_PAT_GITHUB_COM	unset or empty
+45606206919	W1	windows-installed	step0.token_shaped_variables	<none>
+45606206919	W1	windows-installed	step0.GIT_CONFIG_COUNT	unset
+45606206919	W1	windows-installed	step0.GIT_CONFIG_PARAMETERS	unset
+45606206919	W1	windows-installed	step0.GIT_ALLOW_PROTOCOL	file
+45606206919	W1	windows-installed	step0.GIT_TERMINAL_PROMPT	0
+45606206919	W1	windows-installed	step0.GIT_CONFIG_NOSYSTEM	1
+45606206919	W1	windows-installed	step0.GIT_CONFIG_GLOBAL	D:\a\_temp\k245\gitconfig-redirect
+45606206919	W1	windows-installed	step0.config_in_force	gitconfig-redirect
+45606206919	W1	windows-installed	step0.config_file_content	[url "file:///D:/a/_temp/k245/remote/"] ;  | insteadOf = https://x-access-token:<dummy>@github.com/ ;  | insteadOf = https://github.com/ ; [http] ;  | proxy = http://127.0.0.1:9
+45606206919	W1	windows-installed	step0.HOME	D:\a\_temp\k245\home
+45606206919	W1	windows-installed	step0.USERPROFILE	D:\a\_temp\k245\home
+45606206919	W1	windows-installed	step0.getwd	D:/a/_temp
+45606206919	W1	windows-installed	step0	passed
+45606206919	W1	windows-installed	R	R version 4.6.1 (2026-06-24 ucrt)
+45606206919	W1	windows-installed	os	Windows Server x64
+45606206919	W1	windows-installed	interactive()	FALSE
+45606206919	W1	windows-installed	Sys.which(git)	<none>
+45606206919	W1	windows-installed	PATH	C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/x86_64-w64-mingw32.static.posix/bin;C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/usr/bin;C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0
+45606206919	W1	windows-installed	MSR_BUNDLE	set
+45606206919	W1	windows-installed	tempdir()	C:\Users\RUNNER~1\AppData\Local\Temp\RtmpiWTQ4W
+45606206919	W1	windows-installed	packageVersion(git2r)	0.36.2
+45606206919	W1	windows-installed	find.package(git2r)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/git2r
+45606206919	W1	windows-installed	packageVersion(gh)	1.6.1
+45606206919	W1	windows-installed	find.package(gh)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/gh
+45606206919	W1	windows-installed	packageVersion(gitcreds)	0.1.2
+45606206919	W1	windows-installed	find.package(gitcreds)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/gitcreds
+45606206919	W1	windows-installed	packageVersion(MultiScholaR)	0.9.0
+45606206919	W1	windows-installed	find.package(MultiScholaR)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/MultiScholaR
+45606206919	W1	windows-installed	MultiScholaR SourceCommit	e824eefcf83c2418909a572cfcfe2c8205eff207
+45606206919	W1	windows-installed	git2r::libgit2_features()	threads=TRUE ; https=TRUE ; ssh=TRUE
+45606206919	W1	windows-installed	recorder	gh::gh replaced in gh's namespace
+45606206919	W1	windows-installed	T0.gh_token_class	gh_pat
+45606206919	W1	windows-installed	T0.gh_token	empty
+45606206919	W1	windows-installed	T0.push.status	error
+45606206919	W1	windows-installed	T0.push.error_class	simpleError ; error ; condition
+45606206919	W1	windows-installed	T0.push.error_message	DEBUG: Failed to retrieve GitHub token from gh::gh_token()
+45606206919	W1	windows-installed	T0.push.messages	<none>
+45606206919	W1	windows-installed	T0.push.recorder_calls	0
+45606206919	W1	windows-installed	T0.push.recorder	<none>
+45606206919	W1	windows-installed	T0.push.staged_folder_remains	no
+45606206919	W1	windows-installed	T0.push.staged_git_config_holds_dummy	no file
+45606206919	W1	windows-installed	T0.push.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	windows-installed	token.gh_token_with_dummy	not the dummy
+45606206919	W1	windows-installed	token.route	gh::gh_token stood in to return the dummy
+45606206919	W1	windows-installed	P1.status	error
+45606206919	W1	windows-installed	P1.error_class	simpleError ; error ; condition
+45606206919	W1	windows-installed	P1.error_message	R project file does not exist: D:\a\_temp\k245\out-windows/project-k245-p1/k245-p1.Rproj
+45606206919	W1	windows-installed	P1.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45606206919	W1	windows-installed	P1.recorder_calls	0
+45606206919	W1	windows-installed	P1.recorder	<none>
+45606206919	W1	windows-installed	P1.staged_folder_remains	no
+45606206919	W1	windows-installed	P1.staged_git_config_holds_dummy	no file
+45606206919	W1	windows-installed	P1.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	windows-installed	P2.status	error
+45606206919	W1	windows-installed	P2.error_class	multischolar_github_git_missing ; rlang_error ; error ; condition
+45606206919	W1	windows-installed	P2.error_message	pushing needs the git program, which was not found on this computer, so | nothing was created on GitHub. Install Git (git-scm.com), start R again and | press Push again.
+45606206919	W1	windows-installed	P2.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45606206919	W1	windows-installed	P2.recorder_calls	0
+45606206919	W1	windows-installed	P2.recorder	<none>
+45606206919	W1	windows-installed	P2.staged_folder_remains	no
+45606206919	W1	windows-installed	P2.staged_git_config_holds_dummy	no file
+45606206919	W1	windows-installed	P2.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	windows-installed	P2.git_rerun	skipped: no git
+45606206919	W1	windows-installed	P2g	skipped: no git
+45606206919	W1	windows-installed	P3.status	error
+45606206919	W1	windows-installed	P3.error_class	simpleError ; error ; condition
+45606206919	W1	windows-installed	P3.error_message	menu() cannot be used non-interactively
+45606206919	W1	windows-installed	P3.messages	Multiple R Markdown files found. Please select one to use as the main project workflow: | 
+45606206919	W1	windows-installed	P3.recorder_calls	0
+45606206919	W1	windows-installed	P3.recorder	<none>
+45606206919	W1	windows-installed	P3.staged_folder_remains	no
+45606206919	W1	windows-installed	P3.staged_git_config_holds_dummy	no file
+45606206919	W1	windows-installed	P3.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	windows-installed	P4.git2r_push	pushed
+45606206919	W1	windows-installed	P4.remote_branches	master
+45606206919	W1	windows-installed	P5.proteomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	windows-installed	P5.lipidomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	windows-installed	P5.metabolomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	windows-installed	P5.transcriptomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45606206919	W1	windows-installed	after.files_under_tempdir_holding_dummy	<none>
+45606206919	W1	windows-installed	raw_output_unmasked_dummy_count	0

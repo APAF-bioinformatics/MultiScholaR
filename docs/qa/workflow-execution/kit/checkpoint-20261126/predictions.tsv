@@ -1,0 +1,52 @@
+file	declared_by	base_expected	head_expected	verdict_expected	trains
+test-omics-summary-core.R	KIT-212 E16 label (VAL-226); KIT-224 leaf (VAL-213)	676/25/2	676/25/2	differs as declared (message-changed)	train 3, train 6
+test-kit212-da-current.R	KIT-212 new file	absent	309/0/0	only-on-head, no failure	train 3
+test-kit215-not-tested-lists.R	KIT-215 new file	absent	112/0/0	only-on-head, no failure	train 3
+test-kit174-ruv-grouping.R	KIT-174 new file	absent	77/0/0	only-on-head, no failure	train 3
+test-kit225-prot-norm-reset-source.R	KIT-225 new file	absent	56/0/0	only-on-head, no failure	train 3
+test-prot-05b-norm-module-contracts.R	KIT-225 (VAL-229)	439/0/22	440/0/22	differs as declared (count-changed)	train 3
+test-workflow-saved-da.R	KIT-220 deferred W1 values (VAL-230); KIT-243 files values (VAL-268); KIT-201 D5 (VAL-266)	780/171/0	776/175/0	differs as declared (message-changed)	train 4, train 8
+test-kit220-da-threshold-consumers.R	KIT-220 new file	absent	79/0/0	only-on-head, no failure	train 4
+test-integration-removed-factors.R	KIT-234 (VAL-231)	526/0/3	520/0/3	differs as declared (count-changed)	train 4
+test-go-propagation.R	KIT-234 (VAL-231)	331/0/1	321/0/1	differs as declared (count-changed)	train 4
+test-enrichment-significance.R	KIT-234 (VAL-231)	191/0/0	181/0/0	differs as declared (count-changed)	train 4
+test-kit222-replicate-keys.R	KIT-222 new file	absent	456/0/0	only-on-head, no failure	train 4
+test-kit218-da-wrapper-tail.R	KIT-218 new file	absent	80/0/2	only-on-head, no failure	train 4
+test-kit227-report-ruv-sentences.R	KIT-227 new file	absent	166/0/0	only-on-head, no failure	train 4
+test-kit235-lipid-metab-report-parser.R	KIT-235 new file	absent	50/0/0	only-on-head, no failure	train 4
+test-kit234-workbooks-withdrawn.R	KIT-234 new file	absent	29/0/0	only-on-head, no failure	train 4
+test-integration-workbook.R	KIT-234 (VAL-231)	53/0/0	43/0/0	differs as declared (count-changed)	train 4
+test-integration-gui.R	KIT-239 (VAL-255), KIT-240 (VAL-269)	397/0/0	405/0/0	differs as declared (count-changed)	train 5, train 9
+test-integration-record.R	KIT-239 (VAL-255)	133/0/0	167/0/0	differs as declared (count-changed)	train 5
+test-integration-results.R	KIT-239 (VAL-255)	169/0/0	258/0/0	differs as declared (count-changed)	train 5
+test-kit214-sample-columns.R	KIT-214 new file	absent	176/0/0	only-on-head, no failure	train 5
+test-workflow-omics-binding-steps.R	laptop snapshots VAL-181, VAL-189; KIT-214 lines (VAL-259); KIT-224 lines (VAL-213)	58/1/0	58/1/0	differs as declared (message-changed)	train 5, train 6
+test-workflow-omics-declarations.R	laptop snapshots VAL-181, VAL-189; KIT-214 lines (VAL-259); KIT-224 lines (VAL-213)	45/23/0	45/23/0	differs as declared (message-changed)	train 5, train 6
+test-kit226-gprofiler-columns.R	KIT-226 new file	absent	38/0/0	only-on-head, no failure	train 5
+test-kit241-enrich-download-zip.R	KIT-241 new file	absent	15/0/0	only-on-head, no failure	train 5
+test-prot-norm-core.R	KIT-224 lipid_ruv/metab_ruv digests (VAL-213); KIT-244 re-pin (VAL-246)	1548/306/0	1548/306/0	differs as declared (message-changed)	train 6
+test-kit224-ruv-feature-levels.R	KIT-224 new file	absent	69/0/0	only-on-head, no failure	train 6
+test-module-ci-trx-summary.R	KIT-224 (VAL-206)	86/2/0	87/1/0	differs as declared (message-changed)	train 6
+test-omic-summary-module.R	KIT-224 leaf (VAL-213)	1675/28/0	1675/28/0	differs as declared (message-changed)	train 6
+test-workflow-trx-declarations.R	KIT-224 (VAL-206)	309/33/0	313/31/0	differs as declared (message-changed)	train 6
+test-integration-input-transcriptomics.R	KIT-224 (VAL-206)	78/0/0	79/0/0	differs as declared (count-changed)	train 6
+test-kit127-omics-ruv-factors.R	KIT-224 (VAL-206)	421/1/0	425/1/0	differs as declared (count-changed)	train 6
+test-metab-03a-ruviii-c-varying-characterization.R	KIT-224 (VAL-206)	32/0/0	40/0/0	differs as declared (count-changed)	train 6
+test-lipid-12c-ruv-s4-characterization.R	KIT-224 (VAL-206)	59/0/0	67/0/0	differs as declared (count-changed)	train 6
+test-gui-entry-transcriptomics.R	KIT-224 export leaf (VAL-236)	16/13/0	16/13/0	differs as declared (message-changed)	train 6
+test-kit251-replicate-filter-one-click.R	KIT-251 new file	absent	9/0/0	only-on-head, no failure	train 6
+test-kit252-managed-failure-text.R	KIT-252 new file	absent	72/0/0	only-on-head, no failure	train 7
+test-kit250-organism-dialog.R	KIT-250 new file	absent	119/0/0	only-on-head, no failure	train 7
+test-gui-entry-proteomics.R	KIT-201 moved references, D5 (VAL-266)	189/4/0	168/25/0	differs as declared (new-failure)	train 8
+test-kit244-limpa-pass-through.R	KIT-244 new file	absent	204/0/0	only-on-head, no failure	train 8
+test-prot-ruv-factors-in-model.R	KIT-201 (VAL-266), fixed	306/1/0	312/0/0	differs as declared (fixed)	train 8
+test-omic-da-module.R	KIT-201 (VAL-266)	1316/53/0	1289/80/0	differs as declared (new-failure)	train 8
+test-kit243-summary-current-outputs.R	KIT-243 new file	absent	246/0/0	only-on-head, no failure	train 8
+test-kit201-treat-moderation.R	KIT-201 new file	absent	89/0/0	only-on-head, no failure	train 8
+test-omic-enrich-module.R	KIT-201 (VAL-266); flaky I13 leaf	1051/19/0	1011/59/0	differs as declared (new-failure)	train 8
+test-omics-enrich-core.R	KIT-201 (VAL-266)	232/9/1	221/20/1	differs as declared (new-failure)	train 8
+test-integration-model.R	KIT-240 (VAL-269)	263/0/0	265/0/0	differs as declared (count-changed)	train 9
+test-kit245-github-panel.R	KIT-245 new file	absent	42/0/0	only-on-head, no failure	train 9
+test-kit245-github-push-safety.R	KIT-245 new file	absent	87/0/0	only-on-head, no failure	train 9
+test-kit240-integration-default.R	KIT-240 new file	absent	92/0/1	only-on-head, no failure	train 9
+test-kit256-tech-rep-selection-cleared.R	KIT-256 new file	absent	20/0/0	only-on-head, no failure	train 9
