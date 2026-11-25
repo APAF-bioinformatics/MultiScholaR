@@ -1,0 +1,2 @@
+run	commit	purpose	job_minutes	result
+45704530515	8f334001 (base 4d588ba3)	R1 tests-only: new and moved tests fail on old code	45.2	T6(b) 9, T10 5, T3 2 failures as predicted; kit240 file otherwise 82 passed 1 skipped (base 92/0/1); new file 1 passed 2 failed. 3.01 core-hours (over the 25 job-minute step ceiling: setup of 4 jobs; total budget unaffected)

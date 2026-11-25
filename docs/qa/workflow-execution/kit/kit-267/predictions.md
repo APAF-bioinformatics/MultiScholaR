@@ -15,3 +15,11 @@ or an unexpected failure elsewhere stops the ticket (ticket section 14, rule 1).
 | test-kit267-enrichment-defaults.R | T3: 2 failures (8 provisional of 13 vs 0; `mark_organism` absent) |
 
 Base column (same files on 4d588ba3): kit240 file passes as on KIT-240's runs; the new file is absent (only-on-head).
+
+R1 observed (run 45704530515): as predicted (9, 5, 2). R1 cost 45.2 job-minutes (3.01 core-hours), above the ticket's 25 job-minute step figure (four test jobs of about 9 to 14 minutes each, plus plan and results); recorded as a deviation; the total ceiling (470) is unchanged.
+
+## R2 (fix commit against the tests-only commit; base = the commit that holds these predictions, code identical to 8f334001; expected 155 job-minutes, ceiling 210)
+
+Scope recounted on the base: 22 files (the ticket's 21 plus the new file); the list is in the request. R CMD check on both sides.
+Predictions: every file `same` except test-kit240-integration-default.R (`fixed`: T6 (b) and T10 pass, 0 failures on head; base shows its 14 failures) and test-kit267-enrichment-defaults.R (base 1 pass 2 fail; head 3 pass 0 fail: the file exists on the base, so the verdict is `fixed`, not `only-on-head`). For the 20 other files base and head counts are identical. R CMD check: identical findings on both sides (check-compare.txt lists none only on head or only on base). KIT-240 T6 (c) passes on both sides.
+Decision: any other file differing, or a T6 (c) failure, is stop rule 3 / 2 of the ticket.
