@@ -529,12 +529,13 @@ for (lane_id in c("prot_lfq", "lipid_canonical")) {
 
 test_that("KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged", {
     out <- kit247Lane("lipid_canonical", "correlation", function(api, probe) {
-        planted <- new.env()
-        testthat::local_mocked_bindings(writeOmicsDesignArtifacts = function(...) stop("KIT-247 planted failure after the bus write"),
-            .package = "MultiScholaR", .env = planted)
-        kit247Resave(api, probe$lane, "move")
-        kit247Click(api, "design-confirm_design_resave")
-        withr::deferred_run(planted)
+        # VAL-54 instrument fix (run 45676491133): the planted failure is scoped to these two presses; before, it outlived
+        # the row and every later lipidomics lane's design save failed with it.
+        testthat::with_mocked_bindings({
+            kit247Resave(api, probe$lane, "move")
+            kit247Click(api, "design-confirm_design_resave")
+        }, writeOmicsDesignArtifacts = function(...) stop("KIT-247 planted failure after the bus write"), .package = "MultiScholaR")
+        stopifnot(!any(grepl("planted failure", deparse(get("writeOmicsDesignArtifacts", asNamespace("MultiScholaR"))))))
         failed <- list(history = probe$history(), notes = probe$notes())
         probe$clear_notes()
         kit247Resave(api, probe$lane, "move")
