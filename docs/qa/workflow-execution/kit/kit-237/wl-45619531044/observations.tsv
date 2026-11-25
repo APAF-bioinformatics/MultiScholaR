@@ -1,0 +1,40 @@
+session	what	text	utc
+WL1	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T13:55:21Z
+WL1	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T13:55:27Z
+WL1	S5 rendered QC groups		2026-11-25T13:55:43Z
+WL1	S5 rendered sub-tabs	Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter (titles from live omicGuiConfig; expected Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter)	2026-11-25T13:55:47Z
+WL1	S5.4 KIT-251 check (one click)	outcome complete; head protein_replicate_filtered; 'already running' warnings 1; working notices 1	2026-11-25T13:56:52Z
+WL1	S6 rendered defaults	ruv_mode=automatic method=cyclicloess ruv_design_panel_present=FALSE	2026-11-25T13:56:52Z
+WL1	S6.2 rendered threshold	0.5	2026-11-25T13:59:11Z
+WL1	S8 rendered defaults	formula=~ 0 + group q=0.05 lfc=0	2026-11-25T13:59:59Z
+k237_wl_lfq	N2 table for KO_vs_WT (RA-03, RA-05)	1 candidate(s) in the da folder by exact two-sided match; read: results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv	2026-11-25T14:00:39Z
+WL1	S9 rendered settings	contrast=KO_vs_WT taxon=9606 up=0 down=0 q=0.05	2026-11-25T14:00:41Z
+WL2	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:02:50Z
+WL3	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:04:01Z
+WL3	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T14:04:06Z
+WLu-prot_lfq	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:04:18Z
+WLu-prot_lfq	S2 search results chooser	Select: #proteomics_workflow-setup_import-search_results-modal #sF-selectButton is disabled (checkVisibility; 0 unanswered polls; last script error: none)	2026-11-25T14:04:56Z
+WLu-lipid_canonical	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:05:05Z
+WLu-lipid_canonical	S2 chooser assay1_file_std	Select: #lipidomics_workflow-import-assay1_file-modal #sF-selectButton is disabled (checkVisibility; 0 unanswered polls; last script error: none)	2026-11-25T14:05:43Z
+WLu-metab_lc	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:05:52Z
+WLu-metab_lc	S2 chooser assay1_file_std	Select: #metabolomics_workflow-import-assay1_file-modal #sF-selectButton is disabled (checkVisibility; 0 unanswered polls; last script error: none)	2026-11-25T14:06:30Z
+WLu-trx_screen	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:06:39Z
+WLu-trx_screen	S2 chooser assay1_file_std	Select: #transcriptomics_workflow-import-assay1_file-modal #sF-selectButton is disabled (checkVisibility; 0 unanswered polls; last script error: none)	2026-11-25T14:07:16Z
+WL1-lipid_canonical	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:07:25Z
+WL1-lipid_canonical	S5 rendered QC sub-tabs	Intensity Filter > Duplicate Resolution > Internal Standards > Finalize QC	2026-11-25T14:07:41Z
+WL1-lipid_canonical	S5.4 internal standards (known K12, KIT-242)	Error analyzing internal standards: No internal standards found. Pattern: ^IS_|ISTD|Internal|_IS Columns searched: LipidName, LipidClass Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')	2026-11-25T14:09:20Z
+WL1-lipid_canonical	S6 rendered defaults	apply_itsd=TRUE norm_method=cyclicloess ruv_mode=automatic	2026-11-25T14:09:39Z
+WL1-metab_lc	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:15:27Z
+WL1-metab_lc	S5 rendered QC sub-tabs	Intensity Filter > Duplicate Resolution > Internal Standards > Finalize QC	2026-11-25T14:15:44Z
+WL1-metab_lc	S5.4 internal standards (known K12, KIT-242)	Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')	2026-11-25T14:17:22Z
+WL1-metab_lc	S6 rendered defaults	apply_itsd=TRUE norm_method=cyclicloess ruv_mode=automatic	2026-11-25T14:17:41Z
+WL1-trx_screen	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:32:37Z
+WL1-trx_screen	S3 technical-replicate assignments (builder summary)	Group: RPMI, Biological Replicate: 1 |   Samples: RPMI_01_r1, RPMI_01_r2 |   Technical Replicates: 1, 2 | Group: RPMI, Biological Replicate: 2 |   Samples: RPMI_02_r2, RPMI_02_r1 |   Technical Replicates: 2, 1 | Group: RPMI, Biological Replicate: 3 |   Samples: RPMI_03_r2, RPMI_03_r1 |   Technical Replicates: 2, 1 | Group: Sera, Biological Replicate: 1 |   Samples: Sera_01_r2, Sera_01_r1 |   Technical Replicates: 2, 1 | Group: Sera, Biological Replicate: 2 |   Samples: Sera_02_r2, Sera_02_r1 |   Technical Replicates: 2, 1 | Group: Sera, Biological Replicate: 3 |   Samples: Sera_03_r1, Sera_03_r2 |   Technical Replicates: 1, 2	2026-11-25T14:32:56Z
+WL1-trx_screen	S5 rendered QC sub-tabs	Expression Filter > Finalize QC	2026-11-25T14:33:00Z
+WL1-trx_screen	S6 rendered defaults	apply_itsd= norm_method= ruv_mode=automatic	2026-11-25T14:33:26Z
+WL3w	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T14:36:37Z
+WL3w	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T14:36:42Z
+WL3w	S5 rendered QC groups		2026-11-25T14:36:58Z
+WL3w	S5 rendered sub-tabs	Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter (titles from live omicGuiConfig; expected Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter)	2026-11-25T14:36:58Z
+WL3w	S5.4 KIT-251 check (one click)	outcome complete; head protein_replicate_filtered; 'already running' warnings 1; working notices 1	2026-11-25T14:39:06Z
+WL3w	worker ended during S5.2 (Protein Intensity Filter, the longest QC step of WL-1)	worker ended: TRUE at 0.8 s; the step: refused Error applying protein intensity filter: managed action ended: worker_failed	2026-11-25T14:39:09Z

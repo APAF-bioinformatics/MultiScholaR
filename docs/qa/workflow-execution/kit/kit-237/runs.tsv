@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	result
 45605975875	88eefc1d (commit under test 7327607f; driver 76e4b519; routes 47ef001f)	WL: lifecycle on the installed Windows application, four routes; decides instrument proven on Windows	81	instrument not proven: 49 pass, 11 fail, 1 recorded; WL-5 passed; all 11 fails in the instrument's mechanics (outcome.md); VAL-54 instrument rerun 1 follows
+45619531044	3a010ff4 (commit under test 7327607f; driver 76e4b519; routes becc4930)	WL instrument rerun 1 (VAL-54): chooser, plant, omics S7/S8.1 signals, named files, second press; RA-02, RA-03, RA-05	97	instrument not proven: 52 pass, 8 fail, 1 recorded; WL-5 not passed (lipid, metab S6.1w); all 8 in the instrument's mechanics (outcome.md); VAL-54 instrument rerun 2 follows

@@ -1,0 +1,46 @@
+key	value
+planted_commit	d4e4270f413b74a8b3b53ed386b5ee042c0365e5
+planted_commit_check	pass
+commit_under_test	7327607fbed47c01a45bda9998cfb17c4999455a
+package_commit	7327607fbed47c01a45bda9998cfb17c4999455a
+commit_check	pass
+run_branch_head	3a010ff424eb9003b1967f38f5238452d08061d5
+workflow_diff_file	workflow-diff.txt
+workflow_diff_sha256	5d044f9e0fbbe2ab1c8dda0f208918526053b5a8056714fddc56fbed05c43f0b
+source_k233	76e4b519ba32490fa44cc788683f86dd8c0ac787 docs/qa/workflow-execution/kit/kit-233
+source_k237	becc4930c82ba5a901204c1d8a62f2783d80d446 docs/qa/workflow-execution/kit/kit-237
+source_fixtures	7327607fbed47c01a45bda9998cfb17c4999455a tests/testdata/e2e
+journey_R_sha256	3b16610ae0649cf1eb65a2805b35ee73d3aa5eed5fb46b2179e5536ad51e5925
+journey_win_R_sha256	9ed7e52f362bafabe67bb3a733fb6df600f86758487f0c73c3269d56bdbd5be2
+firewall_programs	40
+firewall_rules_added_here	0
+firewall_unruled	0
+LongPathsEnabled_before	1
+LongPathsEnabled_set	0
+runner_image	win25-vs2026 20261116.315.1
+lifecycle_outcome	success
+gui_entry_lanes_outcome	skipped
+e2e_lanes_outcome	success
+request	docs/qa/workflow-execution/kit/kit-237/requests/wl-r1-20261126.json
+run	WL
+commit_under_test	7327607fbed47c01a45bda9998cfb17c4999455a
+journey_commit (KIT-233 journey.R)	76e4b519ba32490fa44cc788683f86dd8c0ac787
+route_commit (KIT-237 files)	becc4930c82ba5a901204c1d8a62f2783d80d446
+routes	prot_lfq lipid_canonical metab_lc trx_screen
+mode	test
+network	firewall: outbound block rules for every .exe under the installed application
+r_version	R version 4.6.1 (2026-06-24 ucrt)
+r_home	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R
+chrome	C:\Program Files\Google\Chrome\Application\chrome.exe
+chrome_version	Google Chrome 157.0.8103.79 
+shinytest2	0.5.1
+cpu	AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD
+cores	4
+launcher_line	MSR-LAUNCHER {"launcher":"process","reason":"win32: no systemd"}
+LongPathsEnabled_read_by_R	0
+project_root	C:/Users/runneradmin/Documents
+project_root_length	30
+application_libpaths	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library
+journey_R_rebound	k233ChooseFile -> k237ChooseFile (folders are .sF-directory); k233DaFile -> k237DaFile (RA-03 exact two-sided match; RA-05 path recorded); k233Action -> k237Action (journey.R's action, then this ticket's records); k233StopSession -> k237StopSession (tree kill, port refusal confirmed); k233ProjectPaths -> k237ProjectPaths (the folder S1 kept; the route's omic); K233_MARK_PANE_JS -> the route's workflow tabset (per session); K233_STATE_JS -> the route's omic stepper (per session, SC-04)
+github_run_id	45619531044
+finished_utc	2026-11-25T14:39:09Z

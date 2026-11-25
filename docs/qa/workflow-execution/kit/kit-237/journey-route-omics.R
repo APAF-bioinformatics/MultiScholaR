@@ -403,8 +403,9 @@ k237StepNormOmic <- function(S, R, step, route) {
     }
     first <- k237Press(S, list(step = "S6.1", name = "normalisation at the defaults", target = paste0(route$prefix, "-norm-run"),
         by = "testid", tabs = tabs, prepare = prepare,
-        digest = function(st) if (route$trx) identical(k237Status(st, route$omic, "normalization"), "complete") else
-            k237HasState(st, route$omic, paste0(route$prefix, c("_norm_complete", "_ruv_corrected", "_normalized"))),
+        # lipid and metab: no digest signal; their states are committed before the pipeline ends (WL rerun 1,
+        # 45619531044: digest at 27.7 s, "Normalization pipeline complete!" during S6.2), as journey.R's S6.1.
+        digest = if (route$trx) function(st) identical(k237Status(st, route$omic, "normalization"), "complete"),
         dom = function(st) if (route$trx) k233Stepper(st, 4L) else
             k233Noted(st, "Normali[sz]ation (pipeline )?complete", "message")), lane)
     if (route$trx || !identical(first$outcome, "complete")) return(first)
@@ -446,11 +447,32 @@ k237StepDaOmic <- function(S, R, step, route) {
     ran <- k233Action(S, c(list(step = "S8.2"), run))
     if (!identical(ran$outcome, "complete")) return(ran)
     # SC-05: the results table opened as a user does; its summary statistics and rows are named outputs; N2 on metab.
+    # The table's rows are not the signal: its default view shows significant features only, empty when none is
+    # (WL rerun 1: metab_lc, 0 significant, S8.3 timed out). The summary statistics are; the table is checked after.
     k233Action(S, list(step = "S8.3", name = "open the DA results table", by = "css",
         target = sprintf("#%s a[data-value='DA Results Table']", de("da_results_tabs")), tabs = tabs,
-        dom = function(st) isTRUE(st$vis[[1L]]), sels = paste0("#", de("da_results_table"), " tbody tr"),
-        outputs = de(c("da_summary_stats", "da_results_table")),
-        after = function(S, res, cap) if (identical(route$omic, "metabolomics")) k237NumberN2Omic(S, R, route)))
+        texts = de("da_summary_stats"),
+        dom = function(st) grepl("Significant (", k233Text(st, de("da_summary_stats")), fixed = TRUE),
+        outputs = de("da_summary_stats"),
+        after = function(S, res, cap) {
+            k237TableCheck(S, route, res)
+            if (identical(route$omic, "metabolomics")) k237NumberN2Omic(S, R, route)
+        }))
+}
+
+#' The DA results table as a named output: required non-empty when the summary counts significant features (the
+#' default view), recorded either way.
+k237TableCheck <- function(S, route, res) {
+    de <- function(x) k237Id(route, "de", x)
+    text <- k233Text(res$st %||% list(), de("da_summary_stats"))
+    sig <- suppressWarnings(as.integer(sub("(?s).*Significant \\([^)]*\\): ([0-9]+).*", "\\1", text, perl = TRUE)))
+    out <- k233CheckOutputs(S, de("da_results_table"))
+    filled <- length(out) && isTRUE(out[[1L]]$nonempty)
+    k233Observation(S$G, S$label, "S8.3 DA results table", sprintf("significant %s; table rows shown: %s", sig, filled))
+    if (isTRUE(sig > 0) && !filled) {
+        k233Finding(S, "S8.3", 3L, sprintf("named output %s empty although %d features are significant",
+            de("da_results_table"), sig))
+    }
 }
 
 #' N2 on an omics route (SC-05): the DA tab's significant count per contrast, assay "All", against the saved

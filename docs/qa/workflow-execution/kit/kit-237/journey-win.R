@@ -174,10 +174,14 @@ k237StopSession <- function(S) {
     invisible(NULL)
 }
 
-#' WL-4 (a) on metab_lc (SC-05): after S8 completes, the DA results table body is emptied in the page and the named
-#' outputs read again; a kind-3 finding naming the table is required.
+#' WL-4 (a) on metab_lc (SC-05): after S8 completes, the table's "Show:" set to "All Results" (a user's choice; with
+#' no significant feature the default view is empty, WL rerun 1), its rows awaited, then the body emptied in the page
+#' and the named outputs read again; a kind-3 finding naming the table is required.
 k237L4aOmic <- function(S, R, route) {
     da <- sprintf("%s_workflow-de-da_results_table", route$omic)
+    k233Set(S, "S8", sprintf("%s_workflow-de-table_significance", route$omic), "all")
+    k233WaitFor(S, sprintf(paste0("(function(){var e=document.getElementById(%s);if(!e){return false;}",
+        "return e.querySelectorAll('tbody tr').length>0 && !e.querySelector('td.dataTables_empty');})()"), k233Json(da)), 30)
     emptied <- k233Js(S, sprintf(paste0("(function(){var e=document.getElementById(%s);if(!e){return false;}",
         "var b=e.querySelectorAll('tbody');b.forEach(function(x){x.innerHTML='';});return b.length>0;})()"), k233Json(da)))
     outputs <- k233CheckOutputs(S, c(sprintf("%s_workflow-de-da_summary_stats", route$omic), da))
@@ -361,8 +365,10 @@ k237ChooseFile <- function(S, step, button, path) {
             return(list(ok = FALSE, how = sprintf("the chooser does not list %s (it lists: %s)", parts[[i]], listed())))
         }
         event <- if (i < length(parts)) "dblclick" else "click"
-        k233Js(S, sprintf("(function(){var f=%s;if(!f){return false;}jQuery(f).trigger('%s');return true;})()",
-            find(parts[[i]]), event))
+        # A native mouse event with button 0, as a user's click gives: shinyFiles selects a row only when
+        # event.button === 0 (shinyFiles.js:77-78); jQuery's trigger() carries no button (WL rerun 1, 45619531044).
+        k233Js(S, sprintf(paste0("(function(){var f=%s;if(!f){return false;}f.dispatchEvent(new MouseEvent('%s',",
+            "{bubbles:true,cancelable:true,button:0,view:window}));return true;})()"), find(parts[[i]]), event))
         k233LogAction(S, step, paste(button, "chooser"), paste(event, parts[[i]]))
     }
     p <- k233Press(S, step, paste(modal, "#sF-selectButton"), "css")

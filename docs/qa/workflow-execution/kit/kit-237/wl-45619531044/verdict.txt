@@ -1,0 +1,2 @@
+instrument not proven on Windows (WL-0, WL-0u, WL-1 to WL-4: 52 pass, 8 fail, 1 recorded)
+WL-5 not passed: no user-mode WJ' may rely on the DOM signals

@@ -184,3 +184,34 @@ modal over 60 s still not met (RA-01: not planted; owed before WJ', ticket secti
 - Whether `taskkill /T /F` plus `kill_tree()` makes the port refuse within 10 s (WL-3).
 - Whether git's zip archive keeps the committed bytes of the fixtures on the runner (`inputs.tsv` decides).
 - The DOM completion signals of the lipid, metab and trx routes (WL-5 is their first check).
+
+## WL instrument rerun 1, run 45619531044 (2026-11-25 13:02 to 14:39 UTC; 97 job-minutes, 6.47 core-hours)
+
+Records: `wl-45619531044/`. Binding as run 1, routes at becc4930. **Verdict: instrument not proven on Windows (52
+pass, 8 fail, 1 recorded); WL-5 not passed (lipid and metab, S6.1w).**
+
+Observed: WL-0, WL-2, WL-3, WL-4 (a), (b), (c) on LFQ pass (the plant now deletes every copy; the missing-file finding
+names `post_norm_pca`). LFQ, lipid and trx reach S10.5; N1 to N4 equal on LFQ (the N2 table, by the exact two-sided
+match, `results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv`, 1 candidate: RA-03, RA-05); K222
+equal on trx (6 keys, 6 biological samples; KIT-222 merged). 32 terminal screenshots taken (RA-02). e2e lanes 88, 190,
+16, 162 passed, none failed. Known findings only, plus one observation for the coordinator: on lipid and metab the first
+press of "Run Normalization Pipeline" is refused "A step is still running" (the tab's own entry QC) while the button is
+shown enabled; the second press, 30 s later with the same settings, completes (runs 1 and rerun 1 alike).
+
+The 8 fails and their cause (instrument mechanics):
+1-4. WL-0u: the chooser now reaches the input folder, but "Select" stays disabled: shinyFiles selects a row only on a
+   click with `event.button === 0` (`shinyFiles.js:77-78`), and jQuery's `trigger('click')` carries no button.
+5, 7. WL-5 on lipid and metab at S6.1w: the digest state is committed at 27.7 s, before the pipeline ends ("Normalization
+   pipeline complete!" appeared during S6.2), so S6.2 was pressed early. journey.R made its own S6.1 page-only for the
+   same reason (its fix 2).
+6, 8 (and N2, WL-4 (a) on metab): `metab_lc` S8.3 timed out: its 6 metabolites have 0 significant, so the results
+   table's default view (significant only) has no rows, and the step's signal waited for rows.
+
+Instrument rerun 2 (VAL-54; no criterion, expected value or stop rule changed): the chooser dispatches native mouse
+events with button 0; lipid and metab S6.1 use the page's completion message only; S8.3 waits for the summary
+statistics and checks the table after (non-empty required when the summary counts significant features); WL-4 (a) on
+metab sets "Show:" to "All Results" (a user's choice) before emptying the table.
+
+Predictions for rerun 2 (written before it): as rerun 1, plus WL-0u passing on all four routes, WL-5 passing on all
+four, `metab_lc` reaching S10.5 with N2 equal (0 and 0) and WL-4 (a) on metab passing.
+
