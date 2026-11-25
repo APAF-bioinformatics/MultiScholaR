@@ -1,0 +1,27 @@
+key	value
+run_mode	g0
+mode	test
+commit_under_test	16112917329a63ab062655f04db5bf1dd7df9729
+records_commit	804a69bd4c54fd604f6479248482a4a83dcad34e
+diff_commit_under_test_vs_records	docs/qa/workflow-execution/kit/kit-250/g0.R docs/qa/workflow-execution/kit/kit-250/k233-journey.R
+diff_only_records_folder	TRUE
+launch_form	tree
+launch_e_form	e
+network_requested	namespace
+r_version	R version 4.6.1 (2026-06-24)
+effective_user_outer	runner
+blas	/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+lapack	/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0
+threads_outer	OMP_NUM_THREADS= OPENBLAS_NUM_THREADS=
+threads_application	OMP/OPENBLAS/MKL_NUM_THREADS=1 (5.1); workers set 1 themselves
+chrome	/usr/bin/google-chrome
+chrome_version	Google Chrome 157.0.8103.78 
+shinytest2	0.5.1
+chromote	0.5.1
+processx	3.9.0
+MultiScholaR	0.9.0
+cpu	AMD EPYC 7763 64-Core Processor
+cores	4
+memory	MemTotal:       16372448 kB
+github_run_id	45594289742
+started_utc	2026-11-25T10:34:08Z

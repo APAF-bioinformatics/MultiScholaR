@@ -1,0 +1,25 @@
+session	mode	quantity	value	evidence
+A	managed (packaging/electron/entry.R, plain launcher)	launcher line	MSR-LAUNCHER {"launcher":"process","reason":"KIT-233 hosted runner: no user D-Bus"}	MSR-LAUNCHER line of the application's console
+A	managed (packaging/electron/entry.R, plain launcher)	driver mouse clicks on Apply (Input.dispatchMouseEvent)	1	at (358.2, 641.8); element at point is the button: TRUE
+A	managed (packaging/electron/entry.R, plain launcher)	click events on the button in the page	1	capture listener on document
+A	managed (packaging/electron/entry.R, plain launcher)	trusted click events on the button	1	event.isTrusted
+A	managed (packaging/electron/entry.R, plain launcher)	shiny:inputchanged events for the button's id	1	values: 1
+A	managed (packaging/electron/entry.R, plain launcher)	R log: observed via module input	0	R/mod_prot_qc_protein_replicate.R:304; run folder logs: 0
+A	managed (packaging/electron/entry.R, plain launcher)	R log: observed via root input	0	R/mod_prot_qc_protein_replicate.R:315; run folder logs: 0
+A	managed (packaging/electron/entry.R, plain launcher)	worker requests for protein_replicate_filter	1	request.rds files: 12 in all (minimum_peptides_per_sample=1, peptide_imputation=1, peptide_intensity_filter=1, peptide_protein_evidence_filter=1, peptide_qvalue_filter=1, peptide_replicate_filter=1, precursor_rollup=1, protein_accession_cleanup=1, protein_duplicate_removal=1, protein_intensity_filter=1, protein_iq_rollup=1, protein_replicate_filter=1); requests-A.tsv
+A	managed (packaging/electron/entry.R, plain launcher)	notifications from the click on	3	[default] Applying protein replicate filter ... || [warning] A protein replicate filter action is already running || [message] protein replicate filter applied successfully
+A	managed (packaging/electron/entry.R, plain launcher)	'already running' warnings	1	A protein replicate filter action is already running
+A	managed (packaging/electron/entry.R, plain launcher)	S5.5 outcome (driver)	complete	
+A	managed (packaging/electron/entry.R, plain launcher)	head after the click (digest)	protein_replicate_filtered	initial > raw_data_s4 > qvalue_filtered > protein_peptide_filtered > precursor_rollup > intensity_filtered > sample_filtered > replicate_filtered > imputed > protein_s4_created > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered
+B	in process (run_app(test_mode = TRUE))	launcher line	MSR-LAUNCHER {"launcher":"in-process","reason":"KIT-251 G0 (b): run_app(test_mode = TRUE)"}	MSR-LAUNCHER line of the application's console
+B	in process (run_app(test_mode = TRUE))	driver mouse clicks on Apply (Input.dispatchMouseEvent)	1	at (358.2, 641.8); element at point is the button: TRUE
+B	in process (run_app(test_mode = TRUE))	click events on the button in the page	1	capture listener on document
+B	in process (run_app(test_mode = TRUE))	trusted click events on the button	1	event.isTrusted
+B	in process (run_app(test_mode = TRUE))	shiny:inputchanged events for the button's id	1	values: 1
+B	in process (run_app(test_mode = TRUE))	R log: observed via module input	0	R/mod_prot_qc_protein_replicate.R:304; run folder logs: 0
+B	in process (run_app(test_mode = TRUE))	R log: observed via root input	0	R/mod_prot_qc_protein_replicate.R:315; run folder logs: 0
+B	in process (run_app(test_mode = TRUE))	worker requests for protein_replicate_filter	0	request.rds files: 0 in all (); requests-B.tsv
+B	in process (run_app(test_mode = TRUE))	notifications from the click on	2	[default] Applying protein replicate filter... || [message] Protein replicate filter applied successfully. Pipeline complete!
+B	in process (run_app(test_mode = TRUE))	'already running' warnings	0	A protein replicate filter action is already running
+B	in process (run_app(test_mode = TRUE))	S5.5 outcome (driver)	complete	
+B	in process (run_app(test_mode = TRUE))	head after the click (digest)	protein_replicate_filtered	initial > raw_data_s4 > qvalue_filtered > protein_peptide_filtered > precursor_rollup > intensity_filtered > sample_filtered > replicate_filtered > imputed > protein_s4_created > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered

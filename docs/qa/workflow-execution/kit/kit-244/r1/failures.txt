@@ -1,0 +1,976 @@
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1, G1: pressed again at the correlation result, the recorded start stays the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `kit244Recorded(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1, G1: pressed again at the correlation result, the recorded start stays the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `press$figures` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1, G1: pressed again at the correlation result, the recorded start stays the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `kit244ManagedSource(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1, G1: pressed again at the correlation result, the recorded start stays the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `kit244Recorded(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1, G1: pressed again at the correlation result, the recorded start stays the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `press$figures` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1, G1: pressed again at the correlation result, the recorded start stays the Peptide Count Filter's table (fails before)
+kind: failure
+message:
+  Expected `kit244ManagedSource(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1b: after RUV set to Skip (no state committed) the second press keeps the recorded start (fails before)
+kind: failure
+message:
+  Expected `kit244Recorded(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1b: after RUV set to Skip (no state committed) the second press keeps the recorded start (fails before)
+kind: failure
+message:
+  Expected `kit244ManagedSource(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1b: after RUV set to Skip (no state committed) the second press keeps the recorded start (fails before)
+kind: failure
+message:
+  Expected `kit244Recorded(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E1b: after RUV set to Skip (no state committed) the second press keeps the recorded start (fails before)
+kind: failure
+message:
+  Expected `kit244ManagedSource(fixture, norm)` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E2: a filter at t_hi, the second press, then 0.5 reads the recorded start and keeps the samples t_hi removed (fails before)
+kind: failure
+message:
+  Expected `again$source` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "Chi-state"             
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E2: a filter at t_hi, the second press, then 0.5 reads the recorded start and keeps the samples t_hi removed (fails before)
+kind: failure
+message:
+  Expected `again$samples` to be identical to `kit244Cache$samples_05`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E2: a filter at t_hi, the second press, then 0.5 reads the recorded start and keeps the samples t_hi removed (fails before)
+kind: failure
+message:
+  Expected `again$source` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "Chi-state"             
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E2: a filter at t_hi, the second press, then 0.5 reads the recorded start and keeps the samples t_hi removed (fails before)
+kind: failure
+message:
+  Expected `again$inputs` to be identical to `c("pearson-pairs:peptide_count_filtered", "pearson-selection:peptide_count_filtered")`.
+  Differences:
+  actual vs expected
+  - "pearson-pairs:Chi-state"
+  + "pearson-pairs:peptide_count_filtered"
+  - "pearson-selection:Chi-state"
+  + "pearson-selection:peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E2: a filter at t_hi, the second press, then 0.5 reads the recorded start and keeps the samples t_hi removed (fails before)
+kind: failure
+message:
+  Expected `again$samples` to be identical to `kit244Cache$samples_05`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `skip$components` to be identical to `kit244Components(fixture, l7)`.
+  Differences:
+  actual$protein_quant_table$identity$input vs expected$protein_quant_table$identity$input
+  - "dfb4eedeefa04b719326cf77d01ac2f1d6f4a22eacd9fd24ac26167c34c0370d"
+  + "569cb53f6355be33184da537513620dc0eac9101e0989f1f7e8330c908412d86"
+  
+  actual$protein_quant_table$payload$relative_path vs expected$protein_quant_table$payload$relative_path
+  - "entities/dia-table-4e0320ee43d9/payload.parquet"
+  + "entities/dia-table-4e033e6fa016/payload.parquet"
+  
+    `actual$protein_quant_table$payload$bytes`: 22719.0
+  `expected$protein_quant_table$payload$bytes`: 24354.0
+  
+  actual$protein_quant_table$payload$sha256 vs expected$protein_quant_table$payload$sha256
+  - "432f15a8c2e74869470ab30328578fba0079f911cd87872304451d1a3771d801"
+  + "c5b03aaef56a558e1ac354fa90fedaa79f972aceeb7e39d3a77a886cd9d779fa"
+  
+    `actual$protein_quant_table$metadata$shape`: 64 12
+  `expected$protein_quant_table$metadata$shape`: 64 13
+  
+  actual$protein_quant_table$entity_id vs expected$protein_quant_table$entity_id
+  - "6343f0ab0263ba160d6578db07f1c688dea1a2fd27cbbc0861a18719372f0a21"
+  + "c1620d22b55cea0b09f835f51ff46b5ca1a648b2212d2df0bd6f869e871d3549"
+  
+  actual$design_matrix$identity$input vs expected$design_matrix$identity$input
+  - "671ac35ca5db65c7d0df61b3a488b5651c5e319810222b215aa0efb48ba249a8"
+  + "c6e0b2ca1cd9cfa97a0c173c58640549a92b60beaf47f35c3c853f33f93cd6ec"
+  
+  actual$design_matrix$payload$relative_path vs expected$design_matrix$payload$relative_path
+  - "entities/dia-table-4e03372c6447/payload.parquet"
+  + "entities/dia-table-4e036a569f58/payload.parquet"
+  
+    `actual$design_matrix$payload$bytes`: 11431.0
+  `expected$design_matrix$payload$bytes`: 11444.0
+  
+  actual$design_matrix$payload$sha256 vs expected$design_matrix$payload$sha256
+  - "04147cacfdea75cc3d548aaa98eaf2b6a0b4fdd78f514f43e97b96a9839fab6a"
+  + "531249a0ffdfdc6427c7bc224784e9ee5bea2cd10c17e73bcb4859e5a7db3ae3"
+  
+    `actual$design_matrix$metadata$shape`: 11 7
+  `expected$design_matrix$metadata$shape`: 12 7
+  
+  actual$design_matrix$entity_id vs expected$design_matrix$entity_id
+  - "0de16e22a07a3047efaab19a1956bcdcbfd9d233b8c1ec9cfbf475eb730974a6"
+  + "71565ac961d8b1d8eb1f97513520e2777acbe41719a2a57b6bab70882fa33fe3"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `skip$samples` to be identical to `kit244Value(fixture, l7)$samples`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `reset$error` to be identical to NA_character_.
+  Differences:
+  actual vs expected
+  - "prot_norm_reset_source_unknown: the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press \"Run Normalization & RUV\" again."
+  + NA
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `reset$state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "correlation_filtered"  
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `reset$head` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "other:9d57d576"        
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `"correlation_filtered" %in% reset$history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `skip$components` to be identical to `kit244Components(fixture, l7)`.
+  Differences:
+  actual$protein_quant_table$identity$input vs expected$protein_quant_table$identity$input
+  - "dfb4eedeefa04b719326cf77d01ac2f1d6f4a22eacd9fd24ac26167c34c0370d"
+  + "569cb53f6355be33184da537513620dc0eac9101e0989f1f7e8330c908412d86"
+  
+  actual$protein_quant_table$payload$relative_path vs expected$protein_quant_table$payload$relative_path
+  - "entities/dia-table-4e03679286a1/payload.parquet"
+  + "entities/dia-table-4e034d01460b/payload.parquet"
+  
+    `actual$protein_quant_table$payload$bytes`: 22719.0
+  `expected$protein_quant_table$payload$bytes`: 24354.0
+  
+  actual$protein_quant_table$payload$sha256 vs expected$protein_quant_table$payload$sha256
+  - "432f15a8c2e74869470ab30328578fba0079f911cd87872304451d1a3771d801"
+  + "c5b03aaef56a558e1ac354fa90fedaa79f972aceeb7e39d3a77a886cd9d779fa"
+  
+    `actual$protein_quant_table$metadata$shape`: 64 12
+  `expected$protein_quant_table$metadata$shape`: 64 13
+  
+  actual$protein_quant_table$entity_id vs expected$protein_quant_table$entity_id
+  - "853810dcafe04da3a129fa9be60cc6a3d1a7e2d7030551e68af067c34618c36f"
+  + "fa6be57502216ddc3aafed822fe64c4e3fb72c98a451101546557ceb2e9aa51f"
+  
+  actual$design_matrix$identity$input vs expected$design_matrix$identity$input
+  - "671ac35ca5db65c7d0df61b3a488b5651c5e319810222b215aa0efb48ba249a8"
+  + "c6e0b2ca1cd9cfa97a0c173c58640549a92b60beaf47f35c3c853f33f93cd6ec"
+  
+  actual$design_matrix$payload$relative_path vs expected$design_matrix$payload$relative_path
+  - "entities/dia-table-4e03437b8388/payload.parquet"
+  + "entities/dia-table-4e036e52755b/payload.parquet"
+  
+    `actual$design_matrix$payload$bytes`: 11431.0
+  `expected$design_matrix$payload$bytes`: 11444.0
+  
+  actual$design_matrix$payload$sha256 vs expected$design_matrix$payload$sha256
+  - "04147cacfdea75cc3d548aaa98eaf2b6a0b4fdd78f514f43e97b96a9839fab6a"
+  + "531249a0ffdfdc6427c7bc224784e9ee5bea2cd10c17e73bcb4859e5a7db3ae3"
+  
+    `actual$design_matrix$metadata$shape`: 11 7
+  `expected$design_matrix$metadata$shape`: 12 7
+  
+  actual$design_matrix$entity_id vs expected$design_matrix$entity_id
+  - "28e3e28700ec52967fec8b39d96e9368bacb2e9970b6e4bd468c20f63035067c"
+  + "76aeaad0e10ee136eceba3c790e76cb824d5eedc8459938739f7af03529c58cd"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `skip$samples` to be identical to `kit244Value(fixture, l7)$samples`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `reset$error` to be identical to NA_character_.
+  Differences:
+  actual vs expected
+  - "prot_norm_reset_source_unknown: the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press \"Run Normalization & RUV\" again."
+  + NA
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `reset$state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "correlation_filtered"  
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `reset$head` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "other:bdf4f829"        
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E3, E3b: a filter at t_hi, the second press, then Skip commits the recorded start; Reset returns it (fails before)
+kind: failure
+message:
+  Expected `"correlation_filtered" %in% reset$history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `reset$state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "correlation_filtered"  
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `reset$head` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `"correlation_filtered" %in% reset$history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit244ResetText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (the peptide quality-control steps)."
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter)."
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `reset$state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "correlation_filtered"  
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `reset$head` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C1-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `"correlation_filtered" %in% reset$history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4: after the second press, Reset returns the Peptide Count Filter's table and names it (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit244ResetText`.
+  Differences:
+  actual vs expected
+  - "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (the peptide quality-control steps)."
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter)."
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$error` to be identical to NA_character_.
+  Differences:
+  actual vs expected
+  - "prot_norm_reset_source_unknown: the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press \"Run Normalization & RUV\" again."
+  + NA
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "correlation_filtered"  
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$head` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C2-state"              
+  `expected`: "peptide_count_filtered"
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `"correlation_filtered" %in% reset$history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit244ResetText`.
+  Differences:
+  actual vs expected
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter)."
+  
+  in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$error` to be identical to NA_character_.
+  Differences:
+  actual vs expected
+  - "prot_norm_reset_source_unknown: the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press \"Run Normalization & RUV\" again."
+  + NA
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$state` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "correlation_filtered"  
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$head` to be identical to "peptide_count_filtered".
+  Differences:
+  `actual`:   "C2-state"              
+  `expected`: "peptide_count_filtered"
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `"correlation_filtered" %in% reset$history` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E4b: after the second press and a filter at t_hi that commits again, Reset returns the recorded start (fails before)
+kind: failure
+message:
+  Expected `reset$notes` to be identical to `kit244ResetText`.
+  Differences:
+  actual vs expected
+  + "[warning 5] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter)."
+  
+  worker
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  raw_data_s4 in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it."
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  raw_data_s4 in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  raw_data_s4 in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$figures` to be identical to `character()`.
+  Differences:
+  `actual`:   "raw_data_s4"
+  `expected`:              
+  
+  raw_data_s4 in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  raw_data_s4 managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  raw_data_s4 managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$runs` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  raw_data_s4 managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  qvalue_filtered in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it."
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  qvalue_filtered in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  qvalue_filtered in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$figures` to be identical to `character()`.
+  Differences:
+  `actual`:   "qvalue_filtered"
+  `expected`:                  
+  
+  qvalue_filtered in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  qvalue_filtered managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  qvalue_filtered managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$runs` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  qvalue_filtered managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  precursor_rollup in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it."
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  precursor_rollup in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  precursor_rollup in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$figures` to be identical to `character()`.
+  Differences:
+  `actual`:   "precursor_rollup"
+  `expected`:                   
+  
+  precursor_rollup in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  precursor_rollup managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  precursor_rollup managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$runs` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  precursor_rollup managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  log2_matrix in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it."
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  log2_matrix in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  log2_matrix in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$figures` to be identical to `character()`.
+  Differences:
+  `actual`:   "log2_matrix"
+  `expected`:              
+  
+  log2_matrix in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  log2_matrix managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  log2_matrix managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$runs` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  log2_matrix managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  peptide_accession_cleaned in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it."
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  peptide_accession_cleaned in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  peptide_accession_cleaned in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$figures` to be identical to `character()`.
+  Differences:
+  `actual`:   "peptide_accession_cleaned"
+  `expected`:                            
+  
+  peptide_accession_cleaned in process
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$classes` to be identical to "prot_norm_limpa_peptide_input".
+  Differences:
+  `actual`:                                  
+  `expected`: "prot_norm_limpa_peptide_input"
+  
+  peptide_accession_cleaned managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$notes` to be identical to `paste0("[error 10] Error in normalization: ", kit244PeptideText)`.
+  Differences:
+  actual vs expected
+  + "[error 10] Error in normalization: on DIA with limpa, \"Run Normalization & RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."
+  
+  peptide_accession_cleaned managed
+
+file: test-kit244-limpa-pass-through.R
+test: KIT-244 E5, E5b: pressed on a peptide table, the press refuses in plain words before anything is recorded or queued (fails before)
+kind: failure
+message:
+  Expected `out$runs` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  peptide_accession_cleaned managed
+

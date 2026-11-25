@@ -1,0 +1,33 @@
+key	value
+gate	g0
+package_version	0.9.0
+package_sha	88f60b007eb2586c817ebc79f0c63a87366c2de7
+shinytest2_version	0.5.1
+chromote_version	0.5.1
+shiny_version	1.14.0
+p0.chrome	/usr/bin/google-chrome
+p0.answered	TRUE
+p0.attached	TRUE
+p0.app_warn	1
+p0.options	S1,S2,S3,S4
+step1.groups	A
+step1.summary	No technical replicates assigned yet.
+step2.set	["S1","S2"]
+step2.server_input	S1,S2
+step2.acted	TRUE
+step2.summary	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2
+step3.box	["S1","S2"]
+step4.sent	S1,S2,S3,S4
+step4.set	["S1","S2","S3","S4"]
+step4.acted	TRUE
+step4.summary	Group: A, Biological Replicate: 1 | Samples: S1, S2, S3, S4 | Technical Replicates: 1, 2, 3, 4
+step4.box	["S1","S2","S3","S4"]
+step5.box_before	["S1"]
+step5.acted	shiny-notification :: ×
+step5.summary_unchanged	TRUE
+step5.box_after	["S1"]
+step6.keys	A_1={S1,S2,S3,S4}
+notifications	shiny-notification :: × || shiny-notification :: × || shiny-notification :: × || shiny-notification :: ×
+applog.lines	14
+applog.warnings	0
+applog.errors	0

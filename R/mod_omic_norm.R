@@ -810,7 +810,17 @@ omicNormGuardTexts <- function() {
         summary_da_files_unmade = paste("The results folder %s holds differential analysis files that no differential analysis",
             "of this session made (%s): they are from an earlier session, an opened session file, or a contrast the last analysis",
             "did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save",
-            "Workflow Arguments' before copying or generating the report."))
+            "Workflow Arguments' before copying or generating the report."),
+        # KIT-243 (VAL-212 (2); part D): the Summary's refusals of a Save that does not describe the current analysis, and of
+        # a differential analysis whose files were not all written (drafts for the owner's wording pass, VAL-41).
+        summary_save_stale = paste("The saved workflow parameters do not describe the current analysis: a step or the",
+            "differential analysis was run, reverted or changed after the analysis record (analysis_record.json) was last",
+            "saved, or it was saved by another version of MultiScholaR. Press 'Save Workflow Arguments' again, then copy the",
+            "results or generate the report. If this message returns after saving, the analysis record could not be written:",
+            "see the warning shown when saving."),
+        da_publication_pending = paste("The files of the last differential analysis were not all written to the project",
+            "folder, so it may still hold files of an earlier analysis. Run the differential analysis again, then copy the",
+            "results or generate the report."))
 }
 
 #' Whether the binding is transcriptomics' (one normalisation state, `trx_ruvs`).
