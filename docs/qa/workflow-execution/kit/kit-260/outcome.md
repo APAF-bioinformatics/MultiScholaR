@@ -287,6 +287,47 @@ line in `test-integration-gui.R` and confirmed the 20 captures of `test-omic-nor
    each ITSD declaration (KIT-242 declares the same); the ticket merging second renames one of the two
    `omicsItsdReportResult` definitions and keeps one per-assay log line.
 
+### Closure check (AUDIT-KIT-260-impl-20261126, "Closure check (2026-11-26)"): what was done, and the hand-off
+
+- **7c900dfe**, the merge of origin/v0.9-staging bbbfdc1a (fetched first): the ledger's append collision kept both,
+  staging's rows first (VAL-280 to VAL-297); everything under `R/`, `inst/` and `tests/` merged without conflict.
+- **c545f24e**, tests only (declared test edits, the coordinator's; no expected value changes):
+  - CC01: both chunk lists of `test-kit260-itsd-default-pattern.R` load "Hierarchical Parser", "Sample Analysis
+    Functions" and "Method Section": since KIT-236 the reports' `FormatMethodDetails` calls `ReportKnown()`, defined in
+    "Sample Analysis Functions" (as KIT-235's test loads it).
+  - CC03: I05 asserts directly that the older-form origin's ITSD product holds only `final` (the gate itself).
+  - CC07: the comment at `test-integration-gui.R:447` cites VAL-275; the ledger row's authority cell names VAL-241,
+    VAL-275 and VAL-276.
+- **No run was made** for these edits; the next run of this branch is the merge train's.
+- **CC03, recorded.** No tests-first run was made for the second correction, although VAL-276 named one: its
+  failing-first evidence is I05 as it stood before the fix (it failed on head in run 45635735448) and the comparison run
+  45665921270 in which I05 and its mirror pass. I05's replay comparison cannot by itself tell a gated kernel from an
+  ungated one, because its origin and its replay come from one build: both sides would carry the same fields. What
+  states the gate is I05's record-outcome assertion (with the state fallback stubbed), the mirror's marker assertion,
+  and now the direct assertion that the older-form product holds only `final`.
+- **CC06, a stated assumption.** `omicsItsdRowsFromStates` reads the annotations from `record$previous_state`, taken as
+  the state the ITSD step read (the head, on the application's routes). Were it another state, the same identifiers'
+  annotations would be read from it; the annotation column does not change across these steps (INFERRED).
+- **CC02, the order (the coordinator's ruling).** KIT-260 and KIT-242 land in ONE merge train, KIT-242 first within it,
+  so that no staging commit holds one ticket without the other and every record replays exactly. KIT-260 must not land
+  before KIT-242 (the recorded token "per_assay" would change meaning when KIT-242 lands), and not in a later train
+  (records made in between would replay with product mismatches once KIT-260 lands). The branch rests until KIT-242
+  Part B exists.
+- **CC05, checks on the merged tree** (each must give 1):
+  - `git grep -c "itsd_outcome = list(" R/utils_workflow_analysis_record.R` (exactly one marker row);
+  - `git grep -c "omicsItsdReportResult <- function" R/` summed over files (one reporting function, after the rename of
+    I04), and one per-assay log line in the tab;
+  - one `fixed = list(method = "ITSD", itsd_outcome = "per_assay")` on the ITSD declaration.
+  Row 50's option (b) (the 12 `provenance` digests left failing until the re-record) would hide any later provenance move
+  in those 12 captures until then.
+- **CC04, the train's predictions.** The predictions above (ruling 4 of run 45665921270) are for KIT-260 alone on
+  staging abfc99ac; they must be rewritten for the combined head (KIT-190, then KIT-242, then KIT-260). In that head
+  KIT-242's count line moves again the `log` and `outputs` keys of `omicNormFrozen` that VAL-275 approved at KIT-260's
+  values, the two `fixed` pins and the 12 `provenance` keys take the combined tree's values (KIT-190 re-dumps the same
+  12 lines), and `test-omics-norm-core.R`'s notes may move with KIT-242's notices. The by-file question for the combined
+  values is the coordinator's to put once, with row 50. (`predictions-second.md` had predicted `test-integration-gui.R`
+  `same`; it failed on KIT-240's position, handled by 513ae741.)
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
