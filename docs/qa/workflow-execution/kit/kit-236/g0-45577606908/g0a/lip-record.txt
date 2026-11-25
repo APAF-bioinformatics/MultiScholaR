@@ -1,0 +1,29 @@
+report docx: lipidomics_report_lipidomics_lipid_canonical.docx
+project paths outside base_dir: lipidomics, lipidomics, 20261125_084316
+schema: multischolar.analysis_record.v1
+normalisation method (record): "cyclicloess"
+log2 offset (record): 0
+ruv step present: FALSE
+itsd step outcomes: [{"rows":17,"columns":8,"itsd_applied":true}]
+DA operation: lipid_da_contrast
+DA parameters (decoded): {"formula":"~ 0 + group","qvalue":0.05,"lfc":0}
+DA contrasts: [{"contrasts":"groupKO-groupWT","friendly_names":"KO_vs_WT","full_format":"KO_vs_WT=groupKO-groupWT"}]
+DA model (verbatim): {"model":"limma","formula_used":"~ 0 + group","eBayes_trend":true,"eBayes_robust":true,"treat_applied":false,"block_reason":"no_duplicates","uses_duplicate_correlation":false}
+DA results: [{"contrast":"groupKO-groupWT","assay":"LCMS_Pos","entity_id":"2123d0c47fcb310727f2ad979fa45b28843b711b7a468e2c734977ec3de3e07a","rows":9},{"contrast":"groupKO-groupWT","assay":"LCMS_Neg","entity_id":"a3a6d133980d7b514fb080f3ea08f98e20fdee0589eb869f4d125563b462dc31","rows":8}]
+DA failures: []
+software version: "0.9.0" ; build: "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4" ; sha: null
+design: sample_id = "Run" ; group_id = "group" ; technical_replicate_id = "tech_rep_group"
+record design rows (k): 6 ; distinct technical_replicate_id values: 6 ; values: KO_1,KO_2,KO_3,WT_1,WT_2,WT_3
+design_matrix.tab rows (n): 6 ; columns: Run,group,factor1,factor2,factor3,batch,replicates,tech_reps,tech_rep_group
+pearson step: lipid_pearson_selection present = TRUE ; threshold = 0.5
+n of k: n = 6 ; k = 6
+== step dimensions
+1 initial import: dimensions {"rows":null,"columns":null}
+2 lipid_raw_data_s4 design_builder: dimensions {"rows":20,"columns":8}
+3 lipid_intensity_filtered lipid_intensity_filter: dimensions {"rows":17,"columns":8}
+4 lipid_duplicates_resolved lipid_duplicate_resolution: dimensions {"rows":17,"columns":8}
+5 lipid_qc_complete lipid_qc_finalize: dimensions {"rows":17,"columns":8}
+6 lipid_itsd_norm lipid_itsd_normalisation: dimensions {"rows":17,"columns":8}
+7 lipid_log2 lipid_log2: dimensions {"rows":17,"columns":8}
+8 lipid_normalized lipid_between_sample_normalisation: dimensions {"rows":17,"columns":8}
+9 lipid_correlation_filtered lipid_pearson_selection: dimensions {"rows":17,"columns":8}

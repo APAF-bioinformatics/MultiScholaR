@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45577606908	10198a0dc05f56542fc0f81154f4818015ad1d98	G0 (a, b, c): section 1 sentences on the GUI lanes with KIT-235 fix dc2c638f; planted variants V0-V7 through RenderReport; chunk-level cases and part B	11	ok: every prediction of section 4 as predicted (G0a 54/54 lipid, 55/55 metab; G0b all 7 variants per lane; G0c 56 cases); script 149 s, scripts job 10 min
