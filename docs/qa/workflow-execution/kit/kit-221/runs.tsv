@@ -1,0 +1,2 @@
+run_id	commit	purpose	job_minutes	result
+45713440865	41c69770ff0ee6346a2a02ccb9a83a465973c306	R1 tests-only: W1-W9 failing-first, G4, g1.R base digests (request kit221-r1-41c69770)	see outcome.md	Tests: new file 43 passed 38 failed 0 errors (predicted 42/39: W5 miss); G4 file 80 passed 0 failed 2 skipped; g1.R exit 1 (instrument defect: ProteinQuantitativeData is not exported)
