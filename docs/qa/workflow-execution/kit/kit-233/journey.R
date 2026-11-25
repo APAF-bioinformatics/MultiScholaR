@@ -268,7 +268,9 @@ k233Outer <- function(run_mode, commit, launch) {
             R_LIBS = Sys.getenv("R_LIBS"), R_LIBS_USER = Sys.getenv("R_LIBS_USER"),
             R_LIBS_SITE = Sys.getenv("R_LIBS_SITE"), LANG = Sys.getenv("LANG", "C.UTF-8"),
             GITHUB_RUN_ID = Sys.getenv("GITHUB_RUN_ID"), TZ = "UTC",
-            OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1"
+            OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+            # shinytest2::AppDriver skips unless NOT_CRAN is true (run L 45523435786: "Reason: On CRAN").
+            NOT_CRAN = "true"
         )
     )
     phase$env <- phase$env[nzchar(phase$env)]
@@ -470,10 +472,12 @@ k233Inner <- function(phase_file) {
         k233WriteAll(G)
     }, add = TRUE)
     plan <- switch(phase$run_mode, lifecycle = k233Lifecycle, journey = k233Journey, userlife = k233UserLife)
-    tryCatch(plan(G), error = function(e) {
-        G$fatal <- paste(conditionMessage(e), "| call:", paste(deparse(conditionCall(e)), collapse = " "))
+    fatal <- function(e) {
+        G$fatal <- paste(conditionMessage(e), "| class:", paste(class(e), collapse = ","), "| call:",
+            paste(deparse(conditionCall(e)), collapse = " "))
         writeLines(G$fatal, file.path(G$out, "inner-fatal.txt"))
-    })
+    }
+    tryCatch(plan(G), error = fatal, skip = fatal)
     invisible(G)
 }
 
@@ -619,12 +623,13 @@ k233Launch <- function(G, label, test_mode = TRUE) {
     S$driver <- NULL
     S$attach_error <- ""
     if (S$answered) {
+        refused <- function(e) {
+            S$attach_error <- conditionMessage(e)
+            NULL
+        }
         S$driver <- tryCatch(
             shinytest2::AppDriver$new(S$url, load_timeout = 120000, timeout = 60000, width = 1440, height = 1100),
-            error = function(e) {
-                S$attach_error <- conditionMessage(e)
-                NULL
-            }
+            error = refused, skip = refused
         )
     }
     S$recorder <- !is.null(S$driver) && isTRUE(k233Js(S, K233_RECORDER_JS))
