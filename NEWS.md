@@ -456,7 +456,7 @@
    change, measured separately, moved the average false discovery proportion and power by at most 0.0007. Caps of 3 to 5
    at larger sample sizes are not yet measured. Below 12 samples the cap of 2 is a larger share of what the test has
    left: with 2 groups of 3 samples, removing 2 factors leaves 2 of the 4 degrees of freedom the test counts, and with 2
-   groups of 2 it leaves none; this was not measured either.
+   groups of 2 it leaves none; this was not measured either (the limit is stated and the cap's rule kept, VAL-289).
 
    Runs whose design names a group with 'pool' now leave those samples out of the control analysis, as proteomics does.
    A grouping column missing from the design is now refused with a message instead of the assay being skipped silently;

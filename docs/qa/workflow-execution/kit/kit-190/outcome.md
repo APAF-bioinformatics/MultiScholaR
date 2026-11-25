@@ -454,7 +454,8 @@ Every other place k is printed or exported, by reading (not executed with a capp
 degrees of freedom while k of them have been removed. With k at the cap: 2 groups of 2 keep 0 of 2; 3 groups of 2 keep
 1 of 3; 2 groups of 3 keep 2 of 4 (standard errors understated about 1.4-fold); 2 groups of 4 keep 4 of 6; the measured
 design, 2 groups of 6, keeps 8 of 10. Nothing in the legacy route stops k reaching n − g. This is not measured and is
-stated in NEWS and the ledger row. The rule is the owner's (O2).
+stated in NEWS and the ledger row. The owner decided O2 (a), VAL-289: the limit stated, the cap's rule kept; the
+degrees-of-freedom question goes to KIT-188 and KIT-262's table. O3 (the notice wording) stays a draft.
 
 **I06 / O1.** `tests/testthat/test-workflow-omics-ruv-cancor-once.R` is not edited. It is predicted to fail at `:73`
 exactly as in run 45619021147 until the owner rules on O1.
@@ -508,3 +509,28 @@ the run.
   KIT-224's level restoration (I04 of the audit). Where the unwanted variation lines up with the groups, both
   group-comparing rules gave false calls in about 20 % of null data sets, against 8 % for group-blind controls
   (KIT-188).
+
+## The correction pass's runs (observed)
+
+**I01 failing-first** (run 45666131951, 5185b830): 126 passed, 7 failed, all in T9 (iv) (no annotation, no notices, no
+route call, no export line); T1 to T9 (iii) pass. The first dispatch failed with GitHub HTTP 502/500 during an outage
+(no run started); the same request was then dispatched with the dispatcher's own command.
+
+**R2 after the repairs** (run 45651851022, head 687ba6f3, base staging 828dd105; 106 files, check, D5): every file as
+predicted in `r2-audit/predictions.md`. 101 `same`, among them `test-omic-norm-module.R` (639 passed, after I07), the
+I01 closure files, both GUI-entry files and `test-kit172-downstream.R`. The new file is `only-on-head`, 139 passed.
+`test-workflow-omics-ruv-cancor-once.R` is a `new-failure` at `:73` (this head did not hold the VAL-280 edit).
+Three files are `message-changed` and fail on both sides: `test-prot-norm-core.R` (VAL-213),
+`test-workflow-omics-binding-steps.R` (`VAL-<merge-b>`) and `test-workflow-omics-declarations.R` (base 45/23, head
+43/25). Check: 6 findings identical, 0 only on head. D5: 12 of 2,078 dump lines differ, each head value equal to the
+stored I07 value. 44.83 core-hours. Evidence: `r2-audit/`.
+
+**O1, VAL-280** (run 45675334261, head 529b2cc0, base 687ba6f3; the cancor-once file alone): base 14/2, head 16/0,
+`fixed`, as declared. The observation decides nothing; it is for KIT-262 M1 (`o1/observation.txt`). Assay `two` was
+rejected at every percentage as `skipped_k_exceeds_complete_controls`, with k 2, 2, 2, 3, 5 at 2 to 6 % against 0, 1,
+1, 1, 2 controls complete in every sample. Lipidomics and metabolomics gave identical lines. Assay `one` was accepted at
+2 to 4 % (k 2) and rejected at 5 and 6 % (k 8 > 6, k 9 > 7). At 2 to 4 % assay `two` is rejected at k = 2, so a cap
+applied inside the search would not have rescued it (O1 (b)). 1.57 core-hours.
+
+Correction-pass budget: 220.39 before the pass, then + 0.92 + 44.83 + 1.57 = 267.71 of 510.4 core-hours. No correction
+pass remains.
