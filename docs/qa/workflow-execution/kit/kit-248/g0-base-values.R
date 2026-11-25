@@ -30,11 +30,55 @@
 # PREDICTIONS (written before any value was read; from the ticket's section 2 and 10 by reading the code; the observed
 # values are compared with these in outcome.md, not here). They are also written to g0-predictions.tsv first.
 #
-# Usage (run-tests scripts lane, from the package root): Rscript docs/qa/workflow-execution/kit/kit-248/g0-base-values.R <out>
+# G0b (coordinator's ruling of 2026-11-25 on stop rule 2; ticket r1.3, section 10): G0's listed thresholds removed no
+# sample (0.5 to 0.95) or every sample (0.99, an error), so the (A) cases are observed again at a threshold that removes
+# exactly one sample. RULE (fixed here before any G0b value is read; KIT-244's audited G0 rule): per route, from G0's
+# supplementary table g0-best-partner-<route>.tsv (run 45592410449, committed beside this script), m = the smallest best
+# within-group partner correlation, m2 = the second-smallest; t_hi = (m + m2) / 2; if there is no m2 or m2 == m, stop
+# rule 2 stands for that route and the route is not run. Cases at t_hi: A in process, A through the worker, A2; all four
+# routes. By reading G0's tables before this run (not a G0b value): classic routes (LFQ, TMT, DIA identical) m = run_0008
+# 0.97372, m2 = run_0004 0.97431; limpa m = run_0001 0.96258, m2 = run_0004 0.96465.
+#
+# G0b PREDICTIONS (base code, the ticket's reading; written before any G0b value is read; also in g0b-predictions.tsv):
+# - Apply at t_hi keeps all samples but one on every route (classic: run_0008 removed; limpa: run_0001 removed), because
+#   filterSamplesByProteinCorrelationThresholdHelper keeps a sample in any within-group pair with r >= threshold.
+# - A and A worker, every route: after Apply then Skip the live correlation_filtered holds ALL 12 samples (the Skip
+#   commits the normalised source: classic ruv_normalized_obj; limpa the recorded start, L7); config threshold 0,
+#   skipped TRUE. The record step and the study parameters say pearson-selection at threshold t_hi (outcomes
+#   skipped TRUE; nothing about the skip). Replay completes and re-commits the selection at t_hi: 11 samples, config
+#   threshold t_hi. NUMERIC DIFFERENCE PREDICTED on every route: replayed samples differ from live (the one removed
+#   sample), the DA digest differs; limpa: the ruv_covariates design digest differs too.
+# - A2 classic (LFQ, TMT, DIA): as A (the second normalisation commits normalized; the Skip re-commits the unfiltered
+#   source and keeps the pearson-selection entry): live 12, replay 11, DA differs. NUMERIC DIFFERENCE PREDICTED.
+# - A2 limpa (Apply at t_hi, pass-through again, Skip): this is KIT-244's base sequence; the second press records the
+#   head (the correlation result C_hi) as its start, so the Skip commits C_hi: live 11 samples (run_0001 absent);
+#   record and study parameters pearson-selection at t_hi; replay re-filters the head at t_hi: 11 samples, the same
+#   as live; DA and RUV design equal. NO NUMERIC DIFFERENCE PREDICTED (KIT-248.md section 5's "Base" row: agrees).
+#
+# Usage (run-tests scripts lane, from the package root):
+#   Rscript docs/qa/workflow-execution/kit/kit-248/g0-base-values.R <out>          G0
+#   Rscript docs/qa/workflow-execution/kit/kit-248/g0-base-values.R <out> g0b      G0b
 
 args <- commandArgs(trailingOnly = TRUE)
 kit248Out <- if (length(args)) args[[1L]] else "kit248-g0"
+kit248Mode <- if (length(args) >= 2L) args[[2L]] else "g0"
+stopifnot(kit248Mode %in% c("g0", "g0b"))
 dir.create(kit248Out, recursive = TRUE, showWarnings = FALSE)
+
+kit248PredictionsG0b <- data.frame(stringsAsFactors = FALSE, rbind(
+    c("G0b all routes", "t_hi", "(m + m2) / 2 from g0-best-partner-<route>.tsv; classic about 0.97402, limpa about 0.96361"),
+    c("G0b all routes", "apply_kept_n", "11 of 12 (classic: run_0008 removed; limpa: run_0001 removed)"),
+    c("G0b A, A worker (all routes)", "live_n / live_config", "12 / min_pearson_correlation_threshold=0;skipped=TRUE"),
+    c("G0b A, A worker (all routes)", "prov_operation / record_operation", "pearson-selection, threshold t_hi, preceded_by pearson-pairs; outcomes skipped TRUE"),
+    c("G0b A, A worker (all routes)", "study_params_correlation", "pearson-selection block with threshold = t_hi; nothing about the skip"),
+    c("G0b A, A worker (all routes)", "replay", "completed; replay_n 11; replay_samples_equal_live FALSE; replay_config threshold t_hi"),
+    c("G0b A, A worker (all routes)", "da_equal", "FALSE (numeric difference predicted)"),
+    c("G0b A, A worker (DIA_LIMPA)", "ruv_design_equal", "FALSE"),
+    c("G0b A2 (LFQ, TMT, DIA)", "all", "as A: live 12, replay 11, da_equal FALSE (numeric difference predicted)"),
+    c("G0b A2 (DIA_LIMPA)", "all", "live 11 (C_hi, run_0001 absent; KIT-244's base); record pearson-selection at t_hi; replay 11, equal to live; da_equal TRUE; ruv_design_equal TRUE (no numeric difference predicted)")))
+names(kit248PredictionsG0b) <- c("case", "observable", "predicted")
+if (identical(kit248Mode, "g0b")) utils::write.table(kit248PredictionsG0b, file.path(kit248Out, "g0b-predictions.tsv"),
+    sep = "\t", quote = FALSE, row.names = FALSE)
 
 kit248Predictions <- data.frame(stringsAsFactors = FALSE, rbind(
     c("SCAN", "kept at 0.5 and 0.9", "all 12 samples on the classic routes (fixture: baseline sd 2, noise sd 0.35, so between-sample r near 0.97); limpa not predicted numerically"),
@@ -63,8 +107,8 @@ kit248Predictions <- data.frame(stringsAsFactors = FALSE, rbind(
     c("A worker", "all of A's", "as A (INFERRED: the managed completion writes the request's operation pearson-selection)"),
     c("A2", "all of A's", "as A (the second normalisation commits normalized/ruv_corrected without truncating; the Skip then keeps the pearson-selection entry)")))
 names(kit248Predictions) <- c("case", "observable", "predicted")
-utils::write.table(kit248Predictions, file.path(kit248Out, "g0-predictions.tsv"), sep = "\t", quote = FALSE,
-    row.names = FALSE)
+if (identical(kit248Mode, "g0")) utils::write.table(kit248Predictions, file.path(kit248Out, "g0-predictions.tsv"),
+    sep = "\t", quote = FALSE, row.names = FALSE)
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE, export_all = TRUE, helpers = TRUE))
 library(testthat)
@@ -464,8 +508,9 @@ kit248A <- function(case, route, path) {
         kit248Outcome(case, route, path, "apply", kit248Apply(fixture, norm, t, worker))
         kit248Record(case, route, path, "after_apply_prov",
             fixture$manager$.context$snapshot$step_provenance$correlation_filtered$operation %||% "<null>")
-        kit248Record(case, route, path, "after_apply_n", tryCatch(length(kit248Samples(fixture$manager,
-            "correlation_filtered")), error = kit248Error))
+        kept <- tryCatch(kit248Samples(fixture$manager, "correlation_filtered"), error = kit248Error)
+        kit248Record(case, route, path, "after_apply_n", length(kept))
+        if (identical(kit248Mode, "g0b")) kit248Record(case, route, path, "after_apply_kept", kept)
         if (identical(case, "A2")) {
             kit248Outcome(case, route, path, "normalise_again", kit248Normalise(fixture, norm))
             kit248Record(case, route, path, "after_normalise_again_head", fixture$manager$current_state)
@@ -489,6 +534,36 @@ kit248Record("env", "-", "-", "workflowOwnerCapable", workflowOwnerCapable())
 
 routes <- c("LFQ", "TMT", "DIA", if (requireNamespace("limpa", quietly = TRUE) && requireNamespace("mixOmics", quietly = TRUE))
     "DIA_LIMPA")
+
+#' G0b's t_hi from G0's best-partner table (the rule in the header); NA when stop rule 2 stands for the route.
+kit248THi <- function(route) {
+    table <- utils::read.delim(file.path("docs", "qa", "workflow-execution", "kit", "kit-248",
+        paste0("g0-best-partner-", tolower(route), ".tsv")), colClasses = "character")
+    best <- sort(as.numeric(table$best_partner[!is.na(table$best_partner) & table$best_partner != "NA"]))
+    kit248Record("G0b", route, "-", "best_partner_sorted_first2", format(utils::head(best, 2L), digits = 17))
+    if (length(best) < 2L || best[[1L]] == best[[2L]]) return(NA_real_)
+    (best[[1L]] + best[[2L]]) / 2
+}
+
+if (identical(kit248Mode, "g0b")) {
+    for (route in routes) {
+        started <- Sys.time()
+        t_hi <- kit248THi(route)
+        kit248Record("G0b", route, "-", "t_hi", if (is.na(t_hi)) "none (stop rule 2 stands for this route)" else
+            format(t_hi, digits = 17))
+        if (is.na(t_hi)) next
+        kit248Cache$t[[route]] <- t_hi
+        kit248Case("A", route, "in_process", kit248A)
+        if (workflowOwnerCapable()) kit248Case("A", route, "worker", kit248A)
+        kit248Case("A2", route, "in_process", kit248A)
+        kit248Record("timing", route, "-", "seconds", round(as.numeric(difftime(Sys.time(), started, units = "secs"))))
+    }
+    rows <- do.call(rbind, kit248Rows$rows)
+    utils::write.table(rows, file.path(kit248Out, "g0b-base-values.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+    cat(sprintf("KIT-248 G0b: %d rows; instrument errors: %d\n", nrow(rows), sum(rows$step == "INSTRUMENT_ERROR")))
+    quit(save = "no", status = 0L)
+}
+
 for (route in routes) {
     started <- Sys.time()
     kit248Case("SCAN", route, "in_process", kit248Scan)
