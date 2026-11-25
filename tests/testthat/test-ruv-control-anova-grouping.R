@@ -607,3 +607,71 @@ test_that("KIT-190 T8 (iv): proteomics and peptide keep the shipped rule (q desc
   expect_identical(k190Selected(k190Quiet(getNegCtrlProtAnovaHelper(m, design_helper, grouping_variable = "group",
     percentage_as_neg_ctrl = 5, ruv_fdr_method = "BH"))), oracle$selected)
 })
+
+# ---- T9: the bound on the automatic k for lipidomics and metabolomics (VAL-182, VAL-235) ------------------------------
+# The untouched sweep, then k = min(k_sweep, calculateAdaptiveMaxK(samples of the assay)) in legacy Automatic only;
+# k_sweep, k_used and the cap recorded; a plain-language notice when k is reduced; a warning (k unchanged) when a Manual k
+# is above the cap; per-assay RUV status recorded (KIT-242 addendum); a replay marker so earlier records replay unbounded.
+
+k190RuvStep <- function(record) Filter(function(s) identical(s$state, "lipid_ruv_corrected"), record$steps)[[1L]]
+
+k190BoundJourney <- function(ruv, options = list()) {
+  root <- withr::local_tempdir(.local_envir = parent.frame())
+  # F172 (seed 172001), whose automatic search chose a k above 2 under rule (d) in KIT-190's measurement (`ed/`).
+  journey <- withr::with_options(options, kit172Quiet(kit172Journey(root, kit172Object(kit172Values(172001L)$values, "lipid"),
+    "lipid", ruv = ruv, da = FALSE)))
+  withr::defer(closeDIAStateAdapter(journey$owner), envir = parent.frame())
+  journey
+}
+
+test_that("KIT-190 T9 (i): Automatic k is the sweep's k bounded by the sample-size cap, recorded with a notice", {
+  skip_if_not(workflowOwnerCapable())
+  journey <- k190BoundJourney(kit172LegacyRuv("automatic"))
+  value <- journey$ruv$value
+  expect_false(is.null(value$k_sweep))
+  k_sweep <- unlist(value$k_sweep)
+  expect_true(all(k_sweep > 2L))
+  expect_identical(unlist(value$k_cap), c(LCMS_Pos = 2L))
+  expect_identical(unlist(value$best_k), c(LCMS_Pos = 2L))
+  notice <- value$k_notice[["LCMS_Pos"]]
+  expect_true(is.character(notice) && grepl("LCMS_Pos", notice, fixed = TRUE) &&
+    grepl(as.character(k_sweep[[1L]]), notice, fixed = TRUE) && grepl("12 samples", notice, fixed = TRUE))
+  outcomes <- k190RuvStep(buildWorkflowAnalysisRecord(journey$owner))$outcomes
+  expect_identical(unlist(outcomes$k_per_assay), c(LCMS_Pos = 2L))
+  expect_identical(unlist(outcomes$k_sweep_per_assay), k_sweep)
+  expect_identical(unlist(outcomes$k_cap_per_assay), c(LCMS_Pos = 2L))
+  expect_identical(unlist(outcomes$ruv_status_per_assay), c(LCMS_Pos = "corrected"))
+})
+
+test_that("KIT-190 T9 (ii): a Manual k above the cap is kept, with a classed warning naming the cap", {
+  skip_if_not(workflowOwnerCapable())
+  ruv <- kit172LegacyRuv("manual")
+  ruv$manual_k <- 3L
+  root <- withr::local_tempdir()
+  object <- kit172Object(kit172Values(172001L)$values, "lipid")
+  journey <- kit172Quiet(kit172Journey(root, object, "lipid", ruv = NULL, da = FALSE))
+  withr::defer(closeDIAStateAdapter(journey$owner))
+  warned <- NULL
+  run <- withCallingHandlers(suppressMessages(runWorkflowOmicsReferenceRuv(journey$binding, journey$owner, ruv,
+    journey$fixture$workflow$config_list)), warning = function(w) {
+      if (inherits(w, "multischolar_ruv_k_notice")) warned <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    })
+  expect_identical(unlist(run$value$best_k), c(LCMS_Pos = 3L))
+  expect_true(is.character(warned) && grepl("LCMS_Pos", warned, fixed = TRUE) && grepl("3", warned, fixed = TRUE) &&
+    grepl("2", warned, fixed = TRUE))
+})
+
+test_that("KIT-190 T9 (iii): the bound's replay marker; under the earlier rule the Automatic k is the sweep's", {
+  skip_if_not(workflowOwnerCapable())
+  markers <- get0("workflowReplayRuleMarkers", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+  expect_identical(markers$ruv_k_bound$current, "sample_size")
+  expect_identical(markers$ruv_k_bound$earlier, "none")
+  expect_identical(workflowOperationEntry("lipid_ruv")$declaration$fixed$ruv_k_bound, "sample_size")
+  journey <- k190BoundJourney(kit172LegacyRuv("automatic"), options = list(MultiScholaR.ruv_k_bound = "none"))
+  value <- journey$ruv$value
+  expect_identical(unlist(value$best_k), unlist(value$k_sweep))
+  step <- k190RuvStep(buildWorkflowAnalysisRecord(journey$owner))
+  names_fixed <- vapply(Filter(function(p) identical(p$source, "fixed"), step$parameters), function(p) p$name, "")
+  expect_false("ruv_k_bound" %in% names_fixed)
+})
