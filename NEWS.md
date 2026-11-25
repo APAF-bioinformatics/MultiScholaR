@@ -86,6 +86,19 @@
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
    shown twice (KIT-251).
+ * Every omic: when a step run by the application's worker ends without an error of its own (the application's
+   memory limit for one step, the time limit for one step, a process that stopped or could not start, a table that
+   changed while the step ran, a result whose files could not be written, an internal check), the message now says
+   in plain words what happened, whether the step's result was saved, and what to do; before, it showed an
+   internal code such as 'managed action ended: memory_guard'. The wording is a draft for the owner's review
+   (KIT-252).
+
+ * Proteomics import with 'Mixed species FASTA': when the 'Select Primary Organism' window appears, the import now
+   finishes only when an organism is confirmed there; Cancel clears the import and says so, and the data must be
+   imported again. Before, the import counted as finished before the
+   choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
+   annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
+   with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
