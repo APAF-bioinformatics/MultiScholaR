@@ -45,6 +45,12 @@ See `runs.tsv` for ids, commits, minutes and core-hours.
   shows no systematic slowdown of the touched files (head/base ratios 0.73 to 1.24). R2a's longest job, 63.4 min
   (tests base 1), was likewise above its 60-minute ceiling and is recorded in runs.tsv.
 
+- **Audit repairs** (45522632448, head edf1e010 = staging 67569959 merged, the test file only, base side absent):
+  77 passed, 0 failed, 0 skipped. I01: on a real session owner whose bus has no design table, classic proteomics and
+  the lipidomics frame each give exactly one warning with the approved text (one log line; lipidomics one tab-log line
+  too), and with a bus table nesting `batch` in `group` the head's warning is still the one shown. I02's cases and the
+  metabolomics frame pass. The head-state read is therefore observed, not only inferred.
+
 ## Budget
 
 Part (a): R1a 0.68 + R2a 19.10 + R2a-panel 0.82 + R3a 80.56 = 101.16 core-hours, against 76.0 expected and 232.7 ceiling.
@@ -78,8 +84,6 @@ real session managers with `group` (no warning expected, none raised: `test-prot
 
 - The warning in a live application session (the application is not started on this machine; no GUI-entry lane chooses
   a column other than `group`).
-- The head-state read with a column that spans groups in a real session store (only the fallback path is tested with a
-  spanning column).
 - The managed (worker) path of the classic route with a spanning column: the warning is raised in the controller before
   dispatch, on both paths, by reading the code; the test uses the in-process path.
 - Part (b): not started (held).
