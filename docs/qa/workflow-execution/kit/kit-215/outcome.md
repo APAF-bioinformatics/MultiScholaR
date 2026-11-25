@@ -36,7 +36,8 @@ See `runs.tsv`.
   - New file on head: 109 passed, 1 failed. T7b's second expectation was my exact message text: dplyr's `mutate()` replaces the raised message by its header ("In argument: ..."), so the refusal ends with that header. The ticket states only the class for T7b, and the class passed. This is a result of an over-specified test expectation, not of the product: one correction pass, 66f32932. R3 runs the full suite, including R2's scope, on it.
   - G1's results digest and G5's 16 report-text digests (four templates, records with and without the outcome, no record; the limits sentence removed) are identical base against head (`r2/digests-*.txt`).
   - G2 (KIT-203's gate g1 on head): environment as KIT-189's; "match on every list" (400 of 400).
-- **R3:** PENDING
+- **R3, run 45502798552: full suite on 94d57634 (head: the merge of staging d048898d plus the correction pass) against d048898d (base)** (`r3/`): 478 files `same`. The new file is only on head: 110 passed, 0 failed, so T7b's corrected row passes. No file timed out or crashed. Check findings are identical on both sides (3 WARNINGs, 3 NOTEs). This also re-runs R2's scope after the correction pass.
+- **Runner use:** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours (expected 105.67, ceiling 469.33).
 
 ## The design of the GO classification (S0-1; step-0 ruling SR-1)
 
@@ -66,10 +67,10 @@ The GO route calls `clusterProfiler::enricher` as before. Only for a list with p
 | # | Criterion | Evidence | State |
 |---|---|---|---|
 | A1 | G0: engine conditions and fixture families | `g0a/engine.tsv`, `g0b/g0.tsv` | met |
-| A2 | failing-first rows fail at base values; guards pass; all pass on the fix | R1; R2 (all but T7b's over-specified text, corrected 66f32932); R3 | met in R1/R2; T7b's corrected row in R3 |
+| A2 | failing-first rows fail at base values; guards pass; all pass on the fix | R1; R2 (all but T7b's over-specified text, corrected 66f32932); R3 110/0 | met |
 | A3 | R2: every file `same` except the new file | `r2/compare.tsv` | met |
 | A4 | KIT-203 gate G1 on head | `g2/g1-summary.tsv` | met |
-| A5 | R3 full suite on the merge | R3 | PENDING |
+| A5 | R3 full suite on the merge | `r3/compare.tsv`: 478 same, new file only on head | met |
 | A6 | NEWS, ledger; no version, `NAMESPACE`, `man/` change | diff of c9219652 against f93dfd85: none of `DESCRIPTION`, `NAMESPACE`, `man/` changed | met |
 
 ## For KIT-216 (VAL-175; KIT-215 goes first)
@@ -97,4 +98,44 @@ KIT-216 also adds a refusal in `runOmicEnrichAnalysis` (`R/mod_omic_enrich.R`), 
 
 ## For the change report
 
-PENDING (completed after R3).
+**What was wrong, and who was affected.** In proteomics enrichment, a list that was never tested looked exactly like a list in which no term was enriched, in the tab, the download and the report:
+- On g:Profiler, a list whose proteins all lack a gene name. KIT-208 already stopped sending such lists and gave a notice, but the tab, the download and the report still showed them as empty results.
+- On the Gene Ontology route (organisms g:Profiler does not serve), a list none of whose proteins has a Gene Ontology annotation the analysis tests.
+
+Three further cases also completed as if nothing were enriched, when nothing could have been tested or the test had failed:
+- a GO comparison whose tested proteins have no annotation at all;
+- a GO comparison with too few annotated proteins for any term of 10 to 500 of them;
+- a list whose test raised an error (both routes; on g:Profiler also an error in a comparison's processing). The error was only a warning.
+
+A direction in which no protein passed the cutoffs read "0". Affected: g:Profiler users with unnamed proteins in one direction; GO-route users with incomplete or mismatched annotation; users of either route whose test failed.
+
+**What changed.**
+- Such a list is labelled "Not tested" with its reason in the tab (plot placeholder and summary), the download's summary and the four proteomics report templates (a bullet). It is recorded as the outcome `enrichment_lists_not_tested` on both routes.
+- A direction with no list says "no list (no protein passed the cutoffs)".
+- The three comparison-level or error cases now refuse the run with a message: classes `workflow_enrichment_no_identifiers` and `workflow_enrichment_test_error`.
+- The g:Profiler report paragraph states that a list with no significant term cannot be told apart from one in which the service recognised none of the names.
+- No term, p-value or list of a tested list changes. A list that was tested and in which no tested term holds a list protein is still shown as tested, with no term. Records of the refused cases made earlier no longer replay.
+
+**Code references.** At the base f93dfd85:
+- `R/func_general_enrichment_orchestration.R:341-417` (g:Profiler lists and handlers), `:564-641` (GO lists and handlers);
+- `R/utils_workflow_dia_da.R:678-757` (kernel and KIT-208's judge);
+- `R/utils_workflow_enrichment.R:1070-1079`, `:1184-1215`, `:1302-1315`;
+- `R/mod_omic_enrich.R:669-680`;
+- `R/mod_omic_enrich_panels.R:111-193`, `:288-406`, `:544-640`, `:689-699`;
+- `inst/reports/proteomics/DIANN_report.rmd:869-893`.
+
+At the fix c9219652:
+- orchestration `:173-199` (`signalEnrichmentListStatus`, `enrichmentGoTestable`), the GO classification `:700-722`;
+- `R/utils_workflow_dia_da.R:744-800` (`diaEnrichmentNoIdentifiers`);
+- `R/utils_workflow_enrichment.R:1226-1227` (the committed fields);
+- `R/mod_omic_enrich.R:690-698`;
+- `R/mod_omic_enrich_panels.R:115-143`, `:385`, `:457`, `:616-631`;
+- `DIANN_report.rmd:892-911` (the other three templates have the same blocks);
+- `R/utils_workflow_analysis_record.R` (map entry `enrichment_lists_not_tested`).
+
+**Evidence.**
+- Run 45493249015: the engine's four NULL conditions on the runner's enrichit 0.2.0; every new test failing first at its base value.
+- Run 45495664583: the fixture families.
+- Run 45495673217: R2, 25 regression files `same`; check findings identical; KIT-203's gate matching on all 400 lists; GO results and report texts of runs without such lists identical base against head.
+- Run 45502798552: R3, 478 files `same`.
+- Limits: synthetic and E. coli fixtures only; no real data; enrichit 0.2.0 only; how often the GO cases arise in real projects was not measured.
