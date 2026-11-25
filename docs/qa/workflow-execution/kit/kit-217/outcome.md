@@ -196,3 +196,67 @@ Then R2 again (correction pass) and R3.
   2. `test-omic-enrich-module.R` `fixed`: one test fails on base only (a second enrichment Run shows a different text
      digest than the first); proteomics enrichment, off this ticket's route; inferred instability, not shown.
 - Per the coordinator's rule no further correction; the ticket goes back with these two verdicts for a ruling.
+
+## Probe P (the coordinator's ruling on R3 item 1): observed
+
+Script `probe-prot-config.R` (here; run from branch `run-k217-probe`, a979ae05, which adds only this script to kit-217's
+head), predictions written in it before any value was read. Run 45600181863 (instrument rerun 1 of 3; the first,
+45597931823, stopped before any value because the test helpers live outside the namespace). Lanes prot_tmt and prot_lfq,
+every step from `import_refusal` to `summary_export`, every committed state, base 16112917 against head; tables in `p/`.
+
+- **Observed.** Every S4 slot other than `args` (the quantitative tables, the design, ids and all other slots) is
+  identical on base and head at every step and state of both lanes (1474 rows of 1474). `args` differs at every state
+  from `protein_s4_initial` on (192 of 192), and the whole-state digest the test computes differs exactly there
+  (192 of 192). The differing `args` leaves are exactly `metaboliteIntensityFiltering/metabolites_min_values_per_group`
+  ("2" on head, absent on base) and `metaboliteIntensityFiltering/metabolites_min_groups` ("1", absent), plus
+  `daAnalysisUI/timestamp` at the DA states (the time of the run; it differs between any two runs). The stored
+  configuration list of the state record also differs, which I had predicted it would not: at `protein_s4_initial` by
+  the same two keys, at `protein_replicate_filtered` only by `output_file`, a temporary path (differs between any two
+  runs). So P1 holds for every data and design component and fails for the stored configuration; P2 holds but for the
+  two run-specific leaves; P3 holds.
+- **R3's failures read the same way.** In all 101 failing proteomics comparisons on head the only differing part is
+  `states` (the state digests); no output (displayed tables, texts, plot data, DA table digests) and no written table's
+  sha256 differs, except prot_dia's four `summary_*` steps, whose integration artifacts (`.parquet` against `.tsv`) fail
+  on base too.
+- **Inferred cause (by reading).** The proteomics import copies the package's `config.ini` into the project and reads it
+  into the session's configuration (`R/func_prot_import_detection.R:249-266`; the design import likewise,
+  `R/mod_prot_design_import_helpers.R:181-208`); the design stores that configuration in the object's `@args` and the
+  state record, so the two metabolite keys this ticket adds to `inst/config/config.ini` (5.3) enter every proteomics
+  state. The lipid, metabolite and transcriptomics designs take their configuration from an imported design folder or
+  start empty (`R/utils_workflow_omics_design.R:205-221`); their design steps did not move in R2 or R3, and the
+  transcriptomics GUI-entry lanes were `same` in R3: they are not hit.
+- **Proteomics results.** No proteomics result a user receives differs between base and head on these lanes: every
+  table, design and value component of every state is identical (probe), and R3 shows no output or written table
+  moving. Only the stored configuration (`@args`, and the design state's stored configuration list) gains two
+  metabolite settings that no proteomics step reads. Limit: two of the five proteomics lanes probed (TMT and LFQ); the
+  other three (DIA, DIA_LIMPA, FragPipe) are read from R3's failure messages only (states only).
+
+## For the owner (item 1; not chosen here)
+
+- **Option 1: keep the fix as it is**; the moved stored references go to the end-of-project re-record. Affected file:
+  `tests/testthat/test-gui-entry-proteomics.R`, oracles `tests/testdata/gui-entry/prot_dia.json`,
+  `prot_dia_limpa.json`, `prot_tmt.json`, `prot_lfq.json`, `prot_lfq_fragpipe.json`: 97 comparisons newly failing (prot_dia 22
+  of its 26 failing steps, prot_dia_limpa 21, prot_tmt 18, prot_lfq 18, prot_lfq_fragpipe 18; the per-step comparisons from
+  `design` on) and prot_dia's four `summary_*` comparisons already failing on base, whose message changes. Cost: no code
+  change and no further run now; the re-record re-freezes these five oracles. The ledger's 5.3 decision is untouched.
+- **Option 2: keep the two keys out of the configuration the proteomics design stores.** Either (a) drop the two keys
+  from `inst/config/config.ini` and map them to `no_shipped_default` in the shipped-default map (as the lipid ones are;
+  the S4 methods fall back to 2 and 1; the metabolomics workbooks then show no config value for them), which changes
+  5.3's "two new `inst/config/config.ini` keys" (the ticket's design text, not one of the owner's SD answers; the
+  defaults 2 and 1 themselves are unchanged); or (b) leave `config.ini` and filter the
+  `metaboliteIntensityFiltering` section out of the proteomics configuration, a proteomics code change outside 5.5's
+  files. Either is a code change needing an extension of the correction pass (the owner's), then R2 and R3 again (about
+  20 and 87 core-hours on this ticket's figures). With (a) the proteomics lanes return to `same`; the metabolite
+  default provenance in records becomes `no_shipped_default`.
+- Transcriptomics: not hit (its design does not read the shipped configuration; R3's transcriptomics lanes `same`).
+
+## Unrelated (R3 item 2), for routing
+
+`test-omic-enrich-module.R`, test "(W3, F107-01) a second Run on the same tab gives the first run's product
+parameters, state digest and display" (line 3693): fails on base only in R3 (45587576015): `seen$again$values` against
+`seen$run$values`, display lines 2 and 8, second Run `<text> b9f6b656e874200059207826580cc3a8412b32f43527e240901e46cb8eabf978`
+against the first Run's `<text> d9625c0c8f0d2e2d05bf97481af72158e56fcbcc0cb47a9ac59b41f286e9dd15`; head passes (1051/19
+against base 1050/20, the other 19 failures identical). Shard 4 on both sides (file 264 of 486, dealt round-robin over
+20 shards; inferred from the order); base shard ran on an AMD EPYC 9V45, head on an EPYC 9V74 (meta.txt); the file sets
+`withr::local_seed(20261109L)` (line 507). Proteomics enrichment, off this ticket's route; possibly an unstable test. Nothing
+done about it.
