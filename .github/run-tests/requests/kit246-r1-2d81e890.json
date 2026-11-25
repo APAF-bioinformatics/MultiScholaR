@@ -1,0 +1,18 @@
+{
+  "requested_by": "",
+  "label": "",
+  "package_commit": "",
+  "base_commit": "",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
