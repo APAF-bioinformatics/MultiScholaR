@@ -675,7 +675,9 @@ applyOmicsDesignTechRepAssignment <- function(designMatrix, techRepSamples, assi
     designMatrix$tech_reps[selected] <- techRepMapping[designMatrix$Run[selected]]
     numbers <- designMatrix$replicates[inGroup]
     ranks <- match(numbers, sort(unique(numbers)))
-    designMatrix$replicates[inGroup] <- if (is.integer(numbers)) ranks else as.numeric(ranks)
+    # The column's type as base left it: base's shift of other runs (an integer minus a double) made it double.
+    othersMoved <- any(ranks != numbers & !inGroup %in% selected, na.rm = TRUE)
+    designMatrix$replicates[inGroup] <- if (is.integer(numbers) && !othersMoved) ranks else as.numeric(ranks)
     list(ok = TRUE, type = "message",
         message = paste("Assigned", length(techRepSamples), "samples as technical replicates"),
         designMatrix = designMatrix)
