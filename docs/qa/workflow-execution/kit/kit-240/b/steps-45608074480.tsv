@@ -1,0 +1,117 @@
+job	step	conclusion
+Plan	Set up job	success
+Plan	Run actions/checkout@v4	success
+Plan	No cache and no upload from a build job (decision M20; revision 1.2, IR-B2)	success
+Plan	Run if [ "$EVENT" = workflow_dispatch ]; then	success
+Plan	Post Run actions/checkout@v4	success
+Plan	Complete job	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Set up job	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Run actions/checkout@v4	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Paths	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	R 4.6.1 into the folder (CRAN installer, silent); Rtools45 for the build	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Rust for the internal packages: the GNU target R links against	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	The package commit: where the build left the release line, if the package source there equals what was built	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Install the library: snapshot binaries, the source builds, the internal packages attempted (read token), MultiScholaR from this commit	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	The version table against the laptop's lockfile	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Standalone Python with mofapy2 (hashes checked)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Pandoc 3.11	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	DIAMOND (KIT-167; release asset verified against inst/extdata/diamond-pin.tsv)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Size; move the folder to a path with spaces	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Check: every bundled package loads (moved, reduced environment, network cut for the bundle's programs)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Check: the internal packages that built, from the moved folder (reduced environment, network cut)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	D5: the bundle's R in a Windows Server Core container (network off)	skipped
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Run actions/setup-node@v4	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Version stamp and third-party notices	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	The installed MultiScholaR names the package commit (Config/MultiScholaR/SourceCommit)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	The Electron shell and the NSIS per-user installer	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	P4: path lengths under the application folder (limit 170)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Silent per-user install from the installer; the installer and the build's own copies are deleted	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	P3 lifecycle: the installed application (network cut for its programs)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Lanes: the GUI-entry lanes without DIA with the installed application's R (reduced environment, network cut)	failure
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	e2e lanes: the four browser lanes without DIA against the installed application's package (reduced environment, network cut)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Figure paths (KIT-052), long paths as the runner has them	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Figure paths (KIT-052), long paths turned off (HKLM LongPathsEnabled = 0 for this disposable runner)	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Parity (KIT-159 G13): the driver and the browser on the installed application, compared	skipped
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Parity check (KIT-159 7.9): the allow-list and hashes of val-out/parity/	skipped
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	parity-results	skipped
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Results	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Post Run actions/setup-node@v4	skipped
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Post Run actions/checkout@v4	success
+Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container	Complete job	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Set up job	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Run actions/checkout@v4	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Paths; the build container where the runner is not Ubuntu 22.04	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Build tools (patchelf; in the container also what the runner's image already has)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	R 4.6.1 at its build prefix (Posit r-builds); jsonlite in a build-tool library	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Resolve the library (plan; nothing installed)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	System libraries the packages need (Posit Package Manager's requirements for jammy)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Rust for the internal packages (rustc 1.88 or later)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	The package commit: where the build left the release line, if the package source there equals what was built	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Install the library: snapshot binaries, the source builds, the internal packages (read token), MultiScholaR from this commit	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	The version table against the laptop's lockfile	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Standalone Python with mofapy2 (hashes checked)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Pandoc 3.11	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	DIAMOND (KIT-167; release asset and executable verified against inst/extdata/diamond-pin.tsv)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Assemble the bundle (run paths to the bundled libraries); remove R from its build prefix	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Move the folder; the build container is removed	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Check: every bundled package loads (moved, bare ubuntu:22.04, path with spaces, network off)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Check: the internal packages, the DIA manifest and the engines (moved, bare ubuntu:22.04, network off)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Check: the bundled DIAMOND runs and passes the package's checksum check (KIT-167; bare ubuntu:22.04, network off)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Run actions/setup-node@v4	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Version stamp and third-party notices	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	The installed MultiScholaR names the package commit (Config/MultiScholaR/SourceCommit)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	The Electron shell (directory target)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	The Linux archive (per-user install.sh, D2); the build's own copies are deleted	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Install from the archive with install.sh into a scratch folder, as the runner's user; the archive is deleted	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Lanes: every GUI-entry lane in process with the installed application's R (network closed, the laptop's locale)	failure
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	e2e lanes: the seven browser lanes against the installed application's package (network closed, the laptop's locale)	skipped
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Parity (KIT-159 G13): the driver and the browser on the installed application, compared	skipped
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Uninstall; nothing of the build is left	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Parity check (KIT-159 7.9): the allow-list and hashes of val-out/parity/, after the uninstall	skipped
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	parity-results	skipped
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Results	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Post Run actions/setup-node@v4	skipped
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Post Run actions/checkout@v4	success
+Linux on ubuntu-24.04: build, install, test, discard (one job; nothing uploaded)	Complete job	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Set up job	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Run actions/checkout@v4	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Paths; the build container where the runner is not Ubuntu 22.04	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Build tools (patchelf; in the container also what the runner's image already has)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	R 4.6.1 at its build prefix (Posit r-builds); jsonlite in a build-tool library	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Resolve the library (plan; nothing installed)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	System libraries the packages need (Posit Package Manager's requirements for jammy)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Rust for the internal packages (rustc 1.88 or later)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	The package commit: where the build left the release line, if the package source there equals what was built	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Install the library: snapshot binaries, the source builds, the internal packages (read token), MultiScholaR from this commit	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	The version table against the laptop's lockfile	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Standalone Python with mofapy2 (hashes checked)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Pandoc 3.11	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	DIAMOND (KIT-167; release asset and executable verified against inst/extdata/diamond-pin.tsv)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Assemble the bundle (run paths to the bundled libraries); remove R from its build prefix	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Move the folder; the build container is removed	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Check: every bundled package loads (moved, bare ubuntu:22.04, path with spaces, network off)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Check: the internal packages, the DIA manifest and the engines (moved, bare ubuntu:22.04, network off)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Check: the bundled DIAMOND runs and passes the package's checksum check (KIT-167; bare ubuntu:22.04, network off)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Run actions/setup-node@v4	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Version stamp and third-party notices	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	The installed MultiScholaR names the package commit (Config/MultiScholaR/SourceCommit)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	The Electron shell (directory target)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	The Linux archive (per-user install.sh, D2); the build's own copies are deleted	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Install from the archive with install.sh into a scratch folder, as the runner's user; the archive is deleted	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Lanes: every GUI-entry lane in process with the installed application's R (network closed, the laptop's locale)	failure
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	e2e lanes: the seven browser lanes against the installed application's package (network closed, the laptop's locale)	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Parity (KIT-159 G13): the driver and the browser on the installed application, compared	skipped
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Uninstall; nothing of the build is left	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Parity check (KIT-159 7.9): the allow-list and hashes of val-out/parity/, after the uninstall	skipped
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	parity-results	skipped
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Results	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Post Run actions/setup-node@v4	skipped
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Post Run actions/checkout@v4	success
+Linux on ubuntu-22.04: build, install, test, discard (one job; nothing uploaded)	Complete job	success

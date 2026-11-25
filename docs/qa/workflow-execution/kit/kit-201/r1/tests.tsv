@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit201-treat-moderation.R	21	21	1	0	0	12.3	failed
+test-prot-ruv-factors-in-model.R	305	7	0	0	2	145.4	failed
+test-omic-norm-ruv-design.R	1152	1	0	0	0	25.3	failed

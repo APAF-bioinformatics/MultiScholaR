@@ -3,7 +3,7 @@
 # samples, KO_7 absent from metabolomics; the lipidomics, metabolomics and transcriptomics runs two per sample), and,
 # for the internal standards, the few-samples note and the refusals, two small inputs written by the contract's writer
 # in the form of test-integration-model.R. Expected counts are read from the corpus files themselves, not from the
-# code under test. The whole surface is behind `MultiScholaR.integration_gui` (off by default).
+# code under test. The whole surface is behind `MultiScholaR.integration_gui` (on unless set FALSE, since KIT-240).
 
 intGuiCorpus <- function() normalizePath(testthat::test_path("..", "testdata", "integration", "corpus"), mustWork = FALSE)
 intGuiOmics <- c("lipidomics", "metabolomics", "proteomics", "transcriptomics")
@@ -119,8 +119,9 @@ intGuiHtml <- function(tag) as.character(htmltools::renderTags(tag)$html)
 # KIT-138: the gate, the shell, the home page.
 # ------------------------------------------------------------------------------------------------
 
-test_that("KIT-138: with the gate off the home page and the integration module are as before", {
-    withr::local_options(MultiScholaR.integration_gui = NULL)
+# KIT-240 (T2): the tabs are on unless the option is set FALSE; set FALSE, the page is as before KIT-138.
+test_that("KIT-138: with the gate set off the home page and the integration module are as before", {
+    withr::local_options(MultiScholaR.integration_gui = FALSE)
     expect_false(integrationGuiEnabled())
     page <- intGuiHtml(app_ui(NULL))
     expect_match(page, '<div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">',
@@ -446,7 +447,13 @@ test_that("KIT-139: internal standards, features seen once and few samples are s
             # KIT-260 (VAL-241, OD-4 (a); stored expectation approved by file): the marked rows named per data set.
             "lipidomics_LCMS_Pos: internal standards marked: itsd1 (ITSD1).",
             sprintf(texts[["fact_replicates_single"]], "proteomics", 5L),
-            sprintf(texts[["fact_sparse"]], "proteomics", 1L)))
+            sprintf(texts[["fact_sparse"]], "proteomics", 1L, 3L, 5L)))
+        # KIT-240 r1.4 (AUDIT-KIT-240-impl I02): the rule applied at the defaults, half of the kept samples (5 here,
+        # every sample kept as the default keeps missing ones), not "two samples"; the sample table counts the kept samples.
+        expect_identical(nrow(preview$aligned$samples), 5L)
+        expect_identical(integrationMinObserved(preview$parameters, nrow(preview$aligned$samples)), 3L)
+        expect_match(facts[[6L]], "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE)
+        expect_false(grepl("two samples", texts[["col_sparse"]], fixed = TRUE))
         expect_true(preview$few_samples)
         expect_match(output$alignment_status$html, sprintf(texts[["few_samples"]], 4L, INTEGRATION_FEW_SAMPLES), fixed = TRUE)
         views <- integrationAlignmentViewTable(preview)
@@ -555,7 +562,7 @@ intGuiExpectSameModel <- function(manager, value, direct_manager, direct) {
     expect_identical(value$model_file[c("sha256", "size", "media_type")], direct$model_file[c("sha256", "size", "media_type")])
 }
 
-test_that("KIT-140: the Model tab's settings are built from the parameter table, provisional ones marked", {
+test_that("KIT-140: the Model tab's settings are built from the parameter table, each marked with its status", {
     texts <- integrationGuiTexts()
     spec <- integrationMofaParameterSpec()
     ui <- intGuiHtml(mod_integration_model_ui("m"))
@@ -574,16 +581,13 @@ test_that("KIT-140: the Model tab's settings are built from the parameter table,
         fixed = TRUE)
     expect_match(ui, sprintf('id="m-param_num_factors"[^>]*value="%d"', spec$num_factors$default))
     expect_match(ui, sprintf('id="m-param_seed"[^>]*value="%d"', spec$seed$default))
-    # Precision: double the decided choice, single selectable, its consequence stated; the others provisional but those
-    # the user decided (INT-12, KIT-151).
+    # Precision: double the decided choice, single selectable, its consequence stated. KIT-240 (VAL-221 (4)): every
+    # default is decided, so every setting is marked so.
     expect_match(ui, texts[["choice_precision_single"]], fixed = TRUE)
     expect_match(ui, texts[["help_precision"]], fixed = TRUE)
     marks <- regmatches(ui, gregexpr(sprintf("\\((%s|%s)\\)", texts[["mark_provisional"]], texts[["mark_decided"]]), ui))[[1L]]
-    # KIT-153: the input matrix is decided (INT-23) as well.
-    decided <- c("input_matrix", "feature_selection", "features_per_view", "min_observed_fraction", "scaling", "scale_views",
-        "convergence_mode", "maxiter", "precision")
-    expect_identical(marks, sprintf("(%s)", ifelse(method %in% decided, texts[["mark_decided"]], texts[["mark_provisional"]])))
-    # A default the workbook changes, and a parameter it adds, change the screen with no edit to the tab.
+    expect_identical(marks, rep(sprintf("(%s)", texts[["mark_decided"]]), length(method)))
+    # A default changed in the table, and a parameter added to it, change the screen with no edit to the tab.
     changed <- spec
     changed$num_factors$default <- 7L
     changed$likelihood <- list(default = "gaussian", choices = c("gaussian", "poisson"), settled_by = "workbook (provisional)")

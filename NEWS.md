@@ -4,6 +4,18 @@
 
 ### New features
 
+ * Multi-omics integration (MOFA2) is now part of the application: the Integration tile on the home page opens six tabs
+   (Import, Sample Matching, Model, Results, Enrichment, Record) that combine two or more omics processed in the same
+   project and saved for integration at their Summary tab. The installers include MOFA2 and the Python it uses. From R,
+   the Model tab needs the Bioconductor package MOFA2, the R package reticulate and a Python with the module mofapy2
+   (0.7.3 is the version tested); without them it says which one is missing and how to install it. Without
+   RETICULATE_PYTHON, the first software check lets reticulate download and set up a Python of its own (about 50 MB,
+   observed with reticulate 1.46.0), and a mofapy2 installed into the system Python is then not used. The Results tab
+   now shows where the reported model ranks among the training seeds by the final value of MOFA2's training objective
+   (the ELBO), how far it is below the highest and the range over the seeds. The test setting
+   `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
+   hides the tabs. The Enrichment tab marks its eight defaults not yet confirmed (KIT-240).
+
  * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
    analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
    could not find with 20 and 60 samples; how missing values are treated; which data sets averaged several runs per
@@ -70,6 +82,23 @@
 
 ### Fixes
 
+ * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
+   a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
+   package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
+   mainly the lowest correlations visible (since 2024; KIT-259).
+ * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
+   stopping with an error (KIT-259).
+ * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
+   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   have no correlation and are not shown (KIT-259).
+ * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
+   unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
+   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
+   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
+   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
+   figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
    shown twice (KIT-251).
@@ -86,6 +115,42 @@
    choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
    annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
    with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
+
+ * Proteomics, DIA with limpa (chosen at the DIA-NN import; not the default route): after the correlation filter,
+   pressing 'Run Normalization & RUV' again now keeps the table the first press started from, as it already did after
+   the RUV covariates and as the other proteomics routes already do. Before, the correlation filter's result became
+   the starting table: re-applying the filter at a lower threshold could not bring back samples a higher threshold had
+   removed (the analysis record named the lower threshold), skipping the filter kept those samples removed while
+   recording it as skipped, and 'Reset to Pre-Normalization' either changed nothing or, once the filter had been
+   applied again with a different result or skipped, refused with a reason that did not apply. At the same or a higher
+   threshold the samples kept were already the same. Pressing 'Run Normalization & RUV' before DPC Quantification now
+   refuses with a message saying which Quality Control steps to apply first; before, it was accepted and the
+   correlation filter and RUV covariates then failed with messages that did not say why (KIT-244).
+
+ * 'Push to GitHub' (Summary tab, every omic) is no longer offered in the installed application, where it could not
+   work: it needs a git program, which the installed application does not have on Windows, and a
+   `<project id>.Rproj` file, which the application never creates. The Summary tab says what to do instead, and that
+   the project's scripts folder holds copies of the input files and analysis data. In R (outside the installed
+   application) the panel and `pushProjectToGithub()` are unchanged apart from the fix below (KIT-245).
+ * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
+   digits, '.', '-' and '_' only, not ending in '.', not a Windows device name); an ID that climbed out of R's
+   temporary folder (such as `../../../../Documents`) could make it delete that folder.
+   It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
+   repository on GitHub, never writes the token to a file (git receives it only for the push), and removes its
+   temporary copy whatever the outcome. A failure GitHub reports after the creation still leaves the new repository
+   empty, and the message names it. The push sends the omic's scripts folder `scripts/<omic>/` as it is: the design
+   and contrast tables, `study_parameters.txt`, `analysis_record.json` and any exported session state; for
+   lipidomics, metabolomics and transcriptomics `import_sources/` (exact copies of the input files) and the imported
+   tables; for proteomics the session archive (`filtered_session_*.msdia.tar`), its `.RDS` files,
+   `peptide-checkpoints/` and `reference_mapping/inputs/`. The repository is created private in the GitHub
+   organisation you name; private means visible to that organisation's owners and to the members its settings allow
+   (KIT-245).
+ * Design builder, every omic: the technical-replicate list is emptied after each successful 'Assign Technical
+   Replicates'. Before, in every earlier release with the design builder, it kept the runs just marked; adding the
+   next sample's runs and pressing Assign made two biological samples one, with no warning. To add runs to a sample
+   already marked, select all of its runs again together with the new ones; runs selected on their own become a
+   separate sample. A refused Assign keeps the selection. (KIT-256)
+
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
@@ -95,13 +160,25 @@
    tab of lipidomics, metabolomics and transcriptomics now clears its results when the table changes, as proteomics
    already did, and after a session file is loaded and the table then moves, the next analysis runs on the current
    table. Before, the saved parameters, the report and the publication folder could combine one table's parameters
-   with another table's differential analysis. They still can if the analysis is run again and Copy or the Report is
-   pressed without pressing 'Save Workflow Arguments' first; the Summary does not check this. 'Generate Report' after
+   with another table's differential analysis. 'Generate Report' after
    the analysis was run again since the last 'Copy' now asks for 'Copy' first. A saved analysis record whose
    differential analysis was run on another table than its final one no longer replays. To check an earlier save: in
    analysis_record.json, the differential_abundance entry's source_state should be the last step's state, or, for
    proteomics with enrichment, the last state before enrichment_completed; if it is empty or names another state, run
    the differential analysis again and save again (KIT-212).
+ * Every omic: each differential analysis now first removes the files it writes that an earlier analysis left (the
+   heatmaps and the combined heatmap PDF in lipidomics and metabolomics; in proteomics the significance-count barplot
+   and a comparison's interactive volcano page or its not-available note), so a figure the newest analysis did not
+   draw (for example the heatmap of a comparison with nothing significant) is no longer copied or reported as
+   current. Heatmaps saved with 'Save Heatmap' are kept; in proteomics those of the comparisons the latest analysis
+   ran are copied with the results, whatever settings they were saved under; one of another comparison stops Copy, as
+   before. If an earlier file cannot be removed (for example, it is open in another program) or the new files cannot
+   be written, the analysis says so, and 'Copy to Publication Directory' and 'Generate Report' refuse until the
+   analysis is run again (unless the results folder cannot be written to at all, when nothing is removed). They also
+   refuse with a message until 'Save Workflow Arguments' is pressed again when a step or the differential analysis
+   was run, reverted or changed after the last save (or MultiScholaR was updated since); this is checked against the
+   analysis record that save wrote, so a project whose last save wrote none is not checked. Before, they paired the
+   last save's parameters and analysis record with the newer results (KIT-243).
  * Proteomics enrichment: a list of up- or down-regulated proteins that could not be tested (on g:Profiler none of its
    proteins has a gene name; on the Gene Ontology route none has a Gene Ontology annotation that the analysis tests) is
    now shown in the tab, the download and the report as 'Not tested', with the reason, and is recorded in the analysis
@@ -374,6 +451,32 @@
    integration change; PCA, RLE and the PC boxplots do not. Analyses recorded before this change replay as they were
    made. Transcriptomics: the RUVIII export file and the RUV-corrected integration input keep each gene's logCPM
    level; the differential analysis is not affected (KIT-224).
+ * Lipidomics, metabolomics and proteomics: the TREAT test now uses the same variance moderation as the main test (an
+   intensity trend and robust estimation, as the analysis record and report always stated). Before, it used one prior
+   variance for all features without the robust step, so the stated settings had no effect on TREAT results. This
+   applies to lipidomics and metabolomics when a log fold-change threshold above 0 is set, and to every proteomics
+   analysis of DIA without limpa, label-free and TMT data with the Skip or legacy RUV options (TREAT runs there at
+   the default threshold of 0). Results of those analyses change. In simulations with known truth (18 settings for
+   proteomics and 18 for lipidomics and metabolomics, which received the same simulated data and, running the same
+   code, gave identical results: variance with and without an abundance trend and hypervariable features, with and
+   without 20 % missing values that depend on abundance, 2 to 4 groups of 3 to 6 samples, no RUV), the changed test
+   was no worse on every one of 982 pre-declared checks. Where variance depends on abundance, the earlier test made
+   too many false calls among low-abundance features and too few among high-abundance ones. In proteomics, among
+   unchanged features of the lowest-abundance third, the share with p below 0.05 fell from up to 9.6 % to at most 5.8
+   %; in the highest third it rose from as low as 3.0 % to about 5 %. In lipidomics and metabolomics, among features
+   whose true change equals the threshold, the shares moved from up to 8.1 % to at most 5.2 %, and from as low as 3.4
+   % to about 5 %. Without missing values the changed test gave 4.7 % to 5.2 % in every abundance third. With missing
+   values that depend on abundance, proteomics at the default threshold still made slightly more false calls than the
+   5 % target (up to 5.8 % in the lowest third, false discovery proportion up to 5.7 %, against up to 9.6 % and 6.7 %
+   before). Where variance does not depend on abundance, it made slightly more false calls than the earlier test
+   (false discovery proportion up to 0.7 percentage points higher). Overall the false discovery proportion changed by
+   -1.3 to +0.7 percentage points and power by -1.3 to +3.0. A new analysis with these options no longer reproduces
+   an earlier version's statistics; saved analyses replay as they were made, and in scripts the earlier statistics
+   are obtained with the trend and robust options off. Reports re-rendered from an analysis saved before this change
+   still describe its TREAT step as trended and robust; that step used one prior variance. The RUV panel's "Approach
+   of earlier versions" row for classic proteomics is restated from the measurement of this test: worst cell 0.389
+   (was 0.385), 10.1 % false discoveries in the reference scenario (was 9.8 %). (KIT-201; methods ledger VAL-127,
+   VAL-131)
 
  * Lipidomics and metabolomics: the internal-standard pattern proposed at import for every metabolomics file and every
    lipidomics file except LipidSearch (the MS-DIAL pattern, which was proposed whatever the file's format) no longer
@@ -632,9 +735,12 @@
    which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
    (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
    are in `?integrationTrainModel` (KIT-234).
- * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
-   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several, it asks in the R console
-   when R runs interactively, and otherwise stops with an error.
+ * 'Push to GitHub' is no longer offered in the installed application (KIT-245). In R, the button and
+   `pushProjectToGithub()` need the git program and the project's `<project id>.Rproj` file and use the one R
+   Markdown file in the project folder; with no R Markdown file they say so, and with several (for example after
+   reports of two omics in one project) they ask in the R console when R runs interactively and otherwise stop with an
+   error. They send the omic's scripts folder, which holds copies of the input files (lipidomics, metabolomics,
+   transcriptomics) or the saved session with its data (proteomics).
 
 
 ### Scientific changes

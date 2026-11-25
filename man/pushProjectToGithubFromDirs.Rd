@@ -39,5 +39,9 @@ pushProjectToGithubFromDirs(
 Invisible TRUE if successful
 }
 \description{
-Push Standard Project Files to GitHub (Wrapper for New Directory Structure)
+Sends the omic's source folder as it is, including copies of input files and saved session data.
+}
+\details{
+Calls \code{\link[=pushProjectToGithub]{pushProjectToGithub()}} with the omic's base and source folders; see there for the checks
+made before anything is created on GitHub, what is sent, and where.
 }

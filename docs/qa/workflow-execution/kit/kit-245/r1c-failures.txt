@@ -1,0 +1,223 @@
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `seen$command` to match regexp "^git -c credential\\.helper= -c ".
+  Actual text:
+  x | git -C '/tmp/RtmpounXVl/k245-s1' push origin refs/heads/main
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `seen$command` to match string "-c 'credential.helper=!f() {".
+  Actual text:
+  x | git -C '/tmp/RtmpounXVl/k245-s1' push origin refs/heads/main
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `seen$command` to match string "$MSR_GITHUB_PUSH_TOKEN".
+  Actual text:
+  x | git -C '/tmp/RtmpounXVl/k245-s1' push origin refs/heads/main
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `seen$count` to be identical to `before[["GIT_CONFIG_COUNT"]]`.
+  Differences:
+  `actual`:   "2"
+  `expected`: NA 
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S6: the function's git options give the token to github.com only, past the user's own helpers
+kind: failure
+message:
+  Expected `any(grepl(K245_DUMMY, seen$other, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "..."
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "..."
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "a."
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "a."
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "nul"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "nul"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "NUL.txt"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "NUL.txt"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "con"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "con"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "COM1"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "COM1"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `inherits(err, "multischolar_github_project_id_invalid")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  "lpt9.log"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `calls$n` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+  
+  "lpt9.log"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `k245Text(err)` to match string "R project file does not exist".
+  Actual text:
+  x | cannot open the connection
+  -x
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created
+kind: failure
+message:
+  Expected `k245Text(err)` to match string "R project file does not exist".
+  Actual text:
+  x | cannot open the connection
+  a.b
+
+file: test-kit245-github-panel.R
+test: KIT-245 E2: in the installed application the push observer refuses inputs a client sends itself
+kind: failure
+message:
+  Expected `k245PanelPresses()` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+

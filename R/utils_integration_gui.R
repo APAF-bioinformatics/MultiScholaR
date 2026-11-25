@@ -17,16 +17,18 @@
 # KIT-138, KIT-139: the integration GUI's configuration, its wording table and the helpers its tabs call (the project
 # scan, the import request, the sample-matching preview). The model layer is KIT-062's
 # (utils_workflow_integration_model.R); nothing here computes beyond reading what it returns. The whole surface sits
-# behind the option `MultiScholaR.integration_gui` (off by default): with it off, the home page and the app are today's,
-# byte for byte. The single-omic `validateOmicGuiConfig` does not fit (it requires design, qc and da groups); the shell
-# is validated by `validateOmicGuiShell` only (KIT-060 audit section 5.3).
+# behind the option `MultiScholaR.integration_gui`, on unless set FALSE (KIT-240: INT-003, VAL-209); set FALSE, the home
+# page and the app are as they were before KIT-138, byte for byte. The single-omic `validateOmicGuiConfig` does not fit
+# (it requires design, qc and da groups); the shell is validated by `validateOmicGuiShell` only (KIT-060 audit section
+# 5.3).
 
-#' Whether the integration GUI is offered (KIT-138; the gate in the manner of `MultiScholaR.ruv_design_panel`).
-#' `options(MultiScholaR.integration_gui = TRUE)` shows it.
+#' Whether the integration GUI is offered (KIT-138; the gate in the manner of `MultiScholaR.ruv_design_panel`). KIT-240:
+#' on by default, in the function so that every process that loads the package (the entry, the plain launcher's and the
+#' systemd controller, `run_app()`) shows it; `options(MultiScholaR.integration_gui = FALSE)` hides it.
 #' @return One logical.
 #' @noRd
 integrationGuiEnabled <- function() {
-    isTRUE(getOption("MultiScholaR.integration_gui", FALSE))
+    isTRUE(getOption("MultiScholaR.integration_gui", TRUE))
 }
 
 #' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
@@ -131,7 +133,10 @@ integrationGuiTexts <- function() {
         align_caution = paste("Samples are matched by name: a sample must carry the same name in every omic. A sample",
             "named differently in two omics appears as two rows."),
         align_rules_heading = "What happens before the model",
-        align_provisional = "These rules are provisional: the integration methods may still change them.",
+        # KIT-240 (VAL-221 (4)): the matching rules' decisions, named (draft wording, docs/qa/.../kit-240/wording.md).
+        align_provisional = paste("The averaging of runs, the removal of internal standards and the handling of missing",
+            "samples are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the",
+            "decision behind each."),
         # %d: all biological samples, those measured in every data set.
         fact_samples = "%d biological samples in all; %d measured in every data set.",
         # %d: samples missing from at least one data set.
@@ -146,14 +151,14 @@ integrationGuiTexts <- function() {
         # %s: the data set; %d: internal standards.
         fact_standards_drop = "%s: %d internal standards removed.",
         fact_standards_keep = "%s: %d internal standards kept.",
-        # %s: the data set; %d: features.
-        fact_sparse = "%s: %d features measured in fewer than two samples are left out.",
+        # %s: the data set; %d: features left out, the fewest biological samples a feature needs, the samples kept.
+        fact_sparse = "%s: %d features measured in fewer than %d of the %d biological samples are left out.",
         # %d: samples in every data set, the threshold.
         few_samples = paste("Only %d biological samples are measured in every data set (fewer than %d). A factor model",
             "needs more samples; its results may be unstable."),
         view_table_heading = "Data sets",
         col_standards_removed = "Internal standards removed",
-        col_sparse = "Features left out (fewer than two samples)",
+        col_sparse = "Features left out (measured in too few samples)",
         col_features_used = "Features used",
         sample_table_heading = "Biological samples",
         col_sample = "Biological sample",
@@ -206,11 +211,24 @@ integrationGuiTexts <- function() {
         readiness_heading = "Software check",
         readiness_ok = "MOFA2 and the Python it uses are installed: the model can be trained on this computer.",
         readiness_recheck = "Check again",
+        # KIT-240: the piece the software check found missing (`integrationMofaCapability()$missing`), and how to get it.
+        readiness_missing_mofa2 = paste("The model cannot be trained on this computer: the R package MOFA2 is not installed.",
+            "The MultiScholaR installers include it. From R, install it with BiocManager::install(\"MOFA2\"), then press",
+            "Check again."),
+        readiness_missing_reticulate = paste("The model cannot be trained on this computer: the R package reticulate, which",
+            "MOFA2 uses to run Python, is not installed. From R, install it with install.packages(\"reticulate\"), then",
+            "press Check again."),
+        readiness_missing_mofapy2 = paste("The model cannot be trained on this computer: no Python with the module mofapy2",
+            "was found. The MultiScholaR installers include one. From R: install into a Python the mofapy2 version your MOFA2",
+            "asks for (0.7.3 for MOFA2 1.22.0), for example pip install mofapy2==0.7.3; close MultiScholaR and R; set the",
+            "environment variable RETICULATE_PYTHON to that Python; then start R and MultiScholaR again."),
         settings_heading = "Model settings",
         settings_matching_heading = "Set by the confirmed sample table",
-        settings_provisional = paste("Provisional: the integration methods may still change this default. Values",
-            "marked so are the current defaults, not final ones."),
-        mark_provisional = "provisional default",
+        # KIT-240 (VAL-221 (4)): every default is a recorded decision; the mark below is for a default that still waits.
+        settings_provisional = paste("Each default below is a decision recorded in the methods ledger, named in the analysis",
+            "record. A value you change is recorded as set by you."),
+        # KIT-240 (R1-04, R1-07): shown beside each Enrichment setting whose default is not yet confirmed.
+        mark_provisional = "default not yet confirmed",
         mark_decided = "decided",
         # %s: the label, then the value in words.
         setting_fixed = "%s: %s",
@@ -219,7 +237,7 @@ integrationGuiTexts <- function() {
         # KIT-152. %s: the setting's label.
         setting_not_number = "%s: enter a number.",
         # The settings, by the parameter's name (`param_<name>`, `help_<name>`, `choice_<name>_<value>`). A setting
-        # without an entry here shows its name: a parameter the workbook adds appears with no edit to the tab.
+        # without an entry here shows its name: a parameter added to the table appears with no edit to the tab.
         # KIT-153 (INT-23): which values each data set enters the model with; the numbers are the simulation of
         # docs/qa/workflow-execution/kit/kit-151d/ruv-results.md (branch run-mofa-evidence-k151d).
         param_input_matrix = "Values each data set enters the model with",
@@ -361,8 +379,8 @@ integrationGuiTexts <- function() {
         results_model = "Results of the model trained at %s.",
         # %s: the reason.
         results_refused = "The results cannot be shown. %s",
-        results_provisional = paste("How many features are listed, which factors are shown, how the factors are related to",
-            "the groups and how the figures look are provisional: the integration methods may still change them."),
+        results_provisional = paste("These defaults are decisions recorded in the methods ledger (VAL-221); a value you change",
+            "is recorded as set by you."),
         advisories_heading = "Notes from the model",
         # %s: the factors (Factor1, Factor2).
         advisory_overall_level = paste("%s rises and falls with each sample's overall level in at least one data set.",
@@ -386,6 +404,21 @@ integrationGuiTexts <- function() {
             "below 1, it depends on the seed, so read it with care."),
         stability_single = paste("The model was trained from one seed only, so how stable the factors are across seeds",
             "was not measured."),
+        # KIT-240 (VAL-221 (1)). %d: the rank, the seeds; %s: the distance below the highest final ELBO, the range of the
+        # final ELBOs (both in ELBO units).
+        stability_elbo_rank = paste("By the final value of MOFA2's training objective (the ELBO, a lower bound on the model",
+            "evidence; higher is better), the model shown ranks %d of %d: %s below the highest. The final values of all seeds",
+            "span %s."),
+        # r1.5 (owner's decision VAL-252): the basis of the rank, from two observed facts: KIT-151c (n20weak cap1000 slow,
+        # run-mofa-evidence-k151c seed-rows.tsv: five seeds span 0.0146, seed 1 ranks 5 of 5) and KIT-062
+        # (mofa-reproducibility-diagnose.json: one solution, matched factors r = 0.999998, 186 and 191 rounds, 0.676 apart).
+        stability_elbo_slack = paste("Training stops by a rule, not at an exact optimum, so a small difference in the final",
+            "value can come from where training stopped rather than from a better solution: one model trained twice in",
+            "single precision (not the shipped setting) on two processors, its factors correlated 0.999998, ended 0.68",
+            "apart when one run stopped five rounds later, and in a simulation with 20 samples and slow training five",
+            "seeds' final values spanned 0.015, with the declared seed ranked 5 of 5."),
+        stability_limit = paste("The table describes only the factors of the model shown: a factor that other seeds find",
+            "but this model lacks is not listed."),
         col_agreement_lowest = "Lowest agreement across seeds",
         col_agreement_median = "Median agreement across seeds",
         col_factor = "Factor",
@@ -1428,6 +1461,9 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
     # Counted over the union of the data sets' biological samples, whichever rule keeps them.
     total <- preview$all_samples
     missing <- total - preview$aligned$shared_samples
+    # KIT-240 r1.4 (AUDIT-KIT-240-impl I02): the rule the alignment applied, over the kept samples, as the Methods says.
+    kept <- nrow(preview$aligned$samples)
+    min_observed <- integrationMinObserved(parameters, kept)
     facts <- c(sprintf(texts[["fact_samples"]], total, preview$aligned$shared_samples),
         sprintf(text("fact_missing_", parameters$missing_samples), missing))
     for (i in seq_len(nrow(preview$replicates))) {
@@ -1442,7 +1478,7 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
             if (length(named)) facts <- c(facts, sprintf(omicGuiItsdTexts()[["integration_names"]], row$view, paste(named, collapse = "; ")))
         }
         sparse <- summary$sparse_dropped[summary$view == row$view]
-        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse))
+        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse, min_observed, kept))
     }
     # KIT-260 (OD-3 (a)): the note, only where marked rows were matched through the removed alternatives.
     note <- omicsItsdLegacyNote(preview$standard_legacy, unit = "data set")
@@ -1577,12 +1613,12 @@ integrationSaveDesign <- function(samples, dir) {
 #' @noRd
 INTEGRATION_GUI_MATCHING_PARAMETERS <- c("technical_replicates", "internal_standards", "missing_samples")
 
-#' Whether a parameter's default is provisional: the spec's `settled_by` names the workbook as the one that settles or
-#' may override it (every parameter but `precision`, decided by INT-6, today).
-#' @param entry One entry of `integrationMofaParameterSpec()`.
+#' Whether a parameter's default still awaits the owner's decision: its `settled_by` says so (KIT-240, VAL-221 (4): no
+#' model or Results default today; the marks of the others name their decision and ledger row).
+#' @param entry One entry of `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
 #' @noRd
 integrationParameterProvisional <- function(entry) {
-    grepl("provisional|may override", entry$settled_by)
+    grepl("awaiting the owner", entry$settled_by, fixed = TRUE)
 }
 
 #' A setting's label, its choices' labels and its help, from the wording table; a parameter or value without an entry
@@ -1603,9 +1639,10 @@ integrationParameterType <- function(entry) {
 }
 
 #' A tab's settings, built from its parameter spec (KIT-140; KIT-152 for any tab and a type per parameter): one input
-#' per parameter, its default the spec's, so a default the workbook changes changes the screen with no edit here; a
+#' per parameter, its default the spec's, so a default changed in the table changes the screen with no edit here; a
 #' choice as buttons, a flag as a tick box, a whole number or a number as a number box, factors as a list to pick from
-#' (its choices filled by the tab once a model is shown). Each label carries "provisional default" or "decided".
+#' (its choices filled by the tab once a model is shown). Each label carries "decided", or the mark of a default that
+#' still awaits the owner's decision (`integrationParameterProvisional`).
 #' @param ns The module's namespace function.
 #' @param spec `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
 #' @param exclude Parameters not offered (the Model tab: those the confirmed sample table fixed).

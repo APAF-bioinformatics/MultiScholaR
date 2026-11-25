@@ -1,0 +1,5 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit240-integration-default.R	90	2	0	1	failed	92	0	0	1	ok	fixed	fixed: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged; counts: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged (passed 17 -> 19, skipped 0 -> 0)	
+test-integration-results.R	169	0	0	0	ok	169	0	0	0	ok	same		
+test-integration-record.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		

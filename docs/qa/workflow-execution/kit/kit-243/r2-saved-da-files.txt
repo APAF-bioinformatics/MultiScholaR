@@ -1,0 +1,35 @@
+# test-workflow-saved-da.R, R2 45593292336: the 'files' field of W1 (a) and W2, base 43e106da against head 4e2f1575 (both fail the laptop-frozen value f5079a9e...)
+== w1b
+ `actual`: "a06eeaab46e84bd9510386697fee6567000955175c235fc76762bb828826e821"	 dia_changed_arguments files
+ `actual`: "a06eeaab46e84bd9510386697fee6567000955175c235fc76762bb828826e821"	 dia_qvalue_only files
+ `actual`: "a06eeaab46e84bd9510386697fee6567000955175c235fc76762bb828826e821"	 dia_refused files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_non_head files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_reopened_rerun files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_repeat files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_two_contrasts files
+ `actual`: "eb705c8aeee4280538d1bbf69fd1594efc1d91f3f2ae0e3df6608f66092a637a"	 dia_one_contrast files
+== w1h
+ `actual`: "8688a7e5c2d82c37c829cf87bc30362f65aa8897849bbd6c8e5906703ff5de96"	 dia_changed_arguments files
+ `actual`: "8688a7e5c2d82c37c829cf87bc30362f65aa8897849bbd6c8e5906703ff5de96"	 dia_qvalue_only files
+ `actual`: "8688a7e5c2d82c37c829cf87bc30362f65aa8897849bbd6c8e5906703ff5de96"	 dia_refused files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_non_head files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_reopened_rerun files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_repeat files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 dia_two_contrasts files
+ `actual`: "eb705c8aeee4280538d1bbf69fd1594efc1d91f3f2ae0e3df6608f66092a637a"	 dia_one_contrast files
+== w2b
+ `actual`: "a06eeaab46e84bd9510386697fee6567000955175c235fc76762bb828826e821"	 worker dia_changed_arguments files
+ `actual`: "a06eeaab46e84bd9510386697fee6567000955175c235fc76762bb828826e821"	 worker dia_qvalue_only files
+ `actual`: "a06eeaab46e84bd9510386697fee6567000955175c235fc76762bb828826e821"	 worker dia_refused files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 worker dia_reopened_rerun files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 worker dia_repeat files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 worker dia_two_contrasts files
+ `actual`: "eb705c8aeee4280538d1bbf69fd1594efc1d91f3f2ae0e3df6608f66092a637a"	 worker dia_one_contrast files
+== w2h
+ `actual`: "8688a7e5c2d82c37c829cf87bc30362f65aa8897849bbd6c8e5906703ff5de96"	 worker dia_changed_arguments files
+ `actual`: "8688a7e5c2d82c37c829cf87bc30362f65aa8897849bbd6c8e5906703ff5de96"	 worker dia_qvalue_only files
+ `actual`: "8688a7e5c2d82c37c829cf87bc30362f65aa8897849bbd6c8e5906703ff5de96"	 worker dia_refused files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 worker dia_reopened_rerun files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 worker dia_repeat files
+ `actual`: "a1d1fdde1cf4422c2bf7512a89678e207040e8676b240f51676412045b1daf09"	 worker dia_two_contrasts files
+ `actual`: "eb705c8aeee4280538d1bbf69fd1594efc1d91f3f2ae0e3df6608f66092a637a"	 worker dia_one_contrast files

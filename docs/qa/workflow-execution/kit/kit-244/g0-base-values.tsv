@@ -1,0 +1,609 @@
+case	path	step	value
+env	-	package_commit	1a9ffe4caa889413bb478ed44d8694e0b04c9f23
+env	-	R	R version 4.6.1 (2026-06-24)
+env	-	limpa	1.4.2
+env	-	mixOmics	6.36.0
+env	-	testthat	3.3.2
+env	-	workflowOwnerCapable	TRUE
+T	in_process	L7_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+T	in_process	L7_n_samples	12
+T	in_process	L7_value_sha	09d6f2e44b6067a9
+T	in_process	press1	completed
+T	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+T	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+T	in_process	press1_figures_from	03-peptide_count_filtered|L7
+T	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+T	in_process	corr1_threshold	0.5
+T	in_process	corr1_source	03-peptide_count_filtered|L7
+T	in_process	corr1	completed
+T	in_process	corr1_committed	TRUE
+T	in_process	corr1_history_changed	TRUE
+T	in_process	corr1_result	C1
+T	in_process	corr1_head_after	correlation_filtered C1-state
+T	in_process	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+T	in_process	corr1_n_samples	12
+T	in_process	corr1_value_sha	09d6f2e44b6067a9
+T	in_process	pairs_reference	other:c3286417
+T	in_process	pairs_hydrated_class	list
+T	in_process	pairs_hydrated_names	schema,product_type,status,value,provenance,reason
+T	in_process	pairs_columns	Run.x,Run.y,pearson_correlation,group
+T	in_process	pairs_rows	30
+T	in_process	samples_in_no_pair	<none>
+T	in_process	samples_without_b	<none>
+T	in_process	predicted_kept_0.5	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+T	in_process	observed_equals_predicted_0.5	TRUE
+T	in_process	m	0.96257597326065381
+T	in_process	m_samples	run_0001
+T	in_process	m2	0.96464941373759827
+T	in_process	t_hi	0.96361269349912604
+T	in_process	predicted_kept_t_hi	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+T	in_process	predicted_removed_t_hi_not_0.5	run_0001
+A05	in_process	press1	completed
+A05	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A05	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A05	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05	in_process	corr1_threshold	0.5
+A05	in_process	corr1_source	03-peptide_count_filtered|L7
+A05	in_process	corr1	completed
+A05	in_process	corr1_committed	TRUE
+A05	in_process	corr1_history_changed	TRUE
+A05	in_process	corr1_result	C1
+A05	in_process	corr1_head_after	correlation_filtered C1-state
+A05	in_process	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05	in_process	corr1_n_samples	12
+A05	in_process	corr1_value_sha	09d6f2e44b6067a9
+A05	in_process	press2	completed
+A05	in_process	press2_head	correlation_filtered C1-state
+A05	in_process	press2_recorded_start	C1-state
+A05	in_process	press2_figures_from	C1-state
+A05	in_process	press2_managed_figure_source	C1-state
+A05	in_process	corr2_threshold	0.5
+A05	in_process	corr2_source	C1-state
+A05	in_process	corr2	completed
+A05	in_process	corr2_committed	FALSE
+A05	in_process	corr2_history_changed	FALSE
+A05	in_process	corr2_result	R2
+A05	in_process	corr2_head_after	correlation_filtered C1-state
+A05	in_process	corr2_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05	in_process	corr2_n_samples	12
+A05	in_process	corr2_value_sha	09d6f2e44b6067a9
+A05	in_process	history_end	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A05-skip	in_process	press1	completed
+A05-skip	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05-skip	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A05-skip	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A05-skip	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05-skip	in_process	corr1_threshold	0.5
+A05-skip	in_process	corr1_source	03-peptide_count_filtered|L7
+A05-skip	in_process	corr1	completed
+A05-skip	in_process	corr1_committed	TRUE
+A05-skip	in_process	corr1_history_changed	TRUE
+A05-skip	in_process	corr1_result	C1
+A05-skip	in_process	corr1_head_after	correlation_filtered C1-state
+A05-skip	in_process	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-skip	in_process	corr1_n_samples	12
+A05-skip	in_process	corr1_value_sha	09d6f2e44b6067a9
+A05-skip	in_process	press2	completed
+A05-skip	in_process	press2_head	correlation_filtered C1-state
+A05-skip	in_process	press2_recorded_start	C1-state
+A05-skip	in_process	press2_figures_from	C1-state
+A05-skip	in_process	press2_managed_figure_source	C1-state
+A05-skip	in_process	skip_source	C1-state
+A05-skip	in_process	skip	completed
+A05-skip	in_process	skip_committed	TRUE
+A05-skip	in_process	skip_head_after	correlation_filtered S-state
+A05-skip	in_process	skip_config	min_pearson_correlation_threshold=0;skipped=1
+A05-skip	in_process	skip_components_as	01-protein_dpc_quant,02-protein_normalised,03-peptide_count_filtered,C1,C1-state,L7
+A05-skip	in_process	skip_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-skip	in_process	skip_n_samples	12
+A05-skip	in_process	skip_value_sha	09d6f2e44b6067a9
+A05-skip	in_process	reset	error [prot_norm_reset_source_unknown/rlang_error/error/condition] the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press "Run Normalization & RUV" again.
+A05-skip	in_process	reset_current_state	correlation_filtered
+A05-skip	in_process	reset_head	S-state
+A05-skip	in_process	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A05-skip	in_process	reset_correlation_filtered_in_history	TRUE
+A05-skip	in_process	reset_previous_state	<null>
+A05-skip	in_process	reset_notices	<none>
+A05-reset	in_process	press1	completed
+A05-reset	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05-reset	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A05-reset	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A05-reset	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05-reset	in_process	corr1_threshold	0.5
+A05-reset	in_process	corr1_source	03-peptide_count_filtered|L7
+A05-reset	in_process	corr1	completed
+A05-reset	in_process	corr1_committed	TRUE
+A05-reset	in_process	corr1_history_changed	TRUE
+A05-reset	in_process	corr1_result	C1
+A05-reset	in_process	corr1_head_after	correlation_filtered C1-state
+A05-reset	in_process	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-reset	in_process	corr1_n_samples	12
+A05-reset	in_process	corr1_value_sha	09d6f2e44b6067a9
+A05-reset	in_process	press2	completed
+A05-reset	in_process	press2_head	correlation_filtered C1-state
+A05-reset	in_process	press2_recorded_start	C1-state
+A05-reset	in_process	press2_figures_from	C1-state
+A05-reset	in_process	press2_managed_figure_source	C1-state
+A05-reset	in_process	reset	completed
+A05-reset	in_process	reset_current_state	correlation_filtered
+A05-reset	in_process	reset_head	C1-state
+A05-reset	in_process	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A05-reset	in_process	reset_correlation_filtered_in_history	TRUE
+A05-reset	in_process	reset_previous_state	correlation_filtered
+A05-reset	in_process	reset_notices	[warning 5] Normalisation reset: the current table is again the one the normalisation started from (the peptide quality-control steps).
+A05-ruvskip	in_process	press1	completed
+A05-ruvskip	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05-ruvskip	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A05-ruvskip	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A05-ruvskip	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05-ruvskip	in_process	corr1_threshold	0.5
+A05-ruvskip	in_process	corr1_source	03-peptide_count_filtered|L7
+A05-ruvskip	in_process	corr1	completed
+A05-ruvskip	in_process	corr1_committed	TRUE
+A05-ruvskip	in_process	corr1_history_changed	TRUE
+A05-ruvskip	in_process	corr1_result	C1
+A05-ruvskip	in_process	corr1_head_after	correlation_filtered C1-state
+A05-ruvskip	in_process	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-ruvskip	in_process	corr1_n_samples	12
+A05-ruvskip	in_process	corr1_value_sha	09d6f2e44b6067a9
+A05-ruvskip	in_process	ruv_skip	completed
+A05-ruvskip	in_process	ruv_skip_notices	RUV-III covariates skipped. Ready for differential expression analysis.
+A05-ruvskip	in_process	ruv_skip_committed	FALSE
+A05-ruvskip	in_process	ruv_skip_history_changed	FALSE
+A05-ruvskip	in_process	ruv_skip_head_after	correlation_filtered C1-state
+A05-ruvskip	in_process	ruv_skip_ruv_covariates_complete	TRUE
+A05-ruvskip	in_process	press2	completed
+A05-ruvskip	in_process	press2_head	correlation_filtered C1-state
+A05-ruvskip	in_process	press2_recorded_start	C1-state
+A05-ruvskip	in_process	press2_figures_from	C1-state
+A05-ruvskip	in_process	press2_managed_figure_source	C1-state
+A-hi	in_process	press1	completed
+A-hi	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A-hi	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A-hi	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A-hi	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A-hi	in_process	corr1_threshold	0.96361269349912604
+A-hi	in_process	corr1_source	03-peptide_count_filtered|L7
+A-hi	in_process	corr1	completed
+A-hi	in_process	corr1_committed	TRUE
+A-hi	in_process	corr1_history_changed	TRUE
+A-hi	in_process	corr1_result	Chi
+A-hi	in_process	corr1_head_after	correlation_filtered Chi-state
+A-hi	in_process	corr1_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-hi	in_process	corr1_n_samples	11
+A-hi	in_process	corr1_value_sha	743d4ee9516554b7
+A-hi	in_process	press2	completed
+A-hi	in_process	press2_head	correlation_filtered Chi-state
+A-hi	in_process	press2_recorded_start	Chi-state
+A-hi	in_process	press2_figures_from	Chi-state
+A-hi	in_process	press2_managed_figure_source	Chi-state
+A-hi	in_process	corr2_threshold	0.5
+A-hi	in_process	corr2_source	Chi-state
+A-hi	in_process	corr2	completed
+A-hi	in_process	corr2_committed	TRUE
+A-hi	in_process	corr2_history_changed	FALSE
+A-hi	in_process	corr2_result	R2
+A-hi	in_process	corr2_head_after	correlation_filtered R2-state
+A-hi	in_process	corr2_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-hi	in_process	corr2_n_samples	11
+A-hi	in_process	corr2_value_sha	743d4ee9516554b7
+A-skip	in_process	press1	completed
+A-skip	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A-skip	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A-skip	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A-skip	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A-skip	in_process	corr1_threshold	0.96361269349912604
+A-skip	in_process	corr1_source	03-peptide_count_filtered|L7
+A-skip	in_process	corr1	completed
+A-skip	in_process	corr1_committed	TRUE
+A-skip	in_process	corr1_history_changed	TRUE
+A-skip	in_process	corr1_result	Chi
+A-skip	in_process	corr1_head_after	correlation_filtered Chi-state
+A-skip	in_process	corr1_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-skip	in_process	corr1_n_samples	11
+A-skip	in_process	corr1_value_sha	743d4ee9516554b7
+A-skip	in_process	press2	completed
+A-skip	in_process	press2_head	correlation_filtered Chi-state
+A-skip	in_process	press2_recorded_start	Chi-state
+A-skip	in_process	press2_figures_from	Chi-state
+A-skip	in_process	press2_managed_figure_source	Chi-state
+A-skip	in_process	skip_source	Chi-state
+A-skip	in_process	skip	completed
+A-skip	in_process	skip_committed	TRUE
+A-skip	in_process	skip_head_after	correlation_filtered S-state
+A-skip	in_process	skip_config	min_pearson_correlation_threshold=0;skipped=1
+A-skip	in_process	skip_components_as	Chi,Chi-state
+A-skip	in_process	skip_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-skip	in_process	skip_n_samples	11
+A-skip	in_process	skip_value_sha	743d4ee9516554b7
+A-skip	in_process	reset	error [prot_norm_reset_source_unknown/rlang_error/error/condition] the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press "Run Normalization & RUV" again.
+A-skip	in_process	reset_current_state	correlation_filtered
+A-skip	in_process	reset_head	S-state
+A-skip	in_process	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A-skip	in_process	reset_correlation_filtered_in_history	TRUE
+A-skip	in_process	reset_previous_state	<null>
+A-skip	in_process	reset_notices	<none>
+A-C2	in_process	press1	completed
+A-C2	in_process	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A-C2	in_process	press1_recorded_start	03-peptide_count_filtered|L7
+A-C2	in_process	press1_figures_from	03-peptide_count_filtered|L7
+A-C2	in_process	press1_managed_figure_source	03-peptide_count_filtered|L7
+A-C2	in_process	corr1_threshold	0.5
+A-C2	in_process	corr1_source	03-peptide_count_filtered|L7
+A-C2	in_process	corr1	completed
+A-C2	in_process	corr1_committed	TRUE
+A-C2	in_process	corr1_history_changed	TRUE
+A-C2	in_process	corr1_result	C1
+A-C2	in_process	corr1_head_after	correlation_filtered C1-state
+A-C2	in_process	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-C2	in_process	corr1_n_samples	12
+A-C2	in_process	corr1_value_sha	09d6f2e44b6067a9
+A-C2	in_process	press2	completed
+A-C2	in_process	press2_head	correlation_filtered C1-state
+A-C2	in_process	press2_recorded_start	C1-state
+A-C2	in_process	press2_figures_from	C1-state
+A-C2	in_process	press2_managed_figure_source	C1-state
+A-C2	in_process	corr2_threshold	0.96361269349912604
+A-C2	in_process	corr2_source	C1-state
+A-C2	in_process	corr2	completed
+A-C2	in_process	corr2_committed	TRUE
+A-C2	in_process	corr2_history_changed	FALSE
+A-C2	in_process	corr2_result	C2
+A-C2	in_process	corr2_head_after	correlation_filtered C2-state
+A-C2	in_process	corr2_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-C2	in_process	corr2_n_samples	11
+A-C2	in_process	corr2_value_sha	743d4ee9516554b7
+A-C2	in_process	reset	error [prot_norm_reset_source_unknown/rlang_error/error/condition] the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press "Run Normalization & RUV" again.
+A-C2	in_process	reset_current_state	correlation_filtered
+A-C2	in_process	reset_head	C2-state
+A-C2	in_process	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A-C2	in_process	reset_correlation_filtered_in_history	TRUE
+A-C2	in_process	reset_previous_state	<null>
+A-C2	in_process	reset_notices	<none>
+A05	worker	press1	completed
+A05	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A05	worker	press1_figures_from	03-peptide_count_filtered|L7
+A05	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05	worker	corr1_threshold	0.5
+A05	worker	corr1_source	03-peptide_count_filtered|L7
+A05	worker	corr1	completed
+A05	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A05	worker	corr1_committed	TRUE
+A05	worker	corr1_history_changed	TRUE
+A05	worker	corr1_result	C1
+A05	worker	corr1_head_after	correlation_filtered C1-state
+A05	worker	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05	worker	corr1_n_samples	12
+A05	worker	corr1_value_sha	09d6f2e44b6067a9
+A05	worker	press2	completed
+A05	worker	press2_head	correlation_filtered C1-state
+A05	worker	press2_recorded_start	C1-state
+A05	worker	press2_figures_from	C1-state
+A05	worker	press2_managed_figure_source	C1-state
+A05	worker	corr2_threshold	0.5
+A05	worker	corr2_source	C1-state
+A05	worker	corr2	completed
+A05	worker	corr2_worker_inputs	pearson-pairs:C1-state,pearson-selection:C1-state
+A05	worker	corr2_committed	FALSE
+A05	worker	corr2_history_changed	FALSE
+A05	worker	corr2_result	R2
+A05	worker	corr2_head_after	correlation_filtered C1-state
+A05	worker	corr2_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05	worker	corr2_n_samples	12
+A05	worker	corr2_value_sha	09d6f2e44b6067a9
+A05	worker	history_end	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A05-skip	worker	press1	completed
+A05-skip	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05-skip	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A05-skip	worker	press1_figures_from	03-peptide_count_filtered|L7
+A05-skip	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05-skip	worker	corr1_threshold	0.5
+A05-skip	worker	corr1_source	03-peptide_count_filtered|L7
+A05-skip	worker	corr1	completed
+A05-skip	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A05-skip	worker	corr1_committed	TRUE
+A05-skip	worker	corr1_history_changed	TRUE
+A05-skip	worker	corr1_result	C1
+A05-skip	worker	corr1_head_after	correlation_filtered C1-state
+A05-skip	worker	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-skip	worker	corr1_n_samples	12
+A05-skip	worker	corr1_value_sha	09d6f2e44b6067a9
+A05-skip	worker	press2	completed
+A05-skip	worker	press2_head	correlation_filtered C1-state
+A05-skip	worker	press2_recorded_start	C1-state
+A05-skip	worker	press2_figures_from	C1-state
+A05-skip	worker	press2_managed_figure_source	C1-state
+A05-skip	worker	skip_source	C1-state
+A05-skip	worker	skip	completed
+A05-skip	worker	skip_committed	TRUE
+A05-skip	worker	skip_head_after	correlation_filtered S-state
+A05-skip	worker	skip_config	min_pearson_correlation_threshold=0;skipped=1
+A05-skip	worker	skip_components_as	01-protein_dpc_quant,02-protein_normalised,03-peptide_count_filtered,C1,C1-state,L7
+A05-skip	worker	skip_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-skip	worker	skip_n_samples	12
+A05-skip	worker	skip_value_sha	09d6f2e44b6067a9
+A05-skip	worker	reset	error [prot_norm_reset_source_unknown/rlang_error/error/condition] the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press "Run Normalization & RUV" again.
+A05-skip	worker	reset_current_state	correlation_filtered
+A05-skip	worker	reset_head	S-state
+A05-skip	worker	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A05-skip	worker	reset_correlation_filtered_in_history	TRUE
+A05-skip	worker	reset_previous_state	<null>
+A05-skip	worker	reset_notices	<none>
+A05-reset	worker	press1	completed
+A05-reset	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05-reset	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A05-reset	worker	press1_figures_from	03-peptide_count_filtered|L7
+A05-reset	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05-reset	worker	corr1_threshold	0.5
+A05-reset	worker	corr1_source	03-peptide_count_filtered|L7
+A05-reset	worker	corr1	completed
+A05-reset	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A05-reset	worker	corr1_committed	TRUE
+A05-reset	worker	corr1_history_changed	TRUE
+A05-reset	worker	corr1_result	C1
+A05-reset	worker	corr1_head_after	correlation_filtered C1-state
+A05-reset	worker	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-reset	worker	corr1_n_samples	12
+A05-reset	worker	corr1_value_sha	09d6f2e44b6067a9
+A05-reset	worker	press2	completed
+A05-reset	worker	press2_head	correlation_filtered C1-state
+A05-reset	worker	press2_recorded_start	C1-state
+A05-reset	worker	press2_figures_from	C1-state
+A05-reset	worker	press2_managed_figure_source	C1-state
+A05-reset	worker	reset	completed
+A05-reset	worker	reset_current_state	correlation_filtered
+A05-reset	worker	reset_head	C1-state
+A05-reset	worker	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A05-reset	worker	reset_correlation_filtered_in_history	TRUE
+A05-reset	worker	reset_previous_state	correlation_filtered
+A05-reset	worker	reset_notices	[warning 5] Normalisation reset: the current table is again the one the normalisation started from (the peptide quality-control steps).
+A05-ruvskip	worker	press1	completed
+A05-ruvskip	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A05-ruvskip	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A05-ruvskip	worker	press1_figures_from	03-peptide_count_filtered|L7
+A05-ruvskip	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A05-ruvskip	worker	corr1_threshold	0.5
+A05-ruvskip	worker	corr1_source	03-peptide_count_filtered|L7
+A05-ruvskip	worker	corr1	completed
+A05-ruvskip	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A05-ruvskip	worker	corr1_committed	TRUE
+A05-ruvskip	worker	corr1_history_changed	TRUE
+A05-ruvskip	worker	corr1_result	C1
+A05-ruvskip	worker	corr1_head_after	correlation_filtered C1-state
+A05-ruvskip	worker	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A05-ruvskip	worker	corr1_n_samples	12
+A05-ruvskip	worker	corr1_value_sha	09d6f2e44b6067a9
+A05-ruvskip	worker	ruv_skip	completed
+A05-ruvskip	worker	ruv_skip_notices	RUV-III covariates skipped. Ready for differential expression analysis.
+A05-ruvskip	worker	ruv_skip_committed	FALSE
+A05-ruvskip	worker	ruv_skip_history_changed	FALSE
+A05-ruvskip	worker	ruv_skip_head_after	correlation_filtered C1-state
+A05-ruvskip	worker	ruv_skip_ruv_covariates_complete	TRUE
+A05-ruvskip	worker	press2	completed
+A05-ruvskip	worker	press2_head	correlation_filtered C1-state
+A05-ruvskip	worker	press2_recorded_start	C1-state
+A05-ruvskip	worker	press2_figures_from	C1-state
+A05-ruvskip	worker	press2_managed_figure_source	C1-state
+A-hi	worker	press1	completed
+A-hi	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A-hi	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A-hi	worker	press1_figures_from	03-peptide_count_filtered|L7
+A-hi	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A-hi	worker	corr1_threshold	0.96361269349912604
+A-hi	worker	corr1_source	03-peptide_count_filtered|L7
+A-hi	worker	corr1	completed
+A-hi	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A-hi	worker	corr1_committed	TRUE
+A-hi	worker	corr1_history_changed	TRUE
+A-hi	worker	corr1_result	Chi
+A-hi	worker	corr1_head_after	correlation_filtered Chi-state
+A-hi	worker	corr1_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-hi	worker	corr1_n_samples	11
+A-hi	worker	corr1_value_sha	743d4ee9516554b7
+A-hi	worker	press2	completed
+A-hi	worker	press2_head	correlation_filtered Chi-state
+A-hi	worker	press2_recorded_start	Chi-state
+A-hi	worker	press2_figures_from	Chi-state
+A-hi	worker	press2_managed_figure_source	Chi-state
+A-hi	worker	corr2_threshold	0.5
+A-hi	worker	corr2_source	Chi-state
+A-hi	worker	corr2	completed
+A-hi	worker	corr2_worker_inputs	pearson-pairs:Chi-state,pearson-selection:Chi-state
+A-hi	worker	corr2_committed	TRUE
+A-hi	worker	corr2_history_changed	FALSE
+A-hi	worker	corr2_result	R2
+A-hi	worker	corr2_head_after	correlation_filtered R2-state
+A-hi	worker	corr2_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-hi	worker	corr2_n_samples	11
+A-hi	worker	corr2_value_sha	743d4ee9516554b7
+A-skip	worker	press1	completed
+A-skip	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A-skip	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A-skip	worker	press1_figures_from	03-peptide_count_filtered|L7
+A-skip	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A-skip	worker	corr1_threshold	0.96361269349912604
+A-skip	worker	corr1_source	03-peptide_count_filtered|L7
+A-skip	worker	corr1	completed
+A-skip	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A-skip	worker	corr1_committed	TRUE
+A-skip	worker	corr1_history_changed	TRUE
+A-skip	worker	corr1_result	Chi
+A-skip	worker	corr1_head_after	correlation_filtered Chi-state
+A-skip	worker	corr1_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-skip	worker	corr1_n_samples	11
+A-skip	worker	corr1_value_sha	743d4ee9516554b7
+A-skip	worker	press2	completed
+A-skip	worker	press2_head	correlation_filtered Chi-state
+A-skip	worker	press2_recorded_start	Chi-state
+A-skip	worker	press2_figures_from	Chi-state
+A-skip	worker	press2_managed_figure_source	Chi-state
+A-skip	worker	skip_source	Chi-state
+A-skip	worker	skip	completed
+A-skip	worker	skip_committed	TRUE
+A-skip	worker	skip_head_after	correlation_filtered S-state
+A-skip	worker	skip_config	min_pearson_correlation_threshold=0;skipped=1
+A-skip	worker	skip_components_as	Chi,Chi-state
+A-skip	worker	skip_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-skip	worker	skip_n_samples	11
+A-skip	worker	skip_value_sha	743d4ee9516554b7
+A-skip	worker	reset	error [prot_norm_reset_source_unknown/rlang_error/error/condition] the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press "Run Normalization & RUV" again.
+A-skip	worker	reset_current_state	correlation_filtered
+A-skip	worker	reset_head	S-state
+A-skip	worker	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A-skip	worker	reset_correlation_filtered_in_history	TRUE
+A-skip	worker	reset_previous_state	<null>
+A-skip	worker	reset_notices	<none>
+A-C2	worker	press1	completed
+A-C2	worker	press1_head	peptide_count_filtered 03-peptide_count_filtered|L7
+A-C2	worker	press1_recorded_start	03-peptide_count_filtered|L7
+A-C2	worker	press1_figures_from	03-peptide_count_filtered|L7
+A-C2	worker	press1_managed_figure_source	03-peptide_count_filtered|L7
+A-C2	worker	corr1_threshold	0.5
+A-C2	worker	corr1_source	03-peptide_count_filtered|L7
+A-C2	worker	corr1	completed
+A-C2	worker	corr1_worker_inputs	pearson-pairs:03-peptide_count_filtered|L7,pearson-selection:03-peptide_count_filtered|L7
+A-C2	worker	corr1_committed	TRUE
+A-C2	worker	corr1_history_changed	TRUE
+A-C2	worker	corr1_result	C1
+A-C2	worker	corr1_head_after	correlation_filtered C1-state
+A-C2	worker	corr1_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-C2	worker	corr1_n_samples	12
+A-C2	worker	corr1_value_sha	09d6f2e44b6067a9
+A-C2	worker	press2	completed
+A-C2	worker	press2_head	correlation_filtered C1-state
+A-C2	worker	press2_recorded_start	C1-state
+A-C2	worker	press2_figures_from	C1-state
+A-C2	worker	press2_managed_figure_source	C1-state
+A-C2	worker	corr2_threshold	0.96361269349912604
+A-C2	worker	corr2_source	C1-state
+A-C2	worker	corr2	completed
+A-C2	worker	corr2_worker_inputs	pearson-pairs:C1-state,pearson-selection:C1-state
+A-C2	worker	corr2_committed	TRUE
+A-C2	worker	corr2_history_changed	FALSE
+A-C2	worker	corr2_result	C2
+A-C2	worker	corr2_head_after	correlation_filtered C2-state
+A-C2	worker	corr2_samples	run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+A-C2	worker	corr2_n_samples	11
+A-C2	worker	corr2_value_sha	743d4ee9516554b7
+A-C2	worker	reset	error [prot_norm_reset_source_unknown/rlang_error/error/condition] the table this normalisation started from can no longer be found in this session (for example, the design was saved again after the normalisation, or the project was saved without that table), so nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press "Run Normalization & RUV" again.
+A-C2	worker	reset_current_state	correlation_filtered
+A-C2	worker	reset_head	C2-state
+A-C2	worker	reset_history	initial,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+A-C2	worker	reset_correlation_filtered_in_history	TRUE
+A-C2	worker	reset_previous_state	<null>
+A-C2	worker	reset_notices	<none>
+B1-raw_data_s4	in_process	head_class	PeptideQuantitativeData
+B1-raw_data_s4	in_process	press	completed
+B1-raw_data_s4	in_process	press_head	raw_data_s4 01-raw_data_s4
+B1-raw_data_s4	in_process	press_handled_errors	<none>
+B1-raw_data_s4	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B1-raw_data_s4	in_process	press_recorded_start	01-raw_data_s4
+B1-raw_data_s4	in_process	press_figures_from	01-raw_data_s4
+B1-qvalue_filtered	in_process	head_class	PeptideQuantitativeData
+B1-qvalue_filtered	in_process	press	completed
+B1-qvalue_filtered	in_process	press_head	qvalue_filtered 02-qvalue_filtered
+B1-qvalue_filtered	in_process	press_handled_errors	<none>
+B1-qvalue_filtered	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B1-qvalue_filtered	in_process	press_recorded_start	02-qvalue_filtered
+B1-qvalue_filtered	in_process	press_figures_from	02-qvalue_filtered
+B1-precursor_rollup	in_process	head_class	PeptideQuantitativeData
+B1-precursor_rollup	in_process	press	completed
+B1-precursor_rollup	in_process	press_head	precursor_rollup 03-precursor_rollup
+B1-precursor_rollup	in_process	press_handled_errors	<none>
+B1-precursor_rollup	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B1-precursor_rollup	in_process	press_recorded_start	03-precursor_rollup
+B1-precursor_rollup	in_process	press_figures_from	03-precursor_rollup
+B1-log2_matrix	in_process	head_class	PeptideQuantitativeData
+B1-log2_matrix	in_process	press	completed
+B1-log2_matrix	in_process	press_head	log2_matrix 04-log2_matrix
+B1-log2_matrix	in_process	press_handled_errors	<none>
+B1-log2_matrix	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B1-log2_matrix	in_process	press_recorded_start	04-log2_matrix
+B1-log2_matrix	in_process	press_figures_from	04-log2_matrix
+B1-peptide_accession_cleaned	in_process	head_class	PeptideQuantitativeData
+B1-peptide_accession_cleaned	in_process	press	completed
+B1-peptide_accession_cleaned	in_process	press_head	peptide_accession_cleaned 05-peptide_accession_cleaned
+B1-peptide_accession_cleaned	in_process	press_handled_errors	<none>
+B1-peptide_accession_cleaned	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B1-peptide_accession_cleaned	in_process	press_recorded_start	05-peptide_accession_cleaned
+B1-peptide_accession_cleaned	in_process	press_figures_from	05-peptide_accession_cleaned
+B1-raw_data_s4	managed	head_class	PeptideQuantitativeData
+B1-raw_data_s4	managed	press	completed
+B1-raw_data_s4	managed	press_head	raw_data_s4 01-raw_data_s4
+B1-raw_data_s4	managed	press_handled_errors	<none>
+B1-raw_data_s4	managed	press_notices	<none>
+B1-raw_data_s4	managed	press_recorded_start	<null>
+B1-raw_data_s4	managed	press_figures_from	<none>
+B1-raw_data_s4	managed	press_runner_actions	1
+B1-qvalue_filtered	managed	head_class	PeptideQuantitativeData
+B1-qvalue_filtered	managed	press	completed
+B1-qvalue_filtered	managed	press_head	qvalue_filtered 02-qvalue_filtered
+B1-qvalue_filtered	managed	press_handled_errors	<none>
+B1-qvalue_filtered	managed	press_notices	<none>
+B1-qvalue_filtered	managed	press_recorded_start	<null>
+B1-qvalue_filtered	managed	press_figures_from	<none>
+B1-qvalue_filtered	managed	press_runner_actions	1
+B1-precursor_rollup	managed	head_class	PeptideQuantitativeData
+B1-precursor_rollup	managed	press	completed
+B1-precursor_rollup	managed	press_head	precursor_rollup 03-precursor_rollup
+B1-precursor_rollup	managed	press_handled_errors	<none>
+B1-precursor_rollup	managed	press_notices	<none>
+B1-precursor_rollup	managed	press_recorded_start	<null>
+B1-precursor_rollup	managed	press_figures_from	<none>
+B1-precursor_rollup	managed	press_runner_actions	1
+B1-log2_matrix	managed	head_class	PeptideQuantitativeData
+B1-log2_matrix	managed	press	completed
+B1-log2_matrix	managed	press_head	log2_matrix 04-log2_matrix
+B1-log2_matrix	managed	press_handled_errors	<none>
+B1-log2_matrix	managed	press_notices	<none>
+B1-log2_matrix	managed	press_recorded_start	<null>
+B1-log2_matrix	managed	press_figures_from	<none>
+B1-log2_matrix	managed	press_runner_actions	1
+B1-peptide_accession_cleaned	managed	head_class	PeptideQuantitativeData
+B1-peptide_accession_cleaned	managed	press	completed
+B1-peptide_accession_cleaned	managed	press_head	peptide_accession_cleaned 05-peptide_accession_cleaned
+B1-peptide_accession_cleaned	managed	press_handled_errors	<none>
+B1-peptide_accession_cleaned	managed	press_notices	<none>
+B1-peptide_accession_cleaned	managed	press_recorded_start	<null>
+B1-peptide_accession_cleaned	managed	press_figures_from	<none>
+B1-peptide_accession_cleaned	managed	press_runner_actions	1
+B2-apply	in_process	log2_status	success 
+B2-apply	in_process	log2_head	log2_matrix other:7d87d360
+B2-apply	in_process	accession_status	success 
+B2-apply	in_process	accession_head	peptide_accession_cleaned other:0920f6bb
+B2-apply	in_process	head_class	PeptideQuantitativeData
+B2-apply	in_process	press	completed
+B2-apply	in_process	press_head	peptide_accession_cleaned route-peptide_accession_cleaned
+B2-apply	in_process	press_handled_errors	<none>
+B2-apply	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B2-apply	in_process	press_recorded_start	route-peptide_accession_cleaned
+B2-apply	in_process	press_figures_from	route-peptide_accession_cleaned
+B2-apply	in_process	corr1_threshold	0.5
+B2-apply	in_process	corr1_source	route-peptide_accession_cleaned
+B2-apply	in_process	corr1	error [workflow_operation_input/rlang_error/error/condition] operation "pearson-pairs" expects <ProteinQuantitativeData>, the source is <PeptideQuantitativeData>
+B2-apply	in_process	corr1_committed	FALSE
+B2-apply	in_process	corr1_history_changed	FALSE
+B2-skip	in_process	log2_status	success 
+B2-skip	in_process	log2_head	log2_matrix other:221309d5
+B2-skip	in_process	accession_status	success 
+B2-skip	in_process	accession_head	peptide_accession_cleaned other:1c454c19
+B2-skip	in_process	head_class	PeptideQuantitativeData
+B2-skip	in_process	press	completed
+B2-skip	in_process	press_head	peptide_accession_cleaned route-peptide_accession_cleaned
+B2-skip	in_process	press_handled_errors	<none>
+B2-skip	in_process	press_notices	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+B2-skip	in_process	press_recorded_start	route-peptide_accession_cleaned
+B2-skip	in_process	press_figures_from	route-peptide_accession_cleaned
+B2-skip	in_process	skip_source	route-peptide_accession_cleaned
+B2-skip	in_process	skip	error [saved_entity_unsupported/rlang_error/error/condition] table read scope requires a Parquet descriptor
+B2-skip	in_process	skip_committed	TRUE
+B2-skip	in_process	skip_head_after	correlation_filtered S-state
+B2-skip	in_process	skip_config	min_pearson_correlation_threshold=0;skipped=1
+B2-skip	in_process	skip_components_as	route-peptide_accession_cleaned
+B2-skip	in_process	skip_samples	run_0001,run_0002,run_0003,run_0004,run_0005,run_0006,run_0007,run_0008,run_0009,run_0010,run_0011,run_0012
+B2-skip	in_process	skip_n_samples	12
+B2-skip	in_process	skip_value_sha	bf796e14a22bf0ec
+B2-skip	in_process	ruv_covariates	error [saved_entity_outputs_pending/rlang_error/error/condition] correlation outputs are pending; retry that action
+B2-skip	in_process	ruv_covariates_head	correlation_filtered S-state
