@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-217 F: the fix commit; the new tests and the three edited files pass, with the files most exposed to the change; head only; ceiling 60 job-minutes",
+  "label": "KIT-217 F fix check on kit-217 ba962c19",
+  "package_commit": "ba962c19d2717b3b5bb4792772d27a1dc9cb3f24",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-partitions.R",
+    "test-kit217-intensity-filter-missing.R",
+    "test-kit172-reopen.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-kit202-intensity-filter-samples.R",
+    "test-omics-qc-core.R",
+    "test-module-ci-lipid-qc.R",
+    "test-module-ci-metab-qc.R",
+    "test-metab-qc-shared.R",
+    "test-metab-02t-metabolite-intensity-filtering-characterization.R",
+    "test-metab-s4-qc-shared.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
