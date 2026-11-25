@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-204 R3: full suite base dd769671 vs head 29848a2f after R2 correction green; decides A4 and the plan section 11 row; ceiling 70 min per job (186.7 core-h)",
+  "label": "KIT-204 R3 full suite base dd769671 vs head 29848a2f",
+  "package_commit": "29848a2f875d3314c659ea0b72e426122fa8d6e3",
+  "base_commit": "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 60
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
