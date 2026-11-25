@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-234 R1: tests first on 327e4dfa (W1-W4, W7-W9 must fail at their base values, W5 pass; W6 must exit 1); ceiling 90 job-minutes; decides stop rule 1",
+  "label": "KIT-234 R1 tests-only commit 327e4dfa",
+  "package_commit": "327e4dfa5db6e5a6adb73c9bd49d9a59201285d9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit234-workbooks-withdrawn.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [{"path": "docs/qa/workflow-execution/kit/kit-234/w6.R", "args": [], "timeout_minutes": 30}],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
