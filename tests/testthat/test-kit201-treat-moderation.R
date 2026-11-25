@@ -395,3 +395,20 @@ test_that("T-196 (guard): TREAT above 0 with a feature without values completes,
         expect_identical(tested, reference, label = paste(omic, "tested rows"))
     }
 })
+
+# T-196 (b), after KIT-200: proteomics' legacy test at a cutoff of 1 with a protein without values.
+test_that("T-196 (b) (guard): proteomics' TREAT at 1 with a protein without values completes, leaves it untested and tests the rest as without it", {
+    fixture <- kit201Matrix()
+    with_empty <- fixture
+    with_empty$x <- rbind(fixture$x, F999 = NA_real_)
+    result <- kit201Prot(with_empty, 1)
+    reference <- kit201Prot(fixture, 1)
+    expect_identical(result$features_without_values, "F999")
+    for (contrast in kit201Contrasts) {
+        table <- result$results[[contrast]]
+        row <- table["F999", , drop = FALSE]
+        expect_true(all(is.na(unlist(row))), label = paste(contrast, "F999 without statistics"))
+        tested <- table[rownames(table) != "F999", , drop = FALSE]
+        expect_identical(tested, reference$results[[contrast]], label = paste(contrast, "tested rows"))
+    }
+})
