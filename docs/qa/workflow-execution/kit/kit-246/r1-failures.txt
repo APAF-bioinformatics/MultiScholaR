@@ -1,0 +1,54 @@
+file: test-integration-record.R
+test: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+kind: failure
+message:
+  Expected `grepl("weak factors", methods, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-record.R
+test: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+kind: failure
+message:
+  Expected `grepl("no practical difference", methods, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-record.R
+test: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+kind: failure
+message:
+  Expected `grepl(old, methods, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-record.R
+test: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+kind: failure
+message:
+  Expected `grepl("weak factors", methods, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-record.R
+test: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+kind: failure
+message:
+  Expected `grepl("no practical difference", methods, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-record.R
+test: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+kind: failure
+message:
+  Expected `grepl(old, methods, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+

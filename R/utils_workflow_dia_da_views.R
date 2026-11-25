@@ -278,6 +278,9 @@ diaDaResultsTableView <- function(daResultsList, tableContrast, tableSignificanc
 }
 
 #' The summary statistics (mod_prot_da_render_table.R:103-149 at fe97aac1).
+#' KIT-204 (VAL-129 (1)): the line "Not tested (no value in a compared group): n" counts the contrast's rows without a
+#' p-value, always shown (also at 0) as in lipidomics and metabolomics; a results list whose table has no `raw_pvalue`
+#' column shows no such line.
 #' @noRd
 diaDaSummaryStatsView <- function(daResultsList, tableContrast, daQValThresh, lfcCutoff) {
     shiny::req(tableContrast, daResultsList)
@@ -296,6 +299,7 @@ diaDaSummaryStatsView <- function(daResultsList, tableContrast, daQValThresh, lf
                 return(paste(c(sprintf("Total genes: %d", counts$total),
                     sprintf("Significant (q < %.3f): %d", daQValThresh, counts$significant),
                     sprintf("Up-regulated: %d", counts$up), sprintf("Down-regulated: %d", counts$down),
+                    sprintf("Not tested (no value in a compared group): %d", counts$not_tested),
                     sprintf("Fold-change cutoff: %.2f", lfcCutoff), note), collapse = "\n"))
             }
             if (!is.null(daResultsList$da_proteins_long)) {
@@ -310,15 +314,17 @@ diaDaSummaryStatsView <- function(daResultsList, tableContrast, daQValThresh, lf
                         current_results$log2FC > lfcCutoff, na.rm = TRUE)
                     down_reg <- sum(current_results$fdr_qvalue < daQValThresh &
                         current_results$log2FC < -lfcCutoff, na.rm = TRUE)
+                    not_tested <- if ("raw_pvalue" %in% names(current_results))
+                        sprintf("Not tested (no value in a compared group): %d", sum(is.na(current_results$raw_pvalue)))
 
-                    paste(
+                    paste(c(
                         sprintf("Total genes: %d", total_genes),
                         sprintf("Significant (q < %.3f): %d", daQValThresh, significant),
                         sprintf("Up-regulated: %d", up_reg),
                         sprintf("Down-regulated: %d", down_reg),
-                        sprintf("Fold-change cutoff: %.2f", lfcCutoff),
-                        sep = "\n"
-                    )
+                        not_tested,
+                        sprintf("Fold-change cutoff: %.2f", lfcCutoff)
+                    ), collapse = "\n")
                 } else {
                     "No results available for selected contrast"
                 }

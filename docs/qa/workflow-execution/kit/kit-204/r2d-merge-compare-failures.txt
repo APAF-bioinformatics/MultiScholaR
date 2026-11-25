@@ -1,0 +1,515 @@
+== test-omic-da-module.R | message-changed | (b) in process: prot_main
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"proteomics_da_results_<DATE>.csv"
+  - sha256"6c7fee22aac004ca5cc6cb450af207fb98e9e4906249f220ac303d32b535a89f"
+  + sha256"2da3b1087dc3d9df1a557c3509fd2c44abbeb5b5f2e6466cc84fb47bd0876fac"
+  
+  prot_main download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "<manifest> schema,protein_id_column,sample_id,contrasts,parameters,model 34f3aca72fffa8c9"
+  + "<manifest> schema,protein_id_column,sample_id,contrasts,parameters,model 1cdb0864e51a3fc1"
+  
+  prot_main run rows
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Heatmap/prot_B_vs_A_clusters.csv"297557cb0dfdc9797f9f058e6828e3abaa3bf575fe716b3801f7fd727a4d6c81"
+    publication_graphs/Heatmap/prot_B_vs_A_heatmap.pdf"<present>"
+  
+  prot_main save_heatmap files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main dendrogram_off files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main select files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_dynamic files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_height files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_k files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_none files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[6:12] vs expected[6:12]
+    <store entries>..workflow-entities/entities/dia-state-<ID>"15"
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main dendrogram_off values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main save_heatmap values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main table_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main table_limit values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_dynamic values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_height values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_k values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_none values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main volcano_labels values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main volcano_ticked values
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"proteomics_da_results_<DATE>.csv"
+  - sha256"6c7fee22aac004ca5cc6cb450af207fb98e9e4906249f220ac303d32b535a89f"
+  + sha256"2da3b1087dc3d9df1a557c3509fd2c44abbeb5b5f2e6466cc84fb47bd0876fac"
+  
+  prot_main download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "<manifest> schema,protein_id_column,sample_id,contrasts,parameters,model 34f3aca72fffa8c9"
+  + "<manifest> schema,protein_id_column,sample_id,contrasts,parameters,model 1cdb0864e51a3fc1"
+  
+  prot_main run rows
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Heatmap/prot_B_vs_A_clusters.csv"297557cb0dfdc9797f9f058e6828e3abaa3bf575fe716b3801f7fd727a4d6c81"
+    publication_graphs/Heatmap/prot_B_vs_A_heatmap.pdf"<present>"
+  
+  prot_main save_heatmap files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main dendrogram_off files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main select files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_dynamic files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_height files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_k files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[10:16] vs expected[10:16]
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-<ID>"1"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main tree_none files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[6:12] vs expected[6:12]
+    <store entries>..workflow-entities/entities/dia-state-<ID>"15"
+    <store entries>..workflow-entities/entities/dia-table-<ID>"8"
+    <store entries>..workflow-entities/entities/dia-volcano-html-<ID>"1"
+  - da_output/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + da_output/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    da_output/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    publication_graphs/Interactive_Volcano_Plots/B_vs_A.html"<present>"
+    publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"<present>"
+  
+  prot_main run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main dendrogram_off values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main save_heatmap values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main table_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main table_limit values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_dynamic values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_height values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_k values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main tree_none values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main volcano_labels values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<ui> be25392948f0243b2d8a35e0dbb647e64be47faf91baaec5e48c1dcd96599265"
+  + "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06"
+  
+  prot_main volcano_ticked values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:6] vs lines(expected[[5]])[2:5]
+    "Significant (q < 0.050): 4"
+    "Up-regulated: 3"
+    "Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+    "Fold-change cutoff: 0.00"
+  
+  prot_main volcano_unticked values
+
+== test-workflow-figure-paths.R | fixed | the figure check names the missing files and, on Windows, the over-long path
+-- base:
+  Expected `message_of(c(written, long), windows = FALSE)` not to match string "259".
+  Actual text:
+  x | required figures were not written x missing or empty: 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.png' i in '<tmp>/file<id>/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+  Expected `message_of(empty, windows = TRUE)` not to match string "259".
+  Actual text:
+  x | required figures were not written x missing or empty: 'empty.png' i in '<tmp>/file<id>'
+-- head:
+  <passes>
+

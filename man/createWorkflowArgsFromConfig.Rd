@@ -12,7 +12,8 @@ createWorkflowArgsFromConfig(
   source_dir_path = NULL,
   final_s4_object = NULL,
   contrasts_tbl = NULL,
-  workflow_data = NULL
+  workflow_data = NULL,
+  omic_type = NULL
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ createWorkflowArgsFromConfig(
 \item{contrasts_tbl}{Data frame, contrasts table (optional)}
 
 \item{workflow_data}{List containing workflow state and optimization results (optional)}
+
+\item{omic_type}{The omic whose study parameters are written; for \code{"proteomics"} the configuration sections of the other omics are not printed. \code{NULL} (the default, as for scripted calls) prints every section, as before.}
 }
 \description{
 Create workflow arguments from config

@@ -1,0 +1,38 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-proteomics.R	168	25	0	0	failed	168	25	0	0	failed	same		
+test-omic-da-module.R	1289	80	0	0	failed	1288	81	0	0	failed	message-changed	message-changed: (b) in process: prot_main; counts: (b) in process: prot_main (passed 189 -> 188, skipped 0 -> 0)	
+test-omic-enrich-module.R	1011	59	0	0	failed	1011	59	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-workflow-saved-da.R	776	175	0	0	failed	776	175	0	0	failed	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-lipid-02ab-da-module-characterization.R	15	0	0	2	ok	15	0	0	2	ok	same		
+test-lipid-02b-da-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-07-s4-da-plot-methods.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-metab-02aa-da-display-filter-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-02k-da-numsig-barplot-characterization.R	4	0	0	0	ok	4	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-prot-07-da-analysis.R	3	0	0	1	ok	3	0	0	1	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-prot-07c-da-results-characterization.R	23	0	0	0	ok	23	0	0	0	ok	same		
+test-prot-07c-da-results-output-shared.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	ok	60	0	0	1	ok	same		
+test-prot-da-compat-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-prot-da-render-direct-shared.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-summary-report-templates.R	123	0	0	0	ok	123	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-figure-paths.R	179	2	0	0	failed	181	0	0	0	ok	fixed	fixed: the figure check names the missing files and, on Windows, the over-long path; counts: the figure check names the missing files and, on Windows, the over-long path (passed 12 -> 14, skipped 0 -> 0)	
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-operations.R	75	0	0	0	ok	75	0	0	0	ok	same		
+test-lipid-08-s4-da-analysis-methods.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-metab-02p-da-analysis-characterization.R	18	0	0	0	ok	18	0	0	0	ok	same		
+test-metab-02q-da-analysis-helper-characterization.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	ok	538	0	0	0	ok	same		
+test-kit204-prot-da-not-tested.R	0	0	0	0	absent	81	0	0	0	ok	only-on-head		
+test-kit220-da-threshold-consumers.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-kit218-da-wrapper-tail.R	80	0	0	2	ok	80	0	0	2	ok	same		
+test-kit212-da-current.R	309	0	0	0	ok	309	0	0	0	ok	same		
+test-kit215-not-tested-lists.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-kit243-summary-current-outputs.R	246	0	0	0	ok	246	0	0	0	ok	same		
+test-kit201-treat-moderation.R	89	0	0	0	ok	89	0	0	0	ok	same		
+test-prot-ruv-factors-in-model.R	312	0	0	0	ok	312	0	0	0	ok	same		
