@@ -14,10 +14,10 @@ k265Head <- paste0(
 k265Named <- function(name, taxon) {
   sprintf("This analysis will use the organism entered in the form: %s (taxon %s). ", name, taxon)
 }
-k265Blank <- paste0(
-  "The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no ",
-  "organism to use. "
-)
+k265Blank <- "The form has no Taxonomy ID, so UniProt annotation will have no organism to use. "
+k265TaxonOnly <- function(taxon) {
+  sprintf("This analysis will use the Taxonomy ID entered in the form: %s (the form gives no organism name). ", taxon)
+}
 k265Tail <- "To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
 k265Again <- "untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
 
@@ -127,15 +127,21 @@ test_that("E1: route (i) names the form's organism in a persistent notice and th
   k265ExpectNotice(run, paste0(k265Head, k265Named("Mus musculus", "10090"), k265Tail))
 })
 
-test_that("E1b: route (i) with no form values passed says the form has no organism", {
+test_that("E1b: route (i) with no form values passed says the form has no Taxonomy ID", {
   run <- k265Run()
   k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail))
 })
 
-test_that("E1c: route (i) with a cleared form says the form has no organism and never prints 'taxon NA'", {
+test_that("E1c: route (i) with a cleared form says the form has no Taxonomy ID and never prints 'taxon NA'", {
   run <- k265Run(form = list(organismName = "", taxonId = NA_real_))
   k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail))
   expect_false(any(grepl("taxon NA", vapply(run$notes, `[[`, character(1), "message"), fixed = TRUE)))
+})
+
+test_that("E1e: route (i) with an empty organism name and a Taxonomy ID names the Taxonomy ID that will be used", {
+  run <- k265Run(form = list(organismName = "", taxonId = 9606))
+  k265ExpectNotice(run, paste0(k265Head, k265TaxonOnly("9606"), k265Tail))
+  expect_false(any(grepl("no Taxonomy ID", vapply(run$notes, `[[`, character(1), "message"), fixed = TRUE)))
 })
 
 test_that("E2: route (ii), an error counting organisms, refuses the import with the cause", {

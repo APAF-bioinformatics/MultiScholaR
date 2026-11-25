@@ -284,7 +284,7 @@ test_that("G3: FASTA headers without organisms: no dialog, the import completes 
   # KIT-265: the notice names the organism the import will use; G3 passes no form values (the blank-form sentence).
   expect_identical(notes, paste0(
     "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. ",
-    "The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. ",
+    "The form has no Taxonomy ID, so UniProt annotation will have no organism to use. ",
     "To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
   ))
   expect_false(isTRUE(localData$waiting_for_organism_selection))

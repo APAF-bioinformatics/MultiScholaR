@@ -1253,7 +1253,7 @@ test_that("analyzeProtImportMixedSpeciesData warns when no valid organism choice
     notifications[[1]]$message,
     paste0(
       "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. ",
-      "The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. ",
+      "The form has no Taxonomy ID, so UniProt annotation will have no organism to use. ",
       "To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
     )
   )
