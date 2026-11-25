@@ -1376,20 +1376,27 @@ checkE4 <- function() {
 
 # ---- one unit ------------------------------------------------------------------------------------------------------
 ARMS_OF <- list(L = list(deciding = c("LA", "GA", "NO", "OR"), reported = c("LA", "OR", "LM", "FP", "SC", "LCm"),
-    munit = c("LA", "LM", "GA", "NO"), ba = c("LA", "GA", "NO", "OR"), lp = c("LP", "OR"), k172c = c("LA", "LM", "GA", "NO", "OR")),
+    munit = c("LA", "LM", "GA", "NO"), ba = c("LA", "GA", "NO", "OR"), lp = c("LP", "OR"), las = c("LAs", "OR"),
+    k172c = c("LA", "LM", "GA", "NO", "OR")),
     P = list(deciding = c("LA", "GA", "NO", "OR"), reported = c("LM", "OR"), ba = c("LA", "GA", "NO", "OR")))
 conditionsOf <- function(part, cellname, job) {
     scen <- scenariosOf(cellname)
     switch(job,
         deciding = expand.grid(mask = MASKS, scenario = scen, stringsAsFactors = FALSE),
-        reported = , lp = expand.grid(mask = MASKS, scenario = SCENARIOS[1:4], stringsAsFactors = FALSE),
+        reported = , lp = , las = expand.grid(mask = MASKS, scenario = SCENARIOS[1:4], stringsAsFactors = FALSE),
         munit = expand.grid(mask = c("none", "vd20"), scenario = c("N0", "E1"), stringsAsFactors = FALSE),
         ba = expand.grid(mask = "ba", scenario = SCENARIOS[1:4], stringsAsFactors = FALSE),
-        k172c = data.frame(mask = "none", scenario = "N0", stringsAsFactors = FALSE))
+        k172c = data.frame(mask = "none", scenario = "N0", stringsAsFactors = FALSE),
+        l1c = data.frame(mask = "none", scenario = "N1", stringsAsFactors = FALSE))
 }
 jobApplies <- function(cellname, job) {
     if (identical(cellname, "K172c") || identical(job, "k172c")) return(identical(cellname, "K172c") && identical(job, "k172c"))
-    switch(job, munit = cellname %in% c("L12", "M12"), ba = cellname %in% c("L64", "M168", "P4b"), TRUE)
+    # 35.6: L1c is one job on L12; 38.5: L24 is a reported cell with its deciding-type job only (LA, GA, NO, OR; R = 100); LP
+    # (5.3) and LAs (34) run in the four shapes of the base table
+    if (identical(job, "l1c")) return(identical(cellname, "L12"))
+    if (identical(cellname, "L24")) return(identical(job, "deciding"))
+    switch(job, munit = cellname %in% c("L12", "M12"), ba = cellname %in% c("L64", "M168", "P4b"),
+        lp = , las = cellname %in% c("L12", "L64", "M12", "M168"), TRUE)
 }
 
 runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_condition) {
@@ -1726,15 +1733,162 @@ checkE7Refusal <- function(sim, d, config = NULL) {
         request$ruv$manual_k <- as.integer(complete + 1L)
         j <- journeyL(sim, values, "LM", request, d, tempfile("k188-e7-"))
         want <- "omics_ruv_insufficient_controls"
+        # r1.21 (R20-P07, 7.4 E7): one LM journey with an invalid typed k (-1) stops by rule (VAL-242: an invalid argument stops);
+        # its class is recorded as read at the bound commit, and compared with what lifecycle.md wrote (K188_PREDICTIONS)
+        bad <- requests$LM
+        bad$ruv$manual_k <- -1L
+        jb <- journeyL(sim, values, "LM", bad, d, tempfile("k188-e7-"))
+        observed <- c(status = jb$status, class = as.character(jb$class %||% NA), step = as.character(jb$step %||% NA))
+        written <- predictionsMet("E7_invalid_k", observed)
+        addCheck("E7_invalid_k", sim$cell, sim$r, "N0 none", jb$status, "a stop (refused or crashed), class recorded",
+            jb$status %in% c("refused", "crashed") && !length(written$unmet),
+            sprintf("k -1: status %s, class %s, step %s; %s", jb$status, jb$class, jb$step, paste(written$unmet, collapse = "; ")))
+        # the r1.20 plant (k one above the complete controls) is kept as an observation of Q6.2 (c): what it meets is recorded
+        # and compared with lifecycle.md's text only where that wrote one
+        observed <- c(status = j$status, class = as.character(j$class %||% NA), step = as.character(j$step %||% NA))
+        written <- predictionsMet("E7_refusal", observed)
+        return(addCheck("E7_refusal", sim$cell, sim$r, "N0 none", complete + 1L, "observation (Q6.2 (c)); as written", !length(written$unmet),
+            sprintf("k %s: status %s, class %s, step %s; %s", complete + 1L, j$status, j$class, j$step, paste(written$unmet, collapse = "; "))))
     }
     addCheck("E7_refusal", sim$cell, sim$r, "N0 none", complete + 1L, want, identical(j$status, "refused") && identical(j$class, want),
         sprintf("k %s: status %s, class %s, step %s", complete + 1L, j$status, j$class, j$step))
 }
 
-runUnit <- function(part, cellname, r, job, scenario, mask, lifecycle, fault_now) {
+# ---- E12's format-default pattern assertion (35.2 (2), 5.2; once per job, defaults read from the bound commit) ------------
+#' Every format default the import proposes matches exactly the `IS_` rows of the generated names (LipidSearch's searches the
+#' class column, 5.2), through the matcher the ITSD step uses (stringr::str_detect).
+checkE12Patterns <- function() {
+    names_all <- c(sprintf("F%04d", 1:250), sprintf("LBL_%03d", 1:10), sprintf("CTL_%03d", 1:5), sprintf("IS_%02d", 1:5))
+    class_all <- ifelse(startsWith(names_all, "IS_"), "ISTD", "PC")
+    for (omic in c("lipid", "metab")) for (format in c("msdial", "progenesis", "xcms", "compound_discoverer", "lipidsearch")) {
+        defaults <- tryCatch(if (identical(omic, "lipid")) getLipidomicsColumnDefaults(format) else getMetabolomicsColumnDefaults(format),
+            error = function(e) NULL)
+        pattern <- defaults$is_pattern
+        if (is.null(pattern) || is.na(pattern)) next
+        hit <- stringr::str_detect(if (identical(format, "lipidsearch")) class_all else names_all, pattern)
+        addCheck("E12_patterns", paste(omic, format), 0L, "format default", pattern, "matches exactly the IS_ rows",
+            identical(which(hit), which(startsWith(names_all, "IS_"))), sprintf("%d rows matched", sum(hit)))
+    }
+}
+
+# ---- L1c: the checks fire on planted failures and stay silent otherwise (35.6; 40.3 (6)) -----------------------------------
+# K188_PLANT (comma list; default all) with K188_JOBS = l1c, K188_LIFECYCLE = 1, cell L12, one data set (the first). One unit
+# per plant, each in its own child process. The plants act on the generator's input or on the script's comparison inputs
+# (itsd, itsdpos, emptysample, ruvdrop: the table the route is given; ruvskip: the request's percentages; normplant: the matrix
+# E13 reads; daerror: a stop at step da; exitplant: the child's own exit), never on the route's state.
+PLANTS <- c("itsd", "itsdpos", "emptysample", "ruvskip", "ruvdrop", "daerror", "normplant", "exitplant")
+# The predictions of 35.6 that do not depend on code that was not on staging when this was written (each cited): the key is the
+# journey's flattened field (`status`, `class`, `step`, or `<column>.<assay>`); "re:" a Perl regular expression, "range:a:b"
+# an inclusive range, "NA" a missing value. The R-marked predictions (35.6 r1.20: KIT-242's and KIT-260's field names,
+# classes and notices) are read at the bound commit, written into lifecycle.md and passed in K188_PREDICTIONS.
+PLANT_EXPECT <- list(
+    # 35.6 (r1.20) `itsd`: E12 fires in both assays (a, b, c), E13 silent
+    itsd = c(status = "instrument", class = "re:^itsd_not_applied:LCMS_Neg:a,b,c \\| itsd_not_applied:LCMS_Pos:a,b,c$",
+        itsd_ok.LCMS_Neg = "FALSE", itsd_ok.LCMS_Pos = "FALSE", itsd_is_left.LCMS_Neg = "5", itsd_is_left.LCMS_Pos = "5",
+        itsd_n_used.LCMS_Neg = "0", itsd_n_used.LCMS_Pos = "0", norm_ok.LCMS_Neg = "TRUE", norm_ok.LCMS_Pos = "TRUE"),
+    # `itsdpos`: E12 fires for LCMS_Pos alone
+    itsdpos = c(status = "instrument", class = "re:^itsd_not_applied:LCMS_Pos:[abc,]+$", itsd_ok.LCMS_Pos = "FALSE",
+        itsd_ok.LCMS_Neg = "TRUE", itsd_is_left.LCMS_Pos = "5", itsd_n_used.LCMS_Pos = "0", itsd_is_left.LCMS_Neg = "0",
+        itsd_n_used.LCMS_Neg = "5"),
+    # `emptysample`: E13 silent in both assays, no instrument row (35.6 r1.20; its later steps are recorded, not predicted)
+    emptysample = c(status = "re:^(?!instrument$)", itsd_ok.LCMS_Neg = "TRUE", itsd_ok.LCMS_Pos = "TRUE", norm_ok.LCMS_Neg = "TRUE",
+        norm_ok.LCMS_Pos = "TRUE"),
+    # `ruvskip`: no k in either assay, kept uncorrected (Q6.2 (c)); the reason's string starts as the trace's status counts
+    ruvskip = c(status = "uncorrected", ruv_status.LCMS_Neg = "uncorrected", ruv_status.LCMS_Pos = "uncorrected",
+        ruv_k_found.LCMS_Neg = "NA", ruv_k_found.LCMS_Pos = "NA", ruv_n_controls.LCMS_Neg = "0", ruv_n_controls.LCMS_Pos = "0",
+        ruv_changed.LCMS_Neg = "FALSE", ruv_changed.LCMS_Pos = "FALSE", ruv_no_k_reason.LCMS_Neg = "re:^skipped_insufficient_controls:1",
+        ruv_no_k_reason.LCMS_Pos = "re:^skipped_insufficient_controls:1"),
+    # `ruvdrop`: 11 to 15 rows reach the RUV input in LCMS_Pos (derived by reading, 35.6 r1.20); LCMS_Pos kept uncorrected;
+    # LCMS_Neg corrected with a k used of 1 or 2 (an observation: a different result is a defect of the plant)
+    ruvdrop = c(rows_ruv_input.LCMS_Pos = "range:11:15", ruv_status.LCMS_Pos = "uncorrected", ruv_k_found.LCMS_Pos = "NA",
+        ruv_status.LCMS_Neg = "corrected", ruv_k_used.LCMS_Neg = "range:1:2"),
+    # `daerror`: ruvskip's RUV columns, then a crash at step da with the deliberate message
+    daerror = c(status = "crashed", step = "da", da_status.LCMS_Neg = "failed", da_status.LCMS_Pos = "failed",
+        da_message.LCMS_Neg = "re:K188 planted DA error", ruv_status.LCMS_Neg = "uncorrected", ruv_status.LCMS_Pos = "uncorrected",
+        ruv_k_found.LCMS_Neg = "NA", ruv_n_controls.LCMS_Neg = "0"),
+    # `normplant`: E13 fires for LCMS_Pos alone
+    normplant = c(status = "instrument", class = "norm_not_applied:LCMS_Pos", norm_ok.LCMS_Pos = "FALSE", norm_ok.LCMS_Neg = "TRUE",
+        itsd_ok.LCMS_Neg = "TRUE", itsd_ok.LCMS_Pos = "TRUE"))
+matchExpectation <- function(observed, expected) {
+    observed <- unname(observed)
+    if (startsWith(expected, "re:")) return(!is.na(observed) && grepl(substring(expected, 4L), observed, perl = TRUE))
+    if (startsWith(expected, "range:")) {
+        bounds <- as.numeric(strsplit(substring(expected, 7L), ":", fixed = TRUE)[[1L]])
+        value <- suppressWarnings(as.numeric(observed))
+        return(is.finite(value) && value >= bounds[[1L]] && value <= bounds[[2L]])
+    }
+    if (identical(expected, "NA")) return(is.na(observed))
+    !is.na(observed) && identical(as.character(observed), expected)
+}
+loadPredictions <- function() {
+    path <- Sys.getenv("K188_PREDICTIONS")
+    if (!nzchar(path)) return(NULL)
+    utils::read.delim(path, stringsAsFactors = FALSE, colClasses = "character", na.strings = character())
+}
+#' The R-marked predictions written into lifecycle.md (a TSV with columns key = "<id>/<field>" and expected): each row's
+#' field of `observed` against its expectation. Returns the count of rows written for `id` and the unmet ones.
+predictionsMet <- function(id, observed) {
+    written <- loadPredictions()
+    if (is.null(written)) return(list(n = 0L, unmet = character()))
+    mine <- written[startsWith(written$key, paste0(id, "/")), , drop = FALSE]
+    unmet <- character()
+    for (i in seq_len(nrow(mine))) {
+        field <- sub("^[^/]*/", "", mine$key[[i]])
+        if (!matchExpectation(observed[field], mine$expected[[i]])) {
+            unmet <- c(unmet, sprintf("%s: observed %s, written %s", field, observed[field], mine$expected[[i]]))
+        }
+    }
+    list(n = nrow(mine), unmet = unmet)
+}
+flattenJourney <- function(j, assays) {
+    flat <- c(status = j$status, class = as.character(j$class %||% NA), step = as.character(j$step %||% NA),
+        warning_classes = as.character(j$warning_classes %||% NA))
+    for (a in assays) for (name in names(j$assay_cols[[a]])) flat[paste0(name, ".", a)] <- as.character(j$assay_cols[[a]][[name]])
+    for (what in c("rows_filter", "rows_itsd", "rows_ruv_input")) for (a in names(j[[what]])) flat[paste0(what, ".", a)] <- as.character(j[[what]][[a]])
+    flat
+}
+runPlantUnit <- function(plant, cellname, r, d) {
+    sim <- generate(cellname, "N1", r)
+    values <- maskedValues(sim, "none")
+    requests <- REQUESTS_L(d)
+    arm <- if (identical(plant, "emptysample")) "NO" else "LA"
+    request <- requests[[arm]]
+    ids <- NULL
+    in_assay <- function(a) names(sim$assay_of)[sim$assay_of == a]
+    if (plant %in% c("ruvskip", "daerror")) {
+        request$ruv$percentage_min <- 1
+        request$ruv$percentage_max <- 1
+    }
+    if (identical(plant, "ruvdrop")) {
+        pos <- in_assay("LCMS_Pos")
+        ids <- c(in_assay("LCMS_Neg"), head(intersect(sim$feat_ids, pos), 10L), intersect(sim$lbl_ids, pos), intersect(sim$is_ids, pos))
+    }
+    if (identical(plant, "emptysample")) values[setdiff(in_assay("LCMS_Pos"), sim$is_ids), sim$runs[[1L]]] <- NA_real_
+    j <- journeyL(sim, values, arm, request, d, tempfile(sprintf("k188-%s-", plant)), ids = ids, plant = plant)
+    common <- list(part = "L", cell = sim$cell, job = "l1c", scenario = sim$scenario, mask = "none", rep = sim$r)
+    rows <- armRows(sim, j, setdiff(j$kept %||% character(), sim$is_ids), common, choiceOf(j, arm %in% c("LA", "LM")))$rows
+    flat <- flattenJourney(j, sim$p$assays)
+    expected <- PLANT_EXPECT[[plant]]
+    unmet <- names(expected)[!vapply(names(expected), function(f) matchExpectation(flat[f], expected[[f]]), logical(1L))]
+    addCheck("E15", sim$cell, r, plant, if (length(unmet)) "unmet" else "met", "as 35.6 predicts", !length(unmet),
+        paste(sprintf("%s: observed %s, predicted %s", unmet, flat[unmet], expected[unmet]), collapse = "; "))
+    written <- predictionsMet(plant, flat)
+    if (written$n) addCheck("E15R", sim$cell, r, plant, written$n, "as written in lifecycle.md (R items)", !length(written$unmet),
+        paste(written$unmet, collapse = "; "))
+    list(rows = do.call(rbind, lapply(rows, function(x) as.data.frame(x[ROW_COLUMNS], stringsAsFactors = FALSE))),
+        checks = do.call(rbind, checks_env$rows), plant = data.frame(plant = plant, key = names(flat), value = unname(flat), stringsAsFactors = FALSE),
+        seconds = NA_real_)
+}
+
+runUnit <- function(part, cellname, r, job, scenario, mask, lifecycle, fault_now, plant = "") {
     t_unit <- proc.time()[[3L]]
     omic <- CELLS[[cellname]]$omic
     d <- routeDefaults(omic)
+    if (identical(job, "l1c")) {
+        # 35.6 `exitplant` (R20-P10): this unit's child ends its process before writing rows; the parent writes the unit row
+        if (identical(plant, "exitplant")) quit(save = "no", status = 3L)
+        return(runPlantUnit(plant, cellname, r, d))
+    }
     config <- if (identical(part, "P")) pConfig() else NULL
     conditions <- conditionsOf(part, cellname, job)
     if (!identical(scenario, "all")) conditions <- conditions[conditions$scenario == scenario & conditions$mask == mask, , drop = FALSE]
@@ -1781,7 +1935,8 @@ if (child) {
     lifecycle <- identical(Sys.getenv("K188_LIFECYCLE"), "1")
     options(k188.e7_unit = identical(Sys.getenv("K188_E7_UNIT"), "1"))
     fault_now <- identical(Sys.getenv("K188_FAULT_UNIT"), "1")
-    result <- tryCatch(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now),
+    result <- tryCatch(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now,
+        Sys.getenv("K188_PLANT_UNIT")),
         error = function(e) list(error = oneLine(paste(class(e)[[1L]], conditionMessage(e))),
             checks = if (length(checks_env$rows)) do.call(rbind, checks_env$rows)))
     saveRDS(result, args[[8L]])
@@ -1810,23 +1965,38 @@ p_last <- {
     spec <- strsplit(strsplit(Sys.getenv("K188_P_REPS", "P0=403,P2=403"), ",", fixed = TRUE)[[1L]], "=", fixed = TRUE)
     stats::setNames(as.integer(vapply(spec, `[[`, "", 2L)), vapply(spec, `[[`, "", 1L))
 }
+# 35.6: K188_PLANT (comma list, default all eight) names the planted cases of the L1c job (K188_JOBS = l1c)
+plants_wanted <- strsplit(Sys.getenv("K188_PLANT", paste(PLANTS, collapse = ",")), ",", fixed = TRUE)[[1L]]
+if ("l1c" %in% jobs) {
+    stopifnot(lifecycle, identical(part, "L"), all(plants_wanted %in% PLANTS))
+    # 40.3 (8), 35.6 (r1.20): the R-marked predictions are read at the bound commit and written into lifecycle.md before the
+    # run; this stops a run sent without them
+    if (!nzchar(Sys.getenv("K188_PREDICTIONS")) || !file.exists(Sys.getenv("K188_PREDICTIONS"))) {
+        stop("K188_PREDICTIONS (an absolute path to the TSV of the R-marked predictions written into lifecycle.md) is not set or not found")
+    }
+}
 units <- list()
 for (cellname in cells_wanted) for (job in jobs) {
     if (!jobApplies(cellname, job)) next
+    if (identical(job, "l1c")) {
+        for (plant in plants_wanted) units[[length(units) + 1L]] <- list(cell = cellname, r = first_rep, job = job, scenario = "N1",
+            mask = "none", plant = plant)
+        next
+    }
     reps <- seq(first_rep, last_rep)
     if (identical(part, "P") && lifecycle) reps <- reps[reps <= (if (cellname %in% names(p_last)) p_last[[cellname]] else first_rep)]
     for (r in reps) {
         if (identical(part, "P")) {
             cond <- conditionsOf(part, cellname, job)
             for (i in seq_len(nrow(cond))) units[[length(units) + 1L]] <- list(cell = cellname, r = r, job = job, scenario = cond$scenario[[i]],
-                mask = cond$mask[[i]])
-        } else units[[length(units) + 1L]] <- list(cell = cellname, r = r, job = job, scenario = "all", mask = "all")
+                mask = cond$mask[[i]], plant = "")
+        } else units[[length(units) + 1L]] <- list(cell = cellname, r = r, job = job, scenario = "all", mask = "all", plant = "")
     }
 }
 units <- do.call(rbind, lapply(units, as.data.frame, stringsAsFactors = FALSE))
 # largest first (the four-way packing), the deliberate fault and the refusal check in fixed units
-weight <- c(L12 = 1, L64 = 2.5, M12 = 0.5, M168 = 3, P0 = 1, P1 = 1.3, P16 = 2, P2 = 0.5, P3 = 2.6, P4b = 5)[units$cell] *
-    c(deciding = 1, reported = 1.8, munit = 1.1, ba = 0.8, lp = 0.7)[units$job]
+weight <- c(L12 = 1, L24 = 1.5, L64 = 2.5, M12 = 0.5, M168 = 3, P0 = 1, P1 = 1.3, P16 = 2, P2 = 0.5, P3 = 2.6, P4b = 5)[units$cell] *
+    c(deciding = 1, reported = 1.8, munit = 1.1, ba = 0.8, lp = 0.7, las = 0.7, l1c = 0.3)[units$job]
 units <- units[order(-weight), , drop = FALSE]
 units$fault <- FALSE
 units$e7 <- FALSE
@@ -1837,6 +2007,8 @@ if (lifecycle) for (cellname in cells_wanted) {
     if (length(hit)) units$e7[[hit[[1L]]]] <- TRUE
 }
 cat(sprintf("KIT-188 %s: %d units, %d workers, lifecycle %s, jobs %s\n", job_name, nrow(units), workers, lifecycle, paste(jobs, collapse = ",")))
+# E12's format-default pattern assertion, once per job (35.2 (2))
+if (identical(part, "L")) checkE12Patterns()
 if (lifecycle) {
     checkE4()
     for (omic in unique(vapply(CELLS[cells_wanted], `[[`, "", "omic"))) {
@@ -1849,7 +2021,7 @@ runChild <- function(i) {
     u <- units[i, ]
     rds <- file.path(out_dir, "rows", sprintf("unit-%s-%s-%d-%s-%s.rds", u$cell, u$job, u$r, u$scenario, u$mask))
     env <- c(sprintf("K188_LIFECYCLE=%s", if (lifecycle) "1" else "0"), sprintf("K188_FAULT_UNIT=%s", if (u$fault) "1" else "0"),
-        sprintf("K188_E7_UNIT=%s", if (u$e7) "1" else "0"))
+        sprintf("K188_E7_UNIT=%s", if (u$e7) "1" else "0"), sprintf("K188_PLANT_UNIT=%s", u$plant))
     t0 <- Sys.time()
     code <- system2("Rscript", c(shQuote(script_file), "--unit", part, u$cell, u$r, u$job, u$scenario, u$mask, shQuote(rds)),
         env = env, stdout = FALSE, stderr = FALSE)
@@ -1886,12 +2058,20 @@ runChild <- function(i) {
     journeys[] <- lapply(journeys, function(x) ifelse(is.na(x), "", as.character(x)))
     status <- stats::aggregate(list(n = rep(1L, nrow(journeys))), journeys[c("cell", "job", "arm", "arm_scale", "scenario", "mask",
         "status", "class")], length)
-    list(timing = timing, checks = res$checks, status = status)
+    # 35.6 `exitplant` (R20-P10): the parent wrote one `arm = unit` row, crashed, for a child that exited with status 3
+    if (identical(u$plant, "exitplant")) {
+        res$checks <- data.frame(check = "E15", cell = u$cell, rep = u$r, condition = "exitplant", value = as.character(code),
+            threshold = "exit 3, one unit row, crashed", pass = identical(as.integer(code), 3L) && nrow(rows) == 1L &&
+                identical(as.character(rows$arm), "unit") && identical(as.character(rows$status), "crashed"),
+            note = sprintf("exit %s; %d row(s)", code, nrow(rows)), stringsAsFactors = FALSE)
+    }
+    list(timing = timing, checks = res$checks, status = status, plant = res$plant)
 }
 results <- parallel::mclapply(seq_len(nrow(units)), runChild, mc.cores = workers, mc.preschedule = FALSE)
 checks <- if (length(checks_env$rows)) do.call(rbind, checks_env$rows) else NULL
 timing <- list()
 status_rows <- list()
+plant_rows <- list()
 for (i in seq_len(nrow(units))) {
     res <- results[[i]]
     if (!is.list(res)) {
@@ -1903,6 +2083,7 @@ for (i in seq_len(nrow(units))) {
     timing[[i]] <- res$timing
     if (!is.null(res$checks)) checks <- rbind(checks, res$checks)
     status_rows[[i]] <- res$status
+    if (!is.null(res$plant)) plant_rows[[length(plant_rows) + 1L]] <- res$plant
 }
 unlink(list.files(file.path(out_dir, "rows"), pattern = "^unit-(timing|checks)-", full.names = TRUE))
 timing <- do.call(rbind, timing)
@@ -1958,6 +2139,8 @@ for (cellname in cells_wanted) {
 }
 utils::write.table(timing, file.path(out_dir, sprintf("timing-%s.tsv", job_name)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 utils::write.table(statuses, file.path(out_dir, sprintf("status-%s.tsv", job_name)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+if (length(plant_rows)) utils::write.table(do.call(rbind, plant_rows), file.path(out_dir, sprintf("plants-%s.tsv", job_name)), sep = "\t",
+    quote = FALSE, row.names = FALSE, na = "NA")
 if (!is.null(checks) && nrow(checks)) utils::write.table(checks, file.path(out_dir, sprintf("checks-%s.tsv", job_name)), sep = "\t",
     quote = FALSE, row.names = FALSE, na = "NA")
 tables <- list.files(out_dir, recursive = TRUE, full.names = TRUE, pattern = "\\.(tsv|gz)$")
@@ -1980,3 +2163,8 @@ provenance <- list(job = job_name, part = part, cells = cells_wanted, data_sets 
 jsonlite::write_json(provenance, file.path(out_dir, sprintf("provenance-%s.json", job_name)), auto_unbox = TRUE, pretty = TRUE, digits = NA)
 cat(sprintf("KIT-188 %s finished: %d units (%d with an error), wall %.1f min\n", job_name, nrow(units), sum(nzchar(timing$error)),
     as.numeric(difftime(Sys.time(), started_at, units = "mins"))))
+# 35.6 (r1.20): a prediction not met (E15, E15R, or the R-marked E7 observations) stops the lifecycle run; everything is written first
+if (!is.null(checks) && any(!checks$pass[checks$check %in% c("E15", "E15R")])) {
+    cat("KIT-188: a planted-case prediction of 35.6 was not met; the lifecycle run stops here (reported, 35.6 r1.20)\n")
+    quit(save = "no", status = 2L)
+}
