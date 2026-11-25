@@ -1,0 +1,25 @@
+check	omic	assay	pass	detail
+E1prime	lipid	both	TRUE	optimization_results and per-assay results, all fields, unhooked against hooked
+E3_recorder_clean	lipid	both	TRUE	failures 0
+E3_count	lipid	both	TRUE	captures 10
+E2	lipid	one	TRUE	2 R5 rows
+E1	lipid	one	TRUE	usable TRUE composite TRUE winner TRUE r5 TRUE
+E3	lipid	one	TRUE	5 rows reached the elbow
+E7	lipid	one	TRUE	nested TRUE k_b TRUE
+E2	lipid	two	TRUE	5 R5 rows
+E1	lipid	two	TRUE	usable TRUE composite TRUE winner TRUE r5 TRUE
+E3	lipid	two	TRUE	5 rows reached the elbow
+E7	lipid	two	TRUE	nested TRUE k_b TRUE
+assay_one_has_ok_row	lipid	one	TRUE	prediction, not a gate
+E1prime	metab	both	TRUE	optimization_results and per-assay results, all fields, unhooked against hooked
+E3_recorder_clean	metab	both	TRUE	failures 0
+E3_count	metab	both	TRUE	captures 10
+E2	metab	one	TRUE	2 R5 rows
+E1	metab	one	TRUE	usable TRUE composite TRUE winner TRUE r5 TRUE
+E3	metab	one	TRUE	5 rows reached the elbow
+E7	metab	one	TRUE	nested TRUE k_b TRUE
+E2	metab	two	TRUE	5 R5 rows
+E1	metab	two	TRUE	usable TRUE composite TRUE winner TRUE r5 TRUE
+E3	metab	two	TRUE	5 rows reached the elbow
+E7	metab	two	TRUE	nested TRUE k_b TRUE
+assay_one_has_ok_row	metab	one	TRUE	prediction, not a gate

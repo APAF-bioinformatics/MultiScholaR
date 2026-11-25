@@ -1,0 +1,13 @@
+omic	assay	rule	percentage	k_used	cap
+lipid	one	P	4	2	3
+lipid	one	C1	4	2	3
+lipid	one	C2	5	2	3
+lipid	two	P	NA	NA	3
+lipid	two	C1	NA	NA	3
+lipid	two	C2	6	2	3
+metab	one	P	4	2	3
+metab	one	C1	4	2	3
+metab	one	C2	5	2	3
+metab	two	P	NA	NA	3
+metab	two	C1	NA	NA	3
+metab	two	C2	6	2	3

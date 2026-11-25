@@ -1,0 +1,89 @@
+KIT-190 observation lipid one: 2% ok k=2 reason=
+KIT-190 observation lipid one: 3% ok k=2 reason=
+KIT-190 observation lipid one: 4% ok k=2 reason=
+KIT-190 observation lipid one: 5% skipped_k_exceeds_complete_controls k=8 reason=k = 8 exceeds 6 controls complete in every sample
+KIT-190 observation lipid one: 6% skipped_k_exceeds_complete_controls k=9 reason=k = 9 exceeds 7 controls complete in every sample
+KIT-190 observation lipid two: 2% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 0 controls complete in every sample
+KIT-190 observation lipid two: 3% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation lipid two: 4% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation lipid two: 5% skipped_k_exceeds_complete_controls k=3 reason=k = 3 exceeds 1 controls complete in every sample
+KIT-190 observation lipid two: 6% skipped_k_exceeds_complete_controls k=5 reason=k = 5 exceeds 2 controls complete in every sample
+KIT-190 observation lipid two: No valid percentage found: RUV-III needs control lipids observed in every sample; at every control percentage tried (2-6%), only 0-2 were (k = 2-5). Filter for completeness first, lower k, or run normalisation without RUV.
+KIT-190 observation metab one: 2% ok k=2 reason=
+KIT-190 observation metab one: 3% ok k=2 reason=
+KIT-190 observation metab one: 4% ok k=2 reason=
+KIT-190 observation metab one: 5% skipped_k_exceeds_complete_controls k=8 reason=k = 8 exceeds 6 controls complete in every sample
+KIT-190 observation metab one: 6% skipped_k_exceeds_complete_controls k=9 reason=k = 9 exceeds 7 controls complete in every sample
+KIT-190 observation metab two: 2% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 0 controls complete in every sample
+KIT-190 observation metab two: 3% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation metab two: 4% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation metab two: 5% skipped_k_exceeds_complete_controls k=3 reason=k = 3 exceeds 1 controls complete in every sample
+KIT-190 observation metab two: 6% skipped_k_exceeds_complete_controls k=5 reason=k = 5 exceeds 2 controls complete in every sample
+KIT-190 observation metab two: No valid percentage found: RUV-III needs control metabolites observed in every sample; at every control percentage tried (2-6%), only 0-2 were (k = 2-5). Filter for completeness first, lower k, or run normalisation without RUV.
+
+verdict: confirmed
+                  check  omic assay pass
+1               E1prime lipid  both TRUE
+2     E3_recorder_clean lipid  both TRUE
+3              E3_count lipid  both TRUE
+4                    E2 lipid   one TRUE
+5                    E1 lipid   one TRUE
+6                    E3 lipid   one TRUE
+7                    E7 lipid   one TRUE
+8                    E2 lipid   two TRUE
+9                    E1 lipid   two TRUE
+10                   E3 lipid   two TRUE
+11                   E7 lipid   two TRUE
+12 assay_one_has_ok_row lipid   one TRUE
+13              E1prime metab  both TRUE
+14    E3_recorder_clean metab  both TRUE
+15             E3_count metab  both TRUE
+16                   E2 metab   one TRUE
+17                   E1 metab   one TRUE
+18                   E3 metab   one TRUE
+19                   E7 metab   one TRUE
+20                   E2 metab   two TRUE
+21                   E1 metab   two TRUE
+22                   E3 metab   two TRUE
+23                   E7 metab   two TRUE
+24 assay_one_has_ok_row metab   one TRUE
+                                                                            detail
+1  optimization_results and per-assay results, all fields, unhooked against hooked
+2                                                                       failures 0
+3                                                                      captures 10
+4                                                                        2 R5 rows
+5                                   usable TRUE composite TRUE winner TRUE r5 TRUE
+6                                                         5 rows reached the elbow
+7                                                             nested TRUE k_b TRUE
+8                                                                        5 R5 rows
+9                                   usable TRUE composite TRUE winner TRUE r5 TRUE
+10                                                        5 rows reached the elbow
+11                                                            nested TRUE k_b TRUE
+12                                                          prediction, not a gate
+13 optimization_results and per-assay results, all fields, unhooked against hooked
+14                                                                      failures 0
+15                                                                     captures 10
+16                                                                       2 R5 rows
+17                                  usable TRUE composite TRUE winner TRUE r5 TRUE
+18                                                        5 rows reached the elbow
+19                                                            nested TRUE k_b TRUE
+20                                                                       5 R5 rows
+21                                  usable TRUE composite TRUE winner TRUE r5 TRUE
+22                                                        5 rows reached the elbow
+23                                                            nested TRUE k_b TRUE
+24                                                          prediction, not a gate
+
+winners
+             omic assay rule percentage k_used cap
+lipid one.1 lipid   one    P          4      2   3
+lipid one.2 lipid   one   C1          4      2   3
+lipid one.3 lipid   one   C2          5      2   3
+lipid two.1 lipid   two    P         NA     NA   3
+lipid two.2 lipid   two   C1         NA     NA   3
+lipid two.3 lipid   two   C2          6      2   3
+metab one.1 metab   one    P          4      2   3
+metab one.2 metab   one   C1          4      2   3
+metab one.3 metab   one   C2          5      2   3
+metab two.1 metab   two    P         NA     NA   3
+metab two.2 metab   two   C1         NA     NA   3
+metab two.3 metab   two   C2          6      2   3

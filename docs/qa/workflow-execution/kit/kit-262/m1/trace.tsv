@@ -1,0 +1,21 @@
+omic	assay	percentage	status	error_reason	realized_controls	complete_controls	k	separation	composite_shipped	sample_size	cap	complete_features	cause
+lipid	one	2	ok		6	2	2	0.912023948990872	0.684017961743154	24	3	93	NA
+lipid	one	3	ok		9	4	2	0.923925408659538	0.692944056494654	24	3	93	NA
+lipid	one	4	ok		12	5	2	0.93940334336808	0.70455250752606	24	3	93	NA
+lipid	one	5	skipped_k_exceeds_complete_controls	k = 8 exceeds 6 controls complete in every sample	15	6	8	0.963956418942895	NA	24	3	93	cap_side
+lipid	one	6	skipped_k_exceeds_complete_controls	k = 9 exceeds 7 controls complete in every sample	18	7	9	0.966133557325266	NA	24	3	93	cap_side
+lipid	two	2	skipped_k_exceeds_complete_controls	k = 2 exceeds 0 controls complete in every sample	6	0	2	0.930251236486319	NA	24	3	89	completeness
+lipid	two	3	skipped_k_exceeds_complete_controls	k = 2 exceeds 1 controls complete in every sample	9	1	2	0.935510908477577	NA	24	3	89	completeness
+lipid	two	4	skipped_k_exceeds_complete_controls	k = 2 exceeds 1 controls complete in every sample	12	1	2	0.951892776834873	NA	24	3	89	completeness
+lipid	two	5	skipped_k_exceeds_complete_controls	k = 3 exceeds 1 controls complete in every sample	15	1	3	0.961701509445128	NA	24	3	89	completeness
+lipid	two	6	skipped_k_exceeds_complete_controls	k = 5 exceeds 2 controls complete in every sample	18	2	5	0.979007809830335	NA	24	3	89	completeness
+metab	one	2	ok		6	2	2	0.912023948990872	0.684017961743154	24	3	93	NA
+metab	one	3	ok		9	4	2	0.923925408659538	0.692944056494654	24	3	93	NA
+metab	one	4	ok		12	5	2	0.93940334336808	0.70455250752606	24	3	93	NA
+metab	one	5	skipped_k_exceeds_complete_controls	k = 8 exceeds 6 controls complete in every sample	15	6	8	0.963956418942895	NA	24	3	93	cap_side
+metab	one	6	skipped_k_exceeds_complete_controls	k = 9 exceeds 7 controls complete in every sample	18	7	9	0.966133557325266	NA	24	3	93	cap_side
+metab	two	2	skipped_k_exceeds_complete_controls	k = 2 exceeds 0 controls complete in every sample	6	0	2	0.930251236486319	NA	24	3	89	completeness
+metab	two	3	skipped_k_exceeds_complete_controls	k = 2 exceeds 1 controls complete in every sample	9	1	2	0.935510908477577	NA	24	3	89	completeness
+metab	two	4	skipped_k_exceeds_complete_controls	k = 2 exceeds 1 controls complete in every sample	12	1	2	0.951892776834873	NA	24	3	89	completeness
+metab	two	5	skipped_k_exceeds_complete_controls	k = 3 exceeds 1 controls complete in every sample	15	1	3	0.961701509445128	NA	24	3	89	completeness
+metab	two	6	skipped_k_exceeds_complete_controls	k = 5 exceeds 2 controls complete in every sample	18	2	5	0.979007809830335	NA	24	3	89	completeness
