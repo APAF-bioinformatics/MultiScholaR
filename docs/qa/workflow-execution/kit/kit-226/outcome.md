@@ -81,8 +81,8 @@ The fields are not disjoint in two places, so every difference is attributed, an
 
 Order (coordinator): KIT-215 merges first; control C, the re-freeze and the merge-check run follow on the
 coordinator's word. The three stored values VAL-196 (4) does not name (`:1923`, `:1926`,
-`test-enrichment-significance.R:497`) are allowed through the control (coordinator's ruling (a); ledger correction
-I01 is the coordinator's).
+`test-enrichment-significance.R:497`) are allowed through the control (coordinator's ruling (a); recorded as VAL-208,
+which corrects VAL-196's wording: the re-freeze authority is VAL-196 with VAL-208).
 
 **Control C must show exactly these 49 changed leaves** (base = staging's head when C runs; head = `kit-226` merged
 onto it; base dumps equal the stored value at each; two head dumps in separate processes identical):
@@ -108,6 +108,21 @@ onto it; base dumps equal the stored value at each; two head dumps in separate p
 - The merge-check run then holds R2's 23 files on the merge with staging plus any merged partner's new test file,
   `check: true`: the new file 38/0, the three moved files back to staging's pre-existing failure lists, check
   identical to base; then the shared R3 (ticket section 6).
+
+## Before control C: does KIT-215's merge move the prediction? (stated before sending)
+
+Staging 16112917 (merge train 3, KIT-215 = VAL-227) merged into `kit-226` (merge commit; only the ledger conflicted,
+resolved by keeping staging's rows and putting this ticket's `VAL-<merge>` row after VAL-229; no code or test
+conflict). Read, not run:
+- `git diff cf8af245 16112917` does not touch `tests/testthat/test-omic-enrich-module.R`,
+  `tests/testdata/gui-entry/prot_dia.json`, `test-omics-enrich-core.R`, `helper-gui-entry.R`,
+  `test-enrichment-significance.R`, `R/func_general_enrichment_engine_helpers.R` or `R/utils_workflow_dia_enrichment.R`:
+  no stored value this control reads was re-frozen by the train.
+- KIT-215's edits to `R/utils_workflow_enrichment.R` and `R/mod_omic_enrich_panels.R` add the not-tested and no-list
+  fields, notices and summary lines only when a list was not tested or a direction had no list; its own control moved
+  no stored capture, so the W1 g:Profiler cases and the prot_dia lane have none.
+- Prediction therefore unchanged: the same 49 leaves, with R2's head values. Any other leaf that differs base/head is
+  stop rule 2.
 
 ## Core-hours
 
