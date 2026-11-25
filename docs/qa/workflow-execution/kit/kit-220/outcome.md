@@ -122,6 +122,27 @@ Script `redump.R` (each file in its own process with the dump switches and the G
   (the 171 known failures). Under the coordinator's rule ("a changed leaf whose base dump differs from the stored value
   stops the ticket") this is a stop. No re-freeze commit was made, and R3 was not sent.
 
+## Re-freeze and the W1 object (coordinator's ruling, 2026-11-25)
+
+- Re-frozen in 2c7e2959, exactly the leaves where control C / run D showed a change with base equal to stored:
+  GUI-entry NumSig keys (`prot_dia.json` 13, `prot_dia_limpa.json`, `prot_lfq.json`, `prot_lfq_fragpipe.json`,
+  `prot_tmt.json` 12 each, `lipid_canonical.json` 12); `test-omic-da-module.R` 10 proteomics + 14 lipid/metab NumSig
+  values; `test-omic-enrich-module.R` 18; `test-omics-da-core.R:343`. `prot_dia.json`'s 24 pre-existing keys untouched.
+- **Not re-frozen (end-of-project re-record list):** `tests/testthat/test-workflow-saved-da.R`, `savedDaW1Frozen()`
+  (laptop-recorded; read also by W2): `dia_qvalue_only` products, dependencies, manifest, head_manifest, display,
+  files; `dia_refused` products, dependencies, head_manifest, display, files; `files` of dia_one_contrast,
+  dia_two_contrasts, dia_repeat, dia_reopened_rerun, dia_non_head, dia_changed_arguments, dia_retry, limpa_one_contrast
+  (19 leaves). Runner values: `control-cd.tsv`.
+- **A3/A4 restated.** A3: R2-scope files `same` base against head except the new file, the re-frozen files (now passing
+  their re-frozen leaves) and `test-workflow-saved-da.R`, whose runner failures are the known ones plus message
+  changes at those 19 leaves only. **Expected R3 verdict** (staging dd769671 against the merge): every file `same`,
+  except `test-kit220-da-threshold-consumers.R` (`only-on-head`, all passing) and `test-workflow-saved-da.R`
+  (`message-changed`, the same failure count, messages differing only at the 19 W1 leaves); `test-omic-gui-config.R`
+  `same`; the re-frozen GUI-entry, module and core files `same` (base passes the old values, head the new); check
+  findings identical. Anything else is a stop.
+- Staging dd769671 merged (8bda2aac; ledger: staging's rows to VAL-211 first, `VAL-<merge>` after); NEWS: the
+  workbook clause removed (VAL-209), 5d327b2f.
+
 ## For the change report
 - **What was wrong.** Proteomics (every workflow and route): the published count table (`.tab`/`.xlsx`), its NumSig
   bar chart (the report's Figure 2), the `Publication_tables` copy and the report's per-comparison count sentence
