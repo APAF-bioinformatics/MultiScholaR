@@ -60,3 +60,25 @@ panels a (principal component analysis after log2 transformation) and h (Pearson
 normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot.", the
 rest of the text equal to V0), none on DIA with limpa (no combined figure, no list); V2 (a list with no combined figure)
 no sentence. Any V0 difference, or a V1 sentence with a wrong letter or stage words, is a defect: stop.
+
+## Instrument re-send 2 of 3 (closure check 2, D.4; the coordinator's ruling of 2026-11-26): written before the run
+
+Cause read by the auditor: the fixture's owner sits on its own fake session, so `getDIAActiveManager()` is NULL during
+the 'Color by' redraw under testServer; the redraw fails before drawing (caught by its own `tryCatch`) and writes no
+figure, placeholder or marker. Repair (test only, ee4c97a0): C01-E1 and C01-E2's redraw is given the fixture's owner
+(`getDIAActiveManager` mocked, as C01-E5 does); no expectation changes. `test-prot-norm-core.R` is not touched (the
+coordinator's ruling: its `:187-189` count, 1 to 2, is a stored value left for the end-of-project re-record).
+
+One run, `test-kit259b-second-correction.R` alone: base `run-k259c3-base` c0bb03bb (9331bbd2 + the repair: the tests
+on 7aedc751's code), head `kit-259b` at this commit (40a7ae4b's fix + the repair); 1 shard per side, no check; about
+15 job-minutes.
+
+| Row | Base (7aedc751's code) | Head |
+|---|---|---|
+| C01-E2, redraw half (the marker after a failing redraw) | the marker appears (the second correction's placeholder writer is in the base): passes | passes |
+| C01-E2, other halves | no list after the run (NULL, passes); no list after the redraw (passes); pre half fails (no list) | all pass |
+| C01-E1 in process, managed | fail: no list ("h\tpost_norm_correlation" expected) after the run or after the redraw | pass: the list is written by the run and unchanged after a redraw that runs |
+| every other row | as the comparison run's base side (R1's E rows fail as stated; closed rows pass) | passes |
+
+Decision: if the marker appears on head, the cause is confirmed and the repair stays test-only; if it does not, that is a
+result: stop and report (nothing further without the owner).
