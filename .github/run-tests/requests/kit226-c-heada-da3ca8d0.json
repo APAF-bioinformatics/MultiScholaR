@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-226 control C head 1 (kit-226 merged with staging 16112917): W1 dump of test-omic-enrich-module.R and the prot_dia GUI-entry record; decides stop rule 2; coordinator's word 2026-11-25; ceiling 60 job-minutes per run, 180 for C",
+  "label": "KIT-226 control C head 1 at da3ca8d0",
+  "package_commit": "da3ca8d0dc3b9c4952254b8b263102f21bd217fd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "pkgload"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-226/redump.R",
+      "args": [
+        "kit226-c-heada-da3ca8d0",
+        "test-omic-enrich-module.R",
+        "test-gui-entry-proteomics.R"
+      ],
+      "out": "kit226-c-heada-da3ca8d0",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-226 control C base (staging 16112917 + script): W1 dump of test-omic-enrich-module.R and the prot_dia GUI-entry record; decides stop rule 2; coordinator's word 2026-11-25; ceiling 60 job-minutes per run, 180 for C",
+  "label": "KIT-226 control C base at 3a48351b",
+  "package_commit": "3a48351b2f98ef2c9be4a63ced0017675fdc7f31",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "pkgload"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-226/redump.R",
+      "args": [
+        "kit226-c-base-3a48351b",
+        "test-omic-enrich-module.R",
+        "test-gui-entry-proteomics.R"
+      ],
+      "out": "kit226-c-base-3a48351b",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
