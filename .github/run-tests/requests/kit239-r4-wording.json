@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-239 R4 (declared, R1-02): wording commit c3888b67 against tests-only c764d390 after AUDIT-KIT-239-impl; new assertions fail on base, pass on head; ceiling 120 job-minutes",
+  "label": "KIT-239 R4 wording commit c3888b67 vs tests-only c764d390, five files",
+  "package_commit": "c3888b671b9828a80b201e282bf930a941eadb07",
+  "base_commit": "c764d390a6015679e6a182e77247e29f460fb8af",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-record.R",
+    "test-integration-results.R",
+    "test-integration-gui.R",
+    "test-integration-model.R",
+    "test-integration-removed-factors.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
