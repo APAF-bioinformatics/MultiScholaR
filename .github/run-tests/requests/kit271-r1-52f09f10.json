@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-271 R1: tests-only commit 52f09f10 on kit-271 (staging 894b9cc8 plus step0.md and the new test file); failing-first base values of T1 to T5b and T8 (Copy); T6 a, T7, T8 (export) pass; T6 b and T8b skip; 1 job, ceiling 45 job-minutes; decides A1",
+  "label": "KIT-271 R1 failing-first 52f09f10",
+  "package_commit": "52f09f10d69d010179e5181e8cc38c85944fdec4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit271-limpa-table-name.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
