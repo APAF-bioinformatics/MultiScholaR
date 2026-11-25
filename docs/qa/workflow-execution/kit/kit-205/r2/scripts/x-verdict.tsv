@@ -1,0 +1,5 @@
+case	guard	must_fail	failed_or_errored	pass
+m1	KIT-205 B2	TRUE	5	TRUE
+m2	KIT-205 B6 (b, c)	TRUE	2	TRUE
+m3	KIT-205 B5	TRUE	2	TRUE
+none	every test	FALSE	0	TRUE

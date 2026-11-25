@@ -1,0 +1,25 @@
+key	gate	predicted	pattern	observed	held
+p0.chrome	both	a Chrome binary is found	.	/usr/bin/google-chrome	TRUE
+p0.answered	both	the app process answers HTTP 200	^TRUE$	TRUE	TRUE
+p0.attached	both	AppDriver attaches by URL	^TRUE$	TRUE	TRUE
+p0.app_warn	both	the app process runs below warn 2 (set to 1)	^[01]$	1	TRUE
+p0.options	both	the box offers S1 to S4	^S1,S2,S3,S4$	S1,S2,S3,S4	TRUE
+step1.groups	both	Assign Metadata gave the runs a group (contrast choices hold it)	.	A	TRUE
+step2.set	both	the box holds S1, S2 before the click	^\["S1","S2"\]$	["S1","S2"]	TRUE
+step2.acted	both	the summary changed after Assign	^TRUE$	TRUE	TRUE
+step2.summary	both	one biological replicate {S1, S2}	^Group: [^,|]+, Biological Replicate: 1 \| Samples: S1, S2 \| Technical Replicates: 1, 2$	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2	TRUE
+step3.box	gb	fix: the box is empty	^\[\]$	[]	TRUE
+step4.sent	gb	fix: the box then holds S3, S4 only	^S3,S4$	S3,S4	TRUE
+step4.acted	both	the summary changed after Assign	^TRUE$	TRUE	TRUE
+step4.summary	gb	fix: two biological replicates, {S1, S2} and {S3, S4}	^Group: [^,|]+, Biological Replicate: 1 \| Samples: S1, S2 \| Technical Replicates: 1, 2 \| Group: [^,|]+, Biological Replicate: 2 \| Samples: S3, S4 \| Technical Replicates: 1, 2$	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2 | Group: A, Biological Replicate: 2 | Samples: S3, S4 | Technical Replicates: 1, 2	TRUE
+step4.box	gb	fix: the box is empty	^\[\]$	[]	TRUE
+step5.box_before	both	the box holds S1 before the refused click	^\["S1"\]$	["S1"]	TRUE
+step5.acted	both	a warning notification appears (too few runs)	warning.*at least two	shiny-notification shiny-notification-warning :: ×Please select at least two samples.	TRUE
+step5.summary_unchanged	both	the refused Assign leaves the summary	^TRUE$	TRUE	TRUE
+step5.box_after	both	the refused Assign leaves the box	^\["S1"\]$	["S1"]	TRUE
+step6.keys	gb	fix: the saved design has two keys, {S1, S2} and {S3, S4}	^[^ =]+_1=\{S1,S2\} [^ =]+_2=\{S3,S4\}$	A_1={S1,S2} A_2={S3,S4}	TRUE
+nc.step2.summary	gb	second session: one biological replicate {S1, S2}	^Group: [^,|]+, Biological Replicate: 1 \| Samples: S1, S2 \| Technical Replicates: 1, 2$	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2	TRUE
+nc.box_set	gb	second session: S1, S2 set again	^\["S1","S2"\]$	["S1","S2"]	TRUE
+nc.acted	gb	the no-change Assign shows its notification	Assigned 2 samples	shiny-notification shiny-notification-message :: ×Assigned 2 samples as technical replicates	TRUE
+nc.summary_unchanged	gb	the design is unchanged (identical summary)	^TRUE$	TRUE	TRUE
+nc.box	gb	fix: the no-change Assign also empties the box	^\[\]$	[]	TRUE

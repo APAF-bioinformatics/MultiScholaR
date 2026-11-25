@@ -1,0 +1,15 @@
+file	source	commit	sha256
+k199-ctl.tsv	docs/qa/workflow-execution/kit/kit-199/gui-entry-control.tsv	6b3e615a60de619296d178490df939215c6ee892	4bda7326436406eba2829df5996a373d021cc33d861a2b39db29e0422e3ebcaa
+k199-keys.tsv	docs/qa/workflow-execution/kit/kit-199/declared-keys.tsv	6b3e615a60de619296d178490df939215c6ee892	df5ac8ce7e4bcc589045b3cea6430a1bfdbcab1e364de64dacedb66edb7bdd97
+k199-ref.tsv	docs/qa/workflow-execution/kit/kit-199/g1a-reference-dia-limpa.tsv	6b3e615a60de619296d178490df939215c6ee892	23f3d466b2bb066317dbc5da76ed096d31c068a4f2a2e1ca9f6306c76f83d70a
+k199-env1.tsv	docs/qa/workflow-execution/kit/kit-199/r1/environment.tsv	6b3e615a60de619296d178490df939215c6ee892	9c53edeeb2c044edf82b11cc64c3e14e37c45d99a9a8f9b1dea7628f116bdac1
+k199-env2.tsv	docs/qa/workflow-execution/kit/kit-199/r2/environment.tsv	6b3e615a60de619296d178490df939215c6ee892	22f8519890b5763accc3b434a8851b923961d16b437f81b9572c1dd6d1cfefd8
+k172-ctl.tsv	docs/qa/workflow-execution/kit/kit-172/gui-entry-control.tsv	0b9262958ab95dc1a7c290b5f2a88009a215feaf	f8d2164bdb1ca0d2b7610d3c94c83c49b3712380d5ff72b4ed99f03e3b604940
+k172-keys.tsv	docs/qa/workflow-execution/kit/kit-172/declared-keys.tsv	0b9262958ab95dc1a7c290b5f2a88009a215feaf	503a922129a4b451fb6208ba1c706a1c0518c15f56f7153f0f82b9f12bb3b710
+k172-ref.tsv	docs/qa/workflow-execution/kit/kit-172/k156-gui-entry-failures.tsv	0b9262958ab95dc1a7c290b5f2a88009a215feaf	0429bb99c688d03bf35978a88b2e39886fe70685160b733a8089e23d1891ce35
+k177-ctl.tsv	docs/qa/workflow-execution/kit/kit-177/gui-entry-control.tsv	0b9262958ab95dc1a7c290b5f2a88009a215feaf	14ff5a89a5dc6f3e0ee19c2b36261aec71f4b2721d20e29edf569352f6bf8934
+k180-ctl.tsv	docs/qa/workflow-execution/kit/kit-180/gui-entry-control.tsv	0b9262958ab95dc1a7c290b5f2a88009a215feaf	7db7fa7be0707c8f38f7923e27f148262414555c411492951c5c7a9fd8a25225
+k180-ref.tsv	docs/qa/workflow-execution/kit/kit-180/g1a-reference-protein-lanes.tsv	0b9262958ab95dc1a7c290b5f2a88009a215feaf	1f87c8d335ef02a31a710299a56bb13ba7f9d36198b331f92ffab2127da7fb4c
+k199-da-r1.tsv	docs/qa/workflow-execution/kit/kit-199/r1/da-runner.tsv (header and rows P00025 P00038 P00146 P00189 P00231, lines copied)	6b3e615a60de619296d178490df939215c6ee892	366961571ab06979acef19a3ff31b84e10221f698a09474577bd5389c76f7d0f
+k199-da-r4.tsv	docs/qa/workflow-execution/kit/kit-199/r4/da-runner.tsv (header and rows P00025 P00038 P00146 P00189 P00231, lines copied)	6b3e615a60de619296d178490df939215c6ee892	599b8cd52f5550600680fdce966909343ee829ea474e98608b1c04a77642d476
+lane-steps.tsv	tests/testdata/gui-entry/<lane>.json (names of steps, in order)	0b9262958ab95dc1a7c290b5f2a88009a215feaf	98b9299f442b1f5ad1b37dfd5cc3178fbd8495f85b1bcb84d37cc2c677d9a976

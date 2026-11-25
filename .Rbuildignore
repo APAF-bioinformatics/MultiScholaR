@@ -22,7 +22,10 @@
 ^tests/testthat/_e2e_artifacts$
 ^tests/testthat/cache$
 ^tests/testthat/results$
+^tests/testdata/integration/kit183-base-store$
 
 ^inst/duckdb$
 ^packaging$
 ^data/benchmark$
+^archive$
+^docs/qa/workflow-execution/kit/kit-159/harness$

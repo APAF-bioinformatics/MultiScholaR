@@ -1,0 +1,11 @@
+config	shape	seeds	rows_failed	seeds_changed	seeds_with_call_change	max_abs_t_change	max_abs_logfc_change	rule_outcome
+scale	TMT	20	0	14	14	6.14835	1.26889	own ticket
+scale	LFQ	20	0	14	14	6.14835	1.26889	own ticket
+legacy_automatic	TMT	20	0	20	19	10.5496	971.592	own ticket
+legacy_automatic	LFQ	20	0	20	19	10.5496	971.592	own ticket
+legacy_manual	TMT	20	0	20	20	8.87429	62.3789	own ticket
+legacy_manual	LFQ	20	0	20	20	8.87429	62.3789	own ticket
+groups_all_features	TMT	20	0	0	0	1.75495e-11	2.84217e-14	reported
+groups_all_features	LFQ	20	0	0	0	1.75495e-11	2.84217e-14	reported
+first_pass_nulls	TMT	20	0	0	0	1.75495e-11	2.84217e-14	reported
+first_pass_nulls	LFQ	20	0	0	0	1.75495e-11	2.84217e-14	reported

@@ -1,0 +1,25 @@
+key	gate	predicted	pattern
+p0.chrome	both	a Chrome binary is found	.
+p0.answered	both	the app process answers HTTP 200	^TRUE$
+p0.attached	both	AppDriver attaches by URL	^TRUE$
+p0.app_warn	both	the app process runs below warn 2 (set to 1)	^[01]$
+p0.options	both	the box offers S1 to S4	^S1,S2,S3,S4$
+step1.groups	both	Assign Metadata gave the runs a group (contrast choices hold it)	.
+step2.set	both	the box holds S1, S2 before the click	^\["S1","S2"\]$
+step2.acted	both	the summary changed after Assign	^TRUE$
+step2.summary	both	one biological replicate {S1, S2}	^Group: [^,|]+, Biological Replicate: 1 \| Samples: S1, S2 \| Technical Replicates: 1, 2$
+step3.box	gb	fix: the box is empty	^\[\]$
+step4.sent	gb	fix: the box then holds S3, S4 only	^S3,S4$
+step4.acted	both	the summary changed after Assign	^TRUE$
+step4.summary	gb	fix: two biological replicates, {S1, S2} and {S3, S4}	^Group: [^,|]+, Biological Replicate: 1 \| Samples: S1, S2 \| Technical Replicates: 1, 2 \| Group: [^,|]+, Biological Replicate: 2 \| Samples: S3, S4 \| Technical Replicates: 1, 2$
+step4.box	gb	fix: the box is empty	^\[\]$
+step5.box_before	both	the box holds S1 before the refused click	^\["S1"\]$
+step5.acted	both	a warning notification appears (too few runs)	warning.*at least two
+step5.summary_unchanged	both	the refused Assign leaves the summary	^TRUE$
+step5.box_after	both	the refused Assign leaves the box	^\["S1"\]$
+step6.keys	gb	fix: the saved design has two keys, {S1, S2} and {S3, S4}	^[^ =]+_1=\{S1,S2\} [^ =]+_2=\{S3,S4\}$
+nc.step2.summary	gb	second session: one biological replicate {S1, S2}	^Group: [^,|]+, Biological Replicate: 1 \| Samples: S1, S2 \| Technical Replicates: 1, 2$
+nc.box_set	gb	second session: S1, S2 set again	^\["S1","S2"\]$
+nc.acted	gb	the no-change Assign shows its notification	Assigned 2 samples
+nc.summary_unchanged	gb	the design is unchanged (identical summary)	^TRUE$
+nc.box	gb	fix: the no-change Assign also empties the box	^\[\]$

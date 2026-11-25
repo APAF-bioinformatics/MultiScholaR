@@ -1,0 +1,2 @@
+filename	line_number	linter	message
+s0.R	111	object_usage_linter	local variable 'reason' assigned but may not be used

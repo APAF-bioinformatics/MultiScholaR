@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-workflow-saved-exports.R	261	10	1	4	0	30.5	failed
+test-kit259-pearson-histogram-figure-failure.R	39	32	0	0	0	93.9	failed
+test-metab-01k-s4-plot-pearson-characterization.R	16	1	0	0	0	7.5	failed

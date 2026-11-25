@@ -1,0 +1,5 @@
+filename	line_number	linter	message
+g1a.R	597	indentation_linter	Hanging indent should be 62 spaces but is 63 spaces.
+parity.R	122	indentation_linter	Hanging indent should be 40 spaces but is 4 spaces.
+parity.R	125	indentation_linter	Hanging indent should be 40 spaces but is 4 spaces.
+parity.R	127	indentation_linter	Hanging indent should be 40 spaces but is 4 spaces.

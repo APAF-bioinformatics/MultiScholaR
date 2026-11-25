@@ -8,7 +8,11 @@ lipidIntensityFilteringHelper(
   assay_table,
   min_lipid_intensity_threshold,
   lipids_proportion_of_samples_below_cutoff,
-  lipid_id_column
+  lipid_id_column,
+  sample_columns = NULL,
+  group_labels = NULL,
+  min_values_per_group = NULL,
+  min_groups = NULL
 )
 }
 \arguments{
@@ -19,6 +23,14 @@ lipidIntensityFilteringHelper(
 \item{lipids_proportion_of_samples_below_cutoff}{The maximum allowed proportion (0 to 1) of samples where a lipid can be below the threshold. If a lipid exceeds this proportion, it's removed.}
 
 \item{lipid_id_column}{A string specifying the name of the column containing the unique lipid identifiers.}
+
+\item{sample_columns}{Optional. The sample columns to count. Without it, every numeric column other than the identifier column is taken as a sample: pass the design's samples when the table holds other numeric columns (retention time, m/z, scores).}
+
+\item{group_labels}{Optional. The group of each sample column, in the same order as \code{sample_columns}. A lipid is kept only if at least \code{min_groups} groups each have a value (not missing) in at least \code{min_values_per_group} of their samples (in every sample, if the group is smaller). Groups named like "pool" and samples without a group are not counted as groups. Without it, only lipids with no value in any sample are removed, with a warning.}
+
+\item{min_values_per_group}{Values required per group (a whole number of at least 1; default 2). Used with \code{group_labels}.}
+
+\item{min_groups}{Groups required (a whole number from 1 to the number of groups; default 1). Used with \code{group_labels}.}
 }
 \value{
 A filtered wide data frame containing only the lipids that pass the filter.

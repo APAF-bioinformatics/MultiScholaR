@@ -3,7 +3,7 @@
 # samples, KO_7 absent from metabolomics; the lipidomics, metabolomics and transcriptomics runs two per sample), and,
 # for the internal standards, the few-samples note and the refusals, two small inputs written by the contract's writer
 # in the form of test-integration-model.R. Expected counts are read from the corpus files themselves, not from the
-# code under test. The whole surface is behind `MultiScholaR.integration_gui` (off by default).
+# code under test. The whole surface is behind `MultiScholaR.integration_gui` (on unless set FALSE, since KIT-240).
 
 intGuiCorpus <- function() normalizePath(testthat::test_path("..", "testdata", "integration", "corpus"), mustWork = FALSE)
 intGuiOmics <- c("lipidomics", "metabolomics", "proteomics", "transcriptomics")
@@ -119,8 +119,9 @@ intGuiHtml <- function(tag) as.character(htmltools::renderTags(tag)$html)
 # KIT-138: the gate, the shell, the home page.
 # ------------------------------------------------------------------------------------------------
 
-test_that("KIT-138: with the gate off the home page and the integration module are as before", {
-    withr::local_options(MultiScholaR.integration_gui = NULL)
+# KIT-240 (T2): the tabs are on unless the option is set FALSE; set FALSE, the page is as before KIT-138.
+test_that("KIT-138: with the gate set off the home page and the integration module are as before", {
+    withr::local_options(MultiScholaR.integration_gui = FALSE)
     expect_false(integrationGuiEnabled())
     page <- intGuiHtml(app_ui(NULL))
     expect_match(page, '<div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">',
@@ -292,9 +293,11 @@ test_that("KIT-138: the correction for unwanted variation each input names is st
     manifest$matrix_role <- "normalised"
     manifest$correction <- list(state = "ruv_covariates", id = "C2", method = "RUVIII", k = 2L, ruv_design = "groups_all_features",
         ruv_k = 2L, replicate_structure = "group", grouping_variable = "group", ruv_k_estimate = NA)
-    writeIntegrationInput(file.path(project$paths$integration_dir, "proteomics"), manifest, input$samples,
+    # KIT-184: equal matrices hold no removed direction: the writer's classed warning, and no factors file.
+    expect_warning(writeIntegrationInput(file.path(project$paths$integration_dir, "proteomics"), manifest, input$samples,
         lapply(input$views, `[[`, "matrix"), lapply(input$views, `[[`, "features"),
-        corrected = lapply(input$views, `[[`, "matrix"))
+        corrected = lapply(input$views, `[[`, "matrix")), class = "integration_input_removed_factors_undetermined")
+    expect_false(file.exists(file.path(project$paths$integration_dir, "proteomics", "removed_proteomics.parquet")))
     scan <- integrationScanProject(project$paths$integration_dir)
     row <- scan$omics[scan$omics$omic == "proteomics", ]
     expect_identical(row$values, texts[["values_both"]])
@@ -442,7 +445,13 @@ test_that("KIT-139: internal standards, features seen once and few samples are s
             sprintf(texts[["fact_replicates_average"]], "lipidomics_LCMS_Pos", 8L, 4L, 4L),
             sprintf(texts[["fact_standards_drop"]], "lipidomics_LCMS_Pos", 1L),
             sprintf(texts[["fact_replicates_single"]], "proteomics", 5L),
-            sprintf(texts[["fact_sparse"]], "proteomics", 1L)))
+            sprintf(texts[["fact_sparse"]], "proteomics", 1L, 3L, 5L)))
+        # KIT-240 r1.4 (AUDIT-KIT-240-impl I02): the rule applied at the defaults, half of the kept samples (5 here,
+        # every sample kept as the default keeps missing ones), not "two samples"; the sample table counts the kept samples.
+        expect_identical(nrow(preview$aligned$samples), 5L)
+        expect_identical(integrationMinObserved(preview$parameters, nrow(preview$aligned$samples)), 3L)
+        expect_match(facts[[6L]], "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE)
+        expect_false(grepl("two samples", texts[["col_sparse"]], fixed = TRUE))
         expect_true(preview$few_samples)
         expect_match(output$alignment_status$html, sprintf(texts[["few_samples"]], 4L, INTEGRATION_FEW_SAMPLES), fixed = TRUE)
         views <- integrationAlignmentViewTable(preview)
@@ -551,7 +560,7 @@ intGuiExpectSameModel <- function(manager, value, direct_manager, direct) {
     expect_identical(value$model_file[c("sha256", "size", "media_type")], direct$model_file[c("sha256", "size", "media_type")])
 }
 
-test_that("KIT-140: the Model tab's settings are built from the parameter table, provisional ones marked", {
+test_that("KIT-140: the Model tab's settings are built from the parameter table, each marked with its status", {
     texts <- integrationGuiTexts()
     spec <- integrationMofaParameterSpec()
     ui <- intGuiHtml(mod_integration_model_ui("m"))
@@ -570,16 +579,13 @@ test_that("KIT-140: the Model tab's settings are built from the parameter table,
         fixed = TRUE)
     expect_match(ui, sprintf('id="m-param_num_factors"[^>]*value="%d"', spec$num_factors$default))
     expect_match(ui, sprintf('id="m-param_seed"[^>]*value="%d"', spec$seed$default))
-    # Precision: double the decided choice, single selectable, its consequence stated; the others provisional but those
-    # the user decided (INT-12, KIT-151).
+    # Precision: double the decided choice, single selectable, its consequence stated. KIT-240 (VAL-221 (4)): every
+    # default is decided, so every setting is marked so.
     expect_match(ui, texts[["choice_precision_single"]], fixed = TRUE)
     expect_match(ui, texts[["help_precision"]], fixed = TRUE)
     marks <- regmatches(ui, gregexpr(sprintf("\\((%s|%s)\\)", texts[["mark_provisional"]], texts[["mark_decided"]]), ui))[[1L]]
-    # KIT-153: the input matrix is decided (INT-23) as well.
-    decided <- c("input_matrix", "feature_selection", "features_per_view", "min_observed_fraction", "scaling", "scale_views",
-        "convergence_mode", "maxiter", "precision")
-    expect_identical(marks, sprintf("(%s)", ifelse(method %in% decided, texts[["mark_decided"]], texts[["mark_provisional"]])))
-    # A default the workbook changes, and a parameter it adds, change the screen with no edit to the tab.
+    expect_identical(marks, rep(sprintf("(%s)", texts[["mark_decided"]]), length(method)))
+    # A default changed in the table, and a parameter added to it, change the screen with no edit to the tab.
     changed <- spec
     changed$num_factors$default <- 7L
     changed$likelihood <- list(default = "gaussian", choices = c("gaussian", "poisson"), settled_by = "workbook (provisional)")
@@ -853,5 +859,25 @@ test_that("KIT-140: on the managed worker the Model tab trains the same model as
         session$setInputs(run = 2)
         expect_identical(bus$integration_model$status, "hit")
         expect_identical(bus$integration_model$reference$entity_id, managed$reference$entity_id)
+    })
+})
+
+# KIT-239 (INT-28): after training, the Model tab points to the limitations on the Results tab (the pointer read from
+# the wording table; on a tree without it this test fails at its first assertion).
+test_that("KIT-239 (L6): after training, the Model tab points to the limitations on the Results tab", {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    texts <- integrationGuiTexts()
+    expect_true("model_limits_pointer" %in% names(texts))
+    project <- intGuiProject()
+    bus <- intGuiConfirmed(project$paths)
+    shiny::testServer(mod_integration_model_server, args = list(workflow_data = bus, paths = project$paths,
+        probe = intGuiAvailable, trainer = intGuiTrainer(), withProgressFn = intGuiNoProgress), {
+        session$flushReact()
+        session$setInputs(run = 1)
+        expect_identical(bus$integration_model$status, "computed")
+        result <- gsub("&#39;", "'", output$result$html, fixed = TRUE)
+        expect_match(result, texts[["result_heading"]], fixed = TRUE)
+        if ("model_limits_pointer" %in% names(texts)) expect_match(result, texts[["model_limits_pointer"]], fixed = TRUE)
     })
 })

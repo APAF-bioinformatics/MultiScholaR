@@ -1,0 +1,23 @@
+check	value	expected	pass
+source_sha256_file	167f90528aff832da5033abcc9c2c515ed7e5936268b51a34d7da55d0e4a0f73	167f90528aff832da5033abcc9c2c515ed7e5936268b51a34d7da55d0e4a0f73	TRUE
+source_sha256_run_file	1b918062f8c94a3c10859a965f5f1120ea3c692ae70181039846c66a43730bde	1b918062f8c94a3c10859a965f5f1120ea3c692ae70181039846c66a43730bde	TRUE
+blocks	69	69	TRUE
+blocks_lipidomics	4	4	TRUE
+blocks_metabolomics	30	30	TRUE
+blocks_proteomics	22	22	TRUE
+blocks_transcriptomics	13	13	TRUE
+lane_step_pairs	69	69	TRUE
+blocks_without_difference	0	0	TRUE
+declared_rows_values	TRUE	TRUE	TRUE
+rows	73	73	TRUE
+rows_per_class	declared_change (KIT-199)=6,integration_artifacts=24,kit128_technical_replicates=13,metab_fixture_4=30	declared_change (KIT-199)=6,integration_artifacts=24,kit128_technical_replicates=13,metab_fixture_4=30	TRUE
+counts_lipid_canonical	integration_artifacts=4	integration_artifacts=4	TRUE
+counts_metab_lc	metab_fixture_4=10	metab_fixture_4=10	TRUE
+counts_metab_gc	metab_fixture_4=10	metab_fixture_4=10	TRUE
+counts_metab_combined	metab_fixture_4=10	metab_fixture_4=10	TRUE
+counts_prot_dia	integration_artifacts=4	integration_artifacts=4	TRUE
+counts_prot_dia_limpa	declared_change (KIT-199)=6,integration_artifacts=4	declared_change (KIT-199)=6,integration_artifacts=4	TRUE
+counts_prot_tmt	integration_artifacts=4	integration_artifacts=4	TRUE
+counts_prot_lfq	integration_artifacts=4	integration_artifacts=4	TRUE
+counts_prot_lfq_fragpipe	integration_artifacts=4	integration_artifacts=4	TRUE
+counts_trx_screen	kit128_technical_replicates=13	kit128_technical_replicates=13	TRUE

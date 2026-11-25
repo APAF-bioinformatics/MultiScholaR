@@ -141,8 +141,10 @@ runProtEnrichDeterministicProcessEnrichments <- function(da_results,
                                                         protein_id_column = "Protein.IDs",
                                                         contrast_names = NULL,
                                                         correction_method = "gSCS",
-                                                        go_propagation = "none") {
+                                                        go_propagation = "none",
+                                                        significance_rule = "qvalue") {
   # KIT-173: `go_propagation` is taken (the clusterProfiler route passes it) and ignored; the tables are fixed.
+  # KIT-203: so is `significance_rule`.
   supportedOrganisms <- buildProtEnrichSupportedOrganisms()
   backend <- if (as.character(taxon_id) %in% supportedOrganisms$taxid) {
     "gprofiler2"
@@ -431,7 +433,15 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
                                                 dirExistsFn = dir.exists,
                                                 dirCreateFn = dir.create,
                                                 getUniprotAnnotationsFn = getUniprotAnnotations,
-                                                catFn = cat) {
+                                                catFn = cat,
+                                                referenceAnnotation = NULL) {
+  # KIT-167 (8.3 item 3): with the reference identifiers chosen, the reference's annotation table comes first and
+  # is returned as is; the project's own annotation (the workflow slot, the environment, the RDS) is neither read nor
+  # written, so a later run with the accessions as imported reads the project's table.
+  if (!is.null(referenceAnnotation)) {
+    return(list(uniprotDatCln = referenceAnnotation, source = "reference_mapping", sourcePath = NULL, cacheDir = NULL,
+      cacheDirCreated = FALSE, loadError = NULL, creationError = NULL, creationReason = NULL, creationDetail = NULL))
+  }
   uniprotDatCln <- NULL
   annotationSource <- NULL
   sourcePath <- NULL
@@ -439,6 +449,8 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
   cacheDirCreated <- FALSE
   loadError <- NULL
   creationError <- NULL
+  creationReason <- NULL
+  creationDetail <- NULL
 
   shareAnnotations <- function(value) {
     if (!is.null(globalEnv)) assign("uniprot_dat_cln", value, envir = globalEnv)
@@ -500,6 +512,9 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
       }
     }, error = function(e) {
       creationError <<- e$message
+      # KIT-175 (C03): the reason and the redacted detail, so the step's notice can give them.
+      creationReason <<- if (inherits(e, "prot_annotation_uniprot_recorded")) e$reason else "processing_failed"
+      creationDetail <<- uniprotConditionDetail(e)
     })
   }
 
@@ -510,7 +525,9 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
     cacheDir = cacheDir,
     cacheDirCreated = cacheDirCreated,
     loadError = loadError,
-    creationError = creationError
+    creationError = creationError,
+    creationReason = creationReason,
+    creationDetail = creationDetail
   )
 }
 

@@ -24,6 +24,7 @@ $env:RTOOLS45_HOME = Join-Path $Bundle 'no-rtools'
 $env:RETICULATE_PYTHON = Join-Path $Bundle 'python\python.exe'
 $env:PYTHONNOUSERSITE = '1'
 $env:RSTUDIO_PANDOC = Join-Path $Bundle 'pandoc'
+$env:MSR_DIAMOND = Join-Path $Bundle 'diamond\diamond.exe'
 # The saved-entity store must not take WSL's bash or other GNU tools found on a host (F6).
 $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'
 $env:MSR_BUNDLE = $Bundle

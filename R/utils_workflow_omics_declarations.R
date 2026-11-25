@@ -126,43 +126,385 @@ omicsFeatureCounts <- function(binding, object) {
     }, numeric(1))
 }
 
+#' Refuse sample columns the lipid and metabolite intensity filter cannot count (KIT-202, D3, VAL-130).
+#' @param assay The assay's name, or NULL for a table given to an exported helper.
+#' @param invalid The design samples (or given columns) that are absent from the table or not numeric.
+#' @noRd
+omicsIntensityFilterRefuse <- function(assay, invalid) {
+    shown <- paste(utils::head(invalid, 3L), collapse = ", ")
+    message <- if (!length(invalid)) {
+        sprintf("Assay '%s': no sample of the design is left to count. The intensity filter counts only the design's samples.",
+            assay %||% "assay table")
+    } else if (is.null(assay)) {
+        sprintf(paste("%d sample column(s) given are missing from the table or not numeric: %s. A run with no value at all",
+            "is read as not numeric: remove it in the design."), length(invalid), shown)
+    } else {
+        sprintf(paste("Assay '%s': %d sample(s) of the design are missing from the table or not numeric: %s. The intensity",
+            "filter counts only the design's samples. A run with no value at all is read as not numeric: remove it in the",
+            "design."), assay, length(invalid), shown)
+    }
+    rlang::abort(message, class = "omics_intensity_filter_samples_invalid", assay = assay, columns = invalid)
+}
+
+#' The columns the lipid and metabolite intensity filter counts as samples in one assay (KIT-202, VAL-118 (1)): the
+#' design's samples less the id column, in the table's order; under the earlier rule of a record made before
+#' (`workflowReplayRuleMarkers$intensity_filter_samples`), every numeric column, as then. A design sample absent from
+#' the table or not numeric, or no sample left, is refused (D3).
+#' @param table_columns The assay table's column names, in order.
+#' @param numeric_columns The names of its numeric columns.
+#' @param design_samples The design's sample ids.
+#' @param id_column The assay's identifier column.
+#' @param assay The assay's name (for the refusal).
+#' @return The columns to count.
+#' @noRd
+omicsIntensityFilterSampleColumns <- function(table_columns, numeric_columns, design_samples, id_column, assay) {
+    marker <- workflowReplayRuleMarkers$intensity_filter_samples
+    if (identical(getOption(marker$option), marker$earlier)) return(numeric_columns)
+    design_samples <- setdiff(unique(as.character(design_samples)), id_column)
+    present <- intersect(design_samples, table_columns)
+    invalid <- c(setdiff(design_samples, table_columns), setdiff(present, numeric_columns))
+    samples <- intersect(table_columns, design_samples)
+    if (length(invalid) || !length(samples)) omicsIntensityFilterRefuse(assay, invalid)
+    samples
+}
+
+#' The columns an exported intensity filter helper counts (KIT-202, D1 (d), VAL-130): `sample_columns` as given, refused
+#' when one is absent or not numeric; without it, every numeric column except the identifier, with a classed warning
+#' naming them (none when no column is counted, where the helper keeps its earlier warning and return).
+#' @noRd
+omicsIntensityFilterHelperColumns <- function(assay_table, id_column, sample_columns = NULL) {
+    numeric_columns <- names(assay_table)[vapply(assay_table, is.numeric, logical(1))]
+    if (!is.null(sample_columns)) {
+        sample_columns <- as.character(sample_columns)
+        invalid <- c(setdiff(sample_columns, names(assay_table)),
+            setdiff(intersect(sample_columns, names(assay_table)), numeric_columns))
+        if (length(invalid)) omicsIntensityFilterRefuse(NULL, invalid)
+        return(sample_columns)
+    }
+    counted <- setdiff(numeric_columns, id_column)
+    if (length(counted)) {
+        shown <- paste(utils::head(counted, 5L), collapse = ", ")
+        if (length(counted) > 5L) shown <- paste0(shown, ", ...")
+        rlang::warn(sprintf(paste("sample_columns not given: every numeric column except '%s' is counted as a sample: %s.",
+            "Pass the design's samples when the table holds other numeric columns."), id_column, shown),
+            class = "omics_intensity_filter_samples_guessed")
+    }
+    counted
+}
+
+#' The design's sample columns of one table (KIT-214, E-1; KIT-202's definition, 7.1): the design's samples less the id
+#' column, in the table's order. Rule-free: the duplicate step and the QC displays call it.
+#' @param table_columns The table's column names, in order.
+#' @param design_samples The design's sample ids.
+#' @param id_column The table's identifier column.
+#' @return The column names.
+#' @noRd
+omicsDesignSampleColumnsOf <- function(table_columns, design_samples, id_column) {
+    setdiff(intersect(table_columns, as.character(design_samples)), id_column)
+}
+
+#' The design's sample columns of one table that hold numbers (KIT-214, E-8): what the QC missingness and the
+#' internal-standard statistics count.
+#' @param table An assay table (or its zero-row prototype).
+#' @param design_samples The design's sample ids.
+#' @param id_column The table's identifier column.
+#' @return The column names.
+#' @noRd
+omicsDesignNumericColumnsOf <- function(table, design_samples, id_column) {
+    columns <- omicsDesignSampleColumnsOf(names(table), design_samples, id_column)
+    columns[vapply(columns, function(column) is.numeric(table[[column]]), logical(1))]
+}
+
+#' The columns duplicate resolution averages in one assay with a duplicated id (KIT-214, VAL-173 (1)): the design's
+#' samples less the id column, in the table's order; under the earlier rule of a record made before
+#' (`workflowReplayRuleMarkers$duplicate_resolution_samples`), every numeric column, as then. Under the current rule a
+#' design sample absent from the table or not numeric, or no sample left, is refused before any row is chosen. Its own
+#' marker and refusal, not the intensity filter's (KIT-202 implementation audit, K202-I07).
+#' @param table_columns The assay table's column names, in order.
+#' @param numeric_columns The names of its numeric columns.
+#' @param design_samples The design's sample ids.
+#' @param id_column The assay's identifier column.
+#' @param assay The assay's name (for the refusal).
+#' @return The columns to average.
+#' @noRd
+omicsDuplicateResolutionSampleColumns <- function(table_columns, numeric_columns, design_samples, id_column, assay) {
+    marker <- workflowReplayRuleMarkers$duplicate_resolution_samples
+    if (identical(getOption(marker$option), marker$earlier)) return(numeric_columns)
+    design_samples <- setdiff(unique(as.character(design_samples)), id_column)
+    invalid <- c(setdiff(design_samples, table_columns), setdiff(intersect(design_samples, table_columns), numeric_columns))
+    samples <- omicsDesignSampleColumnsOf(table_columns, design_samples, id_column)
+    if (length(invalid) || !length(samples)) {
+        shown <- if (length(invalid)) paste(utils::head(invalid, 3L), collapse = ", ") else "(none left)"
+        rlang::abort(sprintf(paste("Duplicate features cannot be resolved in assay '%s': the design's sample column(s) %s",
+            "are missing from it or do not hold numbers. Check the design matrix and the imported table."), assay, shown),
+            class = "omics_duplicate_resolution_samples_invalid", assay = assay, columns = invalid)
+    }
+    samples
+}
+
+#' What a whole-matrix duplicate step hands its unchanged kernel for one assay (KIT-214, E-7 (B)). With a duplicated id
+#' (the kernel's own test), every numeric column is converted to double as the kernel converted it before, and the
+#' design's samples are averaged (`omicsDuplicateResolutionSampleColumns`). Without one the kernel returns the table
+#' unchanged; it is handed the design's samples (every numeric column when there are none, so that no new warning is
+#' raised). Under the earlier rule every numeric column, unconverted, as before.
+#' @param assay The assay table.
+#' @param numeric_columns Its numeric columns (at least one).
+#' @param design_samples The design's sample ids.
+#' @param id_column The assay's identifier column.
+#' @param assay_name The assay's name (for the refusal).
+#' @return `list(table, columns)`.
+#' @noRd
+omicsDuplicateResolutionInput <- function(assay, numeric_columns, design_samples, id_column, assay_name) {
+    marker <- workflowReplayRuleMarkers$duplicate_resolution_samples
+    if (identical(getOption(marker$option), marker$earlier)) return(list(table = assay, columns = numeric_columns))
+    duplicated_id <- id_column %in% names(assay) && any(dplyr::count(assay, .data[[id_column]])$n > 1)
+    if (!duplicated_id) {
+        samples <- omicsDesignSampleColumnsOf(names(assay), design_samples, id_column)
+        return(list(table = assay, columns = if (length(samples)) samples else numeric_columns))
+    }
+    list(table = dplyr::mutate(assay, dplyr::across(dplyr::all_of(numeric_columns), as.numeric)),
+        columns = omicsDuplicateResolutionSampleColumns(names(assay), numeric_columns, design_samples, id_column,
+            assay_name))
+}
+
+#' Whether the lipid and metabolite intensity filter counts present values per group (KIT-217, VAL-173 (2)): FALSE
+#' only while a record made before is replayed under its earlier rule (`workflowReplayRuleMarkers$intensity_filter_missing`).
+#' @noRd
+omicsIntensityFilterCountsInForce <- function() {
+    marker <- workflowReplayRuleMarkers$intensity_filter_missing
+    !identical(getOption(marker$option), marker$earlier)
+}
+
+#' Refuse a setting or a design the per-group count cannot use (KIT-217, 5.1; texts W-12 to W-15 of the ticket's 5.4).
+#' @noRd
+omicsIntensityFilterCountsRefuse <- function(message, setting = NULL, value = NULL) {
+    rlang::abort(message, class = "omics_intensity_filter_counts_invalid", setting = setting, value = value)
+}
+
+#' A setting as a whole number, or NA: a config string has its comment and spaces removed first, as today's two.
+#' @noRd
+omicsIntensityFilterWholeNumber <- function(value) {
+    if (is.character(value)) value <- trimws(sub("#.*$", "", value))
+    number <- if (length(value) == 1L) suppressWarnings(as.numeric(value)) else NA_real_
+    if (is.na(number) || !is.finite(number) || number != round(number)) NA_integer_ else as.integer(number)
+}
+
+#' What a value was entered as, for a refusal.
+#' @noRd
+omicsIntensityFilterShown <- function(value) {
+    if (is.null(value) || !length(value)) return("nothing")
+    paste(format(value), collapse = ", ")
+}
+
+#' The counted group of each sample (KIT-217, SD-11): its label, or NA for a missing or blank label (in no group, as
+#' the QC finalise step reads blanks) and for a group named like "pool" (case-insensitive, the RUV ANOVA's rule).
+#' @param labels Group labels, one per sample.
+#' @noRd
+omicsIntensityFilterCountedGroups <- function(labels) {
+    labels <- as.character(labels)
+    labels[is.na(labels) | !nzchar(trimws(labels)) | grepl("pool", labels, ignore.case = TRUE)] <- NA_character_
+    labels
+}
+
+#' The per-group count's settings checked against the groups (KIT-217, 5.1, in the order the S4 methods check them):
+#' values per group a whole number of at least 1; the design has the group column; at least one group is not a pool
+#' group; groups required a whole number from 1 to the number of counted groups.
+#' @param labels Group labels of the samples counted (the design's, or `group_labels`).
+#' @param min_values_per_group,min_groups The settings as given.
+#' @param group_id The design's group column, named in the refusal of a design without it.
+#' @param has_column FALSE for a design without the group column.
+#' @return `list(groups, min_values_per_group, min_groups)`, groups as `omicsIntensityFilterCountedGroups` gives them.
+#' @noRd
+omicsIntensityFilterCountSettings <- function(labels, min_values_per_group, min_groups, group_id = "group", has_column = TRUE) {
+    m <- omicsIntensityFilterWholeNumber(min_values_per_group)
+    if (is.na(m) || m < 1L) omicsIntensityFilterCountsRefuse(sprintf(
+        "Values required per group must be a whole number of at least 1. You entered: %s.",
+        omicsIntensityFilterShown(min_values_per_group)), "min_values_per_group", min_values_per_group)
+    if (!isTRUE(has_column)) omicsIntensityFilterCountsRefuse(sprintf(paste("The design has no \"%s\" column, so missing",
+        "values cannot be counted per group. Assign each sample to a group in the design and run the filter again."), group_id),
+        "group_id", group_id)
+    groups <- omicsIntensityFilterCountedGroups(labels)
+    pools <- unique(as.character(labels)[!is.na(labels) & grepl("pool", as.character(labels), ignore.case = TRUE)])
+    if (all(is.na(groups)) && length(pools)) omicsIntensityFilterCountsRefuse(sprintf(paste("No group is left to count",
+        "missing values in: every group in the design is named like \"pool\" (%s), and those are not counted. Give at least",
+        "one group of samples a name without \"pool\" in the design, then run the filter again."),
+        paste(pools, collapse = ", ")), "groups", pools)
+    counted <- length(unique(groups[!is.na(groups)]))
+    g <- omicsIntensityFilterWholeNumber(min_groups)
+    if (is.na(g) || g < 1L || g > counted) omicsIntensityFilterCountsRefuse(sprintf(paste("Groups required must be a whole",
+        "number from 1 to %d, the number of groups in the design (groups named like \"pool\" are not counted). You entered: %s."),
+        counted, omicsIntensityFilterShown(min_groups)), "min_groups", min_groups)
+    list(groups = groups, min_values_per_group = m, min_groups = g)
+}
+
+#' The features that pass the per-group count (KIT-217, 5.1): at least `min_groups` counted groups each hold at least
+#' min(n_i, `min_values_per_group`) present (finite) values; with `groups` NULL (an exported helper called without
+#' group labels, SD-14), at least one present value in any sample.
+#' @param values A matrix (or table) of the samples' values, one column per sample.
+#' @param groups The counted group of each column (NA: in no counted group), or NULL.
+#' @return Logical, one per row.
+#' @noRd
+omicsIntensityFilterGroupsPass <- function(values, groups, min_values_per_group, min_groups) {
+    present <- is.finite(as.matrix(values))
+    if (is.null(groups)) return(rowSums(present) >= 1L)
+    met <- integer(nrow(present))
+    for (group in unique(groups[!is.na(groups)])) {
+        columns <- which(!is.na(groups) & groups == group)
+        met <- met + (rowSums(present[, columns, drop = FALSE]) >= min(length(columns), min_values_per_group))
+    }
+    met >= min_groups
+}
+
+#' The lipid and metabolite intensity filter's decision per feature (KIT-217, 5.1), shared by the two exported helpers,
+#' so the whole and partitioned variants decide alike: today's share (values strictly below the threshold over the
+#' samples counted; a missing value is not below, `<` unchanged, VAL-112) under the proportion, and, unless a record
+#' made before is replayed under its earlier rule, the per-group count of present values.
+#' @param values The samples' values of one table or page, one column per sample.
+#' @param groups The counted group of each column (NA for pool and unassigned samples), or NULL (no groups given).
+#' @param threshold The assay's percentile threshold.
+#' @param proportion The maximum share of samples below the threshold.
+#' @param min_values_per_group,min_groups The checked settings (ignored with `groups` NULL).
+#' @return Logical, one per row.
+#' @noRd
+omicsIntensityFilterKeep <- function(values, groups, threshold, proportion, min_values_per_group, min_groups) {
+    values <- as.matrix(values)
+    share <- rowSums(values < threshold, na.rm = TRUE) / ncol(values)
+    keep <- share < proportion
+    if (!omicsIntensityFilterCountsInForce()) return(keep)
+    keep & omicsIntensityFilterGroupsPass(values, groups, min_values_per_group, min_groups)
+}
+
+#' An exported helper's groups and settings (KIT-217, 5.1, SD-14): `group_labels` aligned with the counted columns and
+#' checked as the S4 methods check the design; without them, a classed warning and the no-value rule (settings ignored).
+#' Under a record's earlier rule nothing is read or checked.
+#' @param noun The feature noun's plural, for the warning ("lipids", "metabolites").
+#' @return `list(groups, min_values_per_group, min_groups)`; `groups` NULL for the no-value rule.
+#' @noRd
+omicsIntensityFilterHelperSettings <- function(sample_columns, group_labels, min_values_per_group, min_groups, noun) {
+    if (!omicsIntensityFilterCountsInForce()) return(list(groups = NULL, min_values_per_group = NULL, min_groups = NULL))
+    if (is.null(group_labels)) {
+        rlang::warn(sprintf(paste("No groups were given (group_labels), so missing values are not counted per group: only",
+            "%s with no value in any sample are removed, and then the low-intensity rule is applied as before. Give the",
+            "design's groups to apply the per-group rule."), noun), class = "omics_intensity_filter_groups_guessed")
+        return(list(groups = NULL, min_values_per_group = NULL, min_groups = NULL))
+    }
+    if (length(group_labels) != length(sample_columns)) omicsIntensityFilterCountsRefuse(sprintf(paste("group_labels gives",
+        "%d group(s) for %d sample column(s): give one group label per sample column, in the same order."),
+        length(group_labels), length(sample_columns)), "group_labels", length(group_labels))
+    omicsIntensityFilterCountSettings(group_labels, min_values_per_group %||% 2L, min_groups %||% 1L)
+}
+
+#' Features of one table that fail the per-group count (KIT-217: the step's `removed_missing`, counted first), or 0
+#' under a record's earlier rule.
+#' @noRd
+omicsIntensityFilterRemovedMissing <- function(values, labels, min_values_per_group, min_groups) {
+    if (!omicsIntensityFilterCountsInForce() || !nrow(values)) return(0L)
+    settings <- omicsIntensityFilterCountSettings(labels, min_values_per_group, min_groups)
+    as.integer(sum(!omicsIntensityFilterGroupsPass(values, settings$groups, settings$min_values_per_group,
+        settings$min_groups)))
+}
+
 #' The intensity filter (row, after the per-assay quantile pre-pass; the user's 2026-10-28 decision removed the
-#' `ceiling()` from that quantile in both kernels before any oracle was recorded).
+#' `ceiling()` from that quantile in both kernels before any oracle was recorded). KIT-202: the threshold and the share
+#' count the design's samples only (`omicsIntensityFilterSampleColumns`); the step records the rule marker. KIT-217:
+#' the per-group count of present values (`omicsIntensityFilterKeep`); the step records its marker and, per assay, the
+#' rows removed for missing values (`removed_missing`, counted first) and for low intensity (`removed_low`).
 #' @noRd
 omicsIntensityFilterOperation <- function(binding) {
     filter <- function(object, parameters) binding$filter_intensity(object, parameters)
+    # KIT-217: the two settings as the step received them (the declared step always passes both; NULL only in the
+    # replay of a record made before, where the earlier rule reads neither).
+    count_setting <- function(parameters, i, default) parameters[[binding$intensity_parameters[[i]]]] %||% default
     declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_intensity_filter"), "row",
         parameters = binding$intensity_parameters,
         product_type = paste0(binding$prefix, ".intensity_filter_result"),
+        fixed = list(intensity_filter_samples = "design", intensity_filter_missing = "group_counts"),
         global_statistics = stats::setNames(
-            "the percentile of every intensity of one assay table, computed once per assay before any row",
+            "the percentile of the design's sample intensities of one assay table, computed once per assay before any row",
             binding$intensity_threshold),
         kernel = function(object, parameters, store) {
             before <- omicsFeatureCounts(binding, object)
             filtered <- filter(object, parameters)
+            removed <- if (omicsIntensityFilterCountsInForce()) omicsIntensityFilterRemovedCounts(binding, object, filtered,
+                count_setting(parameters, 3L, 2L), count_setting(parameters, 4L, 1L))
             object <- NULL
-            list(final = store$checkpoint(filtered, paste0(binding$prefix, "-intensity-filtered")),
+            value <- list(final = store$checkpoint(filtered, paste0(binding$prefix, "-intensity-filtered")),
                 counts = list(before = before, after = omicsFeatureCounts(binding, filtered)))
+            # KIT-217: the reasons, under the current rule only (a record made before replays to the value it saved).
+            if (!is.null(removed)) value[c("removed_missing", "removed_low")] <- list(removed$missing, removed$low)
+            value
         })
     # KIT-079: the percentile once per assay over its every intensity, then the kernel's own filter per page.
     declaration$partitioned <- function(parameters, store) {
         percentile <- omicsCleanNumericParameter(parameters[[binding$intensity_parameters[[1L]]]])
         proportion <- omicsCleanNumericParameter(parameters[[binding$intensity_parameters[[2L]]]])
+        min_values_per_group <- count_setting(parameters, 3L, 2L)
+        min_groups <- count_setting(parameters, 4L, 1L)
+        removed <- new.env(parent = emptyenv())
         run <- omicsRunPartitioned(binding, store, function(template) filter(template, parameters), paste0(binding$prefix, "-intensity-filtered"),
             write_assay = function(assay, component, prototype, template, partition) {
+                removed[[assay]] <- c(missing = 0L, low = 0L)
                 id_column <- methods::slot(template, binding$id_slot)
-                numeric_columns <- partition$numeric_columns()
-                intensities <- if (id_column %in% partition$columns && length(numeric_columns)) partition$all_values(numeric_columns)
+                design <- methods::slot(template, "design_matrix")
+                design_samples <- as.character(design[[methods::slot(template, "sample_id")]])
+                # KIT-202: the design's samples of this assay (every numeric column under a record's earlier rule).
+                sample_columns <- if (id_column %in% partition$columns) omicsIntensityFilterSampleColumns(
+                    names(partition$prototype), partition$numeric_columns(), design_samples, id_column, assay)
+                intensities <- if (length(sample_columns)) partition$all_values(sample_columns)
                 if (!length(intensities) || all(is.na(intensities))) return(partition$write_rows(partition$prototype, identity))
                 threshold <- stats::quantile(intensities, na.rm = TRUE, probs = c(percentile / 100))[1]
                 intensities <- NULL
-                page_filter <- function(page) binding$filter_intensity_page(page, threshold, proportion, id_column)
+                # KIT-217: the design's group of each sample column (the S4 method on the template checked the design).
+                group_id <- methods::slot(template, "group_id")
+                group_labels <- if (group_id %in% names(design)) as.character(design[[group_id]])[match(sample_columns, design_samples)]
+                page_filter <- function(page) {
+                    kept <- binding$filter_intensity_page(page, threshold, proportion, id_column, sample_columns, group_labels,
+                        min_values_per_group, min_groups)
+                    missing <- omicsIntensityFilterRemovedMissing(as.data.frame(page)[, sample_columns, drop = FALSE],
+                        group_labels, min_values_per_group, min_groups)
+                    removed[[assay]] <- removed[[assay]] + c(missing, nrow(page) - nrow(kept) - missing)
+                    kept
+                }
                 partition$write_rows(suppressWarnings(page_filter(partition$prototype)), page_filter)
             })
-        c(list(final = run$final), list(counts = list(before = omicsPartitionedFeatureCounts(binding, store, run$source_tables, run$id_column),
-            after = omicsPartitionedFeatureCounts(binding, store, run$tables, run$id_column))))
+        per_assay <- function(kind) stats::setNames(vapply(names(run$source_tables), function(assay)
+            if (is.null(removed[[assay]])) 0L else as.integer(removed[[assay]][[kind]]), integer(1)), names(run$source_tables))
+        value <- list(final = run$final, counts = list(before = omicsPartitionedFeatureCounts(binding, store, run$source_tables, run$id_column),
+            after = omicsPartitionedFeatureCounts(binding, store, run$tables, run$id_column)))
+        # KIT-217: the reasons, under the current rule only (a record made before replays to the value it saved).
+        if (omicsIntensityFilterCountsInForce()) value[c("removed_missing", "removed_low")] <- list(per_assay("missing"),
+            per_assay("low"))
+        value
     }
     declaration
+}
+
+#' The whole variant's rows removed per assay (KIT-217): for missing values, the rows failing the per-group count (as
+#' the filter counts them: an assay the filter returns whole removes none); for low intensity, the other rows removed.
+#' @return `list(missing, low)`, named integer vectors by assay.
+#' @noRd
+omicsIntensityFilterRemovedCounts <- function(binding, object, filtered, min_values_per_group, min_groups) {
+    id_column <- methods::slot(object, binding$id_slot)
+    design <- methods::slot(object, "design_matrix")
+    design_samples <- as.character(design[[methods::slot(object, "sample_id")]])
+    group_id <- methods::slot(object, "group_id")
+    before <- methods::slot(object, binding$data_slot)
+    after <- methods::slot(filtered, binding$data_slot)
+    assays <- names(before) %||% as.character(seq_along(before))
+    missing <- vapply(seq_along(before), function(i) {
+        table <- before[[i]]
+        if (!id_column %in% names(table)) return(0L)
+        # The filter has checked these columns already (`omicsIntensityFilterSampleColumns`); the count reads the
+        # design's samples of the table, the only columns it counts under the current rule.
+        sample_columns <- intersect(names(table), setdiff(design_samples, id_column))
+        if (!length(sample_columns)) return(0L)
+        values <- as.data.frame(table)[, sample_columns, drop = FALSE]
+        if (all(is.na(unlist(values, use.names = FALSE)))) return(0L)
+        labels <- if (group_id %in% names(design)) as.character(design[[group_id]])[match(sample_columns, design_samples)]
+        omicsIntensityFilterRemovedMissing(values, labels, min_values_per_group, min_groups)
+    }, integer(1))
+    removed <- vapply(seq_along(before), function(i) as.integer(nrow(before[[i]]) - nrow(after[[i]])), integer(1))
+    list(missing = stats::setNames(missing, assays), low = stats::setNames(removed - missing, assays))
 }
 
 #' Duplicate resolution (feature group by the id column), through the omic's adaptor (`resolve_duplicates` returns
@@ -171,13 +513,15 @@ omicsIntensityFilterOperation <- function(binding) {
 omicsDuplicateResolutionOperation <- function(binding) {
     declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_duplicate_resolution"), "feature_group", parameters = character(),
         product_type = paste0(binding$prefix, ".duplicate_resolution_result"),
+        fixed = list(duplicate_resolution_samples = "design"),
         kernel = function(object, parameters, store) {
             resolved <- binding$resolve_duplicates(object)
             c(list(final = store$checkpoint(resolved$object, paste0(binding$prefix, "-duplicates-resolved"))), resolved$value)
         })
     # KIT-079: an assay with no duplicate comes back as it is, in source order. One with any is resolved group by group in
     # the kernel's output order, its id's key order (`group_by`, C locale, missing last: the cursor's `key` order), with every
-    # numeric column double: the kernel converts them all before it groups.
+    # numeric column double. KIT-214: the rows' means are over the design's samples (every numeric column under a
+    # record's earlier rule).
     declaration$partitioned <- function(parameters, store) {
         without_samples <- list()
         run <- omicsRunPartitioned(binding, store, function(template) binding$resolve_duplicates(template)$object,
@@ -189,9 +533,11 @@ omicsDuplicateResolutionOperation <- function(binding) {
                 if (!id_column %in% partition$columns || !length(numeric_columns) || !partition$has_duplicates(id_column)) {
                     return(partition$write_rows(partition$prototype, identity))
                 }
+                sample_columns <- omicsDuplicateResolutionSampleColumns(names(partition$prototype), numeric_columns,
+                    methods::slot(template, "design_matrix")[[methods::slot(template, "sample_id")]], id_column, assay)
                 as_double <- function(table) dplyr::mutate(table, dplyr::across(dplyr::any_of(numeric_columns), as.numeric))
                 partition$write_groups(tibble::as_tibble(as_double(partition$prototype)), id_column, function(batch) {
-                    binding$resolve_duplicates_batch(as_double(batch), id_column, numeric_columns)
+                    binding$resolve_duplicates_batch(as_double(batch), id_column, sample_columns)
                 })
             })
         rows <- function(tables) vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1))
@@ -352,8 +698,14 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
             ruv_results <- binding$optimise_ruv(object, parameters$ruv_mode, parameters[setdiff(omicsRuvParameterNames, "ruv_mode")])
             best_k <- binding$extract_best_k(ruv_results)
             controls <- binding$extract_controls(ruv_results)
+            # KIT-190 (VAL-182, VAL-235): the sweep is untouched; its k is bounded by the sample-size cap of proteomics
+            # (`calculateAdaptiveMaxK`, through `boundOmicsRuvSweepK`) in Automatic mode; a Manual k is kept, with a
+            # warning when above the cap. Records made before the bound replay unbounded (`workflowReplayRuleMarkers`).
+            k_limits <- omicsRuvKBound(object, ruv_results, parameters$ruv_mode, best_k)
+            best_k <- k_limits$best_k
             corrected <- ruvIII_C_VaryingFn(theObject = object, ruv_grouping_variable = parameters$ruv_grouping_variable,
                 ruv_number_k = best_k, ctrl = controls)
+            ruv_status <- omicsRuvAssayStatus(binding, object, corrected)
             object <- NULL
             final <- store$checkpoint(corrected, paste0(binding$prefix, "-ruv-corrected"))
             corrected <- NULL
@@ -366,8 +718,111 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
             list(final = final, optimisation = store$product(saved_results, "optimisation", paste0(binding$prefix, "-ruv-optimisation")),
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
-                percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_))
-        })
+                percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_),
+                k_sweep = k_limits$k_sweep, k_cap = k_limits$k_cap, k_samples = k_limits$k_samples, k_notice = k_limits$k_notice,
+                ruv_status = ruv_status)
+        },
+        # KIT-224: the rule marker of the feature levels after the correction (`workflowReplayRuleMarkers`).
+        # KIT-190: the rule markers of the control selection and of the bound on k.
+        fixed = list(ruv_feature_levels = "restored", ruv_control_grouping = "kept", ruv_k_bound = "sample_size"))
+}
+
+#' The bound on a legacy lipidomics or metabolomics RUV k (KIT-190, VAL-182, VAL-235): in Automatic mode the sweep's k
+#' per assay becomes min(k, `calculateAdaptiveMaxK`(the assay's samples)) (`boundOmicsRuvSweepK`), with a plain-language
+#' notice where it is reduced; in Manual mode the user's k is kept and a k above the cap gives a classed warning. Under
+#' the earlier rule of a record made before the bound (option `MultiScholaR.ruv_k_bound` = `"none"`) nothing changes.
+#' @return `list(best_k, k_sweep, k_cap, k_samples, k_notice)`, each per assay (`k_notice` NULL where there is none).
+#' @noRd
+omicsRuvKBound <- function(object, ruv_results, ruv_mode, best_k) {
+    marker <- workflowReplayRuleMarkers$ruv_k_bound
+    if (identical(getOption(marker$option), marker$earlier)) {
+        return(list(best_k = best_k, k_sweep = best_k, k_cap = NULL, k_samples = NULL, k_notice = NULL))
+    }
+    bound <- boundOmicsRuvSweepK(object, ruv_results)
+    slots <- omicsRuvAssaySlots(object)
+    design_samples <- as.character(object@design_matrix[[object@sample_id]])
+    samples <- lapply(methods::slot(object, slots$data), function(assay) length(intersect(colnames(assay), design_samples)))
+    notice <- stats::setNames(vector("list", length(bound$k)), names(bound$k))
+    automatic <- identical(ruv_mode, "automatic")
+    for (assay in names(bound$k)) {
+        k <- bound$sweep_k[[assay]]
+        cap <- bound$limit[[assay]]
+        if (is.na(k) || k <= cap) next
+        notice[[assay]] <- if (automatic) {
+            sprintf(paste("%s: the automatic search found %d unwanted factors. With %d samples the application removes at",
+                "most %d (the limit proteomics uses), so %d were removed."), assay, k, samples[[assay]], cap, cap)
+        } else {
+            sprintf(paste("%s: you chose to remove %d unwanted factors. With %d samples the application removes at most %d",
+                "in Automatic mode (the limit proteomics uses); your choice was kept."), assay, k, samples[[assay]], cap)
+        }
+        rlang::warn(notice[[assay]], class = "multischolar_ruv_k_notice")
+    }
+    if (automatic) best_k <- stats::setNames(lapply(names(best_k), function(assay) {
+        b <- bound$k[[assay]]
+        if (is.null(b) || is.na(b)) best_k[[assay]] else b
+    }), names(best_k))
+    list(best_k = best_k, k_sweep = bound$sweep_k, k_cap = bound$limit, k_samples = samples, k_notice = notice)
+}
+
+#' The sweep's per-assay results with the k removed (KIT-190 I01): where the cap reduced an assay's k, its result gains
+#' `k_removed` (the step's k), `k_found` (the sweep's), `k_cap` and `k_samples`, so the tab and the export show the k
+#' actually removed. An assay the cap left alone is returned unchanged.
+#' @param results The sweep's per-assay results (the optimisation product).
+#' @param value The RUV step's value (`best_k`, `k_sweep`, `k_cap`, `k_samples`).
+#' @noRd
+omicsRuvAnnotateResults <- function(results, value) {
+    if (!is.list(results)) return(results)
+    for (assay in names(results)) {
+        removed <- value$best_k[[assay]]
+        found <- value$k_sweep[[assay]]
+        if (!is.list(results[[assay]]) || is.null(removed) || is.null(found) || is.na(removed) || is.na(found) ||
+            identical(as.integer(removed), as.integer(found))) next
+        results[[assay]]$k_removed <- removed
+        results[[assay]]$k_found <- found
+        results[[assay]]$k_cap <- value$k_cap[[assay]]
+        results[[assay]]$k_samples <- value$k_samples[[assay]]
+    }
+    results
+}
+
+#' The RUV step's notices to the tab (KIT-190 I01): each non-empty notice (the cap reducing an Automatic k; a Manual k
+#' above the cap) as a log line and a notification of type "warning", on both routes, as the log step's notice.
+#' @param value The RUV step's value.
+#' @param addLog The tab's log.
+#' @param warn `function(text)`, the notification.
+#' @noRd
+omicsRuvReportNotices <- function(value, addLog, warn) {
+    for (text in unlist(value$k_notice)) {
+        if (!is.character(text) || !nzchar(text)) next
+        addLog(paste("Warning:", text))
+        warn(text)
+    }
+    invisible(TRUE)
+}
+
+#' One assay's line in the session-export summary (KIT-190 I01): the k removed, with the k found and the cap where the
+#' cap reduced it.
+#' @noRd
+omicsRuvExportSummaryLine <- function(assay_name, result) {
+    k <- result$k_removed %||% result$best_k
+    found <- result$k_found %||% k
+    note <- if (!is.null(result$k_cap) && !is.na(found) && !is.na(k) && found != k) {
+        sprintf(" (found %d, at most %d with %d samples)", as.integer(found), as.integer(result$k_cap),
+            as.integer(result$k_samples %||% NA_integer_))
+    } else ""
+    sprintf("\n  %s: k=%d%s, %%=%.1f, controls=%d", assay_name, as.integer(k), note, result$best_percentage,
+        sum(result$control_genes_index, na.rm = TRUE))
+}
+
+#' Per-assay RUV status of a legacy lipidomics or metabolomics RUV step (KIT-190, the KIT-242 hand-off, R1-N01):
+#' `corrected` (the assay is present and changed), `uncorrected` (present and unchanged) or `dropped` (absent after RUV).
+#' @noRd
+omicsRuvAssayStatus <- function(binding, before, after) {
+    a <- methods::slot(before, binding$data_slot)
+    b <- methods::slot(after, binding$data_slot)
+    stats::setNames(lapply(names(a), function(assay) {
+        if (!assay %in% names(b)) "dropped" else if (identical(a[[assay]], b[[assay]])) "uncorrected" else "corrected"
+    }), names(a))
 }
 
 #' The new design's RUV parameters (KIT-129 integration item 1), by the names of KIT-129 section 1e: the design, the
@@ -637,8 +1092,9 @@ omicsDaOperation <- function(binding) {
             accepted$columns <- names(result[[long_table]])
             # KIT-128: the assays the kernel could not compute, as it names them.
             if (length(result$failed_assays)) accepted$failed_assays <- result$failed_assays
+            # KIT-201 (D3): the TREAT moderation the DA ran under (the replay rule marker).
             accepted$model <- c(list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
-                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
+                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)), workflowTreatModerationRecord(),
                 omicsDaBlockRecord(list(list(
                     block_reason = lapply(result$contrasts_results, function(entry) entry$fit.eb$block_reason),
                     uses_duplicate_correlation = lapply(result$contrasts_results, function(entry) entry$fit.eb$uses_duplicate_correlation)))))
@@ -1054,6 +1510,11 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
         outcomes$negative_control_count_per_assay <- as.list(saved$control_count)
         outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
         outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
+        # KIT-190: the sweep's k, the cap and the k used (k_per_assay), the notice, and the per-assay RUV status.
+        if (!is.null(saved$k_sweep)) outcomes$k_sweep_per_assay <- as.list(saved$k_sweep)
+        if (!is.null(saved$k_cap)) outcomes$k_cap_per_assay <- as.list(saved$k_cap)
+        if (!is.null(saved$k_notice)) outcomes$ruv_k_notice_per_assay <- lapply(saved$k_notice, function(x) x %||% "")
+        if (!is.null(saved$ruv_status)) outcomes$ruv_status_per_assay <- as.list(saved$ruv_status)
         # KIT-129 integration item 3: a new design's product records its design and its k per assay: whether RUV was
         # applied, the rule, the estimate and the seed (today's product names none, and its outcomes are as before).
         if (!is.null(saved$ruv_design)) {
@@ -1171,8 +1632,11 @@ readWorkflowOmicsShell <- function(binding, manager, reference = NULL, measures 
         if ("features" %in% measures) attr(shell, "feature_counts") <- vapply(omicsVisitAssays(binding, manager, reference, function(assay, scope) {
             if (id_column %in% scope$metadata$columns) length(unique(omicsReadRows(scope, id_column)[[id_column]])) else as.integer(scope$metadata$rows)
         }), identity, integer(1))
+        # KIT-214 (E-8): over the design's samples that hold numbers.
+        design_samples <- shell@design_matrix[[shell@sample_id]]
         if ("missing" %in% measures) attr(shell, "missing_percent") <- vapply(omicsVisitAssays(binding, manager, reference,
-            function(assay, scope) omicsAssayMissingPercent(scope)), identity, numeric(1))
+            function(assay, scope) omicsAssayMissingPercent(scope, omicsDesignNumericColumnsOf(
+                readSavedWorkflowTablePrototype(scope), design_samples, id_column))), identity, numeric(1))
         shell
     })
 }
@@ -1208,10 +1672,13 @@ omicsReadRows <- function(scope, columns, keep = NULL) {
 }
 
 #' Percent of the numeric cells that are NA or zero, as the QC tabs' assay statistics count them.
+#' @param columns The columns to count (KIT-214: the design's samples that hold numbers); every numeric column when NULL.
 #' @noRd
-omicsAssayMissingPercent <- function(scope) {
-    prototype <- readSavedWorkflowTablePrototype(scope)
-    columns <- names(prototype)[vapply(prototype, is.numeric, logical(1))]
+omicsAssayMissingPercent <- function(scope, columns = NULL) {
+    if (is.null(columns)) {
+        prototype <- readSavedWorkflowTablePrototype(scope)
+        columns <- names(prototype)[vapply(prototype, is.numeric, logical(1))]
+    }
     if (!length(columns)) return(NA_real_)
     missing <- 0
     if (scope$metadata$rows) streamWorkflowTableRows(scope, columns, function(page, offset, row_names) {
@@ -1365,14 +1832,18 @@ omicsBuilderTableVal <- function(label, owner) {
 
 #' One tab step, as a wrapper runs it in process and a managed action dispatches it (KIT-078): the declaration's name, its
 #' parameters, and the module's state name and description for the commit.
+#' KIT-217: the per-group count's two settings (values required per group, groups required; defaults 2 and 1) are
+#' declared parameters too, so a step always records them; the replay of a record made before passes NULL for both.
 #' @return `list(operation, parameters, state_name, description)`.
 #' @noRd
-omicsIntensityFilterStep <- function(binding, percentile, proportion, description = NULL, state_name = NULL) {
+omicsIntensityFilterStep <- function(binding, percentile, proportion, description = NULL, state_name = NULL,
+    min_values_per_group = 2L, min_groups = 1L) {
     list(operation = paste0(binding$prefix, "_intensity_filter"),
-        parameters = stats::setNames(list(percentile, proportion), binding$intensity_parameters),
+        parameters = stats::setNames(list(percentile, proportion, min_values_per_group, min_groups), binding$intensity_parameters),
         state_name = state_name %||% paste0(binding$prefix, "_intensity_filtered"),
-        description = description %||% sprintf("Applied %s intensity filter (percentile: %d%%, proportion: %.2f)",
-            binding$feature_noun, as.integer(percentile), proportion))
+        description = description %||% sprintf(paste("Applied %s intensity filter (percentile: %d%%, proportion: %.2f,",
+            "values required per group: %s, groups required: %s)"), binding$feature_noun, as.integer(percentile), proportion,
+            omicsIntensityFilterShown(min_values_per_group), omicsIntensityFilterShown(min_groups)))
 }
 
 #' @noRd
@@ -1441,8 +1912,9 @@ runWorkflowOmicsReferenceStep <- function(manager, step, config, source = NULL, 
 
 #' @noRd
 runWorkflowOmicsReferenceIntensityFilter <- function(binding, manager, percentile, proportion, config, description = NULL,
-    state_name = NULL, hydrate = FALSE) {
-    runWorkflowOmicsReferenceStep(manager, omicsIntensityFilterStep(binding, percentile, proportion, description, state_name), config, hydrate = hydrate)
+    state_name = NULL, hydrate = FALSE, min_values_per_group = 2L, min_groups = 1L) {
+    runWorkflowOmicsReferenceStep(manager, omicsIntensityFilterStep(binding, percentile, proportion, description, state_name,
+        min_values_per_group, min_groups), config, hydrate = hydrate)
 }
 
 #' @noRd
@@ -1604,8 +2076,10 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
         stop(paste(unique(unlist(lapply(results, `[[`, "errors"))), collapse = "; "), call. = FALSE)
     }
     # KIT-095: the model record is the binding's (`da_model`); lipid and metab keep the limma one.
-    model <- if (is.function(binding$da_model)) binding$da_model(parameters) else list(model = "limma",
-        formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
+    # KIT-201 (D3): lipid and metab also record the TREAT moderation the DA ran under (the replay rule marker).
+    model <- if (is.function(binding$da_model)) binding$da_model(parameters) else c(list(model = "limma",
+        formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
+        workflowTreatModerationRecord())
     model <- c(model, omicsDaBlockRecord(lapply(results, `[[`, "model")))
     manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
         stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
@@ -2113,8 +2587,11 @@ omicsRouteReplay <- local({
     }
     list(
         intensity_filter = function(binding, manager, step, parameters, config, description) {
+            # KIT-217: the two settings as recorded; a record made before has neither (NULL; its earlier rule reads neither).
             runWorkflowOmicsReferenceIntensityFilter(binding, manager, parameters[[binding$intensity_parameters[[1L]]]],
-                parameters[[binding$intensity_parameters[[2L]]]], config, description, state_name = step$state, hydrate = FALSE)
+                parameters[[binding$intensity_parameters[[2L]]]], config, description, state_name = step$state, hydrate = FALSE,
+                min_values_per_group = parameters[[binding$intensity_parameters[[3L]]]],
+                min_groups = parameters[[binding$intensity_parameters[[4L]]]])
         },
         duplicate_resolution = function(binding, manager, step, parameters, config, description) {
             runWorkflowOmicsReferenceDuplicateResolution(binding, manager, config, description, state_name = step$state, hydrate = FALSE)

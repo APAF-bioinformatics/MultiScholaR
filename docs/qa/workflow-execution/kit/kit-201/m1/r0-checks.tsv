@@ -1,0 +1,18 @@
+kernel	check	status	detail
+L	every cell completes on both sides	pass	
+L	data-set hashes agree	pass	
+L	distinct prior variances on head (tau > 0; P at 0 too)	pass	
+L	one prior variance on base (tau > 0; P at 0 too)	pass	
+L	summary written (structure only)	pass	330 rows; columns: kernel,cell,variance,missing,design,tau,contrast,rule,stratum,data,cell_status,cell_reason,n,gated,mean_base,mean_head,diff,diff_lo,diff_hi,mc_se_diff,verdict,excess,excess_lo,excess_hi,mc_se_head
+M	every cell completes on both sides	pass	
+M	data-set hashes agree	pass	
+M	distinct prior variances on head (tau > 0; P at 0 too)	pass	
+M	one prior variance on base (tau > 0; P at 0 too)	pass	
+M	summary written (structure only)	pass	330 rows; columns: kernel,cell,variance,missing,design,tau,contrast,rule,stratum,data,cell_status,cell_reason,n,gated,mean_base,mean_head,diff,diff_lo,diff_hi,mc_se_diff,verdict,excess,excess_lo,excess_hi,mc_se_head
+P	every cell completes on both sides	pass	
+P	data-set hashes agree	pass	
+P	distinct prior variances on head (tau > 0; P at 0 too)	pass	
+P	one prior variance on base (tau > 0; P at 0 too)	pass	
+P	summary written (structure only)	pass	330 rows; columns: kernel,cell,variance,missing,design,tau,contrast,rule,stratum,data,cell_status,cell_reason,n,gated,mean_base,mean_head,diff,diff_lo,diff_hi,mc_se_diff,verdict,excess,excess_lo,excess_hi,mc_se_head
+L	failure path: the forced data set is recorded failed with its message	pass	
+L	failure path: the forced cell's summary is stopped	pass	

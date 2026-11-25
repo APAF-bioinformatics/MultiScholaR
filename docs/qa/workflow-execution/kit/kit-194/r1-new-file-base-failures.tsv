@@ -1,0 +1,23 @@
+test	kind	count
+KIT-194 T1: lipid QC steps refuse a normalised table, in process and managed, and run on a QC table	failure	88
+KIT-194 T1: metab QC steps refuse a normalised table, in process and managed, and run on a QC table	failure	79
+KIT-194 T2: transcriptomics' Expression Filter and Finalize QC refuse trx_ruvs, and run on trx_qc_complete	failure	8
+KIT-194 T3 (a, b): lipid a second run at the result runs again from the table the first started from	failure	10
+KIT-194 T3 (a, b): metab a second run at the result runs again from the table the first started from	failure	10
+KIT-194 T3 (c, d): lipid ITSD by pattern runs again from the start; a fresh tab at the result refuses	failure	5
+KIT-194 T3 (c, d): metab ITSD by pattern runs again from the start; a fresh tab at the result refuses	failure	5
+KIT-194 T3 (e, f, g): lipid a run is refused while the runner is busy, and on a loaded session	failure	6
+KIT-194 T3 (e, f, g): metab a run is refused while the runner is busy, and on a loaded session	failure	6
+KIT-194 T4: transcriptomics' second run (k 2, then k 1) runs again from trx_qc_complete; a fresh tab and a busy runner refuse	failure	7
+KIT-194 T5: a QC state made on a normalised table (an old session) is not normalised again	failure	5
+KIT-194 T6 (a, b, c): lipid after a Revert to the QC table, Apply, Skip and the managed Apply are refused	failure	8
+KIT-194 T6 (a, b, c): metab after a Revert to the QC table, Apply, Skip and the managed Apply are refused	failure	8
+KIT-194 T6 (d, e, f, g): lipid the correlation step at the result runs; off it (J6, A01) it is refused	failure	6
+KIT-194 T6 (d, e, f, g): metab the correlation step at the result runs; off it (J6, A01) it is refused	failure	4
+KIT-194 T7: lipid Export Normalized Data refuses a reverted head and writes at the correlation state	failure	2
+KIT-194 T7: metab Export Normalized Data refuses a reverted head and writes at the correlation state	failure	2
+KIT-194 T8 (D4 (b1)): lipid a session loaded under a QC state's name is refused at Run DA	failure	2
+KIT-194 T8 (D4 (b1)): metab a session loaded under a QC state's name is refused at Run DA	failure	2
+KIT-194 T8: lipid the DA's head fallback takes only the normalisation's states; loaded QC-named files are refused	failure	8
+KIT-194 T8: metab the DA's head fallback takes only the normalisation's states; loaded QC-named files are refused	failure	8
+KIT-194: the guards raise their classes	failure	1

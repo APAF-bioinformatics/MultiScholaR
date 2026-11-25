@@ -3,14 +3,19 @@
 #' @description
 #' Filters metabolites in *all* assays of a MetaboliteAssayData object.
 #' It removes metabolites that have intensities below a certain percentile threshold
-#' in a proportion of samples exceeding a defined cutoff. The threshold is calculated
-#' independently for each assay.
+#' in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
+#' independently for each assay. A metabolite is also removed unless at least `metabolites_min_groups` groups
+#' of the design each have a value (not missing) in at least `metabolites_min_values_per_group` of their
+#' samples (in every sample, if the group is smaller); groups named like "pool" are not counted, and
+#' a design without a group column is refused.
 #'
 #' @describeIn metaboliteIntensityFiltering Method for MetaboliteAssayData
 #'
 #' @param theObject A MetaboliteAssayData object.
 #' @param metabolites_intensity_cutoff_percentile See generic definition.
 #' @param metabolites_proportion_of_samples_below_cutoff See generic definition.
+#' @param metabolites_min_values_per_group See generic definition.
+#' @param metabolites_min_groups See generic definition.
 #'
 #' @importFrom dplyr pull select all_of across
 #' @importFrom rlang sym
@@ -21,7 +26,8 @@
 setMethod(
     f = "metaboliteIntensityFiltering",
     signature = "MetaboliteAssayData",
-    definition = function(theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL) {
+    definition = function(theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL,
+                          metabolites_min_values_per_group = NULL, metabolites_min_groups = NULL) {
         # --- Parameter Resolution (Done once) ---
         config_intensity_percentile <- "metabolites_intensity_cutoff_percentile"
         raw_intensity_percentile <- checkParamsObjectFunctionSimplify(
@@ -64,6 +70,27 @@ setMethod(
             return(theObject)
         }
 
+        design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+        # KIT-217 (VAL-173 (2)): the per-group count of present values: values required per group (default 2) and groups
+        # required (default 1), resolved after today's two, then checked against the design's groups (pool groups and
+        # samples without a group not counted; no group column, or only pool groups, refused) before any assay. Both are
+        # written to the object's arguments. A record made before replays with the earlier rule, which reads neither.
+        group_labels_of <- function(sample_cols) NULL
+        count_settings <- list(min_values_per_group = NULL, min_groups = NULL)
+        if (omicsIntensityFilterCountsInForce()) {
+            config_min_values <- "metabolites_min_values_per_group"
+            config_min_groups <- "metabolites_min_groups"
+            raw_min_values <- checkParamsObjectFunctionSimplify(theObject, config_min_values, 2L)
+            raw_min_groups <- checkParamsObjectFunctionSimplify(theObject, config_min_groups, 1L)
+            design_matrix <- theObject@design_matrix
+            group_id <- theObject@group_id
+            has_group_column <- group_id %in% names(design_matrix)
+            count_settings <- omicsIntensityFilterCountSettings(if (has_group_column) design_matrix[[group_id]],
+                raw_min_values, raw_min_groups, group_id, has_group_column)
+            theObject <- updateParamInObject(theObject, config_min_values)
+            theObject <- updateParamInObject(theObject, config_min_groups)
+            group_labels_of <- function(sample_cols) as.character(design_matrix[[group_id]])[match(sample_cols, design_samples)]
+        }
         # Iterate using indices
         filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
             assay_table <- original_assay_list[[i]]
@@ -80,8 +107,10 @@ setMethod(
                 return(assay_table) # Return the original table if ID is missing
             }
 
-            # Identify numeric sample columns for this assay
-            sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+            # KIT-202 (VAL-118 (1)): the design's samples of this assay, less the id column (every numeric column under
+            # the earlier rule of a record made before); an absent or non-numeric design sample is refused.
+            sample_cols <- omicsIntensityFilterSampleColumns(names(assay_table),
+                names(assay_table)[sapply(assay_table, is.numeric)], design_samples, metabolite_id_col, assay_name_for_msg)
 
             if (length(sample_cols) == 0) {
                 warning("No numeric sample columns found in assay '", assay_name_for_msg, "'. Skipping filtering for this assay.")
@@ -112,7 +141,11 @@ setMethod(
                 assay_table = assay_table,
                 min_metabolite_intensity_threshold = min_metabolite_intensity_threshold,
                 metabolites_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final,
-                metabolite_id_column = metabolite_id_col
+                metabolite_id_column = metabolite_id_col,
+                sample_columns = sample_cols,
+                group_labels = group_labels_of(sample_cols),
+                min_values_per_group = count_settings$min_values_per_group,
+                min_groups = count_settings$min_groups
             )
 
             message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
@@ -748,9 +781,13 @@ setMethod(
             # Ensure min_cor is finite; default if not
             if (!is.finite(min_cor)) min_cor <- 0
 
-            # Use finer breaks, similar to protein version, clamped to [0, 1]
-            # Note: Protein version uses 0.001 step, using 0.01 here for potentially better visibility first.
-            hist_breaks <- seq(0, 1, 0.01)
+            # Use finer breaks than the protein version's 0.001 step, for visibility.
+            # KIT-259 (A3): the axis and the bins extend below 0 to the lowest correlation; they were [0, 1], which
+            # dropped a negative correlation without a word. For correlations at or above 0 they are as before.
+            lower <- min(0, floor(min_cor * 10) / 10)
+            hist_breaks <- seq(lower, 1, 0.01)
+            # KIT-259 (A3): the pairs with no correlation are counted in a subtitle (none: no subtitle, as before).
+            missing_pairs <- sum(is.na(correlation_vec$pearson_correlation))
 
             # --- Create Plot ---
             tryCatch(
@@ -759,7 +796,7 @@ setMethod(
                         ggplot(aes(pearson_correlation)) +
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
                         # Set x-axis limits and breaks
-                        scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), expand = c(0, 0)) +
+                        scale_x_continuous(limits = c(lower, 1), breaks = seq(lower, 1, 0.1), expand = c(0, 0)) +
                         # # Set fixed y-axis scale, similar to protein version
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +
@@ -770,6 +807,12 @@ setMethod(
                             panel.grid.major = element_blank(),
                             panel.grid.minor = element_blank()
                         )
+                    if (missing_pairs > 0L) {
+                        pearson_plot <- pearson_plot + ggplot2::labs(subtitle = sprintf(paste(
+                            "%d sample pairs shown; %d have no correlation (too few shared values, or a sample with",
+                            "no variation) and are not shown."), sum(!is.na(correlation_vec$pearson_correlation)),
+                            missing_pairs))
+                    }
 
                     return(pearson_plot)
                 },
@@ -883,13 +926,15 @@ findMetabDuplicateFeatureIDs <- function(theObject) {
 
 # KIT-104 W2 (back-reference #9): the duplicate resolution per assay that `metabolomicsDeclarationBinding$resolve_duplicates`
 # runs, moved unchanged with its name from R/mod_metab_qc_duplicates_server_helpers.R (:1-51 at b423b764; the file was
-# deleted by KIT-104 W6).
+# deleted by KIT-104 W6). KIT-214 (VAL-173 (1)): with `designSamples` (the design's sample ids) a row's mean is over the
+# design's samples less the id column (`omicsDuplicateResolutionInput`); NULL keeps every numeric column, as before.
 resolveMetabDuplicateAssayData <- function(
     assayList
     , metaboliteIdCol
     , assayNames = names(assayList)
     , resolveDuplicateFeaturesByIntensityFn = resolveDuplicateFeaturesByIntensity
     , logWarnFn = logger::log_warn
+    , designSamples = NULL
 ) {
     statsList <- list()
 
@@ -909,6 +954,12 @@ resolveMetabDuplicateAssayData <- function(
                 , removed = 0
             )
             return(assayData)
+        }
+
+        if (!is.null(designSamples)) {
+            input <- omicsDuplicateResolutionInput(assayData, sampleCols, designSamples, metaboliteIdCol, assayName)
+            assayData <- input$table
+            sampleCols <- input$columns
         }
 
         resolvedAssay <- resolveDuplicateFeaturesByIntensityFn(

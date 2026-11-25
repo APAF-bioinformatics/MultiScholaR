@@ -7,7 +7,9 @@
 \S4method{lipidIntensityFiltering}{LipidomicsAssayData}(
   theObject,
   lipids_intensity_cutoff_percentile = NULL,
-  lipids_proportion_of_samples_below_cutoff = NULL
+  lipids_proportion_of_samples_below_cutoff = NULL,
+  lipids_min_values_per_group = NULL,
+  lipids_min_groups = NULL
 )
 }
 \arguments{
@@ -16,6 +18,10 @@
 \item{lipids_intensity_cutoff_percentile}{See generic definition.}
 
 \item{lipids_proportion_of_samples_below_cutoff}{See generic definition.}
+
+\item{lipids_min_values_per_group}{See generic definition.}
+
+\item{lipids_min_groups}{See generic definition.}
 }
 \value{
 An updated LipidomicsAssayData object.
@@ -23,8 +29,11 @@ An updated LipidomicsAssayData object.
 \description{
 Filters lipids in \emph{all} assays of a LipidomicsAssayData object.
 It removes lipids that have intensities below a certain percentile threshold
-in a proportion of samples exceeding a defined cutoff. The threshold is calculated
-independently for each assay.
+in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
+independently for each assay. A lipid is also removed unless at least \code{lipids_min_groups} groups
+of the design each have a value (not missing) in at least \code{lipids_min_values_per_group} of their
+samples (in every sample, if the group is smaller); groups named like "pool" are not counted, and
+a design without a group column is refused.
 }
 \section{Functions}{
 \itemize{

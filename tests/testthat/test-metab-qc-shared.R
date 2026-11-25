@@ -191,11 +191,19 @@ test_that("metaboliteIntensityFiltering preserves numeric parsing, per-assay ski
       metaboliteIntensityFilteringHelper = function(assay_table,
                                                     min_metabolite_intensity_threshold,
                                                     metabolites_proportion_of_samples_below_cutoff,
-                                                    metabolite_id_column) {
+                                                    metabolite_id_column,
+                                                    sample_columns = NULL,
+                                                    group_labels = NULL,
+                                                    min_values_per_group = NULL,
+                                                    min_groups = NULL) {
         recorded$thresholds[[length(recorded$thresholds) + 1L]] <- list(
           threshold = min_metabolite_intensity_threshold,
           cutoff = metabolites_proportion_of_samples_below_cutoff,
-          id_col = metabolite_id_column
+          id_col = metabolite_id_column,
+          sample_columns = sample_columns,
+          group_labels = group_labels,
+          min_values_per_group = min_values_per_group,
+          min_groups = min_groups
         )
         assay_table[1, , drop = FALSE]
       }
@@ -215,12 +223,6 @@ test_that("metaboliteIntensityFiltering preserves numeric parsing, per-assay ski
         metabolite = "m3",
         S1 = 5,
         S2 = 7,
-        stringsAsFactors = FALSE
-      ),
-      no_numeric = data.frame(
-        metabolite = "m4",
-        S1 = "x",
-        S2 = "y",
         stringsAsFactors = FALSE
       ),
       all_na = data.frame(
@@ -248,18 +250,51 @@ test_that("metaboliteIntensityFiltering preserves numeric parsing, per-assay ski
 
   filtered <- suppressWarnings(metaboliteIntensityFiltering(the_object))
 
+  # KIT-217 (T-M1): the two settings are resolved after today's two, in that order.
   expect_equal(recorded$params, c(
     "metabolites_intensity_cutoff_percentile",
-    "metabolites_proportion_of_samples_below_cutoff"
+    "metabolites_proportion_of_samples_below_cutoff",
+    "metabolites_min_values_per_group",
+    "metabolites_min_groups"
   ))
   expect_equal(length(recorded$thresholds), 1L)
   expect_identical(unname(recorded$thresholds[[1]]$threshold), 6)
   expect_identical(recorded$thresholds[[1]]$cutoff, 0.5)
+  # KIT-202 (T8, D7): the method passes the design's samples to the helper.
+  expect_identical(recorded$thresholds[[1]]$sample_columns, c("S1", "S2"))
+  # KIT-217 (T-M1): the design's groups of those samples and the two settings at their defaults reach the helper.
+  expect_identical(recorded$thresholds[[1]]$group_labels, c("A", "B"))
+  expect_identical(recorded$thresholds[[1]]$min_values_per_group, 2L)
+  expect_identical(recorded$thresholds[[1]]$min_groups, 1L)
   expect_equal(nrow(filtered@metabolite_data$valid), 1L)
   expect_identical(filtered@metabolite_data$valid$metabolite[[1]], "m1")
   expect_identical(filtered@metabolite_data$no_id$other[[1]], "m3")
-  expect_identical(filtered@metabolite_data$no_numeric$S1[[1]], "x")
   expect_true(all(is.na(filtered@metabolite_data$all_na$S1)))
+
+  # KIT-202 (T8, D3): an assay whose design samples are text is refused, not skipped.
+  no_numeric_object <- methods::new(
+    "MetaboliteAssayData",
+    metabolite_data = list(
+      no_numeric = data.frame(
+        metabolite = "m4",
+        S1 = "x",
+        S2 = "y",
+        stringsAsFactors = FALSE
+      )
+    ),
+    design_matrix = data.frame(
+      Run = c("S1", "S2"),
+      group = c("A", "B"),
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Run",
+    group_id = "group",
+    metabolite_id_column = "metabolite"
+  )
+  expect_error(
+    suppressWarnings(metaboliteIntensityFiltering(no_numeric_object)),
+    class = "omics_intensity_filter_samples_invalid"
+  )
 
   empty_object <- methods::new(
     "MetaboliteAssayData",

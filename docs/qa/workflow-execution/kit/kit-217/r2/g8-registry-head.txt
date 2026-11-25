@@ -1,0 +1,48 @@
+head 1 Expected `current$registry` to be identical to `frozen$registry`. | `expected$metabolomics$metab_intensity_filter$declaration$fixed` is NULL
+head 2 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_raw_data_s4
+head 3 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_intensity_filtered
+head 4 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_duplicates_resolved
+head 5 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_qc_complete
+head 6 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_itsd_norm
+head 7 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_log2
+head 8 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_normalized
+head 9 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_ruv_corrected
+head 10 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_correlation_filtered
+head 11 Expected `current[[omic]]$values` to be identical to `frozen[[omic]]$values`. | lipidomics
+head 12 Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`. | lipidomics
+head 13 Expected `current[[omic]]$da$results[products]` to be identical to `frozen[[omic]]$da$results[products]`. | lipidomics
+head 14 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_raw_data_s4
+head 15 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_intensity_filtered
+head 16 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_duplicates_resolved
+head 17 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_qc_complete
+head 18 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_itsd_norm
+head 19 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_log2
+head 20 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_normalized
+head 21 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_ruv_corrected
+head 22 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_correlation_filtered
+head 23 Expected `current[[omic]]$values` to be identical to `frozen[[omic]]$values`. | metabolomics
+head 24 Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`. | metabolomics
+head 25 Expected `current[[omic]]$da$results[products]` to be identical to `frozen[[omic]]$da$results[products]`. | metabolomics
+base 1 Expected `current$registry` to be identical to `frozen$registry`. | `expected$metabolomics$metab_intensity_filter$declaration$fixed` is NULL
+base 2 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_raw_data_s4
+base 3 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_intensity_filtered
+base 4 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_duplicates_resolved
+base 5 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_qc_complete
+base 6 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_itsd_norm
+base 7 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_log2
+base 8 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_normalized
+base 9 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_ruv_corrected
+base 10 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | lipidomics lipid_correlation_filtered
+base 11 Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`. | lipidomics
+base 12 Expected `current[[omic]]$da$results[products]` to be identical to `frozen[[omic]]$da$results[products]`. | lipidomics
+base 13 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_raw_data_s4
+base 14 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_intensity_filtered
+base 15 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_duplicates_resolved
+base 16 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_qc_complete
+base 17 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_itsd_norm
+base 18 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_log2
+base 19 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_normalized
+base 20 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_ruv_corrected
+base 21 Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`. | metabolomics metab_correlation_filtered
+base 22 Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`. | metabolomics
+base 23 Expected `current[[omic]]$da$results[products]` to be identical to `frozen[[omic]]$da$results[products]`. | metabolomics

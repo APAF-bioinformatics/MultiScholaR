@@ -1,0 +1,106 @@
+variant	test	passed	failed	skipped	error
+head	KIT-184 K1: the removed factors of a hand case are exact, orthonormal, centred and in the samples' order	19	0	FALSE	FALSE
+head	KIT-184 K2: a third direction is approximate with its share; too little to go on is not determined	25	0	FALSE	FALSE
+head	KIT-184 K3: the removed factors are written, listed and read back; a malformed file is refused	22	0	FALSE	FALSE
+head	KIT-184 K3: the import carries the removed factors; an input without them gives the entry the base gives	12	0	FALSE	FALSE
+head	KIT-184 K3 (base store): an input written at base reads as before; one without a correction has base's bytes	10	0	FALSE	FALSE
+head	KIT-184 K5: the covariates are the removed factors averaged as the values are, matched by name, as a basis	22	0	FALSE	FALSE
+head	KIT-184 K6: with covariates the kernel is limma's camera on [intercept, factor, removed factors]; the same model on the corrected values	25	0	FALSE	FALSE
+head	KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input	31	0	FALSE	FALSE
+head	KIT-184 K14: covariates change no count; run_complete and the factor's share by hand	17	0	FALSE	FALSE
+head	KIT-184 K15: the test of record is asked with the samples left after one per removed factor	10	0	FALSE	FALSE
+head	KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap	58	0	FALSE	FALSE
+head	KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key	26	0	FALSE	FALSE
+head	KIT-184 K7 (i) (a): the declarations are those of base; the setting is declared in none	4	0	FALSE	FALSE
+head	KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check	96	0	FALSE	FALSE
+head	KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case	50	0	FALSE	FALSE
+head	KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors	40	0	FALSE	FALSE
+head	KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none	21	0	FALSE	FALSE
+head	KIT-184 K7 (i) (b), (c): a camera entry made at base on a default model has the head's identity apart from the build	8	0	FALSE	FALSE
+head	KIT-184 K7 (iii), K9 (a): an entry made at base on a model trained on corrected values is the default form, without the adjustment	18	0	FALSE	FALSE
+head	KIT-184: no placeholder of the simulation's numbers is left in a shipped text	8	0	FALSE	FALSE
+head	KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference	3	4	FALSE	FALSE
+m1_always_element	KIT-184 K1: the removed factors of a hand case are exact, orthonormal, centred and in the samples' order	19	0	FALSE	FALSE
+m1_always_element	KIT-184 K2: a third direction is approximate with its share; too little to go on is not determined	25	0	FALSE	FALSE
+m1_always_element	KIT-184 K3: the removed factors are written, listed and read back; a malformed file is refused	22	0	FALSE	FALSE
+m1_always_element	KIT-184 K3: the import carries the removed factors; an input without them gives the entry the base gives	9	3	FALSE	FALSE
+m1_always_element	KIT-184 K3 (base store): an input written at base reads as before; one without a correction has base's bytes	6	4	FALSE	FALSE
+m1_always_element	KIT-184 K5: the covariates are the removed factors averaged as the values are, matched by name, as a basis	22	0	FALSE	FALSE
+m1_always_element	KIT-184 K6: with covariates the kernel is limma's camera on [intercept, factor, removed factors]; the same model on the corrected values	25	0	FALSE	FALSE
+m1_always_element	KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input	31	0	FALSE	FALSE
+m1_always_element	KIT-184 K14: covariates change no count; run_complete and the factor's share by hand	17	0	FALSE	FALSE
+m1_always_element	KIT-184 K15: the test of record is asked with the samples left after one per removed factor	10	0	FALSE	FALSE
+m1_always_element	KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap	58	0	FALSE	FALSE
+m1_always_element	KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key	26	0	FALSE	FALSE
+m1_always_element	KIT-184 K7 (i) (a): the declarations are those of base; the setting is declared in none	4	0	FALSE	FALSE
+m1_always_element	KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check	96	0	FALSE	FALSE
+m1_always_element	KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case	50	0	FALSE	FALSE
+m1_always_element	KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors	40	0	FALSE	FALSE
+m1_always_element	KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none	21	0	FALSE	FALSE
+m1_always_element	KIT-184 K7 (i) (b), (c): a camera entry made at base on a default model has the head's identity apart from the build	8	0	FALSE	FALSE
+m1_always_element	KIT-184 K7 (iii), K9 (a): an entry made at base on a model trained on corrected values is the default form, without the adjustment	18	0	FALSE	FALSE
+m1_always_element	KIT-184: no placeholder of the simulation's numbers is left in a shipped text	8	0	FALSE	FALSE
+m1_always_element	KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference	3	4	FALSE	FALSE
+m2_covariates_default	KIT-184 K1: the removed factors of a hand case are exact, orthonormal, centred and in the samples' order	19	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K2: a third direction is approximate with its share; too little to go on is not determined	25	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K3: the removed factors are written, listed and read back; a malformed file is refused	22	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K3: the import carries the removed factors; an input without them gives the entry the base gives	12	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K3 (base store): an input written at base reads as before; one without a correction has base's bytes	10	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K5: the covariates are the removed factors averaged as the values are, matched by name, as a basis	22	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K6: with covariates the kernel is limma's camera on [intercept, factor, removed factors]; the same model on the corrected values	25	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input	5	0	FALSE	TRUE
+m2_covariates_default	KIT-184 K14: covariates change no count; run_complete and the factor's share by hand	15	2	FALSE	FALSE
+m2_covariates_default	KIT-184 K15: the test of record is asked with the samples left after one per removed factor	5	5	FALSE	FALSE
+m2_covariates_default	KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap	42	3	FALSE	TRUE
+m2_covariates_default	KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key	24	2	FALSE	FALSE
+m2_covariates_default	KIT-184 K7 (i) (a): the declarations are those of base; the setting is declared in none	4	0	FALSE	FALSE
+m2_covariates_default	KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check	35	17	FALSE	TRUE
+m2_covariates_default	KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case	30	0	FALSE	TRUE
+m2_covariates_default	KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors	0	0	FALSE	TRUE
+m2_covariates_default	KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none	15	6	FALSE	FALSE
+m2_covariates_default	KIT-184 K7 (i) (b), (c): a camera entry made at base on a default model has the head's identity apart from the build	3	0	FALSE	TRUE
+m2_covariates_default	KIT-184 K7 (iii), K9 (a): an entry made at base on a model trained on corrected values is the default form, without the adjustment	8	0	FALSE	TRUE
+m2_covariates_default	KIT-184: no placeholder of the simulation's numbers is left in a shipped text	8	0	FALSE	FALSE
+m2_covariates_default	KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference	7	0	FALSE	FALSE
+m3_no_restore	KIT-184 K1: the removed factors of a hand case are exact, orthonormal, centred and in the samples' order	19	0	FALSE	FALSE
+m3_no_restore	KIT-184 K2: a third direction is approximate with its share; too little to go on is not determined	25	0	FALSE	FALSE
+m3_no_restore	KIT-184 K3: the removed factors are written, listed and read back; a malformed file is refused	22	0	FALSE	FALSE
+m3_no_restore	KIT-184 K3: the import carries the removed factors; an input without them gives the entry the base gives	12	0	FALSE	FALSE
+m3_no_restore	KIT-184 K3 (base store): an input written at base reads as before; one without a correction has base's bytes	10	0	FALSE	FALSE
+m3_no_restore	KIT-184 K5: the covariates are the removed factors averaged as the values are, matched by name, as a basis	22	0	FALSE	FALSE
+m3_no_restore	KIT-184 K6: with covariates the kernel is limma's camera on [intercept, factor, removed factors]; the same model on the corrected values	25	0	FALSE	FALSE
+m3_no_restore	KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input	31	0	FALSE	FALSE
+m3_no_restore	KIT-184 K14: covariates change no count; run_complete and the factor's share by hand	17	0	FALSE	FALSE
+m3_no_restore	KIT-184 K15: the test of record is asked with the samples left after one per removed factor	10	0	FALSE	FALSE
+m3_no_restore	KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap	58	0	FALSE	FALSE
+m3_no_restore	KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key	26	0	FALSE	FALSE
+m3_no_restore	KIT-184 K7 (i) (a): the declarations are those of base; the setting is declared in none	4	0	FALSE	FALSE
+m3_no_restore	KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check	94	2	FALSE	FALSE
+m3_no_restore	KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case	50	0	FALSE	FALSE
+m3_no_restore	KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors	40	0	FALSE	FALSE
+m3_no_restore	KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none	21	0	FALSE	FALSE
+m3_no_restore	KIT-184 K7 (i) (b), (c): a camera entry made at base on a default model has the head's identity apart from the build	8	0	FALSE	FALSE
+m3_no_restore	KIT-184 K7 (iii), K9 (a): an entry made at base on a model trained on corrected values is the default form, without the adjustment	18	0	FALSE	FALSE
+m3_no_restore	KIT-184: no placeholder of the simulation's numbers is left in a shipped text	8	0	FALSE	FALSE
+m3_no_restore	KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference	3	4	FALSE	FALSE
+m4_setting_declared	KIT-184 K1: the removed factors of a hand case are exact, orthonormal, centred and in the samples' order	19	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K2: a third direction is approximate with its share; too little to go on is not determined	25	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K3: the removed factors are written, listed and read back; a malformed file is refused	22	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K3: the import carries the removed factors; an input without them gives the entry the base gives	12	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K3 (base store): an input written at base reads as before; one without a correction has base's bytes	10	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K5: the covariates are the removed factors averaged as the values are, matched by name, as a basis	22	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K6: with covariates the kernel is limma's camera on [intercept, factor, removed factors]; the same model on the corrected values	25	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input	31	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K14: covariates change no count; run_complete and the factor's share by hand	17	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K15: the test of record is asked with the samples left after one per removed factor	10	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap	58	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key	26	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K7 (i) (a): the declarations are those of base; the setting is declared in none	3	1	FALSE	FALSE
+m4_setting_declared	KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check	96	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case	50	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors	40	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none	21	0	FALSE	FALSE
+m4_setting_declared	KIT-184 K7 (i) (b), (c): a camera entry made at base on a default model has the head's identity apart from the build	7	1	FALSE	FALSE
+m4_setting_declared	KIT-184 K7 (iii), K9 (a): an entry made at base on a model trained on corrected values is the default form, without the adjustment	17	1	FALSE	FALSE
+m4_setting_declared	KIT-184: no placeholder of the simulation's numbers is left in a shipped text	8	0	FALSE	FALSE
+m4_setting_declared	KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference	3	4	FALSE	FALSE

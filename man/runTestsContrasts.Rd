@@ -41,8 +41,12 @@ The contrast string consists of variable that each consist of concatenating the 
 \item{group_id, technical_replicate_id}{Column names of the design's group and of the object's declared technical replicate column (KIT-035): the replicate block comes from the declared column, and a block spanned by the design runs standard lmFit with the reason recorded.}
 }
 \value{
-A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.
+A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object. \code{features_without_values}: present only when the data held proteins with no value in any analysed sample; their ids. Such a protein is a row of every table without statistics (\code{AveExpr} missing).
 }
 \description{
-Run the linear model fitting and statistical tests for a set of contrasts, then adjust with Empirical Bayes function
+Run the linear model fitting and statistical tests for a set of contrasts, then adjust with Empirical Bayes function. A protein with no value in any analysed sample is not tested and is listed (\code{features_without_values}).
+}
+\details{
+TREAT uses the same trend and robust settings as the moderated test (\code{eBayes_trend}, \code{eBayes_robust}; KIT-201).
+With both FALSE the TREAT statistics are those of one prior variance without the robust step, as before KIT-201.
 }

@@ -1,0 +1,11 @@
+size	stage	build_C_vmhwm_mib_median	build_C_vmhwm_mib_range	build_C_n	build_C_heap_peak_mib_median	build_C_heap_peak_mib_range	build_C_wall_s_median	build_C_wall_s_range	build_C_python_peak_mib_median	build_C_python_peak_mib_range	candidate_vmhwm_mib_median	candidate_vmhwm_mib_range	candidate_n	candidate_heap_peak_mib_median	candidate_heap_peak_mib_range	candidate_wall_s_median	candidate_wall_s_range	candidate_python_peak_mib_median	candidate_python_peak_mib_range
+M	align	1185.1	21.2	3	411.7	0.0	17.3	0.2			1066.8	11.5	3	335.0	0.0	18.6	0.3		
+M	import	1155.4	3.9	3	471.8	0.0	43.0	2.0			1155.1	7.5	3	471.9	0.0	42.9	1.4		
+M	results	1098.8	16.0	3	382.9	0.0	5.5	0.3			1175.5	3.3	3	494.0	0.0	6.7	0.1		
+M	train	1210.7	1.7	3	540.6	0.0	312.6	4.0	83.5	0.5	1238.4	7.8	3	463.9	0.0	1344.1	25.5	26.5	0.0
+M	write	933.0	11.8	3	110.3	0.0	3.9	0.0			927.8	2.1	3	110.4	0.0	3.9	0.0		
+L	align	1557.8	12.4	2	744.9	0.0	63.8	1.6			1181.8	1.1	2	456.7	0.0	82.0	2.9		
+L	import	1565.8	9.1	2	588.9	0.0	145.0	12.0			1565.7	8.1	2	589.2	0.0	146.2	6.7		
+L	results	2391.9	5.6	2	1511.5	0.0	18.2	0.0			2413.8	1.1	2	1523.3	0.0	19.6	0.0		
+L	train	1547.7	28.9	2	847.1	0.0	803.1	39.1	121.6	0.4	1342.2	1.5	2	558.9	0.0	3323.2	1.8	64.4	0.0
+L	write	1766.2	4.3	2	126.3	0.0	18.3	0.1			1766.8	4.1	2	126.4	0.0	18.2	0.0		

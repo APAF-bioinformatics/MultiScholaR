@@ -1,0 +1,964 @@
+== test-prot-norm-input-current.R | fixed | KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+-- base:
+  Expected `input` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "280416cb9883e03fbfdc93fe3d7f5d3f222f180894ca78b4d1413801a7505e8d"
+  `expected`: "6745fbfc4bcfc6e5991a9f3ae2b338147a03bb08b46ab91d7cd2948441a0158e"
+  
+  TMT
+  Expected `input` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "2ad2ed9ef7151c44a91e8bd7deaf4f16203197a7d23e8204a5045199e95eea2b"
+  `expected`: "c8f2dd7a5b92ba1d8e5aa1d0faa664b23248e217a45059ce3e77787af5a5e9b4"
+  
+  DIA
+  Expected `input` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "3f8d254f9f03858fd77fd993ffee1f47c0fb8baed5e8a34f9caa227810f6d9c4"
+  `expected`: "8744c4aa526cc5ce37206a7cbcafeb5b1ca4e95ac6fdcf0c8d42ca74ef7b400b"
+  
+  LFQ
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "280416cb9883e03fbfdc93fe3d7f5d3f222f180894ca78b4d1413801a7505e8d"
+  `expected`: "6745fbfc4bcfc6e5991a9f3ae2b338147a03bb08b46ab91d7cd2948441a0158e"
+  
+  TMT
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "2ad2ed9ef7151c44a91e8bd7deaf4f16203197a7d23e8204a5045199e95eea2b"
+  `expected`: "c8f2dd7a5b92ba1d8e5aa1d0faa664b23248e217a45059ce3e77787af5a5e9b4"
+  
+  DIA
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "3f8d254f9f03858fd77fd993ffee1f47c0fb8baed5e8a34f9caa227810f6d9c4"
+  `expected`: "8744c4aa526cc5ce37206a7cbcafeb5b1ca4e95ac6fdcf0c8d42ca74ef7b400b"
+  
+  LFQ
+  Expected `rows` to be identical to `64L - k`.
+  Differences:
+    `actual`: 64
+  `expected`: 58
+  
+  DIA
+  Expected `rows` to be identical to `64L - k`.
+  Differences:
+    `actual`: 64
+  `expected`: 58
+  
+  LFQ
+  Expected `rows` to be identical to `64L - k`.
+  Differences:
+    `actual`: 64
+  `expected`: 58
+  
+  TMT
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T1 (e) (S9): after the design is saved again, a QC change and a click read the QC result (fails before)
+-- base:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "e65f91e5588c82333c43931932493e25c5c91600495b24be00fb9b70a8dee369"
+  `expected`: "f9b77b62b85a4fe50e20d10af39fca07abee6794d95e3969ae95630453c29639"
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T3 (S4, S5): a first run after a QC change reads the QC result, with and without tab entry (fails before)
+-- base:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "1a96339b65b4c8d785fd772dd9cbdef325d2adb2bc3d65f7ba1db01aaf2332d6"
+  `expected`: "65f31e916b07afbe430c4a549b0883ab8f55971dc50bdbf62e49a44f5b9e5aa0"
+  
+  tab entry FALSE
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "33d7b1a4e61174501425ae5edd9ba396e9b016f3cd8011b1c6b71b83be02b1e7"
+  `expected`: "b8d6895bc0a9f3ed7d58e8dd484343cffb607866ea0e43231b2f17f99c95f83f"
+  
+  tab entry TRUE
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+-- base:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T4 (e): a remembered or QC-source table that is itself normalised is refused (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$payload$relative_path`:   "entities/dia-state-4be975f5c9bb/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be961784650/payload.rds"
+  
+    `actual$payload$bytes`: 19152.0
+  `expected$payload$bytes`: 13590.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "8ac138b89b554a805dd9239c75b98ea8108fbec25e45ed90ee20fe6624873c12"
+  + "0ef3f03e1b3ed068958ab7fda8fda6abcdf10467a221a5f68d4d7d0142167d7e"
+  
+  actual$entity_id vs expected$entity_id
+  - "cda5ff4204737c62e43a0831046dc7711c91d5ae7870fc1e6b53026d508c9704"
+  + "43732542a3d9553b640c4febb08a8f75a8e55e9d40caf55e2f262411498fc435"
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T4 (f): on DIA_LIMPA, a table to which QC was applied after the RUV correction is not designated (fails before)
+-- base:
+  Expected `norm$normalization_input_reference` to be identical to `designated`.
+  Differences:
+  `actual$identity$parameters`:   "protein_normalised"    
+  `expected$identity$parameters`: "peptide_count_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9541d7f24/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be93bff6e89/payload.rds"
+  
+    `actual$payload$bytes`: 41437.0
+  `expected$payload$bytes`: 24495.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "b83a54941fa2765510cb2cb9f56f564567217103573a69691a91145006b69335"
+  + "895a0b82d417ff21618c7d2717ea522555a145b24bcd30f1259ddcc98efeb175"
+  
+  actual$entity_id vs expected$entity_id
+  - "a5837fe0d62758c6c135eb8530d328d3194e2a511d692cee15f9411e1a6a5a63"
+  + "d0e55e65d4aac15f3368e8d287209edff82edb6be3569b40c350467b1cd8cf34"
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T4 (g): an adopted legacy head after RUV is refused (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T5: Reset then run reads PRF1 (as before); after Reset, a QC change and a run read the QC result (fails before)
+-- base:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "d199d7c56218c55b97078ee90af714dfdd08a4eeefac64bda371f25fedec7b38"
+  `expected`: "eb02381b636c2c150ba4b48b599b270a6c8a9d46fef5e0e8cb79fde07ec4b7fe"
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T6: a restored session re-runs from its own state as before, and from a QC change reads the QC result (fails before)
+-- base:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "b43e388b0ff222157e15ab1694c7a8d5192126d84d051a4818a35725df912e54"
+  `expected`: "e4d7f3523aec7c284581081d05711afd1e704ef46493a834595725201f3a3bfe"
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T7 (a): the tab says when the run reads another table than the previous run, and only then (fails before)
+-- base:
+  Expected `k182Tab(fixture, norm, "skip")$notes` to be identical to `c(paste0("[message 10] ", k182NoticeText), completion)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
+  + "[message 10] This normalisation uses your current quality-control result. The previous normalisation used an earlier table, from before your latest quality-control changes."
+  + "[message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+-- base:
+  Expected `identical(unname(tools::md5sum(image)), drawn)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  S2
+  Expected `identical(unname(tools::md5sum(image)), drawn)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  S4
+  Expected `isTRUE(match("pre_qc", calls) < match("publish", calls))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  S2
+  Expected `isTRUE(match("pre_qc", calls) < match("publish", calls))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  S4
+  Expected `sum(calls == "pre_qc")` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  S2
+  Expected `sum(calls == "pre_qc")` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  S4
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be91ef2ea87/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be943eb710f/payload.rds"
+  
+    `actual$payload$bytes`: 24803.0
+  `expected$payload$bytes`: 22242.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "db06e0226b80d8cf5720c9a5f47dbc9a267fa2a8d5bdf9f972aafaf559e52bab"
+  + "1b092fa60a0917cbbd5f330943a33664296b4dbbc3984152ee1ddd629e208f44"
+  
+  actual$entity_id vs expected$entity_id
+  - "8d06c432170ee4415f8624a221e1c69a2ba533065feacc123d6b9de526b59661"
+  + "23537619fa3ce726bd0094b9bde97f7f202e3d353358649bb912e481f7ffb778"
+  
+  normalized duplicates
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9281b81cf/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9469e5efc/payload.rds"
+  
+    `actual$payload$bytes`: 27493.0
+  `expected$payload$bytes`: 24932.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "8571d1fb83636692a170f806d1bae0467e3874e9a423b4b442396282c41a9aa4"
+  + "48d9352d934b261ecdb33a147e0cded43f16c2b2f40b32379ab9806140fa1832"
+  
+  actual$entity_id vs expected$entity_id
+  - "0ee225dea0c5b5c57d68c86c1e9bd0e6cffbd847d7feadbee96dcf8af9967f42"
+  + "f92ea1774fe24abaed78e255b02fded27e68c96a8feb5135fab8791007cf76a8"
+  
+  qc_on_normalised duplicates
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be967f9edd7/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be91e7400ec/payload.rds"
+  
+    `actual$payload$bytes`: 24813.0
+  `expected$payload$bytes`: 22252.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "46a7e931948ad82d0c8b19ce0c8a1203356c4a5b12483b850c846270299e04d4"
+  + "6a1e0ac0feef7ae791fbdcdfa9de22b255b477638f9e0c5c245dfa7c12c11fe0"
+  
+  actual$entity_id vs expected$entity_id
+  - "fa4c9f45e692fbd90efd63e116246ec30d3fd3e2e27d309456d04fcc5d2e0629"
+  + "2dd5ee3f058cee399555b6c157bfeca9c1b1c2fcaef98ce6f86e8e7f9096d85f"
+  
+  enrichment_completed duplicates
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be982335ad/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4be93169dace/payload.rds"
+  
+    `actual$payload$bytes`: 26084.0
+  `expected$payload$bytes`: 23522.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "27290a51a1ba64e866d54e7a41b1a323563170d42efeaf1c8a98928b16e03f21"
+  + "88320b17399cbd695839d82600ef77499aa93ea90ac13a6c195efca5730f4b89"
+  
+  actual$entity_id vs expected$entity_id
+  - "6b565a9054e1296a5cd033e917ea937435c0dc6ce88d200101c9e53e3cbf70dc"
+  + "b69dac686456d6c9ccd3379a73c842ab0568bc00a0d6fc0b4adce149e6f81193"
+  
+  correlation_filtered duplicates
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned"
+  `expected$identity$parameters`: "correlation_filtered"     
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9786486fb/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be91c14e1b6/payload.rds"
+  
+    `actual$payload$bytes`: 20461.0
+  `expected$payload$bytes`: 17627.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "8c0bf48df8da6ac311f88d1ad2a3ec2bfffd075de4011761fc9c313809472e8d"
+  + "67d21f4da938e6755416e48958af91e604cea6a5c9df77e77ef9ca672dd82248"
+  
+  actual$entity_id vs expected$entity_id
+  - "576e945a1149d843ac95c9de52f47c60e57c2cb975f5249c34b850bd4f362c8f"
+  + "584c19e045ec1813c44bd560f7a922f4e214b810dedf7f599bf12f612069e375"
+  
+  correlation_filtered cleanup
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned"
+  `expected$identity$parameters`: "enrichment_completed"     
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be97db96ecb/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9594ff1e9/payload.rds"
+  
+    `actual$payload$bytes`: 19189.0
+  `expected$payload$bytes`: 13530.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "1e52a1487da32d8a6049e746d0a6bdde52ee7f3d5a6083118daaf339161a5418"
+  + "f8da7fd98a97923d946f26589916d2115fe2f90076684a8d96a024a18e149cea"
+  
+  actual$entity_id vs expected$entity_id
+  - "820e4c37b1fcbe3b0727060a3892b3276e2840ab6e16cfc588788a82700f151d"
+  + "2fb6504b622e80fda76cb14d7f62eae9abeab39f80014b07c026a1720b85c247"
+  
+  enrichment_completed cleanup
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned"
+  `expected$identity$parameters`: "normalized"               
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be92353ba96/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be93697f53d/payload.rds"
+  
+    `actual$payload$bytes`: 19169.0
+  `expected$payload$bytes`: 13591.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "6fec5afea96e35b275371db81de0614013604aa66bbfca215a5bb8964e43cbb9"
+  + "12223bfb4a39c90645f7ed6d60fd5c11685100dc16dbbeffcab940716437ca5e"
+  
+  actual$entity_id vs expected$entity_id
+  - "258b55da504490f61d162849a6ac8e5fa48695abfcb1ce2fffff1fcacd071e59"
+  + "6cb2d9850aaf528c02ea04bab2ea646d3cca0ccaec0ba1f460c787e0cc9723ee"
+  
+  normalized cleanup
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned" 
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9e4e14ef/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4be920aabb08/payload.rds"
+  
+    `actual$payload$bytes`: 22159.0
+  `expected$payload$bytes`: 20933.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "f19e5f7983bba1439c4c1317f6e3ad5732e8d0a089a0a19866a0bf0f088c4aa9"
+  + "c32386944a8a76256a28215bd4dec49e5461b0ea5fe009770727ccccbe928bb8"
+  
+  actual$entity_id vs expected$entity_id
+  - "d4c0120334eb3b7e03d96f256850f63250a48758a369abc6b42de66f112bb830"
+  + "abcc72f1742cc231608760a993b237ce311be7abe0d6a7572dbf197bb703bc51"
+  
+  qc_on_normalised cleanup
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be91e7400ec/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be97db96ecb/payload.rds"
+  
+    `actual$payload$bytes`: 22252.0
+  `expected$payload$bytes`: 19189.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "6a1e0ac0feef7ae791fbdcdfa9de22b255b477638f9e0c5c245dfa7c12c11fe0"
+  + "1e52a1487da32d8a6049e746d0a6bdde52ee7f3d5a6083118daaf339161a5418"
+  
+  actual$entity_id vs expected$entity_id
+  - "2dd5ee3f058cee399555b6c157bfeca9c1b1c2fcaef98ce6f86e8e7f9096d85f"
+  + "820e4c37b1fcbe3b0727060a3892b3276e2840ab6e16cfc588788a82700f151d"
+  
+  enrichment_completed intensity
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be93169dace/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9786486fb/payload.rds"
+  
+    `actual$payload$bytes`: 23522.0
+  `expected$payload$bytes`: 20461.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "88320b17399cbd695839d82600ef77499aa93ea90ac13a6c195efca5730f4b89"
+  + "8c0bf48df8da6ac311f88d1ad2a3ec2bfffd075de4011761fc9c313809472e8d"
+  
+  actual$entity_id vs expected$entity_id
+  - "b69dac686456d6c9ccd3379a73c842ab0568bc00a0d6fc0b4adce149e6f81193"
+  + "576e945a1149d843ac95c9de52f47c60e57c2cb975f5249c34b850bd4f362c8f"
+  
+  correlation_filtered intensity
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be943eb710f/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be92353ba96/payload.rds"
+  
+    `actual$payload$bytes`: 22242.0
+  `expected$payload$bytes`: 19169.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "1b092fa60a0917cbbd5f330943a33664296b4dbbc3984152ee1ddd629e208f44"
+  + "6fec5afea96e35b275371db81de0614013604aa66bbfca215a5bb8964e43cbb9"
+  
+  actual$entity_id vs expected$entity_id
+  - "23537619fa3ce726bd0094b9bde97f7f202e3d353358649bb912e481f7ffb778"
+  + "258b55da504490f61d162849a6ac8e5fa48695abfcb1ce2fffff1fcacd071e59"
+  
+  normalized intensity
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9469e5efc/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9e4e14ef/payload.rds" 
+  
+    `actual$payload$bytes`: 24932.0
+  `expected$payload$bytes`: 22159.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "48d9352d934b261ecdb33a147e0cded43f16c2b2f40b32379ab9806140fa1832"
+  + "f19e5f7983bba1439c4c1317f6e3ad5732e8d0a089a0a19866a0bf0f088c4aa9"
+  
+  actual$entity_id vs expected$entity_id
+  - "f92ea1774fe24abaed78e255b02fded27e68c96a8feb5135fab8791007cf76a8"
+  + "d4c0120334eb3b7e03d96f256850f63250a48758a369abc6b42de66f112bb830"
+  
+  qc_on_normalised intensity
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be91f73e605/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be982335ad/payload.rds" 
+  
+    `actual$payload$bytes`: 29274.0
+  `expected$payload$bytes`: 26084.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "c0ebc8694651d509b5a5f4ef247c4b00aa14d25c25222fdc8887d3dd429a0904"
+  + "27290a51a1ba64e866d54e7a41b1a323563170d42efeaf1c8a98928b16e03f21"
+  
+  actual$entity_id vs expected$entity_id
+  - "52348eb9d123ad3bf6e228689a6b546afa4a345112c172a1b822f397edfd0397"
+  + "6b565a9054e1296a5cd033e917ea937435c0dc6ce88d200101c9e53e3cbf70dc"
+  
+  correlation_filtered replicate
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be93c13ade3/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9281b81cf/payload.rds"
+  
+    `actual$payload$bytes`: 30684.0
+  `expected$payload$bytes`: 27493.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e88b5c7314a2e2230c49356fe04fd27d790c2b0ad8d4df78909fbdd866245fc0"
+  + "8571d1fb83636692a170f806d1bae0467e3874e9a423b4b442396282c41a9aa4"
+  
+  actual$entity_id vs expected$entity_id
+  - "effa79865f49d89a352a481c7332d3756242af6649522194685f1991ce50b52a"
+  + "0ee225dea0c5b5c57d68c86c1e9bd0e6cffbd847d7feadbee96dcf8af9967f42"
+  
+  qc_on_normalised replicate
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9465334c8/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be91ef2ea87/payload.rds"
+  
+    `actual$payload$bytes`: 27994.0
+  `expected$payload$bytes`: 24803.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "a89ede0c7507d50eaa4780c02f512abbc436967e068d2a09e329c80c059abb8d"
+  + "db06e0226b80d8cf5720c9a5f47dbc9a267fa2a8d5bdf9f972aafaf559e52bab"
+  
+  actual$entity_id vs expected$entity_id
+  - "ad78b6fef4312412f5f6eb8134fc4ead25514a2d5477407d919e47c1b604198a"
+  + "8d06c432170ee4415f8624a221e1c69a2ba533065feacc123d6b9de526b59661"
+  
+  normalized replicate
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9500245f6/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be967f9edd7/payload.rds"
+  
+    `actual$payload$bytes`: 28003.0
+  `expected$payload$bytes`: 24813.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "3552d36bed86f1e83fd66cd5ebdc7da1d3a5a92120b6c7a016c8625597a21299"
+  + "46a7e931948ad82d0c8b19ce0c8a1203356c4a5b12483b850c846270299e04d4"
+  
+  actual$entity_id vs expected$entity_id
+  - "887472012b411e196b95b748123702d337d51662f904a68b4c4d569dcbc5a5ed"
+  + "fa4c9f45e692fbd90efd63e116246ec30d3fd3e2e27d309456d04fcc5d2e0629"
+  
+  enrichment_completed replicate
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                       
+  [3] "normalized"                 | "normalized"                [3]
+  [4] "correlation_filtered"       | "correlation_filtered"      [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned" [5]
+  [6] "protein_intensity_filtered" -                                
+  
+  correlation_filtered intensity
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                       
+  [3] "normalized"                 | "normalized"                [3]
+  [4] "enrichment_completed"       | "enrichment_completed"      [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned" [5]
+  [6] "protein_intensity_filtered" -                                
+  
+  enrichment_completed intensity
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [1] "initial"                    | "initial"                    [1]
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_accession_cleaned"  -                                 
+  
+  normalized cleanup
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_accession_cleaned"  -                                 
+  
+  correlation_filtered cleanup
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "enrichment_completed"       | "enrichment_completed"       [4]
+  [5] "protein_accession_cleaned"  -                                 
+  
+  enrichment_completed cleanup
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_accession_cleaned"  | "protein_accession_cleaned"  [4]
+  [5] "protein_intensity_filtered" -                                 
+  
+  normalized intensity
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "protein_accession_cleaned"  -                                 
+  
+  qc_on_normalised cleanup
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_accession_cleaned"  | "protein_accession_cleaned"  [4]
+  [5] "protein_intensity_filtered" | "protein_intensity_filtered" [5]
+  [6] "duplicates_removed"         -                                 
+  
+  normalized duplicates
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned"  [5]
+  [6] "duplicates_removed"         -                                 
+  
+  qc_on_normalised duplicates
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned"  [5]
+  [6] "protein_intensity_filtered" | "protein_intensity_filtered" [6]
+  [7] "duplicates_removed"         -                                 
+  
+  correlation_filtered duplicates
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [4] "enrichment_completed"       | "enrichment_completed"       [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned"  [5]
+  [6] "protein_intensity_filtered" | "protein_intensity_filtered" [6]
+  [7] "duplicates_removed"         -                                 
+  
+  enrichment_completed duplicates
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "peptide_count_filtered"
+  `expected$identity$parameters`: "protein_normalised"    
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be924350d/payload.rds"  
+  `expected$payload$relative_path`: "entities/dia-state-4be956b35902/payload.rds"
+  
+    `actual$payload$bytes`: 31311.0
+  `expected$payload$bytes`: 29866.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "53855113976b43e3ebc8cead5c4d4ca2713c16498736bcb18f16c28344c56e67"
+  + "16dd0db85395a5fdff8e250d8460c52276e844a3e7913891cc6bc04ff34299ec"
+  
+  actual$entity_id vs expected$entity_id
+  - "3fd1b6d4db46e8c740c277099518cd69041e980be39c5920bba6615fe933c51c"
+  + "c4afcdf60d3ee0dba716c6027662d0693cce7e4a99f026bd0480ec71672092ce"
+  
+  correlation_filtered peptide_count
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "peptide_count_filtered"
+  `expected$identity$parameters`: "protein_normalised"    
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be97fa08e7c/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9175e8b83/payload.rds"
+  
+    `actual$payload$bytes`: 37503.0
+  `expected$payload$bytes`: 36052.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "45bbff3276a83de6212d7dec780830c67d0100b42e0e89ee5fa6687559a3eec6"
+  + "229ab30d60bc0ec0912443523a9a93b30b2cb6bbc2e50b02695ae7048f5d839f"
+  
+  actual$entity_id vs expected$entity_id
+  - "d24365cc5c07bd481ab2673e6d75fad652f8e8174d2eb6790b3b3ad71ce36b5c"
+  + "3c81a4ca80003db421ca260e6e2e8b495799083393aad27dc7efafeb26b80f86"
+  
+  ruv_covariates peptide_count
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_normalised"
+  `expected$identity$parameters`: "ruv_covariates"    
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9175e8b83/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9904b4d0/payload.rds" 
+  
+    `actual$payload$bytes`: 36052.0
+  `expected$payload$bytes`: 32453.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "229ab30d60bc0ec0912443523a9a93b30b2cb6bbc2e50b02695ae7048f5d839f"
+  + "9e023c3b18772b477a865e77e927529d2a92b8ff619b75f30d1817d9b81416de"
+  
+  actual$entity_id vs expected$entity_id
+  - "3c81a4ca80003db421ca260e6e2e8b495799083393aad27dc7efafeb26b80f86"
+  + "9aaa1fef5154bc12d5711a38d75fb6c2d99c253540cb5c6d0b5adad1bcb51e67"
+  
+  ruv_covariates normalisation
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_normalised"  
+  `expected$identity$parameters`: "correlation_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be956b35902/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9427f1bb5/payload.rds"
+  
+    `actual$payload$bytes`: 29866.0
+  `expected$payload$bytes`: 26903.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "16dd0db85395a5fdff8e250d8460c52276e844a3e7913891cc6bc04ff34299ec"
+  + "83b4cfa3676a5602a10e2be3742b76a860bd95eaf35750b2ea3446a05243d1e0"
+  
+  actual$entity_id vs expected$entity_id
+  - "c4afcdf60d3ee0dba716c6027662d0693cce7e4a99f026bd0480ec71672092ce"
+  + "9edbcb8867e8cb7ecc033ebc51fb6f200e8e5295afbdc352e2afd533419bc55c"
+  
+  correlation_filtered normalisation
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T9 (c): managed, the protein intensity filter refuses before apply with the step's prefix, and applies on an unnormalised head (fails before)
+-- base:
+  Expected `refused$applied` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `refused$errors` to be identical to `paste0("Error applying protein intensity filter: ", k182QcText("Protein Replicate Filter"))`.
+  Differences:
+  actual vs expected
+  + "Error applying protein intensity filter: quality-control steps cannot be applied to a table that has already been normalised. To change quality control, press Revert in this tab until the current step is \"Protein Replicate Filter\", the last quality-control result before normalisation, then apply the steps again and press \"Run Normalization & RUV\" again."
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T9 (c): managed, DIA_LIMPA's peptide count filter refuses before apply and applies after a Revert (fails before)
+-- base:
+  Expected `refused$applied` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `refused$errors` to be identical to `paste0("Error applying peptide count filter: ", k182QcText("Peptide Count Filter"))`.
+  Differences:
+  actual vs expected
+  + "Error applying peptide count filter: quality-control steps cannot be applied to a table that has already been normalised. To change quality control, press Revert in this tab until the current step is \"Peptide Count Filter\", the last quality-control result before normalisation, then apply the steps again and press \"Run Normalization & RUV\" again."
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `getDIAStateReference(fixture$manager, "correlation_filtered")` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  apply
+  Expected `getDIAStateReference(fixture$manager, "correlation_filtered")` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  skip
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"      
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be94be0aa6a/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be92bf3900c/payload.rds"
+  
+    `actual$payload$bytes`: 12000.0
+  `expected$payload$bytes`: 15168.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e483a783eddd2180214ee905c0e38e56c784f87092e50f0dda33ff4f6678b031"
+  + "36335e2f333d081ec1fdccf5fc519439774448f649274207c25d9d1edea4184c"
+  
+  actual$entity_id vs expected$entity_id
+  - "8c1222525e056486b5dae6386c7decec5d4078abe0485618ad8a2e651c282574"
+  + "993a4d199dc791053ba49d0fd1e919900b48db78a655d1d692a1f6841007db4e"
+  
+  skip
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"      
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be970234f0b/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be948cc8f5f/payload.rds"
+  
+    `actual$payload$bytes`: 17641.0
+  `expected$payload$bytes`: 15168.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "d2a5e91b5ab08efc397d4c097975389b00ef9d91d4c247d62aaffc4f47241a12"
+  + "573b5b56c99d7689e95acdbb288ca86e0e22b2204c9bf3a212c9e57074475b70"
+  
+  actual$entity_id vs expected$entity_id
+  - "3f173ea537b690b1d06d5776887c9695f9885b306f48889b11bebbf680137c64"
+  + "e6d66f19756a51fb6fc62062bb1a3b39d705dc220c918ac526b4e8f95135a212"
+  
+  apply
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [1] "initial"                    | "initial"                    [1]
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "protein_intensity_filtered" | "protein_intensity_filtered" [3]
+  [4] "correlation_filtered"       -                                 
+  
+  apply
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [1] "initial"                    | "initial"                    [1]
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "protein_intensity_filtered" | "protein_intensity_filtered" [3]
+  [4] "correlation_filtered"       -                                 
+  
+  skip
+  Expected `seen$actions` to have length 0.
+  Actual length: 1.
+  Expected `seen$failed` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T10 (d): the tab's Apply and Skip show the refusal through the correlation error handler (fails before)
+-- base:
+  Expected `seen$completed` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+  Expected `seen$notes` to be identical to `rep(...)`.
+  Differences:
+  actual vs expected
+  + "Error in correlation filtering: the table in the Quality Control tab has changed since normalisation was last run (a step was applied or reverted), so the correlation filter would use a table that does not match it. Press \"Run Normalization & RUV\" again, then apply or skip the correlation filter."
+  + "Error in correlation filtering: the table in the Quality Control tab has changed since normalisation was last run (a step was applied or reverted), so the correlation filter would use a table that does not match it. Press \"Run Normalization & RUV\" again, then apply or skip the correlation filter."
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T10 (e): the correlation at the tab's own states commits as before; at a QC-on-normalised head it is refused
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"      
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be947dc6121/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be9795d84b2/payload.rds"
+  
+    `actual$payload$bytes`: 17638.0
+  `expected$payload$bytes`: 17956.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "0e9d39369e821e0d09795e662798f5cb7485c3557acc8dcecc05b1223103931f"
+  + "7b058effe950c5c4fb9cc0df7b42eddf3ef4e9324c537409d06642d99714ace4"
+  
+  actual$entity_id vs expected$entity_id
+  - "33d1a5098a600bbd7aa893c77694c0ae26d4b44536da3e8a3999c6e47db24ce0"
+  + "99a060468b282237e7be94a7719bb67cb28ea2f9b26482675287c0c8dfa8ccd2"
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T10 (f): on DIA_LIMPA the correlation follows the designated table; after a QC change it waits for the pass-through (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `k182Head(fixture)` to be identical to `p2`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"  
+  `expected$identity$parameters`: "peptide_count_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be91bde1b0f/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be935df39cb/payload.rds"
+  
+    `actual$payload$bytes`: 26906.0
+  `expected$payload$bytes`: 24497.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "c6df1df9c0bb6ca1240ff682dc5ab6cc1d27844802f3423d1897a603a8900f05"
+  + "fdee7f64fed346a260f629f08cbe983f46f3d75baa4c9ac9b5e38ddf89b8d3c5"
+  
+  actual$entity_id vs expected$entity_id
+  - "bcd997e4f6b413e9e94c1943b053b630dfc9f566038ecb4561a6ec94339889c9"
+  + "1a03cd14fea1ae87e56c2795b170e3de7b6e88a4dda6675d0db749f4f2b28d7d"
+-- head:
+  <passes>
+
+== test-prot-norm-input-current.R | fixed | KIT-182 T10 (g) (VAL-99 (4)): after two runs and a Revert to the first, the correlation is refused (fails before)
+-- base:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"
+  `expected$identity$parameters`: "normalized"          
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4be9318b6066/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4be931726f25/payload.rds"
+  
+    `actual$payload$bytes`: 22171.0
+  `expected$payload$bytes`: 13593.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "d7abe8f60b101ec5318bfcad1a7ff7073af74905612d526dbc60ad3f19a48cce"
+  + "5e051f4129a42bd89acb46ce344565fe498143aa822742e044f130c83fbce369"
+  
+  actual$entity_id vs expected$entity_id
+  - "678f6a1a839f0987d4c18b71d361a5df90ec3684e9b9aa97331bcf95bd78f20f"
+  + "fa3e5b87622f3e6768b4d8b4e41e5c80bcb375aaf65b94b6d0ce0dae4d5e672c"
+-- head:
+  <passes>
+

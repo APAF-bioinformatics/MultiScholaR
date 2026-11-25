@@ -98,12 +98,22 @@ mod_omic_qc_intensity_ui <- function(id, config) {
             shiny::h4(texts[["intensity_heading"]]),
             shiny::p(texts[["intensity_help"]]),
             shiny::hr(),
+            # KIT-217 (VAL-173 (2)): the per-group count of missing values (drafts W-1 to W-5), above the two sliders.
+            shiny::h5(texts[["intensity_missing_heading"]]),
+            shiny::numericInput(ns("min_values_per_group"), texts[["intensity_min_values_label"]], value = 2, min = 1,
+                max = 10, step = 1),
+            shiny::helpText(texts[["intensity_min_values_help"]]),
+            shiny::numericInput(ns("min_groups"), texts[["intensity_min_groups_label"]], value = 1, min = 1, max = 10,
+                step = 1),
+            shiny::helpText(texts[["intensity_min_groups_help"]]),
+            shiny::h5(texts[["intensity_low_heading"]]),
             shiny::sliderInput(ns("intensity_cutoff_percentile"), "Intensity Cutoff Percentile (%)", min = 1, max = 50,
                 value = 10, step = 1),
             shiny::helpText("Intensities below this percentile are considered 'low' (default: 10%)"),
             shiny::sliderInput(ns("proportion_below_cutoff"), "Max Proportion of Samples Below Threshold", min = 0.1,
                 max = 1.0, value = 0.5, step = 0.05),
             shiny::helpText(texts[["intensity_proportion_help"]]),
+            shiny::helpText(texts[["intensity_share_help"]]),
             shiny::hr(),
             shiny::div(
                 shiny::actionButton(ns("apply_filter"), "Apply Filter", class = "btn-primary", width = "48%"),
@@ -179,10 +189,16 @@ registerOmicQcIntensity <- function(input, output, session, workflow_data, omic_
             # KIT-075: the counts come from the declaration's result and the figure from the committed state read for
             # this action (or the worker's metrics); no object outlives the observer.
             omicQcHeadMetadata(workflow_data, config)
+            # KIT-194: no QC step on a normalised table (7.2).
+            assertOmicQcHeadNotNormalised(binding, workflow_data$state_manager)
             percentile <- input$intensity_cutoff_percentile
             proportion <- input$proportion_below_cutoff
+            # KIT-217: the per-group count's two settings (the inputs always hold a value in the app; 2 and 1 otherwise).
+            min_values_per_group <- input$min_values_per_group %||% 2L
+            min_groups_required <- input$min_groups %||% 1L
             logger::log_info(paste("Applying", binding$feature_noun, "intensity filter: percentile =", percentile,
-                ", proportion =", proportion))
+                ", proportion =", proportion, ", values required per group =", min_values_per_group,
+                ", groups required =", min_groups_required))
             deliver <- function(result, figure) {
                 table <- omicsQcCountsTable(result$value$counts)
                 stats(table)
@@ -195,9 +211,10 @@ registerOmicQcIntensity <- function(input, output, session, workflow_data, omic_
                 shiny::removeNotification(working)
                 shiny::showNotification(sprintf(texts[["intensity_success"]], sum(table$Filtered)), type = "message")
             }
-            runWorkflowOmicsQcAction(binding, workflow_data, omicsIntensityFilterStep(binding, percentile, proportion),
+            runWorkflowOmicsQcAction(binding, workflow_data, omicsIntensityFilterStep(binding, percentile, proportion,
+                min_values_per_group = min_values_per_group, min_groups = min_groups_required),
                 deliver, omicQcDraw(config, omic_type, "2_Intensity_Filtered"),
-                failed = function(error) shiny::removeNotification(working))
+                failed = function(error) omicQcManagedFailed(error, working, texts[["intensity_error"]]))
         }, error = function(e) {
             message <- paste(texts[["intensity_error"]], e$message)
             logger::log_error(message)
@@ -256,6 +273,20 @@ mod_omic_qc_duplicates_server <- function(id, workflow_data, omic_type, experime
     shiny::moduleServer(id, function(input, output, session) {
         registerOmicQcDuplicates(input, output, session, workflow_data, omic_type, config)
     })
+}
+
+#' A managed QC action's failure (the step has reported it): the working notice removed; a refusal of KIT-194's QC guard
+#' made when the queued action started (A02, B03) is shown with the step's error prefix, as its handler shows one at the
+#' press.
+#' @noRd
+omicQcManagedFailed <- function(error, working, prefix) {
+    shiny::removeNotification(working)
+    if (inherits(error, "omic_qc_input_normalised")) {
+        message <- paste(prefix, conditionMessage(error))
+        logger::log_error(message)
+        shiny::showNotification(message, type = "error", duration = 15)
+    }
+    invisible(NULL)
 }
 
 #' The output id of an assay's duplicate table.
@@ -360,6 +391,8 @@ registerOmicQcDuplicates <- function(input, output, session, workflow_data, omic
         tryCatch({
             # KIT-075: the assay names from the state's metadata; the result carries the state's reference.
             assays <- omicQcHeadMetadata(workflow_data, config)$assay_names
+            # KIT-194: no QC step on a normalised table (7.2).
+            assertOmicQcHeadNotNormalised(binding, workflow_data$state_manager)
             deliver <- function(result, figure) {
                 stats <- omicsDuplicateResolutionStats(result$value, assays)
                 resolved(stats)
@@ -373,7 +406,7 @@ registerOmicQcDuplicates <- function(input, output, session, workflow_data, omic
             }
             runWorkflowOmicsQcAction(binding, workflow_data, omicsDuplicateResolutionStep(binding), deliver,
                 omicQcDraw(config, omic_type, "3_Duplicates_Resolved"),
-                failed = function(error) shiny::removeNotification(working))
+                failed = function(error) omicQcManagedFailed(error, working, "Error resolving duplicates:"))
         }, error = function(e) {
             message <- paste("Error resolving duplicates:", e$message)
             logger::log_error(message)
@@ -598,8 +631,10 @@ omicQcDataSummaryUi <- function(shell, config) {
             sprintf(" No %s object available.", binding$class)))
     }
     assays <- methods::slot(shell, binding$data_slot)
-    samples <- if (length(assays) > 0) names(assays[[1]])[vapply(assays[[1]], is.numeric, logical(1))] else character(0)
     design <- shell@design_matrix
+    # KIT-214 (E-8): the design's samples of the first assay, not its numeric columns.
+    samples <- if (length(assays) > 0) omicsDesignSampleColumnsOf(names(assays[[1]]), design[[shell@sample_id]],
+        methods::slot(shell, binding$id_slot)) else character(0)
     groups <- if (nrow(design) > 0 && shell@group_id %in% names(design)) length(unique(design[[shell@group_id]])) else NA
     row <- function(label, value) shiny::tags$tr(shiny::tags$td(shiny::strong(label)), shiny::tags$td(value))
     shiny::tagList(shiny::tags$table(class = "table table-condensed", style = "margin-bottom: 0;", shiny::tags$tbody(
@@ -639,12 +674,15 @@ omicQcAssayStatsFrame <- function(shell, config) {
     if (is.null(shell) || !inherits(shell, binding$class)) return(NULL)
     assays <- methods::slot(shell, binding$data_slot)
     id_column <- methods::slot(shell, binding$id_slot)
+    # KIT-214 (E-8): Samples counts the design's samples; the missingness reads those that hold numbers.
+    design_samples <- shell@design_matrix[[shell@sample_id]]
     table <- data.frame(Assay = names(assays), Features = attr(shell, "feature_counts") %||% sapply(assays, function(a) {
         if (id_column %in% names(a)) length(unique(a[[id_column]])) else nrow(a)
-    }), Samples = sapply(assays, function(a) sum(vapply(a, is.numeric, logical(1)))), stringsAsFactors = FALSE)
+    }), Samples = sapply(assays, function(a) length(omicsDesignSampleColumnsOf(names(a), design_samples, id_column))),
+        stringsAsFactors = FALSE)
     names(table)[[2L]] <- config$qc$texts[["finalize_count_column"]]
     table$Missingness <- attr(shell, "missing_percent") %||% sapply(assays, function(a) {
-        columns <- names(a)[vapply(a, is.numeric, logical(1))]
+        columns <- omicsDesignNumericColumnsOf(a, design_samples, id_column)
         if (length(columns) == 0) return(NA)
         missing <- sum(vapply(columns, function(column) sum(is.na(a[[column]]) | a[[column]] == 0), numeric(1)))
         round((missing / (nrow(a) * length(columns))) * 100, 1)
@@ -760,6 +798,8 @@ runOmicQcFinalize <- function(workflow_data, omic_type, plot, output, config) {
     qc <- config$qc
     manager <- workflow_data$state_manager
     tryCatch({
+        # KIT-194: no QC step on a normalised table (7.2); the store step below commits at this press, so the press decides.
+        assertOmicQcHeadNotNormalised(binding, manager)
         # KIT-082: the checks read names, classes and row counts, and the text counts the id column. KIT-104 W6
         # (F104-04): an omic whose class cannot be rebuilt as the generic shell reads its own (`qc$finalize_shell`).
         read_shell <- qc$finalize_shell %||% function(binding, manager) {

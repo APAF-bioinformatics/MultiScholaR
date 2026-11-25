@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-omics-norm-state-guards.R	651	0	0	0	0	725.3	ok
+test-kit254-omics-correlation-skip.R	379	0	0	0	0	499.9	ok
+test-workflow-analysis-record.R	351	0	0	0	4	203.6	ok

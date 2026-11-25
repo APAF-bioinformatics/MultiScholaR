@@ -59,12 +59,17 @@ test_that("MCI-032.1 after DA the RUVIII export records M = group, leaves the DA
   expect_identical(written$analyses$trx_ruviii_export$outcomes$ruviii_m_source, "group")
   tsv <- file.path(paths$integration_dir, "transcriptomics_normalized_data.tsv")
   expect_true(file.exists(tsv))
-  # The export's matrix is the reference newY (above); the file is the notebook's (vroom_write of that matrix, as rmd:714-724),
-  # byte-identical to KIT-040's stable output.
-  stable <- reference$store$stable_outputs
-  expect_identical(digest::digest(file = tsv, algo = "sha256"),
-    stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"])
+  # The export's matrix is the reference newY (above). KIT-224 (OD-2, the owner's decision of 2026-11-25): the file keeps
+  # each gene's TMM logCPM level, so it is no longer byte-identical to KIT-040's stable output (the notebook's file): each
+  # gene's mean is its logCPM mean.
+  log_cpm <- withWorkflowStateScope(owner, function() {
+    export <- owner$.context$snapshot$exports$trx_ruviii_export
+    trxSavedMatrix(owner, trxProductValue(owner, trxStateRuvs(owner, export$source)$logcpm)$log_cpm)
+  })
   exported <- as.data.frame(vroom::vroom(tsv, show_col_types = FALSE))
+  file_values <- t(as.matrix(exported[-1L]))
+  colnames(file_values) <- exported$Run
+  expect_lt(max(abs(rowMeans(file_values) - rowMeans(log_cpm[rownames(file_values), colnames(file_values), drop = FALSE]))), 1e-9)
   expect_identical(exported$Run, rownames(value$newY))
   expect_identical(names(exported)[-1L], colnames(value$newY))
   # The results summary: the output map's files.
@@ -139,4 +144,67 @@ test_that("MCI-032.5 the summary tab under the transcriptomics profile: the RUVI
   lipid <- htmltools::renderTags(mod_lipid_summary_ui("summary"))$html
   expect_match(lipid, "lipid-summary-generate-report", fixed = TRUE)
   expect_false(grepl("ruviii", lipid, ignore.case = TRUE))
+})
+
+test_that("KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied", {
+  skipWithoutTrxDeclReference()
+  withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+  fixture <- module_ci_trx_project(module_ci_trx_corpus())
+  assign("project_dirs", fixture$project_dirs, envir = globalenv())
+  withr::defer(if (exists("project_dirs", envir = globalenv())) rm("project_dirs", envir = globalenv()))
+  module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "automatic", ruv_design = "none"),
+    summary = module_ci_trx_summary_steps)
+  report <- list.files(fixture$paths$results_summary_dir, pattern = "^transcriptomics_report.*\\.docx$", full.names = TRUE)
+  expect_length(report, 1L)
+  text <- if (length(report)) module_ci_trx_docx_text(report[[1L]]) else ""
+  for (statement in c(
+    "No correction for unwanted variation was applied: the analysis was run without RUV, as chosen on the normalisation tab.",
+    "The differential expression model held the experimental groups alone (~ 0 + group).",
+    "so the third column shows the TMM logCPM again")) expect_true(grepl(statement, text, fixed = TRUE), info = statement)
+  for (statement in c("RUVs factors W_1", "inferred empirical negative control")) {
+    expect_false(grepl(statement, text, fixed = TRUE), info = statement)
+  }
+})
+
+test_that("KIT-192 T7b the report of a declared design whose k is 0 names the approach, the rule, the seed and the reason", {
+  skipWithoutTrxDeclReference()
+  withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+  fixture <- module_ci_trx_project(module_ci_trx_corpus())
+  assign("project_dirs", fixture$project_dirs, envir = globalenv())
+  withr::defer(if (exists("project_dirs", envir = globalenv())) rm("project_dirs", envir = globalenv()))
+  # The estimated count forced to 0 and nothing else (KIT-186 T3).
+  real <- estimateRuvFactorCount
+  testthat::local_mocked_bindings(estimateRuvFactorCount = function(...) {
+    e <- real(...)
+    e$k <- 0L
+    e
+  }, .package = "MultiScholaR")
+  module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "automatic", ruv_design = "groups_all_features",
+    ruv_k_rule = "num_sv_be"), summary = module_ci_trx_summary_steps)
+  steps <- Filter(function(step) identical(step$operation, "trx_ruvs"), buildWorkflowAnalysisRecord(fixture$owner)$steps)
+  seed <- if (length(steps)) steps[[length(steps)]]$outcomes$ruv_k_seed
+  expect_true(checkmate::test_int(seed))
+  report <- list.files(fixture$paths$results_summary_dir, pattern = "^transcriptomics_report.*\\.docx$", full.names = TRUE)
+  expect_length(report, 1L)
+  text <- if (length(report)) module_ci_trx_docx_text(report[[1L]]) else ""
+  # Pandoc's smart quotes write each quoted label as its own Word run and the extraction puts a space at every tag, so
+  # both sides are compared with quotes made straight and all white space removed (AUDIT-KIT-192-plan-20261124.md A01).
+  squash <- function(x) gsub("\\s+", "", gsub("‘|’|&apos;|&#39;", "'", x))
+  # PCRE: the default engine (TRE) refuses a repeat count above 255 (R1, an instrument defect; the comparison is unchanged).
+  shown <- regmatches(text, regexpr("No correction for unwanted variation.{0,1200}", text, perl = TRUE))
+  if (!length(shown)) shown <- "<absent>"
+  for (statement in c(
+    paste0("No correction for unwanted variation was applied. The approach chosen on the normalisation tab was ",
+      "'Estimate from all genes, within your groups', with the number of unwanted factors set by the rule ",
+      "'Estimated number', random seed ", seed, "."),
+    paste("(k = 0; recorded reason: the estimated count found no unwanted factor (no component above the permutation",
+      "null))"),
+    "This means the rule found no factor it could separate from noise, not that no unwanted variation is present.",
+    "The differential expression model held the experimental groups alone (~ 0 + group).",
+    "so the third column shows the TMM logCPM again")) {
+    expect_true(grepl(squash(statement), squash(text), fixed = TRUE), info = paste(statement, "| rendered:", shown))
+  }
+  for (statement in c("RUVs factors W_1", "inferred empirical negative control")) {
+    expect_false(grepl(squash(statement), squash(text), fixed = TRUE), info = statement)
+  }
 })

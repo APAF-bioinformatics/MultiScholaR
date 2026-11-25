@@ -26,7 +26,22 @@ integrationEnrichFactor(
 \item{id_columns}{A named list giving, for a metabolite or lipid data set, the column of its feature table that
 holds KEGG compound or ChEBI identifiers, for example \code{list(metabolomics_LCMS_Pos = "kegg_id")}.}
 
-\item{overrides}{A named list of enrichment settings and their values (see \code{integrationSettings()$enrichment}).}
+\item{overrides}{A named list of enrichment settings and their values (see \code{integrationSettings()$enrichment}).
+\code{test} chooses the test for KEGG and Reactome: \code{"camera"}, the test of record and the default (limma's camera
+on each feature's regression on the factor, allowing for the correlation measured between a pathway's features,
+on the features measured in every biological sample); \code{"camera_floor"}, the same with negative estimated
+correlations counted as zero (it never calls a pathway \code{"camera"} does not call); \code{"permutation"}, PCGSE's
+permutation test of the factor's values (each feature's correlation with the factor against \code{permutations}
+random reorderings of the factor's values across the biological samples, 1000 or 10000, with \code{seed}; a message
+gives the predicted time first); or \code{"gsea"}, the pre-ranked test used before (each feature's correlation with
+the factor, tested as if features were independent). STRING ignores it. \code{adjust_ruv_factors} (\code{TRUE} or \code{FALSE}),
+"Adjust for removed RUV factors", applies to \code{"camera"} and \code{"camera_floor"}: with \code{TRUE} the test puts the unwanted
+factors that the omic's RUV correction removed from the data set into its model, so a feature counts for what it
+shares with the factor beyond them. Left out, it is \code{FALSE} whatever the model was trained on: the adjustment is
+optional. Because the removed factors are estimated, the adjustment does not protect pathways whose features
+share unwanted variation that follows the factor (the Methods text of a record gives the numbers). \code{TRUE} needs a
+data set to which the omic applied RUV, saved by this version or later. Every result says which form it is. The
+pre-ranked test, the permutation test and STRING do not use the setting.}
 }
 \value{
 A list: \code{enrichments}, a list named \code{"<data set> <database>"} of the enrichments made, each a list with
@@ -44,6 +59,15 @@ used for the query only and is never written to the project, the record or the v
 \dontrun{
 enriched <- integrationEnrichFactor(project, results, api_key = Sys.getenv("STRING_API_KEY"))
 writeLines(enriched$skipped)
+# The pre-ranked test used before KIT-183, for KEGG and Reactome:
+earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+    overrides = list(test = "gsea"))
+# The permutation test of the factor's values (PCGSE), with its seed:
+permuted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+    overrides = list(test = "permutation", seed = 1L))
+# With the unwanted factors the RUV correction removed in the test's model (optional; off unless chosen):
+adjusted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+    overrides = list(adjust_ruv_factors = TRUE))
 names(enriched$enrichments)
 }
 }

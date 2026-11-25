@@ -1,6 +1,7 @@
 # KIT-173: Gene Ontology parent terms on the proteomics clusterProfiler route (T1 to T11 of the ticket, section 10).
 # Fixtures: tests/testdata/go-propagation/ (README.md: sources, releases, SHA-256, licences). No service is called.
 # Helpers: helper-go-propagation.R.
+# KIT-234: T10's loop over the five DIA workbooks removed (the workbooks are archived).
 
 goPropSkipUnlessGoDb <- function() {
     testthat::skip_if_not_installed("GO.db")
@@ -336,7 +337,9 @@ test_that("KIT-173 T7(c): the same DA and annotation run fresh declare go_propag
     fresh <- goPropFresh()
     step <- goPropStep(fresh$record_list)
     names <- vapply(step$parameters, `[[`, "", "name")
-    expect_identical(names, c(utils::head(diaEnrichmentOperation()$parameters, 9L), "go_propagation"))
+    # KIT-203: the default significance rule is declared after it. KIT-205: then the fixed background rule marker.
+    expect_identical(names, c(utils::head(diaEnrichmentOperation()$parameters, 9L), "go_propagation",
+        "significance_rule", "enrichment_background"))
     value <- Filter(function(p) identical(p$name, "go_propagation"), step$parameters)[[1L]]$value
     expect_identical(decodeWorkflowRecordValue(value), "is_a_part_of_regulates")
     base_dir <- goPropFixtureDir("replay-base")
@@ -419,7 +422,7 @@ test_that("KIT-173 T9: a replay under another GO.db release warns with class wor
 
 # --- T10: script users and the electronic-annotation warning ---------------------------------------------------------
 
-test_that("KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates; the workbooks pass the value", {
+test_that("KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates", {
     goPropSkipUnlessGoDb()
     annotations <- data.frame(Entry = sprintf("Q%02d", 1:12), go_id_go_biological_process = "GO:0006110",
         go_term_go_biological_process = "regulation of glycolytic process", go_id_go_molecular_function = NA_character_,
@@ -442,15 +445,6 @@ test_that("KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workb
     expect_true("multischolar_enrichment_iea_not_excludable" %in% warned)
     five_set <- c("GO:0006110", setdiff(GO.db::GOBPANCESTOR[["GO:0006110"]], c("all", "GO:0008150")))
     expect_identical(sort(unique(acc$calls[[1L]]$term2gene[[1L]])), sort(five_set))
-    for (file in c("DIA_workflow_experienced.rmd", "DIA_workflow_limpa.rmd", "DIA_workflow_limpa_starter.rmd",
-        "DIA_workflow_limpa_experienced.rmd", "DIA_workflow_starter.rmd")) {
-        text <- paste(readLines(system.file("workbooks", "proteomics", file, package = "MultiScholaR"), warn = FALSE),
-            collapse = "\n")
-        call <- regmatches(text, regexpr("processEnrichments\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\)", text,
-            perl = TRUE))
-        expect_length(call, 1L)
-        expect_true(grepl('go_propagation = "is_a_part_of_regulates"', call, fixed = TRUE), info = file)
-    }
 })
 
 # --- T11: report text ---------------------------------------------------------------------------------------------------
@@ -511,11 +505,15 @@ test_that("KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record
         expect_true(grepl("3 annotated terms that this release does not contain were not used.", text, fixed = TRUE),
             info = template)
         expect_true(grepl(goPropD7, text, fixed = TRUE), info = template)
-        expect_true(grepl("A term was called significant when its q-value (Storey, 2002) was below 0.05", text,
-            fixed = TRUE), info = template)
-        expect_true(grepl(paste0("The background was the measured proteins with at least one Gene Ontology annotation ",
-            "(on a run with parent terms, at least one below the three top-level terms)."), text, fixed = TRUE),
+        # KIT-203: a fresh record carries the default rule, so the paragraph states the whole-family flag.
+        expect_true(grepl(paste("A term was called significant when its Benjamini-Hochberg adjusted p-value over that",
+            "family was below 0.05"), text, fixed = TRUE), info = template)
+        expect_false(grepl("A term was called significant when its q-value (Storey, 2002)", text, fixed = TRUE),
             info = template)
+        # KIT-205: the fresh record carries the background rule marker ("tested").
+        expect_true(grepl(paste0("The background was the proteins tested in that comparison (those with a p-value) with ",
+            "at least one Gene Ontology annotation (on a run with parent terms, at least one below the three top-level ",
+            "terms)."), text, fixed = TRUE), info = template)
         expect_false(grepl("Benjamini-Hochberg method", text, fixed = TRUE), info = template)
         expect_false(grepl("all identified proteins", text, fixed = TRUE), info = template)
         # (b) a record without go_propagation: the D7 statements, no D3 sentence, no parent-term clause.
@@ -523,6 +521,11 @@ test_that("KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record
         expect_true(grepl(goPropD7, plain, fixed = TRUE), info = template)
         expect_false(grepl("Gene Ontology protein sets were built", plain, fixed = TRUE), info = template)
         expect_false(grepl("on a run with parent terms", plain, fixed = TRUE), info = template)
+        # KIT-203: a record without the rule keeps the q-value's paragraph and is told its measured failure.
+        expect_true(grepl("A term was called significant when its q-value (Storey, 2002) was below 0.05", plain,
+            fixed = TRUE), info = template)
+        expect_true(grepl("Because terms without a list protein are left out before the adjustment", plain,
+            fixed = TRUE), info = template)
         # (c) the count not recorded: no lost-term clause.
         unrecorded <- record_numbers
         unrecorded$enrichment_go_ids_not_in_go_db_total <- "not recorded"
@@ -549,9 +552,12 @@ test_that("KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler para
             expect_true(grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE), info = paste(template, name))
             expect_true(grepl("• A term was called significant when its adjusted p-value was below 0.05.", text,
                 fixed = TRUE), info = paste(template, name))
-            expect_true(grepl(paste0("• The background was the identifiers of each comparison's differential-abundance ",
-                "table (gene names where the table has them, otherwise protein accessions) that g:Profiler recognises ",
-                "(a custom background)."), text, fixed = TRUE), info = paste(template, name))
+            # KIT-205: without a record, the tested proteins; KIT-208's clause (E-7).
+            expect_true(grepl(paste0("• The background was the identifiers of the proteins tested in each comparison ",
+                "(those with a p-value in its differential-abundance table; the first gene name of each protein, from ",
+                "the protein annotation or, where the annotation gives none, from the identifier table; proteins without ",
+                "a gene name were left out of the lists and the background) that g:Profiler recognises (a custom ",
+                "background)."), text, fixed = TRUE), info = paste(template, name))
             expect_false(grepl("clusterProfiler", text, fixed = TRUE), info = paste(template, name))
             expect_false(grepl("Benjamini-Hochberg method", text, fixed = TRUE), info = paste(template, name))
             expect_false(grepl("adjusted FDR cutoff", text, fixed = TRUE), info = paste(template, name))

@@ -1,0 +1,69 @@
+{
+  "during_step": [
+    {
+      "t": 1795602675054,
+      "text": "Applying protein replicate filter ...",
+      "type": "default",
+      "id": "shiny-notification-protein_replicate_filter_working"
+    },
+    {
+      "t": 1795602675054,
+      "text": "A protein replicate filter action is already running",
+      "type": "warning",
+      "id": "shiny-notification-066af00c7b7d1597"
+    },
+    {
+      "t": 1795602687061,
+      "text": "protein replicate filter applied successfully",
+      "type": "message",
+      "id": "shiny-notification-74251862c70f6f6e"
+    }
+  ],
+  "visible_at_end": [
+    {
+      "text": "×Protein annotation was not retrieved: UniProt could not be reached (Couldn't connect to server [rest.uniprot.org]:\nFailed to connect to 127.0.0.1 port 9 after 0 ms: Connection refused). The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run. To try again, save the design again.",
+      "className": "shiny-notification shiny-notification-warning"
+    },
+    {
+      "text": "×protein replicate filter applied successfully",
+      "className": "shiny-notification shiny-notification-message"
+    }
+  ],
+  "modals": [
+    {
+      "start": 1795602497053,
+      "end": 1795602497853,
+      "title": "Experiment Setup",
+      "progress": false,
+      "text": "Experiment Setup Experiment Label: Project Output Directory Select where to create the project directories: Directory Path: Browse... A new folder will be created here with your experiment label Cancel Continue"
+    },
+    {
+      "start": 1795602504053,
+      "end": 1795602505053,
+      "title": "Processing Data",
+      "progress": true,
+      "text": "Processing Data Sanitizing sample names... Please wait while your data is being processed."
+    },
+    {
+      "start": 1795602505253,
+      "end": 1795602506453,
+      "title": "Select Primary Organism",
+      "progress": false,
+      "text": "Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection"
+    },
+    {
+      "start": 1795602512253,
+      "end": 1795602512653,
+      "title": "Processing Design Matrix",
+      "progress": true,
+      "text": "Processing Design Matrix Saving design matrix and preparing data... This may take a moment for large datasets."
+    },
+    {
+      "start": 1795602512853,
+      "end": 1795602516853,
+      "title": "Retrieving UniProt Annotations",
+      "progress": true,
+      "text": "Retrieving UniProt Annotations Please wait while we retrieve protein annotations from UniProt... Initializing... 0%"
+    }
+  ]
+}

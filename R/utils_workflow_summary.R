@@ -72,6 +72,137 @@ workflowSummaryFinalState <- function(config, workflowData, omicType, catFn = ca
     list(finalS4Object = finalS4Object, contrastsTbl = workflowData$contrasts_tbl, dataStateUsed = dataStateUsed)
 }
 
+#' KIT-207 (VAL-105 (2), VAL-148): whether the Summary may write from the head (its final object, study parameters,
+#' analysis record, integration file, report bundle and session state). Lipidomics and metabolomics accept the heads the
+#' DA's head rule accepts (KIT-194: `omicDaFallbackHeadNormalised`; a head adopted from a session file unless
+#' `omicDaLoadedStateRefused` names it), without the DA's precondition on the normalisation status; transcriptomics
+#' accepts a normalised state (`trxDaReadMetadata`). Every other omic, and a manager that is not a session owner, as
+#' before. Recorded divergence: the refusals use plain words for non-specialists, not conventions/R.md's "state the
+#' offending value" (as KIT-194).
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @return TRUE, invisibly; otherwise a condition of class `omic_norm_correlation_input_stale` whose text names the case.
+#' @noRd
+assertWorkflowSummaryHeadFinal <- function(workflowData, omicType) {
+    manager <- workflowData$state_manager
+    if (!isTRUE(omicType %in% c("lipidomics", "metabolomics", "transcriptomics")) || !inherits(manager, "DIAStateAdapter")) {
+        return(invisible(TRUE))
+    }
+    binding <- omicGuiConfig(omicType)$binding$binding
+    texts <- omicNormGuardTexts()
+    refusal <- withWorkflowStateScope(manager, function() {
+        if (omicNormIsTrx(binding)) {
+            if (!is.null(trxDaReadMetadata(workflowData))) return(NULL)
+            return(if (is.null(getWorkflowStateReference(manager, "trx_ruvs"))) texts$summary_none else texts$summary_trx)
+        }
+        head <- manager$current_state
+        if (is.character(head) && length(head) == 1L && omicNormAdopted(manager, head)) {
+            return(if (omicDaLoadedStateRefused(binding, head)) sprintf(texts$summary_loaded, head))
+        }
+        if (omicDaFallbackHeadNormalised(workflowData, binding)) return(NULL)
+        if (is.null(getWorkflowStateReference(manager, paste0(binding$prefix, "_normalized")))) texts$summary_none else
+            texts$summary
+    })
+    if (is.null(refusal)) return(invisible(TRUE))
+    rlang::abort(refusal, class = "omic_norm_correlation_input_stale")
+}
+
+#' KIT-212 (VAL-172 (1), (5)): whether the Summary may present the store's differential analysis: refused when it was run
+#' on another table than the current one (`workflowDaResultStatus`), for every omic; with `files` (Copy and Report) also
+#' when the omic's DA folders hold DA files no DA of this session made (`workflowDaFilesUnmade`), up to three named.
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @param paths The omic's project paths.
+#' @param files Whether the DA files on disk are checked.
+#' @return TRUE, invisibly; otherwise a condition of class `workflow_summary_da_stale`.
+#' @noRd
+assertWorkflowSummaryDaCurrent <- function(workflowData, omicType, paths, files = FALSE) {
+    manager <- workflowData$state_manager
+    texts <- omicNormGuardTexts()
+    if (identical(workflowDaResultStatus(manager), "stale")) rlang::abort(texts$summary_da_stale, class = "workflow_summary_da_stale")
+    if (isTRUE(files)) {
+        unmade <- workflowDaFilesUnmade(manager, paths, omicType)
+        if (length(unmade)) rlang::abort(workflowDaUnmadeText(unmade, texts), class = "workflow_summary_da_stale")
+    }
+    invisible(TRUE)
+}
+
+#' KIT-243 (part D): refused while the newest DA's publication has not completed (its marker,
+#' `removeWorkflowDaOwnFigures`, is still in the publication folder), for every omic.
+#' @param paths The omic's project paths.
+#' @return TRUE, invisibly; otherwise a condition of class `workflow_da_publication_pending`.
+#' @noRd
+assertWorkflowDaPublicationComplete <- function(paths) {
+    marker <- workflowDaPublicationMarker(paths)
+    if (!is.null(marker) && file.exists(marker)) {
+        rlang::abort(omicNormGuardTexts()$da_publication_pending, class = "workflow_da_publication_pending")
+    }
+    invisible(TRUE)
+}
+
+#' KIT-243: what part B compares of an analysis record: its steps as (state, result entity) pairs in order, and its
+#' differential-analysis block, after one JSON round trip with the record writer's options (`writeWorkflowAnalysisRecord`,
+#' which is not called), so a fresh record and one read from disk are compared in the same form.
+#' @param record An analysis record, built or read with `jsonlite::read_json(simplifyVector = FALSE)`.
+#' @return A list.
+#' @noRd
+workflowSummarySaveIdentity <- function(record) {
+    identity <- list(steps = lapply(record$steps, function(step) list(state = step$state, result_entity_id = step$result_entity_id)),
+        differential_abundance = record$analyses$differential_abundance)
+    jsonlite::fromJSON(jsonlite::toJSON(identity, auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),
+        simplifyVector = FALSE)
+}
+
+#' KIT-243 (VAL-212 (2)): whether the last "Save Workflow Arguments" describes the current table and analysis: the
+#' on-disk `analysis_record.json`'s steps and DA block against the record the owner's store gives now
+#' (`buildWorkflowAnalysisRecord`, the builder Save uses; no assay hydrated). "none" for a manager that is not a
+#' reference-state session owner, when no record was saved, or when one cannot be read or compared (logged; KIT-212
+#' E-5's fail-open rule, the recorded divergence over conventions/R.md's specific conditions).
+#' @param manager The bus's state manager.
+#' @param sourceDir The omic's source directory (where Save writes the record).
+#' @return `"none"`, `"current"` or `"changed"`.
+#' @noRd
+workflowSummarySaveStatus <- function(manager, sourceDir) {
+    if (!usesWorkflowReferenceStates(manager) || is.null(sourceDir)) return("none")
+    path <- file.path(sourceDir, "analysis_record.json")
+    if (!file.exists(path)) return("none")
+    tryCatch({
+        saved <- workflowSummarySaveIdentity(jsonlite::read_json(path, simplifyVector = FALSE))
+        current <- workflowSummarySaveIdentity(withWorkflowStateScope(manager, function() buildWorkflowAnalysisRecord(manager)))
+        if (identical(saved, current)) "current" else "changed"
+    }, error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("The saved analysis record could not be compared with the session:",
+            conditionMessage(error))))
+        "none"
+    })
+}
+
+#' KIT-243 (VAL-212 (2)): Copy and the Report refuse until "Save Workflow Arguments" is pressed again when the last Save
+#' does not describe the current table and analysis (`workflowSummarySaveStatus`). Save itself is not guarded.
+#' @param workflowData The workflow bus.
+#' @param paths The omic's project paths.
+#' @return TRUE, invisibly; otherwise a condition of class `workflow_summary_save_stale`.
+#' @noRd
+assertWorkflowSummarySaveCurrent <- function(workflowData, paths) {
+    if (identical(workflowSummarySaveStatus(workflowData$state_manager, paths$source_dir), "changed")) {
+        rlang::abort(omicNormGuardTexts()$summary_save_stale, class = "workflow_summary_save_stale")
+    }
+    invisible(TRUE)
+}
+
+#' The files refusal's text: the folder that holds every listed file, and up to three of them relative to it.
+#' @param files Paths.
+#' @param texts `omicNormGuardTexts()`.
+#' @noRd
+workflowDaUnmadeText <- function(files, texts) {
+    folder <- dirname(files[[1L]])
+    while (!all(startsWith(files, paste0(folder, "/"))) && !identical(dirname(folder), folder)) folder <- dirname(folder)
+    shown <- substring(files, nchar(folder) + 2L)
+    listed <- paste(utils::head(shown, 3L), collapse = ", ")
+    if (length(shown) > 3L) listed <- sprintf("%s and %d more", listed, length(shown) - 3L)
+    sprintf(texts$summary_da_files_unmade, folder, listed)
+}
+
 #' Whether the analysis record (and its bundle) is written for this bus: always with a bus, or only for the group's
 #' `record_class` owner.
 #' @noRd
@@ -93,10 +224,28 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
     summaryFailed <- function(error) {
         catFn("SESSION SUMMARY ERROR:", conditionMessage(error), "\n")
+        # KIT-207: the head is not the normalisation's result. Refused before anything was written: no fallback file, no
+        # "saved with warnings"; the omic's earlier integration input is removed (SD-5 (b), K061-3).
+        # KIT-212 (VAL-172 (1)): the DA shown was run on another table; refused the same way, the earlier input removed.
+        if (inherits(error, c("omic_norm_correlation_input_stale", "workflow_summary_da_stale"))) {
+            notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
+            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
+            failed(error)
+            return(invisible(NULL))
+        }
         # KIT-052 (KIT-134 run 44379470655): a file the save could not write (the session archive's, on Windows with long
         # paths disabled) is named to the user, not only logged; the copy and the report stay refused until it is written.
-        if (inherits(error, "workflow_figure_unwritten")) {
+        # KIT-052, KIT-206; KIT-207 (SD-4): a file the save could not write, or refused, is named to the user.
+        if (inherits(error, c("workflow_figure_unwritten", "prot_norm_correlation_input_stale", "workflow_export_dependency_missing",
+            "integration_input_invalid"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
+        }
+        # KIT-206 audit I02 (K061-3; as KIT-207 SD-5 (b)): the proteomics archive refresh refused a table that is not the
+        # normalisation tab's last result before the integration input was written; the omic's earlier input is removed.
+        if (inherits(error, "prot_norm_correlation_input_stale")) {
+            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
         }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
         if (!file.exists(basicParamsFile)) {
@@ -109,10 +258,13 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         invisible(basicParamsFile)
     }
     tryCatch({
+        assertWorkflowSummaryHeadFinal(workflowData, omicType)
+        assertWorkflowSummaryDaCurrent(workflowData, omicType, paths)
         state <- workflowSummaryFinalState(config, workflowData, omicType, catFn)
         studyParamsFile <- createWorkflowArgsFn(workflow_name = label, description = description,
             source_dir_path = paths$source_dir, final_s4_object = state$finalS4Object, contrasts_tbl = state$contrastsTbl,
-            workflow_data = workflowData)
+            workflow_data = workflowData,
+            omic_type = omicType)
         # KIT-031: the analysis record, derived from the owner's head, beside study_parameters.txt.
         if (workflowSummaryRecords(config, workflowData)) {
             recordFile <- file.path(paths$source_dir, "analysis_record.json")
@@ -193,6 +345,21 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
 copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicType, label, description, argsSaved, notify,
     copyFn = copyToResultsSummary, catFn = cat) {
     paths <- projectDirs[[omicType]]
+    # KIT-212 (VAL-172 (1), (5); E-4): refused first, before the fallback file, when the DA was run on another table or
+    # the DA folders hold files no DA of this session made; nothing is written or copied. A catch-all at a press site, as
+    # the Report's guard. KIT-243: then refused while the newest DA's publication has not completed (part D), and while the
+    # last Save does not describe the current history and DA (VAL-212 (2)).
+    refused <- tryCatch({
+        assertWorkflowSummaryDaCurrent(workflowData, omicType, paths, files = TRUE)
+        assertWorkflowDaPublicationComplete(paths)
+        assertWorkflowSummarySaveCurrent(workflowData, paths)
+    }, error = function(e) e)
+    if (inherits(refused, "error")) {
+        notify(paste("Copy error:", cli::ansi_strip(conditionMessage(refused))), "error", 10)
+        logger::log_error(logger::skip_formatter(paste("Copy refused:", conditionMessage(refused))))
+        return(list(fallbackWritten = FALSE, required = list(), optional = list(), failed = list(), contrastsTbl = NULL,
+            designMatrix = NULL, error = conditionMessage(refused)))
+    }
     fallbackWritten <- FALSE
     basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
     if (!isTRUE(argsSaved) && !file.exists(basicParamsFile)) {
@@ -309,6 +476,23 @@ renderWorkflowSummaryReport <- function(config, workflowData, projectDirs, omicT
         notify("Error: Project directories not properly initialized", "error", 10)
         return(invisible(list(path = NULL, template = NULL, templateSource = NULL, bundleError = NULL)))
     }
+    # KIT-207 (SD-2 (b)): refused, before the template is looked up, when the head is not the normalisation's result.
+    # Recorded divergence: a catch-all at a press site (as KIT-194 A05), over conventions/R.md's specific conditions, so
+    # that an unexpected error of the guard's reads is shown rather than escaping the observer.
+    # KIT-212 (VAL-172 (1), (5)): then refused when the DA was run on another table or the DA folders hold files no DA of
+    # this session made. KIT-243: then while the newest DA's publication has not completed, and while the last Save does
+    # not describe the current history and DA.
+    refused <- tryCatch({
+        assertWorkflowSummaryHeadFinal(workflowData, omicType)
+        assertWorkflowSummaryDaCurrent(workflowData, omicType, paths, files = TRUE)
+        assertWorkflowDaPublicationComplete(paths)
+        assertWorkflowSummarySaveCurrent(workflowData, paths)
+    }, error = function(e) e)
+    if (inherits(refused, "error")) {
+        logger::log_error(logger::skip_formatter(paste("Report refused:", conditionMessage(refused))))
+        notify(paste("Report generation failed:", cli::ansi_strip(conditionMessage(refused))), "error", 15)
+        return(invisible(list(path = NULL, template = NULL, templateSource = NULL, bundleError = NULL)))
+    }
     report <- config$report
     within("Generating report...", {
         # KIT-108 W4: proteomics shows the route's detection first; its resolver returns the template with the route's
@@ -396,6 +580,8 @@ workflowSummaryRenderReport <- function(config, workflowData, paths, omicType, l
 writeWorkflowSummarySessionState <- function(config, workflowData, projectDirs, omicType, label, description, values,
     notify) {
     tryCatch({
+        # KIT-207 (SD-2 (b)): refused when the head is not the normalisation's result ("Export failed: <text>").
+        assertWorkflowSummaryHeadFinal(workflowData, omicType)
         path <- file.path(projectDirs[[omicType]]$source_dir, paste0("session_state_", Sys.Date(), ".RDS"))
         state <- config$session_state(inputValues = list(experiment_label = label, description = description),
             projectDirs = projectDirs, omicType = omicType, values = values, timestamp = Sys.time(),

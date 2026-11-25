@@ -9,7 +9,8 @@ countStatDaGenes(
   lfc_thresh = 0,
   q_val_thresh = 0.05,
   log_fc_column = log2FC,
-  q_value_column = fdr_qvalue
+  q_value_column = fdr_qvalue,
+  p_value_column = NULL
 )
 }
 \arguments{
@@ -22,10 +23,15 @@ countStatDaGenes(
 \item{log_fc_column}{The name of the log fold-change column (tidyverse style).}
 
 \item{q_value_column}{The name of the q-value column (tidyverse style).}
+
+\item{p_value_column}{The name of the raw p-value column (tidyverse style), or NULL (the default). When given, a row
+whose p-value is missing was not tested and gets the status Not tested (KIT-204); that status is listed only when
+at least one row has it.}
 }
 \value{
 A table with the following columns:
-status: The status could be Significant and Up, Significant and Down or Not significant
+status: The status could be Significant and Up, Significant and Down or Not significant, or Not tested (when
+\code{p_value_column} is given and the p-value is missing)
 counts: The number of proteins wit this status
 }
 \description{

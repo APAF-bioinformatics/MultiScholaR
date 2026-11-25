@@ -17,16 +17,31 @@
 # KIT-138, KIT-139: the integration GUI's configuration, its wording table and the helpers its tabs call (the project
 # scan, the import request, the sample-matching preview). The model layer is KIT-062's
 # (utils_workflow_integration_model.R); nothing here computes beyond reading what it returns. The whole surface sits
-# behind the option `MultiScholaR.integration_gui` (off by default): with it off, the home page and the app are today's,
-# byte for byte. The single-omic `validateOmicGuiConfig` does not fit (it requires design, qc and da groups); the shell
-# is validated by `validateOmicGuiShell` only (KIT-060 audit section 5.3).
+# behind the option `MultiScholaR.integration_gui`, on unless set FALSE (KIT-240: INT-003, VAL-209); set FALSE, the home
+# page and the app are as they were before KIT-138, byte for byte. The single-omic `validateOmicGuiConfig` does not fit
+# (it requires design, qc and da groups); the shell is validated by `validateOmicGuiShell` only (KIT-060 audit section
+# 5.3).
 
-#' Whether the integration GUI is offered (KIT-138; the gate in the manner of `MultiScholaR.ruv_design_panel`).
-#' `options(MultiScholaR.integration_gui = TRUE)` shows it.
+#' Whether the integration GUI is offered (KIT-138; the gate in the manner of `MultiScholaR.ruv_design_panel`). KIT-240:
+#' on by default, in the function so that every process that loads the package (the entry, the plain launcher's and the
+#' systemd controller, `run_app()`) shows it; `options(MultiScholaR.integration_gui = FALSE)` hides it.
 #' @return One logical.
 #' @noRd
 integrationGuiEnabled <- function() {
-    isTRUE(getOption("MultiScholaR.integration_gui", FALSE))
+    isTRUE(getOption("MultiScholaR.integration_gui", TRUE))
+}
+
+#' What KIT-151 d's simulations showed for per-feature scaling, in one passage: the Model tab's help (`help_scaling`)
+#' and the integration record's Methods sentence (`methods_scaling_feature_zscore`) both end with it, so the two cannot
+#' differ (KIT-246; the owner's words, VAL-251 and VAL-293). Numbers recounted from KIT-151 d's z-rows.tsv.
+#' @return A character string.
+#' @noRd
+integrationScalingEvidenceText <- function() {
+    paste("In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this",
+        "recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the",
+        "features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather",
+        "than 12 of 30 simulated data sets. Without missing values the difference could not be told from none (29",
+        "rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")
 }
 
 #' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
@@ -131,7 +146,10 @@ integrationGuiTexts <- function() {
         align_caution = paste("Samples are matched by name: a sample must carry the same name in every omic. A sample",
             "named differently in two omics appears as two rows."),
         align_rules_heading = "What happens before the model",
-        align_provisional = "These rules are provisional: the integration methods may still change them.",
+        # KIT-240 (VAL-221 (4)): the matching rules' decisions, named (draft wording, docs/qa/.../kit-240/wording.md).
+        align_provisional = paste("The averaging of runs, the removal of internal standards and the handling of missing",
+            "samples are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the",
+            "decision behind each."),
         # %d: all biological samples, those measured in every data set.
         fact_samples = "%d biological samples in all; %d measured in every data set.",
         # %d: samples missing from at least one data set.
@@ -146,14 +164,14 @@ integrationGuiTexts <- function() {
         # %s: the data set; %d: internal standards.
         fact_standards_drop = "%s: %d internal standards removed.",
         fact_standards_keep = "%s: %d internal standards kept.",
-        # %s: the data set; %d: features.
-        fact_sparse = "%s: %d features measured in fewer than two samples are left out.",
+        # %s: the data set; %d: features left out, the fewest biological samples a feature needs, the samples kept.
+        fact_sparse = "%s: %d features measured in fewer than %d of the %d biological samples are left out.",
         # %d: samples in every data set, the threshold.
         few_samples = paste("Only %d biological samples are measured in every data set (fewer than %d). A factor model",
             "needs more samples; its results may be unstable."),
         view_table_heading = "Data sets",
         col_standards_removed = "Internal standards removed",
-        col_sparse = "Features left out (fewer than two samples)",
+        col_sparse = "Features left out (measured in too few samples)",
         col_features_used = "Features used",
         sample_table_heading = "Biological samples",
         col_sample = "Biological sample",
@@ -206,11 +224,24 @@ integrationGuiTexts <- function() {
         readiness_heading = "Software check",
         readiness_ok = "MOFA2 and the Python it uses are installed: the model can be trained on this computer.",
         readiness_recheck = "Check again",
+        # KIT-240: the piece the software check found missing (`integrationMofaCapability()$missing`), and how to get it.
+        readiness_missing_mofa2 = paste("The model cannot be trained on this computer: the R package MOFA2 is not installed.",
+            "The MultiScholaR installers include it. From R, install it with BiocManager::install(\"MOFA2\"), then press",
+            "Check again."),
+        readiness_missing_reticulate = paste("The model cannot be trained on this computer: the R package reticulate, which",
+            "MOFA2 uses to run Python, is not installed. From R, install it with install.packages(\"reticulate\"), then",
+            "press Check again."),
+        readiness_missing_mofapy2 = paste("The model cannot be trained on this computer: no Python with the module mofapy2",
+            "was found. The MultiScholaR installers include one. From R: install into a Python the mofapy2 version your MOFA2",
+            "asks for (0.7.3 for MOFA2 1.22.0), for example pip install mofapy2==0.7.3; close MultiScholaR and R; set the",
+            "environment variable RETICULATE_PYTHON to that Python; then start R and MultiScholaR again."),
         settings_heading = "Model settings",
         settings_matching_heading = "Set by the confirmed sample table",
-        settings_provisional = paste("Provisional: the integration methods may still change this default. Values",
-            "marked so are the current defaults, not final ones."),
-        mark_provisional = "provisional default",
+        # KIT-240 (VAL-221 (4)): every default is a recorded decision; the mark below is for a default that still waits.
+        settings_provisional = paste("Each default below is a decision recorded in the methods ledger, named in the analysis",
+            "record. A value you change is recorded as set by you."),
+        # KIT-240 (R1-04, R1-07): shown beside each Enrichment setting whose default is not yet confirmed.
+        mark_provisional = "default not yet confirmed",
         mark_decided = "decided",
         # %s: the label, then the value in words.
         setting_fixed = "%s: %s",
@@ -219,7 +250,7 @@ integrationGuiTexts <- function() {
         # KIT-152. %s: the setting's label.
         setting_not_number = "%s: enter a number.",
         # The settings, by the parameter's name (`param_<name>`, `help_<name>`, `choice_<name>_<value>`). A setting
-        # without an entry here shows its name: a parameter the workbook adds appears with no edit to the tab.
+        # without an entry here shows its name: a parameter added to the table appears with no edit to the tab.
         # KIT-153 (INT-23): which values each data set enters the model with; the numbers are the simulation of
         # docs/qa/workflow-execution/kit/kit-151d/ruv-results.md (branch run-mofa-evidence-k151d).
         param_input_matrix = "Values each data set enters the model with",
@@ -257,10 +288,12 @@ integrationGuiTexts <- function() {
         param_scaling = "Scaling of each feature",
         choice_scaling_none = "none: the values as saved",
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
-        # KIT-151 (INT-24).
+        # KIT-151 (INT-24). KIT-239: the simulated pattern's size and the condition in numbers (KIT-151 d, z-summary.tsv:
+        # F2 |r| >= 0.9 in 26 against 12 of 30 with missing values, 29 against 26 without, 30 of 30 at 60 samples). The
+        # last sentence decided by the owner (VAL-251). KIT-246 (VAL-293): the evidence passage is shared with the
+        # Methods paragraph (`integrationScalingEvidenceText`).
         help_scaling = paste("Each selected feature is scaled to mean 0 and standard deviation 1, after the features are",
-            "chosen (the choice uses the values as saved). In simulations with few samples and missing values this found",
-            "weak factors of the smaller data sets more often; otherwise it made no practical difference."),
+            "chosen (the choice uses the values as saved).", integrationScalingEvidenceText()),
         # KIT-151 (audit SCI-12): what scale_views does.
         param_scale_views = "Divide each data set by its overall standard deviation",
         help_scale_views = paste("Each data set is divided by one number, the standard deviation of all its values, so that",
@@ -355,8 +388,8 @@ integrationGuiTexts <- function() {
         results_model = "Results of the model trained at %s.",
         # %s: the reason.
         results_refused = "The results cannot be shown. %s",
-        results_provisional = paste("How many features are listed, which factors are shown, how the factors are related to",
-            "the groups and how the figures look are provisional: the integration methods may still change them."),
+        results_provisional = paste("These defaults are decisions recorded in the methods ledger (VAL-221); a value you change",
+            "is recorded as set by you."),
         advisories_heading = "Notes from the model",
         # %s: the factors (Factor1, Factor2).
         advisory_overall_level = paste("%s rises and falls with each sample's overall level in at least one data set.",
@@ -380,6 +413,21 @@ integrationGuiTexts <- function() {
             "below 1, it depends on the seed, so read it with care."),
         stability_single = paste("The model was trained from one seed only, so how stable the factors are across seeds",
             "was not measured."),
+        # KIT-240 (VAL-221 (1)). %d: the rank, the seeds; %s: the distance below the highest final ELBO, the range of the
+        # final ELBOs (both in ELBO units).
+        stability_elbo_rank = paste("By the final value of MOFA2's training objective (the ELBO, a lower bound on the model",
+            "evidence; higher is better), the model shown ranks %d of %d: %s below the highest. The final values of all seeds",
+            "span %s."),
+        # r1.5 (owner's decision VAL-252): the basis of the rank, from two observed facts: KIT-151c (n20weak cap1000 slow,
+        # run-mofa-evidence-k151c seed-rows.tsv: five seeds span 0.0146, seed 1 ranks 5 of 5) and KIT-062
+        # (mofa-reproducibility-diagnose.json: one solution, matched factors r = 0.999998, 186 and 191 rounds, 0.676 apart).
+        stability_elbo_slack = paste("Training stops by a rule, not at an exact optimum, so a small difference in the final",
+            "value can come from where training stopped rather than from a better solution: one model trained twice in",
+            "single precision (not the shipped setting) on two processors, its factors correlated 0.999998, ended 0.68",
+            "apart when one run stopped five rounds later, and in a simulation with 20 samples and slow training five",
+            "seeds' final values spanned 0.015, with the declared seed ranked 5 of 5."),
+        stability_limit = paste("The table describes only the factors of the model shown: a factor that other seeds find",
+            "but this model lacks is not listed."),
         col_agreement_lowest = "Lowest agreement across seeds",
         col_agreement_median = "Median agreement across seeds",
         col_factor = "Factor",
@@ -405,6 +453,63 @@ integrationGuiTexts <- function() {
             "read the p-values with that in mind."),
         # %s: the omic, then its correction in words.
         claim_correction = "%s: correction for unwanted variation %s",
+        # KIT-239 (INT-28): the limitations of the model, on the Results tab after the notes from the model and in the
+        # integration report after its Methods draft (`integrationLimitationsText`). The `limits_fixed_*` sentences hold
+        # for every run; the others are filled from the model's sample table or the record. Sources of every number:
+        # docs/qa/workflow-execution/kit/kit-239/wording.md.
+        limits_heading = "Limitations of this model",
+        limits_lead = "Read these before drawing conclusions from the factors.",
+        # %d: the biological samples in the model, then those measured in every data set.
+        limits_samples = "This model has %d biological samples; %d of them are measured in every data set.",
+        limits_fixed_samples = paste("How small a pattern the model can find depends on the number of samples. In",
+            "simulations made for this software with 20 samples (two groups of 10), a pattern carried only by the two",
+            "smallest of four data sets, in a tenth of their features, each changed by about two-thirds of its measurement",
+            "noise, was recovered closely (a correlation of at least 0.9 with the true pattern) in at most 2 of 10",
+            "simulated data sets, whichever setting was tried; the settings tried did not include this software's current",
+            "default feature selection. With 60 samples and the slow training this software uses, the same pattern was",
+            "recovered in 7 to 10 of 10, and with this software's default settings a pattern as large as the noise was",
+            "recovered in 26 to 29 of 30 simulated data sets with 20 samples. MOFA2's documentation says that factor models",
+            "are useful only with large numbers of samples, at least more than 15. A pattern this model does not show may",
+            "still be in the data: treat the factors as descriptive."),
+        # %d: the biological samples missing from at least one data set, then the biological samples in the model.
+        limits_missing_samples = paste("Biological samples missing from at least one data set: %d of %d; the model",
+            "leaves those values out."),
+        limits_fixed_missing = paste("Where a value is missing, the model leaves it out (MOFA2 does not impute it), which",
+            "assumes that whether a value is missing does not depend on the value itself (missing at random). Values",
+            "missing because they were too low to measure are not modelled as such, so the model's estimates for",
+            "low-abundance features can be biased. MOFA2 fills missing values with each feature's mean only to compute",
+            "where training starts."),
+        # %s: the data set; %d: its biological samples with two or more runs, its biological samples, the most runs of
+        # one biological sample.
+        limits_averaged_item = "%s: the runs of %d of its %d biological samples were averaged (at most %d runs for one sample).",
+        limits_averaged_none = "No biological sample has more than one run in any data set, so no runs were averaged.",
+        # Said only when runs were averaged.
+        limits_fixed_averaged = paste("Each average uses only the runs in which the value was measured. When a value is",
+            "missing from some of a sample's runs because it was too low to measure, the average of the other runs is too",
+            "high; this affects low-abundance features most."),
+        limits_fixed_model = paste("The model treats all samples as one group (the groups are not given to it, and MOFA2's",
+            "option for several groups of samples is not used), assumes normally distributed (Gaussian) variation in every",
+            "data set, and takes one input per omic (one input can hold several data sets, such as positive and negative",
+            "ion mode). The integration fills in no missing value itself; values that an omic's own workflow estimated",
+            "before saving are treated as measured."),
+        limits_fixed_check = paste("Given the settings of the analysis script it was adapted from, this software trains the",
+            "identical model; this was checked on simulated data only, because the script's own data were not available.",
+            "The check is about the software, not about any biological result, and this software's default settings",
+            "differ from the script's. The defaults for the input matrix, the feature selection, the scaling and the",
+            "convergence rule were chosen from simulations of one design, not from real data; the number of factors comes",
+            "from the analysis script."),
+        # The Results tab (it comes before the Enrichment tab).
+        limits_fixed_services = paste("Enrichment, at the Enrichment tab, needs external services: STRING, queried over the",
+            "internet (by default its version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome",
+            "for metabolites and lipids. Its results depend on the release used, which is recorded with each result."),
+        # The report. %s: the databases and releases the analysis's enrichment used.
+        limits_services_report = paste("The enrichment in this analysis used %s; its results depend on the release of",
+            "each external database named."),
+        limits_services_none = "No enrichment was run in this analysis.",
+        # The report, when the record's integration block cannot be read.
+        limits_not_computed = "This analysis's own numbers could not be read from its record.",
+        # The Model tab, after training.
+        model_limits_pointer = "Read the limitations of this model on the Results tab before drawing conclusions from it.",
         col_samples_tested = "Samples",
         col_groups_n = "Groups",
         col_group_r2 = "Variation between groups (%)",
@@ -614,7 +719,7 @@ integrationGuiTexts <- function() {
         enrich_reactome_organism = "Reactome organism (such as Homo sapiens)",
         enrich_min_set = "Smallest pathway tested (measured compounds in it)",
         enrich_max_set = "Largest pathway tested (measured compounds in it)",
-        enrich_seed = "Seed of the pathway test",
+        enrich_seed = "Seed of the pre-ranked and permutation tests (the correlation-adjusted tests use none)",
         enrich_key = "Your STRING key",
         enrich_key_note = paste("STRING needs a personal key (free from string-db.org). It is used only for this query",
             "and is never saved, recorded or written to a file. Enter it each time."),
@@ -642,7 +747,332 @@ integrationGuiTexts <- function() {
         enrich_tests = paste("%d terms or pathways in the table. P-values are adjusted within this factor, data set and",
             "database only, not across factors, data sets or databases."),
         enrich_none = "No term or pathway passed the threshold.",
-        enrich_terms_heading = "Enriched terms and pathways"
+        enrich_terms_heading = "Enriched terms and pathways",
+        # KIT-183 (VAL-51, VAL-53; proposed wording, VAL-41: the owner edits before release). The numbers in brackets
+        # are the simulation's measured rates (docs/qa/workflow-execution/kit/kit-183/results.md), written in as constants.
+        # VAL-115 (4): the permutation notes take the number of reorderings chosen (%s; their literal % doubled), and every
+        # offered test's note gives the caution about paired, repeated or batched samples.
+        # KIT-191 (VAL-85 (2), VAL-97): four tests, each note per kind of data set (metabolites, shown also for lipids;
+        # genes and proteins, through Gene Ontology), its figures from KIT-183's counted simulation (run 45225854502)
+        # as `INTEGRATION_ENRICHMENT_TEST_EVIDENCE` holds them; regenerated by kit-191/evidence-k191.R (U14).
+        enrich_test = "Test",
+        enrich_test_camera = "Correlation-adjusted test (camera), the default",
+        enrich_test_camera_floor = "Correlation-adjusted test, negative correlations counted as zero (camera)",
+        enrich_test_permutation = "Permutation of the factor's values (PCGSE)",
+        enrich_test_gsea = "Pre-ranked test (GSEA)",
+        enrich_test_camera_pr = "Correlation-adjusted test with an assumed correlation (cameraPR)",
+        enrich_test_camera_note_genes_proteins = paste("Each feature's values are regressed on the factor across the",
+            "biological samples. A term is called when its features follow the factor more closely, in one direction, than",
+            "the other features, allowing for how strongly the term's features vary together, as measured in these data",
+            "(limma camera; Wu and Smyth 2012). Only features measured in every biological sample of this data set can be",
+            "used. The factor was learned from these same data, which the test does not allow for, so read the result as a",
+            "list of terms worth a closer look, not as proof. In a check on simulated data with 12 biological samples, terms",
+            "with no link to the factor were called at the 5 % level in 0.4 to 6.6 % of cases, depending on the kind of",
+            "term; terms made only of the most variable features, the ones the model selects, were called in up to 10.1 %",
+            "even when the factor was replaced by values unrelated to the data, and in up to 12.8 % on factors weaker than",
+            "the main effect. In the same check, terms of 10 genes or proteins in which half the features truly followed",
+            "the main factor were found in 60 to 62 % of cases, and terms of 30 such features in 99 to 100 % (in result",
+            "tables of about 120 to 150 terms, about 1 in 6 truly linked).",
+            "It treats the biological samples as independent, which samples taken in pairs, repeatedly from one subject,",
+            "or in batches are not."),
+        enrich_test_camera_note_metabolites = paste("Each feature's values are regressed on the factor across the biological",
+            "samples. A term is called when its features follow the factor more closely, in one direction, than the other",
+            "features, allowing for how strongly the term's features vary together, as measured in these data (limma",
+            "camera; Wu and Smyth 2012). Only features measured in every biological sample of this data set can be used.",
+            "The factor was learned from these same data, which the test does not allow for, so read the result as a list",
+            "of terms worth a closer look, not as proof. In a check on simulated metabolite data with 12 biological",
+            "samples, terms with no link to the factor were called at the 5 % level in 0.4 to 4.5 % of cases, depending on",
+            "the kind of term; terms made only of the most variable features, the ones the model selects, were called in",
+            "up to 4.5 % even when the factor was replaced by values unrelated to the data, and in up to 6.7 % on factors",
+            "weaker than the main effect. In the same check, terms of 5 metabolites, 2 of them truly following the main",
+            "factor, were found in 2.0 to 2.2 % of cases (in result tables of about 90 terms, about 1 in 9 truly linked).",
+            "It treats the biological samples as independent, which samples taken in pairs, repeatedly from one subject,",
+            "or in batches are not."),
+        enrich_test_camera_floor_note_genes_proteins = paste("The correlation-adjusted test, with any negative correlation",
+            "measured between a term's features counted as zero (limma's own default). This never makes a p-value smaller,",
+            "so it never calls a term that the default test does not call. In a check on simulated data with 12 biological",
+            "samples, terms with no link were called at the 5 % level in 1.1 to 5.1 % of cases against values unrelated to",
+            "the data, depending on the kind of term, and terms made only of the most variable features in up to 5.5 % (the",
+            "default test: up to 10.1 %); terms of 10 genes or proteins in which half the features truly followed the main",
+            "factor were found in 47 to 50 % of cases (the default test: 60 to 62 %; 30 features: 99 %) (in result tables",
+            "of about 120 to 150 terms, about 1 in 6 truly linked). With 6 biological samples it found at most 12 % of such",
+            "terms of 10 or 30 features. On factors weaker than the main effect, terms of features the model used were",
+            "called in up to 12.8 %, as with the default test. The factor was learned from these same data, which the test",
+            "does not allow for.",
+            "It treats the biological samples as independent, which samples taken in pairs, repeatedly from one subject,",
+            "or in batches are not."),
+        enrich_test_camera_floor_note_metabolites = paste("The correlation-adjusted test, with any negative correlation",
+            "measured between a term's features counted as zero (limma's own default). This never makes a p-value smaller,",
+            "so it never calls a term that the default test does not call. In a check on simulated metabolite data with 12",
+            "biological samples, terms with no link to the factor were called at the 5 % level in 1.7 to 3.6 % of cases",
+            "against values unrelated to the data, depending on the kind of term (the default test: 3.4 to 4.5 %); terms of",
+            "5 metabolites, 2 of them truly following the main factor, were found in 0.1 to 0.2 % of cases (the default",
+            "test: 2.0 to 2.2 %) (in result tables of about 90 terms, about 1 in 9 truly linked). On factors weaker than the",
+            "main effect, terms of metabolites the model used were called in up to 6.7 %, as with the default test. No lipid",
+            "data were simulated. The factor was learned from these same data, which the test does not allow for.",
+            "It treats the biological samples as independent, which samples taken in pairs, repeatedly from one subject,",
+            "or in batches are not."),
+        enrich_test_permutation_note_genes_proteins = paste("Each feature's correlation with the factor is compared with",
+            "what %s random reorderings of the factor's values across the biological samples give, so features that",
+            "vary together keep varying together (the permutation test of PCGSE, Frost et al. 2015). The reorderings stand",
+            "for a factor that follows no feature; this factor was learned from these same data and follows the features",
+            "it was learned from, which no reordering reproduces, so the test does not allow for that. It treats the",
+            "biological samples as interchangeable, which samples taken in pairs, repeatedly from one subject, or in",
+            "batches are not. In a check on simulated data with 12 biological samples, terms with no link were called at",
+            "the 5 %% level in 4.8 to 5.3 %% of cases against values unrelated to the data, whatever the kind of term (the",
+            "most variable features: 4.9 to 5.3 %%), and in 0.4 to 4.4 %% on the main factor; terms of 10 genes or proteins",
+            "in which half the features truly followed the main factor were found in 39 to 52 %% of cases (the default",
+            "test: 60 to 62 %%), of 30 in 80 to 96 %% (in result tables of about 120 to 150 terms, about 1 in 6 truly",
+            "linked). With 6 biological samples it found 0.2 to 3.2 %% of such terms (10 to 100 features). On factors",
+            "weaker than the main effect, terms of features the model used were called in up to 12.7 %%."),
+        enrich_test_permutation_note_metabolites = paste("Each feature's correlation with the factor is compared with what",
+            "%s random reorderings of the factor's values across the biological samples give, so features that vary",
+            "together keep varying together (the permutation test of PCGSE, Frost et al. 2015). The reorderings stand for a",
+            "factor that follows no feature; this factor was learned from these same data and follows the features it was",
+            "learned from, which no reordering reproduces, so the test does not allow for that. It treats the biological",
+            "samples as interchangeable, which samples taken in pairs, repeatedly from one subject, or in batches are not.",
+            "In a check on simulated metabolite data with 12 biological samples, terms with no link to the factor were",
+            "called at the 5 %% level in 4.2 to 5.2 %% of cases against values unrelated to the data, whatever the kind of",
+            "term, and in 0.6 to 4.7 %% on the main factor; terms of 5 metabolites, 2 of them truly following the main",
+            "factor, were found in 1.0 %% of cases (the default test: 2.0 to 2.2 %%) (in result tables of about 90 terms,",
+            "about 1 in 9 truly linked). On factors weaker than the main effect, terms of metabolites the model used were",
+            "called in up to 8.6 %% (the default test: 6.7 %%). No lipid data were simulated."),
+        enrich_test_gsea_note_genes_proteins = paste("Every feature is ranked by its correlation with the factor, and a",
+            "term is called when its features sit nearer the top or the bottom of the list than chance (GSEA). The test",
+            "shuffles features as if each were independent. Features that vary together, such as the members of one",
+            "pathway or one complex, make its p-values too small: in a check on simulated data with 12 biological samples,",
+            "terms with no link to the factor whose features were correlated at 0.3 were called at the 5 % level in 40.2",
+            "to 43.0 % of cases (terms of 10 to 100 genes or proteins), against 5 % expected. The factor was learned from",
+            "these same data. Use it to explore; it also uses features with missing values, whose correlations, computed",
+            "on fewer samples, are noisier and sit more often near the ends of the list. In the same check, terms of 10",
+            "genes or proteins in which half the features truly followed the main factor were found in 63 to 72 % of",
+            "cases, a figure that comes with the excess on correlated terms above (in result tables of about 120 to 150",
+            "terms, about 1 in 6 truly linked).",
+            "It treats the biological samples as independent, which samples taken in pairs, repeatedly from one subject,",
+            "or in batches are not."),
+        enrich_test_gsea_note_metabolites = paste("Every feature is ranked by its correlation with the factor, and a term",
+            "is called when its features sit nearer the top or the bottom of the list than chance (GSEA). The test shuffles",
+            "features as if each were independent. Features that vary together, such as the members of one pathway, make",
+            "its p-values too small: in a check on simulated metabolite data with 12 biological samples, terms with no",
+            "link to the factor whose features were correlated at 0.3 were called at the 5 % level in 13.5 % of cases",
+            "(terms of 5 to 10 metabolites), against 5 % expected. The factor was learned from these same data. Use it to",
+            "explore; it also uses features with missing values, whose correlations, computed on fewer samples, are",
+            "noisier and sit more often near the ends of the list. In the same check, terms of 5 metabolites, 2 of them",
+            "truly following the main factor, were found in 1.0 to 1.3 % of cases (in result tables of about 90 terms,",
+            "about 1 in 9 truly linked).",
+            "It treats the biological samples as independent, which samples taken in pairs, repeatedly from one subject,",
+            "or in batches are not."),
+        enrich_test_camera_pr_note = paste("Like the correlation-adjusted test, but with the correlation between a",
+            "term's features assumed to be 0.01 instead of measured (not offered in this release: the correlation-adjusted",
+            "test with the correlation measured held the error rate in the check on simulated data). Terms whose features vary together more strongly get p-values that are too",
+            "small: 29.9 % of terms with no link to the factor, correlated at 0.3, were called at the 5 % level.",
+            "The factor was learned from these same data. Read the result as a list of terms worth a closer look, not as",
+            "proof."),
+        # KIT-184 (VAL-58 (1)): for the tests that have no design (the pre-ranked and permutation tests) on a model trained
+        # on RUV-corrected values.
+        enrich_values_ruv_note = paste("This model was trained on RUV-corrected values, but this result uses the",
+            "normalised values before RUV correction without the unwanted factors the correction removed; variation the",
+            "correction removed stays in them, which lowers power and, if it follows the factor, can bias the result."),
+        # KIT-184 (VAL-53 (1), VAL-58, VAL-62, VAL-160; ticket 5.5). DRAFTS for the owner's wording pass (VAL-41), listed
+        # verbatim in docs/qa/workflow-execution/kit/kit-184/wording.md. The setting is off unless chosen (VAL-160). The
+        # numbers are those of the counted simulation (run 45353248796; kit-184/results.md): what the adjustment kept,
+        # and its limit, in the words the results audit proposed (K184-R12). The setting, the label of the form with
+        # every result of a test that has a design, and the sentences of each form.
+        enrich_adjust_ruv = "Adjust for removed RUV factors",
+        enrich_adjust_ruv_help = paste("Off unless you switch it on. On: each feature is tested for what it shares with",
+            "the factor beyond the unwanted factors that the RUV correction removed from this data set. In a check on",
+            "simulated data this kept false calls within the checked limit (at most 5.4 %) for the kinds of sets with no",
+            "link to what was tested that the check decided on; sets made only of the most variable features were called",
+            "more often (up to 9.4 %, 6.8 % without it), and so were sets in which half the features truly followed the",
+            "main factor, tested against an unrelated covariate (up to 8.6 %, up to 7.0 % without it); it found more true",
+            "terms than off (with as many factors removed as were planted; with four removed where two were planted it",
+            "found fewer). Because the unwanted factors are estimated, sets of features that share them can still be",
+            "called when that variation follows the factor: in a check on simulated data where it followed the groups,",
+            "such sets were called on the model's main factor in 8.1 to 29.6 % of cases with the adjustment and in 2.0 to",
+            "11.2 % without it. Off: the values before RUV are tested without those factors. On needs a data set to which",
+            "the omic applied RUV. The setting does not apply to the pre-ranked test, the permutation test or STRING."),
+        # %d: the removed factors in the design.
+        enrich_adjust_label_yes = "Adjusted for removed RUV factors: yes (%d factor(s)).",
+        enrich_adjust_label_no = "Adjusted for removed RUV factors: no.",
+        # %d: the removed factors in the design, the same, the residual degrees of freedom. These three notes are filled
+        # with sprintf(), so a per cent sign in them is written doubled.
+        enrich_values_ruv_covariates_note = paste("This model was trained on values corrected for unwanted variation",
+            "(RUV). The test reads the values before that correction and puts the %d unwanted factors the correction",
+            "removed from this data set into its model, so a feature counts only for what it shares with the factor",
+            "beyond those unwanted factors. For features measured in every run the regression is exactly that of the same",
+            "model (the factor and these %d unwanted factors) fitted to the corrected values, with %d residual degrees of",
+            "freedom; the test's variance trend reads each feature's average before the correction, so its p-values can",
+            "differ where the correction moved a feature's level. It is not the test of the corrected values on the factor",
+            "alone. The unwanted factors were estimated from these same data and are treated as known. Because the",
+            "unwanted factors are estimated, sets of features that share them can still be called when that variation",
+            "follows the factor: in a check on simulated data where it followed the groups, such sets were called on the",
+            "model's main factor in 8.1 to 29.6 %% of cases with the adjustment and in 2.0 to 11.2 %% without it."),
+        # An approximate set of factors (VAL-58 (6)): no sentence claims an exact match. %d: the removed factors in the
+        # design, the residual degrees of freedom.
+        enrich_values_ruv_covariates_note_approximate = paste("This model was trained on values corrected for unwanted",
+            "variation (RUV). The test reads the values before that correction and puts the %d unwanted factors the",
+            "correction removed from this data set into its model, so a feature counts only for what it shares with the",
+            "factor beyond those unwanted factors. The model has %d residual degrees of freedom. It is not the test of the",
+            "corrected values on the factor alone. The unwanted factors were estimated from these same data and are",
+            "treated as known. Because the unwanted factors are estimated, sets of features that share them can still be",
+            "called when that variation follows the factor: in a check on simulated data where it followed the groups,",
+            "such sets were called on the model's main factor in 8.1 to 29.6 %% of cases with the adjustment and in 2.0 to",
+            "11.2 %% without it."),
+        # %d: the factors the correction declared; %s: the share of what it removed that lies within them.
+        enrich_removed_approximate = paste("Runs were removed after the correction, or it removed variation outside these",
+            "%d factors: %s of what it removed lies within them, so the match with the corrected values is approximate for",
+            "every feature."),
+        # %d: the removed factors in the design.
+        enrich_values_adjusted_default_note = paste("This model was trained on the values before RUV correction. For this",
+            "result the adjustment for removed RUV factors was switched on: the test puts the %d unwanted factors that the",
+            "omic's RUV correction removed from this data set into its model, so a feature counts only for what it shares",
+            "with the factor beyond those unwanted factors. If the factor itself follows them, little is left to test (see",
+            "the share below). The unwanted factors were estimated from these same data and are treated as known. Because",
+            "the unwanted factors are estimated, sets of features that share them can still be called when that variation",
+            "follows the factor: in a check on simulated data where it followed the groups, such sets were called on the",
+            "model's main factor in 8.1 to 29.6 %% of cases with the adjustment and in 2.0 to 11.2 %% without it."),
+        # The form without the adjustment on a model trained on RUV-corrected values: the default (VAL-160). Its numbers
+        # are the ranges over the three simulated data sets where the unwanted variation followed the groups.
+        enrich_values_ruv_unadjusted_note = paste("This model was trained on RUV-corrected values. This result is the form",
+            "without the adjustment for removed RUV factors, which is the default (the adjustment is optional): it tests",
+            "the normalised values before RUV correction without the unwanted factors the correction removed. Its degrees",
+            "of freedom are counted correctly, but variation the correction removed stays in the values, which lowers",
+            "power. In a check on simulated data where the unwanted variation followed the groups, sets of features",
+            "sharing it were called on the model's main factor in 2.0 to 11.2 % of cases in this form and in 8.1 to 29.6 %",
+            "with the adjustment."),
+        # The counts of a result with the removed factors, in three sentences (the second is left out for an approximate
+        # set of factors). %d: the removed factors in the design, biological samples, residual degrees of freedom.
+        enrich_test_covariates_design = paste("Design: intercept, factor and %d removed unwanted factor(s); %d biological",
+            "samples, %d residual degrees of freedom."),
+        # %d: the features used that were measured in every run, the features used.
+        enrich_test_covariates_runs = paste("%d of the %d features used were measured in every run; for the others the",
+            "correction worked feature by feature and the match with the corrected values is approximate."),
+        # %s: the share of the factor's variance the removed factors explain, the share expected by chance.
+        enrich_test_covariates_share = paste("The removed unwanted factors explain %s of this factor's variation across",
+            "these samples (about %s would be expected for an unrelated factor)."),
+        # The three composed (%d, %d, %d; %d, %d; %s, %s), as shown for an exact set of factors.
+        enrich_test_covariates_counts = paste("Design: intercept, factor and %d removed unwanted factor(s); %d biological",
+            "samples, %d residual degrees of freedom. %d of the %d features used were measured in every run; for the others",
+            "the correction worked feature by feature and the match with the corrected values is approximate. The removed",
+            "unwanted factors explain %s of this factor's variation across these samples (about %s would be expected for an",
+            "unrelated factor)."),
+        enrich_factor_removed_overlap = paste("More than half of this factor's variation across the samples of this data",
+            "set follows the unwanted factors removed from it. Little is left to test here, and in this data set the factor",
+            "may reflect variation the correction treated as unwanted."),
+        # %d: the removed factors, the residual degrees of freedom, the smallest number at which the rate was checked.
+        enrich_test_few_df = paste("With %d removed factor(s) in the model this test has %d residual degrees of freedom,",
+            "fewer than the smallest number (%d) at which its error rate was checked."),
+        # camera_floor with the removed factors (KIT-191 8.2 item 4; D3 (a): its measured power, arm 3 of the counted
+        # simulation, sets of 10 on the main factor, the gene and protein data sets of both deciding cells).
+        enrich_floor_covariates_note = paste("False calls are at most those of the correlation-adjusted test with the same",
+            "unwanted factors (counting negative correlations as zero never makes a p-value smaller). In a check on",
+            "simulated data with 12 biological samples and 2 removed factors, terms of 10 features in which half the",
+            "features truly followed the main factor were found in 13 to 32 % of cases with these factors in the model (the",
+            "correlation-adjusted test: 30 to 48 %)."),
+        enrich_caution = paste("Exploratory: the factor was learned from these same data, so these terms are worth a",
+            "closer look, not proof. P-values are adjusted within this factor, data set and database only."),
+        # %s: the factor's variance explained, the largest factor's (r2_percent of the data set's model features), the
+        # kind of simulated data, the kind of term, the entry's test's figure (row E of the evidence table), the test.
+        enrich_factor_strength = paste("In this data set, this factor explains %s of the variance of the features the",
+            "model was trained on (the factor that explains most explains %s). In a check on simulated %s, on factors",
+            "weaker than the main effect, %s were called in up to %s of cases by the %s, although they had no link to the",
+            "simulated biology; no error rate is claimed for such factors."),
+        # VAL-115 (4): the kind of simulated data, the lipid case in one bracket after it.
+        enrich_strength_kind_genes_proteins = "gene and protein data",
+        enrich_strength_kind_metabolites = "metabolite data",
+        enrich_strength_kind_lipids = "metabolite data (no lipid data were simulated)",
+        enrich_strength_terms_genes_proteins = paste("terms made of features the model used, or of features that vary",
+            "together with them"),
+        enrich_strength_terms_metabolites = "terms of metabolites the model used",
+        # The tests as a sentence names them.
+        enrich_test_phrase_camera = "correlation-adjusted test",
+        enrich_test_phrase_camera_floor = "correlation-adjusted test with negative correlations counted as zero",
+        enrich_test_phrase_permutation = "permutation test",
+        enrich_test_phrase_gsea = "pre-ranked test",
+        enrich_test_phrase_camera_pr = "correlation-adjusted test with an assumed correlation",
+        # %d: the data set's biological samples (fewer than 11, the smallest number at which the error rates were decided).
+        enrich_test_few_samples_camera_genes_proteins = paste("This data set has %d biological samples, fewer than the",
+            "smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 5.0 %% of cases (terms of the most variable features: up to",
+            "9.9 %%), and terms of 30 features half following the factor were found in 23 to 44 %%."),
+        enrich_test_few_samples_camera_floor_genes_proteins = paste("This data set has %d biological samples, fewer than",
+            "the smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 4.1 %% of cases (terms of the most variable features: up to",
+            "2.7 %%), and terms of 30 features half following the factor were found in 0 to 12 %%."),
+        enrich_test_few_samples_permutation_genes_proteins = paste("This data set has %d biological samples, fewer than",
+            "the smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 5.3 %% of cases (terms of the most variable features: up to",
+            "5.3 %%), and terms of 30 features half following the factor were found in 0.7 to 1.9 %%."),
+        enrich_test_few_samples_gsea_genes_proteins = paste("This data set has %d biological samples, fewer than the",
+            "smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 5.2 %% of cases (64.7 %% when the term's features vary",
+            "together; terms of the most variable features: up to 6.2 %%), and terms of 30 features half following the",
+            "factor were found in 95 to 99 %%."),
+        enrich_test_few_samples_camera_metabolites = paste("This data set has %d biological samples, fewer than the",
+            "smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 3.7 %% of cases (terms of the most variable features: up to",
+            "3.8 %%), and terms of 5 metabolites, 2 following the factor, were found in 0.1 to 0.2 %%."),
+        enrich_test_few_samples_camera_floor_metabolites = paste("This data set has %d biological samples, fewer than",
+            "the smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 2.2 %% of cases (terms of the most variable features: up to",
+            "0.3 %%), and terms of 5 metabolites, 2 following the factor, were found in 0 %%."),
+        enrich_test_few_samples_permutation_metabolites = paste("This data set has %d biological samples, fewer than",
+            "the smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 5.0 %% of cases (terms of the most variable features: up to",
+            "5.0 %%), and terms of 5 metabolites, 2 following the factor, were found in 0.1 to 0.3 %%."),
+        enrich_test_few_samples_gsea_metabolites = paste("This data set has %d biological samples, fewer than the",
+            "smallest number (11) at which the tests' error rates were decided; at 6 samples, terms with no link to the",
+            "factor were called at the 5 %% level in up to 4.6 %% of cases (33.4 %% when the term's features vary",
+            "together; terms of the most variable features: up to 4.2 %%), and terms of 5 metabolites, 2 following the",
+            "factor, were found in 0.7 %%."),
+        # %d: features used, biological samples, ranked features with a missing value, second features on one identifier.
+        enrich_test_counts = paste("Used by the correlation-adjusted test: %d features measured in all %d biological",
+            "samples (%d ranked features with an identifier had a missing value and were left out; %d set aside as a second feature on one",
+            "identifier)."),
+        enrich_test_counts_permutation = paste("Used by the permutation test: %d features measured in all %d biological",
+            "samples (%d ranked features with an identifier had a missing value and were left out; %d set aside as a",
+            "second feature on one identifier)."),
+        # %d: reorderings, biological samples; %s: the smallest p-value; %d: terms tested, the smallest number of terms
+        # called together (5.2 step 8, as corrected by AUDIT-KIT-193 A05: BH calls k* terms with p_(k*) <= 0.05 k* / m,
+        # and p_(k*) >= p_min, so k* >= m p_min / 0.05).
+        enrich_test_permutation_floor = paste("With %d reorderings of %d biological samples no p-value can be below %s;",
+            "among the %d terms tested, none can be called at a 5 %% false discovery rate unless at least %d are called",
+            "together."),
+        # %d: reorderings, biological samples; %s: the smallest p-value, above 0.05 (AUDIT-KIT-191-impl I01).
+        enrich_test_permutation_floor_none = paste("With %d reorderings of %d biological samples no p-value can be below",
+            "%s, which is above 0.05, so no term can be called at a 5 %% false discovery rate."),
+        # %s: seconds; %d: features, biological samples, terms, reorderings (the scripted run, D4 (c)).
+        enrich_test_permutation_time = paste("The permutation test is predicted to take about %s seconds (%d features, %d",
+            "biological samples, %d terms, %d reorderings); the prediction was measured on a test computer, and this",
+            "computer may be slower or faster."),
+        enrich_permutations = "Number of random reorderings (permutation test)",
+        enrich_permutations_1000 = "1,000 (the number checked on simulated data)",
+        enrich_permutations_10000 = "10,000 (smaller p-values possible; not checked separately)",
+        # The evidence table beside the selector (D6 (a)); %s: the kind of simulated data.
+        enrich_evidence_heading = paste("How each test behaved in a check on simulated %s data with 12 biological",
+            "samples (5 %% level)"),
+        enrich_evidence_lipids = "No lipid data were simulated; these are the figures for metabolites.",
+        enrich_evidence_measure = "Kind of term",
+        enrich_evidence_A = "Terms with no link, factor replaced by values unrelated to the data",
+        enrich_evidence_B = paste("Terms made only of the most variable features (those the model selects), values",
+            "unrelated to the data"),
+        enrich_evidence_C = "Terms with no link, main factor",
+        enrich_evidence_D = "Terms with no link whose features vary together (correlation 0.3), main factor",
+        enrich_evidence_E_genes_proteins = paste("Weaker factors: terms of features the model used, or of features that",
+            "vary together with them, largest"),
+        enrich_evidence_E_metabolites = "Weaker factors: terms of metabolites the model used, largest",
+        enrich_evidence_F = "At least one false call among a result's unrelated terms",
+        enrich_evidence_C3 = "Terms of compounds that carry 2 or 3 measured features, no link",
+        enrich_evidence_G = "Terms of 10 genes or proteins, half truly following the main factor: found",
+        enrich_evidence_H = "The same, 30 features: found",
+        enrich_evidence_I = "Terms of 5 metabolites, 2 of them following the main factor: found",
+        enrich_evidence_kind_genes_proteins = "gene and protein",
+        enrich_evidence_kind_metabolites = "metabolite",
+        # The first sentence of `enrich_direction` (%s: the feature, its data set; %d: +1 or -1), for camera results.
+        enrich_direction_oriented = paste("Direction: the factor is oriented so that its largest weight (%s in %s) is",
+            "positive (multiplied by %d)."),
+        enrich_direction_camera = paste("Up: the term's features rise with the factor more than the other features do",
+            "on average; Down: they rise less, or fall more, than the other features do on average.")
     )
 }
 
@@ -1036,6 +1466,9 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
     # Counted over the union of the data sets' biological samples, whichever rule keeps them.
     total <- preview$all_samples
     missing <- total - preview$aligned$shared_samples
+    # KIT-240 r1.4 (AUDIT-KIT-240-impl I02): the rule the alignment applied, over the kept samples, as the Methods says.
+    kept <- nrow(preview$aligned$samples)
+    min_observed <- integrationMinObserved(parameters, kept)
     facts <- c(sprintf(texts[["fact_samples"]], total, preview$aligned$shared_samples),
         sprintf(text("fact_missing_", parameters$missing_samples), missing))
     for (i in seq_len(nrow(preview$replicates))) {
@@ -1047,7 +1480,7 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
             facts <- c(facts, sprintf(text("fact_standards_", parameters$internal_standards), row$view, row$standards))
         }
         sparse <- summary$sparse_dropped[summary$view == row$view]
-        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse))
+        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse, min_observed, kept))
     }
     unname(facts)
 }
@@ -1179,12 +1612,12 @@ integrationSaveDesign <- function(samples, dir) {
 #' @noRd
 INTEGRATION_GUI_MATCHING_PARAMETERS <- c("technical_replicates", "internal_standards", "missing_samples")
 
-#' Whether a parameter's default is provisional: the spec's `settled_by` names the workbook as the one that settles or
-#' may override it (every parameter but `precision`, decided by INT-6, today).
-#' @param entry One entry of `integrationMofaParameterSpec()`.
+#' Whether a parameter's default still awaits the owner's decision: its `settled_by` says so (KIT-240, VAL-221 (4): no
+#' model or Results default today; the marks of the others name their decision and ledger row).
+#' @param entry One entry of `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
 #' @noRd
 integrationParameterProvisional <- function(entry) {
-    grepl("provisional|may override", entry$settled_by)
+    grepl("awaiting the owner", entry$settled_by, fixed = TRUE)
 }
 
 #' A setting's label, its choices' labels and its help, from the wording table; a parameter or value without an entry
@@ -1205,9 +1638,10 @@ integrationParameterType <- function(entry) {
 }
 
 #' A tab's settings, built from its parameter spec (KIT-140; KIT-152 for any tab and a type per parameter): one input
-#' per parameter, its default the spec's, so a default the workbook changes changes the screen with no edit here; a
+#' per parameter, its default the spec's, so a default changed in the table changes the screen with no edit here; a
 #' choice as buttons, a flag as a tick box, a whole number or a number as a number box, factors as a list to pick from
-#' (its choices filled by the tab once a model is shown). Each label carries "provisional default" or "decided".
+#' (its choices filled by the tab once a model is shown). Each label carries "decided", or the mark of a default that
+#' still awaits the owner's decision (`integrationParameterProvisional`).
 #' @param ns The module's namespace function.
 #' @param spec `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
 #' @param exclude Parameters not offered (the Model tab: those the confirmed sample table fixed).

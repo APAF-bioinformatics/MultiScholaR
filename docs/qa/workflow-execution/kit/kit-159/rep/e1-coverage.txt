@@ -1,0 +1,2 @@
+error
+there is no package called ‘covr’

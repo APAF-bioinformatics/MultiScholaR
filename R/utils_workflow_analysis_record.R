@@ -425,7 +425,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         if (!length(fixed) && !is.null(entry$declaration$fixed)) {
             # The head entry predates the constant's declaration (a store written before KIT-038 declared the P14
             # backend); the kernel passed it then as now, so the registry's constant is listed with its source named.
-            fixed <- entry$declaration$fixed
+            # KIT-187: a rule marker is never back-filled; its absence records the earlier rule.
+            fixed <- entry$declaration$fixed[setdiff(names(entry$declaration$fixed), names(workflowReplayRuleMarkers))]
             fixed_source <- "registry"
         }
         for (name in names(fixed)) parameters[[length(parameters) + 1L]] <- list(name = name, source = fixed_source,
@@ -434,6 +435,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             for (name in names(args)) parameters[[length(parameters) + 1L]] <- list(name = name, source = "args",
                 value = encodeWorkflowRecordValue(args[[name]]), provenance = "unknown")
         }
+        parameters <- workflowRecordIntensityFilterEarlier(operation, parameters)
         previous <- record$previous_state
         input <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) snapshot$states[[previous]]$entity_id else NULL
         products <- lapply(unname(record$data$products %||% list()), function(product) {
@@ -639,16 +641,176 @@ validateWorkflowAnalysisRecord <- function(record) {
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
 }
 
+#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds two rows, `ruv_control_grouping` and `ruv_k_bound`; KIT-205,
+#' VAL-129 (2), adds `enrichment_background`; KIT-202 adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
+#' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
+#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`): for
+#' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
+#' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
+#' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
+#' while the option holds the earlier token (`workflowFixedInForce`), and the replay runs each step whose declaration
+#' fixes it with the step's own rule (`workflowReplayRuleOptions`). The option is internal and set nowhere else.
+#' @noRd
+workflowReplayRuleMarkers <- list(
+    missing_value_comparison = list(option = "MultiScholaR.missing_filter_rule", current = "counts",
+        earlier = "rounded_percentage"),
+    # KIT-205: the enrichment background is each comparison's tested rows (`enrichmentTestedRows`); earlier, every row.
+    enrichment_background = list(option = "MultiScholaR.enrichment_background", current = "tested",
+        earlier = "all_rows"),
+    # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
+    # made before counted every numeric column of the assay ("numeric_columns").
+    intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
+        earlier = "numeric_columns"),
+    # KIT-214 (VAL-173 (1)): lipid and metabolite duplicate resolution averages the design's samples ("design"); records
+    # made before averaged every numeric column of the assay ("numeric_columns").
+    duplicate_resolution_samples = list(option = "MultiScholaR.duplicate_resolution_samples", current = "design",
+        earlier = "numeric_columns"),
+    # KIT-224 (decision M8): the lipidomics and metabolomics legacy RUV-III-C correction keeps each feature's level
+    # ("restored"); records made before kept the shift by a constant per feature ("shifted").
+    ruv_feature_levels = list(option = "MultiScholaR.ruv_feature_levels", current = "restored", earlier = "shifted"),
+    # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
+    # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
+    # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
+    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"),
+    # KIT-190 (VAL-82): lipidomics and metabolomics legacy RUV choose controls by the ANOVA on the grouping column
+    # ("kept"); records made before chose the first rows ("dropped").
+    ruv_control_grouping = list(option = "MultiScholaR.ruv_control_grouping", current = "kept", earlier = "dropped"),
+    # KIT-190 (VAL-182, VAL-235): the legacy lipidomics and metabolomics Automatic k is bounded by the sample-size cap
+    # ("sample_size"); records made before used the sweep's k unbounded ("none").
+    ruv_k_bound = list(option = "MultiScholaR.ruv_k_bound", current = "sample_size", earlier = "none"),
+    # KIT-217 (VAL-173 (2); owner 2026-11-25): the lipid and metabolite intensity filter counts present values per
+    # group (default: 2 values in at least 1 group; pool groups not counted) and so removes a feature with no value
+    # ("group_counts"); records made before did not count missing values ("not_counted").
+    intensity_filter_missing = list(option = "MultiScholaR.intensity_filter_missing", current = "group_counts",
+        earlier = "not_counted"))
+
+#' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
+#' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
+#' @return One logical.
+#' @noRd
+workflowTreatModerationCurrent <- function() {
+    marker <- workflowReplayRuleMarkers$treat_moderation
+    !identical(getOption(marker$option), marker$earlier)
+}
+
+#' The DA model record's marker field (KIT-201): `list(treat_moderation = "as_main_test")` under the current rule, an
+#' empty list under the earlier one (a DA made before the change records none).
+#' @return A list to append to a DA model record.
+#' @noRd
+workflowTreatModerationRecord <- function() {
+    if (workflowTreatModerationCurrent()) list(treat_moderation = workflowReplayRuleMarkers$treat_moderation$current) else list()
+}
+
+#' The option a recorded DA replays under (KIT-201, D3): the current rule when its model record names it, else the earlier.
+#' @param model The record's DA model (`record$analyses$differential_abundance$model`).
+#' @return Named list for `withr::with_options()`.
+#' @noRd
+workflowDaReplayRuleOptions <- function(model) {
+    marker <- workflowReplayRuleMarkers$treat_moderation
+    recorded <- unlist(model$treat_moderation)
+    rule <- if (identical(as.character(recorded), marker$current)) marker$current else marker$earlier
+    stats::setNames(list(rule), marker$option)
+}
+
+#' The settings the lipid and metabolite intensity filter declares for its per-group count (KIT-217, SD-17): a step
+#' made under the earlier rule (no marker `intensity_filter_missing`) lists them with the value "not applicable:
+#' earlier rule" and a note, in place of any value (the earlier rule read neither), so they are neither missing nor
+#' replayed.
+#' @param operation The step's operation.
+#' @param parameters The step's record parameters.
+#' @return The parameters.
+#' @noRd
+workflowRecordIntensityFilterEarlier <- function(operation, parameters) {
+    names <- switch(operation, lipid_intensity_filter = c("lipids_min_values_per_group", "lipids_min_groups"),
+        metab_intensity_filter = c("metabolites_min_values_per_group", "metabolites_min_groups"), NULL)
+    if (is.null(names) || identical(workflowReplayRule(list(parameters = parameters), "intensity_filter_missing"),
+        workflowReplayRuleMarkers$intensity_filter_missing$current)) return(parameters)
+    parameters <- Filter(function(parameter) identical(parameter$source, "fixed") || !isTRUE(parameter$name %in% names),
+        parameters)
+    c(parameters, lapply(names, function(name) list(name = name, source = "not_applicable",
+        value = encodeWorkflowRecordValue("not applicable: earlier rule"), provenance = "unknown",
+        note = paste("This step was run before the filter counted missing values per group. It is replayed with the rule",
+            "it was run under, which had neither setting."))))
+}
+
+#' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
+#' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).
+#' @param step One step of an analysis record.
+#' @param marker A name of `workflowReplayRuleMarkers`.
+#' @return The token.
+#' @noRd
+workflowReplayRule <- function(step, marker) {
+    spec <- workflowReplayRuleMarkers[[marker]]
+    for (parameter in step$parameters %||% list()) {
+        if (identical(parameter$name, marker) && identical(parameter$source, "fixed") &&
+            identical(decodeWorkflowRecordValue(parameter$value), spec$current)) return(spec$current)
+    }
+    spec$earlier
+}
+
+#' The options a step replays under (KIT-187): one per rule marker its declaration fixes, set to the step's own rule.
+#' @param step One step of an analysis record.
+#' @param declaration The step's registered declaration.
+#' @return Named list for `withr::with_options()` (empty when the declaration fixes no marker).
+#' @noRd
+workflowReplayRuleOptions <- function(step, declaration) {
+    options <- list()
+    for (marker in intersect(names(declaration$fixed), names(workflowReplayRuleMarkers)))
+        options[[workflowReplayRuleMarkers[[marker]]$option]] <- workflowReplayRule(step, marker)
+    options
+}
+
+#' A declaration's fixed constants as a step computed now records them (KIT-187): a rule marker whose option holds
+#' its earlier token is omitted, and NULL is returned when nothing is left.
+#' @param fixed Named list of fixed constants, or NULL.
+#' @return The constants to record.
+#' @noRd
+workflowFixedInForce <- function(fixed) {
+    markers <- intersect(names(fixed), names(workflowReplayRuleMarkers))
+    earlier <- Filter(function(marker) identical(getOption(workflowReplayRuleMarkers[[marker]]$option),
+        workflowReplayRuleMarkers[[marker]]$earlier), markers)
+    if (!length(earlier)) return(fixed)
+    fixed <- fixed[setdiff(names(fixed), earlier)]
+    if (length(fixed)) fixed else NULL
+}
+
 #' Decode a record step's parameters into the named list the operation receives: declared names only (a step
 #' without declared parameters lists its arguments, which are not request parameters), fixed constants excluded.
 #' @noRd
 workflowReplayParameters <- function(parameters, declared) {
     out <- list()
     for (parameter in parameters) {
-        if (identical(parameter$source, "fixed") || !parameter$name %in% declared) next
+        # KIT-217: a setting shown as not applicable to a step made before (`workflowRecordIntensityFilterEarlier`).
+        if (identical(parameter$source, "fixed") || identical(parameter$source, "not_applicable") ||
+            !parameter$name %in% declared) next
         out[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
     }
     out
+}
+
+#' KIT-212 (VAL-172 (3)): a record's DA replays only when it was run on the record's final table: its `source_state` is
+#' the state of one of the record's steps (a precondition state the replay store holds, or a replayed step), and, after
+#' the steps are replayed, that state holds the replayed head's table (`workflowDaTablesDiffer`). Refused otherwise
+#' (`workflow_replay_invalid`): replaying it would test another table than the one recorded.
+#' @param manager The replay's owner, after the steps.
+#' @param da The record's `analyses$differential_abundance`.
+#' @param steps The record's steps.
+#' @noRd
+assertWorkflowReplayDaSource <- function(manager, da, steps) {
+    text <- paste("This record's differential analysis was run on a table other than the record's final table, so a replay",
+        "would test a different table. Open the session, run the differential analysis on the final table, save, and replay",
+        "the new record.")
+    source_state <- da$source_state
+    states <- vapply(steps, function(step) as.character(step$state %||% NA_character_), character(1))
+    if (!is.character(source_state) || length(source_state) != 1L || is.na(source_state) || !source_state %in% states) {
+        rlang::abort(text, class = "workflow_replay_invalid")
+    }
+    differ <- withWorkflowStateScope(manager, function() {
+        source <- getWorkflowStateReference(manager, source_state)
+        is.null(source) || workflowDaTablesDiffer(manager, source, workflowDaTableState(manager))
+    })
+    if (differ) rlang::abort(text, class = "workflow_replay_invalid")
+    invisible(TRUE)
 }
 
 #' Replay an analysis record (KIT-028): the record alone, with hash-checked inputs, re-executes the analysis.
@@ -666,7 +828,8 @@ workflowReplayParameters <- function(parameters, declared) {
 #' @param paths Experiment paths of the prepared project.
 #' @param scratch Directory for request and publication scratch.
 #' @param on_step Optional `function(step, manager)` called after each replayed step.
-#' @return `list(states, project_root)` after closing the owner.
+#' @return `list(states, project_root)` after closing the owner, with `design_statement` (KIT-222) when the record's design
+#'   analysed runs of two biological samples as one.
 #' @noRd
 replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, scratch, worker_cap = 12 * 1024^3,
     on_step = NULL) {
@@ -693,6 +856,11 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
         }
     }
+    # KIT-222 (owner's OD-4, 2026-11-25): a record whose design analysed runs of two biological samples as one replays
+    # as recorded; the consumers' refusal is replaced, inside this replay only, by a record of the collisions, and the
+    # result states that its numbers are not valid estimates.
+    key_collisions <- new.env(parent = emptyenv())
+    withr::local_options(list(MultiScholaR.replicate_key_collisions = key_collisions))
     identity <- readSavedStoreIdentity(file.path(project_root, ".workflow-entities", "store.json"))
     manager <- newWorkflowStateOwner(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
     on.exit(closeWorkflowStateOwner(manager), add = TRUE)
@@ -720,6 +888,11 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     for (step in steps[-preconditions]) {
         operation <- step$operation
         if (identical(operation, "enrichment")) next # KIT-107 D5: after the DA, below
+        # KIT-248 (VAL-238, OD-1 (a), (a')): a proteomics correlation step recorded before the Skip recorded itself, as
+        # the Apply it followed (`pearson-selection`) or as `legacy`, whose outcome says skipped (only the Skip writes
+        # that on this state), replays as the skip it was. An earlier `legacy` step has already been refused by then.
+        if (identical(omic_type, "proteomics") && identical(step$state, "correlation_filtered") &&
+            operation %in% c("pearson-selection", "legacy") && isTRUE(unlist(step$outcomes$skipped))) operation <- "pearson-skip"
         entry <- if (operation %in% c("legacy", "import", "design_builder")) NULL else
             tryCatch(workflowOperationEntry(operation), error = function(e) NULL)
         if (is.null(entry)) cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}",
@@ -728,7 +901,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         parameters <- workflowReplayParameters(step$parameters, union(entry$parameters, RUV_DESIGN_REQUEST_PARAMETERS))
         assertReplayRuvControlList(parameters, step)
         variant <- if (is.null(step$variant) || is.na(step$variant)) entry$default_variant else step$variant
-        withWorkflowStateScope(manager, function() {
+        # KIT-187: a step whose declaration fixes a rule marker replays, for that step alone, with the rule it was made with.
+        withr::with_options(workflowReplayRuleOptions(step, entry$declaration), withWorkflowStateScope(manager, function() {
             if (entry$compute %in% c("peptide", "protein")) {
                 directory <- file.path(scratch, "requests", step$state)
                 dir.create(directory, recursive = TRUE, showWarnings = FALSE)
@@ -792,6 +966,16 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 spec <- readWorkflowStateMetadata(manager, selection$value)$data
                 commitWorkflowReferenceState(manager, "correlation_filtered", spec,
                     list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
+            } else if (identical(operation, "pearson-skip")) {
+                # KIT-248 (VAL-238): as the tab's Skip commits: the correlation's source, unfiltered (the normalisation's
+                # final checkpoint; on the DIA_LIMPA route the head state), with the Skip's config, description and step
+                # provenance.
+                correlation_source <- normalization_final %||% getWorkflowStateReference(manager)
+                spec <- readWorkflowStateMetadata(manager, correlation_source)$data
+                clearWorkflowStepProvenance(manager)
+                setWorkflowStepProvenance(manager, "pearson-skip", "whole", character(), fixed = list(skipped = TRUE))
+                commitWorkflowReferenceState(manager, "correlation_filtered", spec,
+                    list(min_pearson_correlation_threshold = 0, skipped = TRUE), "Skipped final sample correlation filter")
             } else if (identical(operation, "protein_ruv_covariates") && !is.null(parameters$ruv_control_rule)) {
                 # KIT-129 sixth pass item 5: declared rules, as the tab runs and commits them (`computeDIAReferenceRuvCovariates`,
                 # `diaRuvCovariatesCommit`).
@@ -825,7 +1009,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
             }
-        })
+        }))
         if (!identical(manager$current_state, step$state))
             cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
         if (is.function(on_step)) on_step(step, manager)
@@ -833,6 +1017,9 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     da <- record$analyses$differential_abundance
     da_manifest <- NULL
     if (!is.null(da)) {
+        assertWorkflowReplayDaSource(manager, da, steps)
+        # KIT-201 (D3): the DA replays with the TREAT moderation it was made with (the earlier one when its model names none).
+        treat_rule <- workflowDaReplayRuleOptions(da$model)
         settings <- list()
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
         contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
@@ -849,11 +1036,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             # KIT-095: a binding that realises its formula from the head checks the record's against it first.
             omics_settings <- list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc)
             if (is.function(omics_binding$da_replay_check)) withWorkflowStateScope(manager, function() omics_binding$da_replay_check(manager, omics_settings))
-            withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,
-                getWorkflowStateReference(manager), omics_settings, contrasts))
+            withr::with_options(treat_rule, withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding,
+                manager, getWorkflowStateReference(manager), omics_settings, contrasts)))
         } else {
-            da_manifest <- runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
-                treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
+            da_manifest <- withr::with_options(treat_rule, runDIAReferenceDaAnalysis(list(formula_string = settings$formula,
+                da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths,
+                contrasts = contrasts, publish = FALSE))
         }
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = da$operation %||% "DA-contrast-output"), manager)
         # KIT-107 D5 (F-16): each recorded enrichment step, on the manifest the DA just produced.
@@ -861,8 +1049,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             if (is.null(da_manifest))
                 cli::cli_abort("step {.val {step$state}} cannot be replayed without a proteomics DA manifest", class = "workflow_replay_unsupported")
             parameters <- workflowReplayParameters(step$parameters, workflowOperationEntry("enrichment")$parameters)
-            withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters, da_manifest,
-                contrasts, paths, scratch, recorded_resources = record$external_resources))
+            # KIT-205: the step replays with the background rule it was made with, as the loop's steps do above.
+            withr::with_options(workflowReplayRuleOptions(step, workflowOperationEntry("enrichment")$declaration),
+                withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters,
+                    da_manifest, contrasts, paths, scratch, recorded_resources = record$external_resources)))
             if (!identical(manager$current_state, step$state))
                 cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
             if (is.function(on_step)) on_step(step, manager)
@@ -884,7 +1074,99 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             list(operation = analysis$operation, state = manager$current_state, description = analysis$operation), parameters))
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
     }
-    list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
+    replayed <- list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
+    if (!is.null(key_collisions$collisions) && nrow(key_collisions$collisions) > 0L) {
+        replayed$design_statement <- workflowReplayKeyCollisionStatement(key_collisions$collisions)
+        cli::cli_warn("{replayed$design_statement}", class = "workflow_replay_replicate_key_collision")
+    }
+    # KIT-254 (owner's OD-1 (a), VAL-247): a lipid or metabolomics record whose correlation filter was applied and then
+    # skipped, or applied more than once, replays as recorded, and the result says so.
+    correlation_statement <- workflowReplayCorrelationStatement(record, manager)
+    if (!is.null(correlation_statement)) {
+        replayed$correlation_statement <- correlation_statement
+        cli::cli_warn("{correlation_statement}", class = "workflow_replay_correlation_skip")
+    }
+    replayed
+}
+
+#' KIT-254 (owner's OD-1 (a), VAL-247): the statement a replay of a lipidomics or metabolomics record carries (DRAFT
+#' wording, docs/qa/workflow-execution/kit/kit-254/wording.md). Read from the record's steps, per omic prefix:
+#' - the filter applied more than once: a `<prefix>_pearson_selection` step whose input is not the result of the step
+#'   before it (its own result when pressed again; the skip state after Apply, Skip, Apply). The earlier threshold is
+#'   not recorded, so the replay may differ from what was run: the second statement, and no other for that omic;
+#' - otherwise the skip step (`<prefix>_norm_complete`) directly after the selection: the skip was recorded on the
+#'   filtered table and the replay repeats both, so it names the samples left out of the design (from the replayed states
+#'   before and after the selection) with the assays they failed in; none when no sample left the design.
+#' Both patterns describe the record, not a version (a script can still call the wrappers in that order).
+#' @param record The analysis record.
+#' @param manager The replay's owner after the steps were replayed (read only for the first statement).
+#' @return The statement, or NULL.
+#' @noRd
+workflowReplayCorrelationStatement <- function(record, manager) {
+    steps <- record$steps
+    operations <- vapply(steps, function(step) as.character(step$operation %||% ""), character(1))
+    results <- vapply(steps, function(step) as.character(step$result_entity_id %||% NA_character_), character(1))
+    texts <- character()
+    for (binding in omicsDeclarationBindings()) {
+        selections <- which(operations == paste0(binding$prefix, "_pearson_selection"))
+        again <- Filter(function(i) {
+            input <- as.character(unlist(steps[[i]]$input_entity_ids))
+            length(input) == 1L && (i == 1L || !identical(input, results[[i - 1L]]))
+        }, selections)
+        if (length(again)) {
+            texts <- c(texts, paste0("The correlation filter was applied more than once in this record; only the last threshold (",
+                workflowReplayCorrelationThreshold(steps[[again[[length(again)]]]]), ") is recorded, so this replay applies it once ",
+                "to the normalised table, and its samples may differ from the analysis that was run."))
+            next
+        }
+        for (i in selections[selections > 1L & selections < length(steps)]) {
+            if (!identical(operations[[i + 1L]], paste0(binding$prefix, "_norm_complete"))) next
+            before <- workflowReplayDesignSamples(binding, manager, steps[[i - 1L]]$state)
+            after <- workflowReplayDesignSamples(binding, manager, steps[[i]]$state)
+            left_out <- setdiff(before$runs, after$runs)
+            if (!length(left_out)) next
+            failed_in <- Filter(function(assay) any(left_out %in% setdiff(before$columns[[assay]], after$columns[[assay]])),
+                names(before$columns))
+            texts <- c(texts, paste0("This record applies the correlation filter at threshold ", workflowReplayCorrelationThreshold(steps[[i]]),
+                " and then a step named 'correlation filtering skipped' on the filtered table. The replay repeats both as recorded, ",
+                "so its analysis leaves out ", paste(left_out, collapse = ", "),
+                if (length(failed_in)) paste0(" (below the threshold in ", paste(failed_in, collapse = ", "), ")"),
+                ". To analyse every sample, run the normalisation again and press 'Skip Filtering & Proceed to DE' without ",
+                "applying the filter."))
+        }
+    }
+    if (!length(texts)) return(NULL)
+    paste(texts, collapse = " ")
+}
+
+#' The recorded threshold of a correlation selection step, as text (KIT-254).
+#' @noRd
+workflowReplayCorrelationThreshold <- function(step) {
+    value <- workflowReplayParameters(step$parameters, "min_pearson_correlation_threshold")$min_pearson_correlation_threshold
+    if (is.null(value)) "not recorded" else format(value)
+}
+
+#' A replayed omics state's design samples, and each assay's columns as stored (KIT-254). The columns are not limited to
+#' the state's design: after the filter a sample that failed in one assay has left the design but keeps its column in
+#' the assays where it passed, so the caller can name only the assays it failed in.
+#' @return `list(runs, columns)`, `columns` a named list per assay.
+#' @noRd
+workflowReplayDesignSamples <- function(binding, manager, state) {
+    meta <- readWorkflowOmicsMetadata(binding, manager, state)
+    runs <- as.character(as.data.frame(meta$design_matrix)[[meta$slots$sample_id %||% "Run"]])
+    object <- readWorkflowOmicsState(binding, manager, state)
+    list(runs = runs, columns = lapply(methods::slot(object, binding$data_slot), colnames))
+}
+
+#' KIT-222 (owner's OD-4): the statement a replay of a record with a merged design carries in its result (DRAFT wording,
+#' docs/qa/workflow-execution/kit/kit-222/wording.md).
+#' @param collisions `findOmicsDesignReplicateKeyCollisions()`'s rows.
+#' @noRd
+workflowReplayKeyCollisionStatement <- function(collisions) {
+    paste0("This record's design analysed runs of two different biological samples as one (",
+        paste(sprintf("'%s': %s", collisions$key, collisions$runs), collapse = "; "), "). The replay repeats that ",
+        "analysis as recorded, so its results are not valid estimates. To obtain valid results, correct the design ",
+        "(mark the runs of each sample together) and run the analysis again.")
 }
 
 #' Text of one encoded record value, in full (KIT-029): atomic values comma-joined, lists as compact JSON,
@@ -966,7 +1248,8 @@ workflowAnalysisRecordTables <- function(record) {
 writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
     tables <- workflowAnalysisRecordTables(record)
     openxlsx::write.xlsx(tables[intersect(c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses",
-        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS), names(tables))], path, overwrite = TRUE)
+        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS, INTEGRATION_RECORD_EVIDENCE_SHEET), names(tables))], path,
+        overwrite = TRUE)
     invisible(path)
 }
 
@@ -1020,6 +1303,11 @@ workflowRecordReportSources <- list(
     proportion_samples_below_cutoff = list(record = list(c("lipid_intensity_filter", "lipids_proportion_of_samples_below_cutoff"),
         c("metab_intensity_filter", "metabolites_proportion_of_samples_below_cutoff")),
         file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
+    # KIT-217: the lipid and metabolite intensity filter's per-group count (values required per group, groups required).
+    intensity_min_values_per_group = list(record = list(c("lipid_intensity_filter", "lipids_min_values_per_group"),
+        c("metab_intensity_filter", "metabolites_min_values_per_group"))),
+    intensity_min_groups = list(record = list(c("lipid_intensity_filter", "lipids_min_groups"),
+        c("metab_intensity_filter", "metabolites_min_groups"))),
     missing_values_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
     max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
     min_peptidoforms_per_protein = list(record = c("peptide_protein_evidence_filter", "num_peptidoforms_per_protein_thresh"), file = c("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
@@ -1100,7 +1388,16 @@ workflowRecordReportSources <- list(
     enrichment_go_pairs_propagated = list(record = c("outcomes", "enrichment", "go_pairs_propagated")),
     enrichment_go_root_only_proteins = list(record = c("outcomes", "enrichment", "go_root_only_proteins")),
     enrichment_go_unreviewed_share = list(record = c("outcomes", "enrichment", "go_unreviewed_share")),
-    enrichment_correction_method = list(record = c("enrichment", "correction_method")))
+    enrichment_correction_method = list(record = c("enrichment", "correction_method")),
+    # KIT-203: the significance rule of a clusterProfiler run: declared (any rule but the q-value), else the rule the
+    # run recorded as applied; a record carrying neither was made with the q-value.
+    enrichment_significance_rule = list(record = list(c("enrichment", "significance_rule"),
+        c("outcomes", "enrichment", "significance_rule"))),
+    # KIT-205: the enrichment background rule, a fixed constant of the step; a record without it was made with every row.
+    enrichment_background = list(record = c("enrichment", "enrichment_background")),
+    # KIT-215 (VAL-170): the lists not tested, on both routes ("<comparison>: <direction>", joined by "; "); a record
+    # without it ("not recorded") was made with every list tested or before KIT-215.
+    enrichment_lists_not_tested = list(record = c("outcomes", "enrichment", "enrichment_lists_not_tested")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the

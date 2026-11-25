@@ -1,0 +1,7 @@
+stage	outcome	detail
+worktree	ok	32766889bdc9fda739ac9671011bfb46eb620642
+native	ok	
+lane base	ok	KIT-184 child run ok   (205 s)
+lane head-1	ok	KIT-184 child freeze ok   (205 s)
+lane head-2	ok	KIT-184 child run ok   (205 s)
+comparison	ok	4 differing leaves

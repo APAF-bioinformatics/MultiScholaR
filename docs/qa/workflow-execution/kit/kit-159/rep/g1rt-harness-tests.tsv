@@ -1,0 +1,6 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-g1r.R	G1R-READ: the 69 committed blocks name 69 (lane, step) pairs, 4, 30, 22, 13 per file	0	0	0	0	1	0	0.015
+test-g1r.R	G1R-FORMS: each waldo form gives (field, key, base = expected, live = actual)	0	0	0	0	1	0	0.092
+test-g1r.R	G1R-UNREADABLE: a line outside the four forms, or no lane and step, is unreadable	0	0	0	0	1	0	0.006
+test-g1r.R	G1R-CLASS: every step has a class of G1(a); 73 rows, two per prot_dia_limpa summary step	0	0	0	0	1	0	0.007
+test-g1r.R	G1R-ADOPT: KIT-180's and KIT-199's rows agree; KIT-172's disagree in 18 groups	0	0	0	0	1	0	0.007

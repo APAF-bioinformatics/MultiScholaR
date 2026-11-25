@@ -858,7 +858,7 @@ omicNormRuvHeadTechnicalReplicates <- function(manager) {
         spec <- readWorkflowStateMetadata(manager, reference)$data
         design <- as.data.frame(materializeWorkflowTable(manager$.context, spec$components$design_matrix))
         isTRUE(resolveProtTechnicalReplicateBlock(design, spec$slots$group_id %||% NA_character_,
-            spec$slots$technical_replicate_id %||% NA_character_)$technical)
+            spec$slots$technical_replicate_id %||% NA_character_, check = FALSE)$technical)
     }), error = function(error) FALSE)
 }
 
@@ -1211,7 +1211,13 @@ registerOmicNormRuvCancorOutputs <- function(output, normData) {
 omicNormRuvSummary <- function(result) {
     if (is.null(result)) return("Not yet computed")
     if (!isTRUE(result$success)) return(paste0("Failed: ", result$error))
-    paste0("Best k: ", result$best_k, "\n", "Best %: ", result$best_percentage, "\n", "Separation: ",
+    # KIT-190 I01: where the cap reduced the search's k, the k removed is shown with the k found.
+    k_line <- if (!is.null(result$k_removed) && !is.null(result$k_found) && !is.na(result$k_found) &&
+        !is.na(result$k_removed) && result$k_found != result$k_removed) {
+        sprintf("Factors removed: %d (the search found %d; at most %d with %d samples)", as.integer(result$k_removed),
+            as.integer(result$k_found), as.integer(result$k_cap %||% result$k_removed), as.integer(result$k_samples %||% NA_integer_))
+    } else paste0("Best k: ", result$best_k)
+    paste0(k_line, "\n", "Best %: ", result$best_percentage, "\n", "Separation: ",
         round(result$separation_score, 4), "\n", "Controls: ", sum(result$control_genes_index, na.rm = TRUE))
 }
 
@@ -1250,10 +1256,19 @@ omicNormItsdTables <- function(output, workflowData, normData, config) {
     if (is.null(shell) || !inherits(shell, binding$class)) return(invisible(NULL))
     id_col <- methods::slot(shell, binding$id_slot)
     annotation_cols <- shell@annotation_id_column
+    design_samples <- shell@design_matrix[[shell@sample_id]]
     rm(shell)
     build <- config$norm$itsd_table
+    # KIT-214 (E-8): each candidate's mean and CV over the design's samples that hold numbers (the builder's own rule only
+    # when there are none).
+    build_page <- function(page) {
+        sample_columns <- omicsDesignNumericColumnsOf(page, design_samples, id_col)
+        if (length(sample_columns)) build(page, id_col, annotation_cols, sample_columns = sample_columns) else {
+            build(page, id_col, annotation_cols)
+        }
+    }
     stored_tables <- tryCatch(readWorkflowOmicsItsdTables(binding, workflowData$state_manager, normData$assay_names,
-        function(page) build(page, id_col, annotation_cols)), error = function(e) {
+        build_page), error = function(e) {
         logger::log_warn(paste("Could not read the ITSD candidate tables:", conditionMessage(e)))
         NULL
     })

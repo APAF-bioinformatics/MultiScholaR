@@ -19,7 +19,9 @@ metabolomicsDeclarationBinding <- list(
     id_slot = "metabolite_id_column", fields = metabolomicsOperationFields, merge = metabolomicsPartitionMerge,
     design_field = "design_matrix", feature_noun = "metabolite", long_table = "da_metabolites_long", design_input_prefix = "metab_assay_",
     step_scope = "the step", da_scope = "the metabolomics DA",
-    intensity_parameters = c("metabolites_intensity_cutoff_percentile", "metabolites_proportion_of_samples_below_cutoff"),
+    # KIT-217: the per-group count's two settings (values required per group, groups required) after today's two.
+    intensity_parameters = c("metabolites_intensity_cutoff_percentile", "metabolites_proportion_of_samples_below_cutoff",
+        "metabolites_min_values_per_group", "metabolites_min_groups"),
     intensity_threshold = "min_metabolite_intensity_threshold",
     step_labels = c(metab_intensity_filter = "2_Intensity_Filtered", metab_duplicate_resolution = "3_Duplicates_Resolved",
         metab_qc_finalize = "4_QC_Complete", metab_itsd_normalisation = "5_ITSD_Normalised", metab_log2 = "6_Log2",
@@ -49,12 +51,15 @@ metabolomicsDeclarationBinding <- list(
     filter_intensity = function(object, parameters) {
         metaboliteIntensityFiltering(object,
             metabolites_intensity_cutoff_percentile = parameters$metabolites_intensity_cutoff_percentile,
-            metabolites_proportion_of_samples_below_cutoff = parameters$metabolites_proportion_of_samples_below_cutoff)
+            metabolites_proportion_of_samples_below_cutoff = parameters$metabolites_proportion_of_samples_below_cutoff,
+            metabolites_min_values_per_group = parameters$metabolites_min_values_per_group,
+            metabolites_min_groups = parameters$metabolites_min_groups)
     },
     # As `resolveMetabDuplicateAssayData` runs it per assay; the module reads its per-assay statistics.
     resolve_duplicates = function(object) {
         resolved <- resolveMetabDuplicateAssayData(assayList = object@metabolite_data,
-            metaboliteIdCol = object@metabolite_id_column, logWarnFn = function(...) NULL)
+            metaboliteIdCol = object@metabolite_id_column, logWarnFn = function(...) NULL,
+            designSamples = object@design_matrix[[object@sample_id]])
         object@metabolite_data <- resolved$resolvedAssayList
         list(object = object, value = list(stats = resolved$statsList))
     },
@@ -82,8 +87,11 @@ metabolomicsDeclarationBinding <- list(
     da_format = function(...) formatMetabDaContrastTable(...),
     da_count = function(...) countMetabDaSignificant(...),
     # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
-    filter_intensity_page = function(page, threshold, proportion, id_column) metaboliteIntensityFilteringHelper(assay_table = page,
-        min_metabolite_intensity_threshold = threshold, metabolites_proportion_of_samples_below_cutoff = proportion, metabolite_id_column = id_column),
+    filter_intensity_page = function(page, threshold, proportion, id_column, sample_columns, group_labels = NULL,
+        min_values_per_group = NULL, min_groups = NULL) metaboliteIntensityFilteringHelper(assay_table = page,
+        min_metabolite_intensity_threshold = threshold, metabolites_proportion_of_samples_below_cutoff = proportion, metabolite_id_column = id_column,
+        sample_columns = sample_columns, group_labels = group_labels, min_values_per_group = min_values_per_group,
+        min_groups = min_groups),
     resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveDuplicateFeaturesByIntensity(assay_tibble = batch,
         id_col = id_column, sample_cols = sample_columns),
     # As `resolveMetabDuplicateAssayData` reports each assay.

@@ -1231,6 +1231,29 @@ omicGuiFeatureQcTexts <- function(noun, class) {
             "across many samples will be removed."), plural, capitalised),
         intensity_proportion_help = sprintf(paste("Remove %s where this proportion of samples are below the",
             "intensity threshold (default: 0.5)"), plural),
+        # KIT-217 (drafts W-1 to W-7 of the ticket's 5.4, for the owner's wording pass, VAL-41): the per-group count of
+        # missing values; the figures in the second help are the simulation's (KIT-217 measurement M, 4.5).
+        intensity_missing_heading = "Missing values",
+        intensity_min_values_label = "Values required per group",
+        intensity_min_values_help = sprintf(paste("A %s meets this in a group when it has a value in at least this many of",
+            "that group's samples (in every sample, if the group has fewer). A missing value, including a zero read as",
+            "missing at import, is not a value. Groups named like \"pool\" are not counted. This rule assumes that, for a",
+            "%s that does not change, values go missing for the same reasons in every group (for example, one detection",
+            "limit for all samples)."), noun, noun),
+        intensity_min_groups_label = "Groups required",
+        intensity_min_groups_help = sprintf(paste("A %s is kept only if at least this many groups meet the requirement",
+            "above. With the default 1, a %s measured in one group and missing from most or all samples of another is",
+            "kept: it is tested if the other group has at least one value, and otherwise listed as not tested, so a drop",
+            "to below detection stays visible. Choosing 2 removes such %s. In simulations with 2 groups of 6 samples and",
+            "25 %% of values missing, requiring 2 groups removed 29 %% of the %s that truly changed 8-fold, most of them",
+            "strongly decreased, and found 71 %% of those changes instead of 82 %%. For 2-fold changes, over all the",
+            "simulated designs (2 or 4 groups of 3 to 45 samples, 5 to 25 %% of values missing), both settings found",
+            "68 %%. A %s with no value in any sample is always removed. An assay with no value at all is left unchanged,",
+            "and its differential analysis is refused."), noun, noun, plural, plural, noun),
+        intensity_low_heading = "Low intensity",
+        intensity_share_help = paste("This share counts values below the threshold among all samples, pools included. A",
+            "missing value is not counted as below the threshold here, but its sample still counts in the total; the",
+            "settings above deal with missing values."),
         intensity_original_label = sprintf("Original %s:", plural),
         intensity_working = sprintf("Applying %s intensity filter...", noun),
         intensity_result_heading = paste(capitalised, "Intensity Filter Applied Successfully"),
@@ -1344,6 +1367,30 @@ omicGuiLog2Texts <- function() {
             "your table (for example \u00b5M against nM). In this data, %s values reaching the log2 step are below 1, so",
             "their log2 values are negative, and taking absolute values treats a log2 value of \u22122 like +2. Cyclic Loess",
             "and Quantile do not depend on the unit."))
+}
+
+#' The proteomics label-free and TMT log2 texts (KIT-177; proposed wording, implemented as proposed, the owner edits
+#' before release, VAL-41): the reopen sentence of a design saved by an earlier version, the notification and step-log
+#' lines of the values set to missing at the design step (`%d` the counts), the refusal of a negative or infinite
+#' quantity (`%s` the run and the values), and the warning shown when `scale` runs on log2 values below 0 (`%d` the count).
+#' @noRd
+omicGuiProtLog2Texts <- function() {
+    c(reopen = paste("This design was saved by an earlier version, which added 1 to every value before taking log2.",
+            "Your saved results are unchanged. If you save the design again, values are log2-transformed without adding 1,",
+            "and later results will differ slightly, most for small values."),
+        notice_zero = "%d values of 0",
+        notice_nan = "%d values that were not a number",
+        notice_both = "%d values of 0 and %d values that were not a number",
+        notice_tail = "were read as not measured (missing). They are not used in the analysis.",
+        log_zero = "Values equal to 0 set to missing: %d",
+        log_nan = "Values that were not a number set to missing: %d",
+        refusal = paste("Run '%s' contains negative or infinite values (for example %s). Quantities must be zero or",
+            "positive; correct the file and import it again."),
+        scale_warning = paste("Scale normalisation divides each sample by the median of its absolute log2 values. In this",
+            "data, %d values are below 1, so their log2 values are negative, and taking absolute values treats a log2",
+            "value of \u22122 like +2. The result then depends on the unit of your table. Cyclic Loess and Quantile do not",
+            "have this problem."),
+        scale_log = "Scale normalisation: log2 values below 0 in the input: %d")
 }
 
 #' An omic's RUV design group: the gate, the tier labels, the k rules and its tables.
@@ -1730,12 +1777,13 @@ omicGuiRuvTableClassic <- function() {
             k_rule_figures = list(sweep_bounded = list(fdp = 0.079, fdp_where = cell[["c5"]], power = 0.91,
                 source = "KIT-124 S1 arm 40 (scored/confirm-gha): worst cell C5 0.079, at most 0.056 elsewhere, power C0 0.91")),
             source = "KIT-129 1a; KIT-124 S1 arm 39 (scored/confirm-gha): worst cell C5 0.079, at most 0.053 elsewhere, power C0 0.92"),
-        legacy = list(status = "measured", fdp = 0.385, fdp_where = cell[["c5"]], power = 0.92,
+        # KIT-201 (VAL-131, D2): the legacy test now gives TREAT the trend and robust settings; its figures are arm 28's.
+        legacy = list(status = "measured", fdp = 0.389, fdp_where = cell[["c5"]], power = 0.92,
             test_form = "corrected_then_tested",
-            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 3% to",
-                "39% across the scenarios tested, against a target of 5%; 9.8% in the reference scenario."),
-            source = paste("KIT-129 1a; KIT-124 S1 arm 3 (scored/confirm-gha; C6 and C8 depend on the runner machine):",
-                "worst cell C5 0.385, C0 0.098, power C0 0.92")),
+            note = paste("For comparison with the approach of earlier versions; analyses saved with earlier versions",
+                "replay unchanged. False discoveries ranged from 3% to 39% across the scenarios tested, against a target",
+                "of 5%; 10.1% in the reference scenario."),
+            source = "KIT-129 1a; KIT-124 S1 arm 28 (scored/exact-gha): worst cell C5 0.389, C0 0.101, power C0 0.92"),
         none = list(status = "measured", fdp = 0.052, fdp_where = cell[["c3"]], power = 0.49,
             note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
                 "target, but about half the power is lost when unwanted variation is present."),
@@ -1900,9 +1948,13 @@ omicGuiRuvTableFeature <- function(features) {
                 "C7 0.084 (rules 2, 3 fail), C0 0.063, C1 0.052, C2 0.073, C3 0.058, power C0 0.48")),
         legacy = list(status = "measured", fdp = 0.557, fdp_where = cell[["c2"]], power = 0.42,
             test_form = "corrected_then_tested",
-            note = paste("More than 90% of simulated data sets had more than 10% false discoveries; 47.0% false",
-                "discoveries in the reference scenario."),
-            source = "KIT-129 1d; KIT-124 S4 arm 3 (scored/confirm-gha): worst cell C2 0.557, C0 0.470, power C0 0.42"),
+            note = paste("Measured in earlier versions, when this design took its control features from the top of",
+                "the table instead of choosing them by comparing the groups; in the simulations the rows were in random",
+                "order, so the controls were a random set of features, some with real differences. More than 90% of",
+                "those simulated data sets had more than 10% false discoveries (47.0% in the reference scenario). These",
+                "figures do not describe the current selection, which has not yet been measured."),
+            source = paste("KIT-129 1d; KIT-124 S4 arm 3 (scored/confirm-gha): worst cell C2 0.557, C0 0.470, power C0",
+                "0.42; controls positional (random rows) before KIT-190")),
         none = list(status = "measured", fdp = 0.059, fdp_where = cell[["c7"]], power = 0.003,
             note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
                 "target, but almost no real differences are found when the signal drifts during the run."),
@@ -2012,9 +2064,26 @@ omicGuiProteomicsNorm <- function() {
             ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
                 "Skip RUV (troublesome datasets)" = "skip"), default = "automatic", percentage = 5, k = NULL, noun = "Proteins",
                 help = c(
-                    grouping = paste("Experimental factor to preserve during batch correction. RUV-III will remove unwanted",
-                        "variation while preserving differences between groups defined by this variable. For TMT workflows",
-                        "with batches, select 'batch' to remove batch effects."),
+                    # KIT-174 (a): what the column does (proposed wording, implemented as
+                    # proposed; the owner edits before release, VAL-41).
+                    grouping = paste(
+                        "Choose the column that holds your experimental groups (normally",
+                        "'group'). Samples that share a value in this column are treated as",
+                        "replicates of each other: RUV-III takes what differs between them to be",
+                        "unwanted variation and builds its correction from it. In the Automatic",
+                        "and Manual modes, and in both RUV modes of DIA with limpa, the same",
+                        "column is also used to pick the control proteins (those that differ",
+                        "least between its values), and, except in Manual mode, the number of",
+                        "factors; the sample-correlation filter on this tab compares samples",
+                        "within it. Do not choose 'batch', or any column in which a value",
+                        "contains samples of more than one group: the correction would then be",
+                        "built from the differences between your groups, and the differences",
+                        "between batches would stay in the data. If you know each sample's batch,",
+                        "add it to the Model Formula on the Differential Expression tab instead,",
+                        "for example ~ 0 + group + batch. If the design declares technical",
+                        "replicates, those are the replicates RUV-III uses; this column still",
+                        "picks the control proteins."
+                    ),
                     automatic = paste("These parameters control the automatic optimization of RUV-III negative control",
                         "selection. The function tests different percentages and finds the optimal balance between",
                         "separation quality and k value."),
@@ -2124,7 +2193,9 @@ omicGuiProteomicsEnrichment <- function() {
         operation = diaEnrichmentOperation, run = runDIAReferenceEnrichment,
         da_source = list(manifest = isDIAResultManifest, components = c("design_matrix", "protein_id_table"),
             read = createDAResultsForEnrichment),
-        id_column = list(slot = "protein_id_column", default = "uniprot_acc", gprofiler_override = "gene_name"),
+        # KIT-167 (8.3 item 3): the reference identifiers' column, offered only with the gate on.
+        id_column = c(list(slot = "protein_id_column", default = "uniprot_acc", gprofiler_override = "gene_name"),
+            if (referenceMappingEnabled()) list(mapped = "reference_accession_used")),
         cutoffs = list(up = cutoff(0, 0, 5, 0.1), down = cutoff(0, 0, 5, 0.1), q = cutoff(0.05, 0.001, 0.2, 0.005)),
         correction = list(choices = c(`g:SCS (Conservative)` = "gSCS", `FDR (Less Conservative)` = "fdr"),
             selected = "gSCS"),
@@ -2475,8 +2546,8 @@ omicGuiLipidNorm <- function() {
         export = list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design",
             progress = list(gather = "Gathering data and publishing outputs...", complete = "Export complete", steps = FALSE),
             summary_time = "session"),
-        itsd_table = function(assay_data, id_col, annotation_cols) {
-            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols)
+        itsd_table = function(assay_data, id_col, annotation_cols, ...) {
+            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols, ...)
         },
         skip_correlation_flags = "before_commit", final_pca = list(preparing_size = 5, error_size = 4),
         managed_correlation_notify = FALSE)
@@ -2496,9 +2567,9 @@ omicGuiLipidQc <- function() {
         # mod_lipid_qc_intensity_server_helpers.R:142; mod_lipid_qc_s4.R:450 (func_lipid_qc.R:134)
         filtering_figure = updateLipidFiltering,
         itsd = list(name_columns = c("Lipid name", "Name", "lipid"),
-            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col, ...) {
                 getLipidInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
-                    lipid_id_col = id_col, sample_id_col = sample_id_col)
+                    lipid_id_col = id_col, sample_id_col = sample_id_col, ...)
             },
             quant = getLipidQuantData,
             tip = "Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')"),
@@ -2701,8 +2772,8 @@ omicGuiMetabNorm <- function() {
     omicGuiFeatureNorm("metab", "Metabolites",
         export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "design",
             progress = list(gather = "Gathering data...", complete = character(0), steps = TRUE), summary_time = "written"),
-        itsd_table = function(assay_data, id_col, annotation_cols) {
-            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)
+        itsd_table = function(assay_data, id_col, annotation_cols, ...) {
+            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols, ...)
         },
         skip_correlation_flags = "after_commit", final_pca = list(preparing_size = 5, error_size = 5),
         managed_correlation_notify = TRUE)
@@ -2721,9 +2792,9 @@ omicGuiMetabQc <- function() {
         # mod_metab_qc_intensity.R:206; mod_metab_qc_s4_server_helpers.R:398 (func_metab_qc.R:268)
         filtering_figure = updateMetaboliteFiltering,
         itsd = list(name_columns = c("Metabolite name", "Name", "metabolite"),
-            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col, ...) {
                 getInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
-                    metabolite_id_col = id_col, sample_id_col = sample_id_col)
+                    metabolite_id_col = id_col, sample_id_col = sample_id_col, ...)
             },
             quant = getMetaboliteQuantData,
             tip = "Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')"),
@@ -2927,8 +2998,8 @@ omicGuiTrxDa <- function() {
         testids = c(run = "trx-da-run", download = "trx-da-download", results_tabs = "trx-da-results-tabs"),
         model = list(editable = FALSE, heading = "Model", output = "formula_display",
             help = c("edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the",
-                "one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors",
-                "W_1..W_k as covariates. No fold-change test is applied."),
+                "one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group, plus the RUV factors",
+                "W_1..W_k as covariates when the normalisation added them. No fold-change test is applied."),
             formula = trxRealisedFormula, text = trxDaModelText),
         threshold = list(label = "FDR (BH) threshold:", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
         lfc = list(label = "Fold-change line (display only; no test):", value = 0, min = 0, max = 2, step = 0.1,
@@ -2945,7 +3016,7 @@ omicGuiTrxDa <- function() {
         run = list(managed = runWorkflowOmicsManagedDa, in_process = runTrxReferenceDaAnalysis,
             export_report = trxDaExport),
         source = list(class = "TranscriptomicsAssayData", read_metadata = trxDaReadMetadata,
-            no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."),
+            no_data = "Run the normalisation first: the differential analysis runs on the normalised data."),
         preflight_first = FALSE,
         texts = c(status_ready = "Ready. The DA runs on the normalised (RUVs) state.",
             status_waiting = "Ready. The DA runs on the normalised (RUVs) state.",

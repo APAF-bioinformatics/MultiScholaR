@@ -7,7 +7,9 @@
 \S4method{metaboliteIntensityFiltering}{MetaboliteAssayData}(
   theObject,
   metabolites_intensity_cutoff_percentile = NULL,
-  metabolites_proportion_of_samples_below_cutoff = NULL
+  metabolites_proportion_of_samples_below_cutoff = NULL,
+  metabolites_min_values_per_group = NULL,
+  metabolites_min_groups = NULL
 )
 }
 \arguments{
@@ -16,6 +18,10 @@
 \item{metabolites_intensity_cutoff_percentile}{See generic definition.}
 
 \item{metabolites_proportion_of_samples_below_cutoff}{See generic definition.}
+
+\item{metabolites_min_values_per_group}{See generic definition.}
+
+\item{metabolites_min_groups}{See generic definition.}
 }
 \value{
 An updated MetaboliteAssayData object.
@@ -23,8 +29,11 @@ An updated MetaboliteAssayData object.
 \description{
 Filters metabolites in \emph{all} assays of a MetaboliteAssayData object.
 It removes metabolites that have intensities below a certain percentile threshold
-in a proportion of samples exceeding a defined cutoff. The threshold is calculated
-independently for each assay.
+in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
+independently for each assay. A metabolite is also removed unless at least \code{metabolites_min_groups} groups
+of the design each have a value (not missing) in at least \code{metabolites_min_values_per_group} of their
+samples (in every sample, if the group is smaller); groups named like "pool" are not counted, and
+a design without a group column is refused.
 }
 \section{Functions}{
 \itemize{

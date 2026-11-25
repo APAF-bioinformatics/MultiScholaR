@@ -120,7 +120,16 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
             done = function() withDIAStateScope(manager, function() {
               entry$accept(manager, request$manifest, results)
               shiny::removeNotification("da_working")
-              publication()
+              # KIT-243 (S2 (b)): the earlier files under this DA's names removed at the accept, so a worker-side
+              # publication failure (which never reaches `publishWorkflowDaResult`) leaves none; the marker refuses Copy.
+              removed <- tryCatch({
+                removeWorkflowDaOwnFigures(manager, experiment_paths, omic_type)
+                TRUE
+              }, error = function(e) {
+                report_error(e)
+                FALSE
+              })
+              if (removed) publication()
             }),
             failed = function(e) {
               report_error(e)

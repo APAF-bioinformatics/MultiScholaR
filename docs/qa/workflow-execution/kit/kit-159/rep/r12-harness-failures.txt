@@ -1,0 +1,11 @@
+== test-g1a.R :: G1A-LOAD: KIT-172's real record certifies each of its four lanes (1 not passed)
+<val_spec_invalid/val_error/rlang_error/error/condition>
+Error in `valReadTextTable(declared)`: a table row with another field count than its header
+
+== test-g1a.R :: G1A-ADOPT: reference rows are adopted by (lane, step, class) and key sets (1 not passed)
+<val_spec_invalid/val_error/rlang_error/error/condition>
+Error in `valAdoptReferenceRows(own172, k172)`: a ticket's committed reference rows disagree with G1(r)'s own rows
+
+== test-g1a.R :: G1A-P2: part (2) reads each lane's chain from the history and judges the live run (1 not passed)
+Error in `is.call(e) && as.character(e[[1L]]) %in% c("<-", "=")`: 'length = 3' in coercion to 'logical(1)'
+

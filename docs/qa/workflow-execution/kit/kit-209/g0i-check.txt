@@ -1,0 +1,12 @@
+g0i: held
+ok  S RC write: completed, valid yes, hwm 703.1, wall 0.3
+ok  S RC import: completed, valid yes, hwm 984.1, wall 4.37
+ok  S RC align: completed, valid yes, hwm 870.9, wall 1.26
+ok  S RC train: completed, valid yes, hwm 957.8, wall 197.61
+ok  S RC results: completed, valid yes, hwm 874.1, wall 1.41
+ok  S C write: completed, valid yes, hwm 702.1, wall 0.31
+ok  S C import: completed, valid yes, hwm 978.9, wall 4.39
+ok  S C align: completed, valid yes, hwm 877, wall 1.26
+ok  S C train: completed, valid yes, hwm 958.8, wall 48.24
+ok  S C results: completed, valid yes, hwm 853.4, wall 0.9
+ok  induced fail_memory on RC: killed: memory limit, baseline 634.4

@@ -1,0 +1,56 @@
+Metabolomics analysis for metab_lc - report - created on 2026-11-25 08:45:20
+Your_fancy_self
+2026-11-25
+Sample Details
+SAMPLE DETAILS
+There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • Sample identification (eg client #, sample name, Salesforce ID etc) • Sample conditions upon receipt • Comments about any noncompliance with sample conditions or suitability for testing including client instruction to proceed/not proceed with work
+Method Details
+METHOD DETAILS
+Data analyses were performed based on SOP xxx. • SOP number(s) and name(s) • Brief summary of method(s):
+Multi-Assay Data Structure The dataset contains 2 assays: LCMS_Pos, LCMS_Neg. Each assay was processed independently through quality control and normalization steps before integration for differential abundance analysis.
+Data Preprocessing and Normalization Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group. Missing values (zeros or non-detects) were coded as NA to distinguish true absence from missing measurements.
+ITSD Normalization Internal standard (ITSD) normalization was applied using the average_centered method with median aggregation across ITSD features. Internal standard features were removed after normalization.
+Between-sample normalization was performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015) to account for systematic technical variation across samples.
+Batch Effect Correction RUV-III batch correction was not applied. The analysis proceeded directly with normalized data for differential abundance analysis.
+Quality Control At each stage of data normalization, samples were checked for batch effects using: • Principal component analysis (PCA) to visualize sample clustering • Density boxplots to assess distribution consistency • Relative log-expression (RLE) plots to detect systematic biases • Pearson correlation matrices to evaluate replicate consistency
+Per-Assay Quality Metrics Quality control metrics were evaluated separately for each assay to ensure data quality before integration. Each assay underwent independent QC assessment following the same protocol, with cross-assay consistency verified in the combined analysis.
+• Comments on test specific conditions information (e.g. temperature), where relevant • Comments on deviations, modifications, additions, or exclusions to the method(s) including the acceptance from the client to proceed with them • Critical reagent details where relevant
+Results
+Quality Control
+Quality Control Analysis Figure 1 shows the QC metrics across two stages of data processing: • Log2 normalization (leftmost column, a, c, e, g) • Cyclic loess normalization (rightmost column, b, d, f, h)
+Note: RUV-III batch correction was not applied for this dataset.
+Principal Component Analysis The PCA plots (Figures 1a-b) show the data distribution: • Initial log2 data baseline • After cyclic loess normalization, technical variation was reduced
+Density Boxplots The density boxplots (Figures 1c-d) show the distribution of the PC1 and PC2 values for each group. • The density boxplots show that the distribution of the PC1 and PC2 values for each group are similar after normalization.
+Relative Log Expression The RLE plots (Figures 1e-f) show improvement in data quality after normalization: • Smaller interquartile ranges (IQR) after normalization indicate reduced technical variation • Normalized data shows more consistent median values near zero
+Pearson Correlation • The Pearson correlation matrix (Figures 1g-h) shows that the correlation between biological samples was high and consistent across normalization methods
+Version Information
+Repository: MultiScholaR Branch: N/A Commit: 10198a0 Git Timestamp: 2026-11-25T19:34:52+11:00
+
+Figure 1: QC metrics across normalization stages
+Differential Abundance Analysis
+DIFFERENTIAL ABUNDANCE ANALYSIS
+Differential abundance analysis of metabolites was performed using the adjusted abundance matrix for comparing each pair of experimental groups. The ‘limma’ R package (Ritchie et al., 2015) was used. A linear model for comparing each pair of conditions was fitted using the formula ‘~ 0 + group’ with the ‘lmFit’ function, and p-values were calculated using the ‘eBayes’ function. A trended and robust empirical Bayes analysis was performed. The false discovery rate correction was applied to the moderated p-values by calculating the q-values (Storey, 2002). The standard empirical Bayes method was used to test for any deviation from zero log-fold-change. Significant differentially abundant metabolites were defined as those with q-values less than 0.05.
+Volcano plots of differentially abundant metabolites across all groups are shown in Figure 3, with a threshold of q-value < 0.05. Full details of all metabolites are provided in the Supplementary results table, DE_metabolites_results.xlsx within the Publication_tables folder.
+## Warning: NumSigDeMolecules directory not found at /tmp/RtmpOhKGUh/kit236-g0b/met/V6/base/results_summary/metabolomics/Publication_figures/NumSigDeMolecules
+Figure 2: Number of significant differentially abundant metabolites for each comparison.
+## Warning: Volcano Plots directory not found at /tmp/RtmpOhKGUh/kit236-g0b/met/V6/base/results_summary/metabolomics/Publication_figures/Volcano_Plots
+Figure 3: Volcano plots of differentially abundant metabolites in alphabetical order.
+Comments
+COMMENTS
+Quality Control • All samples passed initial QC criteria • Normalization successfully reduced technical variation • Batch effects were substantially mitigated, though not completely eliminated
+Technical Performance • High technical reproducibility achieved for majority of metabolites • Correlation metrics indicate reliable quantification • Sample processing met quality standards
+Limitations • Residual batch effects present but within acceptable ranges • Technical variation adequately controlled through normalization steps
+Opinions and Interpretation
+OPINIONS AND INTERPRETATION
+Data Quality Assessment • The dataset demonstrates robust technical quality • Normalization strategy effectively reduced systematic biases
+Recommendations 1. Proceed with downstream analysis using normalized dataset
+Technical Validation • Quality metrics support the reliability of the data • Technical reproducibility meets industry standards • Dataset is suitable for biological interpretation
+Pathway Enrichment Analysis
+PATHWAY ENRICHMENT ANALYSIS
+Pathway enrichment analysis was performed on the differentially abundant metabolites to identify significantly enriched metabolic pathways and biological processes. The analysis was conducted using the following parameters: • No fold change cutoff was applied to filter differentially abundant metabolites. • An adjusted FDR cutoff of 0.05 was used to identify significantly enriched pathways • The background metabolite set consisted of all identified metabolites that passed quality control filtering steps
+The enrichment analysis was performed using KEGG pathway databases. Pathways were considered significantly enriched if they had an adjusted p-value less than 0.05 after multiple testing correction using the Benjamini-Hochberg method.
+Key findings from the pathway enrichment analysis are summarized below for each comparison:
+The complete list of enriched pathways with statistics is provided in the supplementary file ‘Pathway_enrichment_results_metabolomics.xlsx’ within the Publication_tables folder.
+## Warning: Enrichment Plots directory not found at /tmp/RtmpOhKGUh/kit236-g0b/met/V6/base/results_summary/metabolomics/Publication_figures/Enrichment_Plots
+Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant metabolites. Plots are ordered alphabetically by comparison and direction.
+

@@ -301,6 +301,26 @@ applyProtDaContrastModel <- function(base_fit_artifact, contrast_matrix,
   messageFn("   runTestsContrasts: Running contrasts.fit...")
   counterFn("contrasts.fit")
   contrasted_fit <- contrastsFitFn(base_fit_artifact$fit, contrasts = contrast_matrix)
+  # KIT-200 (as KIT-196): a protein with no value in any analysed sample has no mean (Amean NaN), so limma's
+  # empirical-Bayes step cannot use it (the trend covariate; limma 3.68.4 fitFDistUnequalDF1.R:17). It carries no
+  # information and is not tested: it leaves the moderation here, so the other proteins are moderated exactly as in data
+  # that never held it, and it is returned as a row without statistics in every contrast table. A logical index, so a
+  # matrix without row names is handled too (KIT-196 audit I06).
+  empty <- if (is.null(contrasted_fit$Amean)) logical(nrow(contrasted_fit$coefficients)) else is.na(contrasted_fit$Amean)
+  if (all(empty)) {
+    rlang::abort("no feature has a value in any sample, so nothing can be tested", class = "omics_da_no_observed_features")
+  }
+  without_values <- character()
+  if (any(empty)) {
+    # A matrix without row names is named by position first, so topTable labels every row by its input position
+    # (KIT-200 audit I05).
+    if (is.null(rownames(contrasted_fit$coefficients))) {
+      rownames(contrasted_fit$coefficients) <- as.character(seq_along(empty))
+    }
+    without_values <- rownames(contrasted_fit$coefficients)[empty]
+    messageFn(sprintf("   runTestsContrasts: %d protein(s) with no value in any sample are not tested", sum(empty)))
+    contrasted_fit <- contrasted_fit[!empty, ]
+  }
   messageFn("   runTestsContrasts: Running eBayes...")
   counterFn("eBayes")
   moderated_fit <- eBayesFn(contrasted_fit, trend = eBayes_trend,
@@ -312,12 +332,29 @@ applyProtDaContrastModel <- function(base_fit_artifact, contrast_matrix,
     counterFn("treat")
     public_fit <- treatFn(moderated_fit, lfc = as.double(treat_lfc_cutoff))
   }
-  list(schema = "prot_da_contrast_model_v1",
+  artifact <- list(schema = "prot_da_contrast_model_v1",
     base_fit_entity = NA_character_, contrast_matrix = contrast_matrix,
     contrasted_fit = contrasted_fit, moderated_fit = moderated_fit,
     public_fit = public_fit, treat_applied = treat_applied,
     treat_lfc_cutoff = treat_lfc_cutoff,
     eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust)
+  # KIT-200: present only when some protein had no value, so an analysis without one is unchanged.
+  if (length(without_values)) artifact$features_without_values <- without_values
+  artifact
+}
+
+#' Append the proteins without values to one contrast table (KIT-200, as KIT-196): one row per id, every column NA and
+#' typed as the table's own, the id as row name. Called after the q-values and BH, so the multiple-testing family is the
+#' tested proteins only.
+#' @param table A contrast result table.
+#' @param ids The proteins without values (`features_without_values`).
+#' @return `table`, unchanged when `ids` is empty.
+#' @noRd
+appendProtDaUntestedRows <- function(table, ids) {
+  if (!length(ids)) return(table)
+  untested <- table[rep(NA_integer_, length(ids)), , drop = FALSE]
+  rownames(untested) <- ids
+  rbind(table, untested)
 }
 
 #' Apply the existing qvalue fallback and BH populations to one full table.
@@ -407,15 +444,22 @@ buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
     }
     adjusted <- adjustProtDaResultTable(table, p_value_name, q_value_name,
       fdr_value_name, qvalueFn, pAdjustFn, counterFn, messageFn)
-    results[[index]] <- adjusted$table
-    masks[[index]] <- adjusted$valid_p_value_mask
+    # KIT-200: the proteins without values, after the adjustment (they are not in the family).
+    untested <- contrast_artifact$features_without_values
+    results[[index]] <- appendProtDaUntestedRows(adjusted$table, untested)
+    masks[[index]] <- c(adjusted$valid_p_value_mask, rep(FALSE, length(untested)))
     if (isTRUE(adjusted$qvalue_failed)) warnings[[contrast]] <- TRUE
   }
   names(results) <- contrast_strings
   names(masks) <- contrast_strings
-  list(schema = "prot_da_result_tables_v1", results = results,
+  built <- list(schema = "prot_da_result_tables_v1", results = results,
     qvalue_warnings = warnings, valid_p_value_masks = masks,
     fit.eb = contrast_artifact$public_fit)
+  # KIT-200: present only when some protein had no value in any analysed sample.
+  if (length(contrast_artifact$features_without_values)) {
+    built$features_without_values <- contrast_artifact$features_without_values
+  }
+  built
 }
 
 #' The limma test of the factors-in-the-model design (KIT-126; decisions M29, M30)
@@ -487,10 +531,13 @@ runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, form
 #' @param p_value_column The name of the raw p-value column (tidyverse style).
 #' @param q_value_column The name of the q-value column (tidyverse style).
 #' @param fdr_value_column The name of the fdr-value column (tidyverse style).
-#' @return A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.
+#' @description Run the linear model fitting and statistical tests for a set of contrasts, then adjust with Empirical Bayes function. A protein with no value in any analysed sample is not tested and is listed (`features_without_values`).
+#' @return A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object. `features_without_values`: present only when the data held proteins with no value in any analysed sample; their ids. Such a protein is a row of every table without statistics (`AveExpr` missing).
 #' @export
 #' @param weights,treat_lfc_cutoff,eBayes_trend,eBayes_robust Runtime inputs used by this function; see the usage section for accepted values.
 #' @param group_id,technical_replicate_id Column names of the design's group and of the object's declared technical replicate column (KIT-035): the replicate block comes from the declared column, and a block spanned by the design runs standard lmFit with the reason recorded.
+#' @details TREAT uses the same trend and robust settings as the moderated test (`eBayes_trend`, `eBayes_robust`; KIT-201).
+#'   With both FALSE the TREAT statistics are those of one prior variance without the robust step, as before KIT-201.
 runTestsContrasts <- function(data,
                               contrast_strings,
                               design_matrix,
@@ -555,13 +602,18 @@ runTestsContrasts <- function(data,
     design_matrix, samples_in_model, formula_string, weights,
     group_id = group_id, technical_replicate_id = technical_replicate_id)
 
+  # KIT-201 (VAL-127, VAL-131): TREAT takes the moderated test's trend and robust settings, except while a DA made
+  # before that change replays (the earlier rule: treat()'s own defaults, one prior variance without the robust step).
+  treat_moderated <- workflowTreatModerationCurrent()
   saved_manager <- getDIAActiveManager()
   saved_identity <- NULL
   if (usesDIAReferenceStates(saved_manager) && isTRUE(saved_manager$.context$da_reference_execution)) {
+    # The result's identity names the current rule, so a replayed (earlier-rule) result and a new one never share it.
+    adjustment <- paste("full-population-qvalue-BH-v1", rlang::as_name(rlang::ensym(p_value_column)),
+      rlang::as_name(rlang::ensym(q_value_column)), rlang::as_name(rlang::ensym(fdr_value_column)), sep = ":")
+    if (treat_moderated) adjustment <- paste(adjustment, "treat-moderated-v2", sep = ":")
     saved_identity <- newWorkflowDiaResultIdentity(saved_manager$.context$da_base_fit_reference,
-      contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust,
-      paste("full-population-qvalue-BH-v1", rlang::as_name(rlang::ensym(p_value_column)),
-        rlang::as_name(rlang::ensym(q_value_column)), rlang::as_name(rlang::ensym(fdr_value_column)), sep = ":"),
+      contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust, adjustment,
       saved_manager$.context$software)
     saved_result <- resolveWorkflowDiaResult(saved_manager$.context$store, saved_identity)
     if (identical(saved_result$status, "hit")) return(saved_result$value$value$public_result)
@@ -570,8 +622,10 @@ runTestsContrasts <- function(data,
   contrast_artifact <- applyProtDaContrastModel(base_fit_artifact, contr.matrix,
     treat_lfc_cutoff = treat_lfc_cutoff, eBayes_trend = eBayes_trend,
     eBayes_robust = eBayes_robust, contrastsFitFn = contrasts.fit,
-    eBayesFn = eBayes, treatFn = treat)
+    eBayesFn = eBayes, treatFn = \(fit, lfc) limma::treat(fit, lfc = lfc, trend = treat_moderated && isTRUE(eBayes_trend),
+      robust = treat_moderated && isTRUE(eBayes_robust)))
   eb.fit <- contrast_artifact$moderated_fit
+  without_values <- contrast_artifact$features_without_values # KIT-200: NULL when every protein has a value
 
   # Run treat or standard analysis
   t.fit <- contrast_artifact$public_fit
@@ -625,20 +679,22 @@ runTestsContrasts <- function(data,
 
               q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
-                tryCatch(
+                # KIT-249: the handler's value is assigned in this frame (as adjustProtDaResultTable does); assigned
+                # inside the handler, the Benjamini-Hochberg fallback went to a local copy and fdr_qvalue stayed NA.
+                q_values_all[valid_p_idx] <- tryCatch(
                   {
                     q_values_valid <- qvalue(valid_p_values)$q
-                    q_values_all[valid_p_idx] <- q_values_valid
                     message("      qvalue() computation successful")
+                    q_values_valid
                   },
                   error = function(e) {
                     qvalue_failed <<- TRUE
                     message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                     message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                     message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
-                    # Fallback to p.adjust if qvalue fails
-                    q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                     message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
+                    # Fallback to p.adjust if qvalue fails
+                    p.adjust(valid_p_values, method = "BH")
                   }
                 )
               } else {
@@ -686,6 +742,7 @@ runTestsContrasts <- function(data,
             if (qvalue_failed) {
               qvalue_failures[[contrast]] <<- TRUE
             }
+            da_tbl <- appendProtDaUntestedRows(da_tbl, without_values) # KIT-200: after q and BH (not in the family)
             return(da_tbl)
           },
           error = function(e) {
@@ -747,20 +804,22 @@ runTestsContrasts <- function(data,
 
               q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
-                tryCatch(
+                # KIT-249: the handler's value is assigned in this frame (as adjustProtDaResultTable does); assigned
+                # inside the handler, the Benjamini-Hochberg fallback went to a local copy and fdr_qvalue stayed NA.
+                q_values_all[valid_p_idx] <- tryCatch(
                   {
                     q_values_valid <- qvalue(valid_p_values)$q
-                    q_values_all[valid_p_idx] <- q_values_valid
                     message("      qvalue() computation successful")
+                    q_values_valid
                   },
                   error = function(e) {
                     qvalue_failed <<- TRUE
                     message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                     message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                     message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
-                    # Fallback to p.adjust if qvalue fails
-                    q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                     message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
+                    # Fallback to p.adjust if qvalue fails
+                    p.adjust(valid_p_values, method = "BH")
                   }
                 )
               } else {
@@ -808,6 +867,7 @@ runTestsContrasts <- function(data,
             if (qvalue_failed) {
               qvalue_failures[[contrast]] <<- TRUE
             }
+            da_tbl <- appendProtDaUntestedRows(da_tbl, without_values) # KIT-200: after q and BH (not in the family)
             return(da_tbl)
           },
           error = function(e) {
@@ -822,6 +882,8 @@ runTestsContrasts <- function(data,
 
   names(result_tables) <- contrast_strings
   result <- list(results = result_tables, fit.eb = t.fit, qvalue_warnings = qvalue_failures)
+  # KIT-200: present only when some protein had no value in any analysed sample, so other results are unchanged.
+  if (length(without_values)) result$features_without_values <- without_values
   if (!is.null(saved_identity)) {
     saved_reference <- saveWorkflowDiaResult(saved_manager$.context$store,
       list(schema = "prot_da_result_tables_v1", results = result_tables, public_result = result),

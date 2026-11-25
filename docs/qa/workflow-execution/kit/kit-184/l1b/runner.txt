@@ -1,0 +1,6 @@
+image: ubuntu22 20261116.365.1
+4
+MemTotal:       16371436 kB
+CPU(s):                                  4
+Vendor ID:                               GenuineIntel
+Model name:                              INTEL(R) XEON(R) PLATINUM 8573C

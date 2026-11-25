@@ -1,0 +1,16 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-gui-entry-metabolomics.R	105	0	0	0	0	302.6	ok
+test-gui-entry-lipidomics.R	35	0	0	0	0	117.2	ok
+test-kit235-lipid-metab-report-parser.R	50	0	0	0	0	12	ok
+test-kit227-report-ruv-sentences.R	166	0	0	0	0	12.1	ok
+test-general-filemgmt-s4-contracts.R	30	0	0	0	0	8.1	ok
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	3	10	ok
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	0	6.9	ok
+test-lipid-15-summary-module-seams.R	0	0	0	0	0	6.8	ok
+test-metab-05-summary-module-characterization.R	0	0	0	0	0	6.5	ok
+test-module-ci-lipid-summary.R	14	0	0	6	0	13	ok
+test-module-ci-metab-summary.R	12	0	0	6	0	12.3	ok
+test-module-ci-sentinels.R	56	0	0	0	0	7.3	ok
+test-omic-gui-config.R	1911	0	0	0	0	43	ok
+test-omics-summary-core.R	676	25	0	2	0	250	failed
+test-omic-summary-module.R	1675	28	0	0	0	260.3	failed

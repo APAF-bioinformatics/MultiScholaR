@@ -1,0 +1,6 @@
+KIT-190 bound lc: 80 rows; falsifiers k_readback 0, pct_readback 0, oracle 0, instrument 0
+check i_reproduce: ok 28 of 28
+check ii_k_pct_readback: ok 40 of 40
+check iii_oracle: ok 40 of 40
+check iv_instrumentation: ok 40 of 40
+check vii_projected_core_hours_option_c: value 32.6 ceiling 100

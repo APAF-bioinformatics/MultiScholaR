@@ -1,8 +1,773 @@
 # MultiScholaR NEWS
 
-## MultiScholaR 0.9.5 (staging)
+## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
+
+### New features
+
+ * Multi-omics integration (MOFA2) is now part of the application: the Integration tile on the home page opens six tabs
+   (Import, Sample Matching, Model, Results, Enrichment, Record) that combine two or more omics processed in the same
+   project and saved for integration at their Summary tab. The installers include MOFA2 and the Python it uses. From R,
+   the Model tab needs the Bioconductor package MOFA2, the R package reticulate and a Python with the module mofapy2
+   (0.7.3 is the version tested); without them it says which one is missing and how to install it. Without
+   RETICULATE_PYTHON, the first software check lets reticulate download and set up a Python of its own (about 50 MB,
+   observed with reticulate 1.46.0), and a mofapy2 installed into the system Python is then not used. The Results tab
+   now shows where the reported model ranks among the training seeds by the final value of MOFA2's training objective
+   (the ELBO), how far it is below the highest and the range over the seeds. The test setting
+   `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
+   hides the tabs. The Enrichment tab marks its eight defaults not yet confirmed (KIT-240).
+
+ * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
+   analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
+   could not find with 20 and 60 samples; how missing values are treated; which data sets averaged several runs per
+   sample, and why such averages can be too high for low-abundance features; that the model treats all samples as one
+   group with normally distributed variation and takes one input per omic; what the check against the original
+   analysis script covered; and which external enrichment services the analysis used, with their releases. The Model
+   tab points to them after training, and its help for per-feature scaling now states the simulated pattern's size in
+   numbers (KIT-239).
+
+ * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
+   `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
+   be called but are not yet validated): `mapStrainToReference()` maps a
+   strain's proteins to their orthologues in one well-annotated reference of the same species by reciprocal best hits
+   of DIAMOND v2.2.8 searches in both directions (repeat masking off, full extension, 80 % coverage of both sequences,
+   e-value 1e-5, no identity floor by default; every status reported and counted; a strain protein takes a reference
+   accession only when one-to-one). Four UniProt reference proteomes (release 2026_04, CC BY 4.0) ship with the
+   package: E. coli K-12 MG1655, S. aureus NCTC 8325, K. pneumoniae MGH 78578 and S. pyogenes SF370 (STRING
+   unavailable for SF370). `matchStrainGenesToProteins()` matches the strain's genes (locus tags) to its proteins from
+   the GFF3 or GTF annotation without sequence search. Proteomics enrichment can use the orthologues' accessions, with
+   the reference's own GO table, unmapped groups left out of the query lists and the background, and the counts of
+   changed and unchanged features by mapped and unmapped; the integration features gain the mapping columns.
+
+ * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
+   test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
+   with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
+   record show how each test behaved in a check on simulated data of the same kind (false calls and power; no lipid
+   data were simulated), so the choice can be made on those figures. With a permutation result, the tab and the
+   record's Methods state the smallest attainable p-value as an exact fraction (for example 1/1,001) and the smallest
+   number of terms that can be called together at a 5 % false discovery rate, or that none can be called when that
+   p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
+   pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
+   a session with default settings are unchanged (KIT-191).
+
+ * Integration inputs record the unwanted factors a correction for unwanted variation (RUV) removed: where an omic
+   applied RUV to a data set, saving its Summary writes one more file, `removed_<data set>.parquet`, beside the
+   normalised and the corrected matrix (a basis of the difference between the two over the features measured in every
+   run, checked against the correction's number of factors; contract v2, an addition that earlier versions read as
+   before). An input saved earlier must be saved again at the omic's Summary step before the correlation-adjusted
+   enrichment test can run with the adjustment for removed RUV factors (KIT-184).
+
+ * Integration enrichment, an optional adjustment for removed RUV factors: the setting "Adjust for removed RUV factors"
+   (`adjust_ruv_factors`), in the Enrichment tab and in `integrationEnrichFactor(overrides = )`, off unless chosen.
+   Switched on, the correlation-adjusted tests (the default test and the form with negative correlations counted as
+   zero) put the unwanted factors the RUV correction removed from the data set into their model (intercept, factor,
+   removed factors), so a feature counts for what it shares with the factor beyond those factors; for a model trained
+   on RUV-corrected values and features measured in every run this is identical to fitting that model to the corrected
+   values. In a check on simulated data (12 biological samples, 2 removed factors) the adjusted test called sets with
+   no link to what was tested, of the kinds the check decided on, in at most 5.4 % of cases (95 % interval of that
+   largest figure 4.5 to 6.4 %; sets made only of the most variable features: up to 9.4 %, against 6.8 % without the
+   adjustment; sets in which half the features truly followed the main factor, tested against an unrelated covariate:
+   up to 8.6 %, against up to 7.0 %) and found more true terms than the test without it. In that check it did not
+   protect sets of features that share unwanted variation when that variation follows the groups: such sets were called
+   on the model's main factor in 8.1 to 29.6 % of cases with the adjustment, against 2.0 to 11.2 % without it and 1.6
+   to 2.8 % had the true unwanted factors been known. No
+   result changes unless the setting is switched on: every model, one trained on RUV-corrected values included, is
+   tested as before on the values before RUV without the factors. Every result of a correlation-adjusted test now
+   carries the line "Adjusted for removed RUV factors: yes (n factor(s))." or "... no." in the tab, in
+   `integrationEnrichFactor()`'s summaries and in records. The adjusted test is refused when fewer than max(4, the
+   smallest number of samples per feature) biological samples are left after one per removed factor, when the factor is
+   a combination of the removed factors, and for a data set without usable removed factors. The pre-ranked test, the
+   permutation test and STRING do not use the removed factors. A recorded result replays in the form it was saved in; a
+   result recorded before this version replays without the adjustment (VAL-53, VAL-58, VAL-62, VAL-160, VAL-178;
+   KIT-184).
+
+### Fixes
+
+ * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
+   greyed out and says a step is still running while another step of the same analysis runs, for example the
+   quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those
+   figures were drawn (often the first press after opening the tab) was refused with "A step is still running..."
+   although the button looked ready. In transcriptomics, a press made while any of its steps ran was refused the same
+   way. This came in with the 0.9 development builds after v0.9.0. No result changes (KIT-261).
+ * Integration: the draft Methods paragraph (report, study parameters, Record tab) now states, for scaling each
+   feature, what the package's simulations showed, in the same words as the Model tab's help: at 20 samples with about
+   a fifth of the values missing, mostly low ones, the pattern was recovered closely in 26 rather than 12 of 30
+   simulated data sets; without missing values the difference could not be told from none (29 rather than 26 of 30),
+   and with 60 samples the pattern was recovered closely in 30 of 30 either way. It no longer calls the pattern weak or
+   says the scaling otherwise made no difference. Reports and study parameters already saved are not changed; saving
+   the record again writes the corrected sentence (KIT-246).
+ * Proteomics: the study-parameters file (`study_parameters.txt`) no longer lists metabolomics or transcriptomics
+   settings. Every proteomics project copies the package's whole configuration file, so the file listed its
+   metabolomics intensity-filter settings although no proteomics step uses them: twice in 0.9.0, once in the
+   earlier releases that carried these settings (since November 2025). Only the printed file changes; analyses,
+   results and stored records do not. `createWorkflowArgsFromConfig()` gains `omic_type`; scripts that do not pass
+   it get the same file as before (KIT-263).
+ * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
+   a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
+   package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
+   mainly the lowest correlations visible (since 2024; KIT-259).
+ * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
+   stopping with an error (KIT-259).
+ * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
+   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   have no correlation and are not shown (KIT-259).
+ * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
+   unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
+   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
+   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
+   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
+   figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
+ * Reports (lipidomics, metabolomics; the same corrections in the proteomics reports): the report no longer prints
+   conclusions it did not compute (KIT-236; the owner's decision VAL-245; wording drafts for the owner's pass). The
+   quality-control figure text describes the four views and the stages that were run, without panel letters, and draws
+   no conclusion; Comments and Opinions are fields for the analyst instead of fixed statements such as 'All samples
+   passed initial QC criteria', with, where the analysis record holds them, the features remaining after each step and
+   how many of the samples given to the sample-correlation filter it kept. The Methods no longer describe an integration
+   step or a cross-assay check that do not exist; they describe zeros as they were handled, name the comparisons of the
+   contrast table instead of 'each pair of experimental groups' and any comparison whose test could not be computed,
+   name the matrix and model that were tested (under the declared RUV design, the uncorrected values with each assay's
+   RUV factors in the model), state the Benjamini-Hochberg fallback of the q-values (per comparison where the record
+   names it), say when a fold-change threshold was tested with TREAT, that its p-values are TREAT's, and include it in
+   the definition of a significant feature and in the count and volcano sentences, say when technical replicates were
+   modelled as a block, say 'No between-sample normalisation was applied.' or that the method is not recorded instead
+   of naming a method, and name the MultiScholaR version. The DA settings block the application writes ('Differential
+   Expression UI Parameters', the only name any writer has used) is now read: the report looked for a block under a
+   name that is never written, so the TREAT sentence never printed, and a DIA report (DIA-NN, DIA with limpa) without an
+   analysis record now prints the q-value threshold the user set instead of a fixed 0.05. 'SOP xxx' and the sample-identification
+   placeholders are fields for the analyst. The sample details count the analysed samples and the technical
+   replicates the design declares (before, 'no technical replicates' was printed whatever the design). The report names
+   the results table the application writes (`DA_results_<omic>.xlsx`), and the quality-control, count and volcano
+   figures only when they exist (no 'Warning: ... not found' line for these figures); the count sentence reads the table
+   Copy writes (`da_<omic>_num_sig_de_molecules.tab`) and states the counts per comparison and assay. Proteomics: the
+   technical-replicate sentence, the Benjamini-Hochberg fallback, the TREAT sentence and its p-values, the block clause
+   and 'none' as above; the DIA-with-limpa report no longer says technical replicates were averaged (the application
+   never averages them). Not yet changed (they wait for KIT-242): the sentence naming the between-sample normalisation
+   method applied, the internal-standard sentence and the method named in the Figure 1 caption. A project keeps the
+   copy of the report template made at its first report; projects that generated a report before this version keep the
+   earlier text unless that copy (`scripts/<omic>/<template>.rmd`) is removed.
+ * Lipidomics and metabolomics: 'Skip Filtering & Proceed to DE' pressed after the correlation filter was applied now
+   uses every sample, as the tab says, and applying the filter again filters the table the normalisation produced
+   (RUV-corrected when RUV was applied) instead of the already filtered one. Before, in development builds from 31
+   October 2026, after Apply and then Skip, the differential analysis, the exported normalised session, the
+   integration input, the study parameters and the analysis record used or named the filtered table (with two or more
+   lipidomics assays, when the filter had removed a sample from only some of them, the differential analysis instead
+   stopped with a message), while the tab reported that no sample was removed and the final PCA showed every sample.
+   And applying the filter again could not bring back samples that an earlier, higher threshold had removed, while
+   the analysis record named only the last threshold. With more than one assay, applying it again, even at the same
+   threshold, could remove further samples. A differential analysis run between Apply and Skip must now be run again
+   (the Summary asks for it). In earlier releases the analysis after Skip used every sample, but the tab's summary
+   and final PCA still showed the samples the filter had removed; they now show every sample. Analysis records made
+   by the development builds replay as recorded. When the filter was applied and then skipped, the replay reproduces
+   the analysis that was run and states the samples the filter left out; when it was applied more than once, the
+   replay states that only the last threshold was recorded, so its samples may differ from the analysis that was run.
+   (KIT-254)
+
+ * Proteomics: skipping the correlation filter is now recorded as a skip in the analysis record and in the study
+   parameters ('pearson-skip', skipped = TRUE), and a replay of the record keeps every sample, as the run did. Before, a
+   skip with no filter applied before it made the record impossible to replay, and a skip after an applied filter was
+   recorded, and listed in the study parameters, as the filter at its threshold (a replay then removed the samples the
+   filter had removed, so its differential abundance results differed from the reported ones). Results of the analysis
+   itself did not change. Records made before this version are replayed as the skips they were (KIT-248).
+ * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
+   protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
+   shown twice (KIT-251).
+ * Every omic: when a step run by the application's worker ends without an error of its own (the application's
+   memory limit for one step, the time limit for one step, a process that stopped or could not start, a table that
+   changed while the step ran, a result whose files could not be written, an internal check), the message now says
+   in plain words what happened, whether the step's result was saved, and what to do; before, it showed an
+   internal code such as 'managed action ended: memory_guard'. The wording is a draft for the owner's review
+   (KIT-252).
+
+ * Proteomics import with 'Mixed species FASTA': when the 'Select Primary Organism' window appears, the import now
+   finishes only when an organism is confirmed there; Cancel clears the import and says so, and the data must be
+   imported again. Before, the import counted as finished before the
+   choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
+   annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
+   with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
+
+ * Proteomics, DIA with limpa (chosen at the DIA-NN import; not the default route): after the correlation filter,
+   pressing 'Run Normalization & RUV' again now keeps the table the first press started from, as it already did after
+   the RUV covariates and as the other proteomics routes already do. Before, the correlation filter's result became
+   the starting table: re-applying the filter at a lower threshold could not bring back samples a higher threshold had
+   removed (the analysis record named the lower threshold), skipping the filter kept those samples removed while
+   recording it as skipped, and 'Reset to Pre-Normalization' either changed nothing or, once the filter had been
+   applied again with a different result or skipped, refused with a reason that did not apply. At the same or a higher
+   threshold the samples kept were already the same. Pressing 'Run Normalization & RUV' before DPC Quantification now
+   refuses with a message saying which Quality Control steps to apply first; before, it was accepted and the
+   correlation filter and RUV covariates then failed with messages that did not say why (KIT-244).
+
+ * 'Push to GitHub' (Summary tab, every omic) is no longer offered in the installed application, where it could not
+   work: it needs a git program, which the installed application does not have on Windows, and a
+   `<project id>.Rproj` file, which the application never creates. The Summary tab says what to do instead, and that
+   the project's scripts folder holds copies of the input files and analysis data. In R (outside the installed
+   application) the panel and `pushProjectToGithub()` are unchanged apart from the fix below (KIT-245).
+ * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
+   digits, '.', '-' and '_' only, not ending in '.', not a Windows device name); an ID that climbed out of R's
+   temporary folder (such as `../../../../Documents`) could make it delete that folder.
+   It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
+   repository on GitHub, never writes the token to a file (git receives it only for the push), and removes its
+   temporary copy whatever the outcome. A failure GitHub reports after the creation still leaves the new repository
+   empty, and the message names it. The push sends the omic's scripts folder `scripts/<omic>/` as it is: the design
+   and contrast tables, `study_parameters.txt`, `analysis_record.json` and any exported session state; for
+   lipidomics, metabolomics and transcriptomics `import_sources/` (exact copies of the input files) and the imported
+   tables; for proteomics the session archive (`filtered_session_*.msdia.tar`), its `.RDS` files,
+   `peptide-checkpoints/` and `reference_mapping/inputs/`. The repository is created private in the GitHub
+   organisation you name; private means visible to that organisation's owners and to the members its settings allow
+   (KIT-245).
+ * Design builder, every omic: the technical-replicate list is emptied after each successful 'Assign Technical
+   Replicates'. Before, in every earlier release with the design builder, it kept the runs just marked; adding the
+   next sample's runs and pressing Assign made two biological samples one, with no warning. To add runs to a sample
+   already marked, select all of its runs again together with the new ones; runs selected on their own become a
+   separate sample. A refused Assign keeps the selection. (KIT-256)
+
+ * Normalisation, every omic: each run now first removes the earlier run's files that depend on RUV (and, in
+   proteomics, the earlier normalised table), and writes again those it makes. Before, Copy and the report could
+   deliver files from an earlier, different normalisation:
+   - proteomics' Copy delivered an earlier run's RUV-normalised abundance table as `RUV_normalised_results.tsv` after a
+     later run without RUV (in every earlier release), while the analysis used another table;
+   - transcriptomics' report showed the canonical-correlation panels of an earlier RUV grid after a declared RUV
+     design;
+   - lipidomics' and metabolomics' Copy collected earlier RUV-corrected QC figures.
+
+   A file that cannot be removed (for example, open in another program) stops the run before the normalisation is
+   computed. If a proteomics normalisation or correlation filter stops after it has started (for example, a manual k
+   larger than the data allow), the analysis is unchanged but its RUV figures and normalised table are no longer in
+   the project, and the error notice says so: apply or skip the correlation filter again to write the table, and run
+   the normalisation again for the figures, before Copy. On DIA with limpa, pressing "Run Normalization & RUV" again
+   on the correlation's or the RUV covariates' result keeps that result's files. Projects normalised before this
+   release keep such files until the normalisation is run again. (KIT-257)
+ * Proteomics differential analysis (DIA, label-free and TMT on the default route, the scripted wrappers, and the
+   older `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects): when Storey's q-value cannot be
+   computed for a comparison, the q-value column now holds the Benjamini-Hochberg adjusted p-values, as the warning and
+   the analysis record already said. Before, the column was left empty for every protein of that comparison, so nothing
+   was reported significant, the volcano plot showed no protein and the interactive volcano was replaced by a 'not
+   available' note, and the comparison had no proteins for enrichment. This happens when no p-value in the comparison
+   reaches 0.95. That is likely when only a few tens of proteins or fewer are unchanged, for example in a small protein
+   table or in a comparison in which nearly every protein changes strongly; it can also happen in a larger table when
+   the unchanged proteins' p-values are not spread evenly between 0 and 1 (for example after an uncorrected shift
+   between the groups).
+   Comparisons whose q-values could be computed are unchanged. DIA with limpa, lipidomics and metabolomics in the
+   application, and transcriptomics were not affected. Analyses recorded before this change now replay with the
+   Benjamini-Hochberg values their record names, so for those comparisons a replay differs from the results saved
+   before this change (significant counts, plots, enrichment and report numbers included) (KIT-249).
+ * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
+   correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
+   'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
+   refused Save also removes this omic's earlier integration input. 'Generate Report' and 'Copy' also refuse when the
+   results folder holds differential analysis files that no analysis of this session made (from an earlier session,
+   an opened session file, or a contrast the last analysis did not produce), and name them. The differential-analysis
+   tab of lipidomics, metabolomics and transcriptomics now clears its results when the table changes, as proteomics
+   already did, and after a session file is loaded and the table then moves, the next analysis runs on the current
+   table. Before, the saved parameters, the report and the publication folder could combine one table's parameters
+   with another table's differential analysis. 'Generate Report' after
+   the analysis was run again since the last 'Copy' now asks for 'Copy' first. A saved analysis record whose
+   differential analysis was run on another table than its final one no longer replays. To check an earlier save: in
+   analysis_record.json, the differential_abundance entry's source_state should be the last step's state, or, for
+   proteomics with enrichment, the last state before enrichment_completed; if it is empty or names another state, run
+   the differential analysis again and save again (KIT-212).
+ * Every omic: each differential analysis now first removes the files it writes that an earlier analysis left (the
+   heatmaps and the combined heatmap PDF in lipidomics and metabolomics; in proteomics the significance-count barplot
+   and a comparison's interactive volcano page or its not-available note), so a figure the newest analysis did not
+   draw (for example the heatmap of a comparison with nothing significant) is no longer copied or reported as
+   current. Heatmaps saved with 'Save Heatmap' are kept; in proteomics those of the comparisons the latest analysis
+   ran are copied with the results, whatever settings they were saved under; one of another comparison stops Copy, as
+   before. If an earlier file cannot be removed (for example, it is open in another program) or the new files cannot
+   be written, the analysis says so, and 'Copy to Publication Directory' and 'Generate Report' refuse until the
+   analysis is run again (unless the results folder cannot be written to at all, when nothing is removed). They also
+   refuse with a message until 'Save Workflow Arguments' is pressed again when a step or the differential analysis
+   was run, reverted or changed after the last save (or MultiScholaR was updated since); this is checked against the
+   analysis record that save wrote, so a project whose last save wrote none is not checked. Before, they paired the
+   last save's parameters and analysis record with the newer results (KIT-243).
+ * Proteomics enrichment: a list of up- or down-regulated proteins that could not be tested (on g:Profiler none of its
+   proteins has a gene name; on the Gene Ontology route none has a Gene Ontology annotation that the analysis tests) is
+   now shown in the tab, the download and the report as 'Not tested', with the reason, and is recorded in the analysis
+   record; a direction in which no protein passed the cutoffs now says 'no list'. Before, both looked like a list in
+   which no term was enriched. A list that was tested and in which no tested term holds one of its proteins is shown,
+   as before, as tested with no term. On the Gene Ontology route a comparison that has a list but no tested protein
+   with an annotation, or no Gene Ontology term of 10 to 500 tested proteins, is now refused with a message, as is a
+   run in which the test of a list stops with an error (on both routes); records of such runs made before this change
+   no longer replay. On g:Profiler, a list with no significant term cannot be told apart from a list in which the
+   service recognised none of the gene names; the report says so (KIT-215).
+
+ * The help for the RUV grouping variable in proteomics advised selecting 'batch' for TMT. That advice was wrong: with
+   'batch' the correction is built from the differences between your groups and the differences between batches stay.
+   To check an earlier analysis, look for 'RUV grouping variable' in its study_parameters.txt (or the normalisation step
+   of its analysis record); if it is not 'group', run the normalisation again with 'group' and, if you know the batches,
+   add batch to the model formula. The normalisation tab now warns when the chosen column puts samples of different
+   groups together (KIT-174).
+ * Proteomics: 'Reset to Pre-Normalization' now returns to the table the normalisation started from. Before, it
+   returned to the newest of a fixed list of step names. When the normalisation had started before the Protein
+   Replicate Filter, that was, on label-free (MaxQuant, FragPipe, Spectronaut) and TMT data, the design table (so the
+   next normalisation ran without the quality-control filters), and on DIA with iq a peptide table (undoing the protein
+   roll-up and protein Quality Control; the next normalisation then failed). On DIA with limpa every Reset returned the
+   precursor roll-up (undoing Log2 Matrix, Peptide Accession Cleanup, DPC Quantification, Between-Sample Normalisation
+   and the Peptide Count Filter). Reset pressed before any normalisation also undid Quality Control steps; it now leaves
+   Quality Control as it is. When the starting table can no longer be found, Reset now changes nothing and says so
+   (KIT-225).
+
+ * Proteomics and transcriptomics: the published count of significant features, its figure and (proteomics) the report
+   sentence 'there were n upregulated and m downregulated proteins' now use the significance threshold set in the DA tab.
+   Before, they used q (FDR) < 0.05 whatever threshold was set, while the volcano plots and the report's methods sentence
+   used the threshold set, so a report could state one threshold and count at another. The proteomics count table now
+   has a `q_threshold` column, as the lipidomics and metabolomics tables do, and the report's count sentence states its
+   threshold, '(q-value < t)'. In transcriptomics the published volcano plot, the significance bar chart, the list of
+   top genes and the interactive volcano plot used 0.05 in the same way. At the default threshold (0.05) the counts do
+   not change. Lipidomics and metabolomics already counted at the threshold set (see the next item for their up and down
+   columns). A project opened from an earlier
+   version keeps its count table, figures and top-genes list until the differential analysis is run again, and a report
+   made from it before then still prints the counts at 0.05; a transcriptomics report rendered then captions the earlier
+   top-genes list with the threshold set, although the list was made at 0.05 (KIT-220).
+ * Lipidomics and metabolomics: the published table of significant counts (`lipids_num_sig_de_molecules`,
+   `metabolites_num_sig_de_molecules`, `.tab` and `.xlsx`, and the lipidomics copy in Publication_tables) showed 0 in its
+   `up_regulated` and `down_regulated` columns in every analysis; they now give the numbers of features called up and
+   down. Its `significant` column, its bar chart and every other output were right (KIT-220).
+ * Proteomics: the interactive volcano plot now colours proteins by the threshold and fold-change cutoff set; before,
+   it coloured only proteins with an absolute log2 fold change of at least 1, at every setting (KIT-220).
+ * Lipidomics, metabolomics and transcriptomics: the DA tab's summary states the threshold the analysis ran at, which
+   its counts use, and says so when the threshold box has been changed since; proteomics says so when the fold-change
+   box differs from the cutoff the analysis ran at (KIT-220).
+ * Reports: the paragraph on removing unwanted variation (RUV) now states what was run. A manually set RUV is no longer
+   described as an automatic optimisation; a skipped RUV is no longer attributed to 'dataset constraints'; when the
+   analysis did not record whether RUV was applied, or which design column it used, the report says so; a design
+   column other than the experimental groups is described as it was used. A project keeps the copy of the report
+   template made at its first report; projects that generated a report before this version keep the earlier text
+   unless that copy (`scripts/<omic>/<template>.rmd`) is removed (KIT-227).
+ * Reports (lipidomics, metabolomics): the report now reads the study-parameters file the application writes. Since
+   March 2026 the application wrote this file in a form these two reports did not read, so a report generated in the
+   application showed 'Error running Main function: …' in place of its Sample Details and no Methods, Results,
+   Comments or differential-abundance text. The Methods now print again, with the number of assays, the log
+   transformation, the between-sample normalisation and, for each assay, the number of unwanted components removed and
+   of control features, as the study-parameters file records them. Some of the text these two reports now print again
+   is not computed from the data, or can be false for the analysis that was run (for example, internal-standard
+   normalisation is reported as applied when no internal standard matched); that text is corrected in this release
+   (KIT-236). A report generated after a save that failed (the short
+   study-parameters file the application writes on an error) still shows 'Error running Main function: …'; that file
+   records no assays. A project keeps the copy of the report template made at its first report; projects that
+   generated a lipidomics or metabolomics report before this version keep the earlier template unless that copy
+   (`scripts/<omic>/<omic>_report.rmd`) is removed (KIT-235).
+ * `daAnalysisWrapperFunction()`, an older scripted proteomics function not used by the application, no longer stops
+   with 'is.data.frame(df) is not TRUE' after its differential-abundance step. It passed its per-comparison result
+   tables one list level too deep to the step that builds its summary tables, so it stopped on every input and returned
+   nothing. It now returns its tables, plots and counts when the comparisons table has a `full_format` column, as the
+   application writes it, or its first column holds `name=expression` strings. The numbers in its tables are those of
+   its differential-abundance step, unchanged. It still stops when the comparisons table gives only bare expressions,
+   when a group name begins with a digit, and, by our reading (not run), for data quantified with limpa. Its
+   gene-labelled volcano plots are not produced, and its first count table counts at q < 0.05 whatever threshold is
+   set. It stops with a clear message when `contrasts_tbl` is not a data frame, and reads the comparisons as text,
+   so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
+   name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
+   delivered to a user.
+ * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
+   `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
+   those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).
+
+ * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
+   Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
+   example after a quality-control step was reverted or applied again following normalisation. Before, the session
+   file named that table as current while carrying the earlier normalisation's results. 'Export S4 compatibility RDS',
+   which runs only in a guarded diagnostic session, refuses in the same case. The session export now takes its results
+   file and its statement of whether RUV was applied from the normalisation that was run, not from the current RUV
+   setting; a missing file is reported plainly and no longer blocks the next steps until the application is restarted.
+   A Summary save refused because the current table is not the normalisation tab's last result also removes the
+   proteomics input that the Integration tab reads from an earlier save, as in the other omics. Exports made at the
+   end of the normalisation tab, and projects reopened from them, are unchanged, except that the session file now
+   states the RUV mode of the run: on DIA with limpa the RUV covariates step's mode, and 'none' where the chosen rule
+   applied no RUV, rather than the RUV setting shown. In a session file exported before this version, the 'RUV Mode'
+   line of filtered_session_summary.txt is the setting shown at export. The RUV the run applied is in the project's
+   analysis_record.json (the normalisation step's ruv_applied) and in the normalisation tab's RUV summary. No result,
+   report or Methods text used that line (KIT-206).
+
+ * Lipidomics and metabolomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or
+   'covariate contains NA or infinite values') when an assay holds a feature with no value in any sample. Examples are a
+   feature below the detection limit everywhere, which the intensity filter keeps, or a feature measured only in samples
+   the correlation filter removed. Such a feature is not tested: it appears in each comparison's table without a fold
+   change or p-value and is counted in the summary's 'Not tested' line, and it no longer affects any other feature's
+   result. Before, the assay's analysis failed, and the whole analysis stopped when every assay failed. A saved analysis
+   that failed this way now completes when it is replayed. With the default settings every result produced before is
+   unchanged, except in an assay of only one or two features, one of them without values, where the B statistic changes;
+   an assay that failed this way while the other assays completed now has results too, also when the saved analysis is
+   replayed. The older S4 method `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects runs the proteomics test and is repaired with it (see the proteomics entry below, KIT-200). With the trend option off (available only when calling the functions directly), on data that contain such
+   features the result tables change: those features move to the end of each table without an average intensity. With
+   the robust option also on, the other features' results change, to those of the same data without them. With RUV
+   factors in the model these features were already left out of the tables and listed separately; that is unchanged. An
+   assay in which no feature has any value is now refused with 'no feature has a value in any sample, so nothing can be
+   tested'. `runLipidsDA()` and `runMetabolitesDA()` return `features_without_values` (per assay, the ids) when there
+   are such features (KIT-196).
+ * Proteomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or 'covariate contains NA
+   or infinite values') when a protein has no value in any of the analysed samples, for example a protein measured only
+   in samples the correlation filter removed. As for lipidomics and metabolomics, such a protein is not tested: it
+   appears in each comparison's table without a fold change or p-value and does not change any other protein's
+   differential-abundance result. Like every row without a p-value, it is left out of that comparison's enrichment
+   background (KIT-205). This applies to every
+   proteomics analysis route except DIA with limpa, which was not affected, and to the older
+   `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects. Results of analyses that completed before
+   with the default settings are unchanged, except for data of only one or two proteins, one of them without values,
+   where the B statistic changes. When the trend option is off (possible only in scripted calls) on data that contain
+   such proteins, their rows move to the end of each table without an average intensity and are no longer in `fit.eb`; with the robust option also on and unequal residual degrees of freedom, the other proteins' results can change slightly, to those of the same data without them. Data in which no protein has any value is
+   refused with 'no feature has a value in any sample, so nothing can be tested'. `runTestsContrasts()` returns
+   `features_without_values` (the ids) when there are such proteins (KIT-200).
+ * Proteomics: proteins that could not be tested in a comparison (no value in a compared group, or none in the
+   analysed samples) are now counted as 'Not tested'. The differential-abundance summary always shows the line
+   'Not tested (no value in a compared group): n' (0 when every protein was tested); before, such proteins were
+   counted only in its total. In the application and the `differentialAbundanceAnalysis()` method, the table of
+   significant counts (`*_num_sig_da_molecules.tab` and `.xlsx`) lists them as 'Not tested' instead of 'Not
+   significant' when there are any, and the bar chart of every status that `outputDaAnalysisResults()` writes shows
+   them as their own bar. This change alters no other result. Analyses saved by an earlier version keep their table of
+   significant counts until the analysis is run again (KIT-204).
+ * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
+   Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
+   differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
+   normalisation), and reported the analysis complete. They now stop with a message asking to run the normalisation
+   again. Lipidomics, metabolomics and transcriptomics: pressing 'Run Normalization Pipeline' a second time without
+   Reset normalised the already normalised table (log2 applied twice), and in transcriptomics a second run with fewer
+   factors stopped with an error and kept the first run's factors (seen with 2 then 1), and the expression filter
+   applied after normalisation kept factors estimated on the unfiltered genes; it now runs again from the table the
+   first run started from, and it is refused on a table loaded from a session file and while a step is still running.
+   Quality-control steps can no longer be applied to a normalised table; the message names the step to Revert to. A
+   table that carries the name of a normalisation step is treated as normalised even when it was made by a script, or
+   loaded from a session file, rather than by the tab: quality control and the normalisation refuse it, and the message
+   asks to Revert to the last quality-control step (or, when none is left, to import the data again). Scripts that call
+   the package's step functions directly are not guarded (in proteomics the exported quality-control step functions
+   refuse a normalised table, the internal computations do not); a script decides which table it passes. The
+   differential analysis no longer runs on a session file named after a design, quality-control, reset,
+   internal-standard or log2 state (such a file was exported after Quality Control was reverted past the normalisation).
+   Results change only for sessions that took these routes; analysis records are not changed, and replaying one repeats
+   the steps it recorded. To check an earlier lipidomics or metabolomics result, open its analysis record
+   (analysis_record.xlsx, exported with the results). In the sheet 'analyses', the column source_state names the table
+   the differential analysis tested. If that name ends in _intensity_filtered, _duplicates_resolved, _qc_complete,
+   _reset, _itsd_norm or _log2, the analysis tested values that were not normalised, or not fully. If it ends in
+   _correlation_filtered or _norm_complete, look at the sheet 'steps': unless a log2 step (state ending _log2) and a
+   normalisation step (state ending _normalized) stand between the quality-control steps and that state, the analysis
+   tested values that were not normalised. If the sheet 'steps' starts from a session file loaded with 'Load Filtered
+   Session' (one step, operation 'legacy'), the record cannot show how that file was made: this version refuses files
+   named after a design, quality-control, reset, internal-standard or log2 state, and a file named after the correlation
+   step is affected only if Quality Control was reverted before it was exported. A second normalisation run without
+   Reset, and quality control applied after normalisation, do not show in the sheet 'steps'. They show in
+   analysis_record.json: the first internal-standard or log2 step's input (input_entity_ids), or a quality-control
+   step's input, is the result (result_entity_id) of a normalisation, RUV or correlation step. The data were then
+   normalised twice, or filtered after normalisation. Run such analyses again with this version (KIT-194).
+
+ * Lipidomics, metabolomics and transcriptomics: the Summary tab's 'Save Workflow Arguments', 'Generate Report' and
+   'Export Session State' now refuse with a message when the current table is not the result of the last
+   normalisation, for example after Quality Control was reverted or the normalisation was reset after it ran. Before,
+   the saved final object (<omic>_<label>_final_s4.RDS), the study parameters and the analysis record could describe
+   the quality-control table (not normalised), an empty object, or an earlier normalisation, while the differential
+   analysis shown came from the normalised data. A refused save writes nothing and removes the omic's integration
+   input folder (integration/<omic>/), as a save without a final table already did, so the Integration tab does not
+   read an earlier input after a refused save. This includes an input saved earlier in the same session: after a
+   Revert and a refused save, run the normalisation again and save before integrating. 'Generate Report' and 'Export
+   Session State' refuse without removing anything. After a Reset, press Revert once in a Quality Control sub-tab (or
+   run the normalisation again) before saving; after one Revert to the RUV-corrected table that table is saved; a save
+   right after a run, before the correlation step, is allowed; the Summary does not check that the differential
+   analysis shown was run on the table it saves. Transcriptomics no longer writes an earlier normalisation's RUVIII
+   matrix as the integration file: after a second normalisation without a new RUVIII export the save says so. In every
+   omic, proteomics included, a save whose integration input is refused for another reason now names the reason. Saves
+   at the end of the normalisation, after its correlation step or Skip, and after the differential analysis are
+   unchanged. To check an earlier save: open analysis_record.json in the folder of study_parameters.txt (the same save
+   wrote both). If the last step it lists is not a normalisation result (a state ending in _normalized,
+   _ruv_corrected, _correlation_filtered or _norm_complete, or loaded_for_de; for transcriptomics trx_ruvs), for
+   example a quality-control, Reset, internal-standard or log2 state, that save's final object, study parameters and
+   (transcriptomics) integration file do not describe the normalised analysis: save again with this version. A
+   transcriptomics save that showed 'Study parameters saved with warnings' after a second normalisation may have
+   written the earlier RUVIII export as transcriptomics_normalized_data.tsv: run the RUVIII export and save again
+   (KIT-207).
+
+ * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
+   RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
+   model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
+   refused these runs with 'Run the normalisation first', although the normalisation had run. Runs that applied RUV are
+   unchanged. Both cases are offered only when the RUV design panel is switched on. For every user, the message shown
+   when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
+   differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
+   model only when the normalisation added them. The report then states that no correction for unwanted variation was
+   applied.
+
+ * Transcriptomics: on runs of the RUV design panel (the option 'No removal of unwanted variation', an RUV design whose
+   rule finds no unwanted factor, or any RUV design that adds factors), the Differential Analysis tab no longer reports
+   'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
+   figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
+   search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
+ * Proteomics normalisation run again after changes in Quality Control now uses the current quality-control result.
+   Before, once normalisation had run, every later run reused the protein table the first run had read until Reset was
+   pressed, and in some cases even the first run used a table from before the latest quality-control changes, so
+   filters changed or completed afterwards were silently ignored (DIA, label-free and TMT; DIA with limpa was not
+   affected). Results of such a run change: normalisation, RUV, the correlation filter and the differential analysis are
+   now computed from the filtered table the Quality Control tab shows, the pre-normalisation figures and the
+   pre-normalisation column of the composite QC figure are redrawn from that same table, and a notice says that the
+   table differs from the previous run's. A run with no quality-control change in between gives the same results as
+   before. The protein quality-control steps can no longer be applied to a normalised table; press Revert in the Quality
+   Control tab to change quality control after normalisation. If a project saved earlier already holds quality-control
+   steps applied to a normalised table, normalisation now stops with a message naming the step to go back to, instead
+   of normalising an earlier table or normalising the data twice. "Apply Correlation Filter" and "Skip Filtering &
+   Proceed to DE" now stop with a message when quality control has changed since normalisation, instead of filtering
+   the earlier normalisation's result. Saved projects and analysis records are not changed; in a project saved before this release in which
+   normalisation was run again after a quality-control step was reverted or applied again, that run used the earlier
+   table, and its analysis record names the quality-control result as the step's input; to recompute such a project,
+   press Revert in the Quality Control tab back to the step you changed, apply the steps again and press "Run
+   Normalization & RUV"; replaying a record repeats the steps it recorded (KIT-182).
+
+ * Proteomics: when protein annotation from UniProt is empty or incomplete the app now says why, keeps the notice
+   until it is closed, writes the fact into the analysis record, and no longer keeps an empty or incomplete answer
+   for the next attempt. An incomplete annotation stays marked as incomplete when the project is saved and reopened.
+   Projects whose annotation was empty under an earlier version: save the design again. Enrichment now refuses to run
+   when the project has no protein annotation (previously: the UniProt GO route stopped with a 'column not found'
+   error, and the g:Profiler route was sent no protein, since data imported in the app carry no gene names of their
+   own). An earlier analysis record whose enrichment ran without any protein annotation is no longer replayed: the
+   replay is refused, because that run had nothing to test. Each request to UniProt is now tried up to three times,
+   and asks for each protein by its accession only (`accession:` terms; an isoform is asked for by its canonical
+   accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
+   has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
+   annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
+ * Proteomics: when the protein table built in a script already carries gene names and the protein annotation is
+   also present, the differential analysis tables lost every gene name (the two name columns collided); they now take
+   the annotation's name and fall back to the table's own. In such tables a column that both carry is now named
+   `<name>.input` (the table's) and `<name>` (the annotation's), where it was `<name>.x` and `<name>.y`. On the
+   g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
+   proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
+   (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab, the download
+   and the report show such a list as 'Not tested' (KIT-215). The analysis record also states,
+   for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
+   background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
+   change, no longer replays; it is refused with the same message. The first change does not affect data imported in
+   the application, whose names come from the annotation; the others change only g:Profiler runs in which some
+   protein has no gene name (KIT-208).
+ * Proteomics enrichment, g:Profiler: the results table, its downloads and the tab's 'Download results' archive no
+   longer show g:Profiler's adjusted p-value under the names pvalue and qvalue; p.adjust holds it, a new column
+   p_adjust_method names the correction as g:Profiler reports it (for example g_SCS; 'not recorded' when the answer
+   does not say), and Count is the number of the list's genes in the term (it showed the term's size). The published
+   per-comparison enrichment tables and the enrichment workbook also carry p_adjust_method. The g:Profiler figure's
+   axis and hover text, in the application, the published figures and the report, now say 'adjusted p-value' (the
+   points do not move), and the archive's summary says 'Adjusted p-value cutoff'. No term, flag or order changes.
+   Projects saved before this change show the corrected table when opened; files written or downloaded before it
+   (the published tables, figures and report included) keep the old labels until the enrichment is run again.
+   Present since the legacy pipeline (KIT-226).
 
 ### Scientific changes
+
+ * Lipidomics and metabolomics, RUV-III (Automatic and Manual, the default design): the negative-control features are
+   now chosen from a one-way analysis of variance on the RUV grouping column, and the automatic number of factors
+   removed is capped by the number of samples. Before this version the grouping column was removed before that analysis,
+   so no feature was tested and the controls were simply the first rows of each table, in the order the table held them,
+   and the automatic search had no upper limit on the number of factors it removed (up to 10 with 2 groups of 6 samples,
+   the number of samples minus the number of groups). Proteomics was not affected.
+
+   The controls are now the features with a Benjamini-Hochberg q-value above 0.05 that were measured in at least two
+   groups, taken from the highest p-value down; features with equal p-values are taken in the order of their names, so
+   the table's row order no longer decides. A feature measured in only one group is never a control.
+
+   The automatic search is unchanged, but the number of factors it finds is now capped as in proteomics: at most 2 with
+   fewer than 15 samples, 3 below 40, 4 below 80, 5 above. When the cap reduces it, the step says so, naming the assay,
+   the number found and the number removed. In Manual mode the number you choose is kept, with a warning when it is
+   above the cap. The record keeps the number found, the cap and the number removed, and whether each assay was
+   corrected. Because the controls are now the features that differ least between the groups, the automatic search can
+   find, at every percentage it tries, fewer controls measured in every sample than the number of factors it found; an
+   assay can then end with no usable percentage where the earlier row-order controls had one (in a simulated set of 24
+   samples with 5 % of values missing at random, one of two assays). Such an assay is left out of the RUV-corrected data
+   and recorded as 'dropped'; how often this happens is being measured before release.
+
+   Evidence (simulated lipidomics data, KIT-172's generator, 2 groups of 6 samples, one unwanted factor, without
+   internal-standard normalisation: it was requested but did not act on the simulated standards; capped at 2 factors;
+   metabolomics gave identical results on the 100 data sets checked): the new rule was no worse than the earlier repair
+   with the same cap in all eight scenarios tested, by pre-declared margins (0.10 on the share of data sets with any
+   false call, 0.05 on the false discovery proportion; intersection-union test at 5 %), for lipidomics and metabolomics
+   alike. Without the cap the new rule chose 5 to 6 factors on average and made many false calls (in data sets without
+   real differences, 32 to 34 of 50 had at least one); with the cap the false discovery proportion was 0.03 to 0.04
+   where the unwanted factor was not tied to the groups. When the unwanted variation happened to line up with the
+   groups, both rules that compare groups to choose controls still made a false call in about one null data set in five
+   (against about one in twelve for controls chosen blind to the groups). The evidence was produced with the correction
+   as it was before this version's level-keeping change (each feature shifted by a constant). The search's number of
+   factors, its percentage and its controls do not use the correction, so they are as measured; the false-call figures
+   do depend on it, because the differential analysis moderates each feature's variance by its mean abundance; that
+   change, measured separately, moved the average false discovery proportion and power by at most 0.0007. Caps of 3 to 5
+   at larger sample sizes are not yet measured. Below 12 samples the cap of 2 is a larger share of what the test has
+   left: with 2 groups of 3 samples, removing 2 factors leaves 2 of the 4 degrees of freedom the test counts, and with 2
+   groups of 2 it leaves none; this was not measured either (the limit is stated and the cap's rule kept, VAL-289).
+
+   Runs whose design names a group with 'pool' now leave those samples out of the control analysis, as proteomics does.
+   A grouping column missing from the design is now refused with a message instead of the assay being skipped silently;
+   scripts that call `getNegCtrlProtAnovaHelper()`, or the peptide percentage search, with a design lacking the grouping
+   column now get an error instead of row-order controls. Analysis records made before this version replay with the
+   controls and the number of factors they used.
+
+   The simulation figures shown for this design in the RUV design panel (for example 47.0% false discoveries in the
+   reference scenario) were measured with the earlier selection on tables whose rows were in random order; the panel now
+   says so.
+
+ * Lipidomics and metabolomics RUV-III correction (Automatic and Manual, the default): each feature now keeps its mean
+   abundance after the correction, as in proteomics. Before, every feature's corrected values were shifted by a
+   constant that depended on the control features' levels and on the unit the intensities were expressed in. Fold
+   changes are unchanged where the sample-correlation filter keeps the same samples. The moderated p- and q-values of
+   the differential analysis can change, because limma's variance trend is fitted against each feature's mean
+   abundance, and the sample-correlation filter can keep different samples. The abundances in the exported and
+   displayed tables, the sample-correlation plot, the session file and the RUV-corrected matrices offered to the
+   integration change; PCA, RLE and the PC boxplots do not. Analyses recorded before this change replay as they were
+   made. Transcriptomics: the RUVIII export file and the RUV-corrected integration input keep each gene's logCPM
+   level; the differential analysis is not affected (KIT-224).
+ * Lipidomics, metabolomics and proteomics: the TREAT test now uses the same variance moderation as the main test (an
+   intensity trend and robust estimation, as the analysis record and report always stated). Before, it used one prior
+   variance for all features without the robust step, so the stated settings had no effect on TREAT results. This
+   applies to lipidomics and metabolomics when a log fold-change threshold above 0 is set, and to every proteomics
+   analysis of DIA without limpa, label-free and TMT data with the Skip or legacy RUV options (TREAT runs there at
+   the default threshold of 0). Results of those analyses change. In simulations with known truth (18 settings for
+   proteomics and 18 for lipidomics and metabolomics, which received the same simulated data and, running the same
+   code, gave identical results: variance with and without an abundance trend and hypervariable features, with and
+   without 20 % missing values that depend on abundance, 2 to 4 groups of 3 to 6 samples, no RUV), the changed test
+   was no worse on every one of 982 pre-declared checks. Where variance depends on abundance, the earlier test made
+   too many false calls among low-abundance features and too few among high-abundance ones. In proteomics, among
+   unchanged features of the lowest-abundance third, the share with p below 0.05 fell from up to 9.6 % to at most 5.8
+   %; in the highest third it rose from as low as 3.0 % to about 5 %. In lipidomics and metabolomics, among features
+   whose true change equals the threshold, the shares moved from up to 8.1 % to at most 5.2 %, and from as low as 3.4
+   % to about 5 %. Without missing values the changed test gave 4.7 % to 5.2 % in every abundance third. With missing
+   values that depend on abundance, proteomics at the default threshold still made slightly more false calls than the
+   5 % target (up to 5.8 % in the lowest third, false discovery proportion up to 5.7 %, against up to 9.6 % and 6.7 %
+   before). Where variance does not depend on abundance, it made slightly more false calls than the earlier test
+   (false discovery proportion up to 0.7 percentage points higher). Overall the false discovery proportion changed by
+   -1.3 to +0.7 percentage points and power by -1.3 to +3.0. A new analysis with these options no longer reproduces
+   an earlier version's statistics; saved analyses replay as they were made, and in scripts the earlier statistics
+   are obtained with the trend and robust options off. Reports re-rendered from an analysis saved before this change
+   still describe its TREAT step as trended and robust; that step used one prior variance. The RUV panel's "Approach
+   of earlier versions" row for classic proteomics is restated from the measurement of this test: worst cell 0.389
+   (was 0.385), 10.1 % false discoveries in the reference scenario (was 9.8 %). (KIT-201; methods ledger VAL-127,
+   VAL-131)
+
+ * Lipidomics and metabolomics: the intensity filter now counts missing values per group. A feature is kept only if
+   it has a value in at least 2 samples of at least 1 group (all samples, if the group is smaller), and then, as
+   before, if it is below the intensity threshold in fewer than the chosen proportion of samples. Both numbers are
+   settings in the tab and are written to the study parameters; groups named like "pool" are not counted, and a design
+   without a group column, or whose groups are all named like "pool", is refused. A zero read as missing at import is not a value. Before, a missing value was not
+   counted at all: a feature with no value in any sample was always kept, and the filter kept more features the more
+   values were missing. Requiring 2 groups instead of 1 removes features measured in only one group, including strong
+   decreases to below detection. Complete tables give the same results as before. Analyses saved before this change
+   replay as they were made, and show "not applicable: earlier rule" for the two settings. Scripts that call the
+   S4 methods get the new rule; the exported helpers called without groups remove only features with no value, with a
+   warning. Known limit until a follow-up change: a new proteomics project's study parameters also list these two
+   metabolomics settings (proteomics projects copy every omic's default settings, and already list two older
+   metabolomics ones); no proteomics result changes. (KIT-217, VAL-173, VAL-279)
+
+ * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
+   numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
+   it counted in how many samples a feature was below it. An MS-DIAL table imported with its default identifier column
+   ('Peak ID' or 'Alignment ID', whichever the export has), whose identifiers are whole numbers, had that column counted
+   as a sample, so the threshold could be set by identifier numbers and whether a feature was removed could depend on
+   its row number. For example, on an MS-DIAL metabolite table of 8 features and 4 samples at the 10th percentile and
+   0.5, the threshold was 4.9 instead of 16,410 and no feature was removed instead of 2. A custom-format table with a
+   numeric identifier or annotation column was affected in the same way, and so were designs imported from a folder
+   whose tables hold MS-DIAL's numeric columns (retention time, m/z, scores). Tables with no such column (for example
+   LipidSearch imports, and custom imports whose
+   identifier and annotation columns are text) give the same results as before. Analyses saved before this change
+   replay as they were made. A design sample that is missing from a table or is not numeric is now refused with a
+   message. The helpers `lipidIntensityFilteringHelper()` and `metaboliteIntensityFilteringHelper()` take a new optional
+   argument `sample_columns`; without it they count every numeric column except the identifier column and warn which
+   columns they counted. (KIT-202, VAL-118)
+
+ * Lipidomics and metabolomics: duplicate resolution now chooses, for an identifier listed more than once, the row with
+   the highest average over the design's samples. Before, it averaged every numeric column of the table. So a numeric
+   identifier or annotation column (for example a retention time or m/z chosen as annotation, or the numeric columns of
+   a design imported from a folder) entered the average and could decide which row was kept. Where the duplicated rows
+   were measured in different numbers of samples, the row whose measured values average highest is now kept, even if it
+   was measured in fewer samples. Not affected: MS-DIAL
+   imports at their default identifier (their identifiers are unique), scripts that call the S4 method
+   `resolveDuplicateFeatures()` (it already averaged the design's samples), and tables without a
+   duplicated identifier or whose only numeric columns are the samples. The Quality Control summary's sample count and
+   missingness, and the internal-standard means and CVs in Quality Control and in the normalisation's selection table,
+   now also count only the design's samples. An MS-DIAL import showed one sample too many, and an identifier of 0 was
+   counted as a missing value. Analyses recorded before this change replay with the earlier rule. A design sample that
+   is missing from a table with a duplicated identifier, or is not numeric, is now refused with a message. (KIT-214,
+   VAL-173)
+
+ * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
+   those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
+   Before, it also held proteins that could not be tested (no value in a compared group, or none in the analysed
+   samples), which can make a term look more or less enriched than it is (in a worked example, a term of 50 proteins
+   none of which was untested, 300 of 3,000 proteins untested and lists of 150 drawn with no real change, a test at the
+   5 % level called the term on 5.6 % of lists). Comparisons in which every protein was tested give the same results
+   as before. Analyses recorded before this change replay with the earlier background, and their reports describe it
+   (KIT-205).
+
+ * Gene Ontology enrichment for organisms outside g:Profiler's set now calls a term significant by its
+   Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins, including terms with none of the
+   listed proteins. The earlier flag, Storey's q-value over the terms with at least one listed protein, is still
+   offered; in simulations at a cutoff of 0.05 it called terms on up to 42.9 % of random protein lists without parent
+   terms and up to 22.9 % with them. Analyses recorded before this change replay with the q-value, unchanged (KIT-203).
+
+ * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
+   log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014
+   at 1,000, 0.14 at 10; a fold change of 10 against 80 was reported as 2.88 instead of 3. Measured on simulated data
+   (2,000 proteins, two groups of five, 10 % of proteins changed by a factor of 2; 20 simulated data sets per setting):
+   where typical values are near 10, fold changes were shrunk to 0.81 of their true size with the offset and 0.94
+   without it; near 40, 0.96 and 1.00; from about 150 on the two agree. Low-abundance calls stay unreliable either
+   way: in the lowest third of abundance, with values near 10, 14.5 % of the true changes were found with the offset
+   and 8.4 % without it with RUV Automatic (5.2 % and 3.1 % with RUV skipped), and 65 % against 71 % of the calls
+   there were false with RUV Automatic (50 % against 42 % with RUV skipped; the whole list's false share was 0.19
+   against 0.17, and 0.05 against 0.04). The Benjamini-Hochberg procedure controls the false discovery rate of the
+   whole list, not of an abundance stratum. The test used by default does not model the larger variance of log values
+   at low abundance. On the package's five test data sets (values of 500 and above) no call changed (fold changes
+   moved by at most 0.0001). Some Proteome Discoverer exports report signal-to-noise values, which are small; there
+   the change is largest. A value of 0 is read as not measured (missing) and counted; for Spectronaut tables and for
+   designs re-imported from files saved before 7 November 2026 this changes which values are tested. A negative or
+   infinite value now stops the design step with a message naming the run. Saved projects keep their results; saving
+   the design again applies the new transform, and a project whose design was saved by an earlier version says so
+   once when it is opened. Sessions from versions before the session owner (filtered sessions adopted for DA) are not
+   told. Scale normalisation (limma's two-colour M-value scaling) multiplies each sample's log2 values by a factor, so
+   its result depends on the unit of the table on any data; on log2 values below 0 (values below 1) it also treats -2
+   like +2, and a warning now says so when the data hold such values. Cyclic Loess and Quantile do not depend on the
+   unit.
+
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
+   after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
+   percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
+   value of three (33.3333 %) exceeded the rounded 33.333 %, so at the tab's defaults only proteins measured in every
+   sample were kept. The same happened for some other group sizes (for example 6, 7 or 11 samples with 1 required; 11
+   to 14 with 2) and for three groups with 'Min Groups Required' 2. Group sizes whose allowed share is exact or rounds
+   up (for example 2, 4, 5, 6, 7, 8, 9 or 10 samples with 2 required) give the same results as before. In simulated
+   data (KIT-185's generator with no unwanted variation and no RUV, 2 groups of 3, 3,000 proteins, R = 100 draws per
+   condition) the filter now keeps, at 5 %, 10 % and 25 % value-dependent missingness, 2,838, 2,668 and 2,086 proteins
+   instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
+   changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
+   unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
+   were false; a follow-up simulation on new draws, pooled over 2, 4 and 5 groups of 3 and 3 groups of 4, traced this
+   higher share to lower power among them (truly changed proteins found 0.61 against 0.80 among the proteins kept under
+   both rules), while unchanged proteins among them reached p below 0.05 about as often (5.1 % against 5.0 %, at most
+   3.4 % more often), except the few that hold a value at or below the intensity threshold, which the filter counts as
+   missing but the test uses (2.5 times as often; about 2 % of them, 15 % with four groups of three and 5 % of values
+   missing); it also appears, at about half the size, when the same share of values is missing at random (KIT-197));
+   these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
+   Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
+   version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis
+   record, the protein intensity filter and normalisation steps made with this version list the fixed parameter
+   'missing_value_comparison = counts'; a step without it was made with the earlier rule. A session saved before this
+   version and continued after it applies the new rule from its next missing-value step. The peptide intensity
+   filter's percentage-only call (deprecated) reads its percentages the same way. The proteomics reports now say that
+   a protein failed a group when its share of missing values exceeded the allowed share, and was kept when the share
+   of groups it failed did not exceed the allowed share; they said 'or more' and 'at most' of the rounded percentages.
+   (KIT-187, VAL-71)
+ * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
+   default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
+   a pathway's features, on the features measured in every biological sample; of several features on one compound
+   identifier, the one with the largest mean value is kept). The pre-ranked test used before (GSEA on each feature's
+   correlation with the factor) assumes features are independent, which gives p-values that are too small for
+   pathways whose features vary together; it stays selectable, with that assumption stated. Existing scripts that call
+   `integrationEnrichFactor()` without naming a test now get the new test and different p-values (the size of the
+   change is given by the check on simulated data below; on the synthetic test corpus, 40 pathways of randomly chosen
+   measured features were called by neither test). In a check on simulated data shaped like a 12-sample study, on the
+   main factor, unrelated sets whose features vary together at a correlation of 0.3 were called at the 5 % level by
+   the earlier test in 13.5 % (sets of 5 to 10 metabolites) to 43.0 % (sets of 10 to 100 genes) of cases and by the
+   new test in at most 0.6 %. Over every kind of unrelated set checked, the new test called at most 4.4 % on the main
+   factor and at most 6.6 % against values unrelated to the data, except sets made only of the most variable features
+   (up to 10.1 %); on weaker factors both tests call unrelated sets of the model's features too often (the new test up
+   to 12.8 %, the earlier one up to 60.1 %). To get the earlier test, pass `overrides = list(test = "gsea")`; its
+   results are unchanged. In the Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
+   KEGG and Reactome summary now carries a caution (the factor was learned from the same data, so the results are
+   exploratory) and the factor's variance explained in the data set. STRING is unchanged and ignores the setting.
+   Further test options follow in KIT-191 (VAL-85 (2)): the correlation-adjusted test with negative correlations
+   floored, a permutation test and the pre-ranked test, each shown with its measured false-positive rate and power from
+   this check.
 
  * Proteomics enrichment for organisms outside the 13 served by g:Profiler: Gene Ontology sets now include each
    term's more specific terms (parent-term propagation over is a, part of, regulates, positively and negatively
@@ -36,7 +801,6 @@
    number changes: counts, set sizes, ratios, p-values, q-values and the sets themselves are unchanged. (KIT-173,
    VAL-61)
 
-## MultiScholaR 0.9.4 (staging)
 
 ### Scientific changes
 
@@ -71,14 +835,12 @@
    depends on the unit of the table, and on log2 values below 0 the absolute value treats -2 like +2. It stays
    selectable; when it runs on log2 values below 0, the normalisation log and a notification now say so. Cyclic
    Loess and Quantile do not depend on the unit.
- * Lipidomics and metabolomics filtering figures on log2 values (the workbooks draw them after the log step): a value
-   is counted as detected when it is not missing, and the step's missingness counts missing cells only (before, a log2
-   value of 0 or below, that is a measured value of 1 or below, was counted as not detected). On intensities a zero
-   still counts as not detected.
+ * Lipidomics and metabolomics filtering figures on log2 values: a value is counted as detected when it is not
+   missing, and the step's missingness counts missing cells only (before, a log2 value of 0 or below, that is a
+   measured value of 1 or below, was counted as not detected). On intensities a zero still counts as not detected.
  * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
    the assay holds missing values.
 
-## MultiScholaR 0.9.3 (staging)
 
 ### Scientific changes
 
@@ -106,7 +868,6 @@
    Control tab shows the number of proteins left after each step. Projects and analysis records made before this
    change are not altered; replaying a record repeats the steps it recorded.
 
-## MultiScholaR 0.9.2 (staging)
 
 ### Distribution
 
@@ -115,8 +876,21 @@
  * Help, About names the commit of the analysis code that was installed, beside the commit the installer was built
    from. Reports and analysis records made with the installed application name the same commit; before, they named
    none.
+ * The R Markdown workbooks (five for DIA proteomics, two for metabolomics and the multi-omics integration workbook)
+   are no longer installed with the package, and the application no longer copies them into projects. Each proteomics
+   and metabolomics workbook stopped with an error at one or more steps against this version. Copies already in a
+   project's `scripts` folder are kept and are no longer replaced when the project is opened. The workbooks are kept
+   in the source repository under `archive/workbooks/` for a later version, with the set-up script `project_setup.R`,
+   which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
+   (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
+   are in `?integrationTrainModel` (KIT-234).
+ * 'Push to GitHub' is no longer offered in the installed application (KIT-245). In R, the button and
+   `pushProjectToGithub()` need the git program and the project's `<project id>.Rproj` file and use the one R
+   Markdown file in the project folder; with no R Markdown file they say so, and with several (for example after
+   reports of two omics in one project) they ask in the R console when R runs interactively and otherwise stop with an
+   error. They send the omic's scripts folder, which holds copies of the input files (lipidomics, metabolomics,
+   transcriptomics) or the saved session with its data (proteomics).
 
-## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes
 
@@ -269,7 +1043,7 @@ First staging build with every omic in the distributable (Linux and Windows) and
    corrected object given together with the factors, stops. The corrected matrix of this design
    (for figures, export and integration) keeps each feature's mean abundance. Without `ruv_factors` every
    result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts
-   each feature by a constant.
+   each feature by a constant (KIT-224 later removed the shift; see the unreleased section).
 
 ### Other changes
 

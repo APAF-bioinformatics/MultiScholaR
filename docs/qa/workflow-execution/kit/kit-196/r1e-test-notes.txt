@@ -1,0 +1,8 @@
+KIT-196 T3: limma 3.68.4
+KIT-196 T3: limma 3.68.4
+KIT-196 T8: seed 196001, features without values 5 (F0015,F0029,F0040,F0062,F0067)
+KIT-196 T9 (a) lipid: tested rows equal the reference TRUE; largest absolute difference in P.Value 0
+KIT-196 T9 (b) lipid: tested rows equal the reference FALSE; largest absolute difference in P.Value 1.05e-05
+KIT-196 T9 (a) metab: tested rows equal the reference TRUE; largest absolute difference in P.Value 0
+KIT-196 T9 (b) metab: tested rows equal the reference FALSE; largest absolute difference in P.Value 1.05e-05
+1. KIT-196 T8: seeded sparse data (KIT-188's M12 cell, VD 20 %) complete; the tested rows equal the DA without the features without values ('test-kit196-da-no-value-features.R:416:9') - Partial NA coefficients for 19 probe(s)

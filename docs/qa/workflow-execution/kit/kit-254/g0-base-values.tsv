@@ -1,0 +1,665 @@
+case	config	route	observable	value
+SCAN	lipid	in_process	run completed (t=0)	TRUE
+SCAN	lipid	in_process	t=0 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0 removed	<none>
+SCAN	lipid	in_process	t=0 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	9
+SCAN	lipid	in_process	run completed (t=0.3)	TRUE
+SCAN	lipid	in_process	t=0.3 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.3 removed	<none>
+SCAN	lipid	in_process	t=0.3 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	6.4
+SCAN	lipid	in_process	run completed (t=0.5)	TRUE
+SCAN	lipid	in_process	t=0.5 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.5 removed	<none>
+SCAN	lipid	in_process	t=0.5 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	5.3
+SCAN	lipid	in_process	run completed (t=0.7)	TRUE
+SCAN	lipid	in_process	t=0.7 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.7 removed	<none>
+SCAN	lipid	in_process	t=0.7 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	5.3
+SCAN	lipid	in_process	run completed (t=0.8)	TRUE
+SCAN	lipid	in_process	t=0.8 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.8 removed	<none>
+SCAN	lipid	in_process	t=0.8 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	5.3
+SCAN	lipid	in_process	run completed (t=0.9)	TRUE
+SCAN	lipid	in_process	t=0.9 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.9 removed	<none>
+SCAN	lipid	in_process	t=0.9 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	5.4
+SCAN	lipid	in_process	run completed (t=0.95)	TRUE
+SCAN	lipid	in_process	t=0.95 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.95 removed	A_5
+SCAN	lipid	in_process	t=0.95 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	5.4
+SCAN	lipid	in_process	run completed (t=0.99)	TRUE
+SCAN	lipid	in_process	t=0.99 head	lipid_correlation_filtered
+SCAN	lipid	in_process	t=0.99 removed	A_1,A_2,A_3,A_4,A_5,A_6,B_1,B_4,B_5,B_6
+SCAN	lipid	in_process	t=0.99 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid	in_process	seconds	5
+SCAN	metab	in_process	run completed (t=0)	TRUE
+SCAN	metab	in_process	t=0 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0 removed	<none>
+SCAN	metab	in_process	t=0 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.6
+SCAN	metab	in_process	run completed (t=0.3)	TRUE
+SCAN	metab	in_process	t=0.3 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.3 removed	<none>
+SCAN	metab	in_process	t=0.3 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.6
+SCAN	metab	in_process	run completed (t=0.5)	TRUE
+SCAN	metab	in_process	t=0.5 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.5 removed	<none>
+SCAN	metab	in_process	t=0.5 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.3
+SCAN	metab	in_process	run completed (t=0.7)	TRUE
+SCAN	metab	in_process	t=0.7 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.7 removed	<none>
+SCAN	metab	in_process	t=0.7 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.5
+SCAN	metab	in_process	run completed (t=0.8)	TRUE
+SCAN	metab	in_process	t=0.8 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.8 removed	<none>
+SCAN	metab	in_process	t=0.8 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.5
+SCAN	metab	in_process	run completed (t=0.9)	TRUE
+SCAN	metab	in_process	t=0.9 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.9 removed	<none>
+SCAN	metab	in_process	t=0.9 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.6
+SCAN	metab	in_process	run completed (t=0.95)	TRUE
+SCAN	metab	in_process	t=0.95 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.95 removed	A_5
+SCAN	metab	in_process	t=0.95 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.7
+SCAN	metab	in_process	run completed (t=0.99)	TRUE
+SCAN	metab	in_process	t=0.99 head	metab_correlation_filtered
+SCAN	metab	in_process	t=0.99 removed	A_1,A_2,A_3,A_4,A_5,A_6,B_1,B_4,B_5,B_6
+SCAN	metab	in_process	t=0.99 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	metab	in_process	seconds	5.3
+SCAN	lipid_ruv	in_process	run completed (t=0)	TRUE
+SCAN	lipid_ruv	in_process	t=0 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0 removed	<none>
+SCAN	lipid_ruv	in_process	t=0 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.9
+SCAN	lipid_ruv	in_process	run completed (t=0.3)	TRUE
+SCAN	lipid_ruv	in_process	t=0.3 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.3 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.3 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	8.9
+SCAN	lipid_ruv	in_process	run completed (t=0.5)	TRUE
+SCAN	lipid_ruv	in_process	t=0.5 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.5 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.5 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	8
+SCAN	lipid_ruv	in_process	run completed (t=0.7)	TRUE
+SCAN	lipid_ruv	in_process	t=0.7 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.7 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.7 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.9
+SCAN	lipid_ruv	in_process	run completed (t=0.8)	TRUE
+SCAN	lipid_ruv	in_process	t=0.8 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.8 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.8 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	8.3
+SCAN	lipid_ruv	in_process	run completed (t=0.9)	TRUE
+SCAN	lipid_ruv	in_process	t=0.9 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.9 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.9 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.5
+SCAN	lipid_ruv	in_process	run completed (t=0.95)	TRUE
+SCAN	lipid_ruv	in_process	t=0.95 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.95 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.95 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.6
+SCAN	lipid_ruv	in_process	run completed (t=0.99)	TRUE
+SCAN	lipid_ruv	in_process	t=0.99 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.99 removed	B_4
+SCAN	lipid_ruv	in_process	t=0.99 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.8
+SCAN	lipid	in_process	t_hi	0.95
+SCAN	lipid	in_process	t_lo	0.9
+SCAN	lipid	in_process	stop rule 2	FALSE
+SCAN	lipid	in_process	t_lo flagged (none below t_hi removes fewer)	FALSE
+SCAN	metab	in_process	t_hi	0.95
+SCAN	metab	in_process	t_lo	0.9
+SCAN	metab	in_process	stop rule 2	FALSE
+SCAN	metab	in_process	t_lo flagged (none below t_hi removes fewer)	FALSE
+SCAN	lipid_ruv	in_process	t_hi	0.99
+SCAN	lipid_ruv	in_process	t_lo	0.95
+SCAN	lipid_ruv	in_process	stop rule 2	FALSE
+SCAN	lipid_ruv	in_process	t_lo flagged (none below t_hi removes fewer)	FALSE
+PHASE0	lipid	in_process	Apply(0.95) head	lipid_correlation_filtered
+PHASE0	lipid	in_process	Apply(0.95) entity	835e47a0ffab
+PHASE0	lipid	in_process	Apply(0.95) removed	A_5
+PHASE0	lipid	in_process	seconds	5.7
+PHASE0	lipid	managed	run completed	TRUE
+PHASE0	lipid	managed	worker inputs	lipid_qc_figures<-77e0f5dd9a25(lipid_qc_complete) ; lipid_log2<-77e0f5dd9a25(lipid_qc_complete) ; lipid_between_sample_normalisation<-be0e563cf5c8(lipid_log2) ; lipid_qc_figures<-2e27f88321fd(lipid_normalized) ; lipid_composite_figure<-2e27f88321fd(lipid_normalized) ; lipid_pearson_pairs<-2e27f88321fd(lipid_normalized) ; lipid_pearson_selection<-2e27f88321fd(lipid_normalized)
+PHASE0	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+PHASE0	lipid	managed	errors in log	<none>
+PHASE0	lipid	managed	Apply(0.95) head	lipid_correlation_filtered
+PHASE0	lipid	managed	Apply(0.95) entity	e3e32d5492c9
+PHASE0	lipid	managed	Apply(0.95) removed	A_5
+PHASE0	lipid	managed	Apply completed with the in-process sample list	TRUE
+PHASE0	lipid	managed	seconds	21.5
+PHASE0	lipid	managed	run completed	TRUE
+PHASE0	lipid	managed	worker inputs	lipid_qc_figures<-d54867c2695f(lipid_qc_complete) ; lipid_log2<-d54867c2695f(lipid_qc_complete) ; lipid_between_sample_normalisation<-574b53d903b1(lipid_log2) ; lipid_qc_figures<-3faa1d71b50f(lipid_normalized) ; lipid_composite_figure<-3faa1d71b50f(lipid_normalized) ; lipid_pearson_pairs<-3faa1d71b50f(lipid_normalized) ; lipid_pearson_selection<-3faa1d71b50f(lipid_normalized)
+PHASE0	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+PHASE0	lipid	managed	errors in log	<none>
+PHASE0	lipid	managed	Apply then Skip head	lipid_norm_complete
+PHASE0	lipid	managed	Apply then Skip entity	4daf72bab908
+PHASE0	lipid	managed	Apply then Skip removed	A_5
+PHASE0	lipid	managed	Apply then Skip completed	TRUE
+PHASE0	lipid	managed	seconds	20
+PHASE0	lipid	managed	PHASE 0 PASSED	TRUE
+PHASE0	metab	in_process	Apply(0.95) head	metab_correlation_filtered
+PHASE0	metab	in_process	Apply(0.95) entity	b75e4f842785
+PHASE0	metab	in_process	Apply(0.95) removed	A_5
+PHASE0	metab	in_process	seconds	5.9
+PHASE0	metab	managed	run completed	TRUE
+PHASE0	metab	managed	worker inputs	metab_qc_figures<-b6f0d83d3afd(metab_qc_complete) ; metab_log2<-b6f0d83d3afd(metab_qc_complete) ; metab_between_sample_normalisation<-d57500eb4e1c(metab_log2) ; metab_qc_figures<-690fdddfe354(metab_normalized) ; metab_composite_figure<-690fdddfe354(metab_normalized) ; metab_pearson_pairs<-690fdddfe354(metab_normalized) ; metab_pearson_selection<-690fdddfe354(metab_normalized)
+PHASE0	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+PHASE0	metab	managed	errors in log	<none>
+PHASE0	metab	managed	Apply(0.95) head	metab_correlation_filtered
+PHASE0	metab	managed	Apply(0.95) entity	7f05f1d4f743
+PHASE0	metab	managed	Apply(0.95) removed	A_5
+PHASE0	metab	managed	Apply completed with the in-process sample list	TRUE
+PHASE0	metab	managed	seconds	20
+PHASE0	metab	managed	run completed	TRUE
+PHASE0	metab	managed	worker inputs	metab_qc_figures<-394f42128676(metab_qc_complete) ; metab_log2<-394f42128676(metab_qc_complete) ; metab_between_sample_normalisation<-31dc426b449f(metab_log2) ; metab_qc_figures<-f7b4a92a1410(metab_normalized) ; metab_composite_figure<-f7b4a92a1410(metab_normalized) ; metab_pearson_pairs<-f7b4a92a1410(metab_normalized) ; metab_pearson_selection<-f7b4a92a1410(metab_normalized)
+PHASE0	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+PHASE0	metab	managed	errors in log	<none>
+PHASE0	metab	managed	Apply then Skip head	metab_norm_complete
+PHASE0	metab	managed	Apply then Skip entity	6d3ed1ca6559
+PHASE0	metab	managed	Apply then Skip removed	A_5
+PHASE0	metab	managed	Apply then Skip completed	TRUE
+PHASE0	metab	managed	seconds	20.1
+PHASE0	metab	managed	PHASE 0 PASSED	TRUE
+I	lipid	in_process	run completed	TRUE
+I	lipid	in_process	Apply(0.95) head	lipid_correlation_filtered
+I	lipid	in_process	Apply(0.95) entity	dbfbadd05b15
+I	lipid	in_process	Apply(0.95) removed	A_5
+I	lipid	in_process	head	lipid_norm_complete
+I	lipid	in_process	head entity	ed46adf30540
+I	lipid	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+I	lipid	in_process	head design n	11
+I	lipid	in_process	head design removed	A_5
+I	lipid	in_process	final (run result) entity	1fa84e44d2a7
+I	lipid	in_process	head components equal the run result's	FALSE
+I	lipid	in_process	fields	complete=TRUE;filtered_obj=1fa84e44d2a7;results=LCMS_Pos
+I	lipid	in_process	summary	original=12;after=12;removed=0
+I	lipid	in_process	final PCA samples	12
+I	lipid	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_correlation_filtered:lipid_pearson_selection lipid_norm_complete:lipid_norm_complete
+I	lipid	in_process	record correlation step	state=lipid_correlation_filtered;threshold=double,0.95,1;input=1fa84e44d2a7;result=dbfbadd05b15;input_is_result=FALSE;preceded_by=lipid_pearson_pairs
+I	lipid	in_process	replay	completed
+I	lipid	in_process	replay statement	<none>
+I	lipid	in_process	replay head	lipid_norm_complete
+I	lipid	in_process	replay design removed	A_5
+I	lipid	in_process	replay equals live design	TRUE
+I	lipid	in_process	DA source	entity=ed46adf30540;state=lipid_norm_complete
+I	lipid	in_process	DA source design n	11
+I	lipid	in_process	DA status	current
+I	lipid	in_process	Save done / failed	done=1;failed=
+I	lipid	in_process	Save notes	[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+I	lipid	in_process	Save integration object	lipidomics_k207_final_s4.RDS:11 samples
+I	lipid	in_process	study parameters correlation lines	[7. lipid_correlation_filtered: lipid_pearson_selection] | lipid_pearson_pairs.correlation_group [no_shipped_default] = group | min_pearson_correlation_threshold [no_shipped_default] = 0.94999999999999996
+I	lipid	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Normalization complete! Proceeding to DE analysis.
+I	lipid	in_process	seconds	15.3
+II	lipid	in_process	run completed	TRUE
+II	lipid	in_process	run result entity	a87fa6e2f0c0
+II	lipid	in_process	Apply(0.95) head	lipid_correlation_filtered
+II	lipid	in_process	Apply(0.95) entity	e2e040f1c94f
+II	lipid	in_process	Apply(0.95) removed	A_5
+II	lipid	in_process	then Apply(0.9) head	lipid_correlation_filtered
+II	lipid	in_process	then Apply(0.9) entity	c82fae4f7c08
+II	lipid	in_process	then Apply(0.9) removed	A_5
+II	lipid	in_process	correlation sources (entity(head) per press)	a87fa6e2f0c0(lipid_normalized) ; e2e040f1c94f(lipid_correlation_filtered)
+II	lipid	in_process	head	lipid_correlation_filtered
+II	lipid	in_process	head entity	c82fae4f7c08
+II	lipid	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+II	lipid	in_process	head design n	11
+II	lipid	in_process	head design removed	A_5
+II	lipid	in_process	final (run result) entity	a87fa6e2f0c0
+II	lipid	in_process	head components equal the run result's	FALSE
+II	lipid	in_process	fields	complete=TRUE;filtered_obj=c82fae4f7c08;results=LCMS_Pos
+II	lipid	in_process	summary	original=12;after=11;removed=1
+II	lipid	in_process	final PCA samples	11
+II	lipid	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_correlation_filtered:lipid_pearson_selection
+II	lipid	in_process	record correlation step	state=lipid_correlation_filtered;threshold=double,0.9,1;input=c82fae4f7c08;result=c82fae4f7c08;input_is_result=TRUE;preceded_by=lipid_pearson_pairs
+II	lipid	in_process	replay	completed
+II	lipid	in_process	replay statement	<none>
+II	lipid	in_process	replay head	lipid_correlation_filtered
+II	lipid	in_process	replay design removed	<none>
+II	lipid	in_process	replay equals live design	FALSE
+II	lipid	in_process	seconds	13.1
+II0	lipid	in_process	Apply(0.9) alone head	lipid_correlation_filtered
+II0	lipid	in_process	Apply(0.9) alone entity	b56ede715af8
+II0	lipid	in_process	Apply(0.9) alone removed	<none>
+II0	lipid	in_process	seconds	6
+C1	lipid	in_process	head	lipid_norm_complete
+C1	lipid	in_process	head entity	008bfaff6bde
+C1	lipid	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized norm_complete
+C1	lipid	in_process	head design n	12
+C1	lipid	in_process	head design removed	<none>
+C1	lipid	in_process	final (run result) entity	73c781db5382
+C1	lipid	in_process	head components equal the run result's	TRUE
+C1	lipid	in_process	fields	complete=TRUE;filtered_obj=73c781db5382;results=<empty>
+C1	lipid	in_process	summary	No correlation results available.
+C1	lipid	in_process	final PCA samples	12
+C1	lipid	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_norm_complete:lipid_norm_complete
+C1	lipid	in_process	record correlation step	<no pearson selection step>
+C1	lipid	in_process	replay	completed
+C1	lipid	in_process	replay statement	<none>
+C1	lipid	in_process	replay head	lipid_norm_complete
+C1	lipid	in_process	replay design removed	<none>
+C1	lipid	in_process	replay equals live design	TRUE
+C1	lipid	in_process	seconds	8.6
+C2	lipid	in_process	Apply(0.9) then Apply(0.95) head	lipid_correlation_filtered
+C2	lipid	in_process	Apply(0.9) then Apply(0.95) entity	bf2ee02b2e38
+C2	lipid	in_process	Apply(0.9) then Apply(0.95) removed	A_5
+C2	lipid	in_process	seconds	7.5
+C3	lipid	in_process	Apply(0.95) alone head	lipid_correlation_filtered
+C3	lipid	in_process	Apply(0.95) alone entity	d4e452b7a6bc
+C3	lipid	in_process	Apply(0.95) alone removed	A_5
+C3	lipid	in_process	seconds	6.2
+E13	lipid	in_process	head	lipid_correlation_filtered
+E13	lipid	in_process	head entity	1a202f6dc924
+E13	lipid	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+E13	lipid	in_process	head design n	11
+E13	lipid	in_process	head design removed	A_5
+E13	lipid	in_process	final (run result) entity	769e8e97849d
+E13	lipid	in_process	head components equal the run result's	FALSE
+E13	lipid	in_process	fields	complete=TRUE;filtered_obj=1a202f6dc924;results=LCMS_Pos
+E13	lipid	in_process	summary	original=12;after=11;removed=1
+E13	lipid	in_process	final PCA samples	11
+E13	lipid	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_correlation_filtered:lipid_pearson_selection lipid_norm_complete:lipid_norm_complete
+E13	lipid	in_process	record correlation step	state=lipid_correlation_filtered;threshold=double,0.9,1;input=b30f32faacad;result=1a202f6dc924;input_is_result=FALSE;preceded_by=lipid_pearson_pairs
+E13	lipid	in_process	replay	completed
+E13	lipid	in_process	replay statement	<none>
+E13	lipid	in_process	replay head	lipid_norm_complete
+E13	lipid	in_process	replay design removed	<none>
+E13	lipid	in_process	replay equals live design	FALSE
+E13	lipid	in_process	seconds	13.8
+E14	lipid	in_process	DA source (before Skip)	entity=ef589e2d6a93;state=lipid_correlation_filtered
+E14	lipid	in_process	head after Skip	lipid_norm_complete
+E14	lipid	in_process	DA status after Skip	current
+E14	lipid	in_process	Save done / failed	done=1;failed=
+E14	lipid	in_process	Save notes	[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+E14	lipid	in_process	Save integration object	lipidomics_k207_final_s4.RDS:11 samples
+E14	lipid	in_process	seconds	11.3
+E10	lipid	in_process	Apply(0.95) head	lipid_correlation_filtered
+E10	lipid	in_process	Apply(0.95) entity	3fcb7e32f2ef
+E10	lipid	in_process	Apply(0.95) removed	A_5
+E10	lipid	in_process	fields after Apply	complete=TRUE;filtered_obj=3fcb7e32f2ef;results=LCMS_Pos
+E10	lipid	in_process	failed Apply value	FALSE
+E10	lipid	in_process	head	lipid_correlation_filtered
+E10	lipid	in_process	head entity	3fcb7e32f2ef
+E10	lipid	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+E10	lipid	in_process	head design n	11
+E10	lipid	in_process	head design removed	A_5
+E10	lipid	in_process	final (run result) entity	9763eb710ac2
+E10	lipid	in_process	head components equal the run result's	FALSE
+E10	lipid	in_process	fields	complete=TRUE;filtered_obj=3fcb7e32f2ef;results=LCMS_Pos
+E10	lipid	in_process	summary	original=12;after=11;removed=1
+E10	lipid	in_process	final PCA samples	11
+E10	lipid	in_process	notes	[default] Applying correlation filter... | [error] Error: Specified `correlation_group` ('kit254_absent') not found in design_matrix.
+E10	lipid	in_process	seconds	6.3
+E11	lipid	in_process	fields after Apply	complete=TRUE;filtered_obj=ec1f9d5b12c1;results=LCMS_Pos
+E11	lipid	in_process	refused Skip value	FALSE
+E11	lipid	in_process	head	lipid_correlation_filtered
+E11	lipid	in_process	head entity	ec1f9d5b12c1
+E11	lipid	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+E11	lipid	in_process	head design n	11
+E11	lipid	in_process	head design removed	A_5
+E11	lipid	in_process	final (run result) entity	b1d425496c7a
+E11	lipid	in_process	head components equal the run result's	FALSE
+E11	lipid	in_process	fields	complete=TRUE;filtered_obj=ec1f9d5b12c1;results=LCMS_Pos
+E11	lipid	in_process	summary	original=12;after=11;removed=1
+E11	lipid	in_process	final PCA samples	11
+E11	lipid	in_process	notes	[error] Error: kit254: the store commit is refused
+E11	lipid	in_process	seconds	6.3
+E9	lipid	in_process	run head	lipid_normalized
+E9	lipid	in_process	first Apply(0.5) head	lipid_correlation_filtered
+E9	lipid	in_process	first Apply(0.5) entity	a5fd865c4f67
+E9	lipid	in_process	first Apply(0.5) removed	A_1
+E9	lipid	in_process	second Apply(0.5) head	lipid_correlation_filtered
+E9	lipid	in_process	second Apply(0.5) entity	9d8c3a2f78fd
+E9	lipid	in_process	second Apply(0.5) removed	A_1,A_2
+E9	lipid	in_process	errors in log	<none>
+E9	lipid	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+E9	lipid	in_process	seconds	11.2
+I	lipid	managed	run completed	TRUE
+I	lipid	managed	worker inputs	lipid_qc_figures<-aa210b789574(lipid_qc_complete) ; lipid_log2<-aa210b789574(lipid_qc_complete) ; lipid_between_sample_normalisation<-124de97cede3(lipid_log2) ; lipid_qc_figures<-c3b971d496cf(lipid_normalized) ; lipid_composite_figure<-c3b971d496cf(lipid_normalized) ; lipid_pearson_pairs<-c3b971d496cf(lipid_normalized) ; lipid_pearson_selection<-c3b971d496cf(lipid_normalized)
+I	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+I	lipid	managed	errors in log	<none>
+I	lipid	managed	head	lipid_norm_complete
+I	lipid	managed	head entity	f81303ec2ecf
+I	lipid	managed	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+I	lipid	managed	head design n	11
+I	lipid	managed	head design removed	A_5
+I	lipid	managed	INSTRUMENT ERROR	error [shiny.destroyed.error/error/condition] Can't access reactive `reactiveValues2108`; its module session has been destroyed
+I	lipid	managed	seconds	20
+II	lipid	managed	run completed	TRUE
+II	lipid	managed	worker inputs	lipid_qc_figures<-b3ef9141aa06(lipid_qc_complete) ; lipid_log2<-b3ef9141aa06(lipid_qc_complete) ; lipid_between_sample_normalisation<-4edb54e1c52c(lipid_log2) ; lipid_qc_figures<-08cfff661778(lipid_normalized) ; lipid_composite_figure<-08cfff661778(lipid_normalized) ; lipid_pearson_pairs<-08cfff661778(lipid_normalized) ; lipid_pearson_selection<-08cfff661778(lipid_normalized) ; lipid_pearson_pairs<-89e410a3720d(lipid_correlation_filtered) ; lipid_pearson_selection<-89e410a3720d(lipid_correlation_filtered)
+II	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+II	lipid	managed	errors in log	<none>
+II	lipid	managed	after Apply(t_hi)	lipid_correlation_filtered 89e410a3720d
+II	lipid	managed	head	lipid_correlation_filtered
+II	lipid	managed	head entity	f29c4fb4631a
+II	lipid	managed	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+II	lipid	managed	head design n	11
+II	lipid	managed	head design removed	A_5
+II	lipid	managed	INSTRUMENT ERROR	error [shiny.destroyed.error/error/condition] Can't access reactive `reactiveValues1385`; its module session has been destroyed
+II	lipid	managed	seconds	21.9
+E12	lipid	managed	run completed	TRUE
+E12	lipid	managed	worker inputs	lipid_qc_figures<-85066d0310cf(lipid_qc_complete) ; lipid_log2<-85066d0310cf(lipid_qc_complete) ; lipid_between_sample_normalisation<-f1407ca8b965(lipid_log2) ; lipid_qc_figures<-ebba38ccc1db(lipid_normalized) ; lipid_composite_figure<-ebba38ccc1db(lipid_normalized) ; lipid_pearson_pairs<-ebba38ccc1db(lipid_normalized) ; lipid_pearson_selection<-ebba38ccc1db(lipid_normalized) ; lipid_pearson_pairs<-938a34173dd2(lipid_correlation_filtered) ; lipid_pearson_selection<-938a34173dd2(lipid_correlation_filtered)
+E12	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+E12	lipid	managed	errors in log	<none>
+E12	lipid	managed	first press held on the worker	TRUE
+E12	lipid	managed	worker actions after first / second press	6 / 6
+E12	lipid	managed	settled	TRUE
+E12	lipid	managed	after both presses head	lipid_correlation_filtered
+E12	lipid	managed	after both presses entity	af40dc7c1a47
+E12	lipid	managed	after both presses removed	A_5
+E12	lipid	managed	fields	complete=NULL;filtered_obj=NULL;results=<empty>
+E12	lipid	managed	seconds	21.2
+I	metab	in_process	run completed	TRUE
+I	metab	in_process	Apply(0.95) head	metab_correlation_filtered
+I	metab	in_process	Apply(0.95) entity	9633f0237f34
+I	metab	in_process	Apply(0.95) removed	A_5
+I	metab	in_process	head	metab_norm_complete
+I	metab	in_process	head entity	432d5ab32548
+I	metab	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+I	metab	in_process	head design n	11
+I	metab	in_process	head design removed	A_5
+I	metab	in_process	final (run result) entity	012c34da2101
+I	metab	in_process	head components equal the run result's	FALSE
+I	metab	in_process	fields	complete=TRUE;filtered_obj=012c34da2101;results=LCMS_Pos
+I	metab	in_process	summary	original=12;after=12;removed=0
+I	metab	in_process	final PCA samples	12
+I	metab	in_process	record steps	initial:import metab_raw_data_s4:design_builder metab_intensity_filtered:metab_intensity_filter metab_qc_complete:metab_qc_finalize metab_log2:metab_log2 metab_normalized:metab_between_sample_normalisation metab_correlation_filtered:metab_pearson_selection metab_norm_complete:metab_norm_complete
+I	metab	in_process	record correlation step	state=metab_correlation_filtered;threshold=double,0.95,1;input=012c34da2101;result=9633f0237f34;input_is_result=FALSE;preceded_by=metab_pearson_pairs
+I	metab	in_process	replay	completed
+I	metab	in_process	replay statement	<none>
+I	metab	in_process	replay head	metab_norm_complete
+I	metab	in_process	replay design removed	A_5
+I	metab	in_process	replay equals live design	TRUE
+I	metab	in_process	DA source	entity=432d5ab32548;state=metab_norm_complete
+I	metab	in_process	DA source design n	11
+I	metab	in_process	DA status	current
+I	metab	in_process	Save done / failed	done=1;failed=
+I	metab	in_process	Save notes	[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+I	metab	in_process	Save integration object	metabolomics_k207_final_s4.RDS:11 samples
+I	metab	in_process	study parameters correlation lines	[7. metab_correlation_filtered: metab_pearson_selection] | metab_pearson_pairs.correlation_group [no_shipped_default] = group | min_pearson_correlation_threshold [no_shipped_default] = 0.94999999999999996
+I	metab	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Normalization complete! Proceeding to DE analysis.
+I	metab	in_process	seconds	14.3
+II	metab	in_process	run completed	TRUE
+II	metab	in_process	run result entity	77c70e96abf9
+II	metab	in_process	Apply(0.95) head	metab_correlation_filtered
+II	metab	in_process	Apply(0.95) entity	de9d2ce70e21
+II	metab	in_process	Apply(0.95) removed	A_5
+II	metab	in_process	then Apply(0.9) head	metab_correlation_filtered
+II	metab	in_process	then Apply(0.9) entity	ae98446cbd5a
+II	metab	in_process	then Apply(0.9) removed	A_5
+II	metab	in_process	correlation sources (entity(head) per press)	77c70e96abf9(metab_normalized) ; de9d2ce70e21(metab_correlation_filtered)
+II	metab	in_process	head	metab_correlation_filtered
+II	metab	in_process	head entity	ae98446cbd5a
+II	metab	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+II	metab	in_process	head design n	11
+II	metab	in_process	head design removed	A_5
+II	metab	in_process	final (run result) entity	77c70e96abf9
+II	metab	in_process	head components equal the run result's	FALSE
+II	metab	in_process	fields	complete=TRUE;filtered_obj=ae98446cbd5a;results=LCMS_Pos
+II	metab	in_process	summary	original=12;after=11;removed=1
+II	metab	in_process	final PCA samples	11
+II	metab	in_process	record steps	initial:import metab_raw_data_s4:design_builder metab_intensity_filtered:metab_intensity_filter metab_qc_complete:metab_qc_finalize metab_log2:metab_log2 metab_normalized:metab_between_sample_normalisation metab_correlation_filtered:metab_pearson_selection
+II	metab	in_process	record correlation step	state=metab_correlation_filtered;threshold=double,0.9,1;input=ae98446cbd5a;result=ae98446cbd5a;input_is_result=TRUE;preceded_by=metab_pearson_pairs
+II	metab	in_process	replay	completed
+II	metab	in_process	replay statement	<none>
+II	metab	in_process	replay head	metab_correlation_filtered
+II	metab	in_process	replay design removed	<none>
+II	metab	in_process	replay equals live design	FALSE
+II	metab	in_process	seconds	13
+II0	metab	in_process	Apply(0.9) alone head	metab_correlation_filtered
+II0	metab	in_process	Apply(0.9) alone entity	fc8e948ae95a
+II0	metab	in_process	Apply(0.9) alone removed	<none>
+II0	metab	in_process	seconds	6.2
+C1	metab	in_process	head	metab_norm_complete
+C1	metab	in_process	head entity	31b3ff861c23
+C1	metab	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized norm_complete
+C1	metab	in_process	head design n	12
+C1	metab	in_process	head design removed	<none>
+C1	metab	in_process	final (run result) entity	2b8f9a05ccac
+C1	metab	in_process	head components equal the run result's	TRUE
+C1	metab	in_process	fields	complete=TRUE;filtered_obj=2b8f9a05ccac;results=<empty>
+C1	metab	in_process	summary	No correlation results available.
+C1	metab	in_process	final PCA samples	12
+C1	metab	in_process	record steps	initial:import metab_raw_data_s4:design_builder metab_intensity_filtered:metab_intensity_filter metab_qc_complete:metab_qc_finalize metab_log2:metab_log2 metab_normalized:metab_between_sample_normalisation metab_norm_complete:metab_norm_complete
+C1	metab	in_process	record correlation step	<no pearson selection step>
+C1	metab	in_process	replay	completed
+C1	metab	in_process	replay statement	<none>
+C1	metab	in_process	replay head	metab_norm_complete
+C1	metab	in_process	replay design removed	<none>
+C1	metab	in_process	replay equals live design	TRUE
+C1	metab	in_process	seconds	8.7
+C2	metab	in_process	Apply(0.9) then Apply(0.95) head	metab_correlation_filtered
+C2	metab	in_process	Apply(0.9) then Apply(0.95) entity	b5e456d1e102
+C2	metab	in_process	Apply(0.9) then Apply(0.95) removed	A_5
+C2	metab	in_process	seconds	7.6
+C3	metab	in_process	Apply(0.95) alone head	metab_correlation_filtered
+C3	metab	in_process	Apply(0.95) alone entity	7739f7159676
+C3	metab	in_process	Apply(0.95) alone removed	A_5
+C3	metab	in_process	seconds	6.1
+E13	metab	in_process	head	metab_correlation_filtered
+E13	metab	in_process	head entity	61e4fd04d4ff
+E13	metab	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+E13	metab	in_process	head design n	11
+E13	metab	in_process	head design removed	A_5
+E13	metab	in_process	final (run result) entity	3f6e5f1ed946
+E13	metab	in_process	head components equal the run result's	FALSE
+E13	metab	in_process	fields	complete=TRUE;filtered_obj=61e4fd04d4ff;results=LCMS_Pos
+E13	metab	in_process	summary	original=12;after=11;removed=1
+E13	metab	in_process	final PCA samples	11
+E13	metab	in_process	record steps	initial:import metab_raw_data_s4:design_builder metab_intensity_filtered:metab_intensity_filter metab_qc_complete:metab_qc_finalize metab_log2:metab_log2 metab_normalized:metab_between_sample_normalisation metab_correlation_filtered:metab_pearson_selection metab_norm_complete:metab_norm_complete
+E13	metab	in_process	record correlation step	state=metab_correlation_filtered;threshold=double,0.9,1;input=dbf8815c424f;result=61e4fd04d4ff;input_is_result=FALSE;preceded_by=metab_pearson_pairs
+E13	metab	in_process	replay	completed
+E13	metab	in_process	replay statement	<none>
+E13	metab	in_process	replay head	metab_norm_complete
+E13	metab	in_process	replay design removed	<none>
+E13	metab	in_process	replay equals live design	FALSE
+E13	metab	in_process	seconds	13.7
+E14	metab	in_process	DA source (before Skip)	entity=863155c93eac;state=metab_correlation_filtered
+E14	metab	in_process	head after Skip	metab_norm_complete
+E14	metab	in_process	DA status after Skip	current
+E14	metab	in_process	Save done / failed	done=1;failed=
+E14	metab	in_process	Save notes	[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+E14	metab	in_process	Save integration object	metabolomics_k207_final_s4.RDS:11 samples
+E14	metab	in_process	seconds	9.3
+E10	metab	in_process	Apply(0.95) head	metab_correlation_filtered
+E10	metab	in_process	Apply(0.95) entity	bc127f4931b3
+E10	metab	in_process	Apply(0.95) removed	A_5
+E10	metab	in_process	fields after Apply	complete=TRUE;filtered_obj=bc127f4931b3;results=LCMS_Pos
+E10	metab	in_process	failed Apply value	FALSE
+E10	metab	in_process	head	metab_correlation_filtered
+E10	metab	in_process	head entity	bc127f4931b3
+E10	metab	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+E10	metab	in_process	head design n	11
+E10	metab	in_process	head design removed	A_5
+E10	metab	in_process	final (run result) entity	87d635b99e2b
+E10	metab	in_process	head components equal the run result's	FALSE
+E10	metab	in_process	fields	complete=TRUE;filtered_obj=bc127f4931b3;results=LCMS_Pos
+E10	metab	in_process	summary	original=12;after=11;removed=1
+E10	metab	in_process	final PCA samples	11
+E10	metab	in_process	notes	[default] Applying correlation filter... | [error] Error: Specified `correlation_group` ('kit254_absent') not found in design_matrix.
+E10	metab	in_process	seconds	6.5
+E11	metab	in_process	fields after Apply	complete=TRUE;filtered_obj=9a82fdbd883f;results=LCMS_Pos
+E11	metab	in_process	refused Skip value	FALSE
+E11	metab	in_process	head	metab_correlation_filtered
+E11	metab	in_process	head entity	9a82fdbd883f
+E11	metab	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+E11	metab	in_process	head design n	11
+E11	metab	in_process	head design removed	A_5
+E11	metab	in_process	final (run result) entity	117e85f366d1
+E11	metab	in_process	head components equal the run result's	FALSE
+E11	metab	in_process	fields	complete=TRUE;filtered_obj=9a82fdbd883f;results=LCMS_Pos
+E11	metab	in_process	summary	original=12;after=11;removed=1
+E11	metab	in_process	final PCA samples	11
+E11	metab	in_process	notes	[error] Error: kit254: the store commit is refused
+E11	metab	in_process	seconds	6.4
+E9	metab	in_process	run head	metab_normalized
+E9	metab	in_process	first Apply(0.5) head	metab_correlation_filtered
+E9	metab	in_process	first Apply(0.5) entity	04b34c4dfa96
+E9	metab	in_process	first Apply(0.5) removed	A_1
+E9	metab	in_process	second Apply(0.5) head	metab_correlation_filtered
+E9	metab	in_process	second Apply(0.5) entity	2eb5793f07f8
+E9	metab	in_process	second Apply(0.5) removed	A_1,A_2
+E9	metab	in_process	errors in log	<none>
+E9	metab	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+E9	metab	in_process	seconds	11.6
+I	metab	managed	run completed	TRUE
+I	metab	managed	worker inputs	metab_qc_figures<-81c4d78ad761(metab_qc_complete) ; metab_log2<-81c4d78ad761(metab_qc_complete) ; metab_between_sample_normalisation<-49776f1f9217(metab_log2) ; metab_qc_figures<-172bec467afd(metab_normalized) ; metab_composite_figure<-172bec467afd(metab_normalized) ; metab_pearson_pairs<-172bec467afd(metab_normalized) ; metab_pearson_selection<-172bec467afd(metab_normalized)
+I	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+I	metab	managed	errors in log	<none>
+I	metab	managed	head	metab_norm_complete
+I	metab	managed	head entity	83e0b79e1f8b
+I	metab	managed	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+I	metab	managed	head design n	11
+I	metab	managed	head design removed	A_5
+I	metab	managed	INSTRUMENT ERROR	error [shiny.destroyed.error/error/condition] Can't access reactive `reactiveValues8544`; its module session has been destroyed
+I	metab	managed	seconds	20.3
+II	metab	managed	run completed	TRUE
+II	metab	managed	worker inputs	metab_qc_figures<-66ac2145e7cf(metab_qc_complete) ; metab_log2<-66ac2145e7cf(metab_qc_complete) ; metab_between_sample_normalisation<-eb85ce3d6f46(metab_log2) ; metab_qc_figures<-533286d34fc0(metab_normalized) ; metab_composite_figure<-533286d34fc0(metab_normalized) ; metab_pearson_pairs<-533286d34fc0(metab_normalized) ; metab_pearson_selection<-533286d34fc0(metab_normalized) ; metab_pearson_pairs<-8ea837ea9457(metab_correlation_filtered) ; metab_pearson_selection<-8ea837ea9457(metab_correlation_filtered)
+II	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+II	metab	managed	errors in log	<none>
+II	metab	managed	after Apply(t_hi)	metab_correlation_filtered 8ea837ea9457
+II	metab	managed	head	metab_correlation_filtered
+II	metab	managed	head entity	d6a636c54b12
+II	metab	managed	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+II	metab	managed	head design n	11
+II	metab	managed	head design removed	A_5
+II	metab	managed	INSTRUMENT ERROR	error [shiny.destroyed.error/error/condition] Can't access reactive `reactiveValues9544`; its module session has been destroyed
+II	metab	managed	seconds	21.8
+E12	metab	managed	run completed	TRUE
+E12	metab	managed	worker inputs	metab_qc_figures<-62e3d4842be6(metab_qc_complete) ; metab_log2<-62e3d4842be6(metab_qc_complete) ; metab_between_sample_normalisation<-82d96558ef0c(metab_log2) ; metab_qc_figures<-3f9760209c37(metab_normalized) ; metab_composite_figure<-3f9760209c37(metab_normalized) ; metab_pearson_pairs<-3f9760209c37(metab_normalized) ; metab_pearson_selection<-3f9760209c37(metab_normalized) ; metab_pearson_pairs<-85c632a79481(metab_correlation_filtered) ; metab_pearson_selection<-85c632a79481(metab_correlation_filtered)
+E12	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+E12	metab	managed	errors in log	<none>
+E12	metab	managed	first press held on the worker	TRUE
+E12	metab	managed	worker actions after first / second press	6 / 6
+E12	metab	managed	settled	TRUE
+E12	metab	managed	after both presses head	metab_correlation_filtered
+E12	metab	managed	after both presses entity	2115d502e9af
+E12	metab	managed	after both presses removed	A_5
+E12	metab	managed	fields	complete=NULL;filtered_obj=NULL;results=<empty>
+E12	metab	managed	seconds	21.7
+I	lipid_ruv	in_process	run completed	TRUE
+I	lipid_ruv	in_process	Apply(0.99) head	lipid_correlation_filtered
+I	lipid_ruv	in_process	Apply(0.99) entity	9731da6b0209
+I	lipid_ruv	in_process	Apply(0.99) removed	B_4
+I	lipid_ruv	in_process	head	lipid_norm_complete
+I	lipid_ruv	in_process	head entity	89dc62f51e35
+I	lipid_ruv	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized ruv_corrected correlation_filtered norm_complete
+I	lipid_ruv	in_process	head design n	11
+I	lipid_ruv	in_process	head design removed	B_4
+I	lipid_ruv	in_process	final (run result) entity	a25080e458b4
+I	lipid_ruv	in_process	head components equal the run result's	FALSE
+I	lipid_ruv	in_process	fields	complete=TRUE;filtered_obj=a25080e458b4;results=LCMS_Pos
+I	lipid_ruv	in_process	summary	original=12;after=12;removed=0
+I	lipid_ruv	in_process	final PCA samples	12
+I	lipid_ruv	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_ruv_corrected:lipid_ruv lipid_correlation_filtered:lipid_pearson_selection lipid_norm_complete:lipid_norm_complete
+I	lipid_ruv	in_process	record correlation step	state=lipid_correlation_filtered;threshold=double,0.99,1;input=a25080e458b4;result=9731da6b0209;input_is_result=FALSE;preceded_by=lipid_pearson_pairs
+I	lipid_ruv	in_process	replay	completed
+I	lipid_ruv	in_process	replay statement	<none>
+I	lipid_ruv	in_process	replay head	lipid_norm_complete
+I	lipid_ruv	in_process	replay design removed	B_4
+I	lipid_ruv	in_process	replay equals live design	TRUE
+I	lipid_ruv	in_process	DA source	entity=89dc62f51e35;state=lipid_norm_complete
+I	lipid_ruv	in_process	DA source design n	11
+I	lipid_ruv	in_process	DA status	current
+I	lipid_ruv	in_process	Save done / failed	done=1;failed=
+I	lipid_ruv	in_process	Save notes	[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+I	lipid_ruv	in_process	Save integration object	lipidomics_k207_final_s4.RDS:11 samples
+I	lipid_ruv	in_process	study parameters correlation lines	[8. lipid_correlation_filtered: lipid_pearson_selection] | lipid_pearson_pairs.correlation_group [no_shipped_default] = group | min_pearson_correlation_threshold [no_shipped_default] = 0.98999999999999999
+I	lipid_ruv	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Normalization complete! Proceeding to DE analysis.
+I	lipid_ruv	in_process	seconds	20.3
+II	lipid_ruv	in_process	run completed	TRUE
+II	lipid_ruv	in_process	run result entity	41280f83e523
+II	lipid_ruv	in_process	Apply(0.99) head	lipid_correlation_filtered
+II	lipid_ruv	in_process	Apply(0.99) entity	8daf410e973b
+II	lipid_ruv	in_process	Apply(0.99) removed	B_4
+II	lipid_ruv	in_process	then Apply(0.95) head	lipid_correlation_filtered
+II	lipid_ruv	in_process	then Apply(0.95) entity	de7525ddf4d2
+II	lipid_ruv	in_process	then Apply(0.95) removed	B_4
+II	lipid_ruv	in_process	correlation sources (entity(head) per press)	41280f83e523(lipid_ruv_corrected) ; 8daf410e973b(lipid_correlation_filtered)
+II	lipid_ruv	in_process	head	lipid_correlation_filtered
+II	lipid_ruv	in_process	head entity	de7525ddf4d2
+II	lipid_ruv	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized ruv_corrected correlation_filtered
+II	lipid_ruv	in_process	head design n	11
+II	lipid_ruv	in_process	head design removed	B_4
+II	lipid_ruv	in_process	final (run result) entity	41280f83e523
+II	lipid_ruv	in_process	head components equal the run result's	FALSE
+II	lipid_ruv	in_process	fields	complete=TRUE;filtered_obj=de7525ddf4d2;results=LCMS_Pos
+II	lipid_ruv	in_process	summary	original=12;after=11;removed=1
+II	lipid_ruv	in_process	final PCA samples	11
+II	lipid_ruv	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_ruv_corrected:lipid_ruv lipid_correlation_filtered:lipid_pearson_selection
+II	lipid_ruv	in_process	record correlation step	state=lipid_correlation_filtered;threshold=double,0.95,1;input=de7525ddf4d2;result=de7525ddf4d2;input_is_result=TRUE;preceded_by=lipid_pearson_pairs
+II	lipid_ruv	in_process	replay	completed
+II	lipid_ruv	in_process	replay statement	<none>
+II	lipid_ruv	in_process	replay head	lipid_correlation_filtered
+II	lipid_ruv	in_process	replay design removed	<none>
+II	lipid_ruv	in_process	replay equals live design	FALSE
+II	lipid_ruv	in_process	seconds	18.9
+II0	lipid_ruv	in_process	Apply(0.95) alone head	lipid_correlation_filtered
+II0	lipid_ruv	in_process	Apply(0.95) alone entity	f9fb69a24802
+II0	lipid_ruv	in_process	Apply(0.95) alone removed	<none>
+II0	lipid_ruv	in_process	seconds	9.1
+C1	lipid_ruv	in_process	head	lipid_norm_complete
+C1	lipid_ruv	in_process	head entity	928c55d35caf
+C1	lipid_ruv	in_process	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized ruv_corrected norm_complete
+C1	lipid_ruv	in_process	head design n	12
+C1	lipid_ruv	in_process	head design removed	<none>
+C1	lipid_ruv	in_process	final (run result) entity	5ff81b65295d
+C1	lipid_ruv	in_process	head components equal the run result's	TRUE
+C1	lipid_ruv	in_process	fields	complete=TRUE;filtered_obj=5ff81b65295d;results=<empty>
+C1	lipid_ruv	in_process	summary	No correlation results available.
+C1	lipid_ruv	in_process	final PCA samples	12
+C1	lipid_ruv	in_process	record steps	initial:import lipid_raw_data_s4:design_builder lipid_intensity_filtered:lipid_intensity_filter lipid_qc_complete:lipid_qc_finalize lipid_log2:lipid_log2 lipid_normalized:lipid_between_sample_normalisation lipid_ruv_corrected:lipid_ruv lipid_norm_complete:lipid_norm_complete
+C1	lipid_ruv	in_process	record correlation step	<no pearson selection step>
+C1	lipid_ruv	in_process	replay	completed
+C1	lipid_ruv	in_process	replay statement	<none>
+C1	lipid_ruv	in_process	replay head	lipid_norm_complete
+C1	lipid_ruv	in_process	replay design removed	<none>
+C1	lipid_ruv	in_process	replay equals live design	TRUE
+C1	lipid_ruv	in_process	seconds	14.1
+C2	lipid_ruv	in_process	Apply(0.95) then Apply(0.99) head	lipid_correlation_filtered
+C2	lipid_ruv	in_process	Apply(0.95) then Apply(0.99) entity	da2a2a23bf59
+C2	lipid_ruv	in_process	Apply(0.95) then Apply(0.99) removed	B_4
+C2	lipid_ruv	in_process	seconds	11
+C3	lipid_ruv	in_process	Apply(0.99) alone head	lipid_correlation_filtered
+C3	lipid_ruv	in_process	Apply(0.99) alone entity	3e88d8fd1c83
+C3	lipid_ruv	in_process	Apply(0.99) alone removed	B_4
+C3	lipid_ruv	in_process	seconds	9.3
+I	lipid_ruv	managed	run completed	TRUE
+I	lipid_ruv	managed	worker inputs	lipid_qc_figures<-4546e8f74859(lipid_qc_complete) ; lipid_log2<-4546e8f74859(lipid_qc_complete) ; lipid_between_sample_normalisation<-c15e0762f8b7(lipid_log2) ; lipid_qc_figures<-628f478754c4(lipid_normalized) ; lipid_composite_figure<-628f478754c4(lipid_normalized) ; lipid_pearson_pairs<-628f478754c4(lipid_normalized) ; lipid_pearson_selection<-628f478754c4(lipid_normalized)
+I	lipid_ruv	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+I	lipid_ruv	managed	errors in log	<none>
+I	lipid_ruv	managed	head	lipid_norm_complete
+I	lipid_ruv	managed	head entity	b11bf0727d84
+I	lipid_ruv	managed	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered norm_complete
+I	lipid_ruv	managed	head design n	2
+I	lipid_ruv	managed	head design removed	A_1,A_2,A_3,A_4,A_5,A_6,B_1,B_4,B_5,B_6
+I	lipid_ruv	managed	INSTRUMENT ERROR	error [shiny.destroyed.error/error/condition] Can't access reactive `reactiveValues9612`; its module session has been destroyed
+I	lipid_ruv	managed	seconds	20.6
+II	lipid_ruv	managed	run completed	TRUE
+II	lipid_ruv	managed	worker inputs	lipid_qc_figures<-85775d06404a(lipid_qc_complete) ; lipid_log2<-85775d06404a(lipid_qc_complete) ; lipid_between_sample_normalisation<-5467d71b10f0(lipid_log2) ; lipid_qc_figures<-204ea7d58f15(lipid_normalized) ; lipid_composite_figure<-204ea7d58f15(lipid_normalized) ; lipid_pearson_pairs<-204ea7d58f15(lipid_normalized) ; lipid_pearson_selection<-204ea7d58f15(lipid_normalized) ; lipid_pearson_pairs<-ea4e26e9a1ab(lipid_correlation_filtered) ; lipid_pearson_selection<-ea4e26e9a1ab(lipid_correlation_filtered)
+II	lipid_ruv	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+II	lipid_ruv	managed	errors in log	<none>
+II	lipid_ruv	managed	after Apply(t_hi)	lipid_correlation_filtered ea4e26e9a1ab
+II	lipid_ruv	managed	head	lipid_correlation_filtered
+II	lipid_ruv	managed	head entity	30edcde9588b
+II	lipid_ruv	managed	history	initial raw_data_s4 intensity_filtered qc_complete log2 normalized correlation_filtered
+II	lipid_ruv	managed	head design n	2
+II	lipid_ruv	managed	head design removed	A_1,A_2,A_3,A_4,A_5,A_6,B_1,B_4,B_5,B_6
+II	lipid_ruv	managed	INSTRUMENT ERROR	error [shiny.destroyed.error/error/condition] Can't access reactive `reactiveValues8665`; its module session has been destroyed
+II	lipid_ruv	managed	seconds	21.4

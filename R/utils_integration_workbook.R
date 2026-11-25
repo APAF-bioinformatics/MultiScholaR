@@ -56,7 +56,7 @@ integrationApiAssertProject <- function(project) {
 #' The integration module's settings tables
 #'
 #' @description The settings of the model, of the results and of the enrichment, each with its default and the
-#'   decision that settled it, as the Integration tab and the workbook show them. A setting is changed by naming it
+#'   decision that settled it, as the Integration tab shows them. A setting is changed by naming it
 #'   in the `overrides` of [integrationTrainModel()], [integrationGetResults()] or [integrationEnrichFactor()].
 #' @return A list: `model` and `results`, data frames with columns `parameter`, `default`, `choices` and
 #'   `settled_by`; `enrichment`, a data frame with columns `setting`, `default` and `settled_by`; and
@@ -71,7 +71,8 @@ integrationSettings <- function() {
     enrichment_spec <- integrationEnrichmentParameterSpec()
     list(model = integrationMofaParameterTable(), results = integrationResultsParameterTable(),
         enrichment = data.frame(setting = names(enrichment_spec),
-            default = vapply(enrichment_spec, function(entry) paste(format(entry$default), collapse = ""), character(1)),
+            default = vapply(enrichment_spec, function(entry) entry$default_text %||% paste(format(entry$default),
+                collapse = ""), character(1)),
             settled_by = vapply(enrichment_spec, `[[`, character(1), "settled_by"), row.names = NULL),
         input_matrix_help = integrationGuiTexts()[["help_input_matrix"]])
 }
@@ -80,7 +81,9 @@ integrationSettings <- function() {
 #'
 #' @description Lays out a project's integration folders and lists the tables each omic's workflow saved at its
 #'   Summary step under `<project>/integration/<omic>/`, saying for each omic whether it can be used and, if not, why.
-#'   The folder for the workbook's scratch files (`<project>/scripts/integration`) is created when absent.
+#'   The project's integration scripts folder (`<project>/scripts/integration`), where the Integration tab and these
+#'   functions keep their working files, is created when absent. Read the limitations in [integrationTrainModel()]
+#'   before drawing conclusions from a model.
 #' @param project_dir The project's folder.
 #' @return A list: `project_dir`, the project's folder (normalised); `paths`, the integration folders (a named list
 #'   of paths: `base_dir`, `integration_dir`, `source_dir`, `results_dir`, `multiomic_inputs_dir`, `mofa_tables_dir`,
@@ -223,6 +226,38 @@ integrationConfirmMatch <- function(project, match) {
 #'   [integrationSettings()]), changed by `input_matrix` and `overrides`. A model already trained on the same inputs
 #'   with the same settings and software is reused. How samples are matched (technical replicates, internal
 #'   standards, missing samples) is fixed by the confirmed match.
+#' @section Limitations:
+#' Read these before drawing conclusions from a model.
+#'
+#' - How small a pattern the model can find depends on the number of samples. In simulations made for this software
+#'   with 20 samples (two groups of 10), a pattern carried only by the two smallest of four data sets, in a tenth of
+#'   their features, each changed by about two-thirds of its measurement noise, was recovered closely (a correlation
+#'   of at least 0.9 with the true pattern) in at most 2 of 10 simulated data sets, whichever setting was tried; the
+#'   settings tried did not include this software's current default feature selection. With 60 samples and the slow
+#'   training this software uses, the same pattern was recovered in 7 to 10 of 10, and with this software's default
+#'   settings a pattern as large as the noise was recovered in 26 to 29 of 30 simulated data sets with 20 samples.
+#'   MOFA2's documentation says that factor models are useful only with large numbers of samples, at least more than
+#'   15. A pattern this model does not show may still be in the data: treat the factors as descriptive.
+#' - Where a value is missing, the model leaves it out (MOFA2 does not impute it), which assumes that whether a value
+#'   is missing does not depend on the value itself (missing at random). Values missing because they were too low to
+#'   measure are not modelled as such, so the model's estimates for low-abundance features can be biased. MOFA2 fills
+#'   missing values with each feature's mean only to compute where training starts.
+#' - Each average uses only the runs in which the value was measured. When a value is missing from some of a sample's
+#'   runs because it was too low to measure, the average of the other runs is too high; this affects low-abundance
+#'   features most.
+#' - The model treats all samples as one group (the groups are not given to it, and MOFA2's option for several groups
+#'   of samples is not used), assumes normally distributed (Gaussian) variation in every data set, and takes one
+#'   input per omic (one input can hold several data sets, such as positive and negative ion mode). The integration
+#'   fills in no missing value itself; values that an omic's own workflow estimated before saving are treated as
+#'   measured.
+#' - Given the settings of the analysis script it was adapted from, this software trains the identical model; this
+#'   was checked on simulated data only, because the script's own data were not available. The check is about the
+#'   software, not about any biological result, and this software's default settings differ from the script's. The
+#'   defaults for the input matrix, the feature selection, the scaling and the convergence rule were chosen from
+#'   simulations of one design, not from real data; the number of factors comes from the analysis script.
+#' - Enrichment, at the Enrichment tab, needs external services: STRING, queried over the internet (by default its
+#'   version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome for metabolites and lipids.
+#'   Its results depend on the release used, which is recorded with each result.
 #' @param project The value of [integrationOpenProject()].
 #' @param confirmed The value of [integrationConfirmMatch()].
 #' @param input_matrix `NULL` for the default, or which values each data set enters the model with (one of the
@@ -367,6 +402,21 @@ integrationExportResults <- function(project, model, results) {
 #' @param id_columns A named list giving, for a metabolite or lipid data set, the column of its feature table that
 #'   holds KEGG compound or ChEBI identifiers, for example `list(metabolomics_LCMS_Pos = "kegg_id")`.
 #' @param overrides A named list of enrichment settings and their values (see `integrationSettings()$enrichment`).
+#'   `test` chooses the test for KEGG and Reactome: `"camera"`, the test of record and the default (limma's camera
+#'   on each feature's regression on the factor, allowing for the correlation measured between a pathway's features,
+#'   on the features measured in every biological sample); `"camera_floor"`, the same with negative estimated
+#'   correlations counted as zero (it never calls a pathway `"camera"` does not call); `"permutation"`, PCGSE's
+#'   permutation test of the factor's values (each feature's correlation with the factor against `permutations`
+#'   random reorderings of the factor's values across the biological samples, 1000 or 10000, with `seed`; a message
+#'   gives the predicted time first); or `"gsea"`, the pre-ranked test used before (each feature's correlation with
+#'   the factor, tested as if features were independent). STRING ignores it. `adjust_ruv_factors` (`TRUE` or `FALSE`),
+#'   "Adjust for removed RUV factors", applies to `"camera"` and `"camera_floor"`: with `TRUE` the test puts the unwanted
+#'   factors that the omic's RUV correction removed from the data set into its model, so a feature counts for what it
+#'   shares with the factor beyond them. Left out, it is `FALSE` whatever the model was trained on: the adjustment is
+#'   optional. Because the removed factors are estimated, the adjustment does not protect pathways whose features
+#'   share unwanted variation that follows the factor (the Methods text of a record gives the numbers). `TRUE` needs a
+#'   data set to which the omic applied RUV, saved by this version or later. Every result says which form it is. The
+#'   pre-ranked test, the permutation test and STRING do not use the setting.
 #' @return A list: `enrichments`, a list named `"<data set> <database>"` of the enrichments made, each a list with
 #'   `summary` (sentences) and `terms` (a data frame of the terms found); and `skipped`, sentences naming each data
 #'   set and database skipped or refused, and why.
@@ -374,6 +424,15 @@ integrationExportResults <- function(project, model, results) {
 #' \dontrun{
 #' enriched <- integrationEnrichFactor(project, results, api_key = Sys.getenv("STRING_API_KEY"))
 #' writeLines(enriched$skipped)
+#' # The pre-ranked test used before KIT-183, for KEGG and Reactome:
+#' earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+#'     overrides = list(test = "gsea"))
+#' # The permutation test of the factor's values (PCGSE), with its seed:
+#' permuted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+#'     overrides = list(test = "permutation", seed = 1L))
+#' # With the unwanted factors the RUV correction removed in the test's model (optional; off unless chosen):
+#' adjusted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+#'     overrides = list(adjust_ruv_factors = TRUE))
 #' names(enriched$enrichments)
 #' }
 #' @export
@@ -395,6 +454,16 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
     integrationApiAssertOverrides(overrides, enrichment_spec, "overrides")
     enrichment_settings <- lapply(enrichment_spec, `[[`, "default")
     enrichment_settings[names(overrides)] <- overrides
+    # KIT-183: the test is sent only when named in `overrides` (absent, the test of record for the data set), and
+    # never for STRING.
+    if (is.null(overrides[["test"]])) enrichment_settings$test <- NULL
+    # KIT-184 (VAL-62, VAL-160): the adjustment for removed RUV factors is sent only when named in `overrides` (absent,
+    # it is off), only with a test that has a design (an absent test is the test of record, which has one) and never
+    # for STRING.
+    if (is.null(overrides[["adjust_ruv_factors"]]) || !(is.null(overrides[["test"]]) ||
+        isTRUE(overrides[["test"]] %in% INTEGRATION_ENRICHMENT_DESIGN_TESTS))) {
+        enrichment_settings$adjust_ruv_factors <- NULL
+    }
     manager <- project$manager
     view_omics <- integrationViewOmics(integrationImportedObject(manager, "inputs"))
     enrichments <- list()
@@ -412,6 +481,10 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
                 next
             }
             request <- c(list(factor = factor, view = view, database = database), enrichment_settings)
+            if (database == "string") {
+                request$test <- NULL
+                request$adjust_ruv_factors <- NULL
+            }
             mapping <- NULL
             if (database != "string") {
                 request$id_column <- id_columns[[view]]
@@ -428,7 +501,8 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
                     NULL
                 })
             if (is.null(enrichment)) next
-            enrichments[[paste(view, database)]] <- list(summary = integrationEnrichmentSummary(enrichment$run$value),
+            enrichments[[paste(view, database)]] <- list(summary = integrationEnrichmentSummary(enrichment$run$value,
+                entry = enrichment$entry),
                 terms = as.data.frame(enrichment$run$value$terms))
         }
     }

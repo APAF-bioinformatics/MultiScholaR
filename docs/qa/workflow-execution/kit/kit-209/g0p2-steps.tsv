@@ -1,0 +1,25 @@
+job	id	unit	build	rep	index	step	status	seconds	vmhwm_mib	vmhwm_after_reset_mib	entry_vmrss_mib	entry_heap_mib	heap_max_used_mib	exit_vmrss_mib	cgroup_procs	state	expected_state	state_as_expected	rows	store_bytes
+g0p2	U11_C_r1	U11	C	1	1	import	completed	20.44	819.5	379.4	379.4	200.8	570.8	634.5	1	initial	initial	True		48139614
+g0p2	U11_C_r1	U11	C	1	2	design	completed	35.39	991.6	634.5	634.5	254.3	649.8	840.4	1	protein_s4_initial	protein_s4_initial	True	8000	70409534
+g0p2	U11_C_r1	U11	C	1	3	accession	completed	518.12	2035	843.9	840.4	265.6	1740	1972	1	protein_accession_cleaned	protein_accession_cleaned	True	8000	93846407
+g0p2	U11_C_r1	U11	C	1	4	protein_intensity	completed	30.29	1971.6	1972	1972	292.1	1012.3	1965.6	1	protein_intensity_filtered	protein_intensity_filtered	True	7979	116132163
+g0p2	U11_C_r1	U11	C	1	5	duplicates	completed	47.86	1965.2	1965.6	1965.6	294.1	961.6	1944.6	1	duplicates_removed	duplicates_removed	True	7979	138507682
+g0p2	U11_C_r1	U11	C	1	6	protein_replicate	completed	12.85	1945.2	1944.6	1944.6	294.5	1364.9	1222	1	protein_replicate_filtered	protein_replicate_filtered	True	7979	161205199
+g0p2	U11_C_r1	U11	C	1	7	normalisation_ruv	error	41.23	1547.9	1222	1222	296.5	1003.8	1547.9	1	protein_replicate_filtered	ruv_corrected	False	7979	183345468
+g0p2	U12_C_r1	U12	C	1	1	import	completed	20.25	899.9	379.5	379.5	200.8	586.2	735.3	1	initial	initial	True		49138052
+g0p2	U12_C_r1	U12	C	1	2	design	completed	39.54	1072.1	735.3	735.3	258.4	642.2	884.6	1	protein_s4_initial	protein_s4_initial	True	8000	72643339
+g0p2	U12_C_r1	U12	C	1	3	accession	completed	524.35	1990.6	775.1	775.1	269.7	1702.2	1979.5	1	protein_accession_cleaned	protein_accession_cleaned	True	8000	74052613
+g0p2	U12_C_r1	U12	C	1	4	protein_intensity	completed	30.13	1979	1979.5	1979.5	296.3	1001.3	1973.5	1	protein_intensity_filtered	protein_intensity_filtered	True	7987	97589988
+g0p2	U12_C_r1	U12	C	1	5	duplicates	completed	47.32	1973	1973.5	1973.5	298.3	933.4	1943.1	1	duplicates_removed	duplicates_removed	True	7987	121153270
+g0p2	U12_C_r1	U12	C	1	6	protein_replicate	completed	13.02	1953	1943.1	1943.1	298.6	1251.8	1208.8	1	protein_replicate_filtered	protein_replicate_filtered	True	7987	145024591
+g0p2	U12_C_r1	U12	C	1	7	normalisation_ruv	error	42.29	1614.6	1208.8	1208.8	300.7	950.1	1614.6	1	protein_replicate_filtered	ruv_corrected	False	7987	168410215
+g0p2	U7_C_r1	U7	C	1	1	import	completed	14.34	920.6	424.5	424.5	248.8	710.4	776.5	1	initial		True		62880644
+g0p2	U7_C_r1	U7	C	1	2	design	completed	34.76	842	776.5	776.5	279.6	599.5	787.5	1	metab_raw_data_s4	metab_raw_data_s4	True	40012	152605633
+g0p2	U7_C_r1	U7	C	1	3	intensity	completed	55.32	1991.3	787.8	787.8	299.1	1474.8	1991.3	1	metab_intensity_filtered	metab_intensity_filtered	True	36582	211410803
+g0p2	U7_C_r1	U7	C	1	4	duplicates	completed	42.6	2114.1	1991.3	1991.3	338	1525.2	2031.2	1	metab_duplicates_resolved	metab_duplicates_resolved	True	36582	272116281
+g0p2	U7_C_r1	U7	C	1	5	qc_finalize	completed	23.09	2033.8	2032.6	2031.2	349.7	1435.6	2033.8	1	metab_qc_complete	metab_qc_complete	True	36582	279726246
+g0p2	U7_C_r1	U7	C	1	6	normalisation	completed	715.02	3656.4	2033.8	2033.8	368.8	2914.8	3653.9	1	metab_ruv_corrected	metab_ruv_corrected	True	36570	675961616
+g0p2	U7_C_r1	U7	C	1	7	correlation	completed	62.43	3716.8	3653.9	3653.9	747.7	2036.6	3539.3	1	metab_correlation_filtered	metab_correlation_filtered	True	36570	680534452
+g0p2	U7_C_r1	U7	C	1	8	session_export	completed	15.77	3641.9	3539.3	3539.3	744.9	1410.3	3641.9	1	metab_correlation_filtered		True	36570	729426807
+g0p2	U7_C_r1	U7	C	1	9	da	completed	281.79	3705	3641.9	3641.9	744.6	2121.4	3700.8	1	metab_correlation_filtered	metab_correlation_filtered	True	36570	912229050
+g0p2	U7_C_r1	U7	C	1	10	report	completed	78.98	4232.7	3700.8	3700.8	1325.7	3241.5	2420.8	1	metab_correlation_filtered		True	36570	912229050

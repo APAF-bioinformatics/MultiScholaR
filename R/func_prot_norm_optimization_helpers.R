@@ -393,10 +393,13 @@ ruvNoValidPercentageMessage <- function(percentages, status, best_k, complete_co
 #' group's, so such a design is standard, with the reason recorded.
 #' @param design_matrix Ordered sample metadata.
 #' @param group_id,technical_replicate_id Column names from the object's slots.
+#' @param check KIT-222 (owner's OD-3, R1-01): refuse a design whose blocks hold runs of more than one
+#'   technical-replicate marking action (`refuseOmicsDesignReplicateKeyCollision`, read from the design's `tech_reps`
+#'   column), so every caller that computes numbers refuses; FALSE only for a display.
 #' @return List `block` (character per row, or NULL), `technical` (logical), `reason` (one of
 #'   `technical_replicates`, `spanned_by_design`, `no_duplicates`, `no_declaration`, `missing_values`), `blocks`.
 #' @noRd
-resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technical_replicate_id) {
+resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technical_replicate_id, check = TRUE) {
   stopifnot(is.data.frame(design_matrix))
   declared <- is.character(technical_replicate_id) && length(technical_replicate_id) == 1L &&
     is.character(group_id) && length(group_id) == 1L &&
@@ -408,6 +411,7 @@ resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technica
   value <- as.character(value)
   nested <- all(vapply(split(group, value), function(g) length(unique(g)) == 1L, logical(1)))
   block <- if (nested) value else paste(group, value, sep = "_")
+  if (isTRUE(check)) refuseOmicsDesignReplicateKeyCollision(design_matrix, keys = block)
   if (!anyDuplicated(block)) return(list(block = block, technical = FALSE, reason = "no_duplicates", blocks = length(block)))
   spanned <- all(vapply(split(block, group), function(b) length(unique(b)) == 1L, logical(1)))
   list(block = block, technical = !spanned, reason = if (spanned) "spanned_by_design" else "technical_replicates",
@@ -457,6 +461,8 @@ resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, te
 #' @param ruv_qval_cutoff The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
 #' @param ruv_fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
 #' @param exclude_pool_samples Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" in their name from ANOVA calculation. Pool/QC samples are excluded from negative control selection but remain in RUV-III correction.
+#' @param candidate_rule \code{"q_table_order"} (the default; every caller but the lipidomics and metabolomics methods): candidates ranked by q-value, highest first, ties in the order of \code{data_matrix}'s rows. \code{"p_id_two_groups"} (KIT-190, the lipidomics and metabolomics methods): features observed in fewer than two groups are not candidates (they stay in the BH family with p = 1), and candidates are ranked by p-value, highest first, ties broken by row name in C-locale byte order.
+#' @details Features are ranked as \code{candidate_rule} says; a feature observed in fewer than two groups scores p = 1. A \code{design_matrix} without the \code{grouping_variable} column, or fewer than two groups left after leaving out the pools, is an error of class \code{multischolar_ruv_grouping_unusable}.
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
 #' @param percentage_as_neg_ctrl Runtime inputs used by this function; see the usage section for accepted values.
@@ -467,8 +473,20 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , num_neg_ctrl = round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
                                 , ruv_qval_cutoff = 0.05
                                 , ruv_fdr_method = "qvalue"
-                                , exclude_pool_samples = TRUE) {
+                                , exclude_pool_samples = TRUE
+                                , candidate_rule = c("q_table_order", "p_id_two_groups")) {
 
+  candidate_rule <- match.arg(candidate_rule)
+
+  # Without its grouping column the ANOVA has nothing to compare and every feature would score p = 1, so the
+  # first rows would be taken (KIT-190). Refused, except under the earlier rule kept for replaying old records.
+  if (!identical(getOption("MultiScholaR.ruv_control_grouping", "kept"), "dropped") &&
+      !grouping_variable %in% colnames(design_matrix)) {
+    cli::cli_abort(
+      "Control features cannot be chosen: the design passed to the control selection has no column '{grouping_variable}', so the features cannot be compared between groups. Pass a design that holds the grouping column, with sample ids as row names.",
+      class = c("multischolar_ruv_grouping_unusable", "multischolar_refusal")
+    )
+  }
 
   ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
   if((is.null(percentage_as_neg_ctrl) ||
@@ -530,9 +548,10 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
         # Validate sufficient samples remain for ANOVA
         remaining_groups <- unique(design_matrix_for_anova[[grouping_variable]])
         if (length(remaining_groups) < 2) {
-          stop(paste("*** NEG CTRL ANOVA ERROR: After excluding Pool samples, only", 
+          stop(errorCondition(paste("*** NEG CTRL ANOVA ERROR: After excluding Pool samples, only", 
                     length(remaining_groups), 
-                    "group(s) remain. Need at least 2 groups for ANOVA. ***"))
+                    "group(s) remain. Need at least 2 groups for ANOVA. ***"),
+                    class = "multischolar_ruv_grouping_unusable", call = sys.call()))
         }
         
         # Check samples per group
@@ -577,9 +596,24 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 
   filtered_list <- aov[aov > ruv_qval_cutoff]
 
+  if (identical(candidate_rule, "p_id_two_groups")) {
+    # KIT-190 rule (d) (VAL-110; lipidomics and metabolomics, VAL-126): features observed in fewer than two groups stay
+    # in BH's family with p = 1 but are not candidates; candidates are ranked by p, highest first, ties broken by the
+    # feature identifier in C-locale byte order, so the selection does not depend on the table's row order.
+    observed_groups <- apply(data_matrix_for_anova, 1, function(x) length(unique(grps[!is.na(x)])))
+    two_groups <- names(observed_groups)[observed_groups > 1]
+    p_values <- unlist(ps)
+    candidates <- intersect(names(filtered_list), two_groups)
+    filtered_list <- filtered_list[candidates]
+    ranked <- candidates[order(-p_values[candidates], candidates, method = "radix")]
+    list_size <- ifelse(num_neg_ctrl > length(ranked), length(ranked), num_neg_ctrl)
+    control_genes <- ranked[1:list_size]
+  } else {
+
   list_size <- ifelse(num_neg_ctrl > length(filtered_list), length(filtered_list), num_neg_ctrl)
 
   control_genes <- names(sort(filtered_list, decreasing = TRUE)[1:list_size])
+  }
 
   #nrow(data_matrix) - length(control_genes)
   control_genes_index <- rownames(data_matrix) %in% control_genes

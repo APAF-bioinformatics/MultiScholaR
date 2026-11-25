@@ -151,7 +151,10 @@ kit095WithoutTranscriptomics <- function(current, expected) {
     kit173 <- c("enrichment_go_propagation", "enrichment_go_db_version", "enrichment_go_source_date",
         "enrichment_go_ids_not_in_go_db_total", "enrichment_go_annotation_go_db_version",
         "enrichment_go_annotation_go_source_date", "enrichment_go_pairs_direct", "enrichment_go_pairs_propagated",
-        "enrichment_go_root_only_proteins", "enrichment_go_unreviewed_share", "enrichment_correction_method")
+        "enrichment_go_root_only_proteins", "enrichment_go_unreviewed_share", "enrichment_correction_method",
+        "enrichment_significance_rule", # KIT-203
+        "enrichment_background", # KIT-205
+        "enrichment_lists_not_tested") # KIT-215
     testthat::expect_true(all(kit173 %in% names(current$report_sources)))
     testthat::expect_false(any(kit173 %in% names(expected$report_sources)))
     stripped$report_sources[kit173] <- NULL

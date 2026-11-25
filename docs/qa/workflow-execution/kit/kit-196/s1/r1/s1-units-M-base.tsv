@@ -1,0 +1,10 @@
+side	commit	cell	job	rep	exit	wall_seconds	unit_seconds	ns_path	error
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M168	deciding	401	0	2168.7	2168.4	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M168	deciding	402	0	2266.3	2266	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M168	deciding	403	0	2321	2320.7	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M168	ba	401	0	715.3	715	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M168	ba	402	0	879.4	879	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M168	ba	403	0	979.9	979.5	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M12	deciding	401	0	1334.1	1333.8	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M12	deciding	402	0	1320.7	1320.4	/tmp/RtmpJRGwFD/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	M12	deciding	403	0	1284	1283.6	/tmp/RtmpJRGwFD/kit196-s1-base	

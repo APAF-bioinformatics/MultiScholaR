@@ -89,6 +89,7 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
                                                newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
                                                isTestModeFn = is_test_mode,
                                                nowFn = Sys.time) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   pending <- if (identical(workflowData$state_manager$current_state, "protein_replicate_filtered"))
     resumeDIAProteinAction(workflowData, "protein_replicate_filtered") else NULL
   if (!is.null(pending)) return(pending)
@@ -282,6 +283,7 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
       read_result = readManagedProteinResult)
     runApplyObserver <- function(groupingVariable, parallelCores) {
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "protein replicate filter")) return(invisible(NULL)) # KIT-182
         managed_step$apply(list(grouping_variable = groupingVariable %||% "group", parallel_cores = parallelCores %||% 4))
         return(invisible(NULL))
       }
@@ -305,18 +307,6 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
         parallelCores = input$parallel_cores
       )
     })
-
-    rootScopeFn <- session$rootScope
-    rootSession <- if (is.function(rootScopeFn)) rootScopeFn() else session
-    if (!identical(rootSession, session)) {
-      shiny::observeEvent(rootSession$input[[session$ns("apply_protein_replicate_filter")]], {
-        logger::log_info("Protein replicate filter apply observed via root input")
-        runApplyObserver(
-          groupingVariable = rootSession$input[[session$ns("protein_grouping_variable")]] %||% input$protein_grouping_variable,
-          parallelCores = rootSession$input[[session$ns("parallel_cores")]] %||% input$parallel_cores
-        )
-      }, ignoreNULL = TRUE)
-    }
     
     # Revert Protein Replicate Filter
     shiny::observeEvent(input$revert_protein_replicate_filter, {

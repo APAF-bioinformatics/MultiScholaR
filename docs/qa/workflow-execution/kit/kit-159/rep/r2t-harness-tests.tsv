@@ -1,0 +1,11 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-reaudit2.R	R2-01: no DA result on either side is unsupported, never identical	8	3	5	0	0	0	0.265
+test-reaudit2.R	R2-01: through the store replay and into the cell's replay block	5	1	4	0	0	0	0.051
+test-reaudit2.R	R2-02: a metric a family member names is at 1 - 0.05/m even without primary_family	2	1	1	0	0	0	0.009
+test-replay.R	a replay giving the same DA table is identical	2	2	0	0	0	0	0.011
+test-replay.R	a replay giving other values differs, with the largest difference	3	3	0	0	0	0	0.012
+test-replay.R	a replay the package refuses is unsupported, with its class	2	2	0	0	0	0	0.044
+test-replay.R	T-REP-1: the store comparison names a differing state and a differing DA result	7	7	0	0	0	0	2.555
+test-replay.R	T-REP-2: a refused replay is unsupported with its class; a differing one is not swallowed	8	8	0	0	0	0	0.041
+test-replay.R	T-REP-3: the replay block of a cell: declared, not declared, not run	9	9	0	0	0	0	0.021
+test-replay.R	T-REP-4: a declared replay cell runs on metab_combined; its result is written and checked	13	12	1	0	0	0	168.251

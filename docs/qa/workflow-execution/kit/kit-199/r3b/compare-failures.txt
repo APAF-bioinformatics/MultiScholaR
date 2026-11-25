@@ -1,0 +1,199 @@
+== test-gui-entry-proteomics.R | fixed | KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 155
+  `expected$artifacts` is length 154
+  
+  names(actual$artifacts)[1:9] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/corrected_proteomics.parquet"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/corrected_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/corrected_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  actual$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+  - "8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9"
+  + "80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('7a9d96b62d4e83f0b7b95836135dddbef92c09e59f69f1cde3cf8193b85a7f7d')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('23eb5201f267725e30fac15a06ccd50ca0c2d1fee3de66395e5915d3226a8fd1')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  
+  prot_dia_limpa at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 171
+  `expected$artifacts` is length 170
+  
+  names(actual$artifacts)[1:9] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/corrected_proteomics.parquet"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/corrected_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/corrected_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  actual$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+  - "8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9"
+  + "80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('7a9d96b62d4e83f0b7b95836135dddbef92c09e59f69f1cde3cf8193b85a7f7d')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('23eb5201f267725e30fac15a06ccd50ca0c2d1fee3de66395e5915d3226a8fd1')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  
+  prot_dia_limpa at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 176
+  `expected$artifacts` is length 175
+  
+  names(actual$artifacts)[1:9] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/corrected_proteomics.parquet"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/corrected_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/corrected_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  actual$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+  - "8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9"
+  + "80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('7a9d96b62d4e83f0b7b95836135dddbef92c09e59f69f1cde3cf8193b85a7f7d')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('23eb5201f267725e30fac15a06ccd50ca0c2d1fee3de66395e5915d3226a8fd1')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  
+  prot_dia_limpa at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 177
+  `expected$artifacts` is length 176
+  
+  names(actual$artifacts)[1:9] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/corrected_proteomics.parquet"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/corrected_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/corrected_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  actual$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+  - "8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9"
+  + "80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('7a9d96b62d4e83f0b7b95836135dddbef92c09e59f69f1cde3cf8193b85a7f7d')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('23eb5201f267725e30fac15a06ccd50ca0c2d1fee3de66395e5915d3226a8fd1')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  
+  prot_dia_limpa at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+  - "8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9"
+  + "80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47"
+  
+  prot_dia_limpa at step 'da' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+  - "8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9"
+  + "80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47"
+  
+  prot_dia_limpa at step 'summary_refusal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+-- head:
+  <passes>
+
