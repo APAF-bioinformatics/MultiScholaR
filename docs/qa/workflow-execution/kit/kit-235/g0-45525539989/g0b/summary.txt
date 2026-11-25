@@ -1,0 +1,5 @@
+trace installed: TRUE
+lip lipid_canonical: error: could not find function "kit235Capture" (4 s, 0 captures)
+met metab_lc: error: could not find function "kit235Capture" (4 s, 0 captures)
+lip no report docx captured
+met no report docx captured

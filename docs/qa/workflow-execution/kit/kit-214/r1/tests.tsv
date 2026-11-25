@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit214-sample-columns.R	122	44	0	0	0	78.8	failed

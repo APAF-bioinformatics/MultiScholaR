@@ -1,0 +1,31 @@
+file: test-kit222-replicate-keys.R
+test: KIT-222 G1: merge-free designs are byte-identical to base (exhaustive at 2 and 3 samples, 200 random at 50)
+kind: failure
+message:
+  Expected `failures` to be identical to `character()`.
+  Differences:
+        actual                                 | expected 
+    [1] "manual A_1,B_1,A_2,B_2 B,A"           -          
+    [2] "manual A_1,B_2,A_2,B_1 B,A"           -          
+    [3] "manual A_2,B_1,A_1,B_2 B,A"           -          
+    [4] "manual A_2,B_2,A_1,B_1 B,A"           -          
+    [5] "manual B_1,A_1,B_2,A_2 A,B"           -          
+    [6] "manual B_1,A_2,B_2,A_1 A,B"           -          
+    [7] "manual B_2,A_1,B_1,A_2 A,B"           -          
+    [8] "manual B_2,A_2,B_1,A_1 A,B"           -          
+    [9] "manual A_1,A_2,B_1,B_2,C_1,C_2 C,A,B" -          
+   [10] "manual A_1,A_2,B_1,B_2,C_2,C_1 C,A,B" -          
+   [11] "manual A_1,A_2,B_1,C_1,B_2,C_2 C,B,A" -          
+   [12] "manual A_1,A_2,B_1,C_1,C_2,B_2 B,C,A" -          
+   [13] "manual A_1,A_2,B_1,C_2,B_2,C_1 C,B,A" -          
+   [14] "manual A_1,A_2,B_1,C_2,C_1,B_2 B,C,A" -          
+   [15] "manual A_1,A_2,B_2,B_1,C_1,C_2 C,A,B" -          
+   [16] "manual A_1,A_2,B_2,B_1,C_2,C_1 C,A,B" -          
+   [17] "manual A_1,A_2,B_2,C_1,B_1,C_2 C,B,A" -          
+   [18] "manual A_1,A_2,B_2,C_1,C_2,B_1 B,C,A" -          
+   [19] "manual A_1,A_2,B_2,C_2,B_1,C_1 C,B,A" -          
+   [20] "manual A_1,A_2,B_2,C_2,C_1,B_1 B,C,A" -          
+   [21] "manual A_1,A_2,C_1,B_1,B_2,C_2 C,B,A" -          
+   [22] "manual A_1,A_2,C_1,B_1,C_2,B_2 B,C,A" -          
+   [23] "manual A_1,A_2,C_1,B_2,B_1,C_2 C,B,A" -          
+   [24] "manual A_1,A_2,C_1,B_2,C_2,B_1 B,C,A" -          

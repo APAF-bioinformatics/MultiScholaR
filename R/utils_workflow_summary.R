@@ -107,6 +107,39 @@ assertWorkflowSummaryHeadFinal <- function(workflowData, omicType) {
     rlang::abort(refusal, class = "omic_norm_correlation_input_stale")
 }
 
+#' KIT-212 (VAL-172 (1), (5)): whether the Summary may present the store's differential analysis: refused when it was run
+#' on another table than the current one (`workflowDaResultStatus`), for every omic; with `files` (Copy and Report) also
+#' when the omic's DA folders hold DA files no DA of this session made (`workflowDaFilesUnmade`), up to three named.
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @param paths The omic's project paths.
+#' @param files Whether the DA files on disk are checked.
+#' @return TRUE, invisibly; otherwise a condition of class `workflow_summary_da_stale`.
+#' @noRd
+assertWorkflowSummaryDaCurrent <- function(workflowData, omicType, paths, files = FALSE) {
+    manager <- workflowData$state_manager
+    texts <- omicNormGuardTexts()
+    if (identical(workflowDaResultStatus(manager), "stale")) rlang::abort(texts$summary_da_stale, class = "workflow_summary_da_stale")
+    if (isTRUE(files)) {
+        unmade <- workflowDaFilesUnmade(manager, paths, omicType)
+        if (length(unmade)) rlang::abort(workflowDaUnmadeText(unmade, texts), class = "workflow_summary_da_stale")
+    }
+    invisible(TRUE)
+}
+
+#' The files refusal's text: the folder that holds every listed file, and up to three of them relative to it.
+#' @param files Paths.
+#' @param texts `omicNormGuardTexts()`.
+#' @noRd
+workflowDaUnmadeText <- function(files, texts) {
+    folder <- dirname(files[[1L]])
+    while (!all(startsWith(files, paste0(folder, "/"))) && !identical(dirname(folder), folder)) folder <- dirname(folder)
+    shown <- substring(files, nchar(folder) + 2L)
+    listed <- paste(utils::head(shown, 3L), collapse = ", ")
+    if (length(shown) > 3L) listed <- sprintf("%s and %d more", listed, length(shown) - 3L)
+    sprintf(texts$summary_da_files_unmade, folder, listed)
+}
+
 #' Whether the analysis record (and its bundle) is written for this bus: always with a bus, or only for the group's
 #' `record_class` owner.
 #' @noRd
@@ -130,7 +163,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         catFn("SESSION SUMMARY ERROR:", conditionMessage(error), "\n")
         # KIT-207: the head is not the normalisation's result. Refused before anything was written: no fallback file, no
         # "saved with warnings"; the omic's earlier integration input is removed (SD-5 (b), K061-3).
-        if (inherits(error, "omic_norm_correlation_input_stale")) {
+        # KIT-212 (VAL-172 (1)): the DA shown was run on another table; refused the same way, the earlier input removed.
+        if (inherits(error, c("omic_norm_correlation_input_stale", "workflow_summary_da_stale"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
             tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
                 error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
@@ -162,6 +196,7 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
     }
     tryCatch({
         assertWorkflowSummaryHeadFinal(workflowData, omicType)
+        assertWorkflowSummaryDaCurrent(workflowData, omicType, paths)
         state <- workflowSummaryFinalState(config, workflowData, omicType, catFn)
         studyParamsFile <- createWorkflowArgsFn(workflow_name = label, description = description,
             source_dir_path = paths$source_dir, final_s4_object = state$finalS4Object, contrasts_tbl = state$contrastsTbl,
@@ -246,6 +281,16 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
 copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicType, label, description, argsSaved, notify,
     copyFn = copyToResultsSummary, catFn = cat) {
     paths <- projectDirs[[omicType]]
+    # KIT-212 (VAL-172 (1), (5); E-4): refused first, before the fallback file, when the DA was run on another table or
+    # the DA folders hold files no DA of this session made; nothing is written or copied. A catch-all at a press site, as
+    # the Report's guard.
+    refused <- tryCatch(assertWorkflowSummaryDaCurrent(workflowData, omicType, paths, files = TRUE), error = function(e) e)
+    if (inherits(refused, "error")) {
+        notify(paste("Copy error:", cli::ansi_strip(conditionMessage(refused))), "error", 10)
+        logger::log_error(logger::skip_formatter(paste("Copy refused:", conditionMessage(refused))))
+        return(list(fallbackWritten = FALSE, required = list(), optional = list(), failed = list(), contrastsTbl = NULL,
+            designMatrix = NULL, error = conditionMessage(refused)))
+    }
     fallbackWritten <- FALSE
     basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
     if (!isTRUE(argsSaved) && !file.exists(basicParamsFile)) {
@@ -365,7 +410,12 @@ renderWorkflowSummaryReport <- function(config, workflowData, projectDirs, omicT
     # KIT-207 (SD-2 (b)): refused, before the template is looked up, when the head is not the normalisation's result.
     # Recorded divergence: a catch-all at a press site (as KIT-194 A05), over conventions/R.md's specific conditions, so
     # that an unexpected error of the guard's reads is shown rather than escaping the observer.
-    refused <- tryCatch(assertWorkflowSummaryHeadFinal(workflowData, omicType), error = function(e) e)
+    # KIT-212 (VAL-172 (1), (5)): then refused when the DA was run on another table or the DA folders hold files no DA of
+    # this session made.
+    refused <- tryCatch({
+        assertWorkflowSummaryHeadFinal(workflowData, omicType)
+        assertWorkflowSummaryDaCurrent(workflowData, omicType, paths, files = TRUE)
+    }, error = function(e) e)
     if (inherits(refused, "error")) {
         logger::log_error(logger::skip_formatter(paste("Report refused:", conditionMessage(refused))))
         notify(paste("Report generation failed:", cli::ansi_strip(conditionMessage(refused))), "error", 15)

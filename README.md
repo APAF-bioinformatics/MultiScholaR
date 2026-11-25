@@ -86,18 +86,7 @@ For a **code-free, interactive experience**, use the standalone launcher.
 
 ### 2. R Markdown Workflows (Advanced)
 
-For **programmatic, reproducible analyses**, typically for advanced users or batch processing.
-
-1.  **Install Prerequisites**: R (4.4.3+), RStudio, and Rtools (Windows).
-2.  **Setup Project**: Download and run the setup script to generate a structured project with all necessary templates.
-
-    <a href="https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/project_setup.R" download="project_setup.R">
-        <img src="https://img.shields.io/badge/Download-Setup_Script-276DC3?style=for-the-badge&logo=r" alt="Download Setup Script">
-    </a>
-
-3.  **Run Workflows**: Open the generated `.Rmd` templates (Proteomics, Metabolomics, etc.) in `inst/workbooks/` and execute chunks sequentially.
-
-> **Need Help?** Visit the [Multiomics Masterclass](https://zenodo.org/records/15573343) for a comprehensive guide and tutorial data.
+The R Markdown workbooks of earlier versions are archived and not supported in this version; use the application. The integration can also be run from R with the package's `integration*` functions (see `?integrationFindInputs`, and the limitations in `?integrationTrainModel`).
 
 ## Supported Workflows
 

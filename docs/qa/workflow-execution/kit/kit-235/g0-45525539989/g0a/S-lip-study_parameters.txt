@@ -1,0 +1,69 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: lipidomics
+Description: N/A
+Timestamp: 2026-11-25 01:37:43
+
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: N/A
+Commit Timestamp: N/A
+Package Version: 0.9.0
+Source: Installed Package
+
+Assay Information:
+-------------------
+* Number of Assays: 1
+* Assay Names: assay_main
+* Total Lipids: 3
+* Lipids per Assay:
+    - assay_main: 3
+
+ITSD Normalization:
+-------------------
+* Applied: No
+
+Log Transformation:
+------------------
+* Applied: No
+
+Between-Sample Normalization:
+-----------------------------
+* Method: median
+
+Lipidomics Metadata:
+----------------------
+* Lipid ID Column: database_identifier
+* Annotation ID Column: lipid_identification
+* Database Identifier Type: LipidMaps
+* Sample ID Column: Sample_ID
+* Group ID Column: group
+* Number of Samples: 3
+* Number of Groups: 2
+* Group Names: A, B
+* Internal Standard Regex: ^LIPID_ISTD
+
+RUV-III Batch Correction:
+-------------------------
+* Status: Not Applied
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+[ITSDNormalization]
+  applied = FALSE
+Additional Configuration Parameters:
+-----------------------------------
+ITSDNormalization:
+  Applied: FALSE
+
+Contrasts:
+----------
+   A_vs_B

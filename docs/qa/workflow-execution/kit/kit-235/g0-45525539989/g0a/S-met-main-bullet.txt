@@ -1,0 +1,98 @@
+== chunk evaluation errors
+none
+== sample_details
+
+SAMPLE DETAILS
+
+There are 3 samples in total which consists of:
+• 3 biological samples with no technical replicates.
+• Sample identification (eg client #, sample name, Salesforce ID etc)
+• Sample conditions upon receipt
+• Comments about any noncompliance with sample conditions or suitability for
+  testing including client instruction to proceed/not proceed with work  
+== method_details
+
+METHOD DETAILS
+
+Data analyses were performed based on SOP xxx.
+• SOP number(s) and name(s)
+• Brief summary of method(s):
+
+Multi-Assay Data Structure
+The dataset contains 2 assays: assay_pos, assay_neg. Each assay was processed independently through quality control and normalization steps before integration for differential abundance analysis.
+
+Data Preprocessing and Normalization
+Metabolite intensities were log2-transformed with an offset of 1 to stabilize variance. Missing values (zeros or non-detects) were coded as NA to distinguish
+true absence from missing measurements.
+
+ITSD Normalization
+Internal standard (ITSD) normalization was applied using the median method with sum aggregation across ITSD features. Internal standard features were removed after normalization.
+
+Between-sample normalization was performed using the 'PQN' method from
+the 'limma' R package (Ritchie et al., 2015) to account for systematic technical
+variation across samples.
+
+Batch Effect Correction
+RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis.
+
+Quality Control
+At each stage of data normalization, samples were checked for batch effects using:
+• Principal component analysis (PCA) to visualize sample clustering
+• Density boxplots to assess distribution consistency
+• Relative log-expression (RLE) plots to detect systematic biases
+• Pearson correlation matrices to evaluate replicate consistency
+
+Per-Assay Quality Metrics
+Quality control metrics were evaluated separately for each assay to ensure data
+quality before integration. Each assay underwent independent QC assessment
+following the same protocol, with cross-assay consistency verified in the
+combined analysis.
+
+• Comments on test specific conditions information (e.g. temperature), where
+  relevant
+• Comments on deviations, modifications, additions, or exclusions to the method(s)
+  including the acceptance from the client to proceed with them
+• Critical reagent details where relevant  
+== results (first 400 characters)
+
+Quality Control
+
+Quality Control Analysis
+Figure 1 shows the QC metrics across two stages of data processing:
+• Log2 normalization (leftmost column, a, c, e, g)
+• Cyclic loess normalization (rightmost column, b, d, f, h)
+
+Note: RUV-III batch correction was not applied for this dataset.
+
+Principal Component Analysis
+The PCA plots (Figures 1a-b) show the data distribution:
+• Initial log2 data basel
+== length(results_data$numbers)
+46
+== parsed sections and keys
+  [Basic Information] keys: 'Workflow Name', 'Description', 'Timestamp'
+  [Version Information] keys: 'Repository', 'Branch', 'Commit', 'Commit Timestamp', 'Package Version', 'Source'
+  [Assay Information] keys: 'Number of Assays', 'Assay Names', 'Total Metabolites'
+  [Metabolites per Assay] keys: 'assay_pos', 'assay_neg'
+  [ITSD Normalization] keys: 'Applied', 'Method Type', 'Aggregation', 'Pattern Columns', 'ITSD Removed After Normalization', 'Timestamp'
+  [ITSD Features Per Assay] keys: 'assay_pos (2 features)', 'assay_neg (1 features)'
+  [Log Transformation] keys: 'Applied', 'Offset'
+  [Between-Sample Normalization] keys: 'Method'
+  [Metabolomics Metadata] keys: 'Metabolite ID Column', 'Annotation ID Column', 'Database Identifier Type', 'Sample ID Column', 'Group ID Column', 'Number of Samples', 'Number of Groups', 'Group Names', 'Internal Standard Regex'
+  [RUV-III Batch Correction] keys: 'Status'
+  [Workflow Parameters] keys: 'Parameters from Final S4 Object'
+  [Additional Configuration Parameters] keys: ''
+  [ITSDNormalization] keys: 'Applied', 'Method Type', 'Itsd Aggregation', 'Itsd Pattern Columns', 'Removed Itsd', 'Timestamp', 'Itsd Features per Assay', 'Itsd Counts per Assay'
+  [Contrasts] keys: ''
+== extractor called alone: length
+41
+== extractor error
+<NULL>
+== AnalyzeSamples: length(numbers)
+46
+== error AnalyzeSamples would swallow
+none
+== fields from the extractor (no record overlay)
+{"num_assays":"2","assay_names":"assay_pos, assay_neg","itsd_applied":true,"itsd_method_type":"median","itsd_aggregation":"sum","itsd_removed":true,"itsd_features_per_assay":"NA","log_transform_applied":true,"log_transform_offset":"1","normalisation_method":"PQN","ruv_applied":false,"ruv_grouping_variable":"NA","ruv_assay_list":[],"best_k":"NA","num_neg_ctrl":"NA","best_percentage":"NA","ruv_number_k":2,"ruv_per_assay_details":"NA","total_metabolites":"NA","ruv_design_methods":"<absent>"}
+== fields after AnalyzeSamples (record overlay when a record is present)
+{"num_assays":"2","assay_names":"assay_pos, assay_neg","itsd_applied":true,"itsd_method_type":"median","itsd_aggregation":"sum","itsd_removed":true,"itsd_features_per_assay":"NA","log_transform_applied":true,"log_transform_offset":"1","normalisation_method":"PQN","ruv_applied":false,"ruv_grouping_variable":"NA","ruv_assay_list":[],"best_k":"NA","num_neg_ctrl":"NA","best_percentage":"NA","ruv_number_k":2,"ruv_per_assay_details":"NA","total_metabolites":"NA","ruv_design_methods":"<absent>"}

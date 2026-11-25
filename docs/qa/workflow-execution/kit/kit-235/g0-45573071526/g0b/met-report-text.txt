@@ -1,0 +1,22 @@
+Metabolomics analysis for metab_lc - report - created on 2026-11-25 08:14:51
+Your_fancy_self
+2026-11-25
+Sample Details
+Error running Main function: missing value where TRUE/FALSE needed
+Method Details
+Results
+Version Information
+Repository: Branch: Commit: Git Timestamp:
+
+Figure 1: QC metrics across normalization stages
+Differential Abundance Analysis
+## Warning: NumSigDeMolecules directory not found at /tmp/RtmpQ8jrs7/gui-entry-metab_lc-4bbb3aed22bd/project/metab_lc/results_summary/metabolomics/Publication_figures/NumSigDeMolecules
+Figure 2: Number of significant differentially abundant metabolites for each comparison.
+## Warning: Volcano Plots directory not found at /tmp/RtmpQ8jrs7/gui-entry-metab_lc-4bbb3aed22bd/project/metab_lc/results_summary/metabolomics/Publication_figures/Volcano_Plots
+Figure 3: Volcano plots of differentially abundant metabolites in alphabetical order.
+Comments
+Opinions and Interpretation
+Pathway Enrichment Analysis
+## Warning: Enrichment Plots directory not found at /tmp/RtmpQ8jrs7/gui-entry-metab_lc-4bbb3aed22bd/project/metab_lc/results_summary/metabolomics/Publication_figures/Enrichment_Plots
+Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant metabolites. Plots are ordered alphabetically by comparison and direction.
+

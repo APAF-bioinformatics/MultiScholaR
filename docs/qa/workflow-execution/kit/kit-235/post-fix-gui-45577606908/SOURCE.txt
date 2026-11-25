@@ -1,0 +1,3 @@
+Copied from origin/kit-236-g0 deb7d755, docs/qa/workflow-execution/kit/kit-236/g0-45577606908/ (meta.txt, g0a/lip-report-text.txt, g0a/met-report-text.txt).
+Run 45577606908 (KIT-236 G0), package commit 10198a0d = kit-235 dc2c638f + tools/kit236/g0.R (never merged).
+The lanes lipid_canonical and metab_lc rendered with the fixed templates (md5 lipid 52d2b2b3f23b15eae49009d13abf4a21, metab 9362fc191491d07e514653f4734bbc39 = dc2c638f).
