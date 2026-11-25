@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-256 R1: tests-only commit on base (R/ as v0.9-staging 63143aa3); E1, E2, E3, G3 must fail at G0's values, G1, G2, G4 pass; 1 job, ceiling 45 job-minutes (3.0 core-hours)",
+  "label": "KIT-256 R1 failing-first on kit-256 b45c8779 (R/ as v0.9-staging 63143aa3)",
+  "package_commit": "b45c8779f29f4e10f6380327afb3a8cd9148ef72",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit256-tech-rep-selection-cleared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
