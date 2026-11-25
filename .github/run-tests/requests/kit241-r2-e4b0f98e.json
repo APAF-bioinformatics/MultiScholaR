@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-241 R2: fix e4b0f98e against tests-only 89c3f246; files naming the writer or the download, MCI files, the new file; R CMD check both",
+  "label": "KIT-241 R2 fix e4b0f98e vs tests-only 89c3f246",
+  "package_commit": "e4b0f98ecf92ddb6bc93f067e7a90179c1dae264",
+  "base_commit": "89c3f246fbd59d9f8e55849872f167d6e81e8ffc",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-enrich-module.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-prot-11a-enrichment-module-characterization.R",
+    "test-enrichment-significance.R",
+    "test-module-ci-prot-enrich.R",
+    "test-module-ci-manifest.R",
+    "test-e2e-proteomics-enrichment.R",
+    "test-kit241-enrich-download-zip.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
