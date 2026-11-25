@@ -126,4 +126,36 @@ Where "read from run" is shown the base count was not found in the earlier train
 
 ## Result
 
-(filled after the run)
+Run 45699156973 (request `merge-train-20261126k-0090ae3d`, request commit 68f197fc), dispatched without error; green
+(infrastructure). Head 0090ae3d vs base 2b5fa843. Tables: `merge-train-20261126k-compare.tsv`,
+`merge-train-20261126k-check-compare.txt` (same directory).
+
+**Job-minutes 294.1 = 19.61 core-hours** against the ceiling of 600 job-minutes (40.0 core-hours): tests head 41/64/47,
+tests base 42/45/30, check head 12.9, check base 12.2, plan 0.3, results 0.7.
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit263-prot-study-parameters-sections.R | only-on-head, 11/0/0/0 | absent | 11/0/0/0 | only-on-head: HELD |
+| test-omic-summary-module.R | same, 1675/28 | 1675/28 | 1675/28 | same: HELD |
+| test-gui-entry-proteomics.R | same as base (92/101) | 92/101 | 92/101 | same: HELD |
+| test-kit217-intensity-filter-missing.R | same, 344/0 | 344/0 | 344/0 | same: HELD |
+| test-kit248-correlation-skip-record.R | same, 206/0 | 206/0 | 206/0 | same: HELD |
+| test-kit236-report-sentences.R | same, 289/0 | 289/0 | 289/0 | same: HELD |
+| test-kit254-omics-correlation-skip.R | same, 379/0 | 376/3 | 376/3 | verdict same HELD; the stated count 379/0 NOT held: both sides show 376/3 (see below) |
+| test-integration-record.R | same, 200/0 | 200/0 | 200/0 | same: HELD |
+| the other 39 files | same | same | same | same: HELD (counts in the compare table) |
+| R CMD check | nothing only on head | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical; only on head: none, only on base: none: HELD |
+
+Totals: 47 files, 46 `same`, 1 `only-on-head` (the KIT-263 file), no `new-failure`, no `message-changed`, no
+`count-changed`.
+
+**One prediction not held, as recorded.** The `test-kit254-omics-correlation-skip.R` count was predicted from the audit
+as 379/0 (the count of the earlier trains' declarations). It is 376/3 on BOTH sides. These are the three failures
+train 15 already recorded as an undeclared move of that file (KIT-190 with KIT-254, E7 lipid_ruv; train 15's record,
+base 379/0 to head 376/3, and its resolution (a) of 2026-11-26 on its own branch). They are in the base here because
+train 17's base carries train 15's head. Not repaired here, not re-sent. This train adds nothing to it: the file's
+failures are identical on both sides (verdict `same`).
+
+**Decision.** KIT-263 introduces no regression: its new file passes 11/0 on head; every other file and R CMD check
+are identical between the train-17 tip and the merge head. TRAIN GREEN, with the kit254 count noted above. Landing
+only after trains 15, 16 and 17 land with their code unchanged.
