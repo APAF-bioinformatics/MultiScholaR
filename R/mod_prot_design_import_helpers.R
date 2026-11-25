@@ -359,10 +359,14 @@ runProtDesignImportConfirmationFlow <- function(
       data = importedArtifacts$importedDataCln), stateName,
       list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln)) else "first"
     if (later && verdict %in% c("unchanged", "changed")) {
-      flow <- function(cut) runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
+      importedConfig <- workflowData$config_list
+      flow <- function(cut) {
+        workflowData$config_list <- importedConfig
+        runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
         importedArtifacts, taxonId, organismName, session, qcTrigger, successMessage, successNotificationId,
         hydrateFastaSidecar, hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn,
         completePostCheckpointFn, cut = cut)
+      }
       return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, unchanged = function() {
         shiny::removeNotification(successNotificationId)
         applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = importedArtifacts$importedContrasts,
@@ -473,6 +477,9 @@ runProtDesignImportObserverShell <- function(
   showNotification("Importing design files...", id = "importing_design", duration = NULL)
 
   tryCatch({
+    # KIT-247: the import reads the folder's config.ini into the bus; a changed design waiting for confirmation keeps
+    # the session's own until Save (Cancel then changes nothing).
+    previousConfig <- workflowData$config_list
     importedArtifacts <- loadImportedArtifacts(
       workflowData = workflowData,
       experimentPaths = experimentPaths,
@@ -491,6 +498,7 @@ runProtDesignImportObserverShell <- function(
       session = session,
       qcTrigger = qcTrigger
     )
+    if (identical(flowResult, "changed")) workflowData$config_list <- previousConfig
 
     invisible(list(
       ok = TRUE,
