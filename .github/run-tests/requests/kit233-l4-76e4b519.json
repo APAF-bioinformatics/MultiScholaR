@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-233 run L, the owner-allowed fourth (VAL-234; beyond VAL-54's three): lifecycle L-0 to L-5 on staging e0747fc1; fix: N2 contrast-to-table mapping; decides instrument proven; ceiling 60 job-minutes",
+  "label": "KIT-233 L4 on kit-233-journey 76e4b519 (commit under test e0747fc1)",
+  "package_commit": "76e4b519ba32490fa44cc788683f86dd8c0ac787",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-233/journey.R",
+      "args": [
+        "lifecycle",
+        "e0747fc198817596e3e66397a87e06b2f869c6a7"
+      ],
+      "out": "k233-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log|html|md)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
