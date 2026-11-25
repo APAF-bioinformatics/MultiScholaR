@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-214 R1b: R1 on the tests-only state merged with staging 185ebf75 (KIT-202 in); ceiling 45 job-min; decides A2 base side on the merged state",
+  "label": "KIT-214 R1b on merge 49011d1f",
+  "package_commit": "49011d1fd865384637fa5c5e3fcbd2d51d1f4987",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit214-sample-columns.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
