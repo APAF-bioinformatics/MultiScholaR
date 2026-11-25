@@ -671,22 +671,20 @@ runTestsContrasts <- function(data,
 
               q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
-                # KIT-249: the handler's value is assigned in this frame (as adjustProtDaResultTable does); assigned
-                # inside the handler, the Benjamini-Hochberg fallback went to a local copy and fdr_qvalue stayed NA.
-                q_values_all[valid_p_idx] <- tryCatch(
+                tryCatch(
                   {
                     q_values_valid <- qvalue(valid_p_values)$q
+                    q_values_all[valid_p_idx] <- q_values_valid
                     message("      qvalue() computation successful")
-                    q_values_valid
                   },
                   error = function(e) {
                     qvalue_failed <<- TRUE
                     message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                     message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                     message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
-                    message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                     # Fallback to p.adjust if qvalue fails
-                    p.adjust(valid_p_values, method = "BH")
+                    q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                    message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                   }
                 )
               } else {
@@ -796,22 +794,20 @@ runTestsContrasts <- function(data,
 
               q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
-                # KIT-249: the handler's value is assigned in this frame (as adjustProtDaResultTable does); assigned
-                # inside the handler, the Benjamini-Hochberg fallback went to a local copy and fdr_qvalue stayed NA.
-                q_values_all[valid_p_idx] <- tryCatch(
+                tryCatch(
                   {
                     q_values_valid <- qvalue(valid_p_values)$q
+                    q_values_all[valid_p_idx] <- q_values_valid
                     message("      qvalue() computation successful")
-                    q_values_valid
                   },
                   error = function(e) {
                     qvalue_failed <<- TRUE
                     message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                     message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                     message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
-                    message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                     # Fallback to p.adjust if qvalue fails
-                    p.adjust(valid_p_values, method = "BH")
+                    q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
+                    message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
                   }
                 )
               } else {
