@@ -16,7 +16,7 @@ present); `g1.R` exit 1 after 2 s.
 | W2 | 8 / 2 | as predicted | comparisons set; C_vs_A rows (0 against 60); B_vs_A identical |
 | W3 | 8 / 5 | as predicted | `length(contrasts_results$results)` 1 not 2; comparisons; 60 not 120 rows; set; C_vs_A rows |
 | W4 | 10 / 10 | as predicted | as W1 plus set and C_vs_A rows |
-| W5 | 9 / 5 | **8 passed? no: 4 failed** (see below) | comparisons `B_vs_A` only; `nrow` n not 2n; set; C_vs_A rows |
+| W5 | 9 / 5 | 10 passed / 4 failed (the `length` assertion passes; see below) | comparisons `B_vs_A` only; `nrow` n not 2n; set; C_vs_A rows |
 | W7 | 5 / 5 | as predicted | set; B_vs_A rows; `log2FC`, `raw_pvalue`, `fdr_qvalue` of the rows labelled C_vs_A differ from the one-comparison call; mean `log2FC` of P11..P16 under `C_vs_A` = 1.0322 (B - A's effect: the factor premise holds; stop rule 6 does not apply) |
 | W8 | 0 / 1 | as predicted | `expect_null(run$error)` |
 | W9 | 0 / 2 | as predicted | both calls stop with "incorrect number of dimensions", not of class `prot_da_contrasts_invalid` |
