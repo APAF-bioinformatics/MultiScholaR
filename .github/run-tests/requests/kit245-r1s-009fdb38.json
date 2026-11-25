@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-245 Part S R1s: tests-only commit 009fdb38; S1 to S5 must fail at their declared base values, G1, G2 and the edited direct-shared test pass; ceiling 45 job-minutes; decides whether the fix is written",
+  "label": "KIT-245 Part S R1s failing-first on kit-245 009fdb38",
+  "package_commit": "009fdb3894ec6e1a801cbad0c366ad3e0c814d75",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit245-github-push-safety.R", "test-github-management-direct-shared.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
