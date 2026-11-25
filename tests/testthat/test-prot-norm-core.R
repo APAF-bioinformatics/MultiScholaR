@@ -41,8 +41,9 @@ protNormCoreBodyDigests <- c(
     buildProtNormLabelPlot = "3f45f763cb05b83ed873e523c33d019800e5719c06c1cbf6b771b98d8fa9bf69",
     loadProtNormImageAsPlot = "6b9882f8594382fdabaf741c05fad43452517a5a37fdd07cad65b2a87e02e7ff",
     # Re-pinned by the GUI audit (P-35, 2026-11-11): pressed again on the tab's own RUV state, the pass-through keeps the
-    # input it designated before (was 63aea4d3...); the only change to this definition.
-    runDIAReferenceLimpaNormalisationPassThrough = "fe852d7a3086ab62b9bb8fadf6214da74668265e0d7bccf60d001d1eae01fbbf"
+    # input it designated before (was 63aea4d3...); the only change to this definition. Re-pinned by KIT-244 (VAL-246;
+    # VAL-220 (1)): pressed again at the correlation result too (was fe852d7a...); value from run 45591340671's dump.
+    runDIAReferenceLimpaNormalisationPassThrough = "e991f0d2aa83d45b4ee1df5484793a1ea60118e7ae59123401f5548d79293f79"
 )
 
 # Recorded at aa79fe3f (before W3) through the core callers on the fixtures below.
