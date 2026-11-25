@@ -183,11 +183,17 @@ test_that("KIT-240 T6: the marks name the decision behind each default; the eigh
     for (spec in list(integrationMofaParameterSpec(), integrationResultsParameterSpec())) {
         expect_false(any(vapply(spec, integrationParameterProvisional, logical(1))))
     }
-    # (b) Exactly the eight enrichment settings still awaiting the owner say so; the STRING pair names its ledger row.
+    # (b) KIT-267 (VAL-310): the owner confirmed the eight defaults; no enrichment setting awaits, and the eight name
+    # the decision. The STRING pair names its ledger row as before.
     enrichment <- integrationSettings()$enrichment
-    waiting <- c("correlation_method", "min_samples", "string_species", "kegg_organism", "reactome_organism",
+    decided <- c("correlation_method", "min_samples", "string_species", "kegg_organism", "reactome_organism",
         "min_set_size", "max_set_size", "seed")
-    expect_setequal(enrichment$setting[grepl("awaiting the owner", enrichment$settled_by, fixed = TRUE)], waiting)
+    expect_setequal(enrichment$setting[grepl("awaiting the owner", enrichment$settled_by, fixed = TRUE)], character(0))
+    for (name in decided) {
+        settled_by <- enrichment$settled_by[enrichment$setting == name]
+        expect_true(grepl("decided 2026-11-26", settled_by, fixed = TRUE) && grepl("VAL-310", settled_by, fixed = TRUE),
+            info = name)
+    }
     expect_true(all(grepl("^KIT-141 \\(decided 2026-11-20",
         enrichment$settled_by[enrichment$setting %in% c("string_fdr", "string_rank_direction")])))
     # (c) No value changes: every default and choice as at the base commit (frozen here from 3eeaf100).
@@ -322,23 +328,21 @@ test_that("KIT-240 T9 (MOFA2 lane): every seed's final ELBO is finite and the re
     expect_true(rank$below_best >= 0 && rank$range >= rank$below_best)
 })
 
-# KIT-240 r1.3 (coordinator's ruling on AUDIT-KIT-240-plan Re-check 1, R1-04): the Enrichment tab marks the eight
-# defaults that are not yet confirmed (their `settled_by` says they await confirmation), beside each setting's label; the
-# confirmed ones carry no mark. Base: no mark on the tab (the tab never read `settled_by`).
-test_that("KIT-240 T10: the Enrichment tab marks its eight defaults not yet confirmed, and only those", {
+# KIT-267 (VAL-310; moves KIT-240 T10): the Enrichment tab no longer marks any default "not yet confirmed"; the three
+# organism defaults carry the mark "human; change for other species" after their label, and no other setting a mark.
+# Base: eight old marks, no organism mark (the wording key is absent).
+test_that("KIT-240 T10: the Enrichment tab marks no default unconfirmed and its three organism defaults as human", {
     texts <- integrationGuiTexts()
     ui <- k240Plain(k240Html(mod_integration_enrichment_ui("e")))
-    marked <- c(correlation_method = "enrich_correlation_method", min_samples = "enrich_min_samples",
-        string_species = "enrich_string_species", kegg_organism = "enrich_kegg_organism",
-        reactome_organism = "enrich_reactome_organism", min_set_size = "enrich_min_set", max_set_size = "enrich_max_set",
-        seed = "enrich_seed")
-    mark <- sprintf(" (%s)", texts[["mark_provisional"]])
-    for (name in names(marked)) {
-        expect_match(ui, paste0(texts[[marked[[name]]]], mark, "</label>"), fixed = TRUE, info = name)
+    mark_old <- sprintf(" (%s)", k240Text(texts, "mark_provisional"))
+    mark_org <- sprintf(" (%s)", k240Text(texts, "mark_organism"))
+    expect_identical(lengths(regmatches(ui, gregexpr(mark_old, ui, fixed = TRUE))), 0L)
+    expect_identical(lengths(regmatches(ui, gregexpr(mark_org, ui, fixed = TRUE))), 3L)
+    for (key in c("enrich_string_species", "enrich_kegg_organism", "enrich_reactome_organism")) {
+        expect_match(ui, paste0(texts[[key]], mark_org, "</label>"), fixed = TRUE, info = key)
     }
-    expect_false(grepl(paste0(texts[["enrich_string_fdr"]], mark), ui, fixed = TRUE))
-    # Eight marks, no more; the mark's words say plainly that the default is not yet confirmed.
-    expect_identical(lengths(regmatches(ui, gregexpr(mark, ui, fixed = TRUE))), 8L)
+    expect_false(grepl(paste0(texts[["enrich_string_fdr"]], mark_org), ui, fixed = TRUE))
+    # The mechanism's own wording stays (the record's status word repeats it; T12).
     expect_match(texts[["mark_provisional"]], "not yet confirmed", fixed = TRUE)
     expect_false(grepl("owner", texts[["mark_provisional"]], fixed = TRUE))
 })

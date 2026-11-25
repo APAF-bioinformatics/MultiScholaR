@@ -1,0 +1,12 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-integration-record.R	173	6	0	0	failed	200	0	0	0	ok	fixed	fixed: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers; counts: KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers (passed 6 -> 33, skipped 0 -> 0)	
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-integration-removed-factors.R	520	0	0	3	ok	520	0	0	3	ok	same		
+test-integration-model.R	265	0	0	0	ok	265	0	0	0	ok	same		
+test-integration-enrichment-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-integration-results.R	258	0	0	0	ok	258	0	0	0	ok	same		
+test-integration-gui.R	405	0	0	0	ok	405	0	0	0	ok	same		
+test-kit240-integration-default.R	92	0	0	1	ok	92	0	0	1	ok	same		

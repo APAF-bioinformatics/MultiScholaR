@@ -367,7 +367,9 @@ registerProtImportObservers <- function(
           extractOrganisms = extractOrganismsFn,
           analyzeDistribution = analyzeDistributionFn,
           buildSelectionModal = buildSelectionModalFn,
-          showModal = showModalFn
+          showModal = showModalFn,
+          organismName = input$organism_name,
+          taxonId = input$taxon_id
         )
 
         loadConfigurationResourcesFn(

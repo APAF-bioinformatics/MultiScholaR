@@ -1,0 +1,8 @@
+falsifier	cell	class	count	evaluated
+F1	N-r	lipid	1	4
+F2	N-r	lipid	1	2
+F3	N-r	lipid	0	2
+F1	N-r	metab	0	4
+F2	N-r	metab	0	2
+F3	N-r	metab	0	2
+oracle_check	N-r	lipid,metab	1	4
