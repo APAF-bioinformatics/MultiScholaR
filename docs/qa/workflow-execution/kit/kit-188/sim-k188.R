@@ -11,8 +11,14 @@
 # Environment:
 #   K188_JOBS      comma list of job types (Part L default deciding,reported,munit,ba; Part P deciding,reported,ba):
 #                  deciding (LA, GA, NO, OR), reported (LA, OR, LM, FP, SC, LCm in Part L; LM, OR in Part P),
-#                  munit (Part M unit check, L12 and M12), ba (mask BA, L64, M168, P4b), lp (LP, the positional
-#                  selection: the LA request on LP's commit). A job type that does not apply to a cell is not run.
+#                  munit (Part M unit check, L12 and M12), ba (mask BA, L64, M168, P4b), lp (LP: the LA request on the
+#                  bound commit with KIT-190's markers at their earlier tokens, 5.3; r1.21), las (LAs: the LA request with
+#                  KIT-224's marker at its earlier token, 34), l1c (the planted cases of 35.6, L12, one data set, K188_PLANT).
+#                  L24 (38.5, reported) runs the deciding job type only. A job type that does not apply to a cell is not run.
+#   K188_PLANT     L1c: comma list of the planted cases (itsd, itsdpos, emptysample, ruvskip, ruvdrop, daerror, normplant,
+#                  exitplant; default all), one child process each; needs K188_JOBS=l1c and K188_LIFECYCLE=1.
+#   K188_PREDICTIONS  L1c and E7 (R-marked predictions of 35.6 and 7.4, read at the bound commit): absolute path of the TSV
+#                  (columns key = "<plant or check>/<field>", expected) written into lifecycle.md before the run.
 #   K188_LIFECYCLE 1: blind lifecycle (L1, L1p): every estimand column is written NA; the rows' SHA-256 is written; the
 #                  checks E1 to E4, E6, E7, E9 (and E8, E2, E5r) are run and written to checks-<job>.tsv.
 #   K188_FAULT     1: E7 (crash): one deliberate error in the first unit's first journey.
@@ -1125,11 +1131,12 @@ checkE9L <- function(sim, journey, condition, arm, d) {
         }
     }
     # every percentage directly, through the control method the sweep calls, on the RUV input state
-    if (identical(arm, "LA") && !is.null(journey$m_in)) {
+    if (identical(arm, "LP") && !is.null(journey$m_in)) {
         object <- omicObjectFromMatrices(sim, journey$m_in)
         for (pct in seq(d$auto_min, d$auto_max)) {
-            got <- tryCatch(quiet(getNegCtrlMetabAnova(object, ruv_grouping_variable = "group", percentage_as_neg_ctrl = pct)),
-                error = function(e) e)
+            # LP's own marker (the earlier control rule) is set for the direct call, as the journey sets it
+            got <- tryCatch(withMarkers(armMarkers("LP"), quiet(getNegCtrlMetabAnova(object, ruv_grouping_variable = "group",
+                percentage_as_neg_ctrl = pct))), error = function(e) e)
             if (inherits(got, "error")) {
                 pass <- FALSE
                 notes <- c(notes, sprintf("pct %d: error %s", pct, conditionMessage(got)))
@@ -1141,6 +1148,12 @@ checkE9L <- function(sim, journey, condition, arm, d) {
                 pass <- pass && same
             }
         }
+    }
+    # r1.21 (R20-P02, 40.3 (10)): LP's k is the uncapped sweep's k (the trace's `best_k`); a difference stops before the declaration
+    if (identical(arm, "LP")) for (a in names(choice)) {
+        same_k <- identical(choice[[a]]$k, choice[[a]]$k_sweep)
+        pass <- pass && same_k
+        notes <- c(notes, sprintf("%s %s: k %s, uncapped sweep k %s: %s", arm, a, choice[[a]]$k, choice[[a]]$k_sweep, same_k))
     }
     addCheck("E9", sim$cell, sim$r, condition, NA, "same sets", pass, paste(notes, collapse = "; "))
 }
@@ -1242,6 +1255,90 @@ checkE9P <- function(sim, journey, condition, tie = NULL) {
     addCheck("E9", sim$cell, sim$r, condition, length(got), "same set as the rule with qvalue", setequal(got, want_q),
         sprintf("pct %s: %d controls; equal to the rule with qvalue %s, with BH %s", v$percentage, length(got), setequal(got, want_q),
             setequal(got, want_bh)))
+}
+#' E10 (L1r, on the declaration's base; LA and LM, per assay; 7.4 r1.20). (i) the controls at the sweep's chosen percentage are
+#' those of rule (d) computed here on the RUV input: candidates ranked by the group ANOVA's p, highest first, ties by feature
+#' identifier in byte order, features observed in one group and (as the helper's `unlist` drops them) features with no residual
+#' degrees of freedom left out, the first round(N_v x pct / 100); BH's q (the control method's default `ruv_fdr_method`),
+#' the qvalue form recorded beside. (ii) LA: the sweep's k (the optimisation trace's) equals the product's `k_sweep` and the k
+#' used is min(k_sweep, `calculateAdaptiveMaxK`(the assay's samples)); LM's typed k is unchanged; K172c's LA has k used at most
+#' 2. (iii) the analysis record's fields equal the product's (`ruv_record_match`) and the cap equals `calculateAdaptiveMaxK`.
+ruleDControls <- function(m, group, pct, fdr = "BH") {
+    m[!is.finite(m)] <- NA
+    f <- m[rowSums(!is.na(m)) > 1L, colSums(!is.na(m)) > 1L, drop = FALSE]
+    grps <- group[match(colnames(f), names(group))]
+    ps <- apply(f, 1L, function(x) {
+        if (length(unique(grps[!is.na(x)])) > 1L) summary(stats::aov(as.numeric(x) ~ grps))[[1L]][["Pr(>F)"]][1L] else NA_real_
+    })
+    if (is.list(ps)) ps <- unlist(ps)
+    ps[is.na(ps)] <- 1
+    q <- if (identical(fdr, "BH")) qvalue::qvalue(ps, pi0 = 1)$qvalues else qvalue::qvalue(ps)$qvalues
+    names(q) <- names(ps)
+    seen <- apply(f, 1L, function(x) length(unique(grps[!is.na(x)])))
+    candidates <- intersect(names(q)[q > 0.05], names(seen)[seen > 1L])
+    ranked <- candidates[order(-ps[candidates], candidates, method = "radix")]
+    ranked[seq_len(min(round(nrow(f) * pct / 100, 0), length(ranked)))]
+}
+checkE10 <- function(sim, journey, arm, condition, d) {
+    choice <- legacyChoice(journey)
+    if (is.null(choice) || is.null(journey$m_in)) return(addCheck("E10", sim$cell, sim$r, paste(condition, arm), NA, "rule (d) and the bound",
+        FALSE, sprintf("%s: no RUV choice (status %s)", arm, journey$status)))
+    group <- stats::setNames(sim$design$group, sim$design$Run)
+    notes <- character()
+    pass <- TRUE
+    for (a in names(choice)) {
+        ch <- choice[[a]]
+        m <- journey$m_in[[a]]
+        cols <- journey$assay_cols[[a]]
+        cap <- calculateAdaptiveMaxK(ncol(m))
+        if (!is.na(ch$pct) && length(ch$controls)) {
+            same <- setequal(ch$controls, ruleDControls(m, group, ch$pct, "BH"))
+            same_q <- setequal(ch$controls, ruleDControls(m, group, ch$pct, "qvalue"))
+            pass <- pass && same
+            notes <- c(notes, sprintf("%s %s pct %s: controls equal rule (d) with BH %s (with qvalue %s)", arm, a, ch$pct, same, same_q))
+        }
+        sweep_ok <- is.na(ch$k_sweep) || isTRUE(as.integer(cols$ruv_k_sweep) == ch$k_sweep) || identical(arm, "LM")
+        used_ok <- is.na(ch$k) || (if (identical(arm, "LM")) isTRUE(ch$k == as.integer(d$manual_k)) else is.na(ch$k_sweep) ||
+            isTRUE(ch$k == min(ch$k_sweep, cap)))
+        if (startsWith(sim$cell, "K172c") && identical(arm, "LA") && !is.na(ch$k)) used_ok <- used_ok && ch$k <= 2L
+        record_ok <- !identical(cols$ruv_record_match, FALSE) && (is.na(cols$ruv_k_cap) || isTRUE(as.integer(cols$ruv_k_cap) == cap))
+        pass <- pass && sweep_ok && used_ok && record_ok
+        notes <- c(notes, sprintf("%s %s: k_sweep %s (product %s), k used %s, cap %d: bound %s, record %s", arm, a, ch$k_sweep, cols$ruv_k_sweep,
+            ch$k, cap, used_ok, record_ok))
+    }
+    addCheck("E10", sim$cell, sim$r, paste(condition, arm), NA, "rule (d), the bound, the record", pass, paste(notes, collapse = "; "))
+}
+#' E11 (L1r; 34): the LAs and LA journeys of a data set share the RUV input, the controls and k; their corrected matrices
+#' differ by one constant per feature on observed cells (range at most 1e-9); the fold changes agree to 1e-10 where the same
+#' samples are kept (KIT-224 S1 (i), (ii)).
+checkE11 <- function(sim, la, las, condition) {
+    notes <- character()
+    pass <- TRUE
+    cl <- legacyChoice(la)
+    cs <- legacyChoice(las)
+    for (a in sim$p$assays) {
+        same_in <- isTRUE(all.equal(la$m_in[[a]], las$m_in[[a]], tolerance = 0, check.attributes = TRUE))
+        same_choice <- setequal(cl[[a]]$controls, cs[[a]]$controls) && identical(cl[[a]]$k, cs[[a]]$k)
+        x <- la$m_out[[a]]
+        y <- las$m_out[[a]]
+        spread <- NA_real_
+        if (!is.null(x) && !is.null(y)) {
+            rows <- intersect(rownames(x), rownames(y))
+            cols <- intersect(colnames(x), colnames(y))
+            delta <- x[rows, cols, drop = FALSE] - y[rows, cols, drop = FALSE]
+            spread <- suppressWarnings(max(apply(delta, 1L, function(v) if (any(is.finite(v))) diff(range(v[is.finite(v)])) else 0)))
+        }
+        pass <- pass && same_in && same_choice && (is.na(spread) || spread <= 1e-9)
+        notes <- c(notes, sprintf("%s: same RUV input %s, same controls and k %s, per-feature range of the difference %s", a, same_in, same_choice,
+            signif(spread, 4)))
+    }
+    dev <- NA_real_
+    if (!is.null(la$da) && !is.null(las$da) && identical(la$runs_final, las$runs_final)) {
+        at <- match(paste(las$da$assay, las$da$comparison, las$da$feature), paste(la$da$assay, la$da$comparison, la$da$feature))
+        dev <- suppressWarnings(max(abs(las$da$logFC - la$da$logFC[at]), na.rm = TRUE))
+        pass <- pass && is.finite(dev) && dev <= 1e-10
+    }
+    addCheck("E11", sim$cell, sim$r, condition, signif(dev, 4), "constant per feature at most 1e-9; logFC 1e-10", pass, paste(notes, collapse = "; "))
 }
 #' E8 and M-amp: e_j derived from RUV-III on the complete RUV input with LA's k and controls, against the route.
 checkE8 <- function(sim, journey, choice, condition) {
@@ -1407,6 +1504,8 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
     common$miss_share <- miss
     requests <- REQUESTS_L(d)
     arms <- ARMS_OF$L[[job]]
+    # 34 (E11): in the lifecycle the LAs job also runs LA on the same data set, for the comparison only (its rows are not written)
+    if (lifecycle && identical(job, "las")) arms <- c("LA", arms)
     tmp <- function(arm) tempfile(sprintf("k188-%s-%s-", sim$cell, arm))
     journeys <- list()
     choices <- list()
@@ -1426,7 +1525,7 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
             journeys$OR <- j
             next
         }
-        request <- if (arm %in% names(requests)) requests[[arm]] else if (arm == "LP") requests$LA else NULL
+        request <- if (arm %in% names(requests)) requests[[arm]] else if (arm %in% c("LP", "LAs")) requests$LA else NULL
         drop <- character()
         extra <- list()
         if (identical(arm, "SC")) {
@@ -1446,7 +1545,7 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
             extra <- list(T_noLAc = unlist(lapply(la, `[[`, "controls"), use.names = FALSE))
         }
         j <- journeyL(sim, values, arm, request, d, tmp(arm), fault = fault)
-        legacy <- arm %in% c("LA", "LM", "LP")
+        legacy <- arm %in% c("LA", "LM", "LP", "LAs")
         ch <- choiceOf(j, legacy)
         choices[[arm]] <- ch
         if (is.null(T_ids) && !is.null(j$kept)) T_ids <- setdiff(j$kept, sim$is_ids)
@@ -1456,9 +1555,20 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
         journeys[[arm]] <- j
         if (identical(arm, "LA") && identical(job, "reported")) extra <- list(T_noLAc = unlist(lapply(ch, `[[`, "controls"), use.names = FALSE))
         res <- armRows(sim, j, T_ids %||% character(), common, ch, NULL, extra, drop)
-        rows <- c(rows, res$rows)
-        if (lifecycle && legacy && identical(job %in% c("deciding", "reported"), TRUE) && j$status %in% c("ok", "dropped", "uncorrected")) {
-            checkE9L(sim, j, condition, arm, d)
+        if (!(lifecycle && identical(job, "las") && identical(arm, "LA"))) rows <- c(rows, res$rows)
+        # E9 describes the positional selection, which only LP runs on the bound commit (40.3 (10)); E10 checks the rule that ships
+        if (lifecycle && identical(arm, "LP") && j$status %in% c("ok", "dropped", "uncorrected")) checkE9L(sim, j, condition, arm, d)
+        if (lifecycle && arm %in% c("LA", "LM") && j$status %in% c("ok", "dropped", "uncorrected")) checkE10(sim, j, arm, condition, d)
+        # E14 (7.4): every row of a journey that reached the RUV step has a per-assay status, whatever its step; the script's
+        # status equals the product's, but for a strictness of identical() (a product finding for KIT-242, not a stop)
+        if (lifecycle && !is.null(request$ruv) && isTRUE(j$ruv_reached)) {
+            statuses <- vapply(j$assay_cols, function(x) as.character(x$ruv_status), "")
+            agree <- vapply(j$assay_cols, function(x) x$ruv_status_agree, NA)
+            strict <- vapply(j$assay_cols, function(x) identical(x$ruv_status, "uncorrected") && identical(x$ruv_status_product, "corrected"), NA)
+            ok <- !anyNA(statuses) && all(nzchar(statuses)) && all(is.na(agree) | agree | strict)
+            if (!ok || first_condition) addCheck("E14", sim$cell, sim$r, paste(condition, arm), paste(statuses, collapse = "/"),
+                "a status per assay; script equals product", ok, sprintf("product %s; identical() strictness only: %s",
+                paste(vapply(j$assay_cols, function(x) as.character(x$ruv_status_product), ""), collapse = "/"), any(strict, na.rm = TRUE)))
         }
         if (lifecycle && !is.null(j$e1)) {
             if (!isTRUE(j$e1$pass) || first_condition) addCheck("E1", sim$cell, sim$r, paste(condition, arm), NA, "every step as declared",
@@ -1504,6 +1614,7 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
             }
         }
     }
+    if (lifecycle && identical(job, "las") && !is.null(journeys$LA) && !is.null(journeys$LAs)) checkE11(sim, journeys$LA, journeys$LAs, condition)
     # E2: RUV off as Skip (gate off) and as the design none (gate on) give the same DA (lifecycle; E1 vd20)
     if (lifecycle && identical(job, "deciding") && identical(sim$scenario, "E1") && identical(mask, "vd20") && !is.null(journeys$NO$da)) {
         j2 <- journeyL(sim, values, "NOnone", requests$NOnone, d, tmp("NOnone"))
