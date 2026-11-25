@@ -82,6 +82,23 @@
 
 ### Fixes
 
+ * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
+   a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
+   package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
+   mainly the lowest correlations visible (since 2024; KIT-259).
+ * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
+   stopping with an error (KIT-259).
+ * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
+   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   have no correlation and are not shown (KIT-259).
+ * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
+   unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
+   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
+   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
+   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
+   figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
  * Proteomics: skipping the correlation filter is now recorded as a skip in the analysis record and in the study
    parameters ('pearson-skip', skipped = TRUE), and a replay of the record keeps every sample, as the run did. Before, a
    skip with no filter applied before it made the record impossible to replay, and a skip after an applied filter was
@@ -140,6 +157,22 @@
    already marked, select all of its runs again together with the new ones; runs selected on their own become a
    separate sample. A refused Assign keeps the selection. (KIT-256)
 
+ * Normalisation, every omic: each run now first removes the earlier run's files that depend on RUV (and, in
+   proteomics, the earlier normalised table), and writes again those it makes. Before, Copy and the report could
+   deliver files from an earlier, different normalisation:
+   - proteomics' Copy delivered an earlier run's RUV-normalised abundance table as `RUV_normalised_results.tsv` after a
+     later run without RUV (in every earlier release), while the analysis used another table;
+   - transcriptomics' report showed the canonical-correlation panels of an earlier RUV grid after a declared RUV
+     design;
+   - lipidomics' and metabolomics' Copy collected earlier RUV-corrected QC figures.
+
+   A file that cannot be removed (for example, open in another program) stops the run before the normalisation is
+   computed. If a proteomics normalisation or correlation filter stops after it has started (for example, a manual k
+   larger than the data allow), the analysis is unchanged but its RUV figures and normalised table are no longer in
+   the project, and the error notice says so: apply or skip the correlation filter again to write the table, and run
+   the normalisation again for the figures, before Copy. On DIA with limpa, pressing "Run Normalization & RUV" again
+   on the correlation's or the RUV covariates' result keeps that result's files. Projects normalised before this
+   release keep such files until the normalisation is run again. (KIT-257)
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

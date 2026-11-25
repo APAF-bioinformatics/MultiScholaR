@@ -253,3 +253,9 @@ E16 for I02, `*` and `?` in a contrast name), a27a1c7c (the fix: the register's 
   under it, DA2 at q 1e-300 draws no barplot and the removal deletes the planted one (I05).
 - R CMD check identical (0 errors, 3 warnings, 3 notes), nothing only on head.
 The correction pass is accepted by its run; the branch is ready for the coordinator's train.
+
+## Ledger rows (coordinator, 2026-11-26)
+
+KIT-243's ledger row is VAL-265 (merge train 8, staging 67aed57f). The three stored `files` values
+of `tests/testthat/test-workflow-saved-da.R` that move with it are recorded in the coordinator's
+row VAL-268 (not edited; they wait for the end-of-project re-record).

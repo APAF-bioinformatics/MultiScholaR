@@ -212,7 +212,8 @@ test_that("metabolomics S4 plotPearson source retains histogram guards and corre
 
   expect_match(target_text, "pearsonCorForSamplePairs\\(")
   expect_match(target_text, "geom_histogram\\(breaks = hist_breaks, na\\.rm = TRUE\\)")
-  expect_match(target_text, "scale_x_continuous\\(limits = c\\(0, 1\\)")
+  # KIT-259 (A3, declared edit): the x axis extends below 0 to the lowest correlation (c(0, 1) when none is negative).
+  expect_match(target_text, "scale_x_continuous\\(limits = c\\(lower, 1\\)")
   expect_match(
     target_text,
     "pearson_plots_list <- pearson_plots_list\\[!sapply\\(pearson_plots_list,\\s+is\\.null\\)\\]"
