@@ -106,3 +106,22 @@ two `man/` pages are as at 3eeaf100 (every cited line holds); KIT-234's W8 is me
   `test-optional-packages.R` (1) fail identically on both sides (stored references recorded on the laptop, brief
   rule 4); the lipid, metabolomics and proteomics summary files run 0 expectations on both. `R CMD check`: base and
   head 0 errors, 3 warnings, 3 notes, the six findings identical; none only on head. 59.9 job-minutes.
+
+## Product part, option (b) (the owner's decision of 2026-11-25 evening, VAL-244; OD-1b: keep sending, say so)
+
+Step 0: ticket r1.3 records the decision and the (b) budget line. Detection as the ticket names it (E-1, 3.4):
+`nzchar(Sys.getenv("MSR_BUNDLE"))`.
+
+### R1p (declared in the request before it was sent)
+
+- Purpose: E1 fails by assertion on the tests-only commit (the push inputs present, no sentence); G1 passes. Binds
+  c85267e8. Ceiling 45 job-minutes. Decides whether the (b) fix is written.
+- Result, run 45604664357 (`r1p-tests.tsv`): as declared: 12 passed, 28 failed, 0 errors (E1: six inputs present
+  and the sentence absent for each of the four omics; the heading present; G1 passes). 7.1 job-minutes.
+
+### R2p (declared before the request)
+
+- Purpose: base (c85267e8) against head (the (b) fix): `test-kit245-github-panel.R` passes on head; every other file
+  of section 10's regression list `same` (the frozen UI digests of `test-omic-summary-module.R`, the UI-rendering
+  files: tests run without `MSR_BUNDLE`); `R CMD check` nothing only on head. Binds the fix against c85267e8.
+  Ceiling 460 job-minutes (section 11). Decides A2; stop rule 4.

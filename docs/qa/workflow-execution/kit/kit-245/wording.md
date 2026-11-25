@@ -29,6 +29,22 @@ The KIT-245 bullet, and the qualification of KIT-234's 'Push to GitHub' bullet (
 and it sends the omic's scripts folder, which holds copies of the input files (lipidomics, metabolomics,
 transcriptomics) or the saved session with its data (proteomics)"), as in `NEWS.md` on `kit-245`.
 
+## Product part (b) (VAL-244): the installed application's Summary tab
+
+Under "Version Control (Optional)", in place of the checkbox, the four fields and the button
+(`R/mod_omic_summary.R`, `mod_omic_summary_ui`):
+
+> Pushing to GitHub is not available in the installed application. To keep this analysis under version control, use
+> your usual Git tool; note that the project's scripts folder holds copies of your input files and analysis data,
+> which you may not be allowed to share.
+
+Difference from the ticket's draft (section 7): "the folder scripts/<omic>" is written "the project's scripts
+folder", because the Summary tab's configuration does not carry the omic's folder name and adding it would change the
+configuration schema (`R/utils_omic_gui_config.R:377`). The owner may prefer the folder named; that is a small
+follow-up.
+
+NEWS: the KIT-245 (b) bullet under Fixes, and KIT-234's 'Push to GitHub' bullet in P10's (b) form.
+
 ## Open for the owner
 
 - Whether "private means visible to that organisation's owners and to the members its settings allow" is the right

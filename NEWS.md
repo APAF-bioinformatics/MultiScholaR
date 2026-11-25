@@ -61,6 +61,11 @@
 
 ### Fixes
 
+ * 'Push to GitHub' (Summary tab, every omic) is no longer offered in the installed application, where it could not
+   work: it needs a git program, which the installed application does not have on Windows, and a
+   `<project id>.Rproj` file, which the application never creates. The Summary tab says what to do instead, and that
+   the project's scripts folder holds copies of the input files and analysis data. In R (outside the installed
+   application) the panel and `pushProjectToGithub()` are unchanged apart from the fix below (KIT-245).
  * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
    digits, '.', '-' and '_' only); an ID such as `..` used to make it delete folders outside R's temporary folder.
    It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
@@ -557,12 +562,12 @@
    which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
    (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
    are in `?integrationTrainModel` (KIT-234).
- * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
-   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several (for example after reports
-   of two omics in one project), it asks in the R console when R runs interactively, and otherwise stops with an
-   error. It also needs the git program, and it sends the omic's scripts folder, which holds copies of the input files
-   (lipidomics, metabolomics, transcriptomics) or the saved session with its data (proteomics) (KIT-245, under
-   Fixes).
+ * 'Push to GitHub' is no longer offered in the installed application (KIT-245). In R, the button and
+   `pushProjectToGithub()` need the git program and the project's `<project id>.Rproj` file and use the one R
+   Markdown file in the project folder; with no R Markdown file they say so, and with several (for example after
+   reports of two omics in one project) they ask in the R console when R runs interactively and otherwise stop with an
+   error. They send the omic's scripts folder, which holds copies of the input files (lipidomics, metabolomics,
+   transcriptomics) or the saved session with its data (proteomics).
 
 
 ### Scientific changes

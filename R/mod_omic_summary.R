@@ -37,6 +37,9 @@
 mod_omic_summary_ui <- function(id, config) {
     ns <- shiny::NS(id)
     tp <- config$testid
+    # KIT-245 (b) (VAL-244): "Push to GitHub" is not offered in the installed application, recognised by MSR_BUNDLE
+    # (its Windows shell, its Linux launcher and its systemd units set it); elsewhere the panel is unchanged.
+    installed_application <- nzchar(Sys.getenv("MSR_BUNDLE"))
 
     shiny::tagList(
         shiny::fluidPage(
@@ -106,8 +109,15 @@ mod_omic_summary_ui <- function(id, config) {
                 shiny::column(6,
                     shiny::wellPanel(
                         shiny::h4("Version Control (Optional)"),
-                        shiny::checkboxInput(ns("enable_github"), "Enable GitHub Push", FALSE),
-                        shiny::conditionalPanel(
+                        if (installed_application) {
+                            shiny::p(paste("Pushing to GitHub is not available in the installed application.",
+                                "To keep this analysis under version control, use your usual Git tool; note that",
+                                "the project's scripts folder holds copies of your input files and analysis data,",
+                                "which you may not be allowed to share."))
+                        } else {
+                            shiny::checkboxInput(ns("enable_github"), "Enable GitHub Push", FALSE)
+                        },
+                        if (!installed_application) shiny::conditionalPanel(
                             condition = paste0("input['", ns("enable_github"), "']"),
                             shiny::textInput(ns("github_org"), "GitHub Organization:", ""),
                             shiny::textInput(ns("github_email"), "GitHub Email:", ""),
