@@ -180,3 +180,27 @@ regression evidence.
 **Result against the ticket.** No contradiction. 6.4 needs no new row from G0. The `:437` dependency above is
 recorded for the fix.
 
+
+## R2c, the correction pass's comparison (run 45705206380; b32df57c against 687bccf9; 91 files; check)
+
+Observed, against `r2c-predictions.md`. Every verdict was as predicted.
+
+| Group | Result |
+|---|---|
+| Files `same` | 84, including KIT-207 G7, KIT-024 (`test-workflow-dia-products.R`) and S10 (`test-enrichment-significance.R`) |
+| New file | `fixed`: base 69 passed / 64 failed, head 152 passed / 0 failed, 1 skip |
+| `test-omic-enrich-module.R` | moves only at the stored leaves (see below) |
+| `test-omics-enrich-core.R` | W2: four cases at run `history`/`states` |
+| `test-omic-summary-module.R`, `test-omics-summary-core.R` | `prot_native` only |
+| `test-gui-entry-proteomics.R` | the base-against-head difference, classified line by line: `head`, `history`, `states` and the `da_status` output only, at the 6 steps from `enrichment` to `summary_export`. The parquet/tsv artifact lines are the same on both sides; one block only changed position |
+| `test-workflow-integration-input.R` | `count-changed` |
+| R CMD check | identical; nothing only on head |
+
+Moves in `test-omic-enrich-module.R`, all at predicted leaves:
+- W1 run `history` and `states` in each session;
+- W113 `history`: five more failures, beside the two known clusterProfiler failures;
+- the readers P-28, A107-04 ("never answers") and A107-08.
+
+Not checked: G21 on 854dcfc4.
+
+Next: merge staging 75acd421, then the controls and the re-freeze on the merged trees.
