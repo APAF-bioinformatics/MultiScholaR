@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-260 R1: test-kit260-itsd-default-pattern.R on the tests-only commit 63e29c04 (base: each E row fails at the ticket's base value; G guards pass) and on the fix 288abf49 (head: all pass); 1 shard per side, ceiling 45 job-minutes; decides stop rule 1",
+  "label": "KIT-260 R1 tests-only 63e29c04 against fix 288abf49, new test file",
+  "package_commit": "288abf49547fef5174cef76c90e755636bfe902f",
+  "base_commit": "63e29c04cfa21de28cd1c26614fdbaba4cb18b29",
+  "tools_ref": "",
+  "tests": [
+    "test-kit260-itsd-default-pattern.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
