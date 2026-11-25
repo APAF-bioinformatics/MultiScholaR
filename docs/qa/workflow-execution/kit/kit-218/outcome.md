@@ -2,7 +2,7 @@
 
 The ticket is r1.4. Branch `kit-218` came from `v0.9-staging` f93dfd85. Staging dd769671 (with KIT-200 merged) was merged in at 9c586b58.
 
-Commits:
+Commits (the audit repairs follow in the section "Implementation audit repairs"):
 - 23db9b69: tests only (W1 to W4, G1, G3, M1).
 - 8fe6057e: R1 records.
 - e04d0c02: tests only (W5 to W7, M2; H1).
@@ -61,6 +61,7 @@ No difference from R1, so stop rules 1 to 3 do not fire.
 - **Verdicts:** the new file is `fixed`. The other 10 files are `same`. `test-prot-ruv-factors-in-model.R` fails 1 test identically on both sides (M29/M30, the legacy design's DA).
 - **Check:** 0 errors, 3 warnings, 3 notes on each side; 6 findings identical; nothing only on head.
 - **W2's printed count table (KIT-204 C14, not asserted):** `B_vs_A`, "Not significant", 61. All 61 proteins count as not significant, including P11 to P16. See "Not checked".
+- **What the tests show about q-values.** On this fixture the q-values of B_vs_A are missing on base and head alike, because of I01 (the DA step's lost Benjamini-Hochberg fallback, `runTestsContrasts`, handed to its own ticket). So the tests show that the wrapper carries what the DA step returns, not that those q-values are right. Since the audit, `kit218ExpectCarried` also asserts that `log2FC` and `raw_pvalue` are present for every tested protein and prints how many `fdr_qvalue` are missing; `kit218ExpectTruth` checks each label's `log2FC` against the fixture's group means (W1, W4, W6, W7).
 
 Files: `r2/` (`compare.tsv`, `check-compare.txt`, `check-summary.txt`, `tests.tsv`, `tests-base.tsv`, and the new file's base and head logs).
 
@@ -80,7 +81,7 @@ Core-hours: R1 7.0 job-minutes (0.47). R2 tests 21.0 + 21.2 and check 16.1 + 13.
 
 ## Not checked
 
-- **All 61 proteins count as not significant in W2's printed count table.** P11 to P16 carry a +1 effect with residual sd 0.3, so this is not what one would expect. W2 shows that the wrapper carries the DA step's `fdr_qvalue` unchanged. Whether the q-values from `runTestsContrasts` are themselves at or above 0.05 on this fixture was not traced (no R locally). It is recorded for the coordinator, and nothing was changed.
+- **W2's count table (all 61 'Not significant'): cause established by the implementation audit (`audits/AUDIT-KIT-218-impl-20261125.md`, I01), by reading and reconstruction, not by a run.** On W2's input the comparison B_vs_A has no p-value at or above 0.95 (largest 0.9486; on the complete fixture 0.9475), so qvalue 2.44 stops inside its π0 estimate, and `runTestsContrasts`' error handler assigns the Benjamini-Hochberg fallback to a local copy (`R/func_prot_da_model_stats.R:686`, `:809`): `fdr_qvalue` is missing for every protein of that comparison (the same loss is in R2's head log of `test-prot-07-da-analysis.R`, lines 54-56). The wrapper carries those missing values unchanged; W1 to W7's equality checks on `fdr_qvalue` hold for B_vs_A as missing values. With the fallback working, P11 to P16 would have BH q-values of 6e-6 to 5.4e-3. A defect of the DA step, handed to KIT-<new>; not of this ticket's change.
 - The limpa branch (F6), F7's disagreement, MetaboliteAssayData through the wrapper: not run.
 - Whether the wrapper's numbers equal the application's (P10): not added.
 - Windows; real data.
@@ -103,7 +104,8 @@ Core-hours: R1 7.0 job-minutes (0.47). R2 tests 21.0 + 21.2 and check 16.1 + 13.
 - Three inputs would have completed silently and wrongly once the nesting was fixed. They are closed:
   - a data frame without `full_format` (base read its first row only: G1 gives `B_vs_A` only; OD-4 (a), W4);
   - a character vector (now refused, W5);
-  - a comparisons column stored as a factor. On base, M2 recorded the swap: the six B-effect proteins average 0.08 under the label `B_vs_A` and 1.03 under `C_vs_A`, so one comparison's statistics stood under the other's name. Now they are read as text (W6, W7).
+  - a comparisons column stored as a factor. On base, M2 recorded the swap: the six B-effect proteins average 0.08 under the label `B_vs_A` and 1.03 under `C_vs_A`, so one comparison's statistics stood under the other's name. Now they are read as text (W6, W7). The swap was latent: on every version that holds the nesting, a scripted call stopped with an error before any table was returned, so it was never delivered to a user (audit, question 2). Whether the versions before the nesting (`v0.75`, `v0.80`, `v0.9`) delivered it was not checked.
+- In the tests' fixture the comparison B_vs_A carries no q-values, because of the DA step's lost fallback (KIT-<new>); the wrapper's counts for such a comparison show nothing significant until that ticket merges.
 
 **Still stops or limited.**
 - It still stops for bare expressions without `full_format` (F5), for digit-leading group names (F1, M1: limma's `makeContrasts` parse error) and, by reading, for limpa objects (F6).

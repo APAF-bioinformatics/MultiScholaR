@@ -69,8 +69,10 @@
    its differential-abundance step, unchanged. It still stops when the comparisons table gives only bare expressions,
    when a group name begins with a digit, and, by our reading (not run), for data quantified with limpa. Its
    gene-labelled volcano plots are not produced, and its first count table counts at q < 0.05 whatever threshold is
-   set. It stops with a clear message when `contrasts_tbl` is not a data frame, and reads the comparisons as text
-   so a comparisons column stored as a factor gives each comparison its own name (KIT-218).
+   set. It stops with a clear message when `contrasts_tbl` is not a data frame, and reads the comparisons as text,
+   so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
+   name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
+   delivered to a user.
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session

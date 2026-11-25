@@ -118,9 +118,26 @@ kit218ExpectCarried <- function(value, ids = NULL) {
         got <- rows[rows$comparison == short, , drop = FALSE]
         expect_identical(sort(got$Protein.Ids), sort(rownames(ref)), info = full)
         at <- match(keep, got$Protein.Ids)
+        tested <- !is.na(ref[keep, "raw_pvalue"])
+        expect_false(anyNA(got$log2FC[at][tested]), info = paste(full, "log2FC present"))
+        expect_false(anyNA(got$raw_pvalue[at][tested]), info = paste(full, "raw_pvalue present"))
+        cat(sprintf("\nKIT-218 %s: fdr_qvalue missing for %d of %d tested proteins\n", full,
+            sum(is.na(got$fdr_qvalue[at][tested])), sum(tested)))
         expect_identical(unname(got$log2FC[at]), unname(ref[keep, "logFC"]), info = paste(full, "log2FC"))
         expect_identical(unname(got$fdr_qvalue[at]), unname(ref[keep, "fdr_qvalue"]), info = paste(full, "fdr_qvalue"))
         expect_identical(unname(got$raw_pvalue[at]), unname(ref[keep, "raw_pvalue"]), info = paste(full, "raw_pvalue"))
+    }
+}
+
+# Complete data, ~ 0 + group: limma's logFC is the difference of the group means, so each comparison's rows must carry
+# its own comparison's estimates (the fixture's truth; M2 is skipped on head).
+kit218ExpectTruth <- function(rows) {
+    x <- kit218Matrix()
+    truth <- list(B_vs_A = rowMeans(x[, 5:8]) - rowMeans(x[, 1:4]), C_vs_A = rowMeans(x[, 9:12]) - rowMeans(x[, 1:4]))
+    for (comparison in names(truth)) {
+        got <- rows[rows$comparison == comparison, , drop = FALSE]
+        expect_equal(got$log2FC[match(names(truth[[comparison]]), got$Protein.Ids)], unname(truth[[comparison]]),
+            tolerance = 1e-10, info = comparison)
     }
 }
 
@@ -141,6 +158,7 @@ test_that("KIT-218 W1: two contrasts on complete data run through the wrapper's 
     expect_identical(sort(unique(rows$comparison)), c("B_vs_A", "C_vs_A"))
     expect_identical(sort(unique(rows$log_intensity)), c("groupB-groupA", "groupC-groupA"))
     kit218ExpectCarried(value)
+    kit218ExpectTruth(rows)
     expect_setequal(unique(value$num_sig_da_molecules_first_go$table$comparison), c("B_vs_A", "C_vs_A"))
     expect_identical(nrow(value$da_proteins_long), 120L)
     expect_identical(nrow(value$da_proteins_wide), 60L)
@@ -183,6 +201,7 @@ test_that("KIT-218 W4: a data.frame of contrasts without full_format gives every
     rows <- run$value$significant_rows
     expect_identical(sort(unique(rows$comparison)), c("B_vs_A", "C_vs_A"))
     expect_identical(nrow(rows), 120L)
+    kit218ExpectTruth(rows)
 })
 
 # ---- G1: gate, base only ----------------------------------------------------------------------------------------------
@@ -268,6 +287,7 @@ test_that("KIT-218 W6: a full_format column stored as a factor gives each compar
     if (!kit218Completed(run, "W6 error")) return(invisible())
     text <- kit218Call(kit218CompleteObject(), kit218FactorRows(FALSE))
     if (!kit218Completed(text, "W6 text reference error")) return(invisible())
+    kit218ExpectTruth(run$value$significant_rows)
     kit218ExpectSameRows(run$value$significant_rows, text$value$significant_rows)
 })
 
@@ -276,6 +296,7 @@ test_that("KIT-218 W7: a first column stored as a factor, without full_format, g
     run <- kit218Call(kit218CompleteObject(), kit218FactorNoFullFormat(TRUE))
     if (!kit218Completed(run, "W7 error")) return(invisible())
     expect_identical(sort(unique(run$value$significant_rows$comparison)), c("B_vs_A", "C_vs_A"))
+    kit218ExpectTruth(run$value$significant_rows)
     text <- kit218Call(kit218CompleteObject(), kit218FactorNoFullFormat(FALSE))
     if (!kit218Completed(text, "W7 text reference error")) return(invisible())
     kit218ExpectSameRows(run$value$significant_rows, text$value$significant_rows)
