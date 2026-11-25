@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-271 R1 re-run after instrument repair 4a80353c (export helper mechanics; run 45709521655); the earlier request kit271-r1-2 was refused at plan (text over 300 chars), no test ran; ceiling 45 job-minutes",
+  "label": "KIT-271 R1-3 instrument repair 4a80353c",
+  "package_commit": "4a80353ccce5452ed8096303901646ed92a1faee",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit271-limpa-table-name.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
