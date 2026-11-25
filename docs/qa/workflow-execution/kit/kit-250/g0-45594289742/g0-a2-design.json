@@ -1,0 +1,94 @@
+{
+  "tab_status": {
+    "setup_import": "complete",
+    "design_matrix": "complete",
+    "quality_control": "pending",
+    "normalization": "disabled",
+    "differential_expression": "disabled",
+    "enrichment_analysis": "disabled",
+    "session_summary": "disabled"
+  },
+  "setup_import": {
+    "timestamp": "2026-11-25 10:34:31",
+    "search_file": "report.tsv",
+    "detected_format": "diann",
+    "data_type": "peptide",
+    "fasta_file": "proteins.fasta",
+    "taxon_id": 10090,
+    "organism": "Mus musculus",
+    "n_rows": 8989,
+    "n_runs": 8,
+    "n_proteins": 400,
+    "n_peptides": 1037
+  },
+  "notes": [
+    {
+      "t": 1795602883116,
+      "text": "Design saved successfully. You can close this builder.",
+      "type": "message",
+      "id": "shiny-notification-33dc540ce21321d2"
+    },
+    {
+      "t": 1795602887118,
+      "text": "Protein annotation was not retrieved: UniProt could not be reached (Couldn't connect to server [rest.uniprot.org]: Failed to connect to 127.0.0.1 port 9 after 0 ms: Connection refused). The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run. To try again, save the design again.",
+      "type": "warning",
+      "id": "shiny-notification-prot_uniprot_annotation"
+    },
+    {
+      "t": 1795602887118,
+      "text": "Design matrix and contrasts saved successfully!",
+      "type": "message",
+      "id": "shiny-notification-3add9b4ecdf6d443"
+    }
+  ],
+  "modals": [
+    {
+      "start": 1795602862516,
+      "end": 1795602863316,
+      "title": "Experiment Setup",
+      "progress": false,
+      "text": "Experiment Setup Experiment Label: Project Output Directory Select where to create the project directories: Directory Path: Browse... A new folder will be created here with your experiment label Cancel Continue"
+    },
+    {
+      "start": 1795602870516,
+      "end": 1795602871916,
+      "title": "Processing Data",
+      "progress": true,
+      "text": "Processing Data Sanitizing sample names... Please wait while your data is being processed."
+    },
+    {
+      "start": 1795602872116,
+      "end": 1795602875916,
+      "title": "Select Primary Organism",
+      "progress": false,
+      "text": "Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection"
+    },
+    {
+      "start": 1795602883116,
+      "end": 1795602883716,
+      "title": "Processing Design Matrix",
+      "progress": true,
+      "text": "Processing Design Matrix Saving design matrix and preparing data... This may take a moment for large datasets."
+    },
+    {
+      "start": 1795602883916,
+      "end": 1795602887318,
+      "title": "Retrieving UniProt Annotations",
+      "progress": true,
+      "text": "Retrieving UniProt Annotations Please wait while we retrieve protein annotations from UniProt... Initializing... 0%"
+    }
+  ],
+  "texts": {
+    "proteomics_workflow-setup_import-import_status": "[OK] Data imported successfully!\n  \n  Format: diann | Type: peptide",
+    "proteomics_workflow-setup_import-data_summary": "Data Summary\n  \n    Data format: DIANN\n    Data type: peptide\n    Total rows: 8,989\n    Number of runs: 8\n    Number of protein groups: 400\n    Number of peptides: 1,037\n    Organism: Mus musculus (taxon: 10090 )"
+  },
+  "stepper": [
+    "stepper-step step-completed",
+    "stepper-step step-completed",
+    "stepper-step step-current",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending"
+  ]
+}

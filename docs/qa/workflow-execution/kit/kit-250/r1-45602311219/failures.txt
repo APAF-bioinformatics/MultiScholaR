@@ -1,0 +1,359 @@
+file: test-kit250-organism-dialog.R
+test: E1a: with the organism dialog open the import is not complete (first import)
+kind: failure
+message:
+  Expected `run$events` to be identical to `character()`.
+  Differences:
+  `actual`:   "complete:notify=FALSE"
+  `expected`:                        
+
+file: test-kit250-organism-dialog.R
+test: E1a: with the organism dialog open the import is not complete (first import)
+kind: failure
+message:
+  Expected `workflowData$tab_status$setup_import` to be identical to "incomplete".
+  Differences:
+  `actual`:   "complete"  
+  `expected`: "incomplete"
+
+file: test-kit250-organism-dialog.R
+test: E1a: with the organism dialog open the import is not complete (first import)
+kind: failure
+message:
+  Expected `workflowData$tab_status$design_matrix` to be identical to "disabled".
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "disabled"
+
+file: test-kit250-organism-dialog.R
+test: E1b: with the organism dialog open a second import is not complete either
+kind: failure
+message:
+  Expected `identical(workflowData$tab_status$setup_import, "complete")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E1b: with the organism dialog open a second import is not complete either
+kind: failure
+message:
+  Expected `any(grepl("^complete", run$events))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `sum(grepl("^complete", run$events))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `run$events` to be identical to `expected`.
+  Differences:
+  actual vs expected
+    "notification:Filtered to Homo sapiens: kept 2 rows, removed 1 rows"
+  + "complete:notify=FALSE"
+    "removeModal"
+    "notification:Primary organism set to: Homo sapiens (Taxon: 9606)"
+    "notification:Data import successful!"
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `run$seen$taxon_id` to be identical to 9606L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (9606)
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `run$seen$rows` to be identical to `if (filter) 2L else 3L`.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (2)
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `isTRUE(localData$organism_unconfirmed)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `sum(grepl("^complete", run$events))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `run$events` to be identical to `expected`.
+  Differences:
+  actual vs expected
+  - "removeModal"
+  - "notification:Primary organism set to: Homo sapiens (Taxon: 9606)"
+  - "notification:Data import successful!"
+  + "complete:notify=FALSE"
+  + "removeModal"
+  + "notification:Primary organism set to: Homo sapiens (Taxon: 9606)"
+  + "notification:Data import successful!"
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `run$seen$taxon_id` to be identical to 9606L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (9606)
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `run$seen$rows` to be identical to `if (filter) 2L else 3L`.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (3)
+
+file: test-kit250-organism-dialog.R
+test: E2: Confirm completes the import once, after the organism and the optional filter, before its notices
+kind: failure
+message:
+  Expected `isTRUE(localData$organism_unconfirmed)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E3: the dialog's Cancel is the module's own button, not a dismiss button
+kind: failure
+message:
+  Expected `footer` to match string "id=\"import-cancel_organism\"".
+  Actual text:
+  x | 
+    |         <button type="button" class="btn btn-default" data-dismiss="modal" data-bs-dismiss="modal">Cancel</button>
+    |         <button class="btn btn-default action-button btn-primary" id="import-confirm_organism" type="button"><span class="action-label">Confirm Selection</span></button>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+
+file: test-kit250-organism-dialog.R
+test: E3: the dialog's Cancel is the module's own button, not a dismiss button
+kind: failure
+message:
+  Expected `grepl("data-dismiss", footer, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E3: the dialog's Cancel is the module's own button, not a dismiss button
+kind: failure
+message:
+  Expected `grepl("data-bs-dismiss", footer, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E4: Cancel leaves the import unfinished, closes the dialog and says so until closed
+kind: failure
+message:
+  Expected `exists("cancelProtImportOrganismSelection", mode = "function")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit250-organism-dialog.R
+test: E5: a stale waiting flag is reset when an import starts and when an import fails
+kind: failure
+message:
+  Expected `isTRUE(localData$waiting_for_organism_selection)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E5: a stale waiting flag is reset when an import starts and when an import fails
+kind: failure
+message:
+  Expected `isTRUE(localData$organism_unconfirmed)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E5: a stale waiting flag is reset when an import starts and when an import fails
+kind: failure
+message:
+  Expected `run$events` to be identical to `c("complete:notify=FALSE", "removeModal", "notification:Data import successful!:message")`.
+  Differences:
+      actual                  | expected                                          
+  [1] "complete:notify=FALSE" | "complete:notify=FALSE"                        [1]
+                              - "removeModal"                                  [2]
+                              - "notification:Data import successful!:message" [3]
+
+file: test-kit250-organism-dialog.R
+test: E5: a stale waiting flag is reset when an import starts and when an import fails
+kind: failure
+message:
+  Expected `isTRUE(failed$waiting_for_organism_selection)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E5: a stale waiting flag is reset when an import starts and when an import fails
+kind: failure
+message:
+  Expected `isTRUE(failed$organism_unconfirmed)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `waiting` to match string "Choose the organism in the window to finish the import.".
+  Actual text:
+  x | <div class="alert alert-success">
+    |   <strong>[OK] Data imported successfully!</strong>
+    |   <br/>
+    |   Format: diann | Type: peptide
+    | </div>
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `grepl("Data imported successfully", waiting, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `cancelled` to match string "Import not finished: no organism was chosen.".
+  Actual text:
+  x | <div class="alert alert-success">
+    |   <strong>[OK] Data imported successfully!</strong>
+    |   <br/>
+    |   Format: diann | Type: peptide
+    | </div>
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `grepl("Data imported successfully", cancelled, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `summary` to match string "Organism: not confirmed".
+  Actual text:
+  x | <div class="well">
+    |   <h4>Data Summary</h4>
+    |   <ul>
+    |     <li>Data format: DIANN</li>
+    |     <li>Data type: peptide</li>
+    |     <li>Total rows: 8</li>
+    |     <li>Number of runs: 2</li>
+    |     <li>Number of protein groups: 3</li>
+    |     <li>Organism: Mus musculus (taxon: 10090 )</li>
+    |   </ul>
+    | </div>
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `grepl("Mus musculus", summary, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E6: the import page shows no success and no organism before one is confirmed
+kind: failure
+message:
+  Expected `grepl("10090", summary, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit250-organism-dialog.R
+test: E7: after Cancel there is no table for the design builder and the import is incomplete
+kind: failure
+message:
+  Expected `exists("cancelProtImportOrganismSelection", mode = "function")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-01c-import-module-contracts.R
+test: KIT-102 W6: completeProtImportSuccessState writes the statuses through the frame's completion helper
+kind: failure
+message:
+  Expected `result` to be identical to `expected_status`.
+  Differences:
+  `actual$setup_import`:   "complete"  
+  `expected$setup_import`: "incomplete"
+  
+  `actual$design_matrix`:   "pending" 
+  `expected$design_matrix`: "disabled"
+
+file: test-prot-01c-import-module-contracts.R
+test: KIT-102 W6: completeProtImportSuccessState writes the statuses through the frame's completion helper
+kind: failure
+message:
+  Expected `workflowData$tab_status` to be identical to `expected_status`.
+  Differences:
+  `actual$setup_import`:   "complete"  
+  `expected$setup_import`: "incomplete"
+  
+  `actual$design_matrix`:   "pending" 
+  `expected$design_matrix`: "disabled"
+
+file: test-prot-01c-import-module-contracts.R
+test: KIT-102 W6: completeProtImportSuccessState writes the statuses through the frame's completion helper
+kind: failure
+message:
+  Expected `events` to be identical to `if (...) NULL`.
+  Differences:
+  `actual`:   "complete:notify=FALSE"
+  `expected`:                        
+
