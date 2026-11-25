@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-257 R1: tests-only commit 1e1b0cee on kit-257 (staging 63143aa3 plus the new test file); failing-first base values of E1 to E9, G3, G5; G1, G2 pass; 1 job, ceiling 45 job-minutes; decides A1",
+  "label": "KIT-257 R1 failing-first 1e1b0cee",
+  "package_commit": "1e1b0cee43bfb0351feb80bde56a5fbfb2f34605",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit257-norm-own-files.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
