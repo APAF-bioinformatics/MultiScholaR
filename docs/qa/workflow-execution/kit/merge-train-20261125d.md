@@ -103,4 +103,72 @@ Conflicts met and how each was resolved:
 
 ## Result
 
-(filled after the run)
+Run 45586240983 (request `merge-train-20261125d-b7ee701f`, run-tests commit ca111465), head b7ee701f against the
+stacked base 5174a798, sent once; conclusion success (every job success); 811.0 job-minutes of the 3,105 ceiling
+(tests 768.5, check 29.7, scripts 11.9, plan and results 0.8). Tables in `merge-train-20261125d/` (`compare.tsv`,
+`tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`, `w6-console.log`).
+
+Observed, 165 files: 154 `same`, 11 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | ticket, prediction |
+|---|---|---|---|---|
+| test-kit220-da-threshold-consumers.R | absent | 79/0/0/0 | only-on-head | KIT-220, as declared |
+| test-workflow-saved-da.R | 780/171/0/0 | 780/171/0/0 | message-changed | KIT-220, as declared (below) |
+| test-kit227-report-ruv-sentences.R | absent | 166/0/0/0 | only-on-head | KIT-227, as declared |
+| test-kit235-lipid-metab-report-parser.R | absent | 50/0/0/0 | only-on-head | KIT-235, as declared |
+| test-enrichment-significance.R | 191/0/0/0 | 181/0/0/0 | count-changed | KIT-234, as declared |
+| test-go-propagation.R | 331/0/0/1 | 321/0/0/1 | count-changed | KIT-234, as declared |
+| test-integration-removed-factors.R | 526/0/0/3 | 520/0/0/3 | count-changed | KIT-234, as declared |
+| test-integration-workbook.R | 53/0/0/0 | 43/0/0/0 | count-changed | KIT-234, as declared |
+| test-kit234-workbooks-withdrawn.R | absent | 29/0/0/0 | only-on-head | KIT-234, as declared |
+| test-kit222-replicate-keys.R | absent | 456/0/0/0 | only-on-head | KIT-222, as declared |
+| test-kit218-da-wrapper-tail.R | absent | 80/0/0/2 | only-on-head | KIT-218, as declared (G1, M2 skipped) |
+
+- `test-workflow-saved-da.R`: of the 171 failure messages on each side, 134 are identical and 37 differ (37 only on
+  base, 37 only on head, matched by test and leaf). The 37 are exactly the 19 W1 leaves of `savedDaW1Frozen`
+  (dia_qvalue_only products, dependencies, manifest, head_manifest, display, files; dia_refused products,
+  dependencies, head_manifest, display, files; `files` of dia_one_contrast, dia_two_contrasts, dia_repeat,
+  dia_reopened_rerun, dia_non_head, dia_changed_arguments, dia_retry, limpa_one_contrast) and their 18 W2 twins
+  (all but dia_non_head).
+- `test-module-ci-trx-summary.R` `same` (86/2/0/0 on both sides); head log: MCI-032.1 counted, skip 0, no
+  "KIT-040" in the log (KIT-227 condition (iv)).
+- Among the `same` files: `test-integration-workbook-mofa.R` 3 skipped on both; `test-omic-gui-config.R` 1911/0;
+  `test-kit212-da-current.R` 309/0; `test-kit215-not-tested-lists.R` 112/0; `test-gui-entry-proteomics.R` 189/4;
+  `test-gui-entry-transcriptomics.R` 16/13; `test-gui-entry-lipidomics.R` 35/0; `test-gui-entry-metabolomics.R`
+  105/0; `test-omic-summary-module.R` 1675/28; `test-omics-summary-core.R` 676/25 (2 skipped);
+  `test-module-ci-trx-design.R` 66/0/1 error; `test-prot-ruv-factors-in-model.R` 306/1;
+  `test-integration-input-transcriptomics.R` 78/0 on both sides (KIT-222's register named 3 pre-existing failures
+  here, on its own run's base; on this train both sides pass: still `same`).
+- W6 (KIT-234): exit 0; `system.file("workbooks")` = `""`; the built tarball holds 8,120 paths, 0 matching
+  `^MultiScholaR/(inst/workbooks|archive)(/|$)`.
+- R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; 5 findings identical; ONE finding differs: the NOTE
+  "checking for portable file names" lists 246 paths on head against 238 on base. The 8 added paths are all
+  KIT-235's committed G0 records over 100 bytes (`docs/qa/workflow-execution/kit/kit-235/g0-45573071526/g0b/`
+  `{lip,met}-c17-src-analysis_record.json`, `{lip,met}-c17-src-study_parameters.txt`,
+  `{lip,met}-c18-sr-study_parameters.txt`, `{lip,met}-c19-sr-analysis_record.json`, 102 or 103 bytes with the
+  `MultiScholaR/` prefix), committed in 96e3c813. KIT-235's own R2 did not show it because both its base and head
+  already held those files. No other path changed; no code, Rd or namespace finding differs.
+
+Verdicts against the predictions:
+
+- KIT-220: holds exactly (new file 79/0; saved-da message-changed at exactly the 37; every other file `same`).
+- KIT-227: holds exactly (new file 166/0; its files `same`; condition (iv) met).
+- KIT-235: its tests hold exactly (new file 50/0; its 14 files `same`). NOT as declared on the check: its records add
+  8 paths over 100 bytes to the portable-file-names NOTE (a records defect: the implementer brief's 100-byte rule).
+- KIT-234: holds exactly (four count changes, new file 29/0, W6 exit 0, saved-da as KIT-220).
+- KIT-222: holds exactly (new file 456/0; its 91 other files `same`). C1 not re-run: blob `651fc1b6` at the head.
+- KIT-218: holds exactly (new file 80/0, 2 skipped).
+- Check: not identical, one NOTE's path list grown by KIT-235's 8 record paths (above).
+
+Train verdict: every test prediction holds; the check prediction does not hold, by one NOTE text attributable to
+KIT-235's record paths only. Not TRAIN GREEN as declared; the coordinator decides (the record files can be renamed
+or moved under 100 bytes, a docs-only change that no test reads; the run is not repeated here).
+
+Train 3 landed on staging (16112917; KIT-212 = VAL-226, KIT-215 = VAL-227, KIT-174 (a) = VAL-228, KIT-225 =
+VAL-229) while the run was in progress. `git diff --stat 5174a798 origin/v0.9-staging`: 13 files, all
+`docs/methods-decision-ledger.md` or under `docs/qa/workflow-execution/kit/` (the numbered rows, four outcome files,
+`parked-20261113.md`, train 3's record files); no other file differs. The train's `VAL-<train3-n>` and
+`VAL-<train4-k>` placeholders are left for the coordinator at landing.
+
+Not checked: the trees after the run's head (docs only); any file outside the 165; MOFA lane (not required for
+KIT-234 alone); the landing merge with staging 16112917 (ledger rows only, per the coordinator).
