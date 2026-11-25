@@ -1,0 +1,933 @@
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E1a: memory_guard (the application's memory limit for one step) is told as the memory limit
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: memory_guard"
+  + "Error applying kit252: the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = "memory_guard", error = NULL), kit252Text$memory_limit) at test-kit252-managed-failure-text.R:195:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E1a: memory_guard (the application's memory limit for one step) is told as the memory limit
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: memory_guard"
+  + "the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = "memory_guard", error = NULL), kit252Text$memory_limit) at test-kit252-managed-failure-text.R:195:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E1a: memory_guard (the application's memory limit for one step) is told as the memory limit
+kind: failure
+message:
+  Expected `any(grepl("memory_guard", seen$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E1b: host_headroom (the computer's free memory below 2 GB) is told as low memory
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: host_headroom"
+  + "Error applying kit252: the computer's free memory fell below 2 GB, so the step was stopped to protect the computer. Its result was not saved. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = "host_headroom", error = NULL), kit252Text$low_memory) at test-kit252-managed-failure-text.R:200:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E1b: host_headroom (the computer's free memory below 2 GB) is told as low memory
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: host_headroom"
+  + "the computer's free memory fell below 2 GB, so the step was stopped to protect the computer. Its result was not saved. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = "host_headroom", error = NULL), kit252Text$low_memory) at test-kit252-managed-failure-text.R:200:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2a: a worker stopped at its time limit (1,800 s) is told as the 30-minute time limit
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step reached its time limit of 30 minutes and was stopped. Its result was not saved. Running it again on the same data will stop at the same limit."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:205:9
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2a: a worker stopped at its time limit (1,800 s) is told as the 30-minute time limit
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step reached its time limit of 30 minutes and was stopped. Its result was not saved. Running it again on the same data will stop at the same limit."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:205:9
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2a: a worker stopped at its time limit (1,800 s) is told as the 30-minute time limit
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step reached its time limit of 30 minutes and was stopped. Its result was not saved. Running it again on the same data will stop at the same limit."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:205:9
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2a: a worker stopped at its time limit (1,800 s) is told as the 30-minute time limit
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step reached its time limit of 30 minutes and was stopped. Its result was not saved. Running it again on the same data will stop at the same limit."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:205:9
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: worker_failed"
+  + "Error applying kit252: the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E2b: a worker that stopped otherwise, with no error of its own, is told as stopped
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: worker_failed"
+  + "the step's process stopped before it finished (for example, the computer ran out of memory or the process was closed). Its result was not saved. Press the button again; if it stops again, the application's log has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:212:13
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E3: admission_refused (too little memory to start, or a launch failure) and monitor_start_timeout are told as not started
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: admission_refused"
+  + "Error applying kit252: the step could not be started (too little free memory, or its process could not start). Nothing was run. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:218:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E3: admission_refused (too little memory to start, or a launch failure) and monitor_start_timeout are told as not started
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: admission_refused"
+  + "the step could not be started (too little free memory, or its process could not start). Nothing was run. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:218:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E3: admission_refused (too little memory to start, or a launch failure) and monitor_start_timeout are told as not started
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: admission_refused"
+  + "Error applying kit252: the step could not be started (too little free memory, or its process could not start). Nothing was run. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:219:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E3: admission_refused (too little memory to start, or a launch failure) and monitor_start_timeout are told as not started
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: admission_refused"
+  + "the step could not be started (too little free memory, or its process could not start). Nothing was run. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:219:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E3: admission_refused (too little memory to start, or a launch failure) and monitor_start_timeout are told as not started
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: monitor_start_timeout"
+  + "Error applying kit252: the step could not be started (too little free memory, or its process could not start). Nothing was run. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:220:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E3: admission_refused (too little memory to start, or a launch failure) and monitor_start_timeout are told as not started
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: monitor_start_timeout"
+  + "the step could not be started (too little free memory, or its process could not start). Nothing was run. Close other programs and press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:220:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E4: stale and project_replaced are told as changed meanwhile
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: stale"
+  + "Error applying kit252: the table or the project changed while the step ran, so its result was not used. Press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$changed) at test-kit252-managed-failure-text.R:224:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E4: stale and project_replaced are told as changed meanwhile
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: stale"
+  + "the table or the project changed while the step ran, so its result was not used. Press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$changed) at test-kit252-managed-failure-text.R:224:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E4: stale and project_replaced are told as changed meanwhile
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: project_replaced"
+  + "Error applying kit252: the table or the project changed while the step ran, so its result was not used. Press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$changed) at test-kit252-managed-failure-text.R:224:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E4: stale and project_replaced are told as changed meanwhile
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: project_replaced"
+  + "the table or the project changed while the step ran, so its result was not used. Press the button again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$changed) at test-kit252-managed-failure-text.R:224:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: monitor_lost"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: monitor_lost"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: invalid_result"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: invalid_result"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: idle"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: idle"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: nonworker_reservation"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: nonworker_reservation"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: invalid_worker_registration"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: invalid_worker_registration"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: invalid_monitor_snapshot"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: invalid_monitor_snapshot"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: invalid_guard_injection"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: invalid_guard_injection"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: injected_guard_stop"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: injected_guard_stop"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: guard_payload_invalid"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: guard_payload_invalid"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: zzz_unknown"
+  + "Error applying kit252: the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5: monitor_lost, invalid_result, idle, the six guard reasons and an unknown status are told as internal
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: zzz_unknown"
+  + "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$internal) at test-kit252-managed-failure-text.R:230:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5b: cleanup_failed and duplicate (either can follow a saved result) never say the result was not saved
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: cleanup_failed"
+  + "Error applying kit252: the step's process could not be closed cleanly. Its result may have been saved; check this tab before running the step again, and restart the application if this happens again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$not_closed) at test-kit252-managed-failure-text.R:235:9
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5b: cleanup_failed and duplicate (either can follow a saved result) never say the result was not saved
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: cleanup_failed"
+  + "the step's process could not be closed cleanly. Its result may have been saved; check this tab before running the step again, and restart the application if this happens again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$not_closed) at test-kit252-managed-failure-text.R:235:9
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5b: cleanup_failed and duplicate (either can follow a saved result) never say the result was not saved
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: duplicate"
+  + "Error applying kit252: the step's process could not be closed cleanly. Its result may have been saved; check this tab before running the step again, and restart the application if this happens again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$not_closed) at test-kit252-managed-failure-text.R:235:9
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E5b: cleanup_failed and duplicate (either can follow a saved result) never say the result was not saved
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: duplicate"
+  + "the step's process could not be closed cleanly. Its result may have been saved; check this tab before running the step again, and restart the application if this happens again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(list(status = status, error = NULL), kit252Text$not_closed) at test-kit252-managed-failure-text.R:235:9
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E6: publication_pending (the result committed, its files not written) says it was saved
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `paste("Error applying kit252:", text)`.
+  Differences:
+  actual vs expected
+  - "Error applying kit252: managed action ended: publication_pending"
+  + "Error applying kit252: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:241:5
+   2.   └─testthat::expect_identical(...) at test-kit252-managed-failure-text.R:97:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E6: publication_pending (the result committed, its files not written) says it was saved
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: publication_pending"
+  + "the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again."
+trace (first lines):
+      ▆
+   1. └─kit252Expect(...) at test-kit252-managed-failure-text.R:241:5
+   2.   └─testthat::expect_identical(seen$errors, text) at test-kit252-managed-failure-text.R:98:5
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E7: through the proteomics normalisation tab, memory_guard is the memory sentence and its code is in the log
+kind: failure
+message:
+  Expected `grep("^\\[error", seen$notes, value = TRUE)` to be identical to `c(...)`.
+  Differences:
+  actual vs expected
+  - "[error 15] Error applying proteomics step: managed action ended: memory_guard"
+  + "[error 15] Error applying proteomics step: the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+  - "[error 10] Error in normalization: managed action ended: memory_guard"
+  + "[error 10] Error in normalization: the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E7: through the proteomics normalisation tab, memory_guard is the memory sentence and its code is in the log
+kind: failure
+message:
+  Expected `... %in% seen$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Error applying proteomics step: managed action ended: memory_guard
+
+file: test-kit252-managed-failure-text.R
+test: KIT-252 E1a in a chain: the lipidomics RUV action's memory_guard is told as the memory limit
+kind: failure
+message:
+  Expected `grep("^\\[error 15\\]", chain$notes, value = TRUE)` to be identical to `paste("[error 15] Error applying lipidomics step:", kit252Text$memory_limit)`.
+  Differences:
+  actual vs expected
+  - "[error 15] Error applying lipidomics step: managed action ended: memory_guard"
+  + "[error 15] Error applying lipidomics step: the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+
+file: test-workflow-execution.R
+test: (KIT-115 F112-06) a publication left pending by a replaced project is dropped, and the step runs afresh
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `pending_text`.
+  Differences:
+  actual vs expected
+  - "managed action ended: publication_pending"
+  + "the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again."
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-workflow-execution.R:825:5
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-workflow-execution.R
+test: (KIT-115 F112-06) a publication left pending by a replaced project is dropped, and the step runs afresh
+kind: failure
+message:
+  Expected `seen$errors` to be identical to `rep(pending_text, 2L)`.
+  Differences:
+  actual vs expected
+  - "managed action ended: publication_pending"
+  + "the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again."
+  - "managed action ended: publication_pending"
+  + "the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again."
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-workflow-execution.R:825:5
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-workflow-omics-application-reads.R
+test: KIT-082: the runner runs what waits in order, and tells what waits when an action fails
+kind: failure
+message:
+  Expected `shown$message` to match string "the step's result could not be received (an internal check failed). Its result was not saved. Press the button again; if it happens again, the application's log file has the details.".
+  Actual text:
+  x | managed action ended: failed
+trace (first lines):
+       ▆
+    1. ├─base::suppressWarnings(...) at test-workflow-omics-application-reads.R:548:3
+    2. │ └─base::withCallingHandlers(...)
+    3. ├─base::suppressMessages(...)
+    4. │ └─base::withCallingHandlers(...)
+    5. ├─utils::capture.output(...)
+    6. │ └─base::withVisible(...elt(i))
+    7. ├─shiny::testServer(...)
+    8. │ ├─shiny:::withMockContext(...)
+    9. │ │ ├─shiny::isolate(...)
+   10. │ │ │ ├─shiny::..stacktraceoff..(...)
+   11. │ │ │ └─ctx$run(...)
+
+file: test-omic-da-module.R
+test: KIT-112 W3 (F112-02): a click while the publication holds a pending retry retries it without recomputing the contrasts
+kind: failure
+message:
+  Expected `pending$notes` to be identical to `c(...)`.
+  Differences:
+  actual[4:7] vs expected[4:7]
+    "remove da_working"
+    "[default NULL da_publication] Applying DA publication ..."
+    "remove da_publication"
+  - "[error 15 -] Error applying DA publication: managed action ended: publication_pending"
+  + "[error 15 -] Error applying DA publication: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again."
+
+file: test-prot-norm-core.R
+test: GUI audit A111-03: a managed worker failure shows the worker's reason in the step's and the tab's notices
+kind: failure
+message:
+  Expected `log$notes` to be identical to `c(...)`.
+  Differences:
+  actual vs expected
+    "[default NULL] Applying proteomics step ..."
+  - "[error 15] Error applying proteomics step: managed action ended: memory_guard"
+  + "[error 15] Error applying proteomics step: the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+  - "[error 10] Error in normalization: managed action ended: memory_guard"
+  + "[error 10] Error in normalization: the step needed more memory than the application allows for one step (at most 16 GB, less when the computer has less free memory), so it was stopped before it finished. Its result was not saved. Closing other programs may help; if it stops again, this data set is too large for this step on this computer."
+trace (first lines):
+       ▆
+    1. ├─protNormAuditManaged(...) at test-prot-norm-core.R:1843:5
+    2. │ ├─protNormCoreQuiet(...) at test-prot-norm-core.R:1726:5
+    3. │ │ ├─base::suppressWarnings(suppressMessages(code)) at ./helper-prot-norm-core.R:6:22
+    4. │ │ │ └─base::withCallingHandlers(...)
+    5. │ │ └─base::suppressMessages(code)
+    6. │ │   └─base::withCallingHandlers(...)
+    7. │ ├─utils::capture.output(...)
+    8. │ │ └─base::withVisible(...elt(i))
+    9. │ └─shiny::testServer(...)
+   10. │   ├─shiny:::withMockContext(...)
+   11. │   │ ├─shiny::isolate(...)

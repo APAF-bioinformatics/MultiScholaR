@@ -1,0 +1,8 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit250-organism-dialog.R	108	11	0	0	0	11.5	failed
+test-prot-01c-import-module-contracts.R	437	0	0	0	0	16.4	ok
+test-prot-01d-import-module-characterization.R	79	0	0	0	0	9.8	ok
+test-module-ci-prot-import.R	107	0	0	0	0	9.9	ok
+test-module-ci-trx-app.R	50	0	0	0	0	47.8	ok
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	0	9.3	ok
+test-workflow-server-shared.R	226	0	0	0	0	11.6	ok

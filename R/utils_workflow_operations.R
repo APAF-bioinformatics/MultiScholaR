@@ -516,8 +516,8 @@ workflowOperationDefaults <- local({
         trx_da_contrast = list(formula = "input", qvalue = "no_shipped_default", lfc = "no_shipped_default", contrast = "input",
             friendly_name = "input"),
         trx_ruviii_export = list(logcpm = "input", grid = "input", ruviii_m_source = "no_shipped_default"),
-        # KIT-062: the integration model. The inputs come from the import; every method parameter's provisional default
-        # is the model's own (`integrationMofaParameterSpec`, settled by the user's workbook), not config.ini's.
+        # KIT-062: the integration model. The inputs come from the import; every method parameter's default is the
+        # model's own (`integrationMofaParameterSpec`, with the decision behind each), not config.ini's.
         integration_mofa_model = list(input_manifests = "input", views = "input",
             # KIT-153 (INT-23): the decided default of `integrationMofaParameterSpec`, not config.ini's.
             input_matrix = "no_shipped_default", technical_replicates = "no_shipped_default",

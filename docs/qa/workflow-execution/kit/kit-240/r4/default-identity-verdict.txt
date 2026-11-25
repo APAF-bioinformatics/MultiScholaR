@@ -1,0 +1,35 @@
+base: 3eeaf100110e661944f50c427d266d9b3f6a21df
+head: 37071446f7be724b57803f7f7660412cf9795e19
+R version 4.6.1 (2026-06-24)
+substitutions (old -> new, count in base, count in head):
+  production settings_provisional: Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones. -> Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you. (1, 0)
+  production results_provisional: How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them. -> These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you. (2, 0)
+  production mark: (provisional default) -> (decided) (21, 0)
+  production enrichment_mark_insertion:  ->  (default not yet confirmed) (0, 8)
+  test settings_provisional: Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones. -> Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you. (1, 0)
+  test results_provisional: How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them. -> These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you. (2, 0)
+  test mark: (provisional default) -> (decided) (21, 0)
+  test enrichment_mark_insertion:  ->  (default not yet confirmed) (0, 8)
+(i) app_ui, production: head unset = base TRUE: TRUE
+(i) module, production: settings_provisional found in base (1) and not in head (0): TRUE
+(i) module, production: results_provisional found in base (2) and not in head (0): TRUE
+(i) module, production: mark found in base (21) and not in head (0): TRUE
+(i) module, production: the Enrichment mark inserted 8 times in head (8) and absent from base (0): TRUE
+(i) module, production: head unset = base TRUE after the substitutions: TRUE
+(ii) app_ui, production: head FALSE = base unset: TRUE
+(ii) module, production: head FALSE = base unset: TRUE
+(iii) app_ui, production: head unset the same in two processes: TRUE
+(iii) module, production: head unset the same in two processes: TRUE
+(i) app_ui, test: head unset = base TRUE: TRUE
+(i) module, test: settings_provisional found in base (1) and not in head (0): TRUE
+(i) module, test: results_provisional found in base (2) and not in head (0): TRUE
+(i) module, test: mark found in base (21) and not in head (0): TRUE
+(i) module, test: the Enrichment mark inserted 8 times in head (8) and absent from base (0): TRUE
+(i) module, test: head unset = base TRUE after the substitutions: TRUE
+(ii) app_ui, test: head FALSE = base unset: TRUE
+(ii) module, test: head FALSE = base unset: TRUE
+(iii) app_ui, test: head unset the same in two processes: TRUE
+(iii) module, test: head unset the same in two processes: TRUE
+(ii) head FALSE: the module is the unavailable panel: TRUE
+head unset: the module is not the unavailable panel: TRUE
+all checks pass: TRUE

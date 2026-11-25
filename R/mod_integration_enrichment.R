@@ -23,6 +23,17 @@
 # from conventions/R-shiny.md (module function names, fluidRow layout, no ExtendedTask): the integration tabs' existing
 # pattern is kept, under the existing-code rule of conventions/R.md.
 
+#' A setting's label on the Enrichment tab (KIT-240, R1-04): the label, and, for a default not yet confirmed
+#' (`integrationParameterProvisional`: its `settled_by` says it awaits confirmation), the mark in brackets after it.
+#' @param texts `integrationGuiTexts()`.
+#' @param key The label's key in the wording table.
+#' @param entry The setting's entry of `integrationEnrichmentParameterSpec()`.
+#' @return One string.
+#' @noRd
+integrationEnrichmentLabel <- function(texts, key, entry) {
+    if (integrationParameterProvisional(entry)) sprintf("%s (%s)", texts[[key]], texts[["mark_provisional"]]) else texts[[key]]
+}
+
 #' The Enrichment tab's UI.
 #' @param id Module id.
 #' @noRd
@@ -30,6 +41,8 @@ mod_integration_enrichment_ui <- function(id) {
     ns <- shiny::NS(id)
     texts <- integrationGuiTexts()
     spec <- integrationEnrichmentParameterSpec()
+    # KIT-240 (R1-04): a default not yet confirmed carries the mark in its label.
+    label <- function(key, name) integrationEnrichmentLabel(texts, key, spec[[name]])
     shiny::fluidRow(shiny::column(12,
         shiny::h3(texts[["enrich_heading"]]),
         shiny::p(texts[["enrich_intro"]]),
@@ -42,20 +55,20 @@ mod_integration_enrichment_ui <- function(id) {
         testid(shiny::uiOutput(ns("id_column_ui")), "integration-enrichment-id-column"),
         shiny::h4(texts[["enrich_settings_heading"]]),
         shiny::fluidRow(
-            shiny::column(4, shiny::selectInput(ns("correlation_method"), texts[["enrich_correlation_method"]],
+            shiny::column(4, shiny::selectInput(ns("correlation_method"), label("enrich_correlation_method", "correlation_method"),
                 choices = stats::setNames(c("pearson", "spearman"), unname(texts[c("enrich_correlation_pearson",
                     "enrich_correlation_spearman")])), selected = spec$correlation_method$default)),
-            shiny::column(4, shiny::numericInput(ns("min_samples"), texts[["enrich_min_samples"]], spec$min_samples$default,
+            shiny::column(4, shiny::numericInput(ns("min_samples"), label("enrich_min_samples", "min_samples"), spec$min_samples$default,
                 min = 3L, step = 1L)),
             # KIT-191: the seed is shown for the tests that use one (the pre-ranked and permutation tests).
             shiny::column(4, testid(shiny::conditionalPanel(sprintf(paste("(input['%s'] == 'kegg' || input['%s'] ==",
                 "'reactome') && (input['%s'] == 'gsea' || input['%s'] == 'permutation')"), ns("database"), ns("database"),
                 ns("test"), ns("test")),
-                shiny::numericInput(ns("seed"), texts[["enrich_seed"]], spec$seed$default, step = 1L)),
+                shiny::numericInput(ns("seed"), label("enrich_seed", "seed"), spec$seed$default, step = 1L)),
                 "integration-enrichment-seed"))),
         testid(shiny::div(
             shiny::fluidRow(
-                shiny::column(4, shiny::numericInput(ns("string_species"), texts[["enrich_string_species"]],
+                shiny::column(4, shiny::numericInput(ns("string_species"), label("enrich_string_species", "string_species"),
                     spec$string_species$default, step = 1L)),
                 shiny::column(4, shiny::numericInput(ns("string_fdr"), texts[["enrich_string_fdr"]], spec$string_fdr$default,
                     min = 0, max = 1, step = 0.01)),
@@ -63,12 +76,13 @@ mod_integration_enrichment_ui <- function(id) {
             shiny::p(shiny::em(texts[["enrich_key_note"]]))), "integration-enrichment-string"),
         testid(shiny::div(
             shiny::fluidRow(
-                shiny::column(3, shiny::textInput(ns("kegg_organism"), texts[["enrich_kegg_organism"]], spec$kegg_organism$default)),
-                shiny::column(3, shiny::textInput(ns("reactome_organism"), texts[["enrich_reactome_organism"]],
+                shiny::column(3, shiny::textInput(ns("kegg_organism"), label("enrich_kegg_organism", "kegg_organism"),
+                    spec$kegg_organism$default)),
+                shiny::column(3, shiny::textInput(ns("reactome_organism"), label("enrich_reactome_organism", "reactome_organism"),
                     spec$reactome_organism$default)),
-                shiny::column(3, shiny::numericInput(ns("min_set_size"), texts[["enrich_min_set"]], spec$min_set_size$default,
+                shiny::column(3, shiny::numericInput(ns("min_set_size"), label("enrich_min_set", "min_set_size"), spec$min_set_size$default,
                     min = 5L, step = 1L)),
-                shiny::column(3, shiny::numericInput(ns("max_set_size"), texts[["enrich_max_set"]], spec$max_set_size$default,
+                shiny::column(3, shiny::numericInput(ns("max_set_size"), label("enrich_max_set", "max_set_size"), spec$max_set_size$default,
                     min = 5L, step = 1L))),
             # KIT-183: the test, pre-selected with the test of record for the chosen data set, and its sentence.
             testid(shiny::uiOutput(ns("test_ui")), "integration-enrichment-test"),
