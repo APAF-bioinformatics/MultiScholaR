@@ -320,9 +320,9 @@
    as a sample, so the threshold could be set by identifier numbers and whether a feature was removed could depend on
    its row number. For example, on an MS-DIAL metabolite table of 8 features and 4 samples at the 10th percentile and
    0.5, the threshold was 4.9 instead of 16,410 and no feature was removed instead of 2. A custom-format table with a
-   numeric identifier or annotation column was affected in the same way, and so were the metabolomics workbooks, which
-   keep retention time and m/z columns, and designs imported from a folder whose tables hold MS-DIAL's numeric columns
-   (retention time, m/z, scores). Tables with no such column (for example LipidSearch imports, and custom imports whose
+   numeric identifier or annotation column was affected in the same way, and so were designs imported from a folder
+   whose tables hold MS-DIAL's numeric columns (retention time, m/z, scores). Tables with no such column (for example
+   LipidSearch imports, and custom imports whose
    identifier and annotation columns are text) give the same results as before. Analyses saved before this change
    replay as they were made. A design sample that is missing from a table or is not numeric is now refused with a
    message. The helpers `lipidIntensityFilteringHelper()` and `metaboliteIntensityFilteringHelper()` take a new optional
@@ -484,10 +484,9 @@
    depends on the unit of the table, and on log2 values below 0 the absolute value treats -2 like +2. It stays
    selectable; when it runs on log2 values below 0, the normalisation log and a notification now say so. Cyclic
    Loess and Quantile do not depend on the unit.
- * Lipidomics and metabolomics filtering figures on log2 values (the workbooks draw them after the log step): a value
-   is counted as detected when it is not missing, and the step's missingness counts missing cells only (before, a log2
-   value of 0 or below, that is a measured value of 1 or below, was counted as not detected). On intensities a zero
-   still counts as not detected.
+ * Lipidomics and metabolomics filtering figures on log2 values: a value is counted as detected when it is not
+   missing, and the step's missingness counts missing cells only (before, a log2 value of 0 or below, that is a
+   measured value of 1 or below, was counted as not detected). On intensities a zero still counts as not detected.
  * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
    the assay holds missing values.
 
@@ -526,6 +525,17 @@
  * Help, About names the commit of the analysis code that was installed, beside the commit the installer was built
    from. Reports and analysis records made with the installed application name the same commit; before, they named
    none.
+ * The R Markdown workbooks (five for DIA proteomics, two for metabolomics and the multi-omics integration workbook)
+   are no longer installed with the package, and the application no longer copies them into projects. Each proteomics
+   and metabolomics workbook stopped with an error at one or more steps against this version. Copies already in a
+   project's `scripts` folder are kept and are no longer replaced when the project is opened. The workbooks are kept
+   in the source repository under `archive/workbooks/` for a later version, with the set-up script `project_setup.R`,
+   which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
+   (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
+   are in `?integrationTrainModel` (KIT-234).
+ * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
+   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several, it asks in the R console
+   when R runs interactively, and otherwise stops with an error.
 
 
 ### Scientific changes
