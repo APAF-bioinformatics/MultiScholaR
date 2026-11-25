@@ -30,9 +30,9 @@ See `runs.tsv`. Job-minutes: R1 9.6, R1 instrument rerun 12.5, F 32.0, R2 356.1,
   (two keys recorded). T7 (ii), T10 (iii) and G-C1 pass; the other two edited files pass. In R1 itself testthat
   refused a non-character `info` in T3's loop and T4, and T6/T10 (iv) ended at the expected S4 error before their
   declared-step halves: an instrument defect (no result for those parts), fixed in tests only and re-sent once.
-  Inferred: T3 and T4 call the helper with `group_labels`, which the old helper lacks, so they can only fail at the T1
-  wrapper (`expect_false(is.null(out))`); 5.6's sets {G1..G4} and {U1, U2, U3} are what the old rule would return. I
-  read that as the stated value; the auditor should confirm.
+  T3 and T4 fail on base at `expect_false(is.null(out))` (the helper before the fix has no `group_labels`), as T1; the
+  kept sets {G1, G2, G3, G4} and {U1, U2, U3} are today's rule's, derived (every share is 0), not observable on base
+  (implementation audit I09: accepted as met).
 - **F (45523968111, ba962c19, head only).** The new file passes (344/0), the three edited files pass, and nine exposed
   files pass (partitions, lipid/metab declarations, KIT-202, KIT-172 reopen, QC core, module-CI QC).
 - **R2 (45526352392, ba962c19 vs 185ebf75; 44 files, 3+3 shards, check).** 34 `same`; new file `only-on-head`
@@ -116,6 +116,26 @@ Then R2 again (correction pass) and R3.
   equal rows). Measurement M (stage 1, 4.5 of the ticket): every rule's null rate 0.048 to 0.053; power at the matched
   rule 0.677 at g = 1 against 0.678 before; requiring 2 groups loses strongly decreased features (2 x 6, 8-fold, 25 %
   missing: power 0.712 against 0.819 at g = 1).
+- **Since when (legacy).** Read on `main` (436cdbe8), the same rule is in four places: `R/func_lipid_qc.R:202-209` and
+  `R/func_metab_qc.R:202-209`, and the duplicate helpers in `R/func_lipid_s4_objects.R:4328-4335` and
+  `R/func_metab_s4_objects.R:4336-4343`. It is also in the tags: v0.5.0-rc1 (`R/func_lipid_qc.R:209`,
+  `R/func_metab_qc_filtering_helpers.R:41`) and v0.9.0 (`R/func_lipid_qc.R:73`, `R/func_metab_qc_filtering_helpers.R:41`).
+  For lipids it was first written in ce640728 (2026-01-18). Every released version kept features with no value
+  (implementation audit I10, read there).
+- **Size (control S, declared step, percentile 10, proportion 0.5, defaults).** Features removed for missing values,
+  per assay: 2 groups of 6, 250 features per assay: 0 to 4 at 10 % value-dependent missingness, 8 to 20 at 25 %; 4
+  groups of 3, 150 features: 0 to 3 and 9 to 16; complete tables: none.
+- **Side effect (owner's decision VAL-279, option 1).** A new proteomics project's `study_parameters.txt` also prints
+  the two new metabolomics settings (2 values per group, 1 group), because the proteomics import copies the whole
+  package `config.ini` (every omic's sections) into the project and stores it with every state; it already prints two
+  older metabolomics settings (legacy). No proteomics number, table, figure or report sentence changes. The five
+  proteomics GUI-entry reference files (`tests/testdata/gui-entry/prot_dia.json`, `prot_dia_limpa.json`,
+  `prot_tmt.json`, `prot_lfq.json`, `prot_lfq_fragpipe.json`) join the end-of-project re-record; a separate ticket will
+  stop proteomics study parameters listing other omics' settings. Reopened records of any omic saved before this change
+  report `defaults_changed` TRUE (the shipped `config.ini` changed).
+- **Runs.** R1 45520764649 (VAL-54 rerun 45522217087), F 45523968111, R2 45526352392 (control S 45573134165), R2
+  again 45575799976, R3 45587576015, probe 45600181863 (first attempt 45597931823, instrument defect); the merge-train
+  comparison on abfc99ac (below).
 - **Limits.** Simulated data only (KIT-185's generator, no unwanted factor, equal groups); unequal groups, pools and
   refusals tested by unit tests, not measured; no real data.
 
@@ -184,7 +204,9 @@ Then R2 again (correction pass) and R3.
   `test-workflow-operation-registry.R` `count-changed` (registry 354 -> 358, 264 -> 268, failures identical);
   `test-omic-qc-module.R` the four expectations of test (b); the lipid/metab GUI-entry files the 16 steps per lane from
   `qc_intensity`; `test-workflow-omics-declarations.R` and `test-workflow-omics-binding-steps.R` `message-changed`;
-  check findings identical (0 only on head).
+  check findings identical (0 only on head). `test-workflow-omics-binding-steps.R` (`message-changed`) fails one more
+  expectation on head (`report_sources`: the two new report-source entries; passed 18 -> 17 in that test), and its
+  `records` part moves by the two settings, the marker and the step description.
 - **Outside the prediction:**
   1. `test-gui-entry-proteomics.R` `new-failure` (base 189 passed / 4 failed; head 92 / 101). In every proteomics lane
      the per-step comparisons fail from the `design` step on; the first difference is the design state's digest
@@ -205,12 +227,12 @@ head), predictions written in it before any value was read. Run 45600181863 (ins
 every step from `import_refusal` to `summary_export`, every committed state, base 16112917 against head; tables in `p/`.
 
 - **Observed.** Every S4 slot other than `args` (the quantitative tables, the design, ids and all other slots) is
-  identical on base and head at every step and state of both lanes (1474 rows of 1474). `args` differs at every state
+  identical on base and head at every step and state of both lanes (1,344 of 1,344 slot comparisons: seven slots at 192 state observations). `args` differs at every state
   from `protein_s4_initial` on (192 of 192), and the whole-state digest the test computes differs exactly there
   (192 of 192). The differing `args` leaves are exactly `metaboliteIntensityFiltering/metabolites_min_values_per_group`
   ("2" on head, absent on base) and `metaboliteIntensityFiltering/metabolites_min_groups` ("1", absent), plus
   `daAnalysisUI/timestamp` at the DA states (the time of the run; it differs between any two runs). The stored
-  configuration list of the state record also differs, which I had predicted it would not: at `protein_s4_initial` by
+  configuration list of the state record also differs, which I had predicted it would not (130 of 192 observations equal, 62 different): at `protein_s4_initial` by
   the same two keys, at `protein_replicate_filtered` only by `output_file`, a temporary path (differs between any two
   runs). So P1 holds for every data and design component and fails for the stored configuration; P2 holds but for the
   two run-specific leaves; P3 holds.
@@ -225,11 +247,20 @@ every step from `import_refusal` to `summary_export`, every committed state, bas
   state. The lipid, metabolite and transcriptomics designs take their configuration from an imported design folder or
   start empty (`R/utils_workflow_omics_design.R:205-221`); their design steps did not move in R2 or R3, and the
   transcriptomics GUI-entry lanes were `same` in R3: they are not hit.
-- **Proteomics results.** No proteomics result a user receives differs between base and head on these lanes: every
-  table, design and value component of every state is identical (probe), and R3 shows no output or written table
-  moving. Only the stored configuration (`@args`, and the design state's stored configuration list) gains two
-  metabolite settings that no proteomics step reads. Limit: two of the five proteomics lanes probed (TMT and LFQ); the
-  other three (DIA, DIA_LIMPA, FragPipe) are read from R3's failure messages only (states only).
+- **Proteomics results.** No proteomics number, table, figure or report sentence differs between base and head on
+  these lanes: every data and design component of every state is identical (probe, two lanes), and in all five lanes
+  R3 shows no displayed output and no written table moving. What differs is what a new proteomics project stores and
+  prints:
+  - The state arguments and the design state's stored configuration gain the two metabolite settings.
+  - Read in the study-parameters writer, not observed: `study_parameters.txt` then lists `metabolites_min_values_per_group
+    = 2` and `metabolites_min_groups = 1` in its `[metaboliteIntensityFiltering]` block. That block already shows the two
+    existing metabolite settings, in "Parameters from Final S4 Object" and again in "Additional Configuration
+    Parameters".
+  - Because the shipped `config.ini` changes, the analysis record of any project, any omic, whose steps were saved
+    before this change reports a different installed-defaults digest and `defaults_changed` TRUE when rebuilt.
+
+  Limit: the TMT and LFQ lanes are probed; the DIA, DIA_LIMPA and FragPipe lanes are read from R3's failure messages
+  only (state digests only).
 
 ## For the owner (item 1; not chosen here)
 
@@ -260,3 +291,17 @@ against base 1050/20, the other 19 failures identical). Shard 4 on both sides (f
 20 shards; inferred from the order); base shard ran on an AMD EPYC 9V45, head on an EPYC 9V74 (meta.txt); the file sets
 `withr::local_seed(20261109L)` (line 507). Proteomics enrichment, off this ticket's route; possibly an unstable test. Nothing
 done about it.
+
+## Records repairs after the implementation audit (AUDIT-KIT-217-impl-20261125) and the owner's VAL-279
+
+- I02, I03, I04, I09, I10: applied above (proteomics paragraph, the 1,344 and 130/62 counts, the KIT-094 snapshot's
+  two parts, T3/T4, the change report's legacy, size, side-effect and runs paragraphs); `runs.tsv` corrected.
+- I06: NEWS no longer says the workbook gets the rule (KIT-234 withdrew the workbooks), names the all-pool refusal, and
+  states the proteomics study-parameters side effect as a known limit until the follow-up ticket.
+- I07 (W-5's attribution, 29 % at g = 2 against 4 % at g = 1; the metabolite cell's own figures) and I08 (W-11's note
+  is stored in the analysis record's JSON `note` of the two parameters; the record workbook's parameters sheet and the
+  reports do not show notes): for KIT-198 and the owner's wording pass; no code change (the owner chose option 1).
+- Owner's decision VAL-279 (2026-11-26): option 1; the five proteomics reference files are not edited and join the
+  end-of-project re-record.
+- Conventions (N6): many added R lines exceed 100 characters, as the edited files' own lines do; errors use
+  `rlang::abort(class =)` as KIT-202's (existing-code scope rule).

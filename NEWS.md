@@ -277,13 +277,15 @@
    it has a value in at least 2 samples of at least 1 group (all samples, if the group is smaller), and then, as
    before, if it is below the intensity threshold in fewer than the chosen proportion of samples. Both numbers are
    settings in the tab and are written to the study parameters; groups named like "pool" are not counted, and a design
-   without a group column is refused. A zero read as missing at import is not a value. Before, a missing value was not
+   without a group column, or whose groups are all named like "pool", is refused. A zero read as missing at import is not a value. Before, a missing value was not
    counted at all: a feature with no value in any sample was always kept, and the filter kept more features the more
    values were missing. Requiring 2 groups instead of 1 removes features measured in only one group, including strong
    decreases to below detection. Complete tables give the same results as before. Analyses saved before this change
    replay as they were made, and show "not applicable: earlier rule" for the two settings. Scripts that call the
-   metabolomics workbook or the S4 methods get the new rule; the exported helpers called without groups remove only
-   features with no value, with a warning. (KIT-217, VAL-173)
+   S4 methods get the new rule; the exported helpers called without groups remove only features with no value, with a
+   warning. Known limit until a follow-up change: a new proteomics project's study parameters also list these two
+   metabolomics settings (proteomics projects copy every omic's default settings, and already list two older
+   metabolomics ones); no proteomics result changes. (KIT-217, VAL-173, VAL-279)
 
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
