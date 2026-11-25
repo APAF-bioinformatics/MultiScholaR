@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-242 gate G0 (ticket r1.2 section 6): observe cases C1 to C14 at base 3eeaf100 before any code; one job, ceiling 120 minutes; decides section 6's stop rules and the facts OD-1 to OD-6 are put on",
+  "label": "KIT-242 G0 on kit-242-g0 33f11d9e (staging 3eeaf100 + tools/kit242/g0.R)",
+  "package_commit": "33f11d9e4a7111e4973769b6ee3570c71e152b00",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "tools/kit242/g0.R", "args": ["kit242-g0"], "out": "kit242-g0", "out_pattern": "\\.(tsv|txt|json)$", "timeout_minutes": 110}
+  ],
+  "fetch_refs": ["kit-188-ruv-default-calibration"],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
