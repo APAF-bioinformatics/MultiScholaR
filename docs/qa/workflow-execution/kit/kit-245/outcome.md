@@ -99,3 +99,10 @@ two `man/` pages are as at 3eeaf100 (every cited line holds); KIT-234's W8 is me
   file).
 - Binds the fix commit against 009fdb38. Ceiling 300 job-minutes (ticket section 11). Decides AS2; stop rule 4 (any
   other file not `same`, or a new check finding on head) stops the work.
+- Result, run 45600718143 (`r2s-compare.tsv`, `r2s-check-compare.txt`): AS2 met. `test-kit245-github-push-safety.R`
+  `fixed` (base 13 passed, 18 failed; head 31 passed, 0 failed). The other eleven files `same`: the edited
+  `test-github-management-direct-shared.R` 21/0 on both; KIT-234's file 29/0 on both (W8 unedited on the base,
+  edited on the head); `test-module-ci-trx-summary.R` (3), `test-omic-summary-module.R` (28) and
+  `test-optional-packages.R` (1) fail identically on both sides (stored references recorded on the laptop, brief
+  rule 4); the lipid, metabolomics and proteomics summary files run 0 expectations on both. `R CMD check`: base and
+  head 0 errors, 3 warnings, 3 notes, the six findings identical; none only on head. 59.9 job-minutes.
