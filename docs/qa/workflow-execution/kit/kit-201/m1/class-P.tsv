@@ -1,0 +1,9 @@
+kernel	P
+class	no worse
+gated	330
+pass	330
+imprecise	0
+fails_materially	0
+not_judged	0
+stopped_cells	
+falsifier_max_dp_V1V2	0.454025

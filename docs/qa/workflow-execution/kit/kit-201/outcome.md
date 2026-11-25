@@ -1,8 +1,6 @@
 # KIT-201 outcome (route (a); ticket r1.4)
 
-State: tests-only commit, its failing run, the fix and its passing run done; R0, `m1/precision.tsv`, M1, R2 and R3 wait
-for the KIT-196 and KIT-200 merges (their base must contain both: M1's VD20 data sets hold features with no value in any
-sample, which stop the DA on a tree without them).
+State: see the end of this file ("Current state").
 
 ## Commits
 
@@ -11,6 +9,11 @@ sample, which stop the DA on a tree without them).
 | ed56c7a6 | tests first: T-A1 to T-A7, the rewritten legacy-contract tests, `m1-sim.R`, `m1/family.tsv` (K = 990); nothing under R/ |
 | 2c399d0c | T-A5's protein table without row names (R1 instrument defect); nothing under R/ |
 | fa1f9909 | the fix, `man/runTestsContrasts.Rd`, NEWS, two ledger rows |
+| 39f4c2b4 | T-196 (guard; KIT-196 audit K196-I04) |
+| b0d7828a | merge of staging dd769671 (KIT-196, KIT-200, KIT-202 and others): marker list keeps every row; NEWS and ledger kept both |
+| 65da7eab | T-196 (b) (guard, proteomics, after KIT-200) |
+| a87b01a6 | M1 declaration, alone: R0's blind outputs, `m1/precision.tsv`, hashes, seeds, rule (`m1/declaration.md`) |
+| c25e3e1d | `skip-none.R` (for KIT-188's E2) |
 
 ## Observed
 
@@ -39,7 +42,60 @@ sample, which stop the DA on a tree without them).
   `test-omic-norm-ruv-design.R`; `compare.tsv` verdict `fixed` for all three files. A1 is met for this commit; R2 repeats
   it on the merged base.
 
+**R0 (run 45573413958; base dd769671, head 65da7eab; one scripts job).** Blind: only `m1/r0-checks.tsv`,
+`m1/r0-sd.tsv` and the formula's `m1/precision.tsv` / `precision-cost.tsv` were written and read. All 17 checks pass on
+the first attempt: every cell completes on both sides in L, M and P; the data-set hashes agree; `length(unique(s2.prior))`
+is above 1 on head and 1 on base wherever TREAT runs; the summary has 330 rows per kernel; the forced data set (L, cell 1,
+r 9003) is recorded failed with its message and stops its cell's summary. The formula set R between 200 and 1,000 per
+cell (982 comparisons gated, 8 reported, not gated: FDP overall and the lowest third's null rate in two L and two M
+cells at R = 1,000); projected M1 cost 11.63 core-hours, under the 180.0 cap.
+
+**M1 (counted; runs 45577233409 L, 45577238407 M, 45577242529 P; head a87b01a6, base dd769671).** Declared alone at
+a87b01a6 (`m1/declaration.md`). Every cell completed on both sides with matching data-set hashes; no stopped cell.
+`m1/class-*.tsv`, `m1/summary-*.tsv`, `m1/reported-*.tsv`, `m1/rows-*.tsv.gz`.
+
+| Kernel | Class | Gated | Pass | Imprecise | Fails materially | Reported, not gated | Falsifier: max |delta p| (V1, V2) |
+|---|---|---|---|---|---|---|---|
+| L | **no worse** | 326 | 326 | 0 | 0 | 4 (all pass) | 0.286 |
+| M | **no worse** | 326 | 326 | 0 | 0 | 4 (all pass) | 0.286 |
+| P | **no worse** | 330 | 330 | 0 | 0 | 0 | 0.454 |
+
+Sizes (means over data sets, head against base; ranges over cells, thresholds and contrasts):
+- Null rate, lowest third of the level: base 0.043 to 0.096 → head 0.043 to 0.058 (P); 0.043 to 0.081 → 0.041 to
+  0.052 (L, M). Largest decrease 0.040 (P: cell 10, V1, VD20, 2 x 3, tau 0) and 0.031 (L, M: cell 10, tau 0.5).
+- Null rate, highest third: base 0.030 to 0.051 → head 0.047 to 0.051 (P); 0.034 to 0.051 → 0.048 to 0.051 (L, M):
+  head - base up to +0.020 (P), +0.016 (L, M), with head within 0.01 of 0.05 (passes by rule 2's second difference).
+- Null rate among features with a missing value (VD20): base up to 0.081 → head at most 0.057 (P); 0.074 → 0.051 (L, M).
+- Null rate overall: head 0.046 to 0.053 (P), 0.045 to 0.051 (L, M).
+- FDP: head - base -0.013 to +0.007 (P), -0.002 to +0.003 (L, M); upper limits at most 0.008 and 0.004.
+- Power (reported): head - base -0.013 to +0.030 (P), -0.009 to +0.030 (L, M).
+- Calls made on one side only: mean per data set up to 17 (P), 3 (L, M); zero-df and untested counts identical on
+  both sides.
+- V0 (no trend; KIT-124 arm 27's law), P at 0: FDP head - base -0.0003 to +0.0066 (reported beside arm 27's
+  -0.0003 to +0.0005; this simulation has 3 to 6 per group and missing values, arm 27 had 6 and 12).
+- L and M give identical tables: the twin kernels receive the same data (shared seeds) and compute the same thing.
+- Falsifier of the premise (5.2): not met; V1 and V2 differ (max |delta p| 0.29 to 0.45).
+
+**R2 (run 45577246802; base dd769671, head c25e3e1d; 3 shards per side, check).** `r2/`. Of 101 files: 95 `same`,
+the new file `only-on-head` (89 expectations pass, T-196 and T-196 (b) included), `test-prot-ruv-factors-in-model.R`
+`fixed` (the old digest test is gone; base fails it on runners), and five files move: `test-gui-entry-proteomics.R` (the
+four proteomics lanes from the DA step on: 6.2 (iii)), `test-workflow-saved-da.R` (W1/W2 DIA DA captures: 6.2 (i),
+(iii)), `test-omic-da-module.R` (`prot_main`, named in 6.2 (iii); `prot_load`, `prot_no_contrasts` and the KIT-112 W3
+managed run: the DA manifest digest, moved by the model field, 6.2 (i)), and `test-omic-enrich-module.R` (the enrichment
+module's frozen captures: their `da_results_data` is the proteomics DA manifest and their runs the enrichment of its
+legacy-test results: downstream of 6.2 (i) and (iii); **not named in 6.2**, listed here for plan section 11). No
+`compare-error`. `R CMD check`: findings identical on both sides (0 only on head).
+
+**For KIT-188's E2 (VAL-132 (2)): Skip and declared `none` on c25e3e1d.** `r2/skip-none.tsv`: on the same matrices
+(2,000 proteins, 3, 4 and 6 per group, with and without missing values), `runTestsContrasts` (Skip's test) and
+`runProtRuvModelContrasts(exact = TRUE)` (`none`'s) give the same rows, the same missing pattern and the same columns;
+largest differences logFC 3.9e-14, raw p 3.2e-13, q 3.6e-13: **within 1e-10**, not bit-identical. Kernel level only:
+whether the two routes hand the DA the same matrix is not compared here (KIT-188's E2 does).
+
 ## Decisions and deviations
+
+- **Workbooks (owner, VAL-209, 2026-11-25).** No R Markdown workbook ships; nothing under `inst/workbooks/` is edited.
+  Route (a) edited none; the "proteomics workbooks' DA prose" items belong to route (b), not taken (ticket r1.7).
 
 - **Marker location (coordinator's ruling; ticket r1.4 7.1).** The DA is not a record step; the marker is the DA model
   record's `treat_moderation = "as_main_test"`, written while the current rule is in force by
@@ -89,6 +145,9 @@ sample, which stop the DA on a tree without them).
 ## Not checked
 
 - No R was run on this machine; every result above is a runner's.
-- R0, M1, R2, R3: not run (wait for the KIT-196 and KIT-200 merges).
 - The managed worker path's handling of the marker (R2's scope covers the worker tests).
 - Windows; real data.
+
+## Current state
+
+R0, M1 (no worse, all three kernels) and R2 done; R3 running.

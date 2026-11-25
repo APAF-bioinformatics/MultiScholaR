@@ -235,8 +235,12 @@
    variance for all features without the robust step, so the stated settings had no effect on TREAT results. This
    applies to lipidomics and metabolomics when a log fold-change threshold above 0 is set, and to every proteomics
    analysis of DIA without limpa, label-free and TMT data with the Skip or legacy RUV options (TREAT runs there at the
-   default threshold of 0). Results of those analyses change; in simulations [M1's sizes: added when KIT-201's M1 has
-   run]. A new analysis with these options no longer reproduces an earlier version's statistics; saved analyses replay
+   default threshold of 0). Results of those analyses change. In simulations with known truth (18 settings per omic:
+   variance with and without an abundance trend and hypervariable features, with and without missing values, 3 to 6
+   samples per group), the changed test was no worse on every pre-declared check: among unchanged features of the
+   lowest-abundance third, the share with p below 0.05 fell from up to 9.6 % to at most 5.8 % in proteomics (8.1 % to
+   5.2 % in lipidomics and metabolomics); in the highest-abundance third it rose from as low as 3.0 % to about 5 %; the
+   false discovery proportion changed by -1.3 to +0.7 percentage points and power by -1.3 to +3.0. A new analysis with these options no longer reproduces an earlier version's statistics; saved analyses replay
    as they were made, and in scripts the earlier statistics are obtained with the trend and robust options off. Reports
    re-rendered from an analysis saved before this change still describe its TREAT step as trended and robust; that step
    used one prior variance. The RUV panel's "Approach of earlier versions" row for classic proteomics is restated from
