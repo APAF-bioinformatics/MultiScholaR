@@ -902,7 +902,7 @@ k233Selector <- function(S, target, by) {
 
 #' One press: the target must be visible and enabled (checkVisibility with opacity and visibility CSS, offsetParent
 #' only where checkVisibility is missing), waited for at most 30 s while the page renders; then one click.
-k233Press <- function(S, step, target, by = "id") {
+k233Press <- function(S, step, target, by = "id", click = TRUE) {
     selector <- k233Selector(S, target, by)
     started <- Sys.time()
     answered <- 0
@@ -927,6 +927,7 @@ k233Press <- function(S, step, target, by = "id") {
         }
         Sys.sleep(0.5)
     }
+    if (!click) return(list(ok = TRUE, t = as.numeric(k233Js(S, "Date.now()") %||% 0), test = last$test))
     r <- k233Js(S, sprintf(K233_PRESS_JS, k233Json(selector), "true"))
     k233LogAction(S, step, target, "click")
     if (!isTRUE(r$clicked)) return(list(ok = FALSE, reason = paste(target, "could not be clicked"), test = r$test))
@@ -1181,7 +1182,8 @@ k233Capture <- function(S, spec, res, since) {
         covered <- isTRUE(o$exists) && is.finite(ratio) && o$bottom * ratio <= size[[2L]] + 2 &&
             o$right * ratio <= size[[1L]] + 2 && o$top >= -1
         zero <- isTRUE(o$exists) && isTRUE(o$bottom - o$top <= 0)
-        how <- if (covered) "pane image" else if (zero) "zero size (nothing drawn)" else "not covered"
+        how <- if (!isTRUE(o$exists)) "missing (not in the page)" else if (covered) "pane image" else
+            if (zero) "zero size (nothing drawn)" else "not covered"
         if (!covered && !zero && isTRUE(o$exists)) {
             element <- file.path(G$out, sprintf("%s-out-%s.png", stem, sub(".*-", "", o$id)))
             k233Js(S, sprintf("(function(){var e=document.getElementById(%s);if(e){e.scrollIntoView();}return !!e;})()",
@@ -1547,7 +1549,7 @@ k233StepNormalisation <- function(S, R, step, route) {
         by = "testid", tabs = tabs, prepare = prepare,
         # No digest signal: the state ruv_corrected is committed before the step ends (run L rerun 1, 45525410012).
         dom = \(st) k233Noted(st, "Normali[sz]ation (and RUV correction )?completed", "message"),
-        outputs = norm(c("norm_log", "ruv_optimization_summary"))))
+        outputs = norm("ruv_optimization_summary")))
     if (!identical(first$outcome, "complete")) return(first)
     summary_id <- norm("correlation_filter_summary")
     k233Action(S, list(step = "S6.2", name = "correlation filter at the rendered threshold",
@@ -1584,7 +1586,8 @@ k233StepDa <- function(S, R, step, route) {
             k233Noted(st, "loaded successfully", "message"),
         outputs = da("contrasts_display")))
     if (!identical(loaded$outcome, "complete")) return(loaded)
-    run <- k233Action(S, list(step = "S8.2", name = "run DA at the defaults", target = "prot-da-run", tabs = tabs,
+    run <- k233Action(S, list(step = "S8.2", name = "run DA at the defaults", target = "prot-da-run", by = "testid",
+        tabs = tabs,
         prepare = function(S) {
             k233Observation(S$G, S$label, "S8 rendered defaults", sprintf("formula=%s q=%s lfc=%s",
                 k233Clean(k233InputValue(S, da("formula_string"))), k233Clean(k233InputValue(S, da("da_q_val_thresh"))),
@@ -1669,7 +1672,8 @@ k233StepSummary <- function(S, R, step, route) {
 }
 
 k233DownloadReport <- function(S, R) {
-    p <- k233Press(S, "S10.4", "prot-summary-download-report", "testid")
+    p <- k233Press(S, "S10.4", "prot-summary-download-report", "testid", click = FALSE)
+    k233LogAction(S, "S10.4", "prot-summary-download-report", "download (the link's file fetched)")
     if (!isTRUE(p$ok)) return(list(outcome = "refused", message = paste("not reachable as a user:", p$reason)))
     path <- tryCatch(S$G$helpers$e2e_get_download(S$driver, paste0(K233_NS, "session_summary-download_report"),
         artifact_dir = S$G$work, filename = paste0(S$label, "-report-download")), error = \(e) conditionMessage(e))
@@ -1742,6 +1746,9 @@ k233DaFile <- function(R, contrast) {
     files <- list.files(dir, "_long_annot\\.tsv$", full.names = TRUE)
     exact <- file.path(dir, paste0("da_proteins_", gsub("[^A-Za-z0-9_-]", "_", contrast), "_long_annot.tsv"))
     if (file.exists(exact)) return(exact)
+    hit <- files[k233Norm(sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))) == k233Norm(contrast)]
+    if (length(hit)) return(hit[[1L]])
+    files <- list.files(k233ProjectPaths(R)$base, "_long_annot\\.tsv$", full.names = TRUE, recursive = TRUE)
     hit <- files[k233Norm(sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))) == k233Norm(contrast)]
     if (length(hit)) hit[[1L]] else NA_character_
 }
