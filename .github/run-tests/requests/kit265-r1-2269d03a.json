@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-265 R1 (G0): tests-only commit, E and G rows failing first on the code before the fix; ceiling 45 job-minutes, expected 12",
+  "label": "KIT-265 R1 tests only 2269d03a",
+  "package_commit": "2269d03ad00746e0db3be900819c8240a2d1a52a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit265-organism-routes.R",
+    "test-kit250-organism-dialog.R",
+    "test-prot-01c-import-module-contracts.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
