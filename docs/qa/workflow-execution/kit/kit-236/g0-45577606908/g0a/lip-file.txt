@@ -1,0 +1,35 @@
+== ITSD Normalization section
+ITSD Normalization:
+-------------------
+* Applied: Yes
+* Method Type: average_centered
+* Aggregation: median
+* Pattern Columns: LipidClass
+* ITSD Removed After Normalization: Yes
+* Timestamp: 2026-11-25 08:43:44
+'ITSD Features Per Assay' block present: FALSE
+'[Differential Abundance UI Parameters]' present: FALSE
+'[Differential Expression UI Parameters]' present: FALSE
+'User Interface Parameters' present: FALSE
+== Version Information section
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: 10198a0
+Commit Timestamp: 2026-11-25T19:34:52+11:00
+Source: Local Git Repository
+== Log Transformation section
+Log Transformation:
+------------------
+* Applied: Yes
+* Transform: log2
+== Between-Sample Normalization section
+Between-Sample Normalization:
+-----------------------------
+* Method: cyclicloess
+== deAnalysisParameters lines
+[deAnalysisParameters]
+  formula_string = ~ 0 + group
+deAnalysisParameters:
+  lfc [default] = 0

@@ -1,0 +1,13 @@
+# Recount at the fix's tree (staging e0747fc1 merged): 70 by section 9's grep (the 67 of 16112917 + test-kit218-da-wrapper-tail.R, test-kit220-da-threshold-consumers.R, the new file) + 7 named = 77; KIT-218's file time from its committed record (13.8 s), the new file's from R1 45592793437 (72.2 s).
+files 77; test minutes 144.5; setup 12.0 min per job
+heaviest: test-gui-entry-proteomics.R 18.7; test-kit129-run-path.R 16.1; test-prot-design-log2.R 12.7; test-workflow-omics-application-reads.R 10.4; test-omic-da-module.R 9.4; test-omic-enrich-module.R 8.1; test-kit212-da-current.R 8.1; test-workflow-saved-da.R 7.0
+k=3: max 66.1  min 54.0  total 180.5 job-min per side; shards 66.1 60.4 54.0
+k=4: max 56.6  min 41.1  total 192.5 job-min per side; shards 56.6 49.8 45.1 41.1
+k=5: max 49.0  min 32.7  total 204.5 job-min per side; shards 49.0 46.2 40.0 36.5 32.7
+k=6: max 45.7  min 28.9  total 216.5 job-min per side; shards 45.7 41.6 37.1 32.4 30.8 28.9
+k=7: max 43.1  min 25.9  total 228.5 job-min per side; shards 43.1 39.7 33.2 30.6 29.4 26.5 25.9
+k=8: max 41.3  min 23.2  total 240.5 job-min per side; shards 41.3 36.3 32.5 29.9 27.3 25.5 24.6 23.2
+k=9: max 38.4  min 22.2  total 252.5 job-min per side; shards 38.4 35.5 31.7 27.7 26.0 24.1 24.0 22.9 22.2
+k=10: max 37.2  min 19.4  total 264.5 job-min per side; shards 37.2 34.4 29.4 26.6 25.4 23.9 23.8 22.5 21.9 19.4
+chosen k = 5 (largest projected shard 49.0 min <= 50)
+ran: k = 6 shards per side (the ticket's rule, r1.2: 6 per side, largest projected 45.7 min); "chosen k = 5" above is the script's own rule (largest shard at most 50 minutes), not the ticket's

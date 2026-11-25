@@ -1,0 +1,45 @@
+drawings: 1
+Metabolomics analysis for metab_lc - report - created on 2026-11-25 13:25:50
+Your_fancy_self
+2026-11-25
+Sample Details
+SAMPLE DETAILS
+The analysis included 6 samples, each a separate biological sample (no technical replicates were declared in the design). • Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]
+Method Details
+METHOD DETAILS
+Data analyses were performed with MultiScholaR 0.9.0 (build 2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4); SOP reference: [to be completed by the analyst].
+Multi-Assay Data Structure The dataset contains 2 assays: LCMS_Pos, LCMS_Neg. Each assay was processed and tested for differential abundance separately; the results of the 2 assays are reported together.
+Data Preprocessing and Normalization Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group.
+ITSD Normalization Internal standard (ITSD) normalization was applied using the average_centered method with median aggregation across ITSD features. Internal standard features were removed after normalization.
+Between-sample normalization was performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015) to account for systematic technical variation across samples.
+Batch Effect Correction RUV-III batch correction was not applied. The analysis proceeded directly with normalized data for differential abundance analysis.
+Quality Control At each stage of data normalization, samples were checked for batch effects using: • Principal component analysis (PCA) to visualize sample clustering • Density boxplots to assess distribution consistency • Relative log-expression (RLE) plots to detect systematic biases • Pearson correlation matrices to evaluate replicate consistency
+Per-Assay Quality Metrics Per-assay quality control: the quality-control figures were drawn separately for each assay. The assays were required to contain the same samples.
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].
+Results
+Quality Control
+Quality Control Analysis Figure 1 has one row per assay and view (for each assay in turn: principal component analysis; density boxplots of the samples’ scores on the first two principal components; relative log expression; Pearson correlation) and one column per stage: after filtering, on the intensities before log2 transformation (left); after cyclic loess normalisation (normalizeCyclicLoess) (right). RUV-III correction was not applied to this dataset. Whether technical variation was reduced and biological signal kept is for the analyst to judge from these panels; this report draws no conclusion from them.
+Version Information
+Repository: MultiScholaR Branch: N/A Commit: 8fd559b Git Timestamp: 2026-11-26T00:14:54+11:00
+
+Figure 1: QC metrics across normalization stages
+Differential Abundance Analysis
+DIFFERENTIAL ABUNDANCE ANALYSIS
+Differential abundance of metabolites was tested separately within each assay, using the adjusted abundance matrix, for the comparisons defined in the contrast table (1 comparison: KO_vs_WT). The ‘limma’ R package (Ritchie et al., 2015) was used. A linear model was fitted using the formula ‘~ 0 + group’ with the ‘lmFit’ function, and the variances were moderated with limma’s empirical Bayes method (‘eBayes’), and p-values were calculated with limma’s TREAT test against the fold-change threshold. A trended and robust empirical Bayes analysis was performed. False discovery rates were estimated as q-values (Storey, 2002); where they cannot be computed, Benjamini-Hochberg adjusted p-values are used. Each comparison was tested against a log2 fold-change threshold of 0.5 with limma’s TREAT method (McCarthy and Smyth, 2009). Differentially abundant metabolites were those with a q-value below 0.05 and an absolute log2 fold change of at least 0.5.
+Full details of all metabolites are provided in the supplementary results table DA_results_metabolomics.xlsx within the Publication_tables folder.
+Comments
+COMMENTS
+Features remaining after each step (total across the 2 assays): import and design 6; intensity filter 6; duplicate resolution 6; quality-control finalisation 6; internal-standard normalisation 6; log2 transformation 6; between-sample normalisation 6; sample-correlation filter 6. 6 of 6 samples were kept by the sample-correlation filter (threshold 0.5).
+[To be completed by the analyst: quality-control assessment from Figure 1, technical performance and limitations of this data set. Apart from the counts above, nothing in this section is generated automatically.]
+Opinions and Interpretation
+OPINIONS AND INTERPRETATION
+[To be completed by the analyst: interpretation of the results and recommendations for further analysis. Nothing in this section is generated automatically.]
+Pathway Enrichment Analysis
+PATHWAY ENRICHMENT ANALYSIS
+Pathway enrichment analysis was performed on the differentially abundant metabolites to identify significantly enriched metabolic pathways and biological processes. The analysis was conducted using the following parameters: • No fold change cutoff was applied to filter differentially abundant metabolites. • An adjusted FDR cutoff of 0.05 was used to identify significantly enriched pathways • The background metabolite set consisted of all identified metabolites that passed quality control filtering steps
+The enrichment analysis was performed using KEGG pathway databases. Pathways were considered significantly enriched if they had an adjusted p-value less than 0.05 after multiple testing correction using the Benjamini-Hochberg method.
+Key findings from the pathway enrichment analysis are summarized below for each comparison:
+The complete list of enriched pathways with statistics is provided in the supplementary file ‘Pathway_enrichment_results_metabolomics.xlsx’ within the Publication_tables folder.
+## Warning: Enrichment Plots directory not found at /tmp/RtmpiLaK4a/kit236-variants/met/V7/base/results_summary/metabolomics/Publication_figures/Enrichment_Plots
+Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant metabolites. Plots are ordered alphabetically by comparison and direction.
+

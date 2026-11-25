@@ -271,16 +271,9 @@ removeWorkflowDaOwnFigures <- function(manager, paths, omicType) {
     root <- dirname(file.path(graphs, "."))
     folders <- dirname(made)
     own <- made[(folders == root | dirname(folders) == root) & folders != dirname(file.path(graphs, "Heatmap", "."))]
-    present <- own[file.exists(own)]
-    files <- present[!dir.exists(present)]
-    unlink(files, expand = FALSE)
-    left <- present[file.exists(present)]
-    if (length(left)) {
-        rlang::abort(paste0("An earlier file of the differential analysis could not be removed before this analysis's files ",
-            "were written: ", paste(left, collapse = ", "), ". Close any program that has it open, then run the differential ",
-            "analysis again."), class = "workflow_figure_unwritten")
-    }
-    invisible(files)
+    # KIT-257 (AUDIT-KIT-257-impl M1): the shared core (`removeWorkflowOwnFiles`: a leading `~` expanded, no pattern read).
+    removeWorkflowOwnFiles(own, paste0("An earlier file of the differential analysis could not be removed before this ",
+        "analysis's files were written: %s. Close any program that has it open, then run the differential analysis again."))
 }
 
 #' KIT-243 (part D): delete the marker once the DA's publication has completed. The deletion is checked; a marker still

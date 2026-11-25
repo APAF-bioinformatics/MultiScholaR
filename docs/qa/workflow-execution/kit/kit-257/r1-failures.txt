@@ -1,0 +1,410 @@
+file: test-kit257-norm-own-files.R
+test: KIT-257 E1: trx in process, a legacy grid run then a declared design run: the CCA files are gone (fails before)
+kind: failure
+message:
+  Expected `unname(k257Present(cca))` to be identical to `c(FALSE, FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE
+  
+  E1 [message] Normalization complete! Proceeding to DE analysis. | [message] Normalization complete! Proceeding to DE analysis.
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E1: trx in process, a legacy grid run then a declared design run: the CCA files are gone (fails before)
+kind: failure
+message:
+  Expected `any(file.exists(sources[basename(sources) %in% basename(cca)]))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 [message] Normalization complete! Proceeding to DE analysis. | [message] Normalization complete! Proceeding to DE analysis.
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E2: trx managed, the run's start: the CCA files are removed before the first action is dispatched (fails before)
+kind: failure
+message:
+  Expected `unname(rec$present)` to be identical to `c(FALSE, FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE
+  
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G3: trx, a directory named canonical_correlation_panels.png refuses the run with workflow_figure_unwritten (fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `before`.
+  Differences:
+      actual                    | expected                     
+  [2] "trx_raw_data_s4"         | "trx_raw_data_s4"         [2]
+  [3] "trx_expression_filtered" | "trx_expression_filtered" [3]
+  [4] "trx_qc_complete"         | "trx_qc_complete"         [4]
+  [5] "trx_ruvs"                -                              
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G3: trx, a directory named canonical_correlation_panels.png refuses the run with workflow_figure_unwritten (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  [error] Normalization error: the publication's files could not be copied into the project
+  x missing or empty: 'canonical_correlation_panels.png'
+  i in '/tmp/RtmpMSs2JY/file4c5723b359d5/project/kit097/results/transcriptomics/publication_graphs' (workflow_figure_unwritten)
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G3: trx, a directory named canonical_correlation_panels.png refuses the run with workflow_figure_unwritten (fails before)
+kind: failure
+message:
+  Expected `is.null(remove)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E3: a correlation after a skipped-RUV normalisation removes the earlier RUV table; Copy delivers the current one (fails before)
+kind: failure
+message:
+  Expected `unname(present)` to be identical to `c(FALSE, TRUE, FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE TRUE  FALSE
+  `expected`: FALSE TRUE FALSE FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E3: a correlation after a skipped-RUV normalisation removes the earlier RUV table; Copy delivers the current one (fails before)
+kind: failure
+message:
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E3: a correlation after a skipped-RUV normalisation removes the earlier RUV table; Copy delivers the current one (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E3: a correlation after a skipped-RUV normalisation removes the earlier RUV table; Copy delivers the current one (fails before)
+kind: failure
+message:
+  Expected `"normalised_results_cln_with_replicates.RDS" %in% copy$failed` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E4: a normalisation with RUV skipped removes the earlier RUV-corrected figures (fails before)
+kind: failure
+message:
+  Expected `unname(k257Present(figures))` to be identical to `rep(FALSE, length(figures))`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE FALSE FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E7: RUV, correlation, then RUV skipped and the DA without a correlation: no earlier table, Copy delivers none (fails before)
+kind: failure
+message:
+  Expected `unname(present)` to be identical to `rep(FALSE, 4L)`.
+  Differences:
+  `actual`:   TRUE  FALSE FALSE FALSE
+  `expected`: FALSE FALSE FALSE FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E7: RUV, correlation, then RUV skipped and the DA without a correlation: no earlier table, Copy delivers none (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E7: RUV, correlation, then RUV skipped and the DA without a correlation: no earlier table, Copy delivers none (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E9: managed, a normalisation pressed while a correlation's action runs removes that action's table when it starts (fails before)
+kind: failure
+message:
+  Expected `unname(rec$present)` to be identical to FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (proteomics): a file that cannot be removed refuses the normalisation (in process and managed) and the correlation (in process and managed) with nothing committed (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─check(...) at test-kit257-norm-own-files.R:452:5
+   2.   └─testthat::expect_s3_class(error, "workflow_figure_unwritten") at test-kit257-norm-own-files.R:446:9
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (proteomics): a file that cannot be removed refuses the normalisation (in process and managed) and the correlation (in process and managed) with nothing committed (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─check(...) at test-kit257-norm-own-files.R:455:5
+   2.   └─testthat::expect_s3_class(error, "workflow_figure_unwritten") at test-kit257-norm-own-files.R:446:9
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (proteomics): a file that cannot be removed refuses the normalisation (in process and managed) and the correlation (in process and managed) with nothing committed (fails before)
+kind: failure
+message:
+  Expected `k257ProtHead(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"
+  `expected$identity$parameters`: "normalized"          
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4c57745fbf78/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4c5769411d70/payload.rds"
+  
+    `actual$payload$bytes`: 17626.0
+  `expected$payload$bytes`: 13592.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "7a13eaab49cbeaf06738694a33074cb8c04541d0e9adf6ea730882404037a589"
+  + "1cd9c78113aa7a23afb7ac0f3e5d2225011356a637e6f0ecfc0c8f699d242f69"
+  
+  actual$entity_id vs expected$entity_id
+  - "def0c1dd5ed5a07693f99d916b80000f831785922d256ce712feaa16409dde73"
+  + "64e7f863c7e97dfb5cab1c3ac6f3f0c959d51be72c8383de8229c71e621be01b"
+  
+  correlation in process
+trace (first lines):
+      ▆
+   1. └─check("correlation in process", error) at test-kit257-norm-own-files.R:460:5
+   2.   └─testthat::expect_identical(k257ProtHead(fixture), head, info = case) at test-kit257-norm-own-files.R:445:9
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (proteomics): a file that cannot be removed refuses the normalisation (in process and managed) and the correlation (in process and managed) with nothing committed (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─check("correlation in process", error) at test-kit257-norm-own-files.R:460:5
+   2.   └─testthat::expect_s3_class(error, "workflow_figure_unwritten") at test-kit257-norm-own-files.R:446:9
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (proteomics): a file that cannot be removed refuses the normalisation (in process and managed) and the correlation (in process and managed) with nothing committed (fails before)
+kind: failure
+message:
+  Expected `k257ProtHead(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"
+  `expected$identity$parameters`: "normalized"          
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4c57745fbf78/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4c5769411d70/payload.rds"
+  
+    `actual$payload$bytes`: 17626.0
+  `expected$payload$bytes`: 13592.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "7a13eaab49cbeaf06738694a33074cb8c04541d0e9adf6ea730882404037a589"
+  + "1cd9c78113aa7a23afb7ac0f3e5d2225011356a637e6f0ecfc0c8f699d242f69"
+  
+  actual$entity_id vs expected$entity_id
+  - "def0c1dd5ed5a07693f99d916b80000f831785922d256ce712feaa16409dde73"
+  + "64e7f863c7e97dfb5cab1c3ac6f3f0c959d51be72c8383de8229c71e621be01b"
+  
+  correlation managed
+trace (first lines):
+      ▆
+   1. └─check("correlation managed", error) at test-kit257-norm-own-files.R:467:5
+   2.   └─testthat::expect_identical(k257ProtHead(fixture), head, info = case) at test-kit257-norm-own-files.R:445:9
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (proteomics): a file that cannot be removed refuses the normalisation (in process and managed) and the correlation (in process and managed) with nothing committed (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─check("correlation managed", error) at test-kit257-norm-own-files.R:467:5
+   2.   └─testthat::expect_s3_class(error, "workflow_figure_unwritten") at test-kit257-norm-own-files.R:446:9
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E8: DIA with limpa, the pass-through pressed again removes both result-table names (fails before)
+kind: failure
+message:
+  Expected `unname(present)` to be identical to `rep(FALSE, 4L)`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before)
+kind: failure
+message:
+  Expected `rec$dispatched` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  
+  managed
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before)
+kind: failure
+message:
+  Expected `isTRUE(norm$normalization_complete)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E5: lipid in process, RUV skipped removes the earlier RUV-corrected figures; Copy lists none (fails before)
+kind: failure
+message:
+  Expected `unname(k257Present(figures))` to be identical to `rep(FALSE, length(figures))`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE FALSE
+  
+  E5 lipid [message] Normalization pipeline complete! Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite | Applying between-sample normalization (method: quantile ) | Between-sample normalization complete | Post-normalization QC plots generated | RUV-III skipped | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E5: lipid in process, RUV skipped removes the earlier RUV-corrected figures; Copy lists none (fails before)
+kind: failure
+message:
+  Expected `any(grepl("_ruv_corrected_", copy$qc, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E6: lipid managed, the run's start removes the earlier RUV-corrected figures before the first action (fails before)
+kind: failure
+message:
+  Expected `unname(rec$present)` to be identical to `rep(FALSE, length(figures))`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE FALSE
+  
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5: lipid a file that cannot be removed refuses the run with nothing committed (fails before)
+kind: failure
+message:
+  Expected `k257OmicSnapshot(fx)` to be identical to `before`.
+  Differences:
+      actual$history             | expected$history              
+  [2] "lipid_raw_data_s4"        | "lipid_raw_data_s4"        [2]
+  [3] "lipid_intensity_filtered" | "lipid_intensity_filtered" [3]
+  [4] "lipid_qc_complete"        | "lipid_qc_complete"        [4]
+  [5] "lipid_log2"               -                               
+  [6] "lipid_normalized"         -                               
+  
+  `actual$head`:   "lipid_normalized" 
+  `expected$head`: "lipid_qc_complete"
+  
+  G5 lipid [message] Normalization pipeline complete!
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5: lipid a file that cannot be removed refuses the run with nothing committed (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  G5 lipid [message] Normalization pipeline complete!
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E5: metab in process, RUV skipped removes the earlier RUV-corrected figures; Copy lists none (fails before)
+kind: failure
+message:
+  Expected `unname(k257Present(figures))` to be identical to `rep(FALSE, length(figures))`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE FALSE
+  
+  E5 metab [message] Normalization pipeline complete! Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite | Applying between-sample normalization (method: quantile ) | Between-sample normalization complete | Post-normalization QC plots generated | RUV-III skipped | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E5: metab in process, RUV skipped removes the earlier RUV-corrected figures; Copy lists none (fails before)
+kind: failure
+message:
+  Expected `any(grepl("_ruv_corrected_", copy$qc, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 E6: metab managed, the run's start removes the earlier RUV-corrected figures before the first action (fails before)
+kind: failure
+message:
+  Expected `unname(rec$present)` to be identical to `rep(FALSE, length(figures))`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE  TRUE 
+  `expected`: FALSE FALSE FALSE FALSE
+  
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5: metab a file that cannot be removed refuses the run with nothing committed (fails before)
+kind: failure
+message:
+  Expected `k257OmicSnapshot(fx)` to be identical to `before`.
+  Differences:
+      actual$history             | expected$history              
+  [2] "metab_raw_data_s4"        | "metab_raw_data_s4"        [2]
+  [3] "metab_intensity_filtered" | "metab_intensity_filtered" [3]
+  [4] "metab_qc_complete"        | "metab_qc_complete"        [4]
+  [5] "metab_log2"               -                               
+  [6] "metab_normalized"         -                               
+  
+  `actual$head`:   "metab_normalized" 
+  `expected$head`: "metab_qc_complete"
+  
+  G5 metab [message] Normalization pipeline complete!
+
+file: test-kit257-norm-own-files.R
+test: KIT-257 G5: metab a file that cannot be removed refuses the run with nothing committed (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  G5 metab [message] Normalization pipeline complete!
+
