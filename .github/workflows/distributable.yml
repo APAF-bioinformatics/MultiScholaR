@@ -30,6 +30,11 @@ name: KIT-134 distributable
 # steps of stage full up to the install and the test tools, then the harness's parity step
 # (val-parity.R), the check of its folder (parity-check) and its one admitted upload
 # (parity-results, val-out/parity/ only); no lifecycle, hosts, lanes or figures.
+# Stage journey (KIT-237 5.4; dispatch only, on run-k237-journey only, never merged to staging, with input
+# journey_request): the steps of stage full up to the install and the test tools, the P3 lifecycle, the GUI-entry
+# lanes and the e2e lanes when the request asks, then one journey step (KIT-233's journey.R under the installed
+# bundle's R, through kit-237/journey-win.R), the check of its folder (journey-check) and its one admitted upload
+# (journey-results, journey-out/ only, after journey-check succeeded); no hosts, figure paths or D5 container.
 # [dist-linux] or [dist-windows] limits the run to one platform.
 
 on:
@@ -39,7 +44,7 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container, parity, kit167-engine]
+        options: [snapshot, library, full, container, parity, kit167-engine, journey]
       platform:
         description: "Platform"
         type: choice
@@ -47,6 +52,10 @@ on:
         options: [both, linux, windows]
       parity_request:
         description: "Stage parity: docs/qa/workflow-execution/kit/kit-159/parity/requests/<name>.json"
+        type: string
+        default: ""
+      journey_request:
+        description: "Stage journey: docs/qa/workflow-execution/kit/kit-237/requests/<name>.json"
         type: string
         default: ""
   push:
@@ -60,7 +69,9 @@ permissions:
 
 concurrency:
   group: distributable-${{ github.ref }}
-  cancel-in-progress: true
+  # KIT-237: a journey run is never cancelled by a later dispatch on the same ref (it waits); runs on
+  # run-k237-journey are still dispatched one at a time (stop rule 7).
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' || inputs.stage != 'journey' }}
 
 env:
   R_VERSION: "4.6.1"
@@ -88,6 +99,9 @@ jobs:
       kit167_engine: ${{ steps.plan.outputs.kit167_engine }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
       parity: ${{ steps.plan.outputs.parity }}
+      journey: ${{ steps.plan.outputs.journey }}
+      journey_e2e: ${{ steps.plan.outputs.journey_e2e }}
+      journey_gui_entry: ${{ steps.plan.outputs.journey_gui_entry }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -95,6 +109,7 @@ jobs:
           sparse-checkout: |
             .github/workflows
             docs/qa/workflow-execution/kit/kit-159/parity/requests
+            docs/qa/workflow-execution/kit/kit-237/requests
       - name: No cache and no upload from a build job (decision M20; revision 1.2, IR-B2)
         run: |
           file=.github/workflows/distributable.yml
@@ -103,7 +118,9 @@ jobs:
           fi
           # uploads: the snapshot job's text scores (no token, nothing built), and in each of the linux and
           # windows jobs exactly one step parity-results (KIT-159 7.9): stage parity, after parity-check
-          # succeeded, val-out/parity/ only (the comparison tables the harness checked, nothing built)
+          # succeeded, val-out/parity/ only (the comparison tables the harness checked, nothing built); and in the
+          # windows job exactly one step journey-results (KIT-237 5.4): stage journey, after journey-check
+          # succeeded, journey-out/ only (the checked journey records, nothing built)
           uploads="$(grep -cE 'uses: *actions/upload-artifact' "$file")"
           snapshot_uploads="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job == "snapshot:" { n++ } END { print n + 0 }' "$file")"
           parity_ok="$(awk '
@@ -115,11 +132,20 @@ jobs:
             /uses: *actions\/upload-artifact/ { up = 1 }
             END { if (up) print job, name, cond, path }' "$file" | grep -v '^snapshot:' \
             | grep -c "name: parity-results.*needs.plan.outputs.stage == 'parity'.*steps.parity-check.outcome == 'success'.*path: val-out/parity/$")"
+          journey_ok="$(awk '
+            /^  [a-z-]+:$/ { job = $1 }
+            /^      - / { if (up) { print job, name, cond, path }; up = 0; name = ""; cond = ""; path = "" }
+            /^      - name: / || /^        name: / { if (name == "") name = $0 }
+            /^        if: / { cond = $0 }
+            /^          path: / { path = $0 }
+            /uses: *actions\/upload-artifact/ { up = 1 }
+            END { if (up) print job, name, cond, path }' "$file" | grep '^windows:' \
+            | grep -c "name: journey-results.*needs.plan.outputs.stage == 'journey'.*steps.journey-check.outcome == 'success'.*path: journey-out/$")"
           parity_jobs="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job != "snapshot:" { print job }' "$file" | sort | tr '\n' ' ')"
-          if [ "$uploads" != 3 ] || [ "$snapshot_uploads" != 1 ] || [ "$parity_ok" != 2 ] || [ "$parity_jobs" != "linux: windows: " ]; then
-            echo "::error::uploads: $uploads in the file, $snapshot_uploads in snapshot, $parity_ok guarded parity-results ($parity_jobs)"; exit 1
+          if [ "$uploads" != 4 ] || [ "$snapshot_uploads" != 1 ] || [ "$parity_ok" != 2 ] || [ "$journey_ok" != 1 ] || [ "$parity_jobs" != "linux: windows: windows: " ]; then
+            echo "::error::uploads: $uploads in the file, $snapshot_uploads in snapshot, $parity_ok guarded parity-results, $journey_ok guarded journey-results ($parity_jobs)"; exit 1
           fi
-          echo "no cache, no artifact passed between jobs, no upload from a build job except the guarded parity-results"
+          echo "no cache, no artifact passed between jobs, no upload from a build job except the guarded parity-results and journey-results"
       - id: plan
         env:
           EVENT: ${{ github.event_name }}
@@ -127,6 +153,7 @@ jobs:
           INPUT_STAGE: ${{ inputs.stage }}
           INPUT_PLATFORM: ${{ inputs.platform }}
           INPUT_PARITY_REQUEST: ${{ inputs.parity_request }}
+          INPUT_JOURNEY_REQUEST: ${{ inputs.journey_request }}
         run: |
           if [ "$EVENT" = workflow_dispatch ]; then
             stage="$INPUT_STAGE"; platform="$INPUT_PLATFORM"
@@ -136,14 +163,16 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine|journey) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
           build=false; full=false; container=false; parity=false; kit167_engine=false; linux_runners='["ubuntu-22.04"]'
+          journey=false; journey_e2e=false; journey_gui_entry=false
           case "$stage" in
             kit167-engine) kit167_engine=true; platform=windows ;;
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
             container) build=true; container=true; platform=windows ;;
             parity) build=true; full=true; parity=true ;;
+            journey) build=true; full=true; journey=true; platform=windows ;;
           esac
           if [ "$parity" = true ]; then
             # KIT-159 7.9: dispatch only, on run-val-parity, one new request file per run
@@ -152,12 +181,23 @@ jobs:
             printf '%s' "$INPUT_PARITY_REQUEST" | grep -qE '^[a-z0-9][a-z0-9._-]{0,79}$' && [ -f "$req" ] || { echo "::error::no parity request $req"; exit 1; }
             [ "$(git log --format=%H -- "$req" | wc -l)" = 1 ] || { echo "::error::$req was changed after it was added: write a new request"; exit 1; }
           fi
+          if [ "$journey" = true ]; then
+            # KIT-237 5.4: dispatch only, on run-k237-journey only, one new request file per run (never reused)
+            req="docs/qa/workflow-execution/kit/kit-237/requests/$INPUT_JOURNEY_REQUEST.json"
+            [ "$EVENT" = workflow_dispatch ] && [ "$GITHUB_REF" = refs/heads/run-k237-journey ] || { echo "::error::stage journey runs only by dispatch on run-k237-journey"; exit 1; }
+            printf '%s' "$INPUT_JOURNEY_REQUEST" | grep -qE '^[a-z0-9][a-z0-9._-]{0,79}$' && [ -f "$req" ] || { echo "::error::no journey request $req"; exit 1; }
+            [ "$(git log --format=%H -- "$req" | wc -l)" = 1 ] || { echo "::error::$req was changed after it was added: write a new request"; exit 1; }
+            journey_e2e="$(jq -r '.e2e' "$req")"; journey_gui_entry="$(jq -r '.gui_entry' "$req")"
+            case "$journey_e2e:$journey_gui_entry" in true:true|true:false|false:true|false:false) ;; *) echo "::error::$req must say e2e and gui_entry true or false"; exit 1 ;; esac
+            [ "$(jq -r '.platforms | join(",")' "$req")" = windows ] || { echo "::error::$req: this commit runs the journey on windows only"; exit 1; }
+          fi
           linux=false; windows=false
           case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "full=$full"; echo "container=$container"; echo "kit167_engine=$kit167_engine"
             echo "linux_runners=$linux_runners"; echo "parity=$parity"
+            echo "journey=$journey"; echo "journey_e2e=$journey_e2e"; echo "journey_gui_entry=$journey_gui_entry"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -1035,7 +1075,7 @@ jobs:
       # shell's environment; the network is cut for the installed programs by the lifecycle step's rules.
       - name: "Lanes: the GUI-entry lanes without DIA with the installed application's R (reduced environment, network cut)"
         id: lanes
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' && (needs.plan.outputs.stage != 'journey' || needs.plan.outputs.journey_gui_entry == 'true') }}
         timeout-minutes: 90
         run: |
           New-Item -ItemType Directory -Force "$env:OUT\lanes" | Out-Null
@@ -1062,7 +1102,7 @@ jobs:
 
       - name: "e2e lanes: the four browser lanes without DIA against the installed application's package (reduced environment, network cut)"
         id: e2e
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' && (needs.plan.outputs.stage != 'journey' || needs.plan.outputs.journey_e2e == 'true') }}
         timeout-minutes: 120
         run: |
           New-Item -ItemType Directory -Force "$env:OUT\e2e" | Out-Null
@@ -1094,7 +1134,7 @@ jobs:
       # figures with its message (RAISED lines).
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.stage != 'journey' }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
@@ -1115,7 +1155,7 @@ jobs:
       # files); the prot_tmt lane in process at about 90 (below the Q-value staged copy's calculated 99) and about 118.
       - name: "Figure paths (KIT-052), long paths turned off (HKLM LongPathsEnabled = 0 for this disposable runner)"
         id: figuresoff
-        if: ${{ !cancelled() && steps.figures.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.figures.outcome != 'skipped' && steps.install.outcome == 'success' && needs.plan.outputs.stage != 'journey' }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
@@ -1159,6 +1199,167 @@ jobs:
           retention-days: 30
           path: val-out/parity/
 
+      # KIT-237 5.4 (stage journey only): the commit check before anything is launched (once with a deliberately
+      # wrong commit, which must stop, then the real one: stop rule 2), the firewall rules for every installed
+      # program, Windows' default long-path setting, then KIT-233's journey.R (at the request's journey_commit)
+      # under the installed bundle's R in the shell's environment, through kit-237/journey-win.R (at the request's
+      # route_commit), on the e2e fixtures of the commit under test (git archive, no line-ending conversion).
+      - name: "Journey (KIT-237): a browser drives the installed application through its own entry"
+        id: journey
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'journey' && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && steps.lifecycle.outcome != 'skipped' }}
+        timeout-minutes: 160
+        env:
+          JOURNEY_REQUEST: docs/qa/workflow-execution/kit/kit-237/requests/${{ inputs.journey_request }}.json
+          LIFECYCLE_OUTCOME: ${{ steps.lifecycle.outcome }}
+          LANES_OUTCOME: ${{ steps.lanes.outcome }}
+          E2E_OUTCOME: ${{ steps.e2e.outcome }}
+        run: |
+          $request = Get-Content -Raw $env:JOURNEY_REQUEST | ConvertFrom-Json
+          $cut = $request.commit_under_test
+          $out = Join-Path $env:GITHUB_WORKSPACE 'journey-out'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          $record = [System.Collections.Generic.List[string]]::new()
+          $record.Add("key`tvalue")
+          function Add-Record([string]$key, [string]$value) { $record.Add("$key`t$($value -replace '[\t\r\n]+', ' | ')"); "$key $value" }
+          $check = Join-Path $env:RUNNER_TEMP 'journey-commit-check.ps1'
+          @'
+          param([Parameter(Mandatory)][string]$Cut, [Parameter(Mandatory)][string]$AppFolder)
+          # PKG_PATHS as packaging/package-commit.sh defines it (the line the parity step sources, :1143).
+          $line = Select-String -Path packaging/package-commit.sh -Pattern '^PKG_PATHS="(.*)"$' | Select-Object -First 1
+          $paths = $line.Matches[0].Groups[1].Value -split ' '
+          $stamp = Get-Content -Raw (Join-Path $AppFolder 'resources\VERSION.json') | ConvertFrom-Json
+          $pc = $stamp.package_commit
+          $same = $pc -eq $Cut
+          if (-not $same) { git diff --quiet $pc $Cut -- @paths; $same = $LASTEXITCODE -eq 0 }
+          git diff --quiet $Cut HEAD -- packaging/
+          $packaging = $LASTEXITCODE -eq 0
+          $github = @(git diff --name-only $Cut HEAD -- .github/)
+          $githubOk = ($LASTEXITCODE -eq 0) -and (@($github | Where-Object { $_ -ne '.github/workflows/distributable.yml' }).Count -eq 0)
+          if ($same -and $packaging -and $githubOk) { "val_product_tree_ok package_commit=$pc commit_under_test=$Cut"; exit 0 }
+          "val_product_tree_mismatch package_commit=$pc commit_under_test=$Cut package_source_equal=$same packaging_equal=$packaging github_only_this_workflow=$githubOk"
+          exit 1
+          '@ | Set-Content -Encoding utf8 $check
+          # The planted check first (WL-0): a wrong commit under test must stop with val_product_tree_mismatch.
+          $wrong = git rev-list --max-parents=0 HEAD | Select-Object -First 1
+          $said = & pwsh -NoProfile -File $check -Cut $wrong -AppFolder $env:APP_FOLDER 2>&1
+          $plantedCode = $LASTEXITCODE
+          $said
+          Add-Record planted_commit $wrong
+          Add-Record planted_commit_check $(if ($plantedCode -ne 0 -and ($said -match '^val_product_tree_mismatch')) { 'pass' } else { "fail (exit $plantedCode)" })
+          # The real check (stop rule 2).
+          $said = & pwsh -NoProfile -File $check -Cut $cut -AppFolder $env:APP_FOLDER 2>&1
+          $realCode = $LASTEXITCODE
+          $said
+          Add-Record commit_under_test $cut
+          Add-Record package_commit ((Get-Content -Raw "$env:APP_FOLDER\resources\VERSION.json" | ConvertFrom-Json).package_commit)
+          Add-Record commit_check $(if ($realCode -eq 0) { 'pass' } else { 'fail' })
+          Add-Record run_branch_head (git rev-parse HEAD)
+          git diff $cut HEAD -- .github/workflows/distributable.yml | Set-Content -Encoding utf8 (Join-Path $out 'workflow-diff.txt')
+          Add-Record workflow_diff_file 'workflow-diff.txt'
+          Add-Record workflow_diff_sha256 (Get-FileHash -Algorithm SHA256 (Join-Path $out 'workflow-diff.txt')).Hash.ToLower()
+          if ($realCode -ne 0) {
+            $record | Set-Content -Encoding utf8 (Join-Path $out 'environment-workflow.tsv')
+            throw "val_product_tree_mismatch: the installed build is not the commit under test $cut (stop rule 2)"
+          }
+          # Sources and inputs by git archive at the request's commits, with no line-ending conversion.
+          $src = Join-Path $env:RUNNER_TEMP 'journey-src'
+          $fixtures = Join-Path $env:RUNNER_TEMP 'journey-fixtures'
+          foreach ($part in @(@($request.journey_commit, 'docs/qa/workflow-execution/kit/kit-233', $src, 'k233'),
+                              @($request.route_commit, 'docs/qa/workflow-execution/kit/kit-237', $src, 'k237'),
+                              @($cut, 'tests/testdata/e2e', $fixtures, 'fixtures'))) {
+            $zip = Join-Path $env:RUNNER_TEMP "journey-$($part[3]).zip"
+            git -c core.autocrlf=false -c core.eol=lf archive --format=zip -o $zip $part[0] $part[1]
+            if ($LASTEXITCODE -ne 0) { throw "git archive $($part[0]) $($part[1]) failed" }
+            Expand-Archive -LiteralPath $zip -DestinationPath $part[2] -Force
+            Add-Record "source_$($part[3])" "$($part[0]) $($part[1])"
+          }
+          Add-Record journey_R_sha256 (Get-FileHash -Algorithm SHA256 "$src\docs\qa\workflow-execution\kit\kit-233\journey.R").Hash.ToLower()
+          Add-Record journey_win_R_sha256 (Get-FileHash -Algorithm SHA256 "$src\docs\qa\workflow-execution\kit\kit-237\journey-win.R").Hash.ToLower()
+          # Outbound traffic blocked for every installed program, exactly as the lifecycle step does (5.3).
+          Set-NetFirewallProfile -All -Enabled True
+          $programs = @(Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe)
+          $existing = @(Get-NetFirewallRule -DisplayName 'kit-134 block *' -ErrorAction SilentlyContinue | ForEach-Object DisplayName)
+          $added = 0
+          foreach ($program in $programs) {
+            $name = "kit-134 block $($program.FullName)"
+            if ($existing -notcontains $name) { New-NetFirewallRule -DisplayName $name -Direction Outbound -Action Block -Program $program.FullName | Out-Null; $added++ }
+          }
+          $rules = @(Get-NetFirewallRule -DisplayName 'kit-134 block *' -ErrorAction SilentlyContinue | ForEach-Object DisplayName)
+          Add-Record firewall_programs $programs.Count
+          Add-Record firewall_rules_added_here $added
+          Add-Record firewall_unruled @($programs | Where-Object { $rules -notcontains "kit-134 block $($_.FullName)" }).Count
+          # Windows' default on a desktop installation (5.3), for the rest of this disposable runner's job.
+          $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          Add-Record LongPathsEnabled_before (Get-ItemProperty $key).LongPathsEnabled
+          Set-ItemProperty -Path $key -Name LongPathsEnabled -Value 0 -Type DWord
+          Add-Record LongPathsEnabled_set (Get-ItemProperty $key).LongPathsEnabled
+          Add-Record runner_image "$env:ImageOS $env:ImageVersion"
+          Add-Record lifecycle_outcome $env:LIFECYCLE_OUTCOME
+          Add-Record gui_entry_lanes_outcome $env:LANES_OUTCOME
+          Add-Record e2e_lanes_outcome $env:E2E_OUTCOME
+          Add-Record request $env:JOURNEY_REQUEST
+          $record | Set-Content -Encoding utf8 (Join-Path $out 'environment-workflow.tsv')
+          # The driver last: windows-clean-run.ps1 reduces this shell's environment as the shell does for R.
+          $requestPath = (Resolve-Path $env:JOURNEY_REQUEST).Path
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script "$src\docs\qa\workflow-execution\kit\kit-237\journey-win.R" -NoBundleArgument -Arguments $requestPath, $env:APP_FOLDER, $env:TEST_TOOLS, $out, $src, "$fixtures\tests\testdata\e2e", $env:GITHUB_WORKSPACE *> "$env:OUT\journey.log"
+          $status = $LASTEXITCODE
+          Get-Content "$env:OUT\journey.log" -Tail 80
+          if ($status -ne 0) { throw "the journey driver exited $status" }
+
+      - name: "Journey check (KIT-237 5.4): only checked records stay in journey-out/"
+        id: journey-check
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'journey' && steps.journey.outcome != 'skipped' }}
+        run: |
+          $out = Join-Path $env:GITHUB_WORKSPACE 'journey-out'
+          $held = Join-Path $env:GITHUB_WORKSPACE 'journey-withheld'
+          New-Item -ItemType Directory -Force $out, $held | Out-Null
+          foreach ($pair in @(@("$env:OUT\e2e\e2e-summary.tsv", 'e2e-summary.tsv'), @("$env:OUT\lanes\lane-summary.tsv", 'gui-entry-summary.tsv'), @("$env:OUT\journey.log", 'journey-driver.log'))) {
+            if (Test-Path -LiteralPath $pair[0]) { Copy-Item -LiteralPath $pair[0] (Join-Path $out $pair[1]) -Force }
+          }
+          $forbidden = 'fastduckdb|fastlimpadpc|fast_duckdb|fast_limpa_dpc|gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,}'
+          $withheld = [System.Collections.Generic.List[string]]::new()
+          $withheld.Add("path`tbytes`tsha256`treason")
+          foreach ($file in @(Get-ChildItem -LiteralPath $out -Recurse -File -Force)) {
+            $rel = [IO.Path]::GetRelativePath($out, $file.FullName) -replace '\\', '/'
+            if ($rel -in @('withheld.tsv', 'index.tsv')) { continue }
+            $reasons = @()
+            if ($file.Name -notmatch '\.(png|json|tsv|txt|log|html)$') { $reasons += 'type' }
+            if ($file.Length -gt 5MB) { $reasons += 'over 5 MB' } else {
+              $bytes = [IO.File]::ReadAllBytes($file.FullName)
+              if ($bytes.Length -ge 3 -and (($bytes[0] -eq 0x50 -and $bytes[1] -eq 0x4B) -or ($bytes[0] -eq 0x1F -and $bytes[1] -eq 0x8B) -or ($bytes[0] -eq 0x37 -and $bytes[1] -eq 0x7A) -or ($bytes[0] -eq 0x52 -and $bytes[1] -eq 0x61 -and $bytes[2] -eq 0x72))) { $reasons += 'archive' }
+              if ([Text.Encoding]::Latin1.GetString($bytes) -match $forbidden) { $reasons += 'forbidden string or token shape' }
+            }
+            if ($reasons.Count) {
+              $sha = (Get-FileHash -Algorithm SHA256 $file.FullName).Hash.ToLower()
+              $line = "$rel`t$($file.Length)`t$sha`t$($reasons -join ', ')"
+              $withheld.Add($line)
+              "withheld: $line"
+              $target = Join-Path $held $rel
+              New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
+              Move-Item -LiteralPath $file.FullName -Destination $target -Force
+            }
+          }
+          $withheld | Set-Content -Encoding utf8 (Join-Path $out 'withheld.tsv')
+          $index = [System.Collections.Generic.List[string]]::new()
+          $index.Add("path`tbytes`tsha256")
+          foreach ($file in @(Get-ChildItem -LiteralPath $out -Recurse -File -Force | Sort-Object FullName)) {
+            $rel = [IO.Path]::GetRelativePath($out, $file.FullName) -replace '\\', '/'
+            if ($rel -eq 'index.tsv') { continue }
+            $index.Add("$rel`t$($file.Length)`t$((Get-FileHash -Algorithm SHA256 $file.FullName).Hash.ToLower())")
+          }
+          $index | Set-Content -Encoding utf8 (Join-Path $out 'index.tsv')
+          "$($index.Count - 1) files kept, $($withheld.Count - 1) withheld"
+          foreach ($name in 'steps.tsv', 'index.tsv', 'withheld.tsv') { if (-not (Test-Path -LiteralPath (Join-Path $out $name))) { throw "journey-out/$name is missing" } }
+          if (Test-Path -LiteralPath (Join-Path $out 'verdict.txt')) { Get-Content (Join-Path $out 'verdict.txt') }
+
+      - name: journey-results
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'journey' && steps.journey-check.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: journey-windows
+          retention-days: 30
+          path: journey-out/
+
       - name: Results
         if: ${{ !cancelled() }}
         run: |
@@ -1173,6 +1374,8 @@ jobs:
             "browser e2e lanes without DIA, installed application" = '${{ steps.e2e.outcome }}'
             "figure paths, long paths as the runner has them" = '${{ steps.figures.outcome }}'
             "figure paths, long paths off" = '${{ steps.figuresoff.outcome }}'
+            "journey (KIT-237), installed application, long paths off" = '${{ steps.journey.outcome }}'
+            "journey check and upload (KIT-237)" = '${{ steps.journey-check.outcome }}'
           }
           $lines = @('### Results, Windows on windows-2025 (stage ${{ needs.plan.outputs.stage }})', '```')
           $lines += $rows.GetEnumerator() | ForEach-Object { "{0}`t{1}" -f $_.Key, $_.Value }
