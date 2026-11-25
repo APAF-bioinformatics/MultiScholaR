@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-218 audit repairs I02/I03: head-only run of the new test file at c7f105a2; pass = 0 failed, G1 and M2 skipped; a kit218ExpectTruth failure is a result (stop); ceiling 60 job-minutes, inside the correction allowance",
+  "label": "KIT-218 audit-repair head run c7f105a2",
+  "package_commit": "c7f105a2d82f614dec753b4cf8875d8195037661",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit218-da-wrapper-tail.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
