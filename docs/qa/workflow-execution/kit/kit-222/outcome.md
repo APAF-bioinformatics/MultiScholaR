@@ -1,8 +1,10 @@
-# KIT-222 outcome (ticket r1.2; owner's OD-1 to OD-8 of 2026-11-25)
+# KIT-222 outcome (ticket r1.3; owner's OD-1 to OD-8 of 2026-11-25)
 
-State: stopped after R2 and its one correction pass, for the implementation audit (coordinator's instruction: no full
-suite before the audit). One acceptance item is not met: G1's byte identity
-holds on labels but not on the replicate column's type in 1,896 'manual' sequences (below).
+State: stopped after the audit-repair run (run 45574235919), as the coordinator ruled: one result not as predicted.
+The test file passes in full on head (G1 included), every file is `same` and check is identical, but C1 finds 48
+four-sample `manual` sequences, base merge-free, whose labels equal base and whose replicate column differs in type only
+(the audit predicted C1 identical in all 52,384 base merge-free sequences; observed 52,336). F5 (I09, clearing the
+selection) was not done: it needs more than one line (below).
 
 ## Commits (branch kit-222, from origin/v0.9-staging cf8af245)
 
@@ -13,6 +15,10 @@ holds on labels but not on the replicate column's type in 1,896 'manual' sequenc
 | 3893b19a | instrument repairs after R1 (G5's missing argument; E9's table reference; guarded follow-ups) |
 | 0962cffb | the fix, ledger row `VAL-<merge>`, R1 records |
 | f58cd9e2 | correction after R2: the replicate column's type as base left it when other runs move |
+| 4e45c01e | merge of staging dd769671 (ledger to VAL-211; KIT-222's row after it, I06's corrections) |
+| 92208fe5 | tests after the implementation audit: G1 population filter (I01 edit 3), E12a, E12d (I02), G7 |
+| b8d9e56c | audit repairs under R/: base's type rule (I01 edit 1), no integer coercion in proteomics (I01 edit 2), I07 |
+| 8414c68e | records after the audit (outcome.md, wording.md, base-tests.R) |
 
 ## Step-0 survey (before R1)
 
@@ -81,14 +87,34 @@ recorded; G6 first violation at depth 2: lowest(r1, r2) then lowest(r1, r3).
   the group numbered above the selection's highest number before the edit). The proteomics wrapper's integer coercion
   also moved the type against base, untested. Both were applied after the implementation audit (below).
 
+### Audit-repair run (run 45574235919, 8414c68e against staging dd769671)
+
+Authority: AUDIT-KIT-222-impl-20261125 and the coordinator's ruling (repairs after an independent audit, one run,
+beyond the ticket's one correction; the owner told before it ran).
+- 40 files (R2c's scope, `test-prot-design-log2.R`, the 18 integration files of I08 and the two integration-input files):
+  every one `same`. R CMD check: identical findings, 0 only on head.
+- The new file on head: 456 passed, 0 failed: G1 in full, G5, G7 (proteomics edit leaves base's type: double after a
+  shift, integer otherwise), E12a and E12d (the key named on adopting a native archive and on opening a peptide
+  checkpoint).
+- The new file on base (`base-tests.R`, a worktree of dd769671 in the scripts job): every E row fails, E12a and E12d
+  included (`r3a/base-tests.tsv`); G rows pass.
+- C1: head merged 0; G6 head: no violation in 140,910 edits at depth 3. 52,336 of 54,024 sequences identical: the 1,640
+  in which base merged, and 48 four-sample `manual` sequences (e.g. rows D_1, A_1, D_2, B_1, C_1, C_2, B_2, A_2 typed
+  A=1, B=2, C=3, D=4) with labels identical to base and the replicate column of another type. INFERRED: base's shift
+  condition is evaluated on base's intermediate numbers, which differ from the head's ranks during a multi-step
+  sequence, so a per-step condition cannot reproduce base's type on every path. Not predicted (the audit: 52,384).
+- F5 (I09) not done: the builder's selection observer (`R/mod_omic_design_builder.R:524-541`) re-sends each kept
+  selection, `tech_rep_samples` included, after every design change, so a one-line clear after Assign would be
+  overwritten in the same flush. A fix needs that observer changed as well: more than the register's one line.
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
 |---|---|---|
 | A1 | met: every E row failed on base by assertion at its base value; G rows passed (G5 errored on an instrument defect, repaired) | R1, R2 base side |
-| A2 | at R2c: every written E row passed on the fix, but E12a and E12d were not written, so A2 was not met (it was recorded as met; AUDIT-KIT-222-impl I02); E13 is tested at the mechanism only. See the audit-repair run below | R2, R2c |
-| A3 | partly: no head merge (G6 head none at depth 3; C1 head merged 0); every base merge absent on head; G1 labels identical, type differs in 1,896 sequences | r2c/c1 |
-| A4 | met: every regression file `same`; check identical | R2, R2c |
+| A2 | met at the audit-repair run: every E row written passes on head (E12a, E12d included); E12c has no route (I10); E13 at the mechanism only. Earlier, at R2c: every written E row passed on the fix, but E12a and E12d were not written, so A2 was not met (it was recorded as met; AUDIT-KIT-222-impl I02); E13 is tested at the mechanism only. See the audit-repair run below | R2, R2c |
+| A3 | partly: no head merge (G6 head none at depth 3; C1 head merged 0); every base merge absent on head; G1 in the test file passes in full; C1: labels identical in every base merge-free sequence, type differs in 48 four-sample `manual` sequences | r3a/c1 |
+| A4 | met: every regression file `same`; check identical | R2, R2c, audit-repair run |
 | A5 | not run (full suite after the audit, by the coordinator's order) | — |
 | A6 | met except NEWS by decision: no NEWS (OD-6); ledger row naming IMP-036; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged | diff |
 
@@ -117,7 +143,7 @@ recorded; G6 first violation at depth 2: lowest(r1, r2) then lowest(r1, r3).
 
 ## Core-hours
 
-R1 0.7, R2 28.6, correction 12.2: 41.5 of the expected 107.7 (ceiling 501.33); R3 not run.
+R1 0.7, R2 28.6, correction 12.2, audit-repair run 20.0: 61.5 of the expected 107.7 (ceiling 501.33); R3 not run.
 
 ## Not checked
 
@@ -147,7 +173,7 @@ R1 0.7, R2 28.6, correction 12.2: 41.5 of the expected 107.7 (ceiling 501.33); R
 - **What changed in results.** Designs with a merged key: now refused at save, import and at every step that computes
   numbers, or (by construction) not produced by the builder; U8's corpus gives 100 samples instead of 91. Merge-free
   designs: identical labels and partition to base on every G1 sequence (C1); the replicate column's type differs in
-  1,896 manual sequences (open item). IMP-036's stated limit (2026-11-17) understated the defect and is superseded.
+  48 four-sample manual sequences after the audit repairs (open item; was 1,896 before them). IMP-036's stated limit (2026-11-17) understated the defect and is superseded.
 - **Evidence.** R1 45507613511; R2 45509856651; correction 45519323914; C1 in `r2/c1`, `r2c/c1`. The ticket's and the
   audit's Python models predicted every base value R showed, including the 1,440 of 40,320 four-sample `manual` orders.
 
