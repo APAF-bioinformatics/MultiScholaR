@@ -219,8 +219,8 @@
    g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
    proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
    (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
-   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab still shows
-   such a list like a tested list that found no terms, until KIT-215 changes the tab. The analysis record also states,
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab, the download
+   and the report show such a list as 'Not tested' (KIT-215). The analysis record also states,
    for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
    background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
    change, no longer replays; it is refused with the same message. The first change does not affect data imported in

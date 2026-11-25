@@ -12,6 +12,9 @@ Ticket r1.3 (`tickets/kit/KIT-215.md`, section 18: step 0 on f93dfd85). Plan aud
 | c9219652 | the fix (`R/`, the four report templates, NEWS, ledger `VAL-<merge>`, one line of `test-workflow-omics-binding-steps.R`, S0-10) |
 | f7ee8aa3 | merge of `origin/v0.9-staging` d048898d (ledger: staging's VAL-191, VAL-192 first, this ticket's row after; no `R/`, `inst/` or test file changed on staging since f93dfd85) |
 | 66f32932 | correction pass (R2): T7b asserts the refusal's class (the ticket's stated expectation) and its sentence, not the caught error's message |
+| a55acb66 | merge of staging 185ebf75 (merge train: KIT-202, KIT-184; ledger to VAL-200, this row after) |
+| 9a14cfa7 | audit repairs, tests first: T2 and T11 filtered summaries (K215-I01), T7b's exact refusal text restored (K215-I02); nothing under `R/` |
+| (next) | audit repairs K215-I01 (two lines per summary formatter) and K215-I02 (`enrichmentErrorMessage` at the five error signals); NEWS (I03), ledger wording (I06), records (I04, I05, I07, I08, O1) |
 
 ## Runs (observed)
 
@@ -33,11 +36,12 @@ See `runs.tsv`.
 - **R2 + G2, run 45495673217, c9219652 (head) against 6d002423 (base)** (`r2/`, `g2/`):
   - 25 of the 26 files are `same`, including `test-omic-enrich-module.R` (W1/W113: 19 failures, identical on both sides), `test-workflow-omics-binding-steps.R`, `test-gui-entry-proteomics.R`, `test-kit208-gprofiler-identifiers.R` and `test-prot-annotation-uniprot-empty.R`. The failures in the other `same` files are identical on both sides and recorded on the laptop (KIT-156). Stop rule 2 did not fire.
   - R CMD check: findings identical on both sides (3 WARNINGs, 3 NOTEs); nothing only on head.
-  - New file on head: 109 passed, 1 failed. T7b's second expectation was my exact message text: dplyr's `mutate()` replaces the raised message by its header ("In argument: ..."), so the refusal ends with that header. The ticket states only the class for T7b, and the class passed. This is a result of an over-specified test expectation, not of the product: one correction pass, 66f32932. R3 runs the full suite, including R2's scope, on it.
+  - New file on head: 109 passed, 1 failed. T7b's second expectation was my exact message text: dplyr's `mutate()` replaces the raised message by its header ("In argument: ..."), so the refusal ends with that header. The ticket states only the class for T7b, and the class passed. I recorded this as an over-specified test and used the one correction pass (66f32932) to loosen T7b. The implementation audit (K215-I02) corrects that reading: R2 exposed a deviation of the product from the ticket's own refusal text (section 7, S0-6), not an over-specified test. The audit repair below restores T7b's exact assertion and fixes the code.
   - G1's results digest and G5's 16 report-text digests (four templates, records with and without the outcome, no record; the limits sentence removed) are identical base against head (`r2/digests-*.txt`).
   - G2 (KIT-203's gate g1 on head): environment as KIT-189's; "match on every list" (400 of 400).
 - **R3, run 45502798552: full suite on 94d57634 (head: the merge of staging d048898d plus the correction pass) against d048898d (base)** (`r3/`): 478 files `same`. The new file is only on head: 110 passed, 0 failed, so T7b's corrected row passes. No file timed out or crashed. Check findings are identical on both sides (3 WARNINGs, 3 NOTEs). This also re-runs R2's scope after the correction pass.
-- **Runner use:** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours (expected 105.67, ceiling 469.33).
+- **Audit repairs and R2b** (implementation audit `AUDIT-KIT-215-impl-20261125.md`; the coordinator's ruling: audit repairs, not a second correction pass, verified in the one R2b merge check that is due because the merge train landed): PENDING.
+- **Runner use (before R2b):** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours (expected 105.67, ceiling 469.33).
 
 ## The design of the GO classification (S0-1; step-0 ruling SR-1)
 
@@ -67,7 +71,7 @@ The GO route calls `clusterProfiler::enricher` as before. Only for a list with p
 | # | Criterion | Evidence | State |
 |---|---|---|---|
 | A1 | G0: engine conditions and fixture families | `g0a/engine.tsv`, `g0b/g0.tsv` | met |
-| A2 | failing-first rows fail at base values; guards pass; all pass on the fix | R1; R2 (all but T7b's over-specified text, corrected 66f32932); R3 110/0 | met |
+| A2 | failing-first rows fail at base values; guards pass; all pass on the fix | R1; R2 (T7b exposed K215-I02); R3 110/0; R2b (audit repairs) | see R2b |
 | A3 | R2: every file `same` except the new file | `r2/compare.tsv` | met |
 | A4 | KIT-203 gate G1 on head | `g2/g1-summary.tsv` | met |
 | A5 | R3 full suite on the merge | `r3/compare.tsv`: 478 same, new file only on head | met |
@@ -83,15 +87,32 @@ KIT-216, merging second, must:
 
 KIT-216 also adds a refusal in `runOmicEnrichAnalysis` (`R/mod_omic_enrich.R`), after KIT-215's edits to `holdOmicEnrichRun` in the same file.
 
+Against KIT-216 section 15a (implementation audit K215-I04):
+1. Item 1: `saveWorkflowEnrichmentState` gained arguments `not_tested` and `no_list` (`R/utils_workflow_enrichment.R:1200-1229`), and `runWorkflowEnrichment`'s call passes them (`:1120-1121`). KIT-216 adds `source` to the same signature and call.
+2. Item 2: KIT-215 edits `R/utils_workflow_dia_da.R`:
+   - the kernel's `value$no_list` (`:710`);
+   - `diaEnrichmentNoIdentifiers` now returns `list(not_tested, no_list)` (`:744-800`);
+   - `runDIAReferenceEnrichment`'s `out$no_list` (`:885`).
+3. Item 3: `restoreProtEnrichResultsFromState` now calls `holdOmicEnrichOptionalFields` (`R/mod_omic_enrich_panels.R:790`).
+4. Item 6: `test-omic-enrich-module.R` is not changed by KIT-215, so no leaf line moves.
+5. Item 7: the new test file reads no `current_state`, no history and no `replay$states`. It reads the record through `k215EnrichmentRecord` (`:81-85`) and `replay$error` only (T4b `:340-343`).
+6. Also: KIT-215's block in `restoreWorkflowEnrichment` (`:1334-1343`) reads `getWorkflowStateReference(manager, config$state_name)`, the map entry. Under KIT-216's E-1 (ii) that entry outlives the product, so the block must stay behind KIT-216's `diaEnrichmentProduct` gate (KIT-216 3.1 item 4 already gates the whole restore).
+
+(Line numbers as the audit read them at a0d59269.)
+
 ## Limits (observed or by reading)
 
+- Scripted use (owner to confirm, O1 of the implementation audit; not in NEWS until confirmed): a direct call of the exported `processEnrichments` from a script returns, as before, an empty result with no message for a list not tested and for a GO comparison with no annotated tested protein. A caught error is still only a warning, or for g:Profiler's per-comparison error only a console message. The labels and refusals apply in the application and on replay.
+- Out of scope, pre-existing (K215-I08; the coordinator adds the plan section 13 row): a refused enrichment run leaves the pathway files of the lists it tested in `pathway_dir`, which the publication export copies. KIT-215 widens the set of refused runs (C3, C4, errors).
+
 - The report bullet splits the outcome `enrichment_lists_not_tested` on "; " (KIT-208's format). A comparison display name containing "; " would be split wrongly (ruling SR-4 (b)). No change.
-- An error caught after dplyr wraps it (g:Profiler's per-comparison handler) is reported with dplyr's header ("In argument: ..."), not the raised message, and the sentence then ends with two full stops. The run is refused all the same (VAL-170 (4)). Wording is for the owner's pass (VAL-41).
 - On g:Profiler, "no significant term" cannot be told from "no recognised name" (VAL-170 (6)). The report says so; plan section 13 row (ticket 12).
 - When one GO list raises an error and the other direction has no list, the run is refused as an error. With both lists present, a comparison-level refusal is judged first.
 - An absent outcome means "unknown" in a record made before KIT-215, and "every list tested" in a record made after it.
 
 ## Not checked
+
+- The Shiny module path of the new behaviour (observer → tab fields → outputs; the download handler's new arguments; the refusal toast) is checked by reading only: no W1/W113 or GUI-entry case reaches it (fake engine, deterministic double). This goes with the W1 `kernel_clusterprofiler` row on the end-of-project re-record list (K215-I07).
 
 - Real data (C4 and C5 frequency); a later enrichit version.
 - KIT-216's final code.
@@ -105,7 +126,7 @@ KIT-216 also adds a refusal in `runOmicEnrichAnalysis` (`R/mod_omic_enrich.R`), 
 Three further cases also completed as if nothing were enriched, when nothing could have been tested or the test had failed:
 - a GO comparison whose tested proteins have no annotation at all;
 - a GO comparison with too few annotated proteins for any term of 10 to 500 of them;
-- a list whose test raised an error (both routes; on g:Profiler also an error in a comparison's processing). The error was only a warning.
+- a list whose test raised an error (both routes; on g:Profiler also an error in a comparison's processing). The error was only a warning, and for an error in a g:Profiler comparison's processing only a console message (the comparison then showed 'No plot data for this contrast').
 
 A direction in which no protein passed the cutoffs read "0". Affected: g:Profiler users with unnamed proteins in one direction; GO-route users with incomplete or mismatched annotation; users of either route whose test failed.
 
@@ -116,7 +137,9 @@ A direction in which no protein passed the cutoffs read "0". Affected: g:Profile
 - The g:Profiler report paragraph states that a list with no significant term cannot be told apart from one in which the service recognised none of the names.
 - No term, p-value or list of a tested list changes. A list that was tested and in which no tested term holds a list protein is still shown as tested, with no term. Records of the refused cases made earlier no longer replay.
 
-**Code references.** At the base f93dfd85:
+**Code references.** In the legacy pipeline (`main` 436cdbe8): `R/func_general_enrichment.R:3109` (`processEnrichments`), `:3367-3437` (g:Profiler handlers), `:3663-3693` (GO calls and handlers); `R/mod_prot_enrich.R:1794`, `:1872` (summary counts), `:2003`, `:2046` (placeholders).
+
+At the base f93dfd85:
 - `R/func_general_enrichment_orchestration.R:341-417` (g:Profiler lists and handlers), `:564-641` (GO lists and handlers);
 - `R/utils_workflow_dia_da.R:678-757` (kernel and KIT-208's judge);
 - `R/utils_workflow_enrichment.R:1070-1079`, `:1184-1215`, `:1302-1315`;
