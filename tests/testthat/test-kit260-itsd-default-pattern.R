@@ -419,3 +419,240 @@ test_that("KIT-260 G4: KIT-242's C14 object, 'w/o MS2:' rows kept as features by
   expect_true(all(sprintf("w/o MS2: Feature %d", 1:5) %in% after[["Metabolite name"]]))
   expect_false(any(c("PC 15:0_18:1(d7)", "LPC 18:1(d7)") %in% after[["Metabolite name"]]))
 })
+
+# --- Correction pass (AUDIT-KIT-260-impl-20261126): I02 (a), I05, I10 ---------------------------------------------------
+
+#' Run pattern-mode ITSD with the product as a build before KIT-260 wrote it (the kernel's rows-used fields absent),
+#' then the record, the study-parameters file and the report as an older project reopened at this version builds them.
+kit260OlderItsd <- function(root, class, object) {
+  binding <- kit172Binding(class)
+  fixture <- kit260Owner(root, object, class)
+  local({
+    testthat::local_mocked_bindings(omicsItsdRowsUsed = function(...) list(), .package = "MultiScholaR")
+    kit172Quiet(runWorkflowOmicsReferenceItsdNormalisation(binding, fixture$owner, "median", NULL, fixture$workflow$config_list))
+  })
+  fixture
+}
+
+kit260StudyLines <- function(root, owner, state) {
+  dir.create(root, recursive = TRUE, showWarnings = FALSE)
+  kit172Quiet(utils::capture.output(createWorkflowArgsFromConfig("kit260", source_dir_path = root, final_s4_object = owner$getState(state),
+    workflow_data = list(state_manager = owner))))
+  readLines(file.path(root, "study_parameters.txt"), warn = FALSE)
+}
+
+#' The report's parser and Methods paragraph on a study-parameters file (the template's own chunks).
+kit260ReportNote <- function(class, file) {
+  spec <- if (identical(class, "lipid")) list(dir = "lipidomics", file = "lipidomics_report.rmd", extract = "ExtractLipidStudyParameters") else
+    list(dir = "metabolomics", file = "metabolomics_report.rmd", extract = "ExtractStudyParametersNew")
+  env <- new.env(parent = asNamespace("MultiScholaR"))
+  env$`%||%` <- function(a, b) if (!is.null(a)) a else b
+  env$d66_log <- function(...) invisible(NULL)
+  report <- readLines(system.file("reports", spec$dir, spec$file, package = "MultiScholaR"), warn = FALSE, encoding = "UTF-8")
+  for (label in c("Hierarchical Parser", "Method Section")) {
+    start <- grep(paste0("^```\\{r ", label, "[,}]"), report)
+    end <- start + which(report[-seq_len(start)] == "```")[[1L]]
+    chunk <- tempfile(fileext = ".Rmd")
+    writeLines(report[start:end], chunk, useBytes = TRUE)
+    code <- tempfile(fileext = ".R")
+    suppressMessages(knitr::purl(chunk, output = code, quiet = TRUE, documentation = 0))
+    for (e in parse(code, keep.source = FALSE, encoding = "UTF-8")) suppressWarnings(eval(e, env))
+  }
+  numbers <- env[[spec$extract]](env$ReadStudyParamsNew(file))
+  list(note = numbers$itsd_note, method = paste(suppressWarnings(env$FormatMethodDetails(numbers)), collapse = " "))
+}
+
+kit260Plain <- function() c(sprintf("Metabolite %03d", 1:40), ifelse(KIT260_NAMED %in% KIT260_RETURNED,
+  sprintf("Plain %02d", seq_along(KIT260_NAMED)), KIT260_NAMED))
+
+for (class in c("metab", "lipid")) {
+  test_that(sprintf("KIT-260 I02 (record): an older project's record carries the note, read from its stored states (%s)", class), {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    prefix <- kit172Binding(class)$prefix
+    for (case in c("legacy", "twin")) {
+      object <- if (identical(case, "legacy")) kit260Object(class, 8L, pattern = KIT260_BASE) else
+        kit260Object(class, 8L, pattern = KIT260_BASE, names = kit260Plain())
+      # The ITSD product is as an older build wrote it: no rows-used fields.
+      fixture <- kit260OlderItsd(file.path(root, case), class, object)
+      step <- kit260Step(fixture$owner, paste0(prefix, "_itsd_norm"))
+      if (identical(case, "legacy")) {
+        expect_identical(step$outcomes$itsd_note, KIT260_NOTE, info = class)
+        expect_length(unlist(step$outcomes$itsd_features_per_assay$A1), 13L)
+      } else {
+        expect_null(step$outcomes$itsd_note)
+      }
+      closeDIAStateAdapter(fixture$owner)
+    }
+  })
+
+  test_that(sprintf("KIT-260 I02 (study parameters): an older project's study-parameters file carries the note (%s)", class), {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    prefix <- kit172Binding(class)$prefix
+    for (case in c("legacy", "twin")) {
+      object <- if (identical(case, "legacy")) kit260Object(class, 8L, pattern = KIT260_BASE) else
+        kit260Object(class, 8L, pattern = KIT260_BASE, names = kit260Plain())
+      fixture <- kit260OlderItsd(file.path(root, case), class, object)
+      lines <- kit260StudyLines(file.path(root, paste0("sp-", case)), fixture$owner, paste0(prefix, "_itsd_norm"))
+      expect_identical(sum(trimws(lines) == paste("* Note:", KIT260_NOTE)), if (identical(case, "legacy")) 1L else 0L,
+        info = paste(class, case))
+      closeDIAStateAdapter(fixture$owner)
+    }
+  })
+
+  test_that(sprintf("KIT-260 I02 (report): an older project's report carries the note (%s)", class), {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    prefix <- kit172Binding(class)$prefix
+    fixture <- kit260OlderItsd(file.path(root, "legacy"), class, kit260Object(class, 8L, pattern = KIT260_BASE))
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    dir <- file.path(root, "sp")
+    kit260StudyLines(dir, fixture$owner, paste0(prefix, "_itsd_norm"))
+    report <- kit260ReportNote(class, file.path(dir, "study_parameters.txt"))
+    expect_identical(report$note, KIT260_NOTE, info = class)
+    expect_true(grepl(KIT260_NOTE, report$method, fixed = TRUE), info = class)
+  })
+}
+
+test_that("KIT-260 I10: the lipid study parameters and lipid report carry the note on a project run at this version", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  binding <- kit172Binding("lipid")
+  fixture <- kit260Owner(root, kit260Object("lipid", 8L, pattern = KIT260_BASE), "lipid")
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  kit172Quiet(runWorkflowOmicsReferenceItsdNormalisation(binding, fixture$owner, "median", NULL, fixture$workflow$config_list))
+  dir <- file.path(root, "sp")
+  lines <- kit260StudyLines(dir, fixture$owner, "lipid_itsd_norm")
+  expect_identical(sum(trimws(lines) == paste("* Note:", KIT260_NOTE)), 1L)
+  report <- kit260ReportNote("lipid", file.path(dir, "study_parameters.txt"))
+  expect_identical(report$note, KIT260_NOTE)
+  expect_true(grepl(KIT260_NOTE, report$method, fixed = TRUE))
+})
+
+test_that("KIT-260 I10: the integration tab states the note when marked rows were matched through the removed alternatives", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  binding <- kit172Binding("metab")
+  fixture <- kit260Owner(root, kit260Object("metab", 8L, pattern = KIT260_BASE), "metab")
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  config <- fixture$workflow$config_list
+  kit172Quiet({
+    runWorkflowOmicsReferenceLog2(binding, fixture$owner, 0, config)
+    runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, fixture$owner, "cyclicloess", config)
+  })
+  source <- kit172Quiet(withWorkflowStateScope(fixture$owner, function() omicsIntegrationInputSource(binding, fixture$owner)))
+  views <- names(source$features)
+  object <- methods::new("IntegrationViewsData", views = stats::setNames(lapply(views, function(v) data.frame(feature_id = character())), views),
+    features = source$features, inputs = list(metabolomics = list(omic = "metabolomics", views = views, manifest = source$manifest)))
+  legacy <- integrationInternalStandardLegacy(object, views)
+  expect_identical(lengths(legacy), stats::setNames(c(9L, 9L), views))
+  preview <- list(parameters = list(missing_samples = "drop_incomplete", technical_replicates = "average", internal_standards = "drop"),
+    aligned = list(view_summary = data.frame(view = views, sparse_dropped = 0L), shared_samples = 12L), all_samples = 12L,
+    replicates = data.frame(view = views, runs = 12L, biological_samples = 12L, repeated = 0L, standards = 13L),
+    standard_names = integrationInternalStandardNames(object, views), standard_legacy = legacy)
+  note <- paste("This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated",
+    "without MS/MS, or names containing 'IS-' in capitals; such features were used as internal standards and removed",
+    sprintf("(data set %s, 9 rows; data set %s, 9 rows).", views[[1L]], views[[2L]]))
+  expect_true(note %in% integrationAlignmentFacts(preview))
+})
+
+test_that("KIT-260 I10: the integration model and its record name the marked rows per data set (stand-in trainer)", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  integration_dir <- file.path(root, "integration")
+  input <- function(omic, views, samples, standards = list()) {
+    matrices <- lapply(views, function(m) data.frame(feature_id = rownames(m), m, check.names = FALSE, stringsAsFactors = FALSE))
+    features <- lapply(stats::setNames(names(views), names(views)), function(view) {
+      table <- data.frame(feature_id = rownames(views[[view]]), display_name = tolower(rownames(views[[view]])), stringsAsFactors = FALSE)
+      if (!is.null(standards[[view]])) table$is_internal_standard <- standards[[view]]
+      table
+    })
+    manifest <- list(omic_type = omic, workflow = "TEST", matrix_role = "normalised", scale = "log2", correction = NULL,
+      source_state = list(name = "kit260-test"), sample_id_column = "Run", group_column = "group",
+      technical_replicate_column = "tech_rep_group", biological_sample_column = "tech_rep_group")
+    writeIntegrationInput(file.path(integration_dir, omic), manifest, samples, matrices, features)
+  }
+  samples <- function(runs, biological) data.frame(Run = runs, group = sub("_.*$", "", biological),
+    replicates = as.integer(sub("^.*_", "", biological)), tech_rep_group = biological, stringsAsFactors = FALSE)
+  biological <- c("A_1", "A_2", "A_3", "B_1", "B_2", "B_3")
+  p <- rbind(P1 = c(10, 11, 12, 13, 14, 15), P2 = c(5, 7, 6, 9, 8, 10), P3 = c(1, 1.5, 2, 2.5, 3.5, 3))
+  colnames(p) <- paste0("p", seq_along(biological))
+  input("proteomics", list(proteomics = p), samples(colnames(p), biological))
+  l <- rbind(L1 = c(20, 22, 21, 23, 25, 27), L2 = c(3, 4, 4.5, 5, 6, 7), ITSD1 = rep(15, 6))
+  colnames(l) <- paste0("l", seq_along(biological))
+  input("lipidomics", list(lipidomics_LCMS_Pos = l), samples(colnames(l), biological),
+    standards = list(lipidomics_LCMS_Pos = c(FALSE, FALSE, TRUE)))
+  manager <- newIntegrationStateOwner(file.path(root, "store"))
+  withr::defer(closeWorkflowStateOwner(manager))
+  scan <- integrationScanProject(integration_dir)
+  integrationCommitImport(manager, integrationImportRequest(scan, scan$views$view))
+  trainer <- function(views, options) {
+    samples <- colnames(views[[1L]])
+    k <- options$num_factors
+    labels <- paste0("Factor", seq_len(k))
+    list(factors = matrix(seq_len(length(samples) * k) / 10, length(samples), k, dimnames = list(samples, labels)),
+      weights = lapply(views, function(v) matrix(0.5, nrow(v), k, dimnames = list(rownames(v), labels))),
+      r2_per_factor = matrix(1, k, length(views), dimnames = list(labels, names(views))),
+      r2_total = stats::setNames(seq_along(views) + 0.25, names(views)), elbo = c(-20, -10, NaN), iterations = 2L,
+      options = options, versions = list(MOFA2 = "stand-in"), messages = character(),
+      model_file = list(bytes = as.raw(1:3), sha256 = strrep("a", 64L), size = 3))
+  }
+  run <- suppressWarnings(runIntegrationModel(manager, list(views = sort(scan$views$view)), probe = function() list(available = TRUE,
+    reason = NA_character_), trainer = trainer))
+  expect_identical(run$value$internal_standards_marked, list(lipidomics_LCMS_Pos = "itsd1 (ITSD1)"))
+  outcomes <- integrationModelRecordOutcomes(manager$.context, list(reference = run$reference))
+  expect_identical(outcomes$internal_standards_marked, list(lipidomics_LCMS_Pos = "itsd1 (ITSD1)"))
+})
+
+test_that("KIT-260 I05: a record from a build before KIT-260 whose ITSD used standards replays with identical values", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  binding <- kit172Binding("metab")
+  fixture <- kit260OlderItsd(root, "metab", kit260Object("metab", 8L, pattern = KIT260_BASE))
+  owner <- fixture$owner
+  config <- fixture$workflow$config_list
+  kit172Quiet({
+    runWorkflowOmicsReferenceLog2(binding, owner, 0, config)
+    runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, "cyclicloess", config)
+  })
+  json <- file.path(root, "older-record.json")
+  local({
+    # The record as the older build wrote it: the ITSD step's outcome without KIT-260's fields.
+    testthat::local_mocked_bindings(omicsItsdRowsFromStates = function(...) list(), .package = "MultiScholaR")
+    kit172Quiet(writeWorkflowAnalysisRecord(owner, json))
+  })
+  history <- unlist(owner$getHistory())
+  closeDIAStateAdapter(owner)
+  record <- jsonlite::read_json(json, simplifyVector = FALSE)
+  itsd_step <- Filter(function(step) identical(step$state, "metab_itsd_norm"), record$steps)[[1L]]
+  expect_null(itsd_step$outcomes$itsd_features_per_assay)
+  source_dir <- fixture$source_dir
+  copy <- withr::local_tempdir()
+  stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
+  store_root <- dirname(dirname(list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
+  copy_root <- file.path(copy, substring(store_root, nchar(source_dir) + 2L))
+  harness <- new.env(parent = globalenv())
+  sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), harness)
+  api <- function(name) get(name, asNamespace("MultiScholaR"))
+  prepared <- harness$kitPrepareReplayProject(copy_root, c("initial", "metab_raw_data_s4"), api)
+  inputs <- c(stats::setNames(file.path(source_dir, "import_sources", c("A1_export.txt", "A2_export.txt")), c("metab_assay_1", "metab_assay_2")),
+    design_file = file.path(source_dir, "design_matrix.tab"))
+  # The replay runs this version's kernel (the rows-used fields are added to the ITSD product).
+  replay <- kit172Quiet(harness$kitReplayJourney(record, prepared, store_root, inputs, fixture$paths, withr::local_tempdir(), api))
+  expect_identical(replay$states, history)
+  # What the comparison does with the additive fields: every state and every product judged by its sha256.
+  expect_identical(as.character(replay$mismatches), character())
+  # The values: each replayed state's assays identical to the origin's.
+  origin <- newDIAStateAdapter(newWorkflowEntityStore(store_root, readSavedStoreIdentity(file.path(store_root, ".workflow-entities",
+    "store.json"))$project_id, readSavedStoreIdentity(file.path(store_root, ".workflow-entities", "store.json"))$workflow_id), reopen = TRUE)
+  withr::defer(closeDIAStateAdapter(origin))
+  identity <- readSavedStoreIdentity(file.path(prepared, ".workflow-entities", "store.json"))
+  again <- newDIAStateAdapter(newWorkflowEntityStore(prepared, identity$project_id, identity$workflow_id), reopen = TRUE)
+  withr::defer(closeDIAStateAdapter(again))
+  for (state in c("metab_itsd_norm", "metab_log2", "metab_normalized")) {
+    a <- methods::slot(origin$getState(state), binding$data_slot)
+    b <- methods::slot(again$getState(state), binding$data_slot)
+    for (assay in names(a)) expect_identical(as.data.frame(b[[assay]]), as.data.frame(a[[assay]]), info = paste(state, assay))
+  }
+})
