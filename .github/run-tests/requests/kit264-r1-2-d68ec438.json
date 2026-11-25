@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-264 R1 again (instrument defect 1: E8 helper names; VAL-54 rerun 1 of 3): tests-only d68ec438, new file alone; nothing else changed; ceiling 45 job-minutes, no base",
+  "label": "KIT-264 R1-2 tests-only d68ec438",
+  "package_commit": "d68ec438cfa2be4071dc86c3792b9dbab9cc9199",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit264-trx-export-current.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
