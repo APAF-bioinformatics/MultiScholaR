@@ -189,9 +189,11 @@ visible to the organisation's owners and to the members its settings allow (GitH
 
 **What was wrong, and who was affected.**
 - *Destructive, legacy (on `main`):* the Project ID typed in the 'Push to GitHub' panel was used unchecked as a folder
-  name under R's temporary folder, and an existing folder of that name was deleted recursively. An ID of `..` deleted
-  the folder holding R's session folder; `.` deleted R's own session folder; a path such as `../../../Documents`
-  deleted the user's Documents folder on Windows. Anyone with a GitHub token who typed such an ID could trigger it,
+  name under R's temporary folder, and an existing folder of that name was deleted recursively. An ID that climbs
+  out of R's temporary folder and names an existing folder, such as `../../../../Documents` on Windows (R's temporary
+  folder is four levels below the user's profile), had that folder deleted recursively; R1s S4 observed it with
+  `../<sentinel>`. Whether `..` or `.` alone deleted anything was not observed (R's `?unlink` excludes files named
+  '.' and '..'). Anyone with a GitHub token who typed such an ID could trigger it,
   on `main` from proteomics, lipidomics and metabolomics, in 0.9 from every omic. `main` 436cdbe8
   `R/func_github_management.R:122-131` (read with `git show main:R/func_github_management.R`); base e0747fc1
   `:123-131`.

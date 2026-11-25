@@ -67,7 +67,8 @@
    the project's scripts folder holds copies of the input files and analysis data. In R (outside the installed
    application) the panel and `pushProjectToGithub()` are unchanged apart from the fix below (KIT-245).
  * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
-   digits, '.', '-' and '_' only); an ID such as `..` used to make it delete folders outside R's temporary folder.
+   digits, '.', '-' and '_' only, not ending in '.', not a Windows device name); an ID that climbed out of R's
+   temporary folder (such as `../../../../Documents`) could make it delete that folder.
    It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
    repository on GitHub, never writes the token to a file (git receives it only for the push), and removes its
    temporary copy whatever the outcome. A failure GitHub reports after the creation still leaves the new repository

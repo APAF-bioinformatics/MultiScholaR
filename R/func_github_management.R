@@ -82,7 +82,7 @@ pushProjectToGithubFromDirs <- function(project_dirs,
 #' Sends the omic's source folder as it is, including copies of input files and saved session data.
 #'
 #' @details Before anything is created on GitHub the function checks the Project ID (letters, digits, '.', '-' and
-#'   '_' only), finds the project's one R Markdown file, and checks the project's `<project id>.Rproj` file, the
+#'   '_' only; not ending in '.'; not a Windows device name such as NUL), finds the project's one R Markdown file, and checks the project's `<project id>.Rproj` file, the
 #'   git program (2.31 or later) and that no file is larger than GitHub's limit of 100 MB for one file. It then
 #'   creates a repository named after the Project ID in the GitHub organisation `github_org`, always private
 #'   (the `private` argument is ignored): visible to the organisation's owners and to the members its settings
@@ -143,11 +143,15 @@ pushProjectToGithub <- function(base_dir,
   }
   
   # KIT-245 Part S item 0: the Project ID names a folder under tempdir() that is deleted recursively, and the
-  # repository; it is checked before any path is built (legacy: an ID such as ".." deleted folders outside tempdir()).
+  # repository; it is checked before any path is built (legacy: an ID that climbed out of tempdir() named a folder
+  # there that was deleted). Letters are listed (R's ?regex: ranges are locale-dependent); a final '.' (which also
+  # covers '.', '..' and '...', and which Windows drops) and Windows device names are refused (audit I03).
   if (!is.character(project_id) || length(project_id) != 1L || is.na(project_id) ||
-      !grepl("^[A-Za-z0-9._-]{1,100}$", project_id) || project_id %in% c(".", "..")) {
+      !grepl("^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-]{1,100}$", project_id) ||
+      grepl("\\.$", project_id) ||
+      grepl("^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\\..*)?$", project_id, ignore.case = TRUE)) {
     cli::cli_abort(
-      "the Project ID may contain only letters, digits, '.', '-' and '_' (it becomes the repository's name on GitHub); nothing was created.",
+      "the Project ID may contain only letters, digits, '.', '-' and '_', may not end in '.' and may not be a Windows device name such as NUL or COM1 (it becomes the repository's name on GitHub); nothing was created.",
       class = "multischolar_github_project_id_invalid"
     )
   }
@@ -275,8 +279,8 @@ pushProjectToGithub <- function(base_dir,
       class = "multischolar_github_git_missing"
     )
   }
-  # KIT-245 Part S item 1b: the credential reaches git through GIT_CONFIG_COUNT (git 2.31 or later). An unreadable
-  # version is refused like an old one.
+  # KIT-245 Part S item 1b: git 2.31 or later (kept by the coordinator's ruling on audit I01, although the
+  # command-line credential options below do not need it). An unreadable version is refused like an old one.
   git_version_text <- tryCatch(
     system2("git", "--version", stdout = TRUE, stderr = FALSE),
     error = function(e) paste("an unreadable version:", conditionMessage(e))
@@ -406,24 +410,21 @@ pushProjectToGithub <- function(base_dir,
     git2r::remote_add(repo, "origin", remote_url)
 
     # Construct the git command to run in the temp directory
-    git_cmd <- sprintf("git -C %s push origin %s", 
+    # KIT-245 Part S item 1b (audit I01): the credential helper is given on git's command line, after an empty
+    # helper that clears the user's own; it answers only `get` for https://github.com (audit N01) and reads the token
+    # from MSR_GITHUB_PUSH_TOKEN, whose name alone is on the command line (single-quoted on Unix, where system() uses
+    # /bin/sh, so the shell cannot expand it).
+    git_cmd <- sprintf("git -c credential.helper= -c %s -C %s push origin %s",
+                       shQuote(githubPushCredentialHelper()),
                        shQuote(normalizePath(temp_dir, winslash = "/", mustWork = FALSE)), # Normalize and quote path
                        paste0("refs/heads/", current_branch_name))
                        
     # message("DEBUG: Attempting push via system() command: git push origin ", paste0("refs/heads/", current_branch_name), " (in dir: ", normalizePath(temp_dir, winslash = "/", mustWork = FALSE), ")")
     
-    # Execute the command. KIT-245 Part S item 1b: the credential reaches git only through configuration carried in
-    # environment variables, set for this call alone and restored when it returns; the empty helper first clears the
-    # user's own credential helpers, so none of them stores the token.
+    # Execute the command. KIT-245 Part S item 1b: the token is in the environment for this call alone (a non-empty
+    # value, which Windows keeps) and restored when it returns.
     push_output <- withr::with_envvar(
-      c(
-        GIT_CONFIG_COUNT = "2",
-        GIT_CONFIG_KEY_0 = "credential.helper",
-        GIT_CONFIG_VALUE_0 = "",
-        GIT_CONFIG_KEY_1 = "credential.helper",
-        GIT_CONFIG_VALUE_1 = "!f() { echo username=x-access-token; echo \"password=$MSR_GITHUB_PUSH_TOKEN\"; }; f",
-        MSR_GITHUB_PUSH_TOKEN = as.character(unclass(github_token))
-      ),
+      c(MSR_GITHUB_PUSH_TOKEN = as.character(unclass(github_token))),
       system(git_cmd, intern = TRUE, ignore.stderr = FALSE)
     )
     
@@ -462,4 +463,17 @@ pushProjectToGithub <- function(base_dir,
   message("Workflow file renamed to: ", new_workflow_name)
   
   invisible(TRUE)
+}
+
+#' The credential helper of a push (KIT-245 Part S item 1b; AUDIT-KIT-245-impl-20261125 I01, N01): a `credential.helper`
+#' setting for git's `-c` that answers only `get` for `https://github.com`, with the token read from
+#' `MSR_GITHUB_PUSH_TOKEN` (never written into the setting).
+#' @noRd
+githubPushCredentialHelper <- function() {
+  paste0(
+    "credential.helper=!f() { test \"$1\" = get || return 0; p=; h=; ",
+    "while IFS= read -r l && test -n \"$l\"; do case \"$l\" in protocol=*) p=${l#protocol=};; host=*) h=${l#host=};; esac; done; ",
+    "if test \"$p\" = https && test \"$h\" = github.com; then ",
+    "echo username=x-access-token; echo \"password=$MSR_GITHUB_PUSH_TOKEN\"; fi; }; f"
+  )
 }

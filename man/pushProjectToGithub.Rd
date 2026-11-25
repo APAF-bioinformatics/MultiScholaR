@@ -40,7 +40,7 @@ Sends the omic's source folder as it is, including copies of input files and sav
 }
 \details{
 Before anything is created on GitHub the function checks the Project ID (letters, digits, '.', '-' and
-'_' only), finds the project's one R Markdown file, and checks the project's \verb{<project id>.Rproj} file, the
+'_' only; not ending in '.'; not a Windows device name such as NUL), finds the project's one R Markdown file, and checks the project's \verb{<project id>.Rproj} file, the
 git program (2.31 or later) and that no file is larger than GitHub's limit of 100 MB for one file. It then
 creates a repository named after the Project ID in the GitHub organisation \code{github_org}, always private
 (the \code{private} argument is ignored): visible to the organisation's owners and to the members its settings

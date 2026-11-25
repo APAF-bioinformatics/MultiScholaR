@@ -224,6 +224,8 @@ runOmicSummaryServer <- function(input, output, session, projectDirs, omicType, 
     })
 
     shiny::observeEvent(input$push_to_github, {
+        # KIT-245 (b), audit I04: the installed application offers no push, whatever inputs a client sends.
+        if (nzchar(Sys.getenv("MSR_BUNDLE"))) return(invisible(NULL))
         shiny::req(input$enable_github, input$github_org, input$github_email, input$github_username, input$project_id)
         shiny::req(values$report_generated)
         omicSummaryGithub(output, input$experiment_label, input$description, input$github_org, input$github_email,

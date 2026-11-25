@@ -51,3 +51,22 @@ NEWS: the KIT-245 (b) bullet under Fixes, and KIT-234's 'Push to GitHub' bullet 
   plain description (GitHub's model, not re-read; no external call).
 - The R users' message with no token ("DEBUG: Failed to retrieve GitHub token from gh::gh_token()") is unchanged
   (out of scope, F6).
+
+## Correction pass (AUDIT-KIT-245-impl-20261125): drafts for the owner (I07), not yet in the code
+
+- **Help, what is sent** (`?pushProjectToGithub`, today: "every file of `source_dir` except names ending in
+  `DIA_workflow.Rmd` or `data_cln.tab`"). Draft: "every file of `source_dir`, except files that Git is told to ignore
+  (R history and workspace files, and your own Git ignore rules) and top-level names ending in `DIA_workflow.Rmd` or
+  `data_cln.tab`".
+- **"Private"** (help and NEWS). Draft addition: "and to the people and apps the organisation gives access; an owner
+  can make it public later".
+- **Panel sentence** (installed application). Draft: "Pushing to GitHub is not available in the installed application.
+  To keep this analysis under version control, use your usual Git tool; note that the project folder, in particular
+  scripts/, can hold copies of your input files and your analysis data, which you may not be allowed to share."
+- **"removes its temporary copy whatever the outcome"** (help and NEWS). Draft: add "(unless R is stopped during the
+  push)".
+- **Project ID message** (changed in the correction to be truthful about the new refusals): "the Project ID may contain
+  only letters, digits, '.', '-' and '_', may not end in '.' and may not be a Windows device name such as NUL or COM1
+  (it becomes the repository's name on GitHub); nothing was created."
+- **Size check** (note only): it also counts files the generated `.gitignore` keeps out, so a large ignored `.RData`
+  is refused though it would not be sent.
