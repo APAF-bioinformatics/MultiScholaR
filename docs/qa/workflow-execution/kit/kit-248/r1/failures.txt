@@ -1,0 +1,2392 @@
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$preceded_by` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_length(...) at test-kit248-correlation-skip-record.R:274:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `"threshold" %in% kit248ParameterNames(step)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:278:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | [4. correlation_filtered: pearson-selection]
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `any(grepl("threshold", block))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_false(any(grepl("threshold", block)), info = info) at test-kit248-correlation-skip-record.R:290:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  LFQ after DA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(replay$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  LFQ
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+       actual     | expected       
+   [5] "run_0005" | "run_0005" [5] 
+   [6] "run_0006" | "run_0006" [6] 
+   [7] "run_0007" | "run_0007" [7] 
+                  - "run_0008" [8] 
+   [8] "run_0009" | "run_0009" [9] 
+   [9] "run_0010" | "run_0010" [10]
+  [10] "run_0011" | "run_0011" [11]
+  
+  LFQ
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+       names(actual) | names(expected)     
+   [6] "run_0005"    | "run_0005"      [6] 
+   [7] "run_0006"    | "run_0006"      [7] 
+   [8] "run_0007"    | "run_0007"      [8] 
+                     - "run_0008"      [9] 
+   [9] "run_0009"    | "run_0009"      [10]
+  [10] "run_0010"    | "run_0010"      [11]
+  [11] "run_0011"    | "run_0011"      [12]
+  
+  `actual$run_0008` is absent
+  `expected$run_0008` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  LFQ
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248DaTable(replay$manager)` to be identical to `da_live`.
+  Differences:
+       names(actual)               | names(expected)                 
+   [6] "fdr_qvalue"                | "fdr_qvalue"                [6] 
+   [7] "gene_names"                | "gene_names"                [7] 
+   [8] "log2FC"                    | "log2FC"                    [8] 
+   [9] "log2norm.6.left"           - "log2norm.run_0001.control" [9] 
+  [10] "log2norm.run_0001.control" - "log2norm.run_0002.control" [10]
+  [11] "log2norm.run_0002.control" - "log2norm.run_0003.control" [11]
+  [12] "log2norm.run_0003.control" - "log2norm.run_0004.control" [12]
+  [13] "log2norm.run_0004.control" - "log2norm.run_0005.control" [13]
+  [14] "log2norm.run_0005.control" - "log2norm.run_0006.control" [14]
+  [15] "log2norm.run_0006.control" - "log2norm.run_0007.treated" [15]
+  [16] "log2norm.run_0007.treated" - "log2norm.run_0008.treated" [16]
+  [17] "log2norm.run_0009.treated" | "log2norm.run_0009.treated" [17]
+  [18] "log2norm.run_0010.treated" | "log2norm.run_0010.treated" [18]
+  [19] "log2norm.run_0011.treated" | "log2norm.run_0011.treated" [19]
+  [20] "log2norm.run_0012.treated" | "log2norm.run_0012.treated" [20]
+  [21] "numerator"                 | "numerator"                 [21]
+  [22] "raw.6.left"                - "raw.run_0001.control"      [22]
+  [23] "raw.run_0001.control"      - "raw.run_0002.control"      [23]
+  [24] "raw.run_0002.control"      - "raw.run_0003.control"      [24]
+  [25] "raw.run_0003.control"      - "raw.run_0004.control"      [25]
+  [26] "raw.run_0004.control"      - "raw.run_0005.control"      [26]
+  [27] "raw.run_0005.control"      - "raw.run_0006.control"      [27]
+  [28] "raw.run_0006.control"      - "raw.run_0007.treated"      [28]
+  [29] "raw.run_0007.treated"      - "raw.run_0008.treated"      [29]
+  [30] "raw.run_0009.treated"      | "raw.run_0009.treated"      [30]
+  [31] "raw.run_0010.treated"      | "raw.run_0010.treated"      [31]
+  [32] "raw.run_0011.treated"      | "raw.run_0011.treated"      [32]
+  
+       actual$fdr_qvalue | expected$fdr_qvalue     
+   [1] 0.72539           - 0.73536             [1] 
+   [2] 0.55554           - 0.68214             [2] 
+   [3] 0.70140           - 0.77034             [3] 
+   [4] 0.50209           - 0.77034             [4] 
+   [5] 0.97041           - 1.00000             [5] 
+   [6] 0.72539           - 0.87119             [6] 
+   [7] 0.70140           - 0.87119             [7] 
+   [8] 0.49343           - 0.71276             [8] 
+   [9] 0.72539           - 0.81786             [9] 
+  [10] 0.00076           - 0.00033             [10]
+  [11] 0.29131           - 0.12024             [11]
+  [12] 0.69594           - 0.76832             [12]
+  [13] 0.97041           - 0.87119             [13]
+  [14] 0.64591           - 0.71276             [14]
+  [15] 0.18209           - 0.06894             [15]
+  [16] 0.79038           - 0.87119             [16]
+  [17] 0.55554           - 0.82115             [17]
+  [18] 0.70140           - 0.78148             [18]
+  [19] 0.72539           - 0.71307             [19]
+  [20] 0.00061           - 0.00352             [20]
+  [21] 0.07104           - 0.12024             [21]
+  [22] 0.72539           - 0.77034             [22]
+  [23] 0.88193           - 1.00000             [23]
+  [24] 0.70140           - 0.71307             [24]
+  [25] 0.35821           - 0.18295             [25]
+  [26] 0.70140           - 0.91694             [26]
+  [27] 0.79301           - 1.00000             [27]
+  [28] 0.70140           - 0.87119             [28]
+  [29] 0.60312           - 0.71276             [29]
+  [30] 0.00097           - 0.00033             [30]
+  [31] 0.88193           - 0.82115             [31]
+  [32] 0.18780           - 0.13477             [32]
+  [33] 0.76744           - 0.87119             [33]
+  [34] 0.97041           - 0.91694             [34]
+  [35] 0.07104           - 0.04766             [35]
+  [36] 0.61697           - 0.66775             [36]
+  [37] 0.18780           - 0.21283             [37]
+  [38] 0.73270           - 0.88133             [38]
+  [39] 0.97041           - 0.87119             [39]
+  [40] 0.00097           - 0.00302             [40]
+  [41] 0.72539           - 0.88133             [41]
+  [42] 0.61697           - 0.52802             [42]
+  [43] 0.75168           - 0.87119             [43]
+  [44] 0.70140           - 0.95052             [44]
+  [45] 0.72539           - 0.87119             [45]
+  [46] 0.88193           - 1.00000             [46]
+  [47] 0.88193           - 0.87119             [47]
+  [48] 0.92621           - 0.88133             [48]
+  [49] 0.32902           - 0.48620             [49]
+  [50] 0.07104           - 0.06894             [50]
+  [51] 0.64591           - 0.76832             [51]
+  [52] 0.03447           - 0.01175             [52]
+  [53] 0.97532           - 1.00000             [53]
+  [54] 0.49343           - 0.54046             [54]
+  [55] 0.97041           - 0.87119             [55]
+  [56] 0.60312           - 0.87119             [56]
+  [57] 0.76744           - 1.00000             [57]
+  [58] 0.64716           - 0.87119             [58]
+  [59] 0.50209           - 0.42172             [59]
+  [60] 0.00097           - 0.00033             [60]
+  [61] 0.97532           - 1.00000             [61]
+  [62] 0.64716           - 0.70048             [62]
+  [63] 0.61697           - 0.41675             [63]
+  [64] 0.61390           - 0.41675             [64]
+  
+       actual$log2FC       | expected$log2FC         
+   [1] -0.1073793679829826 - -0.1627164989339285 [1] 
+   [2] 0.2619139195624278  - 0.2307190006711366  [2] 
+   [3] -0.1350900287213861 - -0.1463054379328383 [3] 
+   [4] -0.2777748637235646 - -0.1657040115605817 [4] 
+   [5] 0.0100573470109566  - 0.0000000000000000  [5] 
+   [6] -0.1125923125769965 - -0.0664216857359960 [6] 
+   [7] 0.1953109476316079  - 0.1041683068372485  [7] 
+   [8] 0.1909929522588207  - 0.1375604865809557  [8] 
+   [9] -0.1605134477402927 - -0.1552138324488475 [9] 
+  [10] 1.0566322215387167  - 1.0477767261864628  [10]
+  [11] -0.3785212701720617 - -0.4996276539518689 [11]
+  [12] -0.1831660830195183 - -0.1683285801570946 [12]
+  [13] 0.0147385087103800  - -0.0781197354331127 [13]
+  [14] -0.1832347233672600 - -0.1839254973395796 [14]
+  [15] -0.3921602263321482 - -0.5512739290136537 [15]
+  [16] 0.1020867849737286  - 0.1148072078940530  [16]
+  [17] -0.1964148320839172 - -0.1086986510410242 [17]
+  [18] -0.1636218564750926 - -0.1524917845774567 [18]
+  [19] 0.0958817246090575  - 0.1540789389652168  [19]
+  [20] 0.9448351858349433  - 0.7838863844532398  [20]
+  [21] -0.5706941364530671 - -0.4989152733366922 [21]
+  [22] 0.0877229299908713  - 0.1119214968631432  [22]
+  [23] 0.0566630432965809  - -0.0121664129435359 [23]
+  [24] -0.1266823474618661 - -0.1564380404271617 [24]
+  [25] -0.2819480377642307 - -0.3725367718181865 [25]
+  [26] -0.1441333249257006 - -0.0504965304372647 [26]
+  [27] 0.0841032995361708  - 0.0008687190363261  [27]
+  [28] 0.1902108342780338  - 0.0989447976594526  [28]
+  [29] -0.2134074541874682 - -0.1958210393426079 [29]
+  [30] 0.8738859394330980  - 0.9985107227427505  [30]
+  [31] -0.0433096886294493 - -0.1121906805711497 [31]
+  [32] -0.3561669732168262 - -0.3575985643302992 [32]
+  [33] -0.0820037795872928 - 0.0858868813365206  [33]
+  [34] 0.0107066638819511  - 0.0564350222917298  [34]
+  [35] -0.5284114945314506 - -0.5635053760504896 [35]
+  [36] 0.2092763098474251  - 0.2337406728644993  [36]
+  [37] -0.3264524786777621 - -0.2943579122915629 [37]
+  [38] -0.1025301628900941 - -0.0608130553779596 [38]
+  [39] -0.0087402538411396 - -0.0820912634676709 [39]
+  [40] 0.8968752202254429  - 0.8175150135236606  [40]
+  [41] 0.0752189354130728  - 0.0394061872623332  [41]
+  [42] 0.1956339014510533  - 0.2564801638815872  [42]
+  [43] -0.0933745640249981 - -0.0824749891141749 [43]
+  [44] -0.1515231628134579 - -0.0394173764807526 [44]
+  [45] -0.1320434578593392 - -0.0746605767629482 [45]
+  [46] 0.0671094688852634  - 0.0024792368129773  [46]
+  [47] 0.0490343167927385  - 0.0830987324585983  [47]
+  [48] -0.0320117882322606 - 0.0555928420309968  [48]
+  [49] -0.3334414415756832 - -0.2788174123723408 [49]
+  [50] 0.4631446914426363  - 0.4488587368028156  [50]
+  [51] 0.2664908899522551  - 0.2130593801851468  [51]
+  [52] -0.5803160180880482 - -0.6937423895881736 [52]
+  [53] 0.0000000000000000  - 0.0000000000000036  [53]
+  [54] -0.3233304844242610 - -0.2852338474033296 [54]
+  [55] -0.0158111268333556 - -0.0926393545436746 [55]
+  [56] -0.1809293903309168 - -0.0665361378780815 [56]
+  [57] -0.0859249875470063 - -0.0138719010986641 [57]
+  [58] -0.1774446421788625 - -0.1036207414605705 [58]
+  [59] -0.2840566285638850 - -0.3034164722670312 [59]
+  [60] 0.9193869717979126  - 0.9607862549862425  [60]
+  [61] 0.0000000000000000  | 0.0000000000000000  [61]
+  [62] 0.1682050754288120  - 0.1985222684535231  [62]
+  [63] 0.2344322050989192  - 0.3430571106526301  [63]
+  [64] -0.2553934520490770 - -0.3479718739429174 [64]
+  
+  `actual$log2norm.6.left` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$log2norm.6.left` is absent
+  
+  `actual$raw.6.left` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$raw.6.left` is absent
+  
+       actual$raw_pvalue | expected$raw_pvalue     
+   [1] 0.48480815523681  - 0.33320851513708    [1] 
+   [2] 0.18114440986327  - 0.23448404953474    [2] 
+   [3] 0.41429209098371  - 0.39028755954767    [3] 
+   [4] 0.15282939384151  - 0.40724355128575    [4] 
+   [5] 0.91033582173441  - 1.00000000000000    [5] 
+   [6] 0.48990602123448  - 0.68429970329862    [6] 
+   [7] 0.42621940124825  - 0.65565246880901    [7] 
+   [8] 0.13438480013765  - 0.28955991134071    [8] 
+   [9] 0.46776931744387  - 0.46004802339277    [9] 
+  [10] 0.00002430684823  - 0.00000851507377    [10]
+  [11] 0.06066970372534  - 0.01930091860807    [11]
+  [12] 0.35677904985025  - 0.36570781723888    [12]
+  [13] 0.92865298940787  - 0.65622764288957    [13]
+  [14] 0.29912135728729  - 0.28525415232146    [14]
+  [15] 0.02917087202552  - 0.00929299109211    [15]
+  [16] 0.64577744896962  - 0.58903289229259    [16]
+  [17] 0.18689980774405  - 0.48755834234897    [17]
+  [18] 0.40953408666109  - 0.42737297015362    [18]
+  [19] 0.53456693819912  - 0.31196837505734    [19]
+  [20] 0.00000981901934  - 0.00027517846157    [20]
+  [21] 0.01024269579468  - 0.02066581942508    [21]
+  [22] 0.52627790443011  - 0.40924268071250    [22]
+  [23] 0.79122271085390  - 0.95139393772732    [23]
+  [24] 0.38739549969666  - 0.30623524169247    [24]
+  [25] 0.08607960240582  - 0.03716257574397    [25]
+  [26] 0.43564075840885  - 0.78823535673955    [26]
+  [27] 0.66062598745938  - 0.99648236530293    [27]
+  [28] 0.39162033242516  - 0.63755205125809    [28]
+  [29] 0.22223036958253  - 0.27510957925370    [29]
+  [30] 0.00006507532782  - 0.00001531576386    [30]
+  [31] 0.77879863060630  - 0.48047240444490    [31]
+  [32] 0.03327834932621  - 0.02526968941740    [32]
+  [33] 0.60561664784068  - 0.65760484831956    [33]
+  [34] 0.96387793253994  - 0.80232634070750    [34]
+  [35] 0.00993349046157  - 0.00521324080356    [35]
+  [36] 0.26335743949632  - 0.21910440485479    [36]
+  [37] 0.03610301908496  - 0.04655738280254    [37]
+  [38] 0.55169342014216  - 0.73021716280640    [38]
+  [39] 0.95900174607100  - 0.62787309790932    [39]
+  [40] 0.00007745833272  - 0.00018888236933    [40]
+  [41] 0.50465020881300  - 0.73452636171489    [41]
+  [42] 0.26687010324739  - 0.15675730498281    [42]
+  [43] 0.57802740957453  - 0.61232736728262    [43]
+  [44] 0.43823545278144  - 0.84655724144067    [44]
+  [45] 0.51156489123674  - 0.69422794050488    [45]
+  [46] 0.77495322158576  - 0.99110723301234    [46]
+  [47] 0.76745743218781  - 0.62348396295618    [47]
+  [48] 0.84578312250737  - 0.74362632596872    [48]
+  [49] 0.07379480490606  - 0.13674395552613    [49]
+  [50] 0.00880755634239  - 0.00969423316670    [50]
+  [51] 0.30008725479869  - 0.37215518746297    [51]
+  [52] 0.00331305145696  - 0.00110120317803    [52]
+  [53] 1.00000000000000  - 0.99999999999989    [53]
+  [54] 0.13220370894135  - 0.16889515395961    [54]
+  [55] 0.94271008579227  - 0.66050393713774    [55]
+  [56] 0.21451374076565  - 0.67369627670709    [56]
+  [57] 0.61473693624137  - 0.93903177606325    [57]
+  [58] 0.31170235909384  - 0.56849929070659    [58]
+  [59] 0.15044155539295  - 0.11202032868190    [59]
+  [60] 0.00006759291051  - 0.00001505491126    [60]
+  [61] 1.00000000000000  | 1.00000000000000    [61]
+  [62] 0.32140083741370  - 0.25173660271745    [62]
+  [63] 0.25642328659399  - 0.10385855099406    [63]
+  [64] 0.23603988994063  - 0.10418860895513    [64]
+  
+  `actual$log2norm.run_0008.treated` is absent
+  `expected$log2norm.run_0008.treated` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  `actual$raw.run_0008.treated` is absent
+  `expected$raw.run_0008.treated` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  LFQ
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$preceded_by` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_length(...) at test-kit248-correlation-skip-record.R:274:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `"threshold" %in% kit248ParameterNames(step)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:278:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | [4. correlation_filtered: pearson-selection]
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `any(grepl("threshold", block))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_false(any(grepl("threshold", block)), info = info) at test-kit248-correlation-skip-record.R:290:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  TMT after DA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(replay$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  TMT
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+       actual     | expected       
+   [5] "run_0005" | "run_0005" [5] 
+   [6] "run_0006" | "run_0006" [6] 
+   [7] "run_0007" | "run_0007" [7] 
+                  - "run_0008" [8] 
+   [8] "run_0009" | "run_0009" [9] 
+   [9] "run_0010" | "run_0010" [10]
+  [10] "run_0011" | "run_0011" [11]
+  
+  TMT
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+       names(actual) | names(expected)     
+   [6] "run_0005"    | "run_0005"      [6] 
+   [7] "run_0006"    | "run_0006"      [7] 
+   [8] "run_0007"    | "run_0007"      [8] 
+                     - "run_0008"      [9] 
+   [9] "run_0009"    | "run_0009"      [10]
+  [10] "run_0010"    | "run_0010"      [11]
+  [11] "run_0011"    | "run_0011"      [12]
+  
+  `actual$run_0008` is absent
+  `expected$run_0008` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  TMT
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248DaTable(replay$manager)` to be identical to `da_live`.
+  Differences:
+       names(actual)               | names(expected)                 
+   [6] "fdr_qvalue"                | "fdr_qvalue"                [6] 
+   [7] "gene_names"                | "gene_names"                [7] 
+   [8] "log2FC"                    | "log2FC"                    [8] 
+   [9] "log2norm.6.left"           - "log2norm.run_0001.control" [9] 
+  [10] "log2norm.run_0001.control" - "log2norm.run_0002.control" [10]
+  [11] "log2norm.run_0002.control" - "log2norm.run_0003.control" [11]
+  [12] "log2norm.run_0003.control" - "log2norm.run_0004.control" [12]
+  [13] "log2norm.run_0004.control" - "log2norm.run_0005.control" [13]
+  [14] "log2norm.run_0005.control" - "log2norm.run_0006.control" [14]
+  [15] "log2norm.run_0006.control" - "log2norm.run_0007.treated" [15]
+  [16] "log2norm.run_0007.treated" - "log2norm.run_0008.treated" [16]
+  [17] "log2norm.run_0009.treated" | "log2norm.run_0009.treated" [17]
+  [18] "log2norm.run_0010.treated" | "log2norm.run_0010.treated" [18]
+  [19] "log2norm.run_0011.treated" | "log2norm.run_0011.treated" [19]
+  [20] "log2norm.run_0012.treated" | "log2norm.run_0012.treated" [20]
+  [21] "numerator"                 | "numerator"                 [21]
+  [22] "raw.6.left"                - "raw.run_0001.control"      [22]
+  [23] "raw.run_0001.control"      - "raw.run_0002.control"      [23]
+  [24] "raw.run_0002.control"      - "raw.run_0003.control"      [24]
+  [25] "raw.run_0003.control"      - "raw.run_0004.control"      [25]
+  [26] "raw.run_0004.control"      - "raw.run_0005.control"      [26]
+  [27] "raw.run_0005.control"      - "raw.run_0006.control"      [27]
+  [28] "raw.run_0006.control"      - "raw.run_0007.treated"      [28]
+  [29] "raw.run_0007.treated"      - "raw.run_0008.treated"      [29]
+  [30] "raw.run_0009.treated"      | "raw.run_0009.treated"      [30]
+  [31] "raw.run_0010.treated"      | "raw.run_0010.treated"      [31]
+  [32] "raw.run_0011.treated"      | "raw.run_0011.treated"      [32]
+  
+       actual$fdr_qvalue | expected$fdr_qvalue     
+   [1] 0.72539           - 0.73536             [1] 
+   [2] 0.55554           - 0.68214             [2] 
+   [3] 0.70140           - 0.77034             [3] 
+   [4] 0.50209           - 0.77034             [4] 
+   [5] 0.97041           - 1.00000             [5] 
+   [6] 0.72539           - 0.87119             [6] 
+   [7] 0.70140           - 0.87119             [7] 
+   [8] 0.49343           - 0.71276             [8] 
+   [9] 0.72539           - 0.81786             [9] 
+  [10] 0.00076           - 0.00033             [10]
+  [11] 0.29131           - 0.12024             [11]
+  [12] 0.69594           - 0.76832             [12]
+  [13] 0.97041           - 0.87119             [13]
+  [14] 0.64591           - 0.71276             [14]
+  [15] 0.18209           - 0.06894             [15]
+  [16] 0.79038           - 0.87119             [16]
+  [17] 0.55554           - 0.82115             [17]
+  [18] 0.70140           - 0.78148             [18]
+  [19] 0.72539           - 0.71307             [19]
+  [20] 0.00061           - 0.00352             [20]
+  [21] 0.07104           - 0.12024             [21]
+  [22] 0.72539           - 0.77034             [22]
+  [23] 0.88193           - 1.00000             [23]
+  [24] 0.70140           - 0.71307             [24]
+  [25] 0.35821           - 0.18295             [25]
+  [26] 0.70140           - 0.91694             [26]
+  [27] 0.79301           - 1.00000             [27]
+  [28] 0.70140           - 0.87119             [28]
+  [29] 0.60312           - 0.71276             [29]
+  [30] 0.00097           - 0.00033             [30]
+  [31] 0.88193           - 0.82115             [31]
+  [32] 0.18780           - 0.13477             [32]
+  [33] 0.76744           - 0.87119             [33]
+  [34] 0.97041           - 0.91694             [34]
+  [35] 0.07104           - 0.04766             [35]
+  [36] 0.61697           - 0.66775             [36]
+  [37] 0.18780           - 0.21283             [37]
+  [38] 0.73270           - 0.88133             [38]
+  [39] 0.97041           - 0.87119             [39]
+  [40] 0.00097           - 0.00302             [40]
+  [41] 0.72539           - 0.88133             [41]
+  [42] 0.61697           - 0.52802             [42]
+  [43] 0.75168           - 0.87119             [43]
+  [44] 0.70140           - 0.95052             [44]
+  [45] 0.72539           - 0.87119             [45]
+  [46] 0.88193           - 1.00000             [46]
+  [47] 0.88193           - 0.87119             [47]
+  [48] 0.92621           - 0.88133             [48]
+  [49] 0.32902           - 0.48620             [49]
+  [50] 0.07104           - 0.06894             [50]
+  [51] 0.64591           - 0.76832             [51]
+  [52] 0.03447           - 0.01175             [52]
+  [53] 0.97532           - 1.00000             [53]
+  [54] 0.49343           - 0.54046             [54]
+  [55] 0.97041           - 0.87119             [55]
+  [56] 0.60312           - 0.87119             [56]
+  [57] 0.76744           - 1.00000             [57]
+  [58] 0.64716           - 0.87119             [58]
+  [59] 0.50209           - 0.42172             [59]
+  [60] 0.00097           - 0.00033             [60]
+  [61] 0.97532           - 1.00000             [61]
+  [62] 0.64716           - 0.70048             [62]
+  [63] 0.61697           - 0.41675             [63]
+  [64] 0.61390           - 0.41675             [64]
+  
+       actual$log2FC       | expected$log2FC         
+   [1] -0.1073793679829826 - -0.1627164989339285 [1] 
+   [2] 0.2619139195624278  - 0.2307190006711366  [2] 
+   [3] -0.1350900287213861 - -0.1463054379328383 [3] 
+   [4] -0.2777748637235646 - -0.1657040115605817 [4] 
+   [5] 0.0100573470109566  - 0.0000000000000000  [5] 
+   [6] -0.1125923125769965 - -0.0664216857359960 [6] 
+   [7] 0.1953109476316079  - 0.1041683068372485  [7] 
+   [8] 0.1909929522588207  - 0.1375604865809557  [8] 
+   [9] -0.1605134477402927 - -0.1552138324488475 [9] 
+  [10] 1.0566322215387167  - 1.0477767261864628  [10]
+  [11] -0.3785212701720617 - -0.4996276539518689 [11]
+  [12] -0.1831660830195183 - -0.1683285801570946 [12]
+  [13] 0.0147385087103800  - -0.0781197354331127 [13]
+  [14] -0.1832347233672600 - -0.1839254973395796 [14]
+  [15] -0.3921602263321482 - -0.5512739290136537 [15]
+  [16] 0.1020867849737286  - 0.1148072078940530  [16]
+  [17] -0.1964148320839172 - -0.1086986510410242 [17]
+  [18] -0.1636218564750926 - -0.1524917845774567 [18]
+  [19] 0.0958817246090575  - 0.1540789389652168  [19]
+  [20] 0.9448351858349433  - 0.7838863844532398  [20]
+  [21] -0.5706941364530671 - -0.4989152733366922 [21]
+  [22] 0.0877229299908713  - 0.1119214968631432  [22]
+  [23] 0.0566630432965809  - -0.0121664129435359 [23]
+  [24] -0.1266823474618661 - -0.1564380404271617 [24]
+  [25] -0.2819480377642307 - -0.3725367718181865 [25]
+  [26] -0.1441333249257006 - -0.0504965304372647 [26]
+  [27] 0.0841032995361708  - 0.0008687190363261  [27]
+  [28] 0.1902108342780338  - 0.0989447976594526  [28]
+  [29] -0.2134074541874682 - -0.1958210393426079 [29]
+  [30] 0.8738859394330980  - 0.9985107227427505  [30]
+  [31] -0.0433096886294493 - -0.1121906805711497 [31]
+  [32] -0.3561669732168262 - -0.3575985643302992 [32]
+  [33] -0.0820037795872928 - 0.0858868813365206  [33]
+  [34] 0.0107066638819511  - 0.0564350222917298  [34]
+  [35] -0.5284114945314506 - -0.5635053760504896 [35]
+  [36] 0.2092763098474251  - 0.2337406728644993  [36]
+  [37] -0.3264524786777621 - -0.2943579122915629 [37]
+  [38] -0.1025301628900941 - -0.0608130553779596 [38]
+  [39] -0.0087402538411396 - -0.0820912634676709 [39]
+  [40] 0.8968752202254429  - 0.8175150135236606  [40]
+  [41] 0.0752189354130728  - 0.0394061872623332  [41]
+  [42] 0.1956339014510533  - 0.2564801638815872  [42]
+  [43] -0.0933745640249981 - -0.0824749891141749 [43]
+  [44] -0.1515231628134579 - -0.0394173764807526 [44]
+  [45] -0.1320434578593392 - -0.0746605767629482 [45]
+  [46] 0.0671094688852634  - 0.0024792368129773  [46]
+  [47] 0.0490343167927385  - 0.0830987324585983  [47]
+  [48] -0.0320117882322606 - 0.0555928420309968  [48]
+  [49] -0.3334414415756832 - -0.2788174123723408 [49]
+  [50] 0.4631446914426363  - 0.4488587368028156  [50]
+  [51] 0.2664908899522551  - 0.2130593801851468  [51]
+  [52] -0.5803160180880482 - -0.6937423895881736 [52]
+  [53] 0.0000000000000000  - 0.0000000000000036  [53]
+  [54] -0.3233304844242610 - -0.2852338474033296 [54]
+  [55] -0.0158111268333556 - -0.0926393545436746 [55]
+  [56] -0.1809293903309168 - -0.0665361378780815 [56]
+  [57] -0.0859249875470063 - -0.0138719010986641 [57]
+  [58] -0.1774446421788625 - -0.1036207414605705 [58]
+  [59] -0.2840566285638850 - -0.3034164722670312 [59]
+  [60] 0.9193869717979126  - 0.9607862549862425  [60]
+  [61] 0.0000000000000000  | 0.0000000000000000  [61]
+  [62] 0.1682050754288120  - 0.1985222684535231  [62]
+  [63] 0.2344322050989192  - 0.3430571106526301  [63]
+  [64] -0.2553934520490770 - -0.3479718739429174 [64]
+  
+  `actual$log2norm.6.left` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$log2norm.6.left` is absent
+  
+  `actual$raw.6.left` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$raw.6.left` is absent
+  
+       actual$raw_pvalue | expected$raw_pvalue     
+   [1] 0.48480815523681  - 0.33320851513708    [1] 
+   [2] 0.18114440986327  - 0.23448404953474    [2] 
+   [3] 0.41429209098371  - 0.39028755954767    [3] 
+   [4] 0.15282939384151  - 0.40724355128575    [4] 
+   [5] 0.91033582173441  - 1.00000000000000    [5] 
+   [6] 0.48990602123448  - 0.68429970329862    [6] 
+   [7] 0.42621940124825  - 0.65565246880901    [7] 
+   [8] 0.13438480013765  - 0.28955991134071    [8] 
+   [9] 0.46776931744387  - 0.46004802339277    [9] 
+  [10] 0.00002430684823  - 0.00000851507377    [10]
+  [11] 0.06066970372534  - 0.01930091860807    [11]
+  [12] 0.35677904985025  - 0.36570781723888    [12]
+  [13] 0.92865298940787  - 0.65622764288957    [13]
+  [14] 0.29912135728729  - 0.28525415232146    [14]
+  [15] 0.02917087202552  - 0.00929299109211    [15]
+  [16] 0.64577744896962  - 0.58903289229259    [16]
+  [17] 0.18689980774405  - 0.48755834234897    [17]
+  [18] 0.40953408666109  - 0.42737297015362    [18]
+  [19] 0.53456693819912  - 0.31196837505734    [19]
+  [20] 0.00000981901934  - 0.00027517846157    [20]
+  [21] 0.01024269579468  - 0.02066581942508    [21]
+  [22] 0.52627790443011  - 0.40924268071250    [22]
+  [23] 0.79122271085390  - 0.95139393772732    [23]
+  [24] 0.38739549969666  - 0.30623524169247    [24]
+  [25] 0.08607960240582  - 0.03716257574397    [25]
+  [26] 0.43564075840885  - 0.78823535673955    [26]
+  [27] 0.66062598745938  - 0.99648236530293    [27]
+  [28] 0.39162033242516  - 0.63755205125809    [28]
+  [29] 0.22223036958253  - 0.27510957925370    [29]
+  [30] 0.00006507532782  - 0.00001531576386    [30]
+  [31] 0.77879863060630  - 0.48047240444490    [31]
+  [32] 0.03327834932621  - 0.02526968941740    [32]
+  [33] 0.60561664784068  - 0.65760484831956    [33]
+  [34] 0.96387793253994  - 0.80232634070750    [34]
+  [35] 0.00993349046157  - 0.00521324080356    [35]
+  [36] 0.26335743949632  - 0.21910440485479    [36]
+  [37] 0.03610301908496  - 0.04655738280254    [37]
+  [38] 0.55169342014216  - 0.73021716280640    [38]
+  [39] 0.95900174607100  - 0.62787309790932    [39]
+  [40] 0.00007745833272  - 0.00018888236933    [40]
+  [41] 0.50465020881300  - 0.73452636171489    [41]
+  [42] 0.26687010324739  - 0.15675730498281    [42]
+  [43] 0.57802740957453  - 0.61232736728262    [43]
+  [44] 0.43823545278144  - 0.84655724144067    [44]
+  [45] 0.51156489123674  - 0.69422794050488    [45]
+  [46] 0.77495322158576  - 0.99110723301234    [46]
+  [47] 0.76745743218781  - 0.62348396295618    [47]
+  [48] 0.84578312250737  - 0.74362632596872    [48]
+  [49] 0.07379480490606  - 0.13674395552613    [49]
+  [50] 0.00880755634239  - 0.00969423316670    [50]
+  [51] 0.30008725479869  - 0.37215518746297    [51]
+  [52] 0.00331305145696  - 0.00110120317803    [52]
+  [53] 1.00000000000000  - 0.99999999999989    [53]
+  [54] 0.13220370894135  - 0.16889515395961    [54]
+  [55] 0.94271008579227  - 0.66050393713774    [55]
+  [56] 0.21451374076565  - 0.67369627670709    [56]
+  [57] 0.61473693624137  - 0.93903177606325    [57]
+  [58] 0.31170235909384  - 0.56849929070659    [58]
+  [59] 0.15044155539295  - 0.11202032868190    [59]
+  [60] 0.00006759291051  - 0.00001505491126    [60]
+  [61] 1.00000000000000  | 1.00000000000000    [61]
+  [62] 0.32140083741370  - 0.25173660271745    [62]
+  [63] 0.25642328659399  - 0.10385855099406    [63]
+  [64] 0.23603988994063  - 0.10418860895513    [64]
+  
+  `actual$log2norm.run_0008.treated` is absent
+  `expected$log2norm.run_0008.treated` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  `actual$raw.run_0008.treated` is absent
+  `expected$raw.run_0008.treated` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  TMT
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$preceded_by` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_length(...) at test-kit248-correlation-skip-record.R:274:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `"threshold" %in% kit248ParameterNames(step)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:278:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | [4. correlation_filtered: pearson-selection]
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `any(grepl("threshold", block))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIA
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, route) at test-kit248-correlation-skip-record.R:315:9
+   2.   └─testthat::expect_false(any(grepl("threshold", block)), info = info) at test-kit248-correlation-skip-record.R:290:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  DIA after DA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(replay$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  DIA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+       actual     | expected       
+   [5] "run_0005" | "run_0005" [5] 
+   [6] "run_0006" | "run_0006" [6] 
+   [7] "run_0007" | "run_0007" [7] 
+                  - "run_0008" [8] 
+   [8] "run_0009" | "run_0009" [9] 
+   [9] "run_0010" | "run_0010" [10]
+  [10] "run_0011" | "run_0011" [11]
+  
+  DIA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+       names(actual) | names(expected)     
+   [6] "run_0005"    | "run_0005"      [6] 
+   [7] "run_0006"    | "run_0006"      [7] 
+   [8] "run_0007"    | "run_0007"      [8] 
+                     - "run_0008"      [9] 
+   [9] "run_0009"    | "run_0009"      [10]
+  [10] "run_0010"    | "run_0010"      [11]
+  [11] "run_0011"    | "run_0011"      [12]
+  
+  `actual$run_0008` is absent
+  `expected$run_0008` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  DIA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E1, E2, E3, E7, G2, G3: on label-free, TMT and DIA (iq), Apply at t_hi then Skip is recorded as the skip and replays on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248DaTable(replay$manager)` to be identical to `da_live`.
+  Differences:
+       names(actual)               | names(expected)                 
+   [6] "fdr_qvalue"                | "fdr_qvalue"                [6] 
+   [7] "gene_names"                | "gene_names"                [7] 
+   [8] "log2FC"                    | "log2FC"                    [8] 
+   [9] "log2norm.6.left"           - "log2norm.run_0001.control" [9] 
+  [10] "log2norm.run_0001.control" - "log2norm.run_0002.control" [10]
+  [11] "log2norm.run_0002.control" - "log2norm.run_0003.control" [11]
+  [12] "log2norm.run_0003.control" - "log2norm.run_0004.control" [12]
+  [13] "log2norm.run_0004.control" - "log2norm.run_0005.control" [13]
+  [14] "log2norm.run_0005.control" - "log2norm.run_0006.control" [14]
+  [15] "log2norm.run_0006.control" - "log2norm.run_0007.treated" [15]
+  [16] "log2norm.run_0007.treated" - "log2norm.run_0008.treated" [16]
+  [17] "log2norm.run_0009.treated" | "log2norm.run_0009.treated" [17]
+  [18] "log2norm.run_0010.treated" | "log2norm.run_0010.treated" [18]
+  [19] "log2norm.run_0011.treated" | "log2norm.run_0011.treated" [19]
+  [20] "log2norm.run_0012.treated" | "log2norm.run_0012.treated" [20]
+  [21] "numerator"                 | "numerator"                 [21]
+  [22] "raw.6.left"                - "raw.run_0001.control"      [22]
+  [23] "raw.run_0001.control"      - "raw.run_0002.control"      [23]
+  [24] "raw.run_0002.control"      - "raw.run_0003.control"      [24]
+  [25] "raw.run_0003.control"      - "raw.run_0004.control"      [25]
+  [26] "raw.run_0004.control"      - "raw.run_0005.control"      [26]
+  [27] "raw.run_0005.control"      - "raw.run_0006.control"      [27]
+  [28] "raw.run_0006.control"      - "raw.run_0007.treated"      [28]
+  [29] "raw.run_0007.treated"      - "raw.run_0008.treated"      [29]
+  [30] "raw.run_0009.treated"      | "raw.run_0009.treated"      [30]
+  [31] "raw.run_0010.treated"      | "raw.run_0010.treated"      [31]
+  [32] "raw.run_0011.treated"      | "raw.run_0011.treated"      [32]
+  
+       actual$fdr_qvalue | expected$fdr_qvalue     
+   [1] 0.72539           - 0.73536             [1] 
+   [2] 0.55554           - 0.68214             [2] 
+   [3] 0.70140           - 0.77034             [3] 
+   [4] 0.50209           - 0.77034             [4] 
+   [5] 0.97041           - 1.00000             [5] 
+   [6] 0.72539           - 0.87119             [6] 
+   [7] 0.70140           - 0.87119             [7] 
+   [8] 0.49343           - 0.71276             [8] 
+   [9] 0.72539           - 0.81786             [9] 
+  [10] 0.00076           - 0.00033             [10]
+  [11] 0.29131           - 0.12024             [11]
+  [12] 0.69594           - 0.76832             [12]
+  [13] 0.97041           - 0.87119             [13]
+  [14] 0.64591           - 0.71276             [14]
+  [15] 0.18209           - 0.06894             [15]
+  [16] 0.79038           - 0.87119             [16]
+  [17] 0.55554           - 0.82115             [17]
+  [18] 0.70140           - 0.78148             [18]
+  [19] 0.72539           - 0.71307             [19]
+  [20] 0.00061           - 0.00352             [20]
+  [21] 0.07104           - 0.12024             [21]
+  [22] 0.72539           - 0.77034             [22]
+  [23] 0.88193           - 1.00000             [23]
+  [24] 0.70140           - 0.71307             [24]
+  [25] 0.35821           - 0.18295             [25]
+  [26] 0.70140           - 0.91694             [26]
+  [27] 0.79301           - 1.00000             [27]
+  [28] 0.70140           - 0.87119             [28]
+  [29] 0.60312           - 0.71276             [29]
+  [30] 0.00097           - 0.00033             [30]
+  [31] 0.88193           - 0.82115             [31]
+  [32] 0.18780           - 0.13477             [32]
+  [33] 0.76744           - 0.87119             [33]
+  [34] 0.97041           - 0.91694             [34]
+  [35] 0.07104           - 0.04766             [35]
+  [36] 0.61697           - 0.66775             [36]
+  [37] 0.18780           - 0.21283             [37]
+  [38] 0.73270           - 0.88133             [38]
+  [39] 0.97041           - 0.87119             [39]
+  [40] 0.00097           - 0.00302             [40]
+  [41] 0.72539           - 0.88133             [41]
+  [42] 0.61697           - 0.52802             [42]
+  [43] 0.75168           - 0.87119             [43]
+  [44] 0.70140           - 0.95052             [44]
+  [45] 0.72539           - 0.87119             [45]
+  [46] 0.88193           - 1.00000             [46]
+  [47] 0.88193           - 0.87119             [47]
+  [48] 0.92621           - 0.88133             [48]
+  [49] 0.32902           - 0.48620             [49]
+  [50] 0.07104           - 0.06894             [50]
+  [51] 0.64591           - 0.76832             [51]
+  [52] 0.03447           - 0.01175             [52]
+  [53] 0.97532           - 1.00000             [53]
+  [54] 0.49343           - 0.54046             [54]
+  [55] 0.97041           - 0.87119             [55]
+  [56] 0.60312           - 0.87119             [56]
+  [57] 0.76744           - 1.00000             [57]
+  [58] 0.64716           - 0.87119             [58]
+  [59] 0.50209           - 0.42172             [59]
+  [60] 0.00097           - 0.00033             [60]
+  [61] 0.97532           - 1.00000             [61]
+  [62] 0.64716           - 0.70048             [62]
+  [63] 0.61697           - 0.41675             [63]
+  [64] 0.61390           - 0.41675             [64]
+  
+       actual$log2FC       | expected$log2FC         
+   [1] -0.1073793679829826 - -0.1627164989339285 [1] 
+   [2] 0.2619139195624278  - 0.2307190006711366  [2] 
+   [3] -0.1350900287213861 - -0.1463054379328383 [3] 
+   [4] -0.2777748637235646 - -0.1657040115605817 [4] 
+   [5] 0.0100573470109566  - 0.0000000000000000  [5] 
+   [6] -0.1125923125769965 - -0.0664216857359960 [6] 
+   [7] 0.1953109476316079  - 0.1041683068372485  [7] 
+   [8] 0.1909929522588207  - 0.1375604865809557  [8] 
+   [9] -0.1605134477402927 - -0.1552138324488475 [9] 
+  [10] 1.0566322215387167  - 1.0477767261864628  [10]
+  [11] -0.3785212701720617 - -0.4996276539518689 [11]
+  [12] -0.1831660830195183 - -0.1683285801570946 [12]
+  [13] 0.0147385087103800  - -0.0781197354331127 [13]
+  [14] -0.1832347233672600 - -0.1839254973395796 [14]
+  [15] -0.3921602263321482 - -0.5512739290136537 [15]
+  [16] 0.1020867849737286  - 0.1148072078940530  [16]
+  [17] -0.1964148320839172 - -0.1086986510410242 [17]
+  [18] -0.1636218564750926 - -0.1524917845774567 [18]
+  [19] 0.0958817246090575  - 0.1540789389652168  [19]
+  [20] 0.9448351858349433  - 0.7838863844532398  [20]
+  [21] -0.5706941364530671 - -0.4989152733366922 [21]
+  [22] 0.0877229299908713  - 0.1119214968631432  [22]
+  [23] 0.0566630432965809  - -0.0121664129435359 [23]
+  [24] -0.1266823474618661 - -0.1564380404271617 [24]
+  [25] -0.2819480377642307 - -0.3725367718181865 [25]
+  [26] -0.1441333249257006 - -0.0504965304372647 [26]
+  [27] 0.0841032995361708  - 0.0008687190363261  [27]
+  [28] 0.1902108342780338  - 0.0989447976594526  [28]
+  [29] -0.2134074541874682 - -0.1958210393426079 [29]
+  [30] 0.8738859394330980  - 0.9985107227427505  [30]
+  [31] -0.0433096886294493 - -0.1121906805711497 [31]
+  [32] -0.3561669732168262 - -0.3575985643302992 [32]
+  [33] -0.0820037795872928 - 0.0858868813365206  [33]
+  [34] 0.0107066638819511  - 0.0564350222917298  [34]
+  [35] -0.5284114945314506 - -0.5635053760504896 [35]
+  [36] 0.2092763098474251  - 0.2337406728644993  [36]
+  [37] -0.3264524786777621 - -0.2943579122915629 [37]
+  [38] -0.1025301628900941 - -0.0608130553779596 [38]
+  [39] -0.0087402538411396 - -0.0820912634676709 [39]
+  [40] 0.8968752202254429  - 0.8175150135236606  [40]
+  [41] 0.0752189354130728  - 0.0394061872623332  [41]
+  [42] 0.1956339014510533  - 0.2564801638815872  [42]
+  [43] -0.0933745640249981 - -0.0824749891141749 [43]
+  [44] -0.1515231628134579 - -0.0394173764807526 [44]
+  [45] -0.1320434578593392 - -0.0746605767629482 [45]
+  [46] 0.0671094688852634  - 0.0024792368129773  [46]
+  [47] 0.0490343167927385  - 0.0830987324585983  [47]
+  [48] -0.0320117882322606 - 0.0555928420309968  [48]
+  [49] -0.3334414415756832 - -0.2788174123723408 [49]
+  [50] 0.4631446914426363  - 0.4488587368028156  [50]
+  [51] 0.2664908899522551  - 0.2130593801851468  [51]
+  [52] -0.5803160180880482 - -0.6937423895881736 [52]
+  [53] 0.0000000000000000  - 0.0000000000000036  [53]
+  [54] -0.3233304844242610 - -0.2852338474033296 [54]
+  [55] -0.0158111268333556 - -0.0926393545436746 [55]
+  [56] -0.1809293903309168 - -0.0665361378780815 [56]
+  [57] -0.0859249875470063 - -0.0138719010986641 [57]
+  [58] -0.1774446421788625 - -0.1036207414605705 [58]
+  [59] -0.2840566285638850 - -0.3034164722670312 [59]
+  [60] 0.9193869717979126  - 0.9607862549862425  [60]
+  [61] 0.0000000000000000  | 0.0000000000000000  [61]
+  [62] 0.1682050754288120  - 0.1985222684535231  [62]
+  [63] 0.2344322050989192  - 0.3430571106526301  [63]
+  [64] -0.2553934520490770 - -0.3479718739429174 [64]
+  
+  `actual$log2norm.6.left` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$log2norm.6.left` is absent
+  
+  `actual$raw.6.left` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$raw.6.left` is absent
+  
+       actual$raw_pvalue | expected$raw_pvalue     
+   [1] 0.48480815523681  - 0.33320851513708    [1] 
+   [2] 0.18114440986327  - 0.23448404953474    [2] 
+   [3] 0.41429209098371  - 0.39028755954767    [3] 
+   [4] 0.15282939384151  - 0.40724355128575    [4] 
+   [5] 0.91033582173441  - 1.00000000000000    [5] 
+   [6] 0.48990602123448  - 0.68429970329862    [6] 
+   [7] 0.42621940124825  - 0.65565246880901    [7] 
+   [8] 0.13438480013765  - 0.28955991134071    [8] 
+   [9] 0.46776931744387  - 0.46004802339277    [9] 
+  [10] 0.00002430684823  - 0.00000851507377    [10]
+  [11] 0.06066970372534  - 0.01930091860807    [11]
+  [12] 0.35677904985025  - 0.36570781723888    [12]
+  [13] 0.92865298940787  - 0.65622764288957    [13]
+  [14] 0.29912135728729  - 0.28525415232146    [14]
+  [15] 0.02917087202552  - 0.00929299109211    [15]
+  [16] 0.64577744896962  - 0.58903289229259    [16]
+  [17] 0.18689980774405  - 0.48755834234897    [17]
+  [18] 0.40953408666109  - 0.42737297015362    [18]
+  [19] 0.53456693819912  - 0.31196837505734    [19]
+  [20] 0.00000981901934  - 0.00027517846157    [20]
+  [21] 0.01024269579468  - 0.02066581942508    [21]
+  [22] 0.52627790443011  - 0.40924268071250    [22]
+  [23] 0.79122271085390  - 0.95139393772732    [23]
+  [24] 0.38739549969666  - 0.30623524169247    [24]
+  [25] 0.08607960240582  - 0.03716257574397    [25]
+  [26] 0.43564075840885  - 0.78823535673955    [26]
+  [27] 0.66062598745938  - 0.99648236530293    [27]
+  [28] 0.39162033242516  - 0.63755205125809    [28]
+  [29] 0.22223036958253  - 0.27510957925370    [29]
+  [30] 0.00006507532782  - 0.00001531576386    [30]
+  [31] 0.77879863060630  - 0.48047240444490    [31]
+  [32] 0.03327834932621  - 0.02526968941740    [32]
+  [33] 0.60561664784068  - 0.65760484831956    [33]
+  [34] 0.96387793253994  - 0.80232634070750    [34]
+  [35] 0.00993349046157  - 0.00521324080356    [35]
+  [36] 0.26335743949632  - 0.21910440485479    [36]
+  [37] 0.03610301908496  - 0.04655738280254    [37]
+  [38] 0.55169342014216  - 0.73021716280640    [38]
+  [39] 0.95900174607100  - 0.62787309790932    [39]
+  [40] 0.00007745833272  - 0.00018888236933    [40]
+  [41] 0.50465020881300  - 0.73452636171489    [41]
+  [42] 0.26687010324739  - 0.15675730498281    [42]
+  [43] 0.57802740957453  - 0.61232736728262    [43]
+  [44] 0.43823545278144  - 0.84655724144067    [44]
+  [45] 0.51156489123674  - 0.69422794050488    [45]
+  [46] 0.77495322158576  - 0.99110723301234    [46]
+  [47] 0.76745743218781  - 0.62348396295618    [47]
+  [48] 0.84578312250737  - 0.74362632596872    [48]
+  [49] 0.07379480490606  - 0.13674395552613    [49]
+  [50] 0.00880755634239  - 0.00969423316670    [50]
+  [51] 0.30008725479869  - 0.37215518746297    [51]
+  [52] 0.00331305145696  - 0.00110120317803    [52]
+  [53] 1.00000000000000  - 0.99999999999989    [53]
+  [54] 0.13220370894135  - 0.16889515395961    [54]
+  [55] 0.94271008579227  - 0.66050393713774    [55]
+  [56] 0.21451374076565  - 0.67369627670709    [56]
+  [57] 0.61473693624137  - 0.93903177606325    [57]
+  [58] 0.31170235909384  - 0.56849929070659    [58]
+  [59] 0.15044155539295  - 0.11202032868190    [59]
+  [60] 0.00006759291051  - 0.00001505491126    [60]
+  [61] 1.00000000000000  | 1.00000000000000    [61]
+  [62] 0.32140083741370  - 0.25173660271745    [62]
+  [63] 0.25642328659399  - 0.10385855099406    [63]
+  [64] 0.23603988994063  - 0.10418860895513    [64]
+  
+  `actual$log2norm.run_0008.treated` is absent
+  `expected$log2norm.run_0008.treated` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  `actual$raw.run_0008.treated` is absent
+  `expected$raw.run_0008.treated` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+  
+  DIA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "legacy"      
+  `expected`: "pearson-skip"
+  
+  E4
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  E4
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "legacy"      
+  `expected`: "pearson-skip"
+  
+  E4
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `"legacy step: correlation_filtered" %in% validateWorkflowAnalysisRecord(record)$incomplete` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:286:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | <no correlation block>
+  E4
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E4
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E4") at test-kit248-correlation-skip-record.R:338:5
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `"legacy step: correlation_filtered" %in% validateWorkflowAnalysisRecord(record)$incomplete` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E4, E5: label-free Skip with no Apply before it is recorded as the skip and the record replays (fails before: legacy, refused)
+kind: failure
+message:
+  Expected `kit248ErrorText(replay$error)` to be identical to NA_character_.
+  Differences:
+  actual vs expected
+  - "workflow_replay_unsupported: step \"correlation_filtered\" cannot be replayed: operation \"legacy\""
+  + NA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$preceded_by` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_length(...) at test-kit248-correlation-skip-record.R:274:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `"threshold" %in% kit248ParameterNames(step)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:278:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | [4. correlation_filtered: pearson-selection]
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E8: the Apply through the worker, then Skip, is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `any(grepl("threshold", block))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E8
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E8") at test-kit248-correlation-skip-record.R:359:5
+   2.   └─testthat::expect_false(any(grepl("threshold", block)), info = info) at test-kit248-correlation-skip-record.R:290:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$preceded_by` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_length(...) at test-kit248-correlation-skip-record.R:274:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `"threshold" %in% kit248ParameterNames(step)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:278:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | [4. correlation_filtered: pearson-selection]
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E12: Apply at t_hi, Run Normalization & RUV again, Skip is recorded as the skip (fails before)
+kind: failure
+message:
+  Expected `any(grepl("threshold", block))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E12
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E12") at test-kit248-correlation-skip-record.R:373:5
+   2.   └─testthat::expect_false(any(grepl("threshold", block)), info = info) at test-kit248-correlation-skip-record.R:290:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E11: a second Skip commits nothing and leaves no provenance pending to be chained (fails before at its first assertion)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "legacy"      
+  `expected`: "pearson-skip"
+  
+  LFQ
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E11: a second Skip commits nothing and leaves no provenance pending to be chained (fails before at its first assertion)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "legacy"      
+  `expected`: "pearson-skip"
+  
+  DIA_LIMPA
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:272:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `unlist(kit248Entry(fixture$manager)$fixed)` to be identical to `c(skipped = TRUE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+  
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_identical(...) at test-kit248-correlation-skip-record.R:273:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(fixture$manager)$preceded_by` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_length(...) at test-kit248-correlation-skip-record.R:274:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `step$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_identical(step$operation, "pearson-skip", info = info) at test-kit248-correlation-skip-record.R:277:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `"threshold" %in% kit248ParameterNames(step)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_false(...) at test-kit248-correlation-skip-record.R:278:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `skipped` to have length 1.
+  Actual length: 0.
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_length(skipped, 1L) at test-kit248-correlation-skip-record.R:280:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `if (length(block)) block[[1L]] else "<no correlation block>"` to match regexp "^\\[[0-9]+\\. correlation_filtered: pearson-skip\\]$".
+  Actual text:
+  x | [5. correlation_filtered: pearson-selection]
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_match(...) at test-kit248-correlation-skip-record.R:288:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `"  skipped [fixed] = TRUE" %in% block` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_true(...) at test-kit248-correlation-skip-record.R:289:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `any(grepl("threshold", block))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E6
+trace (first lines):
+      ▆
+   1. └─kit248ExpectSkipRecorded(fixture, "E6") at test-kit248-correlation-skip-record.R:425:5
+   2.   └─testthat::expect_false(any(grepl("threshold", block)), info = info) at test-kit248-correlation-skip-record.R:290:5
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(replay$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+      names(actual)   | names(expected)    
+  [1] "Protein.Group" | "Protein.Group" [1]
+                      - "run_0001"      [2]
+  [2] "run_0002"      | "run_0002"      [3]
+  [3] "run_0003"      | "run_0003"      [4]
+  [4] "run_0004"      | "run_0004"      [5]
+  
+  `actual$run_0001` is absent
+  `expected$run_0001` is a double vector (23.643769046678, 23.7945626352366, 24.0440075247052, 23.9886413230552, 23.5909443977032, ...)
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `kit248Table(replay$manager, "ruv_covariates")$design` to be identical to `covariates_live`.
+  Differences:
+    `attr(actual, 'row.names')[9:11]`: 9 10 11   
+  `attr(expected, 'row.names')[9:12]`: 9 10 11 12
+  
+  actual vs expected
+                        Run   group replicates tech_rep_group   batch acquisition excluded           W1          W2
+  - actual[1, ]    run_0002 control          1      control_1 batch_2       late     FALSE -0.010948872  0.27638357
+  - actual[2, ]    run_0003 control          2      control_2 batch_1       early    FALSE -0.675739934  0.44832254
+  - actual[3, ]    run_0004 control          2      control_2 batch_2       late     FALSE  0.138899878 -0.21727483
+  - actual[4, ]    run_0005 control          3      control_3 batch_1       early    FALSE  0.480188510 -0.15429511
+  - actual[5, ]    run_0006 control          3      control_3 batch_2       late     FALSE  0.066215104 -0.26676664
+  - actual[6, ]    run_0007 treated          1      treated_1 batch_1       early    FALSE  0.373411003 -0.01152624
+  - actual[7, ]    run_0008 treated          1      treated_1 batch_2       late     FALSE -0.443113191  0.22439356
+  - actual[8, ]    run_0009 treated          2      treated_2 batch_1       early    FALSE -0.092986565 -0.55348431
+  - actual[9, ]    run_0010 treated          2      treated_2 batch_2       late     FALSE  0.206112341  0.59204228
+  - actual[10, ]   run_0011 treated          3      treated_3 batch_1       early    FALSE -0.383858628 -0.44464901
+  - actual[11, ]   run_0012 treated          3      treated_3 batch_2       late     FALSE  0.341820354  0.10685418
+  + expected[1, ]  run_0001 control          1      control_1 batch_1       early    FALSE -0.054957320  0.35550229
+  + expected[2, ]  run_0002 control          1      control_1 batch_2       late     FALSE  0.138575563 -0.23508680
+  + expected[3, ]  run_0003 control          2      control_2 batch_1       early    FALSE  0.729959431 -0.36764153
+  + expected[4, ]  run_0004 control          2      control_2 batch_2       late     FALSE -0.508676415  0.09962214
+  + expected[5, ]  run_0005 control          3      control_3 batch_1       early    FALSE -0.327369627  0.14356215
+  + expected[6, ]  run_0006 control          3      control_3 batch_2       late     FALSE  0.086517295  0.04565589
+  + expected[7, ]  run_0007 treated          1      treated_1 batch_1       early    FALSE -0.142701742 -0.18653094
+  + expected[8, ]  run_0008 treated          1      treated_1 batch_2       late     FALSE  0.304471910  0.01022260
+  + expected[9, ]  run_0009 treated          2      treated_2 batch_1       early    FALSE  0.152219112  0.16308960
+  + expected[10, ] run_0010 treated          2      treated_2 batch_2       late     FALSE -0.009013081 -0.32680656
+  + expected[11, ] run_0011 treated          3      treated_3 batch_1       early    FALSE  0.030035544  0.70527677
+  + expected[12, ] run_0012 treated          3      treated_3 batch_2       late     FALSE -0.399060670 -0.40686561
+  
+  `actual$Run[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected$Run[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+      actual$group | expected$group     
+  [6] "treated"    - "control"      [3] 
+                   - "control"      [4] 
+                   - "control"      [5] 
+                   - "control"      [6] 
+                   - "treated"      [7] 
+                   - "treated"      [8] 
+                   - "treated"      [9] 
+  [7] "treated"    | "treated"      [10]
+  [8] "treated"    | "treated"      [11]
+  [9] "treated"    | "treated"      [12]
+  
+    `actual$replicates[1:4]`: 1   2 2 3
+  `expected$replicates[1:5]`: 1 1 2 2 3
+  
+      actual$tech_rep_group | expected$tech_rep_group    
+  [1] "control_1"           | "control_1"             [1]
+                            - "control_1"             [2]
+  [2] "control_2"           | "control_2"             [3]
+  [3] "control_2"           | "control_2"             [4]
+  [4] "control_3"           | "control_3"             [5]
+  
+  `actual$batch[1:3]`:             "batch_2" "batch_1" "batch_2"
+  `expected$batch[1:4]`: "batch_1" "batch_2" "batch_1" "batch_2"
+  
+  `actual$acquisition[1:3]`:           "late " "early" "late "
+  `expected$acquisition[1:4]`: "early" "late " "early" "late "
+  
+  `actual$excluded[9:11]`:   FALSE FALSE FALSE      
+  `expected$excluded[9:12]`: FALSE FALSE FALSE FALSE
+  
+       actual$W1           | expected$W1              
+   [1] -0.0109488718983166 - -0.0549573201109627  [1] 
+   [2] -0.675739934281629  - 0.138575562956046    [2] 
+   [3] 0.138899877632829   - 0.729959431007035    [3] 
+   [4] 0.480188509737513   - -0.508676415362746   [4] 
+   [5] 0.0662151041236594  - -0.327369627316192   [5] 
+   [6] 0.373411003406863   - 0.0865172954179372   [6] 
+   [7] -0.443113190838286  - -0.142701741586757   [7] 
+   [8] -0.0929865645915021 - 0.304471910205101    [8] 
+   [9] 0.206112340783882   - 0.152219112346302    [9] 
+  [10] -0.38385862817653   - -0.00901308119406166 [10]
+  [11] 0.341820354101508   - 0.0300355435343271   [11]
+                           - -0.399060669896044   [12]
+  
+       actual$W2          | expected$W2            
+   [1] 0.276383572101851  - 0.355502290653745  [1] 
+   [2] 0.44832253633339   - -0.235086804965175 [2] 
+   [3] -0.217274826499288 - -0.367641526887014 [3] 
+   [4] -0.154295109499368 - 0.0996221361894234 [4] 
+   [5] -0.266766638985588 - 0.143562150810758  [5] 
+   [6] -0.011526237256451 - 0.0456558887367753 [6] 
+   [7] 0.224393564951401  - -0.186530938688401 [7] 
+   [8] -0.553484309142613 - 0.0102226025253281 [8] 
+   [9] 0.592042278936287  - 0.163089595082989  [9] 
+  [10] -0.444649011494608 - -0.326806558908315 [10]
+  [11] 0.106854180555004  - 0.705276771009249  [11]
+                          - -0.40686560555938  [12]
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E6: DIA with limpa, Apply at t_hi, Skip, RUV covariates, DA: recorded as the skip; the replay's table, covariates and DA equal the live ones (fails before)
+kind: failure
+message:
+  Expected `kit248DaTable(replay$manager)` to be identical to `da_live`.
+  Differences:
+       names(actual)               | names(expected)                 
+   [4] "denominator"               | "denominator"               [4] 
+   [5] "fdr_qvalue"                | "fdr_qvalue"                [5] 
+   [6] "log2FC"                    | "log2FC"                    [6] 
+   [7] "log2norm.6.right"          - "log2norm.run_0001.control" [7] 
+   [8] "log2norm.run_0002.control" | "log2norm.run_0002.control" [8] 
+   [9] "log2norm.run_0003.control" | "log2norm.run_0003.control" [9] 
+  [10] "log2norm.run_0004.control" | "log2norm.run_0004.control" [10]
+  
+       names(actual)               | names(expected)                 
+  [17] "log2norm.run_0011.treated" | "log2norm.run_0011.treated" [17]
+  [18] "log2norm.run_0012.treated" | "log2norm.run_0012.treated" [18]
+  [19] "numerator"                 | "numerator"                 [19]
+  [20] "raw.6.right"               - "raw.run_0001.control"      [20]
+  [21] "raw.run_0002.control"      | "raw.run_0002.control"      [21]
+  [22] "raw.run_0003.control"      | "raw.run_0003.control"      [22]
+  [23] "raw.run_0004.control"      | "raw.run_0004.control"      [23]
+  
+       actual$fdr_qvalue      | expected$fdr_qvalue        
+   [1] 0.45530043451951535127 - 0.80222469298498355617 [1] 
+   [2] 0.79720856028124509329 - 0.89426484940658867995 [2] 
+   [3] 0.38093140781322004651 - 0.56889786596679292607 [3] 
+   [4] 0.66001361209166586885 - 0.86803753115510651206 [4] 
+   [5] 0.45530043451951535127 - 0.29455815576963967350 [5] 
+   [6] 0.79720856028124509329 - 0.87574383039585568245 [6] 
+   [7] 0.75223904957192322396 - 0.86803753115510651206 [7] 
+   [8] 0.66001361209166586885 - 0.86803753115510651206 [8] 
+   [9] 0.75223904957192322396 - 0.56889786596679292607 [9] 
+  [10] 0.00000000000000021584 - 0.00000000000000000056 [10]
+  [11] 0.81082354116090726848 - 0.90762606610659313233 [11]
+  [12] 0.50543296714749108567 - 0.41629378624847862556 [12]
+  [13] 0.75223904957192322396 - 0.82426865356831990894 [13]
+  [14] 0.33822934263427090196 - 0.47237508972020503251 [14]
+  [15] 0.33822934263427090196 - 0.29243548677910630174 [15]
+  [16] 0.29858538423158903496 - 0.34951138134830167514 [16]
+  [17] 0.64262255675679336164 - 0.74755071339723355717 [17]
+  [18] 0.21791587991315189421 - 0.47237508972020503251 [18]
+  [19] 0.76970517567120122493 - 0.82426865356831990894 [19]
+  [20] 0.00000000000000019647 - 0.00000000000000022325 [20]
+  [21] 0.60703403375825715216 - 0.69284255031913810630 [21]
+  [22] 0.80070838575815661553 - 0.86803753115510651206 [22]
+  [23] 0.23495533831261644631 - 0.27083402194140110408 [23]
+  [24] 0.29858538423158903496 - 0.34951138134830167514 [24]
+  [25] 0.81082354116090726848 - 0.87261234573767609835 [25]
+  [26] 0.80070838575815661553 - 0.82426865356831990894 [26]
+  [27] 0.81082354116090726848 - 0.89426484940658867995 [27]
+  [28] 0.81082354116090726848 - 0.88182312738733104052 [28]
+  [29] 0.81082354116090726848 - 0.89426484940658867995 [29]
+  [30] 0.00000000000000494113 - 0.00000000000000002346 [30]
+  [31] 0.60703403375825715216 - 0.74755071339723355717 [31]
+  [32] 0.81082354116090726848 - 0.87261234573767609835 [32]
+  [33] 0.79720856028124509329 - 0.86803753115510651206 [33]
+  [34] 0.79720856028124509329 - 0.82426865356831990894 [34]
+  [35] 0.29858538423158903496 - 0.29455815576963967350 [35]
+  [36] 0.80070838575815661553 - 0.86803753115510651206 [36]
+  [37] 0.33822934263427090196 - 0.21205087055915550209 [37]
+  [38] 0.81082354116090726848 - 0.90762606610659313233 [38]
+  [39] 0.81082354116090726848 - 0.89426484940658867995 [39]
+  [40] 0.00000000000001514544 - 0.00000000000000266760 [40]
+  [41] 0.64823837087869795592 - 0.89426484940658867995 [41]
+  [42] 0.45530043451951535127 - 0.47237508972020503251 [42]
+  [43] 0.79720856028124509329 - 0.82426865356831990894 [43]
+  [44] 0.65714858593551128685 - 0.82426865356831990894 [44]
+  [45] 0.33822934263427090196 - 0.51673681537535365305 [45]
+  [46] 0.60832057879210210682 - 0.74755071339723355717 [46]
+  [47] 0.80070838575815661553 - 0.94503466965985238879 [47]
+  [48] 0.56457233859246880314 - 0.61059772868062034412 [48]
+  [49] 0.33822934263427090196 - 0.34951138134830167514 [49]
+  [50] 0.00000000000723070556 - 0.00000000000000266760 [50]
+  [51] 0.79720856028124509329 - 0.87261234573767609835 [51]
+  [52] 0.29858538423158903496 - 0.41339247870426859555 [52]
+  [53] 0.80070838575815661553 - 0.80222469298498355617 [53]
+  [54] 0.60703403375825715216 - 0.87261234573767609835 [54]
+  [55] 0.79720856028124509329 - 0.90762606610659313233 [55]
+  [56] 0.71243715553082354042 - 0.82426865356831990894 [56]
+  [57] 0.29858538423158903496 - 0.23594695452070904573 [57]
+  [58] 0.33822934263427090196 - 0.34951138134830167514 [58]
+  [59] 0.80070838575815661553 - 0.94503466965985238879 [59]
+  [60] 0.00000000000000000077 - 0.00000000000000000056 [60]
+  [61] 0.80070838575815661553 - 0.88182312738733104052 [61]
+  [62] 0.75223904957192322396 - 0.79237285001601220902 [62]
+  [63] 0.81082354116090726848 - 0.87574383039585568245 [63]
+  [64] 0.21791587991315189421 - 0.34951138134830167514 [64]
+  
+       actual$log2FC | expected$log2FC     
+   [1] 0.17421       - 0.10467         [1] 
+   [2] 0.05590       - 0.02508         [2] 
+   [3] 0.17885       - 0.13330         [3] 
+   [4] -0.09787      - -0.05923        [4] 
+   [5] 0.19235       - 0.26836         [5] 
+   [6] -0.04696      - -0.04160        [6] 
+   [7] 0.07521       - 0.05637         [7] 
+   [8] 0.11073       - 0.06652         [8] 
+   [9] 0.06777       - 0.13786         [9] 
+  [10] 1.06893       - 1.05097         [10]
+  [11] 0.02006       - 0.01964         [11]
+  [12] 0.12466       - 0.15649         [12]
+  [13] -0.06149      - -0.06616        [13]
+  [14] 0.20689       - 0.15662         [14]
+  [15] 0.19521       - 0.21329         [15]
+  [16] -0.18874      - -0.16612        [16]
+  [17] -0.10006      - -0.10481        [17]
+  [18] 0.28860       - 0.17586         [18]
+  [19] -0.07662      - -0.08992        [19]
+  [20] 0.92870       - 0.89988         [20]
+  [21] 0.13230       - 0.12316         [21]
+  [22] -0.03073      - 0.05338         [22]
+  [23] 0.25095       - 0.23061         [23]
+  [24] -0.20811      - -0.18951        [24]
+  [25] -0.01937      - -0.04508        [25]
+  [26] 0.03533       - 0.10611         [26]
+  [27] 0.00954       - 0.02897         [27]
+  [28] -0.00616      - 0.03729         [28]
+  [29] -0.01215      - -0.02457        [29]
+  [30] 0.85885       - 0.89430         [30]
+  [31] 0.13144       - 0.10266         [31]
+  [32] 0.00755       - 0.04728         [32]
+  [33] -0.05865      - -0.07708        [33]
+  [34] -0.04932      - -0.07668        [34]
+  [35] -0.24859      - -0.25258        [35]
+  [36] 0.04254       - 0.05599         [36]
+  [37] -0.19521      - -0.24567        [37]
+  [38] 0.02348       - 0.01792         [38]
+  [39] -0.01047      - -0.02374        [39]
+  [40] 0.97506       - 0.97516         [40]
+  [41] -0.09599      - -0.02590        [41]
+  [42] 0.16456       - 0.16886         [42]
+  [43] -0.03697      - -0.06776        [43]
+  [44] 0.09240       - 0.07565         [44]
+  [45] -0.17186      - -0.14333        [45]
+  [46] -0.10285      - -0.09706        [46]
+  [47] -0.02219      - -0.00636        [47]
+  [48] -0.13842      - -0.12591        [48]
+  [49] 0.16802       - 0.17893         [49]
+  [50] 0.84750       - 0.85314         [50]
+  [51] -0.06497      - -0.05178        [51]
+  [52] 0.22091       - 0.17935         [52]
+  [53] 0.03981       - 0.09836         [53]
+  [54] -0.13220      - -0.04694        [54]
+  [55] -0.05288      - -0.01624        [55]
+  [56] -0.07870      - -0.07118        [56]
+  [57] -0.19172      - -0.22341        [57]
+  [58] -0.20599      - -0.20726        [58]
+  [59] 0.02645       - 0.00960         [59]
+  [60] 1.02899       - 1.00319         [60]
+  [61] -0.04087      - -0.03796        [61]
+  [62] -0.07385      - -0.09627        [62]
+  [63] 0.00803       - 0.03563         [63]
+  [64] 0.23923       - 0.17910         [64]
+  
+  `actual$log2norm.6.right` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$log2norm.6.right` is absent
+  
+  `actual$raw.6.right` is a double vector (NA, NA, NA, NA, NA, ...)
+  `expected$raw.6.right` is absent
+  
+       actual$raw_pvalue        | expected$raw_pvalue          
+   [1] 0.2020428523827562106163 - 0.4106965871117878030816 [1] 
+   [2] 0.6611206938558882306722 - 0.8244004080466988959586 [2] 
+   [3] 0.1479109277443049486056 - 0.2222257288932784902169 [3] 
+   [4] 0.4271251275427130345008 - 0.5902378481301896462341 [4] 
+   [5] 0.1869979702258469655973 - 0.0523491072816185745720 [5] 
+   [6] 0.6934565240493777427133 - 0.7074155578303245039962 [6] 
+   [7] 0.5322705117636753469057 - 0.6199694730393383590439 [7] 
+   [8] 0.4185272274154878680008 - 0.6123365402621334663280 [8] 
+   [9] 0.5538453345544072092821 - 0.2200562099117191194875 [9] 
+  [10] 0.0000000000000000119724 - 0.0000000000000000000130 [10]
+  [11] 0.8741555826570903686701 - 0.8627838790895452358853 [11]
+  [12] 0.2336349222870066077995 - 0.1235872177925170928292 [12]
+  [13] 0.5563525082421537648614 - 0.5097602419328717271441 [13]
+  [14] 0.1221925427447547313209 - 0.1623789370913204799241 [14]
+  [15] 0.1026449411098570019263 - 0.0456930448092353613809 [15]
+  [16] 0.0590618572343211828413 - 0.0839982798838263822194 [16]
+  [17] 0.3683425108265323544288 - 0.3377642957827542424809 [17]
+  [18] 0.0322339145899088810876 - 0.1623696068626566957338 [18]
+  [19] 0.5835021333560324041656 - 0.4838895504225997346026 [19]
+  [20] 0.0000000000000000072656 - 0.0000000000000000139532 [20]
+  [21] 0.3254956757561471292206 - 0.2922929509158864180840 [21]
+  [22] 0.7913452722276208550767 - 0.6185675669935952747380 [22]
+  [23] 0.0390986723843125758004 - 0.0380860343355095345985 [23]
+  [24] 0.0705097516330807777551 - 0.0889840411815168291776 [24]
+  [25] 0.8515136244327390357967 - 0.6775660465695637624250 [25]
+  [26] 0.8124570051392374647747 - 0.4558762080810211392290 [26]
+  [27] 0.9412080136582041678395 - 0.8054637071391568259315 [27]
+  [28] 0.9594901219198670450083 - 0.7396733987444574776049 [28]
+  [29] 0.9178377719695153258428 - 0.8201550930198283628769 [29]
+  [30] 0.0000000000000003654440 - 0.0000000000000000010995 [30]
+  [31] 0.3071413446707218497522 - 0.3504143969049532403304 [31]
+  [32] 0.9505034301419579279013 - 0.6573250782717605655847 [32]
+  [33] 0.6928157122731594119713 - 0.5709011145336243542303 [33]
+  [34] 0.6835899370439866284954 - 0.5043392425011654633948 [34]
+  [35] 0.0732849257577643520278 - 0.0552296542068074422516 [35]
+  [36] 0.7338332185506464266922 - 0.6239019755177328541151 [36]
+  [37] 0.1078130725044465498819 - 0.0231930639674076330414 [37]
+  [38] 0.8561464238312876950943 - 0.8742357732704271189306 [38]
+  [39] 0.9152631428946563785232 - 0.8110214171315693887365 [39]
+  [40] 0.0000000000000014001870 - 0.0000000000000002500877 [40]
+  [41] 0.3835472713440289949105 - 0.8121667001791067486138 [41]
+  [42] 0.1988418619772191475725 - 0.1565198598363139181888 [42]
+  [43] 0.7075340994706180719476 - 0.5151679084801998875776 [43]
+  [44] 0.4009698353626762745705 - 0.4893805419501378040081 [44]
+  [45] 0.1250764256673168317580 - 0.1857022930255177173287 [45]
+  [46] 0.3374333066253020207981 - 0.3452220782296805401401 [46]
+  [47] 0.8008886354139964636190 - 0.9450346696598523887900 [47]
+  [48] 0.2714108021183195829096 - 0.2480553272765019801049 [48]
+  [49] 0.1150873427249444885812 - 0.0747603802893591629086 [49]
+  [50] 0.0000000000008021694387 - 0.0000000000000002380608 [50]
+  [51] 0.6221811573035405107390 - 0.6736457116176555182108 [51]
+  [52] 0.0772913273216522672682 - 0.1162666346355755442321 [52]
+  [53] 0.7655782089321683248073 - 0.4136471073203821235964 [53]
+  [54] 0.3157040061727759971966 - 0.6817283951075594483626 [54]
+  [55] 0.6513518007071055215818 - 0.8792627515407621663357 [55]
+  [56] 0.4742236909969448355184 - 0.4937865829291856467620 [56]
+  [57] 0.0621213546088352011609 - 0.0294933693150886307166 [57]
+  [58] 0.1132471578409105228413 - 0.0928389606706426367966 [58]
+  [59] 0.8142752808177167178627 - 0.9323454665301263988297 [59]
+  [60] 0.0000000000000000000143 - 0.0000000000000000000176 [60]
+  [61] 0.7542392122023524603236 - 0.7440382637330605897219 [61]
+  [62] 0.5348747243520122207627 - 0.3838055992265059224167 [62]
+  [63] 0.9330916506685554834277 - 0.7115418621966327350492 [63]
+  [64] 0.0319937614645077472719 - 0.0840099815600370281032 [64]
+  
+  `actual$log2norm.run_0001.control` is absent
+  `expected$log2norm.run_0001.control` is a double vector (23.643769046678, 23.7945626352366, 24.0440075247052, 23.9886413230552, 23.5909443977032, ...)
+  
+  `actual$raw.run_0001.control` is absent
+  `expected$raw.run_0001.control` is a double vector (23.643769046678, 23.7945626352366, 24.0440075247052, 23.9886413230552, 23.5909443977032, ...)
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E10: DIA with limpa, press, Apply at t_hi, press again, Skip: live and replay agree on the recorded start (fails before)
+kind: failure
+message:
+  Expected `kit248Step(record)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  in process
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E10: DIA with limpa, press, Apply at t_hi, press again, Skip: live and replay agree on the recorded start (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+  in process
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E10: DIA with limpa, press, Apply at t_hi, press again, Skip: live and replay agree on the recorded start (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+      names(actual)   | names(expected)    
+  [1] "Protein.Group" | "Protein.Group" [1]
+                      - "run_0001"      [2]
+  [2] "run_0002"      | "run_0002"      [3]
+  [3] "run_0003"      | "run_0003"      [4]
+  [4] "run_0004"      | "run_0004"      [5]
+  
+  `actual$run_0001` is absent
+  `expected$run_0001` is a double vector (23.643769046678, 23.7945626352366, 24.0440075247052, 23.9886413230552, 23.5909443977032, ...)
+  
+  in process
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E10: DIA with limpa, press, Apply at t_hi, press again, Skip: live and replay agree on the recorded start (fails before)
+kind: failure
+message:
+  Expected `kit248Step(record)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+  
+  worker
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E10: DIA with limpa, press, Apply at t_hi, press again, Skip: live and replay agree on the recorded start (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+  `actual[1:3]`:              "run_0002" "run_0003" "run_0004"
+  `expected[1:4]`: "run_0001" "run_0002" "run_0003" "run_0004"
+  
+  worker
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E10: DIA with limpa, press, Apply at t_hi, press again, Skip: live and replay agree on the recorded start (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+      names(actual)   | names(expected)    
+  [1] "Protein.Group" | "Protein.Group" [1]
+                      - "run_0001"      [2]
+  [2] "run_0002"      | "run_0002"      [3]
+  [3] "run_0003"      | "run_0003"      [4]
+  [4] "run_0004"      | "run_0004"      [5]
+  
+  `actual$run_0001` is absent
+  `expected$run_0001` is a double vector (23.643769046678, 23.7945626352366, 24.0440075247052, 23.9886413230552, 23.5909443977032, ...)
+  
+  worker
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E9 (OD-1 (a)): a record made before the fix by Apply then Skip replays as the skip, on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Entry(replay$manager)$operation` to be identical to "pearson-skip".
+  Differences:
+  `actual`:   "pearson-selection"
+  `expected`: "pearson-skip"     
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E9 (OD-1 (a)): a record made before the fix by Apply then Skip replays as the skip, on every sample (fails before)
+kind: failure
+message:
+  Expected `kit248Config(replay$manager)` to equal `list(min_pearson_correlation_threshold = 0, skipped = TRUE)`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `names(actual)`:   "min_pearson_correlation_threshold"          
+  `names(expected)`: "min_pearson_correlation_threshold" "skipped"
+  
+    `actual$min_pearson_correlation_threshold`: 0.97
+  `expected$min_pearson_correlation_threshold`: 0.00
+  
+  `actual$skipped` is absent
+  `expected$skipped` is a logical vector (TRUE)
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E9 (OD-1 (a)): a record made before the fix by Apply then Skip replays as the skip, on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$samples` to be identical to `live$samples`.
+  Differences:
+       actual     | expected       
+   [5] "run_0005" | "run_0005" [5] 
+   [6] "run_0006" | "run_0006" [6] 
+   [7] "run_0007" | "run_0007" [7] 
+                  - "run_0008" [8] 
+   [8] "run_0009" | "run_0009" [9] 
+   [9] "run_0010" | "run_0010" [10]
+  [10] "run_0011" | "run_0011" [11]
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E9 (OD-1 (a)): a record made before the fix by Apply then Skip replays as the skip, on every sample (fails before)
+kind: failure
+message:
+  Expected `replayed$table` to be identical to `live$table`.
+  Differences:
+  `actual` is length 12
+  `expected` is length 13
+  
+       names(actual) | names(expected)     
+   [6] "run_0005"    | "run_0005"      [6] 
+   [7] "run_0006"    | "run_0006"      [7] 
+   [8] "run_0007"    | "run_0007"      [8] 
+                     - "run_0008"      [9] 
+   [9] "run_0009"    | "run_0009"      [10]
+  [10] "run_0010"    | "run_0010"      [11]
+  [11] "run_0011"    | "run_0011"      [12]
+  
+  `actual$run_0008` is absent
+  `expected$run_0008` is a double vector (21.5976871051812, 21.4307520022437, 20.3119541963684, 20.9688916415838, 18.8592955768628, ...)
+
+file: test-kit248-correlation-skip-record.R
+test: KIT-248 E13 (OD-1 (a')): a legacy correlation step whose outcome says skipped replays as the skip; an earlier legacy step is still refused (fails before)
+kind: failure
+message:
+  Expected `kit248ErrorText(replay$error)` to be identical to NA_character_.
+  Differences:
+  actual vs expected
+  - "workflow_replay_unsupported: step \"correlation_filtered\" cannot be replayed: operation \"legacy\""
+  + NA
+
+file: test-workflow-operation-registry.R
+test: the registry carries the built-in operations with every fact the execution layer reads
+kind: failure
+message:
+  Expected `names` to be identical to `c(...)`.
+  Differences:
+  actual[1:7] vs expected[1:6]
+    "DA-contrast-output"
+    "da_publication"
+    "enrichment"
+  - "integration_mofa_model"
+    "lipid_between_sample_normalisation"
+    "lipid_composite_figure"
+    "lipid_da_contrast"
+  
+       actual                      | expected                        
+  [51] "normalization-ruv"         | "normalization-ruv"         [50]
+  [52] "pearson-pairs"             | "pearson-pairs"             [51]
+  [53] "pearson-selection"         | "pearson-selection"         [52]
+                                   - "pearson-skip"              [53]
+  [54] "peptide_accession_cleanup" | "peptide_accession_cleanup" [54]
+  [55] "peptide_imputation"        | "peptide_imputation"        [55]
+  [56] "peptide_intensity_filter"  | "peptide_intensity_filter"  [56]
+
+file: test-workflow-operation-registry.R
+test: unregistered or malformed operations refuse with the execution layer's class; entries are validated
+kind: failure
+message:
+  Expected `sort(workflowOperationNames())` to be identical to `sort(...)`.
+  Differences:
+  actual[1:7] vs expected[1:6]
+    "DA-contrast-output"
+    "da_publication"
+    "enrichment"
+  - "integration_mofa_model"
+    "lipid_between_sample_normalisation"
+    "lipid_composite_figure"
+    "lipid_da_contrast"
+  
+       actual                      | expected                        
+  [51] "normalization-ruv"         | "normalization-ruv"         [50]
+  [52] "pearson-pairs"             | "pearson-pairs"             [51]
+  [53] "pearson-selection"         | "pearson-selection"         [52]
+                                   - "pearson-skip"              [53]
+  [54] "peptide_accession_cleanup" | "peptide_accession_cleanup" [54]
+  [55] "peptide_imputation"        | "peptide_imputation"        [55]
+  [56] "peptide_intensity_filter"  | "peptide_intensity_filter"  [56]
+
