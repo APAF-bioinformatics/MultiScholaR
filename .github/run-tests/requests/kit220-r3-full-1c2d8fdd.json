@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-220 R3: full suite, merge 1c2d8fdd (staging dd769671 merged, re-freeze 2c7e2959) against staging dd769671, check; expected: all same except the new file and test-workflow-saved-da.R message-changed at 19 W1 leaves; test-omic-gui-config.R same",
+  "label": "KIT-220 R3 full suite head 1c2d8fdd base dd769671",
+  "package_commit": "1c2d8fdd31fa2304b13cd053193e1c20e0629443",
+  "base_commit": "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120,
+    "test-workflow-saved-da.R": 90
+  },
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
