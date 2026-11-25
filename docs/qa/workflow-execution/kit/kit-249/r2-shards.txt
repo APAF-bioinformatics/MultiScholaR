@@ -10,3 +10,4 @@ k=8: max 41.3  min 23.2  total 240.5 job-min per side; shards 41.3 36.3 32.5 29.
 k=9: max 38.4  min 22.2  total 252.5 job-min per side; shards 38.4 35.5 31.7 27.7 26.0 24.1 24.0 22.9 22.2
 k=10: max 37.2  min 19.4  total 264.5 job-min per side; shards 37.2 34.4 29.4 26.6 25.4 23.9 23.8 22.5 21.9 19.4
 chosen k = 5 (largest projected shard 49.0 min <= 50)
+ran: k = 6 shards per side (the ticket's rule, r1.2: 6 per side, largest projected 45.7 min); "chosen k = 5" above is the script's own rule (largest shard at most 50 minutes), not the ticket's

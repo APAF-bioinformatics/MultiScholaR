@@ -1,6 +1,6 @@
 # KIT-249 outcome (G0, R1, the fix, R2: stopped at stop rules 3 and 4)
 
-Ticket: `tickets/kit/KIT-249.md` r1.2. Branch `kit-249` from `v0.9-staging` at **16112917329a63ab062655f04db5bf1dd7df9729**
+Ticket: `tickets/kit/KIT-249.md` r1.3. Branch `kit-249` from `v0.9-staging` at **16112917329a63ab062655f04db5bf1dd7df9729**
 (merge train 3). G0 branch `kit-249-g0` (not merged). OD-1 was decided by the owner on 2026-11-25: (a), older records
 recompute on replay (VAL-237). Staging e0747fc1 (merge train 4, KIT-218 merged) was merged into `kit-249` (47ad12d0);
 E7 (b) for `daAnalysisWrapperFunction` was added as a tests-only commit (db30cf75); the fix is 82470db1.
@@ -26,7 +26,7 @@ the fixture rule of section 8 was not needed):
 | G0-a runTestsContrasts topTable | 0.756 | both error | 0 of 30 | 0 | yes | Storey, 30 of 30, 6 of 6, 0 nulls |
 | G0-b runTestsContrasts topTreat (lfc 0) | 0.754 | both error | 0 of 30 | 0 | yes | the same |
 | G0-c S4 method, LFQ object | 0.754 | both error | 0 of 30 | 0 | yes; count table "Not significant: 30" | the same; "Significant and Up: 6" |
-| G0-d application kernel in process, DIA owner (publish on) | 0.754 | both error | 0 of 30 (da_proteins_long 0 of 30) | 0 | manifest names B_vs_A; record `fdr_method` "BH"; notification "Some contrasts used the existing BH fallback after q-value estimation failed." | the same; record "qvalue" |
+| G0-d application kernel in process, DIA owner (publish on) | 0.754 | both error | 0 of 30 (da_proteins_long 0 of 30) | 0 | manifest names B_vs_A; record `fdr_method` "BH"; notification (the handler's text, printed by G0 when the manifest flags a comparison; the tab itself was not driven) "Some contrasts used the existing BH fallback after q-value estimation failed." | the same; record "qvalue" |
 | G0-e protein_deAnalysisWrapperFunction (completed) | 0.754 | both error | 0 of 30 | 0 | yes | the same |
 | G0-f lipidomics / metabolomics exported S4 | 0.754 | both error | 0 of 30 | 0 | yes (kernel) | the same |
 | G0-c1 control: adjustProtDaResultTable | 0.754 | both error | 30, identical to BH | 6 | `qvalue_failed` TRUE | n/a |
@@ -46,19 +46,33 @@ first half (B_vs_A "BH", C_vs_A "qvalue"), G1 (C_vs_A equal to `qvalue::qvalue(r
 significant) in E1, E2, E4 (three owners) and E5.
 
 **R2** (`r2-45601895895/compare.tsv`, `check-compare.txt`, `tests*.tsv`, `saved-da-new.txt`): 77 files.
-- 75 `same` (including `test-module-ci-prot-da.R` and `test-prot-07d-da-model-stats-shared.R`, the success-path
-  falsifiers; `test-kit218-da-wrapper-tail.R`; `test-kit220-da-threshold-consumers.R`; `test-workflow-analysis-record.R`).
-- The new file `fixed`: base 82 passed, 54 failed (including E7 (b), which therefore fails first on the merged tree);
+- 75 `same` (including `test-module-ci-prot-da.R` and `test-prot-07d-da-model-stats-shared.R`; neither falsifies a fix that
+  assigns BH on the success path: 07d's double sits in a test quarantined as Q-11 and module-CI's asserts no
+  success-path value. The falsifier is G1: on C_vs_A Storey's q is not bit-identical to BH on any route (G0:
+  `identical_q_bh` FALSE, `q_equals_storey` TRUE), so G1's exact identity fails under BH, at rounding level; `test-kit218-da-wrapper-tail.R`; `test-kit220-da-threshold-consumers.R`; `test-workflow-analysis-record.R`).
+- The new file `fixed`: base 82 passed, 54 failed (including E7 (b), which therefore fails first on the merged tree (committed 42 seconds before the fix and first run in R2, beside it; its base values are G0-e's and KIT-218 A1's, and the fix was not changed for it));
   head 136 passed, 0 failed. G1 holds on head (E1, E2, E4 on three owners, E5).
-- **`test-workflow-saved-da.R` `message-changed`: base 780 passed / 171 failed, head 759 / 192.** The 21 expectations
-  failing only on head are all in the KIT-112 W1 (a) and W2 (W1 (b)) frozen captures (`savedDaW1Frozen()`,
-  `tests/testthat/test-workflow-saved-da.R:764` onward): `entities` (a `rendered_asset` more), `calls`
-  (`saveDIAStateValue` 10 -> 11 in four cases), and in those cases the contrast products and display digests differ
-  from base. Those captures' frozen `fdr` fields say "BH" for the cases `dia_one_contrast`, `dia_two_contrasts` and
-  their kin (`:786`, `:818`, `:850`, `:885`, `:920`, `:1091`, `:1135`): **the frozen captures were recorded on
-  comparisons where qvalue() failed, with the empty q-value column frozen in.** Most fields of these captures already
-  fail on runners on base and head alike (laptop-recorded, KIT-156); the record digest (without the fdr fields) is
-  identical on base and head.
+- **`test-workflow-saved-da.R` `message-changed`: base 780 passed / 171 failed, head 759 / 192.** Every difference is in
+  the KIT-112 W1 (a) and W2 (W1 (b)) frozen captures (`savedDaW1Frozen()`, `:764` onward), frozen on the laptop at
+  64e7c2ae (2026-11-10), a commit with this defect.
+  - 21 expectations fail only on head: `entities` in nine W1 (a) cases and their nine W2 twins (one or two
+    `rendered_asset` more, nothing else), and `calls` in three W1 (a) cases (`saveDIAStateValue` 10 -> 11 in
+    `dia_one_contrast`, 7 -> 8 in `dia_two_contrasts`, 8 -> 9 in `dia_retry`; W2 does not compare that count).
+  - 87 expectations that already fail on runners on both sides change their message: `products`, `dependencies` and
+    `files` of those nine cases, and `manifest`, `head_manifest` and `display` of the six fallback cases.
+  - The six cases whose comparisons fell back (frozen `fdr` "BH": `:786`, `:818`, `:850`, `:885`, `:920`, `:1091`)
+    now carry Benjamini-Hochberg q-values: each fallback comparison publishes an interactive volcano page (a saved
+    `rendered_asset`, one more state save) where the defect wrote a 'not available' note, and its contrast products,
+    manifests and display change.
+  - The three later cases at TREAT 0.5 (`:957`, `:996`, `:1035`; `fdr` "qvalue") move only in fields that accumulate
+    over the fixture's store and folder (`entities`, `products`, `dependencies`, `files`). Every changed entry belongs
+    to an earlier fallback click. Their own products, dependencies, manifest, head manifest, display and record are
+    identical on both sides.
+  - `limpa_one_contrast` (`:1135`, "BH" through `adjustProtDaResultTable`, which always kept the fallback) does not
+    move: a control.
+  - `states`, `fits`, `record` (without the fdr fields) and `fdr` are identical on both sides in every case. In W2 the
+    worker equals today's managed path on head in every compared field.
+  - **The stored captures encode the defect's result for the six fallback cases** (no q-value, no page).
 - R CMD check: identical on both sides (6 findings; none only on head).
 - Longest job 45.3 minutes (projected 45.7).
 
@@ -81,7 +95,9 @@ significant) in E1, E2, E4 (three owners) and E5.
 ## Decision needed (OD-2, stop rule 4)
 
 The KIT-112 W1 (a) and W2 frozen captures in `tests/testthat/test-workflow-saved-da.R` (`savedDaW1Frozen()`) move on
-head in the cases recorded as "BH": they froze the empty q-value column. Re-recording them is the owner's word by file
+head in exactly the leaves of AUDIT-KIT-249-impl-20261125 I01 (every move traced to the six fallback comparisons;
+none where qvalue() succeeded; limpa does not move): they froze the empty q-value column. Put to the owner as parked row 36;
+this branch does not edit that file. Re-recording them is the owner's word by file
 (VAL-130 (4)); the ticket's section 3 and section 7 prediction ("none moves") missed this file's W1 captures. Whether
 to accept the move (and re-record, or leave the laptop-recorded values failing as they already do on runners for most
 fields) is OD-2. One correction pass remains in the budget; it is not used, because the result is valid, not an
@@ -91,7 +107,9 @@ instrument defect.
 
 `r2-shards.py` (stdlib Python) projects each shard from the per-file seconds of full suite 45573760967 (and train 3's
 45573711299 for its three new files), 12 minutes set-up per job, files heaviest first, round-robin: 6 shards per side,
-largest projected 45.6 minutes (`r2-shards.txt`). `r2-files.txt`: the 74 files at 16112917 (67 by section 9's grep + 7 named).
+largest projected 45.6 minutes (`r2-shards.txt`). `r2-files.txt`: the 77 files recounted at the fix's tree (70 by section 9's grep, including the new file and KIT-218's
+and KIT-220's, + 7 named); 6 shards per side by the ticket's rule (r1.2), largest projected 45.7 minutes;
+`r2-shards.txt`'s "chosen k = 5" is the script's own rule (largest shard at most 50 minutes), not the ticket's.
 
 ## For the change report
 
@@ -110,6 +128,22 @@ largest projected 45.6 minutes (`r2-shards.txt`). `r2-files.txt`: the 74 files a
   application, transcriptomics.
 - **Since.** a71b8618 (2025-11-12); on `main` at `R/func_prot_da.R:2642`, `:2763`; in v0.9.0 at
   `R/func_prot_da_model_stats.R:640`, `:762`; at the base 16112917 `R/func_prot_da_model_stats.R:686`, `:809`.
+- **Before a71b8618** the same comparison stopped the analysis with qvalue's error; after it, the analysis completed
+  with no q-values for that comparison. On `main` the DIA-with-limpa route has no handler and still stops with
+  qvalue's error on the same trigger (`main:R/func_prot_limpa.R:1284`).
+- **How an affected result is recognised** (every version since a71b8618): a comparison whose `fdr_qvalue` column is
+  empty in every row while `raw_pvalue` is present; on `main` and the tags v0.3.6.3 and v0.5.0-rc1 also the modal
+  naming it and the console line "q_values_all has 0 non-NA values"; on staging builds from v0.9.0, `fdr_method` "BH"
+  for that comparison in `analysis_record.json`, `qvalue_warnings` in the DA products and, since KIT-101
+  (2026-11-07), `Interactive_Volcano_Plots/<comparison>.unavailable.txt` in place of the interactive volcano.
+- **Seen earlier and misread.** KIT-101 (F-08, 2026-11-07) found every committed proteomics fixture of 5 or 6
+  proteins with an all-missing FDR and read it as q-values that "cannot be fitted on so few p-values"; its fix
+  (DAS-066) let the publication complete with a 'not available' note. The KIT-112 frozen captures (2026-11-10) and
+  KIT-220's runner values for them were recorded with the defect; KIT-218's W2 count (61 'Not significant') and
+  KIT-204's B-A fixture showed it too.
+- **After the fix, statistically.** Benjamini-Hochberg is Storey's q-value with pi0 = 1. It is used exactly when pi0
+  is likely small, so there it is conservative by about 1/pi0, and the switch from Storey's q-value is discontinuous.
+  Comparisons of one analysis can carry different methods; the record states the method per comparison.
 - **The fix.** 82470db1, `R/func_prot_da_model_stats.R:674-691` and `:799-816`: the value of the inner `tryCatch` is
   assigned (as `adjustProtDaResultTable` does); `qvalue()` stays unqualified.
 - **What changed in results.** Only comparisons where qvalue() fails: `fdr_qvalue` now equals `p.adjust(raw_pvalue, "BH")`
@@ -119,6 +153,19 @@ largest projected 45.6 minutes (`r2-shards.txt`). `r2-files.txt`: the 74 files a
 - **Evidence.** G0 45590869970 (before, every route), R1 45592793437 (tests at the before values), R2 45601895895
   (after; the KIT-112 frozen captures move, OD-2). Limits: synthetic data only; frequency statement inferred, not
   measured; no real data read.
+
+## Owed elsewhere (not done here)
+
+- I10: the F112-03 comment `tests/testthat/test-workflow-saved-da.R:1155-1156` ("At q 0.05 without TREAT this fixture
+  publishes no Glimma page") becomes false with the fix; it is NOT edited now (the file's captures are the owner's,
+  parked row 36) and is owed at the re-record. `diaInteractiveVolcanoUnavailableText`'s "(the FDR could not be
+  estimated, for example on too few proteins)" goes to the owner's wording (`wording.md` W4).
+- I12 (conventions divergence): the fix's two new comment lines are 116 characters and keep the function's 2-space
+  idiom; the new test file has lines over 100 characters and `function(` lambdas (R.md: `\(x)`), new code that
+  diverges from `conventions/R.md`; recorded, not reformatted.
+- I13: A4 (the next checkpoint's full suite) must read `test-integration-model.R`, `test-integration-mofa-model.R` and
+  `test-prot-missing-value-counts.R`, which replay records and were outside R2; the four e2e proteomics lanes ran 0
+  tests in R2 (skipped) and are no evidence.
 
 ## Not checked
 
