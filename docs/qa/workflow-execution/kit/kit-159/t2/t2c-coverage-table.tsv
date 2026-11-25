@@ -1,0 +1,89 @@
+regime	method	class	form	design	transform	n	level	status	coverage	mc_se	source	statistic
+C4	jackknife	accuracy	replicate	NA	NA	4	0.95	fail	0.918	0.00613498166256428	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.975	fail	0.9535	0.00470838348055891	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.983333333333333	pass	0.9695	0.00384511053157123	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.9875	pass	0.9765	0.0033873108803297	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.991666666666667	pass	0.9855	0.00267298989897081	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.99375	pass	0.988	0.00243474844696531	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.995833333333333	pass	0.992	0.0019919839356782	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	4	0.996666666666667	pass	0.9935	0.00179690706493129	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.95	fail	0.898	0.00676742196113114	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.975	fail	0.9395	0.0053310294503032	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.983333333333333	fail	0.956	0.00458606585212206	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.9875	fail	0.9655	0.00408103847078167	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.991666666666667	pass	0.9765	0.0033873108803297	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.99375	pass	0.983	0.00289058817544112	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.995833333333333	pass	0.9865	0.00258047960658479	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	accuracy	replicate	NA	NA	6	0.996666666666667	pass	0.989	0.00233227356885937	harness	mae@matrix500, mae_diff@matrix500
+C4	jackknife	rank	replicate	NA	NA	4	0.95	pass	0.984	0.00280570846668003	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.975	pass	0.992	0.0019919839356782	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.983333333333333	pass	0.9955	0.00149662119455792	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.9875	pass	0.997	0.00122290637417588	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.991666666666667	pass	0.9985	0.000865375640979091	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.99375	pass	0.9985	0.000865375640979091	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.995833333333333	pass	0.999	0.000706753139363385	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	4	0.996666666666667	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.95	conservative	0.9975	0.00111663557170635	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.975	pass	0.998	0.000998999499499375	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.983333333333333	pass	0.999	0.000706753139363385	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.9875	pass	0.999	0.000706753139363385	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.991666666666667	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.99375	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.995833333333333	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840
+C4	jackknife	rank	replicate	NA	NA	6	0.996666666666667	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.95	fail	0.908	0.00646281672337998	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.975	fail	0.949	0.00491929873051028	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.983333333333333	pass	0.964	0.00416557318985035	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.9875	pass	0.9735	0.00359150038284837	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.991666666666667	pass	0.9815	0.00301311715670001	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.99375	pass	0.9865	0.00258047960658479	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.995833333333333	pass	0.9885	0.00238408787589719	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	4	0.996666666666667	pass	0.9925	0.00192921616207204	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.95	fail	0.8995	0.00672308522926789	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.975	fail	0.9405	0.00528960064655168	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.983333333333333	fail	0.9575	0.00451075104611194	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.9875	pass	0.9675	0.00396508196636589	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.991666666666667	pass	0.978	0.00327993902382346	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.99375	pass	0.9845	0.00276222283677476	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.995833333333333	pass	0.987	0.00253288373203351	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4	jackknife	threshold_count	replicate	NA	NA	6	0.996666666666667	pass	0.99	0.0022248595461287	harness	sens@matrix500, sens_diff@matrix500, fcs@matrix500, fcs_diff@matrix500
+C4e	jackknife	accuracy	block	NA	NA	5	0.95	fail	0.745	0.00974615308724422	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.975	fail	0.823	0.00853437168161781	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.983333333333333	fail	0.8685	0.00755671059390261	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.9875	fail	0.8925	0.00692617318582203	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.991666666666667	fail	0.917	0.00616891400491205	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.99375	fail	0.935	0.00551248582764618	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.995833333333333	fail	0.9515	0.00480352734977121	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	5	0.996666666666667	fail	0.9575	0.00451075104611194	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.95	fail	0.7065	0.0101822824062191	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.975	fail	0.781	0.00924767538357613	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.983333333333333	fail	0.8145	0.00869165548097714	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.9875	fail	0.833	0.00833999400479401	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.991666666666667	fail	0.8555	0.00786192565469809	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.99375	fail	0.872	0.0074704752191544	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.995833333333333	fail	0.888	0.00705180827873248	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	accuracy	block	NA	NA	14	0.996666666666667	fail	0.896	0.00682583328246449	harness	mae@matrix500_block, bias@matrix500_block
+C4e	jackknife	rank	block	NA	NA	5	0.95	conservative	0.994	0.0017268468374468	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.975	pass	0.9985	0.000865375640979091	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.983333333333333	pass	0.999	0.000706753139363385	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.9875	pass	0.999	0.000706753139363385	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.991666666666667	pass	0.999	0.000706753139363385	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.99375	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.995833333333333	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	5	0.996666666666667	pass	0.9995	0.000499874984371065	harness	pauc_diff@matrix4840_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.95	fail	0.7065	0.0101822824062191	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.975	fail	0.8005	0.00893587572653067	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.983333333333333	fail	0.8385	0.00822854027151839	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.9875	fail	0.866	0.00761721733968514	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.991666666666667	fail	0.895	0.00685474288358068	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.99375	fail	0.913	0.0063020234845643	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.995833333333333	fail	0.9325	0.00560997994648822	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	5	0.996666666666667	fail	0.9445	0.00511955808639769	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.95	fail	0.726	0.00997306372184596	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.975	fail	0.7895	0.00911563903409958	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.983333333333333	fail	0.8235	0.00852489736008593	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.9875	fail	0.846	0.00807105941001552	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.991666666666667	fail	0.875	0.00739509972887452	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.99375	fail	0.8865	0.00709287494602859	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.995833333333333	fail	0.9035	0.00660256578914591	harness	rej@matrix500_block
+C4e	jackknife	threshold_count	block	NA	NA	14	0.996666666666667	fail	0.916	0.00620258010830977	harness	rej@matrix500_block

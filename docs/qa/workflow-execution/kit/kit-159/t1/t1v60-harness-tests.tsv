@@ -1,0 +1,11 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-tab.R	T-TAB: prot_dia writes the standard tables with their columns	12	12	0	0	0	0	162.191
+test-tab.R	T-TAB: prot_dia_limpa writes the standard tables with their columns	16	16	0	0	0	0	139.842
+test-tab.R	T-TAB: prot_lfq writes the standard tables with their columns	12	12	0	0	0	0	106.235
+test-tab.R	T-TAB: prot_lfq_fragpipe writes the standard tables with their columns	12	12	0	0	0	0	102.701
+test-tab.R	T-TAB: prot_tmt writes the standard tables with their columns	12	12	0	0	0	0	103.305
+test-tab.R	T-TAB: trx_screen writes the standard tables with their columns	16	16	0	0	0	0	25.287
+test-tab.R	T-TAB: lipid_canonical writes the standard tables with their columns	13	13	0	0	0	0	71.252
+test-tab.R	T-TAB: metab_lc writes the standard tables with their columns	13	13	0	0	0	0	66.631
+test-tab.R	T-TAB: metab_gc writes the standard tables with their columns	13	13	0	0	0	0	47.489
+test-tab.R	T-TAB: metab_combined writes the standard tables with their columns	13	13	0	0	0	0	63.599

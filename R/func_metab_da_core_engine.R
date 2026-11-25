@@ -63,7 +63,8 @@ fitMetabDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
 #' @param contrast_strings,treat_lfc_cutoff,eBayes_trend,eBayes_robust As `runTestsContrastsMetabDA`.
 #' @param contrastsFitFn The contrast step: `limma::contrasts.fit` (today's), or the exact one of the factors-in-the-model
 #'   design (`ruvExactContrastsFit`, decision M29).
-#' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts.
+#' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts, with `features_without_values` (their ids)
+#'   when some feature has no value in any fitted sample (KIT-196: not tested, a row without statistics per table).
 #' @noRd
 applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE,
                                   contrastsFitFn = limma::contrasts.fit) {
@@ -110,6 +111,18 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
     # Run limma analysis
     logger::log_info("   Running contrasts.fit...")
     cfit <- contrastsFitFn(fit, contrasts = contr.matrix)
+
+    # KIT-196: a feature with no value in any fitted sample has no mean (Amean NaN), so limma's empirical-Bayes step
+    # cannot use it (the trend covariate; limma 3.68.4 fitFDistUnequalDF1.R:17). It carries no information and is not
+    # tested: it leaves the moderation here and is returned as a row without statistics in every contrast table.
+    without_values <- if (!is.null(cfit$Amean)) rownames(cfit$coefficients)[is.na(cfit$Amean)] else character()
+    if (length(without_values) == nrow(cfit$coefficients)) {
+        rlang::abort("no feature has a value in any sample, so nothing can be tested", class = "omics_da_no_observed_features")
+    }
+    if (length(without_values)) {
+        logger::log_info(sprintf("   %d feature(s) with no value in any sample are not tested", length(without_values)))
+        cfit <- cfit[!is.na(cfit$Amean), ]
+    }
 
     logger::log_info("   Running eBayes...")
     eb.fit <- limma::eBayes(cfit, trend = eBayes_trend, robust = eBayes_robust)
@@ -187,6 +200,13 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
                     qvalue_failures[[contrast]] <<- TRUE
                 }
 
+                # KIT-196: the features without values, as rows without statistics (AveExpr NA), typed as the table's.
+                if (length(without_values)) {
+                    untested <- da_tbl[rep(NA_integer_, length(without_values)), , drop = FALSE]
+                    rownames(untested) <- without_values
+                    da_tbl <- rbind(da_tbl, untested)
+                }
+
                 return(da_tbl)
             },
             error = function(e) {
@@ -198,11 +218,14 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 
     names(result_tables) <- contrast_strings
 
-    list(
+    result <- list(
         results = result_tables,
         fit.eb = t.fit,
         qvalue_warnings = qvalue_failures
     )
+    # KIT-196: present only when some feature had no value in any sample, as `failed_assays` is.
+    if (length(without_values)) result$features_without_values <- without_values
+    result
 }
 
 # ----------------------------------------------------------------------------
@@ -212,7 +235,8 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 #'
 #' @description Performs limma-based differential abundance analysis on a
 #'   single metabolomics assay matrix. This is the core DA engine adapted from
-#'   the proteomics `runTestsContrastsDA()` function.
+#'   the proteomics `runTestsContrastsDA()` function. A feature with no value in any sample is not tested and
+#'   is listed (`features_without_values`).
 #'
 #' @param data Numeric matrix with metabolites as rows and samples as columns.
 #'   Rownames should be metabolite IDs.
@@ -235,6 +259,8 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 #'   - results: Named list of DE result tables (one per contrast)
 #'   - fit.eb: The eBayes fit object
 #'   - qvalue_warnings: List of contrasts where qvalue() failed
+#'   - features_without_values: present only when the assay held features with no value in any sample; their
+#'     ids. Such a feature is not tested: it is a row of every table without statistics (`AveExpr` missing)
 #'
 #' @importFrom limma lmFit contrasts.fit eBayes treat topTable topTreat makeContrasts
 #' @importFrom qvalue qvalue

@@ -1,0 +1,199 @@
+job	id	unit	build	rep	index	step	status	seconds	vmhwm_mib	vmhwm_after_reset_mib	entry_vmrss_mib	entry_heap_mib	heap_max_used_mib	exit_vmrss_mib	cgroup_procs	state	expected_state	state_as_expected	rows	store_bytes
+g0a	CAL_C_r1	CAL	C	1	1	calibrate	completed	1.19	1147.9	380.2	380.2	198.4	966.4	380.2	1		not in the harness map			
+g0a	CAL_C_r1	CAL	C	1	2	noop	completed	0	380.2	380.2	380.2	198.4	198.4	380.2	1		not in the harness map			
+g0a	S1_C_r2	S1	C	2	1	import	completed	1.26	446.9	380.3	380.3	198.4	322.3	446.9	1	initial	initial	True		66266
+g0a	S1_C_r2	S1	C	2	2	design	completed	0.62	479.7	446.9	446.9	243.6	350.5	479.7	1	protein_s4_initial	protein_s4_initial	True	5	163777
+g0a	S1_C_r2	S1	C	2	3	accession	completed	6.02	690.1	479.7	479.7	254.9	476.7	628.8	1	protein_accession_cleaned	protein_accession_cleaned	True	5	433590
+g0a	S1_C_r2	S1	C	2	4	protein_intensity	completed	6.71	690	628.8	628.8	280.9	465.5	628.8	1	protein_intensity_filtered	protein_intensity_filtered	True	5	689441
+g0a	S1_C_r2	S1	C	2	5	duplicates	completed	4.63	690.3	628.8	628.8	282.5	468.5	628.8	1	duplicates_removed	duplicates_removed	True	5	927754
+g0a	S1_C_r2	S1	C	2	6	protein_replicate	completed	5.3	690.4	628.8	628.8	282.8	469.8	629	1	protein_replicate_filtered	protein_replicate_filtered	True	5	1513893
+g0a	S1_C_r2	S1	C	2	7	normalisation_ruv	completed	2.73	633.9	629	629	283.3	474.5	633.9	1	normalized	normalized	True	5	2296711
+g0a	S1_C_r2	S1	C	2	8	correlation	completed	5.94	723.7	633.9	633.9	285.8	477	671.4	1	correlation_filtered	correlation_filtered	True	5	4272057
+g0a	S1_C_r2	S1	C	2	9	session_export	completed	1.14	671.4	671.4	671.4	302.8	455.4	671.4	1	correlation_filtered		True	5	4561960
+g0a	S1_C_r2	S1	C	2	10	da	completed	8.13	941.6	671.4	671.4	303.6	775.2	941.6	1	correlation_filtered	correlation_filtered	True	5	7376323
+g0a	S1_C_r2	S1	C	2	11	report	completed	4.5	969	941.6	941.6	609.6	810.8	969	1	correlation_filtered		True	5	7376323
+g0a	S1_base_r1	S1	base	1	1	import	completed	1.33	446.3	379.2	379.2	198.3	322.7	446.2	1	initial	initial	True		66265
+g0a	S1_base_r1	S1	base	1	2	design	completed	0.75	478.6	446.2	446.2	243.5	350.3	478.5	1	protein_s4_initial	protein_s4_initial	True	5	163682
+g0a	S1_base_r1	S1	base	1	3	accession	completed	5.74	688.2	478.5	478.5	254.8	476.2	627.2	1	protein_accession_cleaned	protein_accession_cleaned	True	5	433045
+g0a	S1_base_r1	S1	base	1	4	protein_intensity	completed	6.69	688.6	627.2	627.2	280.6	465.9	627.2	1	protein_intensity_filtered	protein_intensity_filtered	True	4	706581
+g0a	S1_base_r1	S1	base	1	5	duplicates	completed	4.6	688.7	627.2	627.2	282.3	468.4	627.2	1	duplicates_removed	duplicates_removed	True	4	954385
+g0a	S1_base_r1	S1	base	1	6	protein_replicate	completed	5.41	688.9	627.2	627.2	282.5	469.8	627.4	1	protein_replicate_filtered	protein_replicate_filtered	True	4	1566642
+g0a	S1_base_r1	S1	base	1	7	normalisation_ruv	completed	2.76	632.3	627.4	627.4	283.1	474	632.3	1	normalized	normalized	True	4	2389808
+g0a	S1_base_r1	S1	base	1	8	correlation	completed	6.37	722.3	632.3	632.3	285.4	476.8	669.6	1	correlation_filtered	correlation_filtered	True	4	4474791
+g0a	S1_base_r1	S1	base	1	9	session_export	completed	0.82	669.6	669.6	669.6	302.6	458.3	669.6	1	correlation_filtered		True	4	4780199
+g0a	S1_base_r1	S1	base	1	10	da	completed	9.23	943.2	669.6	669.6	303.4	785.9	943.2	1	correlation_filtered	correlation_filtered	True	4	9091206
+g0a	S1_base_r1	S1	base	1	11	report	completed	4.69	969.9	943.2	943.2	610.7	813.3	969.9	1	correlation_filtered		True	4	9091206
+g0a	S2_C_r2	S2	C	2	1	import	completed	1.29	446.7	380.2	380.2	198.4	322.3	446.7	1	initial	initial	True		66391
+g0a	S2_C_r2	S2	C	2	2	design	completed	0.74	479.9	446.7	446.7	243.7	350.7	479.9	1	protein_s4_initial	protein_s4_initial	True	5	164229
+g0a	S2_C_r2	S2	C	2	3	accession	completed	5.48	690.4	479.9	479.9	255	477.1	628.9	1	protein_accession_cleaned	protein_accession_cleaned	True	5	433919
+g0a	S2_C_r2	S2	C	2	4	protein_intensity	completed	6.91	690.5	628.9	628.9	281.1	465.9	628.9	1	protein_intensity_filtered	protein_intensity_filtered	True	5	689774
+g0a	S2_C_r2	S2	C	2	5	duplicates	completed	4.76	690.5	628.9	628.9	282.7	468.8	629	1	duplicates_removed	duplicates_removed	True	5	928047
+g0a	S2_C_r2	S2	C	2	6	protein_replicate	completed	5.34	690.6	629	629	282.9	470.1	629.1	1	protein_replicate_filtered	protein_replicate_filtered	True	5	1514183
+g0a	S2_C_r2	S2	C	2	7	normalisation_ruv	completed	2.61	634	629.1	629.1	283.4	474.8	634	1	normalized	normalized	True	5	2296420
+g0a	S2_C_r2	S2	C	2	8	correlation	completed	6.64	723.6	634	634	285.9	477.3	671.4	1	correlation_filtered	correlation_filtered	True	5	4269613
+g0a	S2_C_r2	S2	C	2	9	session_export	completed	0.82	671.4	671.4	671.4	302.9	455.2	671.4	1	correlation_filtered		True	5	4559149
+g0a	S2_C_r2	S2	C	2	10	da	completed	8.09	941.5	671.4	671.4	303.7	775.3	941.5	1	correlation_filtered	correlation_filtered	True	5	7371633
+g0a	S2_C_r2	S2	C	2	11	report	completed	4.29	968.6	941.5	941.5	609.7	810.7	968.7	1	correlation_filtered		True	5	7371633
+g0a	S2_base_r1	S2	base	1	1	import	completed	1.3	445.9	379.4	379.4	198.3	322.4	445.8	1	initial	initial	True		66392
+g0a	S2_base_r1	S2	base	1	2	design	completed	0.58	478.8	445.8	445.8	243.8	350.7	478.7	1	protein_s4_initial	protein_s4_initial	True	5	164152
+g0a	S2_base_r1	S2	base	1	3	accession	completed	5.36	689	478.7	478.7	255	476.7	627.7	1	protein_accession_cleaned	protein_accession_cleaned	True	5	433422
+g0a	S2_base_r1	S2	base	1	4	protein_intensity	completed	6.83	689.2	627.7	627.7	280.9	466.5	627.7	1	protein_intensity_filtered	protein_intensity_filtered	True	4	707285
+g0a	S2_base_r1	S2	base	1	5	duplicates	completed	4.67	689.2	627.7	627.7	282.5	468.9	627.7	1	duplicates_removed	duplicates_removed	True	4	955048
+g0a	S2_base_r1	S2	base	1	6	protein_replicate	completed	5.34	689.4	627.7	627.7	282.8	470.3	627.9	1	protein_replicate_filtered	protein_replicate_filtered	True	4	1567290
+g0a	S2_base_r1	S2	base	1	7	normalisation_ruv	completed	2.61	632.7	627.9	627.9	283.2	474.5	632.7	1	normalized	normalized	True	4	2389768
+g0a	S2_base_r1	S2	base	1	8	correlation	completed	6.63	722.3	632.7	632.7	285.7	477.4	670.2	1	correlation_filtered	correlation_filtered	True	4	4472220
+g0a	S2_base_r1	S2	base	1	9	session_export	completed	0.87	670.4	670.2	670.2	302.8	458.8	670.3	1	correlation_filtered		True	4	4777203
+g0a	S2_base_r1	S2	base	1	10	da	completed	8.61	1006.8	670.3	670.3	303.5	851.7	1006.8	1	correlation_filtered	correlation_filtered	True	4	9085275
+g0a	S2_base_r1	S2	base	1	11	report	completed	4.6	1015.1	1006.8	1006.8	610.8	813.3	1015.1	1	correlation_filtered		True	4	9085275
+g0a	U1_C_r1	U1	C	1	1	import	completed	1.36	590.6	425.7	425.7	247.5	476.8	590.5	1	initial		True		145844
+g0a	U1_C_r1	U1	C	1	2	design	completed	3.07	624.9	590.5	590.5	278.4	487	624.9	1	lipid_raw_data_s4	lipid_raw_data_s4	True	432	397890
+g0a	U1_C_r1	U1	C	1	3	intensity	completed	7.86	746	624.9	624.9	295.8	491	669.4	1	lipid_intensity_filtered	lipid_intensity_filtered	True	392	4328675
+g0a	U1_C_r1	U1	C	1	4	duplicates	completed	9.61	748.9	669.4	669.4	333.7	497.7	672.1	1	lipid_duplicates_resolved	lipid_duplicates_resolved	True	377	10799758
+g0a	U1_C_r1	U1	C	1	5	qc_finalize	completed	8.39	765.1	672.1	672.1	342.4	506	688.3	1	lipid_qc_complete	lipid_qc_complete	True	377	18296279
+g0a	U1_C_r1	U1	C	1	6	normalisation	completed	42.04	1277.9	688.3	688.3	356.3	823.5	995.7	1	lipid_ruv_corrected	lipid_ruv_corrected	True	365	64570181
+g0a	U1_C_r1	U1	C	1	7	correlation	completed	3.85	995.7	995.7	995.7	406.2	635	995.7	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	68228358
+g0a	U1_C_r1	U1	C	1	8	session_export	completed	1.62	996	995.7	995.7	402.8	741.8	996	1	lipid_correlation_filtered		True	365	68565714
+g0a	U1_C_r1	U1	C	1	9	da	completed	15.67	1147.7	996	996	402.5	945.8	1147.7	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	95445994
+g0a	U1_C_r1	U1	C	1	10	report	completed	7.77	1216.3	1147.7	1147.7	536.3	1057.2	1134	1	lipid_correlation_filtered		True	365	95445994
+g0a	U1_C_r1_fail_memory	U1	C	1	1	import	completed	1.37	590.7	425.8	425.8	247.5	476.8	590.6	1	initial		True		145842
+g0a	U1_C_r1_fail_memory	U1	C	1	2	design	completed	3.12	623.9	590.6	590.6	278.4	487	623.9	1	lipid_raw_data_s4	lipid_raw_data_s4	True	432	397886
+g0a	U1_C_r1_fail_memory	U1	C	1	3	intensity	completed	8.19	735.2	623.9	623.9	295.8	491	658.3	1	lipid_intensity_filtered	lipid_intensity_filtered	True	392	4328798
+g0a	U1_C_r1_fail_memory	U1	C	1	4	duplicates	completed	10.18	735.9	658.3	658.3	333.7	497.7	658.6	1	lipid_duplicates_resolved	lipid_duplicates_resolved	True	377	10799936
+g0a	U1_C_r1_fail_memory	U1	C	1	5	qc_finalize	completed	8.34	750.2	658.6	658.6	342.4	506	672.9	1	lipid_qc_complete	lipid_qc_complete	True	377	18296504
+g0a	U1_C_r1_fail_time	U1	C	1	1	import	completed	1.5	590.8	425.9	425.9	247.5	476.8	590.7	1	initial		True		145842
+g0a	U1_C_r1_fail_time	U1	C	1	2	design	completed	3.25	625.1	590.7	590.7	278.4	487	625.1	1	lipid_raw_data_s4	lipid_raw_data_s4	True	432	397894
+g0a	U1_C_r1_fail_time	U1	C	1	3	intensity	completed	8.2	746.4	625.1	625.1	295.8	491	669.4	1	lipid_intensity_filtered	lipid_intensity_filtered	True	392	4328790
+g0a	U1_C_r1_fail_time	U1	C	1	4	duplicates	completed	10.16	750.5	669.4	669.4	333.6	497.7	673.5	1	lipid_duplicates_resolved	lipid_duplicates_resolved	True	377	10800066
+g0a	U1_C_r1_fail_time	U1	C	1	5	qc_finalize	completed	9.33	765.4	673.5	673.5	342.4	505.4	688.5	1	lipid_qc_complete	lipid_qc_complete	True	377	18296878
+g0a	U1_C_r1_package_error	U1	C	1	1	import	completed	1.45	590.5	425.6	425.6	247.5	476.8	590.4	1	initial		True		145855
+g0a	U1_C_r1_package_error	U1	C	1	2	design	completed	3.31	624.7	590.4	590.4	278.4	487	624.7	1	lipid_raw_data_s4	lipid_raw_data_s4	True	432	397924
+g0a	U1_C_r1_package_error	U1	C	1	3	intensity	completed	8.48	745.9	624.7	624.7	295.8	491	669.3	1	lipid_intensity_filtered	lipid_intensity_filtered	True	392	4329935
+g0a	U1_C_r1_package_error	U1	C	1	4	duplicates	completed	10.29	748.8	669.3	669.3	333.7	497.7	672	1	lipid_duplicates_resolved	lipid_duplicates_resolved	True	377	10803834
+g0a	U1_C_r1_package_error	U1	C	1	5	qc_finalize	completed	8.38	765.1	672	672	342.4	506	688.3	1	lipid_qc_complete	lipid_qc_complete	True	377	18303801
+g0a	U1_C_r1_package_error	U1	C	1	6	normalisation	completed	41.09	1276.2	688.3	688.3	356.3	823.3	935.1	1	lipid_ruv_corrected	lipid_ruv_corrected	True	365	64625981
+g0a	U1_C_r1_package_error	U1	C	1	7	correlation	completed	3.29	935.1	935.1	935.1	406	634.9	935.1	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	68286824
+g0a	U1_C_r1_package_error	U1	C	1	8	session_export	completed	1.7	935.5	935.1	935.1	402.7	741.7	935.5	1	lipid_correlation_filtered		True	365	68624627
+g0a	U1_C_r1_package_error	U1	C	1	9	da	completed	15.35	1148.2	935.5	935.5	402.4	945.9	1148.2	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	95524558
+g0a	U1_C_r1_package_error	U1	C	1	10	report	completed	7.36	1216.9	1148.2	1148.2	536.4	1057.6	1134.4	1	lipid_correlation_filtered		True	365	95524558
+g0a	U1_C_r2	U1	C	2	1	import	completed	1.43	591	425.9	425.9	247.5	476.8	590.9	1	initial		True		145857
+g0a	U1_C_r2	U1	C	2	2	design	completed	3.16	625.3	590.9	590.9	278.4	487	625.3	1	lipid_raw_data_s4	lipid_raw_data_s4	True	432	397930
+g0a	U1_C_r2	U1	C	2	3	intensity	completed	8.29	746.5	625.3	625.3	295.8	491	669.7	1	lipid_intensity_filtered	lipid_intensity_filtered	True	392	4329891
+g0a	U1_C_r2	U1	C	2	4	duplicates	completed	10.55	750.6	669.7	669.7	333.7	497.7	673.8	1	lipid_duplicates_resolved	lipid_duplicates_resolved	True	377	10803561
+g0a	U1_C_r2	U1	C	2	5	qc_finalize	completed	8.53	765.6	673.8	673.8	342.4	505.6	688.8	1	lipid_qc_complete	lipid_qc_complete	True	377	18303239
+g0a	U1_C_r2	U1	C	2	6	normalisation	completed	42.09	1279.1	688.8	688.8	356.2	823.4	934.5	1	lipid_ruv_corrected	lipid_ruv_corrected	True	365	64601571
+g0a	U1_C_r2	U1	C	2	7	correlation	completed	3.44	934.5	934.5	934.5	406.1	634.9	934.5	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	68262340
+g0a	U1_C_r2	U1	C	2	8	session_export	completed	1.7	934.9	934.5	934.5	402.8	741.7	934.9	1	lipid_correlation_filtered		True	365	68599697
+g0a	U1_C_r2	U1	C	2	9	da	completed	14.91	1148	934.9	934.9	402.5	945.9	1148	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	95499025
+g0a	U1_C_r2	U1	C	2	10	report	completed	7.67	1215.4	1148	1148	536.4	1056.3	1133.2	1	lipid_correlation_filtered		True	365	95499025
+g0a	U1_base_r1	U1	base	1	1	import	completed	1.46	587.9	428.3	428.3	246.5	474.2	587.8	1	initial		True		145853
+g0a	U1_base_r1	U1	base	1	2	design	completed	2.96	621.6	587.8	587.8	277.1	484.8	621.6	1	lipid_raw_data_s4	lipid_raw_data_s4	True	432	397924
+g0a	U1_base_r1	U1	base	1	3	intensity	completed	8.02	743	621.6	621.6	294.5	488.1	666.5	1	lipid_intensity_filtered	lipid_intensity_filtered	True	392	4329914
+g0a	U1_base_r1	U1	base	1	4	duplicates	completed	9.42	746	666.5	666.5	332.6	493.4	668.9	1	lipid_duplicates_resolved	lipid_duplicates_resolved	True	377	10803746
+g0a	U1_base_r1	U1	base	1	5	qc_finalize	completed	8.29	761	668.9	668.9	341.4	501	683.9	1	lipid_qc_complete	lipid_qc_complete	True	377	18303647
+g0a	U1_base_r1	U1	base	1	6	normalisation	completed	41.27	1274.5	683.9	683.9	355	821.2	936.5	1	lipid_ruv_corrected	lipid_ruv_corrected	True	365	64603770
+g0a	U1_base_r1	U1	base	1	7	correlation	completed	3.18	936.6	936.5	936.5	404.9	632.8	936.5	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	68264796
+g0a	U1_base_r1	U1	base	1	8	session_export	completed	1.54	936.8	936.6	936.5	401.3	739.4	936.8	1	lipid_correlation_filtered		True	365	68602272
+g0a	U1_base_r1	U1	base	1	9	da	completed	14.25	1149.4	936.8	936.8	401.3	952.8	1149.4	1	lipid_correlation_filtered	lipid_correlation_filtered	True	365	95581338
+g0a	U1_base_r1	U1	base	1	10	report	completed	7	1215.8	1149.4	1149.4	534.6	1057.5	1132.4	1	lipid_correlation_filtered		True	365	95581338
+g0a	U2_C_r2	U2	C	2	1	import	completed	1.36	591.2	425.5	425.5	247.6	477.1	591.1	1	initial		True		174313
+g0a	U2_C_r2	U2	C	2	2	design	completed	3.16	625.7	591.1	591.1	278.4	487.2	625.7	1	metab_raw_data_s4	metab_raw_data_s4	True	612	477248
+g0a	U2_C_r2	U2	C	2	3	intensity	completed	6.56	742.7	625.7	625.7	295.9	491.3	666	1	metab_intensity_filtered	metab_intensity_filtered	True	576	3505375
+g0a	U2_C_r2	U2	C	2	4	duplicates	completed	7.73	743	666	666	329.5	490.3	666	1	metab_duplicates_resolved	metab_duplicates_resolved	True	576	8149334
+g0a	U2_C_r2	U2	C	2	5	qc_finalize	completed	6.46	746.8	666	666	335.6	492	669.9	1	metab_qc_complete	metab_qc_complete	True	576	13266311
+g0a	U2_C_r2	U2	C	2	6	normalisation	completed	41.76	1261.2	669.9	669.9	347.5	814.8	982.8	1	metab_ruv_corrected	metab_ruv_corrected	True	564	57922529
+g0a	U2_C_r2	U2	C	2	7	correlation	completed	3.66	982.8	982.8	982.8	400	615.3	982.8	1	metab_correlation_filtered	metab_correlation_filtered	True	564	61464356
+g0a	U2_C_r2	U2	C	2	8	session_export	completed	1.52	984	982.8	982.8	396.7	722.8	984	1	metab_correlation_filtered		True	564	61846590
+g0a	U2_C_r2	U2	C	2	9	da	completed	14.05	1119.2	984	984	396.4	915.4	1119.2	1	metab_correlation_filtered	metab_correlation_filtered	True	564	88413721
+g0a	U2_C_r2	U2	C	2	10	report	completed	7.4	1186.4	1119.2	1119.2	531	1025.8	1103.2	1	metab_correlation_filtered		True	564	88413721
+g0a	U2_base_r1	U2	base	1	1	import	completed	1.61	587.9	428	428	246.6	474.6	587.7	1	initial		True		174313
+g0a	U2_base_r1	U2	base	1	2	design	completed	3.08	621.9	587.7	587.7	277.1	485.1	621.8	1	metab_raw_data_s4	metab_raw_data_s4	True	612	477253
+g0a	U2_base_r1	U2	base	1	3	intensity	completed	6.29	739.3	621.8	621.8	294.5	488.6	662.7	1	metab_intensity_filtered	metab_intensity_filtered	True	576	3505413
+g0a	U2_base_r1	U2	base	1	4	duplicates	completed	7.59	739.8	662.7	662.7	328.3	488.5	662.7	1	metab_duplicates_resolved	metab_duplicates_resolved	True	576	8149336
+g0a	U2_base_r1	U2	base	1	5	qc_finalize	completed	6.55	743.6	662.7	662.7	334.4	489.9	666.6	1	metab_qc_complete	metab_qc_complete	True	576	13266246
+g0a	U2_base_r1	U2	base	1	6	normalisation	completed	41.85	1273.9	666.6	666.6	346.2	810.5	978.8	1	metab_ruv_corrected	metab_ruv_corrected	True	564	57921866
+g0a	U2_base_r1	U2	base	1	7	correlation	completed	3.32	978.9	978.8	978.8	398.6	613.1	978.8	1	metab_correlation_filtered	metab_correlation_filtered	True	564	61463550
+g0a	U2_base_r1	U2	base	1	8	session_export	completed	1.66	980.1	978.8	978.8	395.2	720.4	980.1	1	metab_correlation_filtered		True	564	61845693
+g0a	U2_base_r1	U2	base	1	9	da	completed	14.47	1118.4	980.1	980.1	395.1	913.6	1118.4	1	metab_correlation_filtered	metab_correlation_filtered	True	564	88474317
+g0a	U2_base_r1	U2	base	1	10	report	completed	7.24	1183.9	1118.4	1118.4	529.2	1023.2	1100.9	1	metab_correlation_filtered		True	564	88474317
+g0a	U3_C_r2	U3	C	2	1	import	completed	1.29	601.5	429.3	429.3	246.4	485.6	601	1	initial		True		578731
+g0a	U3_C_r2	U3	C	2	2	design	completed	2.25	634.4	601	601	276.2	490.6	634.4	1	trx_raw_data_s4	trx_raw_data_s4	True	6000	1231521
+g0a	U3_C_r2	U3	C	2	3	expression_filter	completed	1.97	680.3	634.4	634.4	294.8	509.9	661	1	trx_expression_filtered	trx_expression_filtered	True	5095	1647369
+g0a	U3_C_r2	U3	C	2	4	qc_finalize	completed	0.43	664.8	661	661	324	486.6	662.7	1	trx_qc_complete	trx_qc_complete	True	5095	1712440
+g0a	U3_C_r2	U3	C	2	5	normalisation	completed	23.97	1599.6	662.7	662.7	324.8	1421.2	1549.2	1	trx_ruvs	trx_ruvs	True	5095	23151639
+g0a	U3_C_r2	U3	C	2	6	da	completed	3.94	1575.1	1549.2	1549.2	917.2	1421.1	1575	1	trx_ruvs	trx_ruvs	True	5095	30537921
+g0a	U3_C_r2	U3	C	2	7	ruviii_export	completed	4.24	1635.5	1575	1575	901.6	1421.5	1613.2	1	trx_ruvs	trx_ruvs	True	5095	37976604
+g0a	U3_C_r2	U3	C	2	8	report	completed	6.94	1619.5	1613.2	1613.2	913.1	1306.5	1476.1	1	trx_ruvs		True	5095	37976604
+g0a	U3_C_r2	U3	C	2	9	session_export	completed	0.03	1476.2	1476.1	1476.1	928.6	942.4	1476.2	1	trx_ruvs		True	5095	37976604
+g0a	U3_base_r1	U3	base	1	1	import	completed	1.29	598	426.3	426.3	245.5	483.1	597.5	1	initial		True		578736
+g0a	U3_base_r1	U3	base	1	2	design	completed	2.36	629.6	597.5	597.5	275.3	488.1	629.6	1	trx_raw_data_s4	trx_raw_data_s4	True	6000	1353548
+g0a	U3_base_r1	U3	base	1	3	expression_filter	completed	2.27	680.4	629.6	629.6	290.6	507.6	680.4	1	trx_expression_filtered	trx_expression_filtered	True	4565	1848263
+g0a	U3_base_r1	U3	base	1	4	qc_finalize	completed	0.5	680	680.4	680.4	327.2	492.2	677.9	1	trx_qc_complete	trx_qc_complete	True	4565	1913110
+g0a	U3_base_r1	U3	base	1	5	normalisation	completed	27.08	1809.9	677.9	677.9	328.2	1620.1	1809.9	1	trx_ruvs	trx_ruvs	True	4565	40501512
+g0a	U3_base_r1	U3	base	1	6	da	completed	4.36	1809.7	1809.9	1809.9	932	1608.4	1766.5	1	trx_ruvs	trx_ruvs	True	4565	48962610
+g0a	U3_base_r1	U3	base	1	7	ruviii_export	completed	5.2	1823.3	1766.5	1766.5	905.4	1418.8	1802.4	1	trx_ruvs	trx_ruvs	True	4565	62285497
+g0a	U3_base_r1	U3	base	1	8	report	completed	6.99	1803.9	1802.4	1802.4	924.3	1307.2	1517.1	1	trx_ruvs		True	4565	62285497
+g0a	U3_base_r1	U3	base	1	9	session_export	completed	0.03	1517.2	1517.2	1517.2	937.6	951.3	1517.2	1	trx_ruvs		True	4565	62285497
+g0a	U4_C_r2	U4	C	2	1	import	completed	5.98	711.1	380.3	380.3	198.4	528.8	711.1	1	initial	initial	True		16338779
+g0a	U4_C_r2	U4	C	2	2	design	completed	3.92	860.6	711.2	711.2	245.4	415.8	801.3	1	raw_data_s4	raw_data_s4	True	320872	16427476
+g0a	U4_C_r2	U4	C	2	3	qvalue	completed	17.16	1000.6	801.3	801.3	255.6	528.8	908.6	1	qvalue_filtered	qvalue_filtered	True	320872	39389967
+g0a	U4_C_r2	U4	C	2	4	protein_peptide	completed	13.08	1017.5	908.6	908.6	293.6	528.8	926.2	1	protein_peptide_filtered	protein_peptide_filtered	True	320872	70856930
+g0a	U4_C_r2	U4	C	2	5	rollup	completed	9.95	1281.6	926.2	926.2	297.9	528.8	999.6	1	precursor_rollup	precursor_rollup	True	303000	81594182
+g0a	U4_C_r2	U4	C	2	6	intensity	completed	22.38	1075.2	999.6	999.6	303	528.8	983	1	intensity_filtered	intensity_filtered	True	226991	109215018
+g0a	U4_C_r2	U4	C	2	7	sample	completed	7.25	1053	983.1	983.1	304	528.8	960.9	1	sample_filtered	sample_filtered	True	224359	117725895
+g0a	U4_C_r2	U4	C	2	8	replicate	completed	10.66	1052.2	960.9	960.9	304.3	528.8	960	1	replicate_filtered	replicate_filtered	True	224359	129339349
+g0a	U4_C_r2	U4	C	2	9	imputation	completed	20.25	1064.6	960.1	960.1	305	528.8	972.5	1	imputed	imputed	True	279240	160818849
+g0a	U4_C_r2	U4	C	2	10	iq	completed	10.93	1089.6	972.6	972.6	305.9	528.8	997.3	1	protein_s4_created	protein_s4_created	True	2500	168119510
+g0a	U4_C_r2	U4	C	2	11	accession	completed	7.37	1084.9	997.3	997.3	307.7	470	992.5	1	protein_accession_cleaned	protein_accession_cleaned	True	2500	172194741
+g0a	U4_C_r2	U4	C	2	12	protein_intensity	completed	9.03	1087.2	992.5	992.5	309.2	468	994.7	1	protein_intensity_filtered	protein_intensity_filtered	True	2476	175958819
+g0a	U4_C_r2	U4	C	2	13	duplicates	completed	7.04	1063.2	994.7	994.7	310.3	483.8	970.9	1	duplicates_removed	duplicates_removed	True	2476	180198311
+g0a	U4_C_r2	U4	C	2	14	protein_replicate	completed	7.71	1063.4	970.9	970.9	311.1	489	970.9	1	protein_replicate_filtered	protein_replicate_filtered	True	2476	186552724
+g0a	U4_C_r2	U4	C	2	15	normalisation_ruv	completed	51.14	1077.9	970.9	970.9	312.1	671.4	1004.9	1	ruv_corrected	ruv_corrected	True	2456	195539591
+g0a	U4_C_r2	U4	C	2	16	correlation	completed	8.87	1096.6	1004.9	1004.9	321.2	614.7	1005.3	1	correlation_filtered	correlation_filtered	True	2456	206873505
+g0a	U4_C_r2	U4	C	2	17	session_export	completed	6.5	1005.3	1005.3	1005.3	334.6	587.6	1005.3	1	correlation_filtered		True	2456	210029803
+g0a	U4_C_r2	U4	C	2	18	da	error	0.84	1005.3	1005.3	1005.3	335.4	590	1005.3	1	correlation_filtered	correlation_filtered	True	2456	211900347
+g0a	U4_base_r1	U4	base	1	1	import	completed	5.79	709.7	379.3	379.3	198.3	528.4	709.6	1	initial	initial	True		16338782
+g0a	U4_base_r1	U4	base	1	2	design	completed	3.92	847.6	709.6	709.6	245.3	415.7	847.5	1	raw_data_s4	raw_data_s4	True	320872	16427485
+g0a	U4_base_r1	U4	base	1	3	qvalue	completed	16.99	949.5	847.5	847.5	255.5	528.4	857.2	1	qvalue_filtered	qvalue_filtered	True	320872	39389977
+g0a	U4_base_r1	U4	base	1	4	protein_peptide	completed	12.27	1009.2	857.2	857.2	293.5	528.5	882.7	1	protein_peptide_filtered	protein_peptide_filtered	True	320872	70856932
+g0a	U4_base_r1	U4	base	1	5	rollup	completed	9.95	1177.9	882.7	882.7	297.8	528.5	957.2	1	precursor_rollup	precursor_rollup	True	303000	81594167
+g0a	U4_base_r1	U4	base	1	6	intensity	completed	23.11	1081.5	957.2	957.2	302.9	528.5	989.2	1	intensity_filtered	intensity_filtered	True	226991	109214994
+g0a	U4_base_r1	U4	base	1	7	sample	completed	7.96	1067.9	989.2	989.2	303.8	528.5	975.4	1	sample_filtered	sample_filtered	True	224359	117725846
+g0a	U4_base_r1	U4	base	1	8	replicate	completed	11.13	1066.3	975.4	975.4	304.2	528.5	973.7	1	replicate_filtered	replicate_filtered	True	224359	129339264
+g0a	U4_base_r1	U4	base	1	9	imputation	completed	20.54	1100.9	973.7	973.7	304.8	528.5	1008.7	1	imputed	imputed	True	279240	160818709
+g0a	U4_base_r1	U4	base	1	10	iq	completed	10.85	1097.6	1008.7	1008.7	305.7	528.5	1005.4	1	protein_s4_created	protein_s4_created	True	2500	168119380
+g0a	U4_base_r1	U4	base	1	11	accession	completed	7.21	1096.7	1005.4	1005.4	307.6	469.4	1004.3	1	protein_accession_cleaned	protein_accession_cleaned	True	2500	172194765
+g0a	U4_base_r1	U4	base	1	12	protein_intensity	completed	9.4	1096.4	1004.3	1004.3	309	467.5	1003.8	1	protein_intensity_filtered	protein_intensity_filtered	True	2426	175954396
+g0a	U4_base_r1	U4	base	1	13	duplicates	completed	7.05	1088.7	1003.9	1003.8	310.1	483.3	996.3	1	duplicates_removed	duplicates_removed	True	2426	180189410
+g0a	U4_base_r1	U4	base	1	14	protein_replicate	completed	7.84	1074.7	996.3	996.3	310.8	488.5	982	1	protein_replicate_filtered	protein_replicate_filtered	True	2426	186539270
+g0a	U4_base_r1	U4	base	1	15	normalisation_ruv	completed	51.75	1090.8	982	982	311.9	668.6	1034.6	1	ruv_corrected	ruv_corrected	True	2350	195509202
+g0a	U4_base_r1	U4	base	1	16	correlation	completed	9.01	1115.1	1034.6	1034.6	321	611.9	1023.3	1	correlation_filtered	correlation_filtered	True	2350	206838945
+g0a	U4_base_r1	U4	base	1	17	session_export	completed	6.65	1023.4	1023.4	1023.3	334.5	585.5	1023.3	1	correlation_filtered		True	2350	209993411
+g0a	U4_base_r1	U4	base	1	18	da	completed	10.7	1330.3	1023.4	1023.3	335.2	940.3	1330.3	1	correlation_filtered	correlation_filtered	True	2350	232316285
+g0a	U4_base_r1	U4	base	1	19	report	completed	4.88	1350.6	1330.3	1330.3	641.2	858.6	1333.7	1	correlation_filtered		True	2350	232316285
+g0a	U5_C_r2	U5	C	2	1	import	completed	5.81	711.3	380.4	380.4	198.4	528.7	711.3	1	initial	initial	True		16339048
+g0a	U5_C_r2	U5	C	2	2	design	completed	3.83	849.3	711.4	711.4	245.4	415.8	795.5	1	raw_data_s4	raw_data_s4	True	320872	16428054
+g0a	U5_C_r2	U5	C	2	3	qvalue	completed	16.99	1017.4	795.5	795.5	255.6	528.7	925.2	1	qvalue_filtered	qvalue_filtered	True	320872	39391216
+g0a	U5_C_r2	U5	C	2	4	rollup	completed	10.18	1183.2	925.2	925.2	293.6	528.7	984.9	1	precursor_rollup	precursor_rollup	True	303000	49885920
+g0a	U5_C_r2	U5	C	2	5	peptide_log2	completed	18.09	1077.6	984.9	984.9	301.1	528.7	985.5	1	log2_matrix	log2_matrix	True	303000	80740269
+g0a	U5_C_r2	U5	C	2	6	peptide_accession	completed	47.28	1158.4	985.5	985.5	303.5	655.3	1066.4	1	peptide_accession_cleaned	peptide_accession_cleaned	True	303000	114598385
+g0a	U5_C_r2	U5	C	2	7	dpc_quant	completed	13.08	1181.3	1066.4	1066.4	305.7	655.3	1089	1	protein_dpc_quant	protein_dpc_quant	True	2500	124711407
+g0a	U5_C_r2	U5	C	2	8	protein_normalisation_limpa	completed	7.36	1159	1089	1089	313.8	599.4	1066.6	1	protein_normalised	protein_normalised	True	2500	134675825
+g0a	U5_C_r2	U5	C	2	9	peptide_count	completed	6.93	1159.7	1066.6	1066.6	314.5	604.5	1067.2	1	peptide_count_filtered	peptide_count_filtered	True	2500	144400869
+g0a	U5_C_r2	U5	C	2	10	correlation	completed	8.12	1149.9	1067.2	1067.2	315.1	590.7	1057.1	1	correlation_filtered	correlation_filtered	True	2500	148995718
+g0a	U5_C_r2	U5	C	2	11	ruv_covariates	completed	59.48	1058.5	1057.1	1057.1	328.3	585	1056.8	1	ruv_covariates	ruv_covariates	True	2500	166224882
+g0a	U5_C_r2	U5	C	2	12	session_export	completed	4.09	1056.8	1056.8	1056.8	333.7	567.9	1056.8	1	ruv_covariates		True	2500	169008575
+g0a	U5_C_r2	U5	C	2	13	da	error	0.85	1056.8	1056.8	1056.8	334.5	570.2	1056.8	1	ruv_covariates	ruv_covariates	True	2500	170471510
+g0a	U5_base_r1	U5	base	1	1	import	completed	5.75	709.7	379.4	379.4	198.3	528.4	709.7	1	initial	initial	True		16339053
+g0a	U5_base_r1	U5	base	1	2	design	completed	3.9	847.7	709.7	709.7	245.3	415.7	847.6	1	raw_data_s4	raw_data_s4	True	320872	16428056
+g0a	U5_base_r1	U5	base	1	3	qvalue	completed	16.99	976.4	847.6	847.6	255.5	528.4	883.9	1	qvalue_filtered	qvalue_filtered	True	320872	39391213
+g0a	U5_base_r1	U5	base	1	4	rollup	completed	9.82	1157.3	883.9	883.9	293.4	528.4	996.5	1	precursor_rollup	precursor_rollup	True	303000	49885904
+g0a	U5_base_r1	U5	base	1	5	peptide_log2	completed	18.82	1111.7	996.5	996.5	301	528.4	1019.4	1	log2_matrix	log2_matrix	True	303000	80740240
+g0a	U5_base_r1	U5	base	1	6	peptide_accession	completed	49.15	1138	1019.4	1019.4	303.4	560.8	1045.7	1	peptide_accession_cleaned	peptide_accession_cleaned	True	303000	114598326
+g0a	U5_base_r1	U5	base	1	7	dpc_quant	completed	13.74	1130	1045.7	1045.7	305.5	560.8	987.7	1	protein_dpc_quant	protein_dpc_quant	True	2500	124711352
+g0a	U5_base_r1	U5	base	1	8	protein_normalisation_limpa	completed	7.25	1079.1	987.7	987.7	314.4	497.8	986.6	1	protein_normalised	protein_normalised	True	2500	134675823
+g0a	U5_base_r1	U5	base	1	9	peptide_count	completed	6.67	1066.4	986.6	986.6	315.1	493.2	973.8	1	peptide_count_filtered	peptide_count_filtered	True	2500	144400894
+g0a	U5_base_r1	U5	base	1	10	correlation	completed	7.95	1069.6	973.8	973.8	315.6	481.6	978.9	1	correlation_filtered	correlation_filtered	True	2500	148995844
+g0a	U5_base_r1	U5	base	1	11	ruv_covariates	completed	58.77	997	979.2	978.9	328.9	610.1	996.7	1	ruv_covariates	ruv_covariates	True	2500	166225529
+g0a	U5_base_r1	U5	base	1	12	session_export	completed	4.24	996.8	996.8	996.7	334.2	576.6	996.7	1	ruv_covariates		True	2500	169009264
+g0a	U5_base_r1	U5	base	1	13	da	completed	11.24	1306.7	996.8	996.7	335	952.1	1306.7	1	ruv_covariates	ruv_covariates	True	2500	182599303
+g0a	U5_base_r1	U5	base	1	14	report	completed	4.83	1315.4	1306.7	1306.7	639.6	830.4	1259.9	1	ruv_covariates		True	2500	182599303

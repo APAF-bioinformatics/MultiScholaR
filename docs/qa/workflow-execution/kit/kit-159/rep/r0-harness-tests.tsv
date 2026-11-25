@@ -1,0 +1,36 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-e2e.R	E2E-prot: prot_dia from cells to verdicts	0	0	0	0	1	0	6.537
+test-e2e.R	E2E-metab: metab_combined (two assays, shared ids) from cells to verdicts	0	0	0	0	1	0	3.238
+test-e2e.R	E2E-trx: trx_screen from cells to verdicts	0	0	0	0	1	0	2.979
+test-phases.R	T-PH-1: the cell table crosses units and arms, one run per (run, arm), fixed seeds	7	7	0	0	0	0	0.069
+test-phases.R	T-PH-2: prepare.R runs in an isolated environment; universe and prepared hashes	7	7	0	0	0	0	0.078
+test-phases.R	T-PH-3: the cell runner by kind writes da.tsv; a refusal is val_arm_refused	8	8	0	0	0	0	0.172
+test-phases.R	T-PH-4: kernel arms pass the identity gate before their cells, or are all refused	5	5	0	0	0	0	0.066
+test-phases.R	T-PH-5: per-unit metric rows carry the fixed columns; blinded in the lifecycle	0	0	0	0	1	0	0.022
+test-phases.R	T-PH-6: run-level intervals over units, refusals, and blinded outcomes	5	5	0	0	0	0	0.023
+test-phases.R	T-PH-7: a phase writes its run folder (cells, metrics, comparisons, provenance)	0	0	0	0	1	0	0.401
+test-phases.R	T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict	0	0	0	0	1	0	0.03
+test-phases.R	T-PH-9: test mode cannot be forced (r1.12, 7.3)	1	1	0	0	0	0	0.029
+test-records.R	T-PROV-1: a complete provenance passes; a missing field fails	6	6	0	0	0	0	0.067
+test-records.R	T-DET-1: identical, within rounding, and different tables	4	4	0	0	0	0	0.029
+test-records.R	T-DET-2: fingerprints tell a real change from a rounding one	4	4	0	0	0	0	0.017
+test-records.R	T-SCORE-1: phase score combines requests; a missing cell or another commit is refused	5	5	0	0	0	0	0.074
+test-repair.R	R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted	0	0	0	0	1	0	0.007
+test-repair.R	R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop	0	0	0	0	1	0	0.011
+test-repair.R	R-I03: ticket coverage regimes run, are pinned by hash and reach the classifier	0	0	0	0	1	0	0.005
+test-repair.R	R-I04: refusals are recorded per 4.7 and O7 (b); nothing aborts the scoring	0	0	0	0	1	0	0.032
+test-repair.R	R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks	0	0	0	0	1	0	0.008
+test-repair.R	R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file	0	0	0	0	1	0	0.009
+test-repair.R	R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view	0	0	0	0	1	0	0.006
+test-repair.R	R-I09, I18: declared states follow the arm's RUV run; a diagnostic step that changes state is not ok	2	1	1	0	1	0	0.094
+test-repair.R	R-I11: the declaration's statistical schema is refused before any cell	0	0	0	0	1	0	0.005
+test-repair.R	R-I16: a member without a verdict is not_evaluable; worse_when never names a guard	4	0	4	0	0	0	0.05
+test-repair.R	R-I15: G1(a) does not admit limpa_da_last_digits without its ruling and G1D's digest	2	0	2	0	1	0	0.027
+test-repair.R	R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout)	3	3	0	0	1	0	6.055
+test-repair.R	R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics	2	1	1	0	1	0	0.034
+test-tab-repair.R	T-TAB-OFF: prot_dia_limpa with RUV off completes and writes no RUV factors	0	0	0	0	1	0	1.019
+test-tab-repair.R	T-TAB-OFF: trx_screen with RUV off completes and writes no RUV factors	0	0	0	0	1	0	0.058
+test-tab-repair.R	T-PRE-RUV: prot_dia matrix_pre_ruv.tsv is the product's record of the RUV input	0	0	0	0	1	0	0.683
+test-tab-repair.R	T-PRE-RUV: prot_lfq matrix_pre_ruv.tsv is the product's record of the RUV input	0	0	0	0	1	0	0.311
+test-tab-repair.R	T-PRE-RUV: prot_tmt matrix_pre_ruv.tsv is the product's record of the RUV input	0	0	0	0	1	0	0.314
+test-tab-repair.R	T-PRE-RUV: prot_dia_limpa matrix_pre_ruv.tsv is the product's record of the RUV input	0	0	0	0	1	0	0.628

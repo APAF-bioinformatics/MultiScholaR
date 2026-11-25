@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit200-prot-da-no-value-proteins.R	127	16	1	0	0	99.4	failed

@@ -1,0 +1,10 @@
+block 23-234: 212 lines (source 212), differing source lines: [215]
+block 237-237: 1 lines (source 1), differing source lines: []
+block 244-246: 3 lines (source 3), differing source lines: []
+block 248-249: 2 lines (source 2), differing source lines: []
+block 263-270: 8 lines (source 8), differing source lines: []
+block 276-286: 11 lines (source 11), differing source lines: []
+differing lines in total: 1
+line 215
+  source:         out <- data.frame(id = rownames(tab), p = tab$raw_pvalue, q = tab$fdr_qvalue, stringsAsFactors = FALSE)
+  copy:           out <- data.frame(id = rownames(tab), p = tab$raw_pvalue, q = tab$fdr_qvalue, logFC = tab$logFC, t = tab$t, ave = tab$AveExpr, stringsAsFactors = FALSE)

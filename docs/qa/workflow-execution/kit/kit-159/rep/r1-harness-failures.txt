@@ -1,0 +1,30 @@
+== test-e2e.R :: E2E-prot: prot_dia from cells to verdicts (1 not passed)
+Error in `data.frame(component = component, member = member, metric = metric, arm = if (length(cmp_arms)) cmp_arms[[1L]] else member, comparator = if (length(cmp_arms) == 2L) cmp_arms[[2L]] else if (length(cmp_arms) == 1L) "fixed" else NA_character_, view = view, outcome = cl$outcome %||% NA_character_, conf = conf, regime = cl$regime %||% NA_character_, regime_status = cl$regime_status %||% NA_character_, coverage = as.numeric(cl$coverage %||% NA_real_), mc_se = as.numeric(cl$mc_se %||% NA_real_), nsim = as.numeric(cl$nsim %||%      NA_real_), statistic = as.character(cl$statistic %||% NA_cha
+
+== test-e2e.R :: E2E-metab: metab_combined (two assays, shared ids) from cells to verdicts (1 not passed)
+Error in `data.frame(component = component, member = member, metric = metric, arm = if (length(cmp_arms)) cmp_arms[[1L]] else member, comparator = if (length(cmp_arms) == 2L) cmp_arms[[2L]] else if (length(cmp_arms) == 1L) "fixed" else NA_character_, view = view, outcome = cl$outcome %||% NA_character_, conf = conf, regime = cl$regime %||% NA_character_, regime_status = cl$regime_status %||% NA_character_, coverage = as.numeric(cl$coverage %||% NA_real_), mc_se = as.numeric(cl$mc_se %||% NA_real_), nsim = as.numeric(cl$nsim %||%      NA_real_), statistic = as.character(cl$statistic %||% NA_cha
+
+== test-e2e.R :: E2E-trx: trx_screen from cells to verdicts (1 not passed)
+Error in `data.frame(component = component, member = member, metric = metric, arm = if (length(cmp_arms)) cmp_arms[[1L]] else member, comparator = if (length(cmp_arms) == 2L) cmp_arms[[2L]] else if (length(cmp_arms) == 1L) "fixed" else NA_character_, view = view, outcome = cl$outcome %||% NA_character_, conf = conf, regime = cl$regime %||% NA_character_, regime_status = cl$regime_status %||% NA_character_, coverage = as.numeric(cl$coverage %||% NA_real_), mc_se = as.numeric(cl$mc_se %||% NA_real_), nsim = as.numeric(cl$nsim %||%      NA_real_), statistic = as.character(cl$statistic %||% NA_cha
+
+== test-records.R :: T-SCORE-1: phase score combines requests; a missing cell or another commit is refused (1 not passed)
+Error in `file(file, "rt")`: cannot open the connection
+
+== test-repair.R :: R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+

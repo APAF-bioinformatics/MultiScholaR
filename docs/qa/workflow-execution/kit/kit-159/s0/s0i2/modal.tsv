@@ -1,0 +1,9 @@
+cell	step	action	input_id	value	source	location
+prot_dia	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui
+prot_lfq	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui
+prot_lfq_fragpipe	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui
+prot_tmt	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui
+prot_dia-export_load	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui
+prot_dia_two_species	import	setup_import-confirm_organism	setup_import-selected_organism	9606	ui_default	modal
+prot_dia_two_species	import	setup_import-confirm_organism	setup_import-filter_to_organism	FALSE	ui_default	modal
+prot_dia_two_species	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	TRUE	forced	ui

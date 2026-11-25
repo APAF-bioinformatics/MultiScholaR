@@ -122,7 +122,8 @@ countMetabDaSignificant <- function(df) {
 #'
 #' @description Main entry point for metabolomics differential abundance analysis.
 #'   Loops over all assays in the MetaboliteAssayData object, runs limma DA on each,
-#'   and aggregates results with an assay identifier column.
+#'   and aggregates results with an assay identifier column. A feature with no value in any sample is not
+#'   tested and is listed (`features_without_values`).
 #'
 #' @param theObject MetaboliteAssayData S4 object containing metabolite data.
 #' @param contrasts_tbl Data frame with contrast definitions. Must have a column
@@ -152,6 +153,9 @@ countMetabDaSignificant <- function(df) {
 #'   - failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
 #'     other assays are kept and a warning (class `omics_da_assay_failed`) names the failed ones; when every
 #'     assay failed the function stops (class `omics_da_all_assays_failed`).
+#'   - features_without_values: present only when an assay held features with no value in any sample; per such
+#'     assay, their ids. Such a feature is not tested: it is a row of every contrast table without statistics
+#'     (`AveExpr` missing), and the other features' results are those of the data without it
 #'   - ruv_features_not_tested, ruv_features_not_observed: with `ruv_factors` only. Per assay, the ids not tested
 #'     (`supplied_controls`, `not_estimable`), and a table (`feature`, `group`) of the tested features with no
 #'     value in one whole group
@@ -223,6 +227,8 @@ runMetabolitesDA <- function(
     all_qvalue_warnings <- list()
     # KIT-128: the assays whose kernel stopped, with the message.
     failed_assays <- list()
+    # KIT-196: per assay, the features with no value in any sample (not tested).
+    features_without_values <- list()
     # KIT-128 K128-1: a design without biological replication is refused before any assay.
     refuseNoBiologicalReplication(resolveProtTechnicalReplicateBlock(as.data.frame(design_matrix), group_col,
         theObject@technical_replicate_id), design_matrix[[group_col]])
@@ -299,6 +305,9 @@ runMetabolitesDA <- function(
                 per_assay_results[[assay_name]] <- assay_combined
                 # Store fit object for Glimma (KIT-128 K128-5: only once the assay's tables are formatted).
                 contrasts_results[[assay_name]] <- limma_results
+                if (length(limma_results$features_without_values)) {
+                    features_without_values[[assay_name]] <- limma_results$features_without_values
+                }
 
                 logger::log_info(sprintf(
                     "   Completed assay %s: %d total results",
@@ -348,6 +357,8 @@ runMetabolitesDA <- function(
         treat_lfc_cutoff = treat_lfc_cutoff
     )
     if (length(failed_assays) > 0) result$failed_assays <- failed_assays
+    # KIT-196: present only when some assay had features without values, as `failed_assays` is.
+    if (length(features_without_values) > 0) result$features_without_values <- features_without_values
     # KIT-127: with RUV factors, what was not tested and what was not observed in a whole group, by assay.
     if (!is.null(ruv_factors)) {
         result$ruv_features_not_tested <- ruv_not_tested

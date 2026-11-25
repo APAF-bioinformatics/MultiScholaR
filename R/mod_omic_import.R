@@ -37,7 +37,15 @@ mod_omic_import_ui <- function(id, config) {
         shinyjs::useShinyjs(),
         shiny::fluidRow(shiny::column(12, shiny::wellPanel(
             shiny::h3(config$import$title),
-            omicGuiFunction(panel$ui)(ns, config)))))
+            omicGuiFunction(panel$ui)(ns, config),
+            # KIT-167: the optional reference mapping step, only with the gate on.
+            if (referenceMappingImportOffered(config)) referenceMappingImportUi(ns, config)))))
+}
+
+#' Whether the import step offers the reference mapping (KIT-167): the gate on, proteomics or transcriptomics
+#' @noRd
+referenceMappingImportOffered <- function(config) {
+    referenceMappingEnabled() && isTRUE(config$shell$omic_type %in% c("proteomics", "transcriptomics"))
 }
 
 #' The import frame's server: the configured panel's server, given the completion helper.
@@ -53,8 +61,12 @@ mod_omic_import_server <- function(id, workflow_data, experiment_paths, volumes 
     panel <- omicImportSourcePanel(config$import$source_panel)
     shiny::moduleServer(id, function(input, output, session) {
         complete <- function(notify = TRUE) completeOmicImport(workflow_data, config, panel$design_status, notify)
-        omicGuiFunction(panel$server)(input, output, session, workflow_data = workflow_data,
+        value <- omicGuiFunction(panel$server)(input, output, session, workflow_data = workflow_data,
             experiment_paths = experiment_paths, volumes = volumes, config = config, complete = complete)
+        if (referenceMappingImportOffered(config)) {
+            referenceMappingImportServer(input, output, session, workflow_data, experiment_paths, config)
+        }
+        value
     })
 }
 

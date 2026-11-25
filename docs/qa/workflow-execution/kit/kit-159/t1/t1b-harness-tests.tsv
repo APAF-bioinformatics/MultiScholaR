@@ -1,0 +1,94 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-baseline.R	T-BASE: median and no normalisation; t equals a direct limma fit; zeros become NA	5	5	0	0	0	0	0.416
+test-baseline.R	T-BASE-filter: a key enters a contrast by that contrast's two groups only	4	4	0	0	0	0	0.034
+test-baseline.R	T-BASE-batch: a balanced batch term leaves the fold changes unchanged	2	2	0	0	0	0	0.011
+test-baseline.R	the baseline refuses a contrast group below min_per_group	1	1	0	0	0	0	0.03
+test-baseline.R	the counts baseline runs voom-limma after filterByExpr and TMM	2	2	0	0	0	0	0.099
+test-classify.R	T-CLS: the four outcomes, no_worse and inclusive ends	10	10	0	0	0	0	0.026
+test-classify.R	T-CLS: refusals and a one-arm comparison against a fixed value	5	5	0	0	0	0	0.053
+test-classify.R	T-CLS: a within-run interval decides only when declared on that comparison	2	2	0	0	0	0	0.006
+test-classify.R	T-CLS-regime: no regime, no harness regime for the class, flagged without consent	6	6	0	0	0	0	0.051
+test-classify.R	T-CLS-compound: conjunctions, worse_when, controls and guards	11	11	0	0	0	0	0.03
+test-classify.R	T-CLS-compound: a guard requiring match, and a contradicted guard	4	4	0	0	0	0	0.013
+test-coverage.R	pass bands: approximate run-level, within-run, exact and Clopper-Pearson	9	9	0	0	0	0	0.024
+test-coverage.R	the summary flags a paired t count passing on normal and failing on skewed data	3	3	0	0	0	0	0.014
+test-coverage.R	the catalogue has unique cells and every regime of 10.2	2	2	0	0	0	0	0.057
+test-coverage.R	small runs of a C1 and a C3 cell return one row per level	5	5	0	0	0	0	0.087
+test-declaration.R	T-DECL-1, T-DECL-2: a missing declaration; a declaration committed with another file	2	2	0	0	1	1	0.151
+test-declaration.R	T-DECL-3, T-DECL-4: a changed design file or scoring file is refused	1	1	0	0	1	1	0.13
+test-declaration.R	T-DECL-5 to T-DECL-7: evidence beside the harness is accepted; harness and product changes are refused	1	1	0	0	1	1	0.148
+test-declaration.R	T-DECL-8 and T-ENV-1: the library table against the declared hash and extras	1	1	0	0	1	1	0.085
+test-declaration.R	T-DECL-9 to T-DECL-11 and T-DECL-16: the two-stage order and the listed changes	2	2	0	0	1	2	0.108
+test-declaration.R	T-DECL-12: a correction at another commit than the counted run's is refused	6	5	1	0	0	4	0.168
+test-declaration.R	T-DECL-13: an amended run with its listed replacements is accepted and stamped	3	3	0	0	0	1	0.422
+test-declaration.R	T-DECL-14: a changed preparation file is refused	1	1	0	0	1	1	0.106
+test-declaration.R	T-DECL-15: annotation 'none' on identifiers more than 1 % UniProt-like is refused	2	2	0	0	0	0	2.458
+test-declaration.R	T-DECL-17: the evidence check refuses two corrections of one counted run	2	2	0	0	0	0	0.014
+test-inputs.R	T-IN-1 to T-IN-3: a missing column, a bad URL and a bad hash format are refused	5	5	0	0	0	0	0.063
+test-inputs.R	T-IN-4 and T-IN-5: size and hash mismatches are refused and the file deleted	4	4	0	0	0	0	0.046
+test-inputs.R	T-IN-6: a verified input is reached by role; an undeclared role is refused	3	3	0	0	0	0	0.025
+test-inputs.R	T-IN-7: 2.5 times the bytes to fetch above the free space is refused	1	1	0	0	0	0	0.016
+test-inputs.R	T-IN-8: three members of one archive from one download, each verified	4	4	0	0	0	0	0.039
+test-inputs.R	T-IN-9: an optional role that cannot be fetched is recorded, a required one refused	3	3	0	0	0	0	0.029
+test-inputs.R	the record phase hashes inputs and members; two equal records compare equal	3	3	0	0	0	0	0.024
+test-inputs.R	T-ANN-1: an incomplete or empty UniProt answer refuses the record	7	7	0	0	0	2	0.061
+test-inputs.R	T-PRE-1: phase pre admits listed aggregates only and refuses truth reads	4	4	0	0	0	0	0.053
+test-intervals.R	T-ORD: order-statistic intervals and their achieved levels	7	7	0	0	0	0	0.019
+test-intervals.R	T-PT: paired t on eight per-unit differences	5	5	0	0	0	0	0.014
+test-intervals.R	T-JK-1: the delete-one jackknife of the mean has SE sd / sqrt(n)	2	2	0	0	0	0	0.007
+test-intervals.R	T-JK-2: jackknife from full and deletion values	3	3	0	0	0	0	0.008
+test-intervals.R	T-JK-2-bias: the bias estimate and its flag against half the margin	3	3	0	0	0	0	0.009
+test-intervals.R	T-JK-log: the log transform and an undefined deletion	4	4	0	0	0	0	0.011
+test-intervals.R	T-JK-crit: a declared critical value may be larger than t, never smaller	3	3	0	0	0	0	0.019
+test-intervals.R	T-JK-3: the jackknife of a median is refused	2	2	0	0	0	0	0.021
+test-intervals.R	the jackknife needs four deletions; dependent units are refused	2	2	0	0	0	0	0.014
+test-intervals.R	T-CP: Clopper-Pearson intervals	3	3	0	0	0	0	0.009
+test-intervals.R	T-ONE: the one-sample paired t against a fixed value	2	2	0	0	0	0	0.006
+test-intervals.R	T-WIL: Wilson intervals without an event floor	3	3	0	0	0	0	0.009
+test-intervals.R	T-NEW: Newcombe's paired interval, method 10	3	3	0	0	0	0	0.008
+test-intervals.R	T-BOOT-1: the same seed and B give identical intervals	2	2	0	0	0	0	0.912
+test-intervals.R	T-BOOT-2: a constant paired shift gives a zero-width interval at the shift	1	1	0	0	0	0	0.407
+test-intervals.R	T-BOOT-3: strata keep their sizes; clusters are resampled whole	2	2	0	0	0	0	6.922
+test-intervals.R	T-BOOT-4: B below 50 / tail probability is refused	3	3	0	0	0	0	0.02
+test-intervals.R	T-REF-FILL: the least favourable fill decides whether the verdict stands	8	8	0	0	0	0	0.022
+test-intervals.R	refusals under 30 units: one is dropped with a substitute required, two are not evaluable	3	3	0	0	0	0	0.009
+test-licence.R	T-LIC-1 to T-LIC-4: unlisted file, extra column, per-feature class, too many rows	6	6	0	0	0	0	0.075
+test-licence.R	T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz	5	5	0	0	0	0	2.816
+test-licence.R	T-LIC-9: declared outputs, keyed lineage, and path placeholders	8	8	0	0	0	0	0.099
+test-licence.R	T-LIC-10: the lifecycle keeps scored.tsv.gz and primary call counts private	3	3	0	0	0	0	0.041
+test-licence.R	T-LIC-11: result tables of a not-permitted input, label keys, attribution	6	6	0	0	0	0	0.063
+test-licence.R	T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach only the private log	8	7	1	0	0	0	0.307
+test-metrics.R	T-M1/M2: bias and median absolute error with one missing estimate	10	10	0	0	0	0	0.035
+test-metrics.R	T-M2-pooled: pooled median and the mean of per-class medians	4	4	0	0	0	0	0.016
+test-metrics.R	T-M3: linear and geometric CV; a group with one finite value is skipped	3	3	0	0	0	0	0.016
+test-metrics.R	T-M4/M5/M6: confusion, FDP and sensitivity in the own and union views	10	10	0	0	0	0	0.033
+test-metrics.R	T-M4-sign: a wrong-sign call is a false discovery and its key stays a miss	8	8	0	0	0	0	0.026
+test-metrics.R	T-M4-nostat: a finite estimate without p is quantified, not testable, and a union miss	5	5	0	0	0	0	0.018
+test-metrics.R	T-M5-zero: no call gives FDP 0; an all-null truth with one call gives FDP 1	4	4	0	0	0	0	0.019
+test-metrics.R	T-M7: partial AUC from the origin, normalised by fpr_max, and the null floor	5	5	0	0	0	0	0.034
+test-metrics.R	T-M7-ties: a tied block is one straight segment	2	2	0	0	0	0	0.009
+test-metrics.R	T-M7-sign: a wrong-sign positive ranks by its one-sided p near the end	5	5	0	0	0	0	0.035
+test-metrics.R	T-M7-prev: 5 nulls in the region are refused at the default floor	1	1	0	0	0	0	0.02
+test-metrics.R	T-M8: Pearson and Spearman correlations	3	3	0	0	0	0	0.011
+test-metrics.R	T-M9: Quartet SNR from scores	1	1	0	0	0	0	0.006
+test-metrics.R	T-M9-pca: the matrix form equals the score form with prcomp's weights	2	2	0	0	0	0	0.033
+test-metrics.R	T-M10: Matthews correlation from the confusion table	2	2	0	0	0	0	0.009
+test-metrics.R	T-M10-sign: a wrong-sign key counts in FP and FN	3	3	0	0	0	0	0.011
+test-metrics.R	M11: coverage counts quantified, testable and called keys per class	4	4	0	0	0	0	0.012
+test-records.R	T-PROV-1: a complete provenance passes; a missing field fails	6	6	0	0	0	0	0.041
+test-records.R	T-DET-1: identical, within rounding, and different tables	4	3	1	0	0	0	0.028
+test-records.R	T-DET-2: fingerprints tell a real change from a rounding one	4	4	0	0	0	0	0.014
+test-records.R	T-SCORE-1: phase score combines requests; a missing cell or another commit is refused	5	5	0	0	0	0	0.066
+test-score.R	T-BH: the matched rule is Benjamini-Hochberg of the raw p	3	3	0	0	0	0	0.013
+test-score.R	T-BH-assay: one family per assay; the same key in two assays is two rows	4	4	0	0	0	0	0.026
+test-score.R	T-VIEW: intersection, union, and union metrics unchanged by a third arm	3	3	0	0	0	0	0.022
+test-score.R	T-KEY: a duplicate in one arm and an unmapped key in another leave the comparison	4	4	0	0	0	0	0.013
+test-score.R	T-VIEW: an own-view comparison between arms is refused by the classifier	1	1	0	0	0	0	0.012
+test-score.R	T-BLIND-1: two truths with one key set and label multiset blind identically	4	4	0	0	0	0	0.018
+test-units.R	T-CHUNK-1 and T-CHUNK-2: an erroring cell and a refusing cell keep the others	4	4	0	0	0	0	0.227
+test-units.R	T-CHUNK-3 and T-CHUNK-5: a cell over its own limit times out and later cells complete	2	2	0	0	0	0	3.214
+test-units.R	T-CHUNK-4 and T-CHUNK-6: a killed chunk; its unstarted cells complete in a fresh chunk	4	4	0	0	0	0	0.43
+test-units.R	T-CHUNK-7: four chunks run at the same time	3	3	0	0	0	0	2.34
+test-units.R	T-RUN-1: two unit rows naming one run execute it once and are scored twice	3	3	0	0	0	0	0.188
+test-units.R	T-RNG-1: a cell that draws random numbers is flagged	2	2	0	0	0	0	0.211
+test-units.R	valUnitsDropReplicate deletes replicate r from every group; a group without it stays whole	4	4	0	0	0	0	0.014

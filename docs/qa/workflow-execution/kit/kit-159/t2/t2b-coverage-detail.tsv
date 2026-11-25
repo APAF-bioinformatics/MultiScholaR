@@ -1,0 +1,17 @@
+cell	regime	family	n	condition	statistic	class	level	nsim	coverage	mc_se	achieved	undefined	target	status	kind	seconds_sims	seconds_target
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.95	2000	1	0	NA	0	0	conservative	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.975	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.983333333333333	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.9875	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.991666666666667	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.99375	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.995833333333333	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C4e-150	C4e	c4e:4840	14	matrix4840_block	pauc_diff	rank	0.996666666666667	2000	1	0	NA	0	0	pass	approx_run	4126.264	3138.552
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.95	2000	0.9485	0.00494205169944629	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.975	2000	0.9735	0.00359150038284837	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.983333333333333	2000	0.983	0.00289058817544112	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.9875	2000	0.9875	0.00248432586429397	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.991666666666667	2000	0.9915	0.00205277251540447	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.99375	2000	0.9925	0.00192921616207204	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.995833333333333	2000	0.994	0.0017268468374468	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026
+C7-160	C7	c7:threshold_count	200	iid_in_class	paired_threshold_count	threshold_count	0.996666666666667	2000	0.995	0.00157718102955875	NA	0	0.0996894999999914	pass	approx_within	8407.856	5.78700000000026

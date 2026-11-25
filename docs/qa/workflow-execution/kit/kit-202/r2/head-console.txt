@@ -1,0 +1,40 @@
+KIT-202 S1 head input lipid_canonical 
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Starting LipidSearch import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+KIT-202 S1 head input metab_lc 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_pos_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/lcms_neg_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+KIT-202 S1 head input metab_gc 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_gc/gcms_features.tsv
+::notice title=INFO::Read 3 rows and 9 columns
+::notice title=INFO::Detected 8 sample columns and 1 annotation columns
+KIT-202 S1 head input metab_combined 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_combined/combined_lcms_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_combined/combined_gcms_features.tsv
+::notice title=INFO::Read 3 rows and 10 columns
+::notice title=INFO::Detected 8 sample columns and 2 annotation columns
+KIT-202 S1 head input module_ci_lipid 
+KIT-202 S1 head input module_ci_metab 
+KIT-202 S1 head input lipid_msdial 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/RtmpodyIBX/kit202-s1-lipid-788056f72f82/msdial_lipid_pos.csv
+::notice title=INFO::Read 3 rows and 13 columns
+::notice title=INFO::Detected 4 sample columns and 9 annotation columns
+KIT-202 S1 head input metab_msdial 
+::notice title=INFO::Starting MS-DIAL import from: /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testdata/e2e/metab_lc/seed_lcms_pos.csv
+::notice title=INFO::Read 8 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+KIT-202 S1 head input workbook 
+Error in if (file == "") file <- stdout() else if (is.character(file)) { : 
+  the condition has length > 1
+Calls: childMain -> <Anonymous>
+Execution halted

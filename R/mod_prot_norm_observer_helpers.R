@@ -16,7 +16,10 @@ registerProtNormServerObservers <- function(
   checkMemoryUsageFn = checkProtNormMemoryUsage,
   runTabEntryWorkflowFn = runProtNormTabEntryWorkflow,
   regenerateQcForAestheticChangeFn = regenerateProtNormQcForAestheticChange,
-  runNormalizationWorkflowFn = runProtNormNormalizationWorkflow,
+  # KIT-182 (F-e): the tab's run redraws the pre-normalisation figures with the tab's own generator when its source
+  # changes; a delegate given here is called with the formals it had before.
+  runNormalizationWorkflowFn = function(...) runProtNormNormalizationWorkflow(...,
+    generatePreNormalizationQcFn = generatePreNormalizationQcFn),
   runApplyCorrelationObserverFn = runProtNormApplyCorrelationObserver,
   runSkipCorrelationObserverFn = runProtNormSkipCorrelationObserver,
   runResetObserverFn = runProtNormResetObserver,
@@ -214,6 +217,12 @@ protNormS4DownloadHandler <- function(workflowData, normData, experimentPaths, o
   shiny::downloadHandler(
     filename = function() paste0(omicType, "_", experimentLabel, "_final_s4.RDS"),
     content = function(file) {
+      # KIT-206: refused, and shown, when the current table is not the tab's last result.
+      tryCatch(assertProtNormExportHeadCurrent(workflowData$state_manager, normData$correlation_filtered_obj),
+        prot_norm_correlation_input_stale = function(e) {
+          shiny::showNotification(paste("Error exporting session:", conditionMessage(e)), type = "error", duration = 10)
+          stop(e)
+        })
       names <- resolveProtNormCorrelationResultFilenames(normData$ruv_optimization_result,
         workflowData$ruv_optimization_result)
       canonical <- file.path(experimentPaths$protein_qc_dir, names$rdsFilename)

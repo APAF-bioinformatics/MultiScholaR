@@ -640,16 +640,25 @@ validateWorkflowAnalysisRecord <- function(record) {
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
 }
 
-#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row): for each marker that a step's declaration may fix, the
-#' option that selects the rule inside the package, its current token (the declaration's fixed value) and its earlier
-#' token. A step lists the marker, with source `fixed`, only when it was computed under the current rule: the record
-#' builder never back-fills it, `setWorkflowStepProvenance` omits it while the option holds the earlier token
-#' (`workflowFixedInForce`), and the replay runs each step whose declaration fixes it with the step's own rule
-#' (`workflowReplayRuleOptions`). The option is internal and set nowhere else.
+#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
+#' adds `intensity_filter_samples`; KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA
+#' model record by the DA's replay, `workflowDaReplayRuleOptions`): for
+#' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
+#' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
+#' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
+#' while the option holds the earlier token (`workflowFixedInForce`), and the replay runs each step whose declaration
+#' fixes it with the step's own rule (`workflowReplayRuleOptions`). The option is internal and set nowhere else.
 #' @noRd
 workflowReplayRuleMarkers <- list(
     missing_value_comparison = list(option = "MultiScholaR.missing_filter_rule", current = "counts",
         earlier = "rounded_percentage"),
+    # KIT-205: the enrichment background is each comparison's tested rows (`enrichmentTestedRows`); earlier, every row.
+    enrichment_background = list(option = "MultiScholaR.enrichment_background", current = "tested",
+        earlier = "all_rows"),
+    # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
+    # made before counted every numeric column of the assay ("numeric_columns").
+    intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
+        earlier = "numeric_columns"),
     # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
     # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
     # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
@@ -950,8 +959,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             if (is.null(da_manifest))
                 cli::cli_abort("step {.val {step$state}} cannot be replayed without a proteomics DA manifest", class = "workflow_replay_unsupported")
             parameters <- workflowReplayParameters(step$parameters, workflowOperationEntry("enrichment")$parameters)
-            withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters, da_manifest,
-                contrasts, paths, scratch, recorded_resources = record$external_resources))
+            # KIT-205: the step replays with the background rule it was made with, as the loop's steps do above.
+            withr::with_options(workflowReplayRuleOptions(step, workflowOperationEntry("enrichment")$declaration),
+                withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters,
+                    da_manifest, contrasts, paths, scratch, recorded_resources = record$external_resources)))
             if (!identical(manager$current_state, step$state))
                 cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
             if (is.function(on_step)) on_step(step, manager)
@@ -1190,7 +1201,13 @@ workflowRecordReportSources <- list(
     enrichment_go_pairs_propagated = list(record = c("outcomes", "enrichment", "go_pairs_propagated")),
     enrichment_go_root_only_proteins = list(record = c("outcomes", "enrichment", "go_root_only_proteins")),
     enrichment_go_unreviewed_share = list(record = c("outcomes", "enrichment", "go_unreviewed_share")),
-    enrichment_correction_method = list(record = c("enrichment", "correction_method")))
+    enrichment_correction_method = list(record = c("enrichment", "correction_method")),
+    # KIT-203: the significance rule of a clusterProfiler run: declared (any rule but the q-value), else the rule the
+    # run recorded as applied; a record carrying neither was made with the q-value.
+    enrichment_significance_rule = list(record = list(c("enrichment", "significance_rule"),
+        c("outcomes", "enrichment", "significance_rule"))),
+    # KIT-205: the enrichment background rule, a fixed constant of the step; a record without it was made with every row.
+    enrichment_background = list(record = c("enrichment", "enrichment_background")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the

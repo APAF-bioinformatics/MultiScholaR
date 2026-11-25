@@ -1,0 +1,14 @@
+== test-p1k.R :: R-P1: the detail records the misses at the lower and at the upper bound per level (19 not passed)
+Expected `all(c("miss_low", "miss_high") %in% names(det))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-p1k.R :: R-P1: the P1 cell's detail carries one-sided misses; the regime table does not (2 not passed)
+Expected `det$miss_low` to be identical to `want$low`.
+Differences:
+`actual` is NULL
+`expected` is an integer vector (0, 0, 0, 0, 0, ...)
+
+

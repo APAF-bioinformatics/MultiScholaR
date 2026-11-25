@@ -1,0 +1,4 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-e2e.R	E2E-prot: prot_dia from cells to verdicts	56	56	0	0	0	1	795.393
+test-e2e.R	E2E-metab: metab_combined (two assays, shared ids) from cells to verdicts	59	59	0	0	0	1	351.598
+test-e2e.R	E2E-trx: trx_screen from cells to verdicts	56	56	0	0	0	1	169.958

@@ -1,0 +1,47 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-module-ci-lipid-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-module-ci-metab-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-omics-norm-core.R	62	0	0	14	ok	62	0	0	14	ok	same		
+test-metab-03d-norm-module-characterization.R	13	0	0	3	ok	11	2	0	3	failed	new-failure	new-failure: mod_metab_norm_server preserves export prereq and success behavior; counts: mod_metab_norm_server preserves export prereq and success behavior (passed 3 -> 1, skipped 0 -> 0)	
+test-omic-qc-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-module-ci-trx-qc.R	34	1	1	0	failed	34	1	1	0	failed	same		
+test-trx-norm-core.R	58	0	0	0	ok	58	0	0	0	ok	same		
+test-trx-norm-module.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-omic-da-head-fallback.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-omic-da-module.R	1316	53	0	0	failed	1316	53	0	0	failed	same		
+test-module-ci-lipid-da.R	140	0	0	0	ok	140	0	0	0	ok	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-trx-da-without-ruv.R	53	1	0	0	failed	53	1	0	0	failed	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		
+test-kit172-downstream.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omics-norm-itsd-selection.R	22	0	0	0	ok	22	0	0	0	ok	same		
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-workflow-analysis-record.R	307	0	0	0	ok	307	0	0	0	ok	same		
+test-workflow-omics-sessions.R	150	0	0	0	ok	150	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-lipid-12-norm-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-12a-norm-module-characterization.R	5	0	0	5	ok	5	0	0	5	ok	same		
+test-metab-03c-norm-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	ok	58	0	0	2	ok	same		
+test-lipid-01c-qc-duplicate-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01d-qc-intensity-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01g-qc-duplicates-module-characterization.R	9	0	0	5	ok	9	0	0	5	ok	same		
+test-lipid-01h-qc-s4-module-characterization.R	3	0	0	0	ok	3	0	0	0	ok	same		
+test-lipid-01k-qc-intensity-shared.R	16	0	0	1	ok	16	0	0	1	ok	same		
+test-metab-01p-qc-duplicates-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01q-qc-intensity-module-characterization.R	20	0	0	13	ok	20	0	0	13	ok	same		
+test-metab-01s-qc-s4-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01t-qc-s4-module-characterization.R	2	0	0	7	ok	2	0	0	7	ok	same		
+test-metab-01u-qc-duplicates-module-characterization.R	9	0	0	3	ok	9	0	0	3	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-omics-norm-state-guards.R	358	280	0	0	failed	647	0	0	0	ok	fixed	fixed: KIT-194 T1: lipid QC steps refuse a normalised table, in process and managed, and run on a QC table; fixed: KIT-194 T1: metab QC steps refuse a normalised table, in process and managed, and run on a QC table; fixed: KIT-194 T2: transcriptomics' Expression Filter and Finalize QC refuse trx_ruvs, and run on trx_qc_complete; fixed: KIT-194 T3 (a, b): lipid a second run at the result runs again from the table the first started from; fixed: KIT-194 T3 (c, d): lipid ITSD by pattern runs again from the start; a fresh tab at the result refuses; fixed: KIT-194 T3 (e, f, g): lipid a run is refused while the runner is busy, and on a loaded session; fixed: KIT-194 T3 (a, b): metab a second run at the result runs again from the table the first started from; fixed: KIT-194 T3 (c, d): metab ITSD by pattern runs again from the start; a fresh tab at the result refuses; fixed: KIT-194 T3 (e, f, g): metab a run is refused while the runner is busy, and on a loaded session; fixed: KIT-194 T4: transcriptomics' second run (k 2, then k 1) runs again from trx_qc_complete; a fresh tab and a busy runner refuse; fixed: KIT-194 T5: a QC state made on a normalised table (an old session) is not normalised again; fixed: KIT-194 T6 (a, b, c): lipid after a Revert to the QC table, Apply, Skip and the managed Apply are refused; fixed: KIT-194 T6 (d, e, f, g): lipid the correlation step at the result runs; off it (J6, A01) it is refused; fixed: KIT-194 T7: lipid Export Normalized Data refuses a reverted head and writes at the correlation state; fixed: KIT-194 T6 (a, b, c): metab after a Revert to the QC table, Apply, Skip and the managed Apply are refused; fixed: KIT-194 T6 (d, e, f, g): metab the correlation step at the result runs; off it (J6, A01) it is refused; fixed: KIT-194 T7: metab Export Normalized Data refuses a reverted head and writes at the correlation state; fixed: KIT-194 T8: lipid the DA's head fallback takes only the normalisation's states; loaded QC-named files are refused; fixed: KIT-194 T8 (D4 (b1)): lipid a session loaded under a QC state's name is refused at Run DA; fixed: KIT-194 T8: metab the DA's head fallback takes only the normalisation's states; loaded QC-named files are refused; fixed: KIT-194 T8 (D4 (b1)): metab a session loaded under a QC state's name is refused at Run DA; fixed: KIT-194: the guards raise their classes; counts: KIT-194 T1: lipid QC steps refuse a normalised table, in process and managed, and run on a QC table (passed 24 -> 112, skipped 0 -> 0); counts: KIT-194 T1: metab QC steps refuse a normalised table, in process and managed, and run on a QC table (passed 18 -> 97, skipped 0 -> 0); counts: KIT-194 T2: transcriptomics' Expression Filter and Finalize QC refuse trx_ruvs, and run on trx_qc_complete (passed 6 -> 14, skipped 0 -> 0); counts: KIT-194 T3 (a, b): lipid a second run at the result runs again from the table the first started from (passed 9 -> 19, skipped 0 -> 0); counts: KIT-194 T3 (a, b): metab a second run at the result runs again from the table the first started from (passed 9 -> 19, skipped 0 -> 0); counts: KIT-194 T3 (c, d): lipid ITSD by pattern runs again from the start; a fresh tab at the result refuses (passed 5 -> 10, skipped 0 -> 0); counts: KIT-194 T3 (c, d): metab ITSD by pattern runs again from the start; a fresh tab at the result refuses (passed 5 -> 10, skipped 0 -> 0); counts: KIT-194 T3 (e, f, g): lipid a run is refused while the runner is busy, and on a loaded session (passed 3 -> 9, skipped 0 -> 0); counts: KIT-194 T3 (e, f, g): metab a run is refused while the runner is busy, and on a loaded session (passed 3 -> 9, skipped 0 -> 0); counts: KIT-194 T4: transcriptomics' second run (k 2, then k 1) runs again from trx_qc_complete; a fresh tab and a busy runner refuse (passed 3 -> 11, skipped 0 -> 0); counts: KIT-194 T5: a QC state made on a normalised table (an old session) is not normalised again (passed 6 -> 11, skipped 0 -> 0); counts: KIT-194 T6 (a, b, c): lipid after a Revert to the QC table, Apply, Skip and the managed Apply are refused (passed 4 -> 12, skipped 0 -> 0); counts: KIT-194 T6 (a, b, c): metab after a Revert to the QC table, Apply, Skip and the managed Apply are refused (passed 4 -> 12, skipped 0 -> 0); counts: KIT-194 T6 (d, e, f, g): lipid the correlation step at the result runs; off it (J6, A01) it is refused (passed 34 -> 40, skipped 0 -> 0); counts: KIT-194 T6 (d, e, f, g): metab the correlation step at the result runs; off it (J6, A01) it is refused (passed 30 -> 34, skipped 0 -> 0); counts: KIT-194 T7: lipid Export Normalized Data refuses a reverted head and writes at the correlation state (passed 7 -> 9, skipped 0 -> 0); counts: KIT-194 T7: metab Export Normalized Data refuses a reverted head and writes at the correlation state (passed 7 -> 9, skipped 0 -> 0); counts: KIT-194 T8 (D4 (b1)): lipid a session loaded under a QC state's name is refused at Run DA (passed 5 -> 7, skipped 0 -> 0); counts: KIT-194 T8 (D4 (b1)): metab a session loaded under a QC state's name is refused at Run DA (passed 5 -> 7, skipped 0 -> 0); counts: KIT-194 T8: lipid the DA's head fallback takes only the normalisation's states; loaded QC-named files are refused (passed 14 -> 22, skipped 0 -> 0); counts: KIT-194 T8: metab the DA's head fallback takes only the normalisation's states; loaded QC-named files are refused (passed 10 -> 18, skipped 0 -> 0); counts: KIT-194: the guards raise their classes (passed 0 -> 9, skipped 0 -> 0)	

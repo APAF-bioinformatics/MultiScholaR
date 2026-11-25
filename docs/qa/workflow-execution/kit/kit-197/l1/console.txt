@@ -1,0 +1,16 @@
+KIT-197 L1: start 03:15:18 
+KIT-197 L1: lifecycle simulation exit 0 after 258 s
+    R 
+20131 
+KIT-197 L1: checks
+  id pass
+  E1 TRUE
+ E2a TRUE
+ E2b TRUE
+  E3 TRUE
+ DET TRUE
+  E4 TRUE
+  E5 TRUE
+ G1m TRUE
+  E6 TRUE
+KIT-197 L1: end 03:21:41 

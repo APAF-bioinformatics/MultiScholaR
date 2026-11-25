@@ -82,8 +82,9 @@ metabolomicsDeclarationBinding <- list(
     da_format = function(...) formatMetabDaContrastTable(...),
     da_count = function(...) countMetabDaSignificant(...),
     # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
-    filter_intensity_page = function(page, threshold, proportion, id_column) metaboliteIntensityFilteringHelper(assay_table = page,
-        min_metabolite_intensity_threshold = threshold, metabolites_proportion_of_samples_below_cutoff = proportion, metabolite_id_column = id_column),
+    filter_intensity_page = function(page, threshold, proportion, id_column, sample_columns) metaboliteIntensityFilteringHelper(assay_table = page,
+        min_metabolite_intensity_threshold = threshold, metabolites_proportion_of_samples_below_cutoff = proportion, metabolite_id_column = id_column,
+        sample_columns = sample_columns),
     resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveDuplicateFeaturesByIntensity(assay_tibble = batch,
         id_col = id_column, sample_cols = sample_columns),
     # As `resolveMetabDuplicateAssayData` reports each assay.

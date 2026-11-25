@@ -1025,9 +1025,11 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     expect_identical(vapply(record$steps, function(s) s$operation, ""), c("import", "design_builder", "enrichment"))
     step <- record$steps[[3L]]
     expect_identical(step$variant, "whole")
-    # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names).
-    expect_identical(vapply(step$parameters, `[[`, "", "name"), utils::head(diaEnrichmentOperation()$parameters, 9L))
-    expect_identical(vapply(step$parameters, `[[`, "", "source"), rep("provenance", 9L))
+    # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names). KIT-205: then the
+    # fixed background rule marker, as fixed constants follow the declared parameters.
+    expect_identical(vapply(step$parameters, `[[`, "", "name"), c(utils::head(diaEnrichmentOperation()$parameters, 9L),
+        "enrichment_background"))
+    expect_identical(vapply(step$parameters, `[[`, "", "source"), c(rep("provenance", 9L), "fixed"))
     # KIT-119 (A107-06): the step records the identities of the inputs it read, the annotation table and each contrast's
     # DA table (the table's sha256, `diaAnnotationDigest`), beside the outcomes every step has.
     expect_identical(names(step$outcomes), c("rows", "columns", "annotation_sha256", "da_inputs_sha256"))
@@ -1152,7 +1154,7 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
             replayed_filter$config <<- readComponentMetadata(manager, manager$.context$snapshot$states$enrichment_completed)$config
         }))))
     expect_identical(replayed_filter$provenance$parameter_names,
-        setdiff(diaEnrichmentOperation()$parameters, "go_propagation")) # KIT-173: clusterProfiler route only
+        setdiff(diaEnrichmentOperation()$parameters, c("go_propagation", "significance_rule"))) # KIT-173, KIT-203: clusterProfiler route only
     expect_identical(replayed_filter$provenance$values[c("organism_filter_enabled", "organism_filter_taxon")],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     # KIT-119 (A107-06): the outcomes also hold the input identities (the three filter outcomes are as before).

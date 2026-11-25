@@ -9,7 +9,7 @@
 if (!methods::isClass("e2eEnrichResult")) {
     methods::setClass(
         "e2eEnrichResult"
-        , slots = c(result = "data.frame")
+        , slots = c(result = "data.frame", geneSets = "list")
     )
 }
 
@@ -164,7 +164,9 @@ fake_enricher <- function(
     , pAdjustMethod = "BH"
     , ...
 ) {
-    methods::new("e2eEnrichResult", result = .e2e_enricher_result_df)
+    # KIT-203: the size-filtered family the route adjusts over: the 3 result terms and 7 more (m = 10)
+    methods::new("e2eEnrichResult", result = .e2e_enricher_result_df, geneSets = stats::setNames(
+        rep(list("P04637"), 10L), c(.e2e_enricher_result_df$ID, sprintf("GO:99990%02d", 1:7))))
 }
 
 # --------------------------------------------------------------------------- #

@@ -941,6 +941,11 @@ trxWriteIntegrationExport <- function(manager, parameters, path) {
     }
     export <- manager$.context$snapshot$exports$trx_ruviii_export
     if (is.null(export)) cli::cli_abort("no accepted RUVIII export", class = "workflow_execution_invalid")
+    # KIT-207 (SD-4 (a)): the export must have been made from the lineage's RUVs state, as `trxIntegrationInputSource`
+    # requires; an earlier run's matrix is refused before the file is written.
+    if (!is.null(state) && !identical(export$source$entity_id, state$reference$entity_id)) {
+        abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
+    }
     newY <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value$newY
     vroom::vroom_write(as.data.frame(newY) |> tibble::rownames_to_column("Run"), path)
     invisible(path)
@@ -1039,6 +1044,9 @@ trxIntegrationInputSource <- function(manager) {
     features <- data.frame(feature_id = ids, display_name = ifelse(is.na(gene_names) | !nzchar(gene_names), ids, gene_names),
         stringsAsFactors = FALSE)
     if (!name_column %in% names(features)) features[[name_column]] <- gene_names
+    # KIT-167: with the gate on and a gene table saved at count import, the gene-level mapping columns and the gene
+    # length (counts unchanged); without one the features are as before.
+    if (referenceMappingEnabled()) features <- trxReferenceMappingFeatures(features, readReferenceGenes(manager))
     technical <- slots$technical_replicate_id
     if (!is.character(technical) || length(technical) != 1L || !isTRUE(technical %in% names(samples))) technical <- NA_character_
     manifest <- list(omic_type = "transcriptomics",

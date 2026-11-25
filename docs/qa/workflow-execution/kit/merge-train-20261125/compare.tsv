@@ -1,0 +1,68 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-workflow-partitions.R	439	0	0	2	ok	439	0	0	2	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-integration-input-lipid-metab.R	132	0	0	0	ok	208	0	0	0	ok	count-changed	counts: KIT-135: a new RUV design writes the RUV state's corrected table and names the design (M10); design none is normalised (passed 21 -> 40, skipped 0 -> 0); counts: KIT-135: lipidomics with today's RUV writes the corrected matrix per assay as omic_assay views, beside the RDS (passed 47 -> 65, skipped 0 -> 0); counts: KIT-135: metabolomics with today's RUV writes the corrected matrix per assay as omic_assay views, beside the RDS (passed 47 -> 65, skipped 0 -> 0); counts: KIT-184 K4: lipidomics with today's RUV at two factors: the written factors are what was removed (passed NA -> 21, skipped NA -> 0)	
+test-kit172-downstream.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-kit172-log2-rule.R	212	0	0	0	ok	212	0	0	0	ok	same		
+test-kit172-reopen.R	14	0	0	0	ok	14	0	0	0	ok	same		
+test-kit172-unit-equivariance.R	350	0	0	0	ok	350	0	0	0	ok	same		
+test-kit202-intensity-filter-samples.R	0	0	0	0	absent	163	0	0	0	ok	only-on-head		
+test-kit207-summary-head-guard.R	292	0	0	0	ok	292	0	0	0	ok	same		
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	ok	58	0	0	2	ok	same		
+test-lipid-01c-qc-duplicate-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01d-qc-intensity-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01k-qc-intensity-shared.R	16	0	0	1	ok	16	0	0	1	ok	same		
+test-lipid-09-s4-normalization-methods.R	39	0	0	0	ok	39	0	0	0	ok	same		
+test-metab-01b-qc-filtering-helpers-characterization.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-metab-01q-qc-intensity-module-characterization.R	20	0	0	13	ok	20	0	0	13	ok	same		
+test-metab-02t-metabolite-intensity-filtering-characterization.R	14	0	0	0	ok	14	0	0	0	ok	same		
+test-metab-qc-shared.R	19	0	0	0	ok	20	0	0	0	ok	count-changed	counts: metaboliteIntensityFiltering preserves numeric parsing, per-assay skipping, and helper-driven filtering (passed 11 -> 12, skipped 0 -> 0)	
+test-metab-s4-qc-shared.R	32	0	0	0	ok	32	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omics-norm-state-guards.R	647	0	0	0	ok	647	0	0	0	ok	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-prot-02-qc-peptide-groupaware.R	39	0	0	0	ok	39	0	0	0	ok	same		
+test-prot-missing-value-counts.R	67	0	0	0	ok	67	0	0	0	ok	same		
+test-prot-qc-peptide-intensity-group-batches.R	5	0	0	0	ok	5	0	0	0	ok	same		
+test-prot-qc-peptide-intensity-legacy-counts.R	3	0	0	0	ok	3	0	0	0	ok	same		
+test-prot-qc-peptide-methods-direct-shared.R	119	0	0	0	ok	119	0	0	0	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-omics-binding-steps.R	58	1	0	0	failed	58	1	0	0	failed	message-changed	message-changed: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit	
+test-workflow-omics-owner.R	78	1	0	0	failed	78	1	0	0	failed	same		
+test-workflow-operation-registry.R	1095	2	0	0	failed	1095	2	0	0	failed	same		
+test-omic-qc-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	message-changed	message-changed: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's; message-changed: (b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-kit129-run-path.R	711	0	0	1	ok	711	0	0	1	ok	same		
+test-workflow-omics-declarations.R	46	22	0	0	failed	45	23	0	0	failed	message-changed	message-changed: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced; counts: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced (passed 37 -> 36, skipped 0 -> 0)	
+test-integration-removed-factors.R	0	0	0	0	absent	526	0	0	3	ok	only-on-head		
+test-workflow-integration-input.R	181	0	0	0	ok	241	0	0	0	ok	count-changed	counts: KIT-061 (D14): DIA_LIMPA in covariates mode writes the RUV-adjusted product, not the state's uncorrected table (passed 17 -> 27, skipped 0 -> 0); counts: KIT-061 (K061-1): after a classic re-run with RUV skipped the head's normalised matrix is written, not the old correction (passed 13 -> 15, skipped 0 -> 0); counts: KIT-061: a classic route with RUV writes the corrected matrix after the correlation filter, and no archive or S4 object (passed 19 -> 22, skipped 0 -> 0); counts: KIT-061: a classic route without RUV writes the normalised matrix and names the UniProt gene as display name (passed 6 -> 8, skipped 0 -> 0); counts: KIT-061: DIA_LIMPA in correction mode writes the corrected state's table (passed 11 -> 20, skipped 0 -> 0); counts: KIT-153: classic proteomics: the data set's matrix is the normalised matrix RUV-III-C corrected; the corrected one is beside it (passed 14 -> 23, skipped 0 -> 0); counts: KIT-184 K4: after the correlation filter removed a run, the removed factors are approximate, with their share (passed NA -> 12, skipped NA -> 0); counts: KIT-184 K4: classic proteomics with two factors and missing values: the written factors are what was removed (passed NA -> 13, skipped NA -> 0)	
+test-integration-input-transcriptomics.R	57	0	0	0	ok	78	0	0	0	ok	count-changed	counts: KIT-136: a new design names its RUV record fields; an export from an earlier RUV step is refused until run again (passed 10 -> 19, skipped 0 -> 0); counts: KIT-136: with RUV applied the input is the accepted RUVIII export (INT-1), corrected, beside today's TSV (passed 28 -> 38, skipped 0 -> 0); counts: KIT-136: with RUV off (design none) the TMM logCPM is written, normalised, without a RUVIII export; the worker writes the same (passed 19 -> 21, skipped 0 -> 0)	
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-enrichment-tests.R	180	0	0	2	ok	181	0	0	2	ok	count-changed	counts: KIT-183 T11: the tab: the test selector, its default, notes, counts, caution, seed label and key (passed 25 -> 26, skipped 0 -> 0)	
+test-integration-enrichment-options.R	271	0	0	0	ok	271	0	0	0	ok	same		
+test-integration-record.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-integration-gui.R	395	0	0	0	ok	397	0	0	0	ok	count-changed	counts: KIT-138: the correction for unwanted variation each input names is stated in words (passed 6 -> 8, skipped 0 -> 0)	
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-integration-workbook.R	53	0	0	0	ok	53	0	0	0	ok	same		
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-enrichment-mofa.R	0	0	0	2	ok	0	0	0	3	ok	count-changed	counts: KIT-184 K13: with MOFA2 trained on corrected values, camera with the removed factors, recorded and repeated offline (passed NA -> 0, skipped NA -> 1)	
+test-integration-corpus.R	111	0	0	0	ok	111	0	0	0	ok	same		
+test-integration-feature-selection.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-integration-model.R	263	0	0	0	ok	263	0	0	0	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		
+test-integration-outputs-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-partitioned-alignment.R	253	0	0	0	ok	253	0	0	0	ok	same		
+test-integration-record-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-results-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-sample-match.R	76	0	0	0	ok	76	0	0	0	ok	same		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	116	0	0	0	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	message-changed	message-changed: (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files; message-changed: (W3, core side) trx_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files	
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		

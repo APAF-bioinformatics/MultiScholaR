@@ -1,0 +1,148 @@
+== test-action-scripts.R :: every route has a script whose steps carry an id, a declared state and a run function (1 not passed)
+Error in `valActionScript(route)`: could not find function "valActionScript"
+
+== test-action-scripts.R :: no script presses revert, skip, export, load, report, enrichment or Cancel (7.4, A17) (1 not passed)
+Error in `valActionScript(route)`: could not find function "valActionScript"
+
+== test-action-scripts.R :: the common skeleton per route: import, design, QC, normalisation, correlation, DA (1 not passed)
+Error in `valActionScript(route, ...)`: could not find function "valActionScript"
+
+== test-action-scripts.R :: the QC sub-tabs are the product's spec tables, in order (DIA, DIA_LIMPA, LFQ, TMT) (1 not passed)
+Error in `valActionScript(route, ...)`: could not find function "valActionScript"
+
+== test-action-scripts.R :: each QC step declares the state its sub-tab commits; DA declares its tab complete (1 not passed)
+Error in `valActionScript("prot_dia")`: could not find function "valActionScript"
+
+== test-action-scripts.R :: action-scripts.md lists exactly each route's step ids (the accepted scripts, VAL-41) (2 not passed)
+Expected `file.exists(md)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-arm-builders.R :: shipped: no option and no override on any route (1 not passed)
+Error in `valArmInputs(valArmShipped(), route)`: could not find function "valArmInputs"
+
+== test-arm-builders.R :: legacy: the gate off and the shipped mode and parameters written explicitly (1 not passed)
+Error in `valArmInputs(valArmRuvLegacy(), "prot_dia")`: could not find function "valArmInputs"
+
+== test-arm-builders.R :: calibrated: the gate on; the design the server selects, recorded as expected (1 not passed)
+Error in `valArmInputs(valArmRuvCalibrated(), "metab_lc")`: could not find function "valArmInputs"
+
+== test-arm-builders.R :: off: skip with the gate off; transcriptomics design none with the gate on (1 not passed)
+Error in `valArmInputs(valArmRuvOff(), "prot_lfq")`: could not find function "valArmInputs"
+
+== test-arm-builders.R :: design and supplied controls: the gate on, the design and k rule; the list one per line (1 not passed)
+Error in `valArmInputs(valArmRuvDesign("first_pass_nulls", k_rule = "sweep_bounded"), "lipid_canonical")`: could not find function "valArmInputs"
+
+== test-arm-builders.R :: the matrix stage of a cell follows its route and arm (7.3; A12, revision 1.8) (1 not passed)
+Error in `valCellRuv("prot_dia", valArmRuvOff())`: could not find function "valCellRuv"
+
+== test-arm-tables.R :: proteomics: da.tsv's columns and values, the matrices by stage, features (1 not passed)
+Error in `valReadArmTables(NULL, cell$paths, "prot_dia", cell$out, ruv = "off", state_reader = cell$reader, model_state = "correlation_filtered")`: could not find function "valReadArmTables"
+
+== test-arm-tables.R :: a fold-change threshold enters called_own; a missing DA file is refused (1 not passed)
+Error in `valReadArmTables(NULL, cell$paths, "prot_dia", cell$out, ruv = "off", lfc_cutoff = 1.8, state_reader = cell$reader, model_state = "correlation_filtered")`: could not find function "valReadArmTables"
+
+== test-arm-tables.R :: lipidomics with factors in the model: matrix.tsv uncorrected, W, a labelled display (1 not passed)
+Error in `valReadArmTables(NULL, cell$paths, "lipid_canonical", cell$out, ruv = "factors_in_model", state_reader = cell$reader, model_state = "lipid_correlation_filtered", itsd_applied = TRUE)`: could not find function "valReadArmTables"
+
+== test-arm-tables.R :: lipidomics with RUV correcting the matrix: matrix.tsv is the corrected one, no display (1 not passed)
+Error in `valReadArmTables(NULL, cell$paths, "lipid_canonical", cell$out, ruv = "correction", state_reader = cell$reader, model_state = "lipid_correlation_filtered", itsd_applied = TRUE)`: could not find function "valReadArmTables"
+
+== test-arm-tables.R :: transcriptomics: da.tsv from the edgeR table, log-CPM matrices (1 not passed)
+Error in `valReadArmTables(NULL, list(da_output_dir = da_dir), "trx_screen", file.path(dir, "tables"), ruv = "off", state_reader = function(name) obj, model_state = "trx_qc_complete")`: could not find function "valReadArmTables"
+
+== test-custom-arm.R :: a custom arm is labelled 'not the harness baseline' (1 not passed)
+Error in `valRunCustomArm(arm, unit = "u01", inputs = list())`: could not find function "valRunCustomArm"
+
+== test-custom-arm.R :: a published arm: anchor reproduced, stopped, or kept as context (1 not passed)
+Error in `valRunCustomArm(pass, unit = "u01", inputs = list())`: could not find function "valRunCustomArm"
+
+== test-custom-arm.R :: a ticket function that refuses is recorded as refused with its class and digest (1 not passed)
+Error in `valRunCustomArm(arm, unit = "u07", inputs = list())`: could not find function "valRunCustomArm"
+
+== test-integration.R :: the workbook functions run in a user's order with every setting recorded (1 not passed)
+Error in `valRunIntegration(spec, fns = fakeWorkbook(log))`: could not find function "valRunIntegration"
+
+== test-integration.R :: a departure from a setting that does not exist is refused; the hook gets the results (1 not passed)
+Error in `valRunIntegration(bad, fns = fakeWorkbook(log))`: could not find function "valRunIntegration"
+
+== test-parity.R :: the browser's inputValues lose their type suffixes (1 not passed)
+Error in `valBrowserValues(js, prefix = "proteomics_workflow-")`: could not find function "valBrowserValues"
+
+== test-parity.R :: the ledgers are compared per action and input, with excluded client-state inputs (1 not passed)
+Error in `valCompareLedgers(driver, browser, exclusions)`: could not find function "valCompareLedgers"
+
+== test-parity.R :: the browser replays the driver's actions in order and records its values before each (1 not passed)
+Error in `valParityBrowser(app, actions, prefix = "app-")`: could not find function "valParityBrowser"
+
+== test-parity.R :: the bundle DA table against L1's: digest, then 10-digit fingerprints (1 not passed)
+Error in `valMaskedDigest(da)`: could not find function "valMaskedDigest"
+
+== test-replay.R :: a replay giving the same DA table is identical (1 not passed)
+Error in `valReplay(manager = NULL, original_da = daRows(), build = function(manager) list(steps = list()), replay = function(record) daRows())`: could not find function "valReplay"
+
+== test-replay.R :: a replay giving other values differs, with the largest difference (1 not passed)
+Error in `valReplay(manager = NULL, original_da = daRows(), build = function(manager) list(), replay = function(record) daRows(0.001))`: could not find function "valReplay"
+
+== test-replay.R :: a replay the package refuses is unsupported, with its class (1 not passed)
+Error in `valReplay(manager = NULL, original_da = daRows(), build = function(manager) list(), replay = refusing)`: could not find function "valReplay"
+
+== test-tab.R :: T-TAB: prot_dia writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: prot_dia_limpa writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: prot_lfq writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: prot_lfq_fragpipe writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: prot_tmt writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: trx_screen writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: lipid_canonical writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: metab_lc writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: metab_gc writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-tab.R :: T-TAB: metab_combined writes the standard tables with their columns (1 not passed)
+Error in `valFixtureCell(route, root)`: could not find function "valFixtureCell"
+
+== test-workflow.R :: a toy cell runs to its end: outcomes per step, the diagnostic refusal recorded (1 not passed)
+Error in `valRunWorkflow(toyScript(steps), files = list(), design = NULL, spec = toySpec(), observe = toyObserve, project = FALSE, ...)`: could not find function "valRunWorkflow"
+
+== test-workflow.R :: the ledger: rendered defaults, a choices-only server update, modal inputs, a re-render (1 not passed)
+Error in `valRunWorkflow(toyScript(steps), files = list(), design = NULL, spec = toySpec(), observe = toyObserve, project = FALSE, ...)`: could not find function "valRunWorkflow"
+
+== test-workflow.R :: a refused step ends the cell; later steps do not run (1 not passed)
+Error in `valStep("load", tab = NULL, declared = list(head = "loaded"), press = c("load", "confirm"), run = function(api) {     api$defaults(toyUi, NULL)     api$press("load")     api$modal_confirm("Confirm Selection") })`: could not find function "valStep"
+
+== test-workflow.R :: an R error is did_not_complete (error); a wrong state is (unexpected_state) (1 not passed)
+Error in `valStep("boom", tab = NULL, declared = list(head = "loaded"), press = "boom", run = function(api) api$press("boom"))`: could not find function "valStep"
+
+== test-workflow.R :: a script setting a non-structural input is refused; an enrichment press is refused (1 not passed)
+Error in `valStep("bad", tab = NULL, declared = "diagnostic", run = function(api) {     api$defaults(toyUi, NULL)     api$set(list(method = "median")) })`: could not find function "valStep"
+
+== test-workflow.R :: forced options and inputs are scoped to the cell and recorded (KIT-163 N9) (1 not passed)
+Error in `valRunWorkflow(toyScript(steps), files = list(), design = NULL, spec = toySpec(), observe = toyObserve, project = FALSE, ...)`: could not find function "valRunWorkflow"
+
+== test-workflow.R :: an arm's overrides are set with source override; one not rendered is refused (1 not passed)
+Error in `valStep("set", tab = NULL, declared = "diagnostic", run = function(api) {     api$defaults(toyUi, NULL)     api$overrides()     api$press("run") })`: could not find function "valStep"
+
+== test-workflow.R :: the hook-side callback runs inside the session after the steps, with the cell's context (1 not passed)
+Error in `valRunWorkflow(toyScript(steps), files = list(), design = NULL, spec = toySpec(), observe = toyObserve, project = FALSE, ...)`: could not find function "valRunWorkflow"
+
+== test-workflow.R :: a not_permitted ledger masks the listed inputs' identifiers by SHA-256 (5.2) (1 not passed)
+Error in `valMaskLedger(led, "ruv_control_list")`: could not find function "valMaskLedger"
+

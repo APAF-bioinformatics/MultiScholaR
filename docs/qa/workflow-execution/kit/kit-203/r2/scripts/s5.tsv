@@ -1,0 +1,12 @@
+check	pass	detail
+states	TRUE	initial,correlation_filtered,enrichment_completed
+record declares no significance_rule	TRUE	taxon_id,up_cutoff,down_cutoff,q_cutoff,exclude_iea,correction_method,protein_id_column,contrast_names,results,go_propagation
+declared names = base's	TRUE	taxon_id,up_cutoff,down_cutoff,q_cutoff,exclude_iea,correction_method,protein_id_column,contrast_names,results,go_propagation
+declared values (product parameters) = base's	TRUE	
+service = base's	TRUE	clusterProfiler:4.20.0
+contrasts = base's	TRUE	
+result tables identical (exact)	TRUE	
+plot inputs identical	TRUE	
+pathway file names	TRUE	groupB-groupA_down_enrichment_plot.html,groupB-groupA_down_enrichment_plot.png,groupB-groupA_down_enrichment_results.tsv,groupB-groupA_up_enrichment_plot.html,groupB-groupA_up_enrichment_plot.png,groupB-groupA_up_enrichment_results.tsv
+every file's SHA-256 (TSV) or existence	TRUE	
+no family column in the replayed tables	TRUE	

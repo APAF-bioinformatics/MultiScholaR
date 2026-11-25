@@ -68,6 +68,9 @@ annotation below the top-level terms, over terms with 10 to 500 such proteins an
 the three aspects together as one family per comparison and direction; a term was called significant when its Storey
 q-value was below 0.05, with Benjamini-Hochberg adjusted p-values reported beside it. GO terms are nested, so the
 tests are positively dependent and a significant term's parents tend to be significant too: significant terms are
-reported as related groups, not as independent findings. Storey's q-value assumes nearly independent tests; on 20
-random lists from the E. coli proteome 1 list in each setting had any significant term (95 % interval 0.1 % to 25 %),
-and without parent terms one random list had 120 terms significant by q-value and none by Benjamini-Hochberg."
+reported as related groups, not as independent findings. Storey's q-value, computed over the terms with at least one list protein, does not hold its nominal rate on this route
+(KIT-189): on 2,000 random lists of 126 annotated proteins from the E. coli proteome, 16.0 % (95 % interval 14.4 % to
+17.6 %) had any term significant by q-value without parent terms and 5.8 % (4.8 % to 6.9 %) with them, against 3.8 % and
+2.6 % by Benjamini-Hochberg over the same terms and 1.6 % and 1.7 % by Benjamini-Hochberg over every term of 10 to 500
+proteins; KIT-173's random list of 126 entries (draw 5, reproduced in KIT-189's check E0) had 120 terms significant by
+q-value and none by Benjamini-Hochberg."

@@ -8,7 +8,8 @@ metaboliteIntensityFilteringHelper(
   assay_table,
   min_metabolite_intensity_threshold,
   metabolites_proportion_of_samples_below_cutoff,
-  metabolite_id_column
+  metabolite_id_column,
+  sample_columns = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ metaboliteIntensityFilteringHelper(
 \item{metabolites_proportion_of_samples_below_cutoff}{The maximum allowed proportion (0 to 1) of samples where a metabolite can be below the threshold. If a metabolite exceeds this proportion, it's removed.}
 
 \item{metabolite_id_column}{A string specifying the name of the column containing the unique metabolite identifiers.}
+
+\item{sample_columns}{Optional. The sample columns to count. Without it, every numeric column other than the identifier column is taken as a sample: pass the design's samples when the table holds other numeric columns (retention time, m/z, scores).}
 }
 \value{
 A filtered wide data frame containing only the metabolites that pass the filter.

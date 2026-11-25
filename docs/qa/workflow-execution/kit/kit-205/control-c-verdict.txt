@@ -1,0 +1,4 @@
+base 241914cb4461128efdd453002a17ab3744cad2ba (library /home/runner/work/_temp/k205-control-c/base-lib/MultiScholaR, enrichmentTestedRows: FALSE); head cd5d590f9d269a4e7973bda3e0a1195525aaa435 (library /opt/R/4.6.1/lib/R/library/MultiScholaR, enrichmentTestedRows: TRUE)
+archive 0, install 0, side exits base 0, head 0
+rows compared 26 (head keys 26); all equal: 26; not equal: 0
+VERDICT: control C holds ((a) head = base; (b) head = base on the table without its untested rows)

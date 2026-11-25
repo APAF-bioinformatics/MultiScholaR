@@ -1,0 +1,7 @@
+omic	quantity	route	base_c846908d	head_09f05774	note
+lipidomics	DA input maximum (J1, Revert then Apply)	in_process	1373458.9	refused (no DA)	normalised table maximum 20.38
+metabolomics	DA input maximum (J1, Revert then Apply)	in_process	1373458.9	refused (no DA)	normalised table maximum 20.38
+lipidomics	second run normalised maximum (F-c)	in_process	4.32999	20.112	first run 20.112; head re-runs from lipid_qc_complete
+lipidomics	second run normalised maximum (F-c)	managed	4.32999	20.112	first run 20.112
+metabolomics	second run normalised maximum (F-c)	in_process	4.32999	20.112	first run 20.112; head re-runs from metab_qc_complete
+metabolomics	second run normalised maximum (F-c)	managed	4.32999	20.112	first run 20.112

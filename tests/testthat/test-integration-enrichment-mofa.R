@@ -217,3 +217,92 @@ test_that("KIT-183 T14: with MOFA2, camera through the store, recorded and repea
             row.names = FALSE)
     }
 })
+
+# KIT-184 K13: a model MOFA2 trained on RUV-corrected values; the correlation-adjusted test with the removed factors in
+# its design through the store, recorded, and repeated offline from the record. The corrected matrices are made here as
+# in ticket 6.6: the corpus's proteomics and metabolomics matrices less two known directions over the runs (the parity
+# of the replicate number, and the replicate number) times known per-feature coefficients, every second feature's level
+# shifted by 0.5; the correction declares k = 2.
+test_that("KIT-184 K13: with MOFA2 trained on corrected values, camera with the removed factors, recorded and repeated offline", {
+    intEnrMofaSkip()
+    skip_if_not_installed("clusterProfiler")
+    root <- withr::local_tempdir()
+    integration_dir <- file.path(root, "integration")
+    ids <- NULL
+    for (omic in c("metabolomics", "proteomics")) {
+        dir <- file.path(integration_dir, omic)
+        dir.create(dir, recursive = TRUE)
+        stopifnot(all(file.copy(list.files(file.path(intEnrMofaData(), "corpus", omic), full.names = TRUE), dir)))
+        input <- readIntegrationInputWithMatrices(dir)
+        read <- input$manifest
+        manifest <- list(omic_type = read$omic_type, workflow = read$workflow, matrix_role = read$matrix_role, scale = read$scale,
+            correction = list(state = "ruv_corrected", method = "kit184-test", k = 2L, replicate_structure = "group",
+                grouping_variable = "group"), source_state = list(name = "kit184-mofa"),
+            sample_id_column = read$sample_id_column, group_column = read$group_column,
+            technical_replicate_column = read$technical_replicate_column,
+            biological_sample_column = read$biological_sample_column)
+        features <- lapply(input$views, `[[`, "features")
+        if (omic == "metabolomics") {
+            ids <- sprintf("C%05d", 10000L + seq_len(nrow(features$metabolomics_GCMS)))
+            features$metabolomics_GCMS$kegg_id <- ids
+        }
+        replicate <- as.integer(sub("^.*_", "", as.character(input$samples$tech_rep_group)))
+        w <- cbind(ifelse(replicate %% 2L == 0L, 1, -1), replicate - 5.5)
+        matrices <- lapply(input$views, `[[`, "matrix")
+        corrected <- lapply(matrices, function(table) {
+            m <- as.matrix(table[-1L])
+            i <- seq_len(nrow(m))
+            a <- cbind(0.30 + 0.01 * (i %% 13L), 0.02 + 0.05 * ((i %% 5L) - 2))
+            m <- m - a %*% t(w) - ifelse(i %% 2L == 0L, 0.5, 0)
+            out <- data.frame(feature_id = table$feature_id, m, check.names = FALSE, stringsAsFactors = FALSE)
+            names(out) <- names(table)
+            out
+        })
+        writeIntegrationInput(dir, manifest, input$samples, matrices, features, corrected = corrected)
+        expect_true(all(file.exists(file.path(dir, sprintf("removed_%s.parquet", names(matrices))))))
+    }
+    manager <- newIntegrationStateOwner(file.path(root, "store"))
+    opened <- TRUE
+    withr::defer(if (opened) closeWorkflowStateOwner(manager))
+    scan <- integrationScanProject(integration_dir)
+    integrationCommitImport(manager, integrationImportRequest(scan, scan$views$view))
+    run <- runIntegrationModel(manager, list(input_matrix = "ruv_corrected"))
+    expect_identical(run$status, "computed")
+    sets <- split(ids, rep(c("first", "second", "third", "rest"), c(10, 10, 10, length(ids) - 30L)))
+    pathway <- paste0("path:hsa", sprintf("%05d", seq_along(sets)))
+    mapping <- list(database = "KEGG", release = "KEGG Release fixture", sha256 = strrep("e", 64L), url = "fixture",
+        downloaded_at = "2026-11-24T00:00:00+0000",
+        table = data.frame(pathway = rep(pathway, lengths(sets)), compound = paste0("cpd:", unlist(sets, use.names = FALSE)),
+            name = rep(names(sets), lengths(sets)), stringsAsFactors = FALSE))
+    # The adjustment is off unless chosen (VAL-160): the request switches it on.
+    out <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "metabolomics_GCMS", database = "kegg",
+        id_column = "kegg_id", adjust_ruv_factors = TRUE), mapping = mapping)
+    value <- out$run$value
+    expect_identical(value$test, "camera")
+    expect_identical(value$design_columns, c("intercept", "factor", "ruv_W1", "ruv_W2"))
+    expect_identical(value$design_detail$status, "exact")
+    expect_identical(value$design_detail$residual_df, value$test_counts$samples - 4L)
+    expect_true(out$entry$settings$adjust_ruv_factors)
+    export <- manager$.context$snapshot$exports$integration_mofa_model
+    expect_identical(names(export$enrichment), "Factor1|metabolomics_GCMS|kegg|camera|adjusted")
+    record <- buildWorkflowAnalysisRecord(manager)
+    expect_true(grepl("unwanted factors that the RUV correction removed from this data set", integrationMethodsText(record),
+        fixed = TRUE))
+    store_root <- dirname(manager$.context$store$directory)
+    closeWorkflowStateOwner(manager)
+    opened <- FALSE
+    offline <- function(...) stop("a service was called during an offline replay")
+    replay <- suppressWarnings(replayIntegrationProject(store_root, file.path(root, "replay"), enrichment_query = offline,
+        enrichment_download = offline))
+    comparison <- replay$enrichment_comparison
+    expect_identical(comparison$enrichment, "Factor1|metabolomics_GCMS|kegg|camera|adjusted")
+    expect_identical(comparison$note, "")
+    expect_true(comparison$ranking_equal)
+    expect_true(comparison$terms_equal)
+    evidence <- Sys.getenv("MULTISCHOLAR_INTEGRATION_EVIDENCE_OUT", unset = "")
+    if (nzchar(evidence)) {
+        dir.create(evidence, recursive = TRUE, showWarnings = FALSE)
+        utils::write.table(comparison, file.path(evidence, "kit184-covariate-replay.tsv"), sep = "\t", quote = FALSE,
+            row.names = FALSE)
+    }
+})

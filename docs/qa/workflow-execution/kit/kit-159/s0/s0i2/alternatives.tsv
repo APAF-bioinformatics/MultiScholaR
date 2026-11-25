@@ -1,0 +1,3 @@
+cell	compare_with	status	digest_a	digest_b	identical	rows_a	rows_b	keys_one_side	max_abs_diff	na_mismatch	called_a	called_b	called_changed
+prot_dia-export_load	prot_dia	compared	bf44b2184bd57c90dc17a76eed52c4a9c82f5febbdd6a3a736920f7973168852	bf44b2184bd57c90dc17a76eed52c4a9c82f5febbdd6a3a736920f7973168852	TRUE	659	659	0	0	0	44	44	0
+prot_dia_two_species	prot_dia	compared	bf44b2184bd57c90dc17a76eed52c4a9c82f5febbdd6a3a736920f7973168852	bf44b2184bd57c90dc17a76eed52c4a9c82f5febbdd6a3a736920f7973168852	TRUE	659	659	0	0	0	44	44	0

@@ -600,6 +600,9 @@ runDIANativeSessionExport <- function(manager, metadata, output_dir,
             "correlation_filtered_s4", "state_manager") %in% names(metadata))) {
             cli::cli_abort("native session metadata contains legacy history fields", class = "saved_entity_invalid")
         }
+        # KIT-206 (SD-3): a declared file that is absent is refused before the request, its journal or the pending
+        # export exist, so a failed export of this kind blocks no dependent action. A resumed request is unchanged.
+        assertDIANativeDependenciesPresent(dependencies)
         if (!is.null(metadata$config_list)) metadata$config_list <-
             prepareDIAStateRecord(list(data = NULL, config = metadata$config_list))$config
         reference <- saveDIAStateValue(context, metadata, "native-session-metadata", codec = "rds")
@@ -1609,6 +1612,35 @@ diaNativeGuiRoots <- function(paths) {
     roots[!vapply(roots, is.null, logical(1))]
 }
 
+#' The archive destinations the export writes itself after its request exists (KIT-206): the export's
+#' `prepare_outputs` (`runProtNormExportSessionWorkflow`) and the Summary's refresh (`refreshDIANativeSummaryArchive`)
+#' write them, so `assertDIANativeDependenciesPresent` does not require them beforehand.
+#' @noRd
+DIA_NATIVE_EXPORT_WRITTEN_FILES <- paste0("source/", c("filtered_session_summary.txt", "accession_cleanup_results.RDS",
+    "qc_params.RDS", "fasta_metadata.RDS", "ruv_optimization_results.RDS", "mixed_species_analysis.RDS",
+    "aa_seq_tbl_final.RDS", "uniprot_dat_cln.RDS"))
+
+#' Refuse a native export whose declared file is absent before its request exists (KIT-206, SD-3): the source of every
+#' dependency, other than the files the export writes itself (`DIA_NATIVE_EXPORT_WRITTEN_FILES`), must be present, not
+#' a link and not a directory (what staging's `workflowTableFileIdentity` accepts).
+#' @param dependencies Named source/destination file dependencies.
+#' @return TRUE invisibly, or an error of class `workflow_export_dependency_missing`.
+#' @noRd
+assertDIANativeDependenciesPresent <- function(dependencies) {
+    for (spec in dependencies) {
+        if (!is.list(spec) || isTRUE(spec$destination %in% DIA_NATIVE_EXPORT_WRITTEN_FILES)) next
+        source <- spec$source
+        if (!is.character(source) || length(source) != 1L || is.na(source)) next
+        link <- Sys.readlink(source)
+        if (!file.exists(source) || !is.na(link) && nzchar(link) || isTRUE(file.info(source)$isdir)) {
+            rlang::abort(sprintf(paste("the file %s that this export needs is missing from %s; run the step that",
+                "writes it, then export again."), basename(source), dirname(source)),
+                class = "workflow_export_dependency_missing")
+        }
+    }
+    invisible(TRUE)
+}
+
 #' Include declared scientific/report artifacts, not a blanket project backup.
 #' @param manager Native owner with experiment paths.
 #' @param metadata Frozen metadata for the export.
@@ -1627,9 +1659,15 @@ collectDIANativeGuiFiles <- function(manager, metadata) {
         key <- paste0("gui_", sprintf("%05d", length(specs) + 1L))
         specs[[key]] <<- list(source = source, destination = destination)
     }
-    final_stub <- paste0(if (!identical(metadata$ruv_mode, "skip")) "ruv_" else "",
-        "normalised_results_cln_with_replicates")
-    add("protein_qc", paste0(final_stub, ".tsv"))
+    # KIT-206 (SD-3): the results file the run wrote (`results_file`); metadata saved before it (a later Summary
+    # refresh of an earlier export) names the file by its RUV setting, as before.
+    if (is.character(metadata$results_file) && length(metadata$results_file) == 1L) {
+        add("protein_qc", metadata$results_file)
+    } else {
+        final_stub <- paste0(if (!identical(metadata$ruv_mode, "skip")) "ruv_" else "",
+            "normalised_results_cln_with_replicates")
+        add("protein_qc", paste0(final_stub, ".tsv"))
+    }
     protein_names <- c("normalized_protein_matrix_pre_ruv.tsv", "remove_proteins_with_only_one_rep.tsv",
         paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds")),
         paste0(rep(c("pre_norm", "post_norm", "ruv_corrected"), each = 4L), "_",
@@ -1683,6 +1721,8 @@ refreshDIANativeSummaryArchive <- function(workflow, source_dir) {
     owned <- context$owned_export
     if (is.null(owned$metadata_reference)) cli::cli_abort("export the native session before Summary")
     if (identical(owned$generation, context$head$entity_id)) return(invisible(owned))
+    # KIT-206 (SD-1): the archive is not re-written from a head that is not the normalisation tab's last result.
+    assertProtNormExportHeadCurrent(manager, owned$extra_references$correlation_filtered)
     metadata <- resolveDIAStateValue(context, owned$metadata_reference)
     metadata$r6_current_state_name <- manager$current_state
     metadata$r6_state_history <- manager$state_history
@@ -1859,10 +1899,16 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
     for (field in c("normalization_input_reference", "normalized_protein_obj", "ruv_normalized_obj")) {
         if (isSavedWorkflowReference(norm_data[[field]])) extra[[field]] <- norm_data[[field]]
     }
+    # KIT-206 (SD-3): the results file and the RUV statement follow the run, not the tab's RUV setting: the file the
+    # correlation's writer names (`publishDIAReferenceCorrelation`), the mode the tab's RUV summary reads.
+    results_file <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
+        workflow_data$ruv_optimization_result, messageFn = function(...) invisible(NULL))$tsvFilename
+    ruv_mode <- resolveDIARuvRunDescription(manager)$ruv_mode %||% input$ruv_mode
     metadata <- list(r6_current_state_name = state, r6_state_history = context$snapshot$state_history,
         contrasts_tbl = workflow_data$contrasts_tbl, design_matrix = workflow_data$design_matrix,
         config_list = config, export_timestamp = Sys.time(), normalization_method = input$norm_method,
-        ruv_mode = input$ruv_mode, ruv_applied = input$ruv_mode != "skip", ruv_k = norm_data$best_k,
+        ruv_mode = ruv_mode, ruv_applied = !ruv_mode %in% c("skip", "none"), results_file = results_file,
+        ruv_k = norm_data$best_k,
         correlation_threshold = norm_data$correlation_threshold,
         output_policy = "native_first_v1",
         # KIT-042: the owner's type (the store identity, KIT-020) is authoritative; the config and the state's

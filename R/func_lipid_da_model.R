@@ -63,7 +63,8 @@ fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
 #' @param contrast_strings,treat_lfc_cutoff,eBayes_trend,eBayes_robust As `runTestsContrastsLipidDA`.
 #' @param contrastsFitFn The contrast step: `limma::contrasts.fit` (today's), or the exact one of the factors-in-the-model
 #'   design (`ruvExactContrastsFit`, decision M29).
-#' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts.
+#' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts, with `features_without_values` (their ids)
+#'   when some feature has no value in any fitted sample (KIT-196: not tested, a row without statistics per table).
 #' @noRd
 applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE,
                                   contrastsFitFn = limma::contrasts.fit) {
@@ -110,6 +111,18 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
     # Run limma analysis
     logger::log_info("   Running contrasts.fit...")
     cfit <- contrastsFitFn(fit, contrasts = contr.matrix)
+
+    # KIT-196: a feature with no value in any fitted sample has no mean (Amean NaN), so limma's empirical-Bayes step
+    # cannot use it (the trend covariate; limma 3.68.4 fitFDistUnequalDF1.R:17). It carries no information and is not
+    # tested: it leaves the moderation here and is returned as a row without statistics in every contrast table.
+    without_values <- if (!is.null(cfit$Amean)) rownames(cfit$coefficients)[is.na(cfit$Amean)] else character()
+    if (length(without_values) == nrow(cfit$coefficients)) {
+        rlang::abort("no feature has a value in any sample, so nothing can be tested", class = "omics_da_no_observed_features")
+    }
+    if (length(without_values)) {
+        logger::log_info(sprintf("   %d feature(s) with no value in any sample are not tested", length(without_values)))
+        cfit <- cfit[!is.na(cfit$Amean), ]
+    }
 
     logger::log_info("   Running eBayes...")
     eb.fit <- limma::eBayes(cfit, trend = eBayes_trend, robust = eBayes_robust)
@@ -187,6 +200,13 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
                     qvalue_failures[[contrast]] <<- TRUE
                 }
 
+                # KIT-196: the features without values, as rows without statistics (AveExpr NA), typed as the table's.
+                if (length(without_values)) {
+                    untested <- da_tbl[rep(NA_integer_, length(without_values)), , drop = FALSE]
+                    rownames(untested) <- without_values
+                    da_tbl <- rbind(da_tbl, untested)
+                }
+
                 return(da_tbl)
             },
             error = function(e) {
@@ -198,11 +218,14 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 
     names(result_tables) <- contrast_strings
 
-    list(
+    result <- list(
         results = result_tables,
         fit.eb = t.fit,
         qvalue_warnings = qvalue_failures
     )
+    # KIT-196: present only when some feature had no value in any sample, as `failed_assays` is.
+    if (length(without_values)) result$features_without_values <- without_values
+    result
 }
 
 # ----------------------------------------------------------------------------
@@ -211,7 +234,8 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 #' Run limma differential abundance analysis for a single assay
 #'
 #' @description Performs limma-based differential abundance analysis on a
-#'   single lipidomics assay matrix.
+#'   single lipidomics assay matrix. A feature with no value in any sample is not tested and
+#'   is listed (`features_without_values`).
 #'
 #' @param data Numeric matrix with lipids as rows and samples as columns.
 #'   Rownames should be lipid IDs.
@@ -234,6 +258,8 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 #'   - results: Named list of DE result tables (one per contrast)
 #'   - fit.eb: The eBayes fit object
 #'   - qvalue_warnings: List of contrasts where qvalue() failed
+#'   - features_without_values: present only when the assay held features with no value in any sample; their
+#'     ids. Such a feature is not tested: it is a row of every table without statistics (`AveExpr` missing)
 #'
 #' @importFrom limma lmFit contrasts.fit eBayes treat topTable topTreat makeContrasts
 #' @importFrom qvalue qvalue
@@ -371,7 +397,8 @@ countLipidDaSignificant <- function(df) {
 #'
 #' @description Main entry point for lipidomics differential abundance analysis.
 #'   Loops over all assays in the LipidomicsAssayData object, runs limma DA on each,
-#'   and aggregates results with an assay identifier column.
+#'   and aggregates results with an assay identifier column. A feature with no value in any sample is not
+#'   tested and is listed (`features_without_values`).
 #'
 #' @param theObject LipidomicsAssayData S4 object containing lipid data.
 #' @param contrasts_tbl Data frame with contrast definitions. Must have a column
@@ -401,6 +428,9 @@ countLipidDaSignificant <- function(df) {
 #'   - failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
 #'     other assays are kept and a warning (class `omics_da_assay_failed`) names the failed ones; when every
 #'     assay failed the function stops (class `omics_da_all_assays_failed`).
+#'   - features_without_values: present only when an assay held features with no value in any sample; per such
+#'     assay, their ids. Such a feature is not tested: it is a row of every contrast table without statistics
+#'     (`AveExpr` missing), and the other features' results are those of the data without it
 #'   - ruv_features_not_tested, ruv_features_not_observed: with `ruv_factors` only. Per assay, the ids not tested
 #'     (`supplied_controls`, `not_estimable`), and a table (`feature`, `group`) of the tested features with no
 #'     value in one whole group
@@ -481,6 +511,8 @@ runLipidsDA <- function(
     all_qvalue_warnings <- list()
     # KIT-128: the assays whose kernel stopped, with the message.
     failed_assays <- list()
+    # KIT-196: per assay, the features with no value in any sample (not tested).
+    features_without_values <- list()
     # KIT-128 K128-1: a design without biological replication is refused before any assay.
     refuseNoBiologicalReplication(resolveProtTechnicalReplicateBlock(as.data.frame(design_matrix), group_col,
         theObject@technical_replicate_id), design_matrix[[group_col]])
@@ -556,6 +588,9 @@ runLipidsDA <- function(
                 per_assay_results[[assay_name]] <- assay_combined
                 # Store fit object for Glimma (KIT-128 K128-5: only once the assay's tables are formatted).
                 contrasts_results[[assay_name]] <- limma_results
+                if (length(limma_results$features_without_values)) {
+                    features_without_values[[assay_name]] <- limma_results$features_without_values
+                }
 
                 logger::log_info(sprintf(
                     "   Completed assay %s: %d total results",
@@ -605,6 +640,8 @@ runLipidsDA <- function(
         treat_lfc_cutoff = treat_lfc_cutoff
     )
     if (length(failed_assays) > 0) result$failed_assays <- failed_assays
+    # KIT-196: present only when some assay had features without values, as `failed_assays` is.
+    if (length(features_without_values) > 0) result$features_without_values <- features_without_values
     # KIT-127: with RUV factors, what was not tested and what was not observed in a whole group, by assay.
     if (!is.null(ruv_factors)) {
         result$ruv_features_not_tested <- ruv_not_tested

@@ -1,0 +1,5 @@
+strain	project	url	bytes	sha256
+B36	none found	NA	NA	NA
+KPC2	PXD020839	https://ftp.pride.ebi.ac.uk/pride/data/archive/2021/07/PXD020839/BPA_SEP_KPC2_Contaminants.fasta	15817761	3139e262c1131121ec91ec5980dfc3b117263ad88fe6b687703ebd103bd288ca
+BPH2900	PXD020791	https://ftp.pride.ebi.ac.uk/pride/data/archive/2021/07/PXD020791/BPA_SEP_BPH2900_Contaminants.fasta	14666884	0ab6a83cd0f15bb201c807df28a85088fd0860fbea1dfdcc6b1e81dc4b8b9abe
+HKU419	PXD020863	https://ftp.pride.ebi.ac.uk/pride/data/archive/2021/07/PXD020863/BPA_SEP_HKU419_Contaminants.fasta	14375644	a21bd43f56e151da34ae8b36247a9f8358b78ef956ad2aa8271fcc3345c21ab2

@@ -282,7 +282,7 @@ test_that("(F-16, D6 test 4) the enrichment state records its provenance, and a 
     expect_identical(entry$parameter_names, utils::head(diaEnrichmentOperation()$parameters, 9L))
     expect_identical(entry$parameter_names, names(declared))
     expect_identical(entry$values, declared)
-    expect_null(entry$fixed)
+    expect_identical(entry$fixed, list(enrichment_background = "tested")) # KIT-205: the background rule marker
     # The state's config and description as today's save writes them (a result-class state: KIT-101 F-15's read).
     metadata <- readComponentMetadata(manager, manager$.context$snapshot$states$enrichment_completed)
     expect_identical(metadata$config, list(selected_contrast = "B_vs_A", analysis_method = "gprofiler2",
@@ -306,11 +306,13 @@ test_that("(F-16, D6 test 1) after a Run the record's enrichment step carries it
     expect_identical(step$operation, "enrichment")
     expect_identical(step$variant, "whole")
     parameters <- step$parameters
-    # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names).
-    expect_identical(vapply(parameters, `[[`, "", "name"), utils::head(diaEnrichmentOperation()$parameters, 9L))
-    expect_identical(vapply(parameters, `[[`, "", "source"), rep("provenance", 9L))
+    # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names). KIT-205: then the
+    # fixed background rule marker.
+    expect_identical(vapply(parameters, `[[`, "", "name"), c(utils::head(diaEnrichmentOperation()$parameters, 9L),
+        "enrichment_background"))
+    expect_identical(vapply(parameters, `[[`, "", "source"), c(rep("provenance", 9L), "fixed"))
     expect_identical(vapply(parameters, `[[`, "", "provenance"), c("input", "no_shipped_default", "no_shipped_default",
-        "no_shipped_default", "no_shipped_default", "no_shipped_default", "input", "input", "input"))
+        "no_shipped_default", "no_shipped_default", "no_shipped_default", "input", "input", "input", "fixed"))
     expect_false(any(grepl("enrichment_completed", seen$record$record$incomplete, fixed = TRUE)))
 })
 

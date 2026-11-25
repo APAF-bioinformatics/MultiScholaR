@@ -657,6 +657,11 @@ diaEnrichmentServiceIdentity <- function(results) {
 #' GUI audit R3, P-28: the organism filter is declared (`organism_filter_enabled`, `organism_filter_taxon`). A run
 #' with the filter off declares the first nine names only (`diaEnrichmentDeclaredNames`), so its identity, its product
 #' and its record are what they were before the filter was declared.
+#' KIT-208 (VAL-147 (1)): the lists `perform_enrichment` did not send to g:Profiler for want of a named identifier
+#' (`multischolar_enrichment_no_identifiers`) are collected beside the service failures and judged after the process
+#' returns (`diaEnrichmentNoIdentifiers`): a comparison whose background has no named protein refuses the run (class
+#' `workflow_enrichment_no_identifiers`) before any product or state is saved; otherwise the lists are returned as
+#' `not_tested`, absent when there are none. A service failure is reported first.
 #' @noRd
 diaEnrichmentOperation <- function() {
     newWorkflowOperation("enrichment", "ProteinQuantitativeData", fields = "design_matrix", unit = "whole_matrix",
@@ -664,9 +669,12 @@ diaEnrichmentOperation <- function() {
         factors = list(cacheable = FALSE, service = "enrichment"),
         parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
             "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon",
-            "go_propagation"),
-        global_statistics = c(per_contrast_da_table =
-            "the background universe and the significant set are the complete DA table of each contrast"),
+            "go_propagation", "significance_rule"),
+        global_statistics = c(per_contrast_da_table = paste("the background universe is the rows of each contrast's DA",
+            "table with a p-value; the lists are drawn from it")),
+        # KIT-205 (VAL-129 (2)): the background is each comparison's tested rows; a recorded step without this marker
+        # replays with every row (`workflowReplayRuleMarkers`).
+        fixed = list(enrichment_background = "tested"),
         kernel = function(object, parameters, store) {
             process <- parameters$process_fn %||% processEnrichments
             arguments <- list(da_results = parameters$da_results, taxon_id = parameters$taxon_id,
@@ -676,34 +684,99 @@ diaEnrichmentOperation <- function() {
                 contrast_names = parameters$contrast_names, correction_method = parameters$correction_method)
             # KIT-173: the GO parent-term rule, passed only when the run carries one (the clusterProfiler route).
             if (!is.null(parameters$go_propagation)) arguments$go_propagation <- parameters$go_propagation
+            # KIT-203: the significance rule, likewise.
+            if (!is.null(parameters$significance_rule)) arguments$significance_rule <- parameters$significance_rule
             failures <- character()
+            unnamed <- list()
             results <- withCallingHandlers(do.call(process, arguments),
                 multischolar_enrichment_service_failure = function(condition)
-                    failures <<- c(failures, conditionMessage(condition)))
+                    failures <<- c(failures, conditionMessage(condition)),
+                multischolar_enrichment_no_identifiers = function(condition)
+                    unnamed[[length(unnamed) + 1L]] <<- condition)
             if (length(failures)) {
                 rlang::abort(paste("The enrichment service did not answer, so nothing was saved.",
                     paste(unique(failures), collapse = "; ")), class = "workflow_enrichment_service")
             }
+            not_tested <- diaEnrichmentNoIdentifiers(unnamed, parameters$da_results)
             if (!methods::is(results, "EnrichmentResults"))
                 cli::cli_abort("enrichment kernel returned no EnrichmentResults", class = "workflow_operation_output")
-            list(results = results, service = diaEnrichmentServiceIdentity(results))
+            value <- list(results = results, service = diaEnrichmentServiceIdentity(results))
+            value$not_tested <- not_tested
+            value
         })
+}
+
+#' The display name of each DA table name (KIT-208): the contrasts table's `friendly_names` where its `contrasts`
+#' column holds the name, otherwise the name itself.
+#' @param contrasts_tbl The contrasts table (`da_results@contrasts`, or the run's), or NULL.
+#' @param ids The `da_data` names.
+#' @return A character vector as long as `ids`.
+#' @noRd
+enrichmentContrastDisplayNames <- function(contrasts_tbl, ids) {
+    ids <- as.character(ids)
+    if (!is.data.frame(contrasts_tbl) || !all(c("contrasts", "friendly_names") %in% names(contrasts_tbl))) return(ids)
+    shown <- as.character(contrasts_tbl$friendly_names)[match(ids, as.character(contrasts_tbl$contrasts))]
+    ifelse(is.na(shown) | !nzchar(shown), ids, shown)
+}
+
+#' The g:Profiler lists not sent for want of a named identifier (KIT-208, VAL-147 (1))
+#'
+#' A comparison whose background (its tested rows, `enrichmentTestedRows`) has no named protein refuses the run: nothing
+#' it could test would be tested. A list
+#' whose proteins are all unnamed, in a comparison with named proteins, is not tested and returned.
+#' @param signals The `multischolar_enrichment_no_identifiers` conditions `perform_enrichment` signalled, in order.
+#' @param da_results The run's `da_results_for_enrichment` (its contrasts table and DA tables name and count).
+#' @return NULL when nothing was signalled; otherwise a data frame, one row per list in signal order: `comparison`
+#'   (display name), `direction` ("up" or "down"), `proteins` (the list's size). A background without a named protein
+#'   is refused (class `workflow_enrichment_no_identifiers`).
+#' @noRd
+diaEnrichmentNoIdentifiers <- function(signals, da_results) {
+    if (!length(signals)) return(NULL)
+    contrasts_tbl <- tryCatch(da_results@contrasts, error = function(e) NULL)
+    tables <- tryCatch(da_results@da_data, error = function(e) list())
+    label <- function(signal, field) as.character(signal[[field]] %||% NA_character_)[[1L]]
+    raw <- vapply(signals, label, "", field = "contrast")
+    empty <- vapply(signals, function(signal) identical(as.numeric(signal$background_ids), 0), NA)
+    if (any(empty)) {
+        refused <- unique(raw[empty])
+        # KIT-205 alignment (KIT-208 audit I08): n counts the comparison's tested rows, the background in force.
+        tested <- function(name) {
+            table <- if (!is.na(name)) tables[[name]]
+            if (is.null(table)) 0L else NROW(enrichmentTestedRows(table)$rows)
+        }
+        sentences <- vapply(refused, function(name) sprintf(paste("g:Profiler tests gene names, and none of the tested",
+            "proteins of comparison %s has one (0 of %d tested proteins named), so nothing would be tested."),
+            enrichmentContrastDisplayNames(contrasts_tbl, name), tested(name)), "")
+        rlang::abort(paste(c(sentences, "Check that the protein annotation was retrieved for this organism (save the",
+            "design again). This happens when the annotation was not retrieved for these proteins, or when their",
+            "identifiers are not UniProt accessions."), collapse = " "), class = "workflow_enrichment_no_identifiers")
+    }
+    data.frame(comparison = enrichmentContrastDisplayNames(contrasts_tbl, raw),
+        direction = vapply(signals, label, "", field = "direction"),
+        proteins = vapply(signals, function(signal) as.integer(signal$list_size), 1L), stringsAsFactors = FALSE)
 }
 
 #' The declared parameter names one enrichment run uses (GUI audit R3, P-28): the organism filter's two only when the
 #' run's arguments switch the filter on. Before P-28 no completed run had the filter applied (it failed on the undefined
 #' `clean_acc`, P-07, or ran unfiltered for want of a mapping), so a run without the two names is an unfiltered run.
 #' KIT-173: `go_propagation` only when the run's arguments carry a propagating value (the clusterProfiler route), so a
-#' g:Profiler run and a run without parent terms declare what they did before.
+#' g:Profiler run and a run without parent terms declare what they did before. KIT-203: `significance_rule` only when the
+#' run's arguments carry a rule other than `"qvalue"`, so a g:Profiler run and a q-value run declare what they did before
+#' (OD6: a record made before the rule replays with the q-value, its identity unchanged).
 #' @param declared The declaration's parameter names.
-#' @param arguments The run's arguments (`organism_filter_enabled`, `go_propagation`).
+#' @param arguments The run's arguments (`organism_filter_enabled`, `go_propagation`, `significance_rule`).
 #' @return The names, in the declaration's order.
 #' @noRd
 diaEnrichmentDeclaredNames <- function(declared, arguments) {
     filter <- c("organism_filter_enabled", "organism_filter_taxon")
     if (!isTRUE(arguments$organism_filter_enabled)) declared <- setdiff(declared, filter)
+    # KIT-167 (8.3 item 5): the reference identifiers' three names are added only when they are used; the declaration
+    # itself is unchanged, so every existing run keeps its names, provenance and identity.
+    if (identical(arguments$id_source, "reference")) declared <- c(declared, referenceEnrichmentNames)
     if (is.null(arguments$go_propagation) || identical(arguments$go_propagation, "none"))
         declared <- setdiff(declared, "go_propagation")
+    if (is.null(arguments$significance_rule) || identical(arguments$significance_rule, "qvalue"))
+        declared <- setdiff(declared, "significance_rule")
     declared
 }
 
@@ -719,9 +792,11 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
 #'   only) is declared when it is not `"none"`; otherwise the kernel receives it as an undeclared extra, so a record
 #'   made before KIT-173 replays with the sets it was made with and the same identity.
 #' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
-#' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
+#' @return `list(results, service, reference, parameters)`: the `EnrichmentResults`, the reported service identity,
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
-#'   parameters and the service identity; rooted on the source and the result tables).
+#'   parameters and the service identity; rooted on the source and the result tables) and the declared values; and
+#'   `not_tested` (KIT-208) when g:Profiler lists were not sent for want of a named identifier
+#'   (`diaEnrichmentNoIdentifiers`).
 #' @noRd
 runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn = NULL) {
     manager <- workflow$state_manager
@@ -736,6 +811,9 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
     # KIT-173: an undeclared `go_propagation` ("none") still reaches the kernel, whose own default propagates.
     if (!is.null(arguments$go_propagation) && !"go_propagation" %in% declared)
         parameters$go_propagation <- arguments$go_propagation
+    # KIT-203: an undeclared `significance_rule` ("qvalue") still reaches the kernel, whose own default is the family's.
+    if (!is.null(arguments$significance_rule) && !"significance_rule" %in% declared)
+        parameters$significance_rule <- arguments$significance_rule
     value <- runProjected(manager, declaration, manifest$source, parameters)
     declared_values <- parameters[declared]
     if (!is.null(arguments$correction_method_effective))
@@ -758,8 +836,10 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
             if (identical(parts[[1L]], "clusterProfiler")) "package_version" else "database_version",
             query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
     }
-    list(results = value$results, service = value$service, reference = reference,
+    out <- list(results = value$results, service = value$service, reference = reference,
         parameters = declared_values) # KIT-107 D4 (F-16): the declared values the identity used
+    out$not_tested <- value$not_tested # KIT-208: absent when every list was sent; neither identity nor product
+    out
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's

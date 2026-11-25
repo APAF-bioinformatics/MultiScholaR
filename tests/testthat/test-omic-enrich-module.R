@@ -131,18 +131,21 @@ omicEnrichW1UiParts <- function(ui) {
         defaults = defaults)
 }
 
+# KIT-203 (OD5, owner exception by file): re-frozen from the head dump of run 45341049018 (two byte-identical dumps
+# in separate processes; the base dump equalled the block it replaces). Moved: the significance rule selector, its
+# help and two notes, the cutoff's label and help, the clusterProfiler table legend, the HTML digest (kit-203/dumps/).
 # OMIC_ENRICH_FROZEN_UI_START
 omicEnrichW1FrozenUi <- list(
-    html = "3c213c43b0003c7ca879afc155c682b8b451935e7244e4f542a075fe481822ba",
+    html = "5d25d71d8ad08786c22ebc0c1bdae9f963e5d3ed9cc807044d7ea5ad22dd0b96",
     inputs = c(
         "enrichment_analysis-clusterprofiler_direction_filter", "enrichment_analysis-correction_method",
         "enrichment_analysis-down_cutoff", "enrichment_analysis-download_enrichment_results",
         "enrichment_analysis-enable_organism_filter", "enrichment_analysis-enrichment_method_tabs",
         "enrichment_analysis-gprofiler_direction_filter", "enrichment_analysis-organism_taxid",
         "enrichment_analysis-q_cutoff", "enrichment_analysis-run_enrichment_analysis",
-        "enrichment_analysis-selected_contrast", "enrichment_analysis-stringdb_filter_significant",
-        "enrichment_analysis-stringdb_max_results", "enrichment_analysis-stringdb_ranking_method",
-        "enrichment_analysis-up_cutoff"),
+        "enrichment_analysis-selected_contrast", "enrichment_analysis-significance_rule",
+        "enrichment_analysis-stringdb_filter_significant", "enrichment_analysis-stringdb_max_results",
+        "enrichment_analysis-stringdb_ranking_method", "enrichment_analysis-up_cutoff"),
     outputs = c(
         "enrichment_analysis-analysis_method_display", "enrichment_analysis-clusterprofiler_plot",
         "enrichment_analysis-clusterprofiler_results_table",
@@ -160,25 +163,34 @@ omicEnrichW1FrozenUi <- list(
         `enrichment_analysis-enable_organism_filter` = "Filter to target organism only",
         `enrichment_analysis-gprofiler_direction_filter` = "Direction:",
         `enrichment_analysis-organism_taxid` = "Organism Taxon ID:",
-        `enrichment_analysis-q_cutoff` = "Q-value Cutoff:",
+        `enrichment_analysis-q_cutoff` = "Significance cutoff:",
         `enrichment_analysis-selected_contrast` = "Select Contrast:",
+        `enrichment_analysis-significance_rule` = "Significance rule (clusterProfiler route):",
         `enrichment_analysis-stringdb_filter_significant` = "Filter Significant Only",
         `enrichment_analysis-stringdb_max_results` = "Max Results:",
         `enrichment_analysis-stringdb_ranking_method` = "Ranking Method:",
         `enrichment_analysis-up_cutoff` = "Up Log2FC Cutoff:"),
     help = c(
         "Choose which DE contrast to analyze", "Minimum log2 fold change for up-regulated genes",
-        "Minimum log2 fold change for down-regulated genes", "FDR threshold for enrichment significance",
+        "Minimum log2 fold change for down-regulated genes",
+        "Proteins with a differential-abundance q-value below this value form the up and down lists; a term is called significant when its adjusted value (below) is below it.",
+        "Used for organisms outside g:Profiler's 13 (the clusterProfiler route); g:Profiler applies its own correction.",
+        "Each term's p-value is adjusted together with every Gene Ontology term (biological process, molecular function and cellular component together) that has 10 to 500 of your tested proteins, including terms with none of the listed proteins (they count as p = 1). In a check on simulated protein lists at a cutoff of 0.05 (reviewed E. coli and yeast annotations; lists of 25, 126 and 400 proteins drawn at random; with and without parent terms; 2,000 random lists per setting), lists with no real signal had at least one significant term in 1.0 % to 2.5 % of cases (nominal 5 %). On lists of 126 proteins built around one process, the average share of a list's significant terms that were false (0 when nothing was called) was 0.1 % to 1.7 % (counted over all significant terms of those lists together, at most 3.0 %), and the process's own term was found in 74.8 % to 100.0 % of the lists in which it was tested: up to 5.8 percentage points less often than with the q-value with parent terms and up to 8.8 points less often without them, never more often. Not simulated: down lists, other organisms, and lists of proteins that change together as in real data. Its error guarantee assumes that the terms' tests are independent or tend to agree; overlapping Gene Ontology terms do not ensure this, so the check measured it instead, in the settings named only.",
+        "Terms with none of your listed proteins are left out before the adjustment. This breaks the q-value's assumption (p-values of terms with no real change spread evenly between 0 and 1), so the q-value can estimate that most terms are real. In the same check, lists with no real signal had at least one significant term in 1.7 % to 42.9 % of cases: clearly above 7.5 %, the tolerance allowed for a nominal 5 % (lower confidence limit above it), in 6 of 18 settings and above it without certainty in 2 more; with parent terms the clear cases were lists of 25 proteins (E. coli full proteome 22.9 %, its 2,000-protein subset 16.7 %). Up to 23.6 % of such lists had 10 or more significant terms. On lists of 126 proteins built around one process, the average share of a list's significant terms that were false (0 when nothing was called) was up to 35.7 %, clearly above 7.5 % in 3 of 18 settings, all without parent terms; counted over all significant terms of those lists together it was up to 82.1 %. On lists of 25 with parent terms the average was 10.7 %. It found the process's own term up to 5.8 percentage points more often than the default with parent terms and up to 8.8 points more often without.",
         "NCBI taxonomy ID for organism",
         "Enable if using mixed-species FASTA (e.g., with contaminants). Filters DE results to target organism before enrichment analysis.",
         "Automatically determined based on organism support", "Contrasts from DE analysis",
         "g:SCS: More conservative, reduces false positives but may miss terms.",
-        "FDR: Detects more terms but higher false positive risk."),
+        "FDR: Detects more terms but higher false positive risk.",
+        "p.adjust: Benjamini-Hochberg over the terms with at least one listed protein. p_adjust_family: Benjamini-Hochberg over every term of 10 to 500 tested proteins. qvalue: Storey's q-value over the terms with at least one listed protein. In the saved table, neg_log10_q is from the q-value whatever the rule."),
     choices = list(
         `enrichment_analysis-clusterprofiler_direction_filter` = c("all=All selected", "up=Up-regulated only", "down=Down-regulated only"),
         `enrichment_analysis-correction_method` = c("gSCS=g:SCS (Conservative) selected", "fdr=FDR (Less Conservative)"),
         `enrichment_analysis-gprofiler_direction_filter` = c("all=All selected", "up=Up-regulated only", "down=Down-regulated only"),
         `enrichment_analysis-selected_contrast` = character(0),
+        `enrichment_analysis-significance_rule` = c(
+            "bh_whole_family=Benjamini-Hochberg over every term of 10 to 500 tested proteins (default) selected",
+            "qvalue=Storey q-value over the terms with at least one listed protein (as in earlier versions)"),
         `enrichment_analysis-stringdb_ranking_method` = c(
             "combined_score=Combined Score selected", "fdr_qvalue=FDR Q-value", "log2fc=Log2 Fold Change")),
     defaults = c(
@@ -187,6 +199,7 @@ omicEnrichW1FrozenUi <- list(
         `enrichment_analysis-enable_organism_filter` = "FALSE",
         `enrichment_analysis-gprofiler_direction_filter` = "all",
         `enrichment_analysis-organism_taxid` = "9606", `enrichment_analysis-q_cutoff` = "0.05",
+        `enrichment_analysis-significance_rule` = "bh_whole_family",
         `enrichment_analysis-stringdb_filter_significant` = "FALSE",
         `enrichment_analysis-stringdb_max_results` = "50",
         `enrichment_analysis-stringdb_ranking_method` = "combined_score",
@@ -3923,7 +3936,7 @@ omicEnrichW113Frozen[["gprofiler"]] <- list(
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "032782518e99aba7"),
+        rest = "5dc2191f96ea1a63"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -3936,7 +3949,8 @@ omicEnrichW113Frozen[["gprofiler"]] <- list(
         `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
         `parameters$protein_id_column` = "provenance ; input ; gene_name",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
-        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
+        `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["clusterprofiler"]] <- list(
     history = c("initial", "correlation_filtered", "enrichment_completed"),
@@ -3993,7 +4007,7 @@ omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "032782518e99aba7"),
+        rest = "5dc2191f96ea1a63"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -4006,7 +4020,8 @@ omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
         `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
         `parameters$protein_id_column` = "provenance ; input ; gene_name",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
-        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
+        `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
     history = c("initial", "correlation_filtered", "enrichment_completed"),
@@ -4063,7 +4078,7 @@ omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|organism_filter_enabled|organism_filter_taxon",
-        rest = "db53d45b43df9549"),
+        rest = "3209fd30831abfc4"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -4078,7 +4093,8 @@ omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
         `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
         `parameters$organism_filter_enabled` = "provenance ; no_shipped_default ; TRUE",
-        `parameters$organism_filter_taxon` = "provenance ; input ; 9606"))
+        `parameters$organism_filter_taxon` = "provenance ; input ; 9606",
+        `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
     history = c("initial", "correlation_filtered", "enrichment_completed"),
@@ -4100,7 +4116,7 @@ omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|organism_filter_enabled|organism_filter_taxon",
-        rest = "db53d45b43df9549"),
+        rest = "3209fd30831abfc4"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -4115,7 +4131,8 @@ omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
         `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
         `parameters$organism_filter_enabled` = "provenance ; no_shipped_default ; TRUE",
-        `parameters$organism_filter_taxon` = "provenance ; input ; 9606"))
+        `parameters$organism_filter_taxon` = "provenance ; input ; 9606",
+        `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["refusals/pre_da"]] <- list(
     history = c("initial", "correlation_filtered"),
@@ -4161,7 +4178,7 @@ omicEnrichW113Frozen[["restore"]] <- list(
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "032782518e99aba7"),
+        rest = "5dc2191f96ea1a63"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -4174,7 +4191,8 @@ omicEnrichW113Frozen[["restore"]] <- list(
         `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
         `parameters$protein_id_column` = "provenance ; input ; gene_name",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
-        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
+        `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["prefill"]] <- list(
     history = c("initial", "correlation_filtered"),
@@ -4259,8 +4277,11 @@ test_that("(R3, P-28) a filtered run declares the organism filter, records what 
     seen <- omicEnrichR3FilterDrive(list(record = omicEnrichR3Record))
     r3 <- seen$record$r3
     # KIT-173: `go_propagation` is appended after the filter's two and is declared on the clusterProfiler route only.
-    expect_identical(utils::tail(setdiff(diaEnrichmentOperation()$parameters, "go_propagation"), 2L), omicEnrichR3FilterNames)
-    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters, "go_propagation"))
+    # KIT-203: `significance_rule` after it, likewise.
+    expect_identical(utils::tail(setdiff(diaEnrichmentOperation()$parameters, c("go_propagation", "significance_rule")), 2L),
+        omicEnrichR3FilterNames)
+    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters,
+        c("go_propagation", "significance_rule")))
     expect_identical(r3$provenance$values[omicEnrichR3FilterNames],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     expect_identical(omicEnrichR3Parameters(r3$step)[omicEnrichR3FilterNames],
@@ -4294,9 +4315,11 @@ test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its recor
     seen <- omicEnrichW3Drive("gprofiler", list(record = omicEnrichR3Record))
     r3 <- seen$record$r3
     expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters,
-        c(omicEnrichR3FilterNames, "go_propagation"))) # KIT-173
+        c(omicEnrichR3FilterNames, "go_propagation", "significance_rule"))) # KIT-173, KIT-203
     expect_length(r3$provenance$parameter_names, 9L)
-    expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
+    # KIT-205: the record step lists the fixed background rule marker after the declared names.
+    expect_identical(names(omicEnrichR3Parameters(r3$step)), c(r3$provenance$parameter_names,
+        "enrichment_background"))
     # KIT-119 (2), A107-06: every run records its inputs' identities beside the outcomes every step has (it recorded
     # `rows` and `columns` only); the organism filter's outcomes are still absent from an unfiltered run.
     expect_identical(names(r3$step$outcomes), c("rows", "columns", "annotation_sha256", "da_inputs_sha256"))
@@ -4314,9 +4337,11 @@ test_that("(R3, A107-03) a clusterProfiler run records the correction it applied
     expect_identical(omicEnrichR3Parameters(r3$step)[["correction_method"]], "provenance ; no_shipped_default ; BH")
     expect_identical(seen$run$product[["parameters$correction_method"]], "BH")
     expect_identical(r3$step$outcomes$correction_method_requested, "gSCS")
+    # KIT-203 (5.4, OD10): the notice opens with the default rule's sentence; the correction sentence follows.
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
-        paste("[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS,",
-            "applies to g:Profiler only and was not used."),
+        paste("[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value",
+            "over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only",
+            "and was not used."), # KIT-205 (SD-1 (b)): "tested"
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
 })
 

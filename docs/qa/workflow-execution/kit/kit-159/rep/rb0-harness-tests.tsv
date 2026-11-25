@@ -1,0 +1,19 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-g1a-entry.R	T-G1A-ENV-1: the job environment holds the CPU model, the D7 keys and the lockfile digest	0	0	0	0	1	0	0.015
+test-g1a-entry.R	T-G1A-ENV-2: the lockfile is compared between the link's commit and the job's	0	0	0	0	1	0	0.139
+test-g1a-entry.R	T-G1A-GATES: gates.md carries the environment, part (1), part (2) and the D7 mode	0	0	0	0	1	0	0.006
+test-g1a-entry.R	T-G1A-ENTRY: val-g1a.R refuses part (2) without a reference table, with its class	4	0	4	0	0	0	0.207
+test-g1a-entry.R	T-PAR-5: L1's committed DA tables are read for G13 and checked against their hash	0	0	0	0	1	0	0.06
+test-records.R	T-PROV-1: a complete provenance passes; a missing field fails	11	11	0	0	0	0	0.129
+test-records.R	T-PROV-2: every cell carries a replay status of G5; per-unit truths are hashed (I07, E4, E5)	6	1	5	0	1	0	0.048
+test-records.R	T-DET-1: identical, within rounding, and different tables	4	4	0	0	0	0	0.061
+test-records.R	T-DET-2: fingerprints tell a real change from a rounding one	4	4	0	0	0	0	0.02
+test-records.R	T-SCORE-1: phase score combines requests; a missing cell or another commit is refused	5	5	0	0	0	0	0.075
+test-replay.R	a replay giving the same DA table is identical	2	2	0	0	0	0	0.007
+test-replay.R	a replay giving other values differs, with the largest difference	3	3	0	0	0	0	0.01
+test-replay.R	a replay the package refuses is unsupported, with its class	2	2	0	0	0	0	0.014
+test-replay.R	T-REP-1: the store comparison names a differing state and a differing DA result	0	0	0	0	1	0	0.005
+test-replay.R	T-REP-2: a refused replay is unsupported with its class; a differing one is not swallowed	0	0	0	0	1	0	0.005
+test-replay.R	T-REP-3: the replay block of a cell: declared, not declared, not run	0	0	0	0	1	0	0.005
+test-replay.R	T-REP-4: a declared replay cell runs on metab_combined; its result is written and checked	5	2	3	0	1	0	93.266
+test-valrun.R	T-RUN-E2: val-run.R runs lifecycle, counted and score, and refuses with its class	21	17	4	0	0	0	3.88

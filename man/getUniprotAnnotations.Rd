@@ -12,7 +12,8 @@ getUniprotAnnotations(
   batch_size = 25,
   timeout = 600,
   api_delay = 1,
-  progress_callback = NULL
+  progress_callback = NULL,
+  label = NULL
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ getUniprotAnnotations(
 \item{api_delay}{Sleep time in seconds between API calls}
 
 \item{progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{label}{NULL (the project's own annotation), or a text appended to the \code{query_summary} of every analysis-record
+row the retrieval writes (KIT-167: \code{"reference annotation: <reference> (<UPID> or supplied)"}).}
 }
 \value{
 A data frame containing UniProt annotations and GO terms. A table built here carries the attribute
@@ -41,4 +45,10 @@ therefore omits), counted by class (obsolete, secondary, unknown), with up to 20
 Downloads protein information from UniProt for a list of protein IDs,
 processes the results including Gene Ontology annotations, and caches
 the result for future use.
+}
+\details{
+A cache file with zero rows, or one that cannot be read, is not used: it is removed and the query runs. An empty
+or incomplete answer (the conditions of \code{directUniprotDownload}, which pass through) is never written to the
+cache. An error in the processing of the answer or in the cache write is recorded once and re-raised with the
+class \code{prot_annotation_uniprot_recorded} added (field \code{reason = "processing_failed"}).
 }
