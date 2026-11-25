@@ -61,3 +61,23 @@ Classification, committed before the run (the coordinator's):
     rule, R1 re-sent once).
 (iii) no foreign line at all through this path: STOP and report; VAL-279's premise needs the owner.
 Lipidomics: no proteomics section expected.
+
+## D2 result and classification (run 45681727116, kit-263 0abd5669): (ii), the foreign block twice in the application
+
+With a proteomics owner (shipped configuration as `@args` and `config_list`), the file has 236 lines. Foreign lines: in
+"Parameters from Final S4 Object" `[metaboliteIntensityFiltering]` and its two keys (lines 101-103); in "Additional
+Configuration Parameters" `metaboliteIntensityFiltering:` and `Metabolites Intensity Cutoff Percentile: 1`,
+`Metabolites Proportion of Samples Below Cutoff: 0.5` (lines 203-205): 3 + 3 = 6. The Additional block prints because
+with an analysis record (owner) the writer uses the record's formatter, not `formatConfigList`; the T1 fixture (no
+state manager, so no record) went through `formatConfigList`, which errors on `plotRle`'s length-2 value (separate
+defect, outcome.md) and left the block empty. The lipidomics owner's save: 157 lines, headers
+`globalParameters`, `ITSDNormalization`, `daAnalysisParameters`, `ruv_number_k`, `ctrl`, no foreign line (0).
+Classification (ii): the ticket's counts stand (six today); the T1/T2/T3 fixture did not represent the application:
+an instrument defect. The fixture is rebuilt on D2's owner construction, expectations unchanged; R1 is re-sent once
+(instrument rule, 1 of 3, request kit263-r1-2).
+
+## Predictions for R1 re-send (rebuilt fixture, tests-only commit)
+
+T1 fails by value (6 foreign lines on base, expected 0); T2 passes (6 for `"metabolomics"` and `NULL`); T3 passes;
+T4 errors (constant absent); T5 fails by value (NULL against "transcriptomics"). The diagnostic tests are removed from
+the file (their output is in runs 45679194881 and 45681727116).
