@@ -1,0 +1,11 @@
+case	observable	predicted
+G0b all routes	t_hi	(m + m2) / 2 from g0-best-partner-<route>.tsv; classic about 0.97402, limpa about 0.96361
+G0b all routes	apply_kept_n	11 of 12 (classic: run_0008 removed; limpa: run_0001 removed)
+G0b A, A worker (all routes)	live_n / live_config	12 / min_pearson_correlation_threshold=0;skipped=TRUE
+G0b A, A worker (all routes)	prov_operation / record_operation	pearson-selection, threshold t_hi, preceded_by pearson-pairs; outcomes skipped TRUE
+G0b A, A worker (all routes)	study_params_correlation	pearson-selection block with threshold = t_hi; nothing about the skip
+G0b A, A worker (all routes)	replay	completed; replay_n 11; replay_samples_equal_live FALSE; replay_config threshold t_hi
+G0b A, A worker (all routes)	da_equal	FALSE (numeric difference predicted)
+G0b A, A worker (DIA_LIMPA)	ruv_design_equal	FALSE
+G0b A2 (LFQ, TMT, DIA)	all	as A: live 12, replay 11, da_equal FALSE (numeric difference predicted)
+G0b A2 (DIA_LIMPA)	all	live 11 (C_hi, run_0001 absent; KIT-244's base); record pearson-selection at t_hi; replay 11, equal to live; da_equal TRUE; ruv_design_equal TRUE (no numeric difference predicted)

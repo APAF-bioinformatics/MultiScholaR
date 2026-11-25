@@ -1,0 +1,3 @@
+run_id	commit	purpose	job_minutes	result
+45592410449	bfc76de99bf09943302151b46f2590b9c971754e	G0 base values: SCAN, B, A (in process, worker), A2 on LFQ, TMT, DIA (iq), DIA with limpa; staging 16112917 + script	22.8	ok; 0 instrument errors; every prediction held; stop rule 1 not triggered; stop rule 2 triggered (no listed threshold removes some but not all samples)
+45597013061	ad0622df89f2254a5d6fc73d9f3afea338a621e2	G0b (coordinator ruling on stop rule 2): A in process and worker, A2 at per-route t_hi on LFQ, TMT, DIA (iq), DIA with limpa; staging 16112917 + script	20.2	ok; 0 instrument errors; every prediction held; numeric difference live vs replay shown on every A cell and A2 classic; none on A2 limpa (as predicted)
