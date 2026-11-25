@@ -1,0 +1,61 @@
+{
+  "tab_status": {
+    "setup_import": "complete",
+    "design_matrix": "pending",
+    "quality_control": "disabled",
+    "normalization": "disabled",
+    "differential_expression": "disabled",
+    "enrichment_analysis": "disabled",
+    "session_summary": "disabled"
+  },
+  "setup_import": {
+    "timestamp": "2026-11-25 10:35:04",
+    "search_file": "report.tsv",
+    "detected_format": "diann",
+    "data_type": "peptide",
+    "fasta_file": "proteins.fasta",
+    "taxon_id": 10090,
+    "organism": "Mus musculus",
+    "n_rows": 8989,
+    "n_runs": 8,
+    "n_proteins": 400,
+    "n_peptides": 1037
+  },
+  "notes": [],
+  "modals": [
+    {
+      "start": 1795602896077,
+      "end": 1795602896877,
+      "title": "Experiment Setup",
+      "progress": false,
+      "text": "Experiment Setup Experiment Label: Project Output Directory Select where to create the project directories: Directory Path: Browse... A new folder will be created here with your experiment label Cancel Continue"
+    },
+    {
+      "start": 1795602903079,
+      "end": 1795602904277,
+      "title": "Processing Data",
+      "progress": true,
+      "text": "Processing Data Sanitizing sample names... Please wait while your data is being processed."
+    },
+    {
+      "start": 1795602904477,
+      "end": null,
+      "title": "Select Primary Organism",
+      "progress": false,
+      "text": "Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection"
+    }
+  ],
+  "texts": {
+    "proteomics_workflow-setup_import-import_status": "[OK] Data imported successfully!\nFormat: diann | Type: peptide",
+    "proteomics_workflow-setup_import-data_summary": "Data Summary\nData format: DIANN\nData type: peptide\nTotal rows: 8,989\nNumber of runs: 8\nNumber of protein groups: 400\nNumber of peptides: 1,037\nOrganism: Mus musculus (taxon: 10090 )"
+  },
+  "stepper": [
+    "stepper-step step-completed",
+    "stepper-step step-current",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending"
+  ]
+}
