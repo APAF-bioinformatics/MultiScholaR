@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit226-gprofiler-columns.R	19	19	0	0	0	8.8	failed
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	0	7	ok
+test-enrichment-significance.R	190	1	0	0	0	149.5	failed
