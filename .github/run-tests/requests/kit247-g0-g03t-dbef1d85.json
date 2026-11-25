@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-247 G0-3 trx probe instrument rerun 1 of 1 (VAL-54, coordinator's ruling): run 45594081675 gave no value for four trx group keys ('counts must be numeric' in the probe); design read as its component; no prediction changed; 1 job, ceiling 90 job-minutes",
+  "label": "KIT-247 G0 g03t on kit-247-g0 dbef1d85 (R/ as v0.9-staging 16112917)",
+  "package_commit": "dbef1d85c3aae07cbb4a14aa1bcd7be1ae2fc9b8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-247/g0-lanes.R",
+      "args": [
+        "g03t",
+        "kit247-g0"
+      ],
+      "env": {},
+      "out": "kit247-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 85
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
