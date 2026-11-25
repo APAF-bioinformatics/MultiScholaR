@@ -86,6 +86,18 @@
    choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
    annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
    with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
+
+ * Proteomics, DIA with limpa (chosen at the DIA-NN import; not the default route): after the correlation filter,
+   pressing 'Run Normalization & RUV' again now keeps the table the first press started from, as it already did after
+   the RUV covariates and as the other proteomics routes already do. Before, the correlation filter's result became
+   the starting table: re-applying the filter at a lower threshold could not bring back samples a higher threshold had
+   removed (the analysis record named the lower threshold), skipping the filter kept those samples removed while
+   recording it as skipped, and 'Reset to Pre-Normalization' either changed nothing or, once the filter had been
+   applied again with a different result or skipped, refused with a reason that did not apply. At the same or a higher
+   threshold the samples kept were already the same. Pressing 'Run Normalization & RUV' before DPC Quantification now
+   refuses with a message saying which Quality Control steps to apply first; before, it was accepted and the
+   correlation filter and RUV covariates then failed with messages that did not say why (KIT-244).
+
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
