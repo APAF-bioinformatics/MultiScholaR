@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-239 R1: tests-only commit fce22178; L1 to L6 must fail at their stated base values (stop rule 1); one job, ceiling 60 min (kit239-r1-fce22178 was pushed blank by mistake)",
+  "label": "KIT-239 R1 failing-first on kit-239 fce22178 (results, record, gui)",
+  "package_commit": "fce221781602c7f2fa1f05b8c313baa3b39ccbee",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-integration-record.R", "test-integration-results.R", "test-integration-gui.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
