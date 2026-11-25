@@ -179,6 +179,18 @@ signalEnrichmentListStatus <- function(reason, route, contrast, direction = NA_c
   invisible(NULL)
 }
 
+#' The message of the error a caught condition was raised for (KIT-215): the innermost condition of an error chained by
+#' dplyr or rlang (whose own message is a context header such as "In argument: ..."), on one line, without a final full
+#' stop (the refusal adds one).
+#' @param condition The caught error.
+#' @return One string.
+#' @noRd
+enrichmentErrorMessage <- function(condition) {
+  while (inherits(condition$parent, "condition")) condition <- condition$parent
+  text <- paste(conditionMessage(condition), collapse = " ")
+  sub("[.[:space:]]+$", "", gsub("\\s*\n\\s*", " ", text))
+}
+
 #' What the clusterProfiler route can test in one comparison (KIT-215, VAL-170)
 #'
 #' Computed as enrichit 0.2.0 computes it inside `clusterProfiler::enricher` (4.20.0): the gene is TERM2GENE's second
@@ -413,7 +425,8 @@ processEnrichments <- function(da_results,
           }, error = function(e) {
             warning(sprintf("Error processing up-regulated genes: %s", e$message))
             # KIT-215 (VAL-170 (4)): the error refuses the run where the kernel handles the signal.
-            signalEnrichmentListStatus("error", "gprofiler2", contrast_name, "up", nrow(up_matrix), message = e$message)
+            signalEnrichmentListStatus("error", "gprofiler2", contrast_name, "up", nrow(up_matrix),
+              message = enrichmentErrorMessage(e))
             message("Debug info for up-regulated genes:")
             message("Number of proteins: ", nrow(up_matrix))
             NULL
@@ -452,7 +465,7 @@ processEnrichments <- function(da_results,
           }, error = function(e) {
             warning(sprintf("Error processing down-regulated genes: %s", e$message))
             signalEnrichmentListStatus("error", "gprofiler2", contrast_name, "down", nrow(down_matrix), # KIT-215
-              message = e$message)
+              message = enrichmentErrorMessage(e))
             message("Debug info for down-regulated genes:")
             message("Number of proteins: ", nrow(down_matrix))
             NULL
@@ -463,7 +476,7 @@ processEnrichments <- function(da_results,
           message(sprintf("*** ERROR details: %s", class(e)))
           message(sprintf("*** Call stack: %s", paste(deparse(sys.calls()), collapse = " -> ")))
           # KIT-215 (VAL-170 (4)): an error in the comparison's processing refuses the run where the kernel handles it.
-          signalEnrichmentListStatus("error", "gprofiler2", contrast_name, message = e$message)
+          signalEnrichmentListStatus("error", "gprofiler2", contrast_name, message = enrichmentErrorMessage(e))
           return(NULL)
         })
       })
@@ -670,7 +683,8 @@ processEnrichments <- function(da_results,
           warning(sprintf("Error processing up-regulated genes: %s", e$message))
           failed[["up"]] <<- TRUE
           # KIT-215 (VAL-170 (4)): the error refuses the run where the kernel handles the signal.
-          signalEnrichmentListStatus("error", "clusterprofiler", long_name, "up", length(up_genes), message = e$message)
+          signalEnrichmentListStatus("error", "clusterprofiler", long_name, "up", length(up_genes),
+            message = enrichmentErrorMessage(e))
           NULL
         })
 
@@ -693,7 +707,7 @@ processEnrichments <- function(da_results,
           warning(sprintf("Error processing down-regulated genes: %s", e$message))
           failed[["down"]] <<- TRUE
           signalEnrichmentListStatus("error", "clusterprofiler", long_name, "down", length(down_genes), # KIT-215
-            message = e$message)
+            message = enrichmentErrorMessage(e))
           NULL
         })
 

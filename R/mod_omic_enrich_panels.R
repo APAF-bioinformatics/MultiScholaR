@@ -165,6 +165,8 @@ formatProtEnrichGprofilerSummaryText <- function(gprofilerResults,
       } else {
         messageText <- sprintf("Showing %d down-regulated pathways", displayedCount)
       }
+        # KIT-215 (VAL-170 (5)): a filtered direction that was not tested or had no list says so, not a count of 0.
+        if (!is.na(notes[directionFilter])) messageText <- notes[[directionFilter]]
     } else {
       totalTerms <- nrow(gprofilerResults)
       positiveTerms <- sum(gprofilerResults$directionality == "positive", na.rm = TRUE)
@@ -213,6 +215,8 @@ formatProtEnrichClusterProfilerSummaryText <- function(clusterprofilerResults,
       } else {
         messageText <- sprintf("Showing %d down-regulated GO terms", displayedCount)
       }
+        # KIT-215 (VAL-170 (5)): a filtered direction that was not tested or had no list says so, not a count of 0.
+        if (!is.na(notes[directionFilter])) messageText <- notes[[directionFilter]]
     } else {
       totalTerms <- nrow(clusterprofilerResults)
       upTerms <- sum(clusterprofilerResults$directionality == "up", na.rm = TRUE)
