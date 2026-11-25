@@ -280,6 +280,10 @@ for (class in c("lipid", "metab")) {
         out <- kit255Filter(input, class, alone)
         expect_identical(kit255Design(out), setdiff(kit255Runs, kit255S))
         expect_false(any(vapply(kit255Assays(out, class), function(t) kit255S %in% names(t), logical(1))))
+        # I03: the record names the sample removed because no assay kept a value for it, and the notice says so
+        expect_identical(out@args$correlation_exclusions$no_value, kit255S)
+        expect_true("Sample B_6 had no remaining value in any assay and was removed from the study." %in%
+            omicsCorrelationExclusionNotice(out@args$correlation_exclusions))
         # G7: with a replicate partner (its pairs hold NA)
         paired <- lapply(kit255Pairs(failing = list()), function(t) {
             t$pearson_correlation[t$Run.x == kit255S | t$Run.y == kit255S] <- NA_real_
@@ -287,7 +291,8 @@ for (class in c("lipid", "metab")) {
         })
         out <- kit255Filter(input, class, paired)
         expect_identical(kit255Design(out), setdiff(kit255Runs, kit255S))
-        expect_null(out@args$correlation_exclusions)
+        expect_identical(out@args$correlation_exclusions$no_value, kit255S)
+        expect_length(out@args$correlation_exclusions$excluded, 0L)
     })
 }
 
@@ -510,6 +515,9 @@ for (class in c("lipid", "metab")) {
         expect_identical(worker@args, in_process@args)
         # E6: under the new rule the sample stays, so the DA of the managed state completes for both assays
         expect_identical(kit255Design(worker), kit255Runs)
+        # the worker's completion delivers the notice to the tab's log, as the tab in process does
+        expect_true(any(grepl("did not reach the threshold", managed$fx$log$lines, fixed = TRUE)))
+        expect_true(any(grepl("Its values in LCMS_Neg are set to missing", managed$fx$log$lines, fixed = TRUE)))
         da <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceDaAnalysis(managed$fx$binding, managed$fx$owner,
             getWorkflowStateReference(managed$fx$owner), list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0),
             kit172Contrasts())), error = function(e) e)
@@ -540,7 +548,11 @@ for (class in c("lipid", "metab")) {
             summary <<- output$summary
         })
         expect_match(summary, "Removed: 0 samples", fixed = TRUE)
-        expect_match(summary, "Excluded in one assay only: B_6 in LCMS_Neg", fixed = TRUE)
+        # E16 (session): the exported session list carries the exclusions, read through the metadata reader
+        session <- collectWorkflowOmicsNormSession(fx$binding, fx$workflow, nd, kit255Input(), "kit255", fx$config$norm$export)
+        expect_identical(names(session$correlation_exclusions$excluded), "LCMS_Neg")
+        expect_identical(names(session$correlation_exclusions$excluded$LCMS_Neg), kit255S)
+        expect_match(summary, "Set missing in some assays only: B_6 in LCMS_Neg", fixed = TRUE)
         # with no sample set missing the summary has no such line
         clean <- kit255Fixture(file.path(withr::local_tempdir(), "project"), kit172Values(255001L)$values, class)
         withr::defer(try(closeDIAStateAdapter(clean$owner), silent = TRUE))
@@ -553,7 +565,7 @@ for (class in c("lipid", "metab")) {
         }, {
             summary2 <<- output$summary
         })
-        expect_false(grepl("Excluded in one assay only", summary2, fixed = TRUE))
+        expect_false(grepl("Set missing in some assays only", summary2, fixed = TRUE))
     })
 }
 
@@ -587,6 +599,26 @@ for (class in c("lipid", "metab")) {
             expect_equal(sum(is.finite(da$per_assay_results$LCMS_Neg$logFC)), 0L)
             expect_gt(sum(is.finite(da$per_assay_results$LCMS_Pos$logFC)), 0L)
         }
+        # I01: the comparisons with group B in LCMS_Neg are recorded and printed as not tested, with the reason
+        record <- out@args$correlation_exclusions
+        expect_identical(record$not_tested, list(LCMS_Neg = "B"))
+        notice <- omicsCorrelationExclusionNotice(record)
+        expect_true(any(grepl("In assay LCMS_Neg, no sample of group B has a value left, so comparisons with that group are not tested in LCMS_Neg.", notice, fixed = TRUE)))
+        expect_match(omicsCorrelationExclusionSummaryLine(record), "Comparisons not tested (no sample of the group has a value): group B in LCMS_Neg.", fixed = TRUE)
+        expect_true(any(grepl("group B in LCMS_Neg", omicsCorrelationExclusionStudyLines(record), fixed = TRUE)))
+    })
+
+    test_that(paste("KIT-255 E20 (two replicates per group):", class, "every one-assay failure leaves a group without a value in that assay, recorded as not tested"), {
+        input <- kit172Object(kit255Values(), class)
+        input@design_matrix$group <- paste0("G", rep(1:6, each = 2L))
+        pairs <- lapply(c(LCMS_Pos = "LCMS_Pos", LCMS_Neg = "LCMS_Neg"), function(assay) {
+            data.frame(Run.x = kit255Runs[c(TRUE, FALSE)], Run.y = kit255Runs[c(FALSE, TRUE)],
+                pearson_correlation = if (identical(assay, "LCMS_Neg")) c(0.9, 0.9, 0.9, 0.9, 0.9, 0.1) else rep(0.9, 6L), stringsAsFactors = FALSE)
+        })
+        out <- kit255Filter(input, class, pairs)
+        expect_identical(kit255Design(out), kit255Runs)
+        expect_true(kit255AllNa(kit255Assays(out, class)$LCMS_Neg$B_5) && kit255AllNa(kit255Assays(out, class)$LCMS_Neg$B_6))
+        expect_identical(out@args$correlation_exclusions$not_tested, list(LCMS_Neg = "G6"))
     })
 }
 
@@ -669,6 +701,13 @@ for (class in c("lipid", "metab")) {
                     entry <- da$manifest$results[[1L]]
                     expect_identical(sort(names(entry$assays)), c("LCMS_Neg", "LCMS_Pos"))
                     expect_length(entry$errors, 0L)
+                    # E8: LCMS_Neg equals the without-the-sample state tested with the same factors, to 1e-10
+                    normalised <- readWorkflowOmicsState(built$binding, owner, paste0(built$prefix, "_normalized"))
+                    declared <- withWorkflowStateScope(owner, function() as.data.frame(materializeWorkflowTable(owner$.context,
+                        entry$assays$LCMS_Neg$tables[[built$binding$long_table]])))
+                    without <- kit255Kernel(class, kit255Drop(normalised, class, kit255S), after@args$ruv_factors)
+                    expect_false(inherits(without, "error"))
+                    if (!inherits(without, "error")) expect_true(kit255TablesEqual(declared, without$per_assay_results$LCMS_Neg))
                 }
             }
             # E9, E10: place 3 (the writer's matrices); the normalised state itself is untouched
@@ -767,3 +806,76 @@ for (class in c("lipid", "metab")) {
         expect_true(kit255S %in% names(methods::slot(object, binding$data_slot)$LCMS_Pos))
     })
 }
+
+# ---- I02: the texts with three assays; a sample counted once ----
+
+for (class in c("lipid", "metab")) {
+    test_that(paste("KIT-255 I02:", class, "the notice names only the assays where the sample reached the threshold or was not tested"), {
+        values <- c(kit255Values(), list(GCMS = kit172Values(255005L)$values))
+        input <- kit172Object(values, class)
+        out <- kit255Filter(input, class, kit255Pairs(failing = list(LCMS_Neg = kit255S, GCMS = kit255S), assays = c("LCMS_Pos", "LCMS_Neg", "GCMS")))
+        record <- out@args$correlation_exclusions
+        expect_identical(sort(names(record$excluded)), c("GCMS", "LCMS_Neg"))
+        notice <- omicsCorrelationExclusionNotice(record, names(values))
+        neg <- notice[grepl("in assay LCMS_Neg", notice, fixed = TRUE)]
+        expect_length(neg, 1L)
+        expect_false(grepl("GCMS", neg, fixed = TRUE))
+        expect_true(grepl("LCMS_Pos (it reached the threshold there)", neg, fixed = TRUE))
+        summary <- omicsCorrelationExclusionSummaryLine(record)
+        expect_match(summary, "Set missing in some assays only:", fixed = TRUE)
+        expect_match(summary, "B_6 in GCMS", fixed = TRUE)
+        # an assay with no pairs table: the sample was not tested there
+        untested <- kit255Filter(input, class, kit255Pairs(assays = c("LCMS_Pos", "LCMS_Neg")))
+        text <- paste(omicsCorrelationExclusionNotice(untested@args$correlation_exclusions, names(values)), collapse = " ")
+        expect_match(text, "GCMS (it was not tested there)", fixed = TRUE)
+        expect_match(text, "LCMS_Pos (it reached the threshold there)", fixed = TRUE)
+    })
+}
+
+# ---- I07: the exclusion record merges two presses at two thresholds ----
+
+for (class in c("lipid", "metab")) {
+    test_that(paste("KIT-255 I07:", class, "a second press at another threshold merges into the record, each entry keeping its own threshold"), {
+        input <- kit172Object(kit255Values(), class)
+        first <- kit255Filter(input, class, kit255Pairs())
+        second <- kit255Filter(first, class, kit255Pairs(failing = list(LCMS_Pos = "A_1"), best = 0.6, high = 0.99), threshold = 0.8)
+        record <- second@args$correlation_exclusions
+        expect_identical(sort(names(record$excluded)), c("LCMS_Neg", "LCMS_Pos"))
+        expect_identical(omicsCorrelationExclusionThreshold(record, "LCMS_Neg", kit255S), 0.5)
+        expect_identical(omicsCorrelationExclusionThreshold(record, "LCMS_Pos", "A_1"), 0.8)
+        expect_equal(record$excluded$LCMS_Pos[["A_1"]], 0.6)
+        expect_identical(kit255Design(second), kit255Runs)
+    })
+}
+
+# ---- E16: the study parameters carry the block ----
+
+test_that("KIT-255 E16: the saved study parameters carry the samples set missing and the groups not tested; the other lines are unchanged", {
+    make <- function(args) createLipidomicsAssayData(
+        lipid_data = list(assay_main = data.frame(database_identifier = c("L1", "L2"), lipid_identification = c("a", "b"),
+            S1 = c(1, 2), S2 = c(1, 2), check.names = FALSE)),
+        design_matrix = data.frame(Sample_ID = c("S1", "S2"), group = c("A", "B"), stringsAsFactors = FALSE),
+        lipid_id_column = "database_identifier", annotation_id_column = "lipid_identification", sample_id = "Sample_ID",
+        group_id = "group", database_identifier_type = "LipidMaps", internal_standard_regex = "^ISTD",
+        args = c(list(ITSDNormalization = list(applied = FALSE), log_transformed = FALSE, normalisation_method = "median"), args))
+    lines <- function(object) {
+        dir <- withr::local_tempdir(pattern = "kit255-writer-")
+        had <- exists("config_list", envir = .GlobalEnv, inherits = FALSE)
+        old <- if (had) get("config_list", envir = .GlobalEnv)
+        assign("config_list", list(), envir = .GlobalEnv)
+        on.exit(if (had) assign("config_list", old, envir = .GlobalEnv) else rm("config_list", envir = .GlobalEnv), add = TRUE)
+        path <- NULL
+        invisible(utils::capture.output(path <- createWorkflowArgsFromConfig(workflow_name = "lipidomics", source_dir_path = dir,
+            final_s4_object = object, contrasts_tbl = data.frame(contrast = "A_vs_B", stringsAsFactors = FALSE)), type = "output"))
+        readLines(path, warn = FALSE, encoding = "UTF-8")
+    }
+    plain <- lines(make(list()))
+    marked <- lines(make(list(correlation_exclusions = list(threshold = 0.5, excluded = list(assay_main = c(S2 = -0.015)),
+        not_tested = list(assay_main = "B")))))
+    expect_false(any(grepl("best correlation with a replicate", plain, fixed = TRUE)))
+    expect_true(any(grepl("* Samples set missing per assay (threshold 0.5):", marked, fixed = TRUE)))
+    expect_true(any(grepl("assay_main: S2 (best correlation with a replicate -0.015)", marked, fixed = TRUE)))
+    expect_true(any(grepl("* Comparisons not tested (no sample of the group has a value there):", marked, fixed = TRUE)))
+    expect_true(any(grepl("assay_main: group B", marked, fixed = TRUE)))
+    expect_true(all(plain[!grepl("Timestamp|Date|Generated", plain)] %in% marked))
+})
