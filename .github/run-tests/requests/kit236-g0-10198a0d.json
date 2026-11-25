@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-236 gate G0 (a, b, c): observe each false lipid/metab and proteomics report sentence on the GUI lanes with KIT-235's parser fix, before any code",
+  "label": "KIT-236 G0 on kit-236-g0 10198a0d (kit-235 dc2c638f + tools/kit236/g0.R)",
+  "package_commit": "10198a0dc05f56542fc0f81154f4818015ad1d98",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit236/g0.R",
+      "args": [],
+      "out": "kit236-g0",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
