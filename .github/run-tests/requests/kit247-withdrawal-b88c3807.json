@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-247 withdrawal of VAL-288 (VAL-331) and C05: the three KIT-247 test files, base eab793f1 (R/ as ac53976a + the new rows), head b88c3807; no check; about 130 job-minutes, inside the 9.1 core-hours left under 190 (VAL-309); predictions in kit-247/withdrawal-declaration.md",
+  "label": "KIT-247 withdrawal base eab793f1 head b88c3807",
+  "package_commit": "b88c3807b99208cd9d6ee118b455b42c07a78c6d",
+  "base_commit": "eab793f14db2000cc7fda4c35a98c78c3914b1d0",
+  "tools_ref": "",
+  "tests": [
+    "test-kit247-design-resave.R",
+    "test-kit247-import-config.R",
+    "test-kit247-resave-no-session.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit247-design-resave.R": 100
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
