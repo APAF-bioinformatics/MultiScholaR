@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-244 R1: tests-only commit ffb90f3a (staging 16112917 + G0 records + new test file; nothing under R/); failing-first of E1-E5b, G rows as base; ceiling 45 job-minutes (3.0 core-hours); decides A2",
+  "label": "KIT-244 R1 failing-first at ffb90f3a",
+  "package_commit": "ffb90f3a4002aeaf9aef602012092b74879a3fce",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit244-limpa-pass-through.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {"MULTISCHOLAR_KIT105_W3_DUMP": "1", "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
