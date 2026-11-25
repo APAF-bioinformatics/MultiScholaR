@@ -533,7 +533,7 @@ test_that("KIT-246: the Methods paragraph's scaling sentence states the simulati
     # INT-31 corrects INT-24's evidence sentence: the z-score's sentence said "weak factors" (undefined) and "otherwise
     # made no practical difference" (KIT-151 d: inconclusive at 20 samples without missing values). One journey with
     # the default scaling; the paragraph as built and as read back from JSON. E2 and E5 (the owner's words and the
-    # agreement with the Model tab's help) are added with the fix.
+    # agreement with the Model tab's help) were added with the fix.
     old <- paste("each scaled to mean 0 and standard deviation 1 after the selection (which used the unscaled values);",
         "in simulation, with few samples and missing values this scaling improved the recovery of weak factors, and",
         "otherwise made no practical difference.")
@@ -561,4 +561,28 @@ test_that("KIT-246: the Methods paragraph's scaling sentence states the simulati
     expect_true(grepl(t[["methods_scaling_none"]], unscaled, fixed = TRUE))
     expect_true(grepl("without per-feature scaling.", unscaled, fixed = TRUE))
     expect_false(grepl(t[["methods_scaling_feature_zscore"]], unscaled, fixed = TRUE))
+    # E2: the owner's words (VAL-293, option (a), without the effect size): the numbers, the criterion and the
+    # condition; the two other results neither called small nor none.
+    sentence <- t[["methods_scaling_feature_zscore"]]
+    for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
+        "a correlation of at least 0.9", "missing", "could not be told from none")) {
+        expect_true(grepl(term, sentence, fixed = TRUE), info = term)
+    }
+    expect_false(grepl("weak", sentence, ignore.case = TRUE))
+    for (phrase in c("no practical difference", "too small", "there was none", "rose by")) {
+        expect_false(grepl(phrase, sentence, fixed = TRUE), info = phrase)
+    }
+    # E5: the Methods sentence and the Model tab's help end with one shared passage, so they cannot differ.
+    help <- integrationGuiTexts()[["help_scaling"]]
+    evidence <- integrationScalingEvidenceText()
+    expect_true(endsWith(sentence, evidence))
+    expect_true(endsWith(help, evidence))
+    for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
+        "could not be told from none", "a correlation of at least 0.9 with the true pattern",
+        "a tenth of the features of the two smallest")) {
+        expect_true(grepl(term, sentence, fixed = TRUE) && grepl(term, help, fixed = TRUE), info = term)
+    }
+    for (phrase in c("too small", "there was none")) {
+        expect_false(grepl(phrase, help, fixed = TRUE) || grepl(phrase, sentence, fixed = TRUE), info = phrase)
+    }
 })

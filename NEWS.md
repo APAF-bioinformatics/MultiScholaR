@@ -82,6 +82,13 @@
 
 ### Fixes
 
+ * Integration: the draft Methods paragraph (report, study parameters, Record tab) now states, for scaling each
+   feature, what the package's simulations showed, in the same words as the Model tab's help: at 20 samples with about
+   a fifth of the values missing, mostly low ones, the pattern was recovered closely in 26 rather than 12 of 30
+   simulated data sets; without missing values the difference could not be told from none (29 rather than 26 of 30),
+   and with 60 samples the pattern was recovered closely in 30 of 30 either way. It no longer calls the pattern weak or
+   says the scaling otherwise made no difference. Reports and study parameters already saved are not changed; saving
+   the record again writes the corrected sentence (KIT-246).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
