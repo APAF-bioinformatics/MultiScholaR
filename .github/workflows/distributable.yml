@@ -1315,12 +1315,19 @@ jobs:
           Set-NetFirewallProfile -All -LogBlocked True -LogFileName '%systemroot%\system32\LogFiles\Firewall\pfirewall.log' -LogMaxSizeKilobytes 4096
           Start-Sleep -Seconds 5
           $probeHost = ([uri]$env:GITHUB_SERVER_URL).Host
-          $probeIp = ([System.Net.Dns]::GetHostAddresses($probeHost) | Where-Object { $_.AddressFamily -eq 'InterNetwork' } | Select-Object -First 1).IPAddressToString
-          # R first (8 s), then the step's shell (8 s), to the same address and port 443; only a TCP handshake is attempted.
-          $rSaid = (& "$env:APP_FOLDER\resources\runtime\R\bin\Rscript.exe" --vanilla -e "x <- tryCatch({ con <- socketConnection('$probeIp', 443, blocking = TRUE, open = 'r+', timeout = 8); close(con); 'connected' }, error = function(e) paste('failed:', conditionMessage(e)), warning = function(w) paste('failed:', conditionMessage(w))); cat(x)" 2>&1 | Out-String).Trim()
-          $client = [System.Net.Sockets.TcpClient]::new()
+          $probeIp = try { ([System.Net.Dns]::GetHostAddresses($probeHost) | Where-Object { $_.AddressFamily -eq 'InterNetwork' } | Select-Object -First 1).IPAddressToString } catch { '' }
+          # DC2-1: a failed or empty lookup skips both attempts, so it lands in case 4 for the outbound row only and cannot
+          # stop the journey step.
           $controlConnected = $false
-          try { $controlConnected = $client.ConnectAsync($probeIp, 443).Wait(8000) } catch { } finally { $client.Dispose() }
+          if ([string]::IsNullOrEmpty($probeIp)) {
+            $rSaid = 'not run: the probe address did not resolve'
+          } else {
+            # R first (8 s), then the step's shell (8 s), to the same address and port 443; only a TCP handshake is attempted.
+            $rSaid = (& "$env:APP_FOLDER\resources\runtime\R\bin\Rscript.exe" --vanilla -e "x <- tryCatch({ con <- socketConnection('$probeIp', 443, blocking = TRUE, open = 'r+', timeout = 8); close(con); 'connected' }, error = function(e) paste('failed:', conditionMessage(e)), warning = function(w) paste('failed:', conditionMessage(w))); cat(x)" 2>&1 | Out-String).Trim()
+            $client = [System.Net.Sockets.TcpClient]::new()
+            $controlConnected = $false
+            try { $controlConnected = $client.ConnectAsync($probeIp, 443).Wait(8000) } catch { } finally { $client.Dispose() }
+          }
           # The log is read every 5 s for up to 60 s until a DROP of R's attempt (that address, port 443) is there, then once more.
           function Read-FirewallLog {
             if (-not (Test-Path -LiteralPath $fwlog)) { return '' }

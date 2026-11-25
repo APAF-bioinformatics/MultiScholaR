@@ -485,3 +485,18 @@ connections differently or not at all for this profile, or the attempt did not l
   Firewall). Criterion: `identical(wf$outbound_control_connected, "True") && grepl("cannot be opened|cannot open the
   connection", wf$outbound_r_said %||% "")`, with the DROP recorded beside it (result `recorded`).
 
+## DC2-1 (diff check of 862145a0, 2026-11-26)
+
+The probe's address lookup is wrapped in `try { … } catch { '' }` (the register's exact line), and when the address is
+empty both attempts are skipped (`outbound_r_said` = "not run: the probe address did not resolve"; the shell not
+connected). A DNS failure therefore lands in case 4 for the outbound row only and cannot stop the journey step, which in
+WJ''s job carries the evidence journeys. Not run.
+
+## Owed before WJ' (KIT-237 rests until the release commit)
+
+- A WJ' driver entry point: `k237Main` runs only WL or WLprime.
+- The H-1/H-2 hand-off from KIT-261: after opening the Normalization tab, wait for idle; wait up to 120 s for "Run
+  Normalization Pipeline" to be enabled; press once (WJ' re-presses nothing).
+- The re-binding to the release commit (merged into the run branch; early and full checks; driver 76e4b519; the
+  route commit WL' proves).
+
