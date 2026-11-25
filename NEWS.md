@@ -110,6 +110,24 @@
    refuses with a message saying which Quality Control steps to apply first; before, it was accepted and the
    correlation filter and RUV covariates then failed with messages that did not say why (KIT-244).
 
+ * 'Push to GitHub' (Summary tab, every omic) is no longer offered in the installed application, where it could not
+   work: it needs a git program, which the installed application does not have on Windows, and a
+   `<project id>.Rproj` file, which the application never creates. The Summary tab says what to do instead, and that
+   the project's scripts folder holds copies of the input files and analysis data. In R (outside the installed
+   application) the panel and `pushProjectToGithub()` are unchanged apart from the fix below (KIT-245).
+ * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
+   digits, '.', '-' and '_' only, not ending in '.', not a Windows device name); an ID that climbed out of R's
+   temporary folder (such as `../../../../Documents`) could make it delete that folder.
+   It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
+   repository on GitHub, never writes the token to a file (git receives it only for the push), and removes its
+   temporary copy whatever the outcome. A failure GitHub reports after the creation still leaves the new repository
+   empty, and the message names it. The push sends the omic's scripts folder `scripts/<omic>/` as it is: the design
+   and contrast tables, `study_parameters.txt`, `analysis_record.json` and any exported session state; for
+   lipidomics, metabolomics and transcriptomics `import_sources/` (exact copies of the input files) and the imported
+   tables; for proteomics the session archive (`filtered_session_*.msdia.tar`), its `.RDS` files,
+   `peptide-checkpoints/` and `reference_mapping/inputs/`. The repository is created private in the GitHub
+   organisation you name; private means visible to that organisation's owners and to the members its settings allow
+   (KIT-245).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
@@ -672,9 +690,12 @@
    which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
    (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
    are in `?integrationTrainModel` (KIT-234).
- * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
-   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several, it asks in the R console
-   when R runs interactively, and otherwise stops with an error.
+ * 'Push to GitHub' is no longer offered in the installed application (KIT-245). In R, the button and
+   `pushProjectToGithub()` need the git program and the project's `<project id>.Rproj` file and use the one R
+   Markdown file in the project folder; with no R Markdown file they say so, and with several (for example after
+   reports of two omics in one project) they ask in the R console when R runs interactively and otherwise stop with an
+   error. They send the omic's scripts folder, which holds copies of the input files (lipidomics, metabolomics,
+   transcriptomics) or the saved session with its data (proteomics).
 
 
 ### Scientific changes

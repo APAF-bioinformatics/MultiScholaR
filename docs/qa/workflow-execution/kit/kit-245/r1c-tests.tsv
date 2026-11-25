@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit245-github-push-safety.R	66	21	0	0	9	7.5	failed
+test-kit245-github-panel.R	41	1	0	0	0	7.5	failed

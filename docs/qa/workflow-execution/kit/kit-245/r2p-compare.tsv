@@ -1,0 +1,14 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit245-github-panel.R	12	28	0	0	failed	40	0	0	0	ok	fixed	fixed: KIT-245 E1: the installed application shows no GitHub push controls, and says why; counts: KIT-245 E1: the installed application shows no GitHub push controls, and says why (passed 4 -> 32, skipped 0 -> 0)	
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-kit245-github-push-safety.R	31	0	0	0	ok	31	0	0	0	ok	same		
+test-github-management-direct-shared.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-kit234-workbooks-withdrawn.R	29	0	0	0	ok	29	0	0	0	ok	same		
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-15-summary-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-trx-summary.R	82	3	0	0	failed	82	3	0	0	failed	same		
+test-module-ui-wrapper-direct-shared.R	45	0	0	0	ok	45	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-optional-packages.R	11	1	0	0	failed	11	1	0	0	failed	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		

@@ -1,0 +1,106 @@
+run_id	gate	host	key	value
+45617907710	W1c	windows-installed	step0.case_set	main
+45617907710	W1c	windows-installed	step0.GITHUB_PAT	unset or empty
+45617907710	W1c	windows-installed	step0.GITHUB_TOKEN	unset or empty
+45617907710	W1c	windows-installed	step0.GH_TOKEN	unset or empty
+45617907710	W1c	windows-installed	step0.GITHUB_PAT_GITHUB_COM	unset or empty
+45617907710	W1c	windows-installed	step0.token_shaped_variables	<none>
+45617907710	W1c	windows-installed	step0.GIT_CONFIG_COUNT	unset
+45617907710	W1c	windows-installed	step0.GIT_CONFIG_PARAMETERS	unset
+45617907710	W1c	windows-installed	step0.GIT_ALLOW_PROTOCOL	file
+45617907710	W1c	windows-installed	step0.GIT_TERMINAL_PROMPT	0
+45617907710	W1c	windows-installed	step0.GIT_CONFIG_NOSYSTEM	1
+45617907710	W1c	windows-installed	step0.GIT_CONFIG_GLOBAL	D:\a\_temp\k245\gitconfig-redirect
+45617907710	W1c	windows-installed	step0.config_in_force	gitconfig-redirect
+45617907710	W1c	windows-installed	step0.config_file_content	[url "file:///D:/a/_temp/k245/remote/"] ;  | insteadOf = https://x-access-token:<dummy>@github.com/ ;  | insteadOf = https://github.com/ ; [http] ;  | proxy = http://127.0.0.1:9
+45617907710	W1c	windows-installed	step0.HOME	D:\a\_temp\k245\home
+45617907710	W1c	windows-installed	step0.USERPROFILE	D:\a\_temp\k245\home
+45617907710	W1c	windows-installed	step0.getwd	D:/a/_temp
+45617907710	W1c	windows-installed	step0	passed
+45617907710	W1c	windows-installed	R	R version 4.6.1 (2026-06-24 ucrt)
+45617907710	W1c	windows-installed	os	Windows Server x64
+45617907710	W1c	windows-installed	interactive()	FALSE
+45617907710	W1c	windows-installed	Sys.which(git)	<none>
+45617907710	W1c	windows-installed	PATH	C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/x86_64-w64-mingw32.static.posix/bin;C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/usr/bin;C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0
+45617907710	W1c	windows-installed	MSR_BUNDLE	set
+45617907710	W1c	windows-installed	tempdir()	C:\Users\RUNNER~1\AppData\Local\Temp\RtmpkZCKLC
+45617907710	W1c	windows-installed	packageVersion(git2r)	0.36.2
+45617907710	W1c	windows-installed	find.package(git2r)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/git2r
+45617907710	W1c	windows-installed	packageVersion(gh)	1.6.1
+45617907710	W1c	windows-installed	find.package(gh)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/gh
+45617907710	W1c	windows-installed	packageVersion(gitcreds)	0.1.2
+45617907710	W1c	windows-installed	find.package(gitcreds)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/gitcreds
+45617907710	W1c	windows-installed	packageVersion(MultiScholaR)	0.9.0
+45617907710	W1c	windows-installed	find.package(MultiScholaR)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/MultiScholaR
+45617907710	W1c	windows-installed	MultiScholaR SourceCommit	fb135727500bc71a7ffa83fd58172f93aad1ade2
+45617907710	W1c	windows-installed	git2r::libgit2_features()	threads=TRUE ; https=TRUE ; ssh=TRUE
+45617907710	W1c	windows-installed	recorder	gh::gh replaced in gh's namespace
+45617907710	W1c	windows-installed	T0.gh_token_class	gh_pat
+45617907710	W1c	windows-installed	T0.gh_token	empty
+45617907710	W1c	windows-installed	T0.push.status	error
+45617907710	W1c	windows-installed	T0.push.error_class	simpleError ; error ; condition
+45617907710	W1c	windows-installed	T0.push.error_message	DEBUG: Failed to retrieve GitHub token from gh::gh_token()
+45617907710	W1c	windows-installed	T0.push.messages	<none>
+45617907710	W1c	windows-installed	T0.push.recorder_calls	0
+45617907710	W1c	windows-installed	T0.push.recorder	<none>
+45617907710	W1c	windows-installed	T0.push.staged_folder_remains	no
+45617907710	W1c	windows-installed	T0.push.staged_git_config_holds_dummy	no file
+45617907710	W1c	windows-installed	T0.push.files_under_tempdir_holding_dummy	<none>
+45617907710	W1c	windows-installed	token.gh_token_with_dummy	not the dummy
+45617907710	W1c	windows-installed	token.route	gh::gh_token stood in to return the dummy
+45617907710	W1c	windows-installed	P1.status	error
+45617907710	W1c	windows-installed	P1.error_class	simpleError ; error ; condition
+45617907710	W1c	windows-installed	P1.error_message	R project file does not exist: D:\a\_temp\k245\out-windows/project-k245-p1/k245-p1.Rproj
+45617907710	W1c	windows-installed	P1.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45617907710	W1c	windows-installed	P1.recorder_calls	0
+45617907710	W1c	windows-installed	P1.recorder	<none>
+45617907710	W1c	windows-installed	P1.staged_folder_remains	no
+45617907710	W1c	windows-installed	P1.staged_git_config_holds_dummy	no file
+45617907710	W1c	windows-installed	P1.files_under_tempdir_holding_dummy	<none>
+45617907710	W1c	windows-installed	P2.status	error
+45617907710	W1c	windows-installed	P2.error_class	multischolar_github_git_missing ; rlang_error ; error ; condition
+45617907710	W1c	windows-installed	P2.error_message	pushing needs the git program, which was not found on this computer, so | nothing was created on GitHub. Install Git (git-scm.com), start R again and | press Push again.
+45617907710	W1c	windows-installed	P2.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd | 
+45617907710	W1c	windows-installed	P2.recorder_calls	0
+45617907710	W1c	windows-installed	P2.recorder	<none>
+45617907710	W1c	windows-installed	P2.staged_folder_remains	no
+45617907710	W1c	windows-installed	P2.staged_git_config_holds_dummy	no file
+45617907710	W1c	windows-installed	P2.files_under_tempdir_holding_dummy	<none>
+45617907710	W1c	windows-installed	P2.git_rerun	skipped: no git
+45617907710	W1c	windows-installed	P2g	skipped: no git
+45617907710	W1c	windows-installed	P3.status	error
+45617907710	W1c	windows-installed	P3.error_class	simpleError ; error ; condition
+45617907710	W1c	windows-installed	P3.error_message	menu() cannot be used non-interactively
+45617907710	W1c	windows-installed	P3.messages	Multiple R Markdown files found. Please select one to use as the main project workflow: | 
+45617907710	W1c	windows-installed	P3.recorder_calls	0
+45617907710	W1c	windows-installed	P3.recorder	<none>
+45617907710	W1c	windows-installed	P3.staged_folder_remains	no
+45617907710	W1c	windows-installed	P3.staged_git_config_holds_dummy	no file
+45617907710	W1c	windows-installed	P3.files_under_tempdir_holding_dummy	<none>
+45617907710	W1c	windows-installed	P4.git2r_push	pushed
+45617907710	W1c	windows-installed	P4.remote_branches	master
+45617907710	W1c	windows-installed	P6.Sys.which(git)	C:\PROGRA~1\Git\bin\git.exe
+45617907710	W1c	windows-installed	P6.git --version	git version 2.56.1.windows.1
+45617907710	W1c	windows-installed	P6.git_config_global_url_http	url.file:///D:/a/_temp/k245/remote/.insteadof https://x-access-token:<dummy>@github.com/ ; url.file:///D:/a/_temp/k245/remote/.insteadof https://github.com/ ; http.proxy http://127.0.0.1:9
+45617907710	W1c	windows-installed	P6.status	error
+45617907710	W1c	windows-installed	P6.error_class	multischolar_github_push_failed ; rlang_error ; error ; condition
+45617907710	W1c	windows-installed	P6.error_message	the repository kit245-probe-no-such-org/k245-p6 was created on GitHub | but the files could not be sent (system('git push') failed with exit code: | 128). It is empty: delete it on GitHub or use another Project ID.
+45617907710	W1c	windows-installed	P6.messages	Using the only R Markdown file found: scripts/proteomics/DIANN_report.rmd |  ; warning: running command 'git -C "C:/Users/runneradmin/AppData/Local/Temp/RtmpkZCKLC/k245-p6" push origin refs/heads/main' had status 128
+45617907710	W1c	windows-installed	P6.recorder_calls	1
+45617907710	W1c	windows-installed	P6.recorder	POST /orgs/{org}/repos [.token=dummy; org=kit245-probe-no-such-org; name=k245-p6; private=TRUE; auto_init=FALSE]
+45617907710	W1c	windows-installed	P6.staged_folder_remains	no
+45617907710	W1c	windows-installed	P6.staged_git_config_holds_dummy	no file
+45617907710	W1c	windows-installed	P6.files_under_tempdir_holding_dummy	<none>
+45617907710	W1c	windows-installed	P6.pushed_tree	fatal: Not a valid object name refs/heads/main
+45617907710	W1c	windows-installed	P6.mechanism	GIT_CONFIG_COUNT environment block (audited head)
+45617907710	W1c	windows-installed	P6.credential_github_status	128
+45617907710	W1c	windows-installed	P6.credential_github_gives_dummy	no
+45617907710	W1c	windows-installed	P6.credential_github_gives_decoy	no
+45617907710	W1c	windows-installed	P6.credential_example_gives_dummy	no
+45617907710	W1c	windows-installed	P6.decoy_store_written	no
+45617907710	W1c	windows-installed	P5.proteomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45617907710	W1c	windows-installed	P5.lipidomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45617907710	W1c	windows-installed	P5.metabolomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45617907710	W1c	windows-installed	P5.transcriptomics	push_to_github=no; enable_github=no; github_org=no; heading=yes; not_available_sentence=yes
+45617907710	W1c	windows-installed	after.files_under_tempdir_holding_dummy	<none>
+45617907710	W1c	windows-installed	raw_output_unmasked_dummy_count	0
