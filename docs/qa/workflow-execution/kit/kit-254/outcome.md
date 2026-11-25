@@ -121,32 +121,82 @@ function that calls `start` unless `runner$retrying()`. No change to replay, rec
 ## R2
 
 Run 45609913680: head bff1eb38 (the fix) against base 9dc99037 (the tests-only commit), the 47 files longest first
-(`r2/compare.tsv`, `r2/check-compare.txt`, `r2/tests*.tsv`). OBSERVED: **46 files `same`**, including
+(`r2/compare.tsv`, `r2/check-compare.txt`, `r2/tests*.tsv`). OBSERVED: **46 files `same`** (seven of them fail on both sides, with the same 446 failure messages byte for byte: test-prot-norm-core.R 306, test-omic-da-module.R 53, test-workflow-trx-declarations.R 33, test-omic-summary-module.R 28, test-workflow-omics-declarations.R 23, test-workflow-operation-registry.R 2, test-workflow-kit-harness.R 1; all fail identically in staging's merge trains), including
 `test-omics-norm-state-guards.R` (the T1/T8 edit runs on both sides), `test-kit212-da-current.R`,
 `test-kit207-summary-head-guard.R`, `test-omic-norm-module.R` and `test-prot-norm-core.R` (identical failure messages on
 both sides, as on every runner); **the new file `fixed`**: base 191 passed 101 failed, head 292 passed 0 failed, every
 E row fixed, every G row passing on both. R CMD check: ERRORs 0, WARNINGs 3, NOTEs 3 on each side, findings identical, 0
 only on head. Stop rule 3 not triggered. 385 job-minutes (25.67 core-hours).
 
+## Correction pass (AUDIT-KIT-254-impl-20261126) and the follow-up under OD-1 (a) (VAL-247; ticket r1.3 section 18)
+
+- **Merge.** `origin/v0.9-staging` c4505c7f merged into `kit-254` (1a5291d3): conflicts only in `NEWS.md` (both entries
+  kept) and the ledger (staging's rows VAL-230 to VAL-261 kept, KIT-254's after them); no code conflict.
+- **First statement superseded.** 6c43b26b (per-assay columns, Skip after Apply only) was replaced after the audit (I08,
+  point 6; coordinator's ruling): its R1b (45619709256) failed as predicted, its R2b (45623518474) was cancelled with no
+  result read; 993c454b reverts it.
+- **I01 (E7 after KIT-224).** R1c (45624689427, merged tree without statement code): the new precondition failed for
+  lipid with RUV (Apply(0.99) now kept B_2 and B_3 only; lipid and metab held). G0b (45628705535, G0's rule unchanged, on
+  the merged tree): no listed threshold removes some samples and keeps two per group (none up to 0.95, ten at 0.99):
+  **stop rule 2** for E7. Declared test-only edit (44e3e910): lipid with RUV at 0.5 / 0.3, nothing removed; E7 keeps
+  its state and record assertions; its sample difference is not shown on the fixture after KIT-224 (it was, at e0747fc1:
+  B_4). Under KIT-248's G0b precedent (m + m2) / 2 from `g0b/g0b-best-partner.tsv` would be about 0.960 (A_1 0.9573, B_4
+  0.9628); not chosen here (the coordinator's call).
+- **R1d (45631887861; staging c4505c7f plus the test file only; predictions committed first), OBSERVED as predicted:**
+  257 passed, 114 failed: every E row fails at base, E7 on its state and record assertions; E8, E15 to E18 at "no
+  statement"; no G row or precondition failed. E17's first run (R1c) was an instrument defect (the replay's inputs
+  matched by assay order; fixed by SHA-256 in 44e3e910).
+- **Statements (904a5514).** `replayWorkflowAnalysisRecord` returns `correlation_statement` and raises it as a warning of
+  class `workflow_replay_correlation_skip`; the replay is unchanged. Per lipid/metab prefix: a selection whose input is not
+  the result of the step before it (the filter applied more than once, including Apply, Skip, Apply, whose selection's
+  input is the skip state, G0 E13) gets the second statement and no other; otherwise the skip step directly after the
+  selection gets the first, naming the samples left out of the design with the assays they failed in, and none when no
+  sample left the design. The register's point 6 said Apply, Skip, Apply records carry "input equals result"; G0's E13
+  record shows `input_is_result=FALSE`, hence the definition above. Texts are drafts (`wording.md`).
+- **R2c:** predictions in `r2c-predictions.md` (committed before the request). **R2c (45635516160, base 44e3e910, head 904a5514; 506 job-minutes), OBSERVED:**
+  57 files `same` (the seven with pre-existing failures at staging's counts; `test-omics-norm-state-guards.R` 651/0 and
+  `test-workflow-analysis-record.R` 351/0 on both sides; the replay consumers unchanged); R CMD check identical, none only
+  on head. The new file: base 351 passed 20 failed, head 369 passed **2 failed: E17 lipid and metab**, against the
+  prediction of 0. E8, E15, E16, E18 and every guard pass on head (statements in the head log). E17's statement names
+  the right sample, left out of the design ("leaves out A_1"), but its assay detail is false: "(below the threshold in
+  LCMS_Pos, LCMS_Neg)", while A_1 failed in LCMS_Pos only. **Cause (read):** `workflowReplayDesignSamples` intersects each
+  assay's columns with the state's own design, and A_1 has left the after-state's design, so A_1 seems to leave every
+  assay. **Repair (not made):** compare the after-state's assay columns as stored (`colnames(assay)`), intersected with
+  the before-state's design only. **Stop:** this was the run of the one correction pass (AGENTS.md; the coordinator's
+  message); a further fix and run need the coordinator's authority.
+
 ## Acceptance criteria
 
 | # | Criterion | Evidence | State |
 |---|---|---|---|
-| A1 | G0 before any code | run 45599722106; tables above | met, with the two instrument limits stated (managed I/II tab fields observed in R1 instead; managed RUV not run) |
+| A1 | G0 before any code (E7's thresholds re-derived on the merged tree: G0b, stop rule 2) | run 45599722106; tables above | met, with the two instrument limits stated (managed I and II: head, history and design recorded in G0; the DA source, Save, record and replay observed on base by R1's managed rows; the tab's correlation summary and PCA on the managed route observed on no run: the Skip sets them in process on every session, `R/mod_omic_norm.R:629-673`, as G0 observed in process; managed RUV not run) |
 | A2 | each E row fails at G0's value on the tests-only commit; G rows pass; edited T1/T8 pass on base; all pass on the fix | R1 45604366935; R2 head side | met (R1; head side of R2: 292 passed, 0 failed) |
 | A3 | R2 base against head: every file `same` except the new file; check nothing only on head | R2 45609913680 | met |
 | A4 | the merge train's full suite; `test-omics-norm-state-guards.R` count-changed by the T1/T8 edit | the train | not this branch's run (the coordinator's train) |
 | A5 | NEWS, ledger, outcome with "For the change report"; `man/`, `NAMESPACE` unchanged | 964d6f65; this file | met (ledger `VAL-<merge>`, numbered at merge) |
 
-**OD-1 (owner, decided after this implementation started: (a), VAL-247).** This change makes no replay change (the
-coordinator's ruling). The replay statement under (a) is a later, separate commit with its own failing-first run and its
-own comparison over the replay consumers (the 54-file scope), merged after KIT-222 (on staging since merge train 4).
+**OD-1 (owner: (a), VAL-247).** The main fix makes no replay change (the coordinator's ruling); the replay statement
+under (a) is the separate follow-up above, with its own failing-first run (R1b) and comparison (R2b).
+
+Conventions: 20 new lines of the fix exceed R.md's 100 characters, following the file's idiom (230 such lines); a
+recorded divergence under R.md's existing-code scope rule (I13).
 
 ## Not checked
 
+- E7's sample difference after KIT-224 (stop rule 2; G0b): state and record assertions only on the merged tree.
+- The follow-up statement's assay detail on multi-assay records: wrong at 904a5514 (R2c, E17); not repaired.
+
 - E7 managed (lipid with RUV through the worker): the harness ran no RUV action for these inputs (G0); why was not traced.
-- The managed I/II tab fields at base in G0 (observed in R1 instead).
+- The managed route's correlation summary and PCA reference (base and fix): read only.
 - G0 was not rerun after its instrument errors.
+- A publication failure of the managed selection after its science was committed: the tab's correlation fields are
+  cleared while the head holds the new filtered table, until the retry (any managed action) delivers the Apply's result
+  (`R/utils_workflow_execution.R:2072-2083`, `:845`, `:853`; `R/mod_omic_norm.R:599`). Transient; read, not run (I02).
+- G7 presses at the run's result; an Apply pressed at a correlation-step head while a display runs is shown only through
+  E12's shared mechanism (start-time resolution) (I03).
+- After the fix a re-applied step's input is the run's result (its previous state is the state the cut returns to);
+  read, and implied by E6 and E13 (replay equals live), not asserted on the record (I12).
+- Why the managed harness ran no RUV step (phase 0 copied lipid's pass for lipid with RUV; I11).
 - A Skip pressed while a managed Apply runs (in process at the click; traced by reading in Re-check 1 only).
 - The full suite (the merge train's); Windows; real data; how often either sequence happens in practice.
 - Lipid DA refusal after a Skip on multi-assay data where a sample failed in only some assays (R1-07 (b)): by reading
@@ -178,7 +228,9 @@ own comparison over the replay consumers (the 54-file scope), merged after KIT-2
 - **How to recognise affected outputs.** Records: a `<prefix>_norm_complete` step directly after a
   `<prefix>_correlation_filtered` step (case i); a `<prefix>_pearson_selection` step whose input entity is its own result
   (case ii). Outputs: the DA tables, the exported session, the integration input and final S4 file, and
-  `study_parameters.txt` (a `min_pearson_correlation_threshold` line although Skip was pressed) of such sessions.
+  `study_parameters.txt` (a `min_pearson_correlation_threshold` line although Skip was pressed) of such sessions. The
+  first signature also matches a record a script makes, after the fix too, by calling the wrappers in that order; it
+  describes the record, not the version (I12).
 - **How to recompute.** Run the normalisation again, then Skip (or Apply once), then the DA and the Summary.
 - **Evidence.** G0 45599722106 (base values), R1 45604366935 (each E row failing at them), R2 45609913680. F172 fixtures (12
   samples, one assay; E9 two assays with constructed pair correlations); limits under Not checked.

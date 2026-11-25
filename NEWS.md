@@ -71,16 +71,19 @@
 ### Fixes
 
  * Lipidomics and metabolomics: 'Skip Filtering & Proceed to DE' pressed after the correlation filter was applied now
-   uses every sample, as the tab says, and applying the filter again filters the normalised table again instead of the
-   already filtered one. Before, in development builds from 31 October 2026, after Apply and then Skip, the
-   differential analysis, the exported normalised session, the integration input, the study parameters and the
-   analysis record used or named the filtered table, while the tab reported that no sample was removed and the final
-   PCA showed every sample. And applying the filter again could not bring back samples that an earlier, higher
-   threshold had removed, while the analysis record named only the last threshold. With more than one assay, applying
-   it again, even at the same threshold, could remove further samples. A differential analysis run between Apply and
-   Skip must now be run again (the Summary asks for it). In earlier releases the analysis after Skip used every sample,
-   but the tab's summary and final PCA still showed the samples the filter had removed; they now show every sample.
-   (KIT-254)
+   uses every sample, as the tab says, and applying the filter again filters the table the normalisation produced
+   (RUV-corrected when RUV was applied) instead of the already filtered one. Before, in development builds from 31
+   October 2026, after Apply and then Skip, the differential analysis, the exported normalised session, the
+   integration input, the study parameters and the analysis record used or named the filtered table (with two or more
+   lipidomics assays, when the filter had removed a sample from only some of them, the differential analysis instead
+   stopped with a message), while the tab reported that no sample was removed and the final PCA showed every sample.
+   And applying the filter again could not bring back samples that an earlier, higher threshold had removed, while
+   the analysis record named only the last threshold. With more than one assay, applying it again, even at the same
+   threshold, could remove further samples. A differential analysis run between Apply and Skip must now be run again
+   (the Summary asks for it). In earlier releases the analysis after Skip used every sample, but the tab's summary
+   and final PCA still showed the samples the filter had removed; they now show every sample. Analysis records made
+   by the development builds replay as they ran, with a statement naming the samples the filter left out, or, for a
+   filter applied more than once, saying that only the last threshold was recorded. (KIT-254)
 
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
