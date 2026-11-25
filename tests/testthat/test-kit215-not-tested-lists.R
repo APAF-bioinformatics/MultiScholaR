@@ -280,6 +280,11 @@ test_that("KIT-215 T2: the tab shows the GO list as not tested, with its reason"
     summary <- k215Summary(formatProtEnrichClusterProfilerSummaryText, run$selected$clusterprofilerResults, run)
     expect_true(grepl(sprintf("Up-regulated: not tested (%s)", k215GoReason), summary, fixed = TRUE),
         info = summary) # base: "Up-regulated: 0"
+    # K215-I01: the summary filtered to the direction not tested says so, not a count of 0.
+    filtered <- k215Summary(formatProtEnrichClusterProfilerSummaryText, run$selected$clusterprofilerResults, run,
+        filter = "up")
+    expect_true(grepl(sprintf("Up-regulated: not tested (%s)", k215GoReason), filtered, fixed = TRUE),
+        info = filtered) # base: "Showing 0 up-regulated GO terms"
 })
 
 test_that("KIT-215 T2b: after a reopen the tab shows the same texts", {
@@ -431,10 +436,8 @@ test_that("KIT-215 T7b: an error in a g:Profiler comparison's processing refuses
     testthat::local_mocked_bindings(stripEnrichmentIdSuffix = function(ids) stop("k215 forced strip error"))
     project <- k215Project(withr::local_tempdir(), k215Annotations(), taxon = "9606", id_gene_names = TRUE)
     expect_true(inherits(project$error, "workflow_enrichment_test_error")) # base: completed, the contrast NULL
-    # Correction pass (R2 run 45495673217): the ticket states the class only; the message ends with the caught error's
-    # message, which dplyr's `mutate()` replaces by its own header ("In argument: ..."), so only the sentence is asserted.
-    expect_true(startsWith(conditionMessage(project$error), paste("The enrichment test of comparison B_vs_A stopped",
-        "with an error, so the run was not completed: ")))
+    expect_identical(conditionMessage(project$error), paste("The enrichment test of comparison B_vs_A stopped with an",
+        "error, so the run was not completed: k215 forced strip error."))
     expect_null(project$config)
 })
 
@@ -543,6 +546,11 @@ test_that("KIT-215 T11: a GO direction with no list says so in the summary and t
         project$run)
     expect_true(grepl("Down-regulated: no list (no protein passed the cutoffs)", summary, fixed = TRUE),
         info = summary) # base: "Down-regulated: 0"
+    # K215-I01: the summary filtered to the direction with no list says so, not a count of 0.
+    filtered <- k215Summary(formatProtEnrichClusterProfilerSummaryText, project$run$selected$clusterprofilerResults,
+        project$run, filter = "down")
+    expect_true(grepl("Down-regulated: no list (no protein passed the cutoffs)", filtered, fixed = TRUE),
+        info = filtered) # base: "Showing 0 down-regulated GO terms"
     expect_true(grepl("B_vs_A, down-regulated: no list (no protein passed the cutoffs)", k215Download(project$run),
         fixed = TRUE))
     expect_identical(k215Plot(renderProtEnrichClusterProfilerPlot, project$run$results, "down", project$run$not_tested),
