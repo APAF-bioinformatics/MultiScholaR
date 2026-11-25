@@ -115,3 +115,15 @@ Core-hours: R1 7.0 job-minutes (0.47). R2 tests 21.0 + 21.2 and check 16.1 + 13.
 **Evidence and its limits.**
 - R1 45491079123 and R2 45573395892. The shared full suite comes after merge.
 - One synthetic design: 60 proteins, 12 samples, 3 groups. Limma branch only.
+
+## Implementation audit repairs (`audits/AUDIT-KIT-218-impl-20261125.md`)
+
+- Staging 3eeaf100 merged at 248a75e6. The ledger conflict was resolved by keeping staging's rows through VAL-225, with KIT-218's row `VAL-<merge>` after them.
+- **Repairs at c7f105a2 (nothing under `R/`):**
+  - I02: `kit218ExpectCarried` asserts that `log2FC` and `raw_pvalue` are present for tested proteins and prints how many `fdr_qvalue` are missing. The texts above and the ledger qualifier come from the register.
+  - I03: `kit218ExpectTruth` checks each label against the group-mean truth. It is called in W1, W4, W6 and W7.
+  - I04: the NEWS clause was replaced, and NEWS now says the swap was latent.
+  - I06: the ledger's line ranges now match this file.
+  - I09: recorded as open in `wording.md`.
+- **Run A1 (45581173440, c7f105a2, head only, new file):** 80 passed, 0 failed, G1 and M2 skipped. `kit218ExpectTruth` passed everywhere it is called. Printed: `fdr_qvalue` is missing for 60 of 60 tested proteins of B_vs_A and 0 of 60 of C_vs_A. This is I01, seen directly. 10.8 job-minutes, 0.72 core-hours, from the correction allowance.
+- **Core-hours in total:** 5.96 against 13.0 expected and 56.0 ceiling.
