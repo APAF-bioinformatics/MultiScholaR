@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-190 bounded-k: reestimate.R plan, run once, on stage 1's committed reestimate.tsv (spent = lifecycle 3.15 + stage 1 8.06 core-hours); not a measurement",
+  "label": "KIT-190 bounded-k plan 01662a56",
+  "package_commit": "01662a56898545c255bc4c69d4dded46cf11ffa1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/reestimate.R",
+      "args": [
+        "plan",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s1/reestimate.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s1/provenance.json",
+        "11.21",
+        "k190-plan"
+      ],
+      "out": "k190-plan",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
