@@ -1,0 +1,46 @@
+{
+  "requested_by": "KIT-190 K190-D01: the declared metabolomics identity check run late (bound metab-check, K190_CLASS=metab), compared field by field with the counted lipid rows",
+  "label": "KIT-190 metab identity eee3e05e",
+  "package_commit": "eee3e05ee98b20cd552d929734fc968448da9924",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "metab-check",
+        "k190-metab/check"
+      ],
+      "env": {
+        "K190_CLASS": "metab",
+        "K190_WORKERS": "2"
+      },
+      "out": "k190-metab",
+      "out_pattern": "(journeys|curves)\\.tsv$|provenance\\.json$",
+      "timeout_minutes": 80
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/metab-identity.R",
+      "args": [
+        "k190-metab/check/journeys.tsv",
+        "k190-metab/identity"
+      ],
+      "out": "k190-metab",
+      "out_pattern": "(journeys|curves|metab-identity)\\.tsv$|provenance\\.json$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

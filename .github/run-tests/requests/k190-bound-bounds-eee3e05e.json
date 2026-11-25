@@ -1,0 +1,37 @@
+{
+  "requested_by": "KIT-190 per-cell one-sided 95% bounds (bounds.R), computed after the decision; descriptive; decides nothing",
+  "label": "KIT-190 bounds eee3e05e",
+  "package_commit": "eee3e05ee98b20cd552d929734fc968448da9924",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/bounds.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/eg/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/ep/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/er/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/es/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/ew/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/nr-e1/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/ns/journeys.tsv",
+        "docs/qa/workflow-execution/kit/kit-190/bound-s2/nw/journeys.tsv",
+        "--",
+        "k190-bounds"
+      ],
+      "out": "k190-bounds",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
