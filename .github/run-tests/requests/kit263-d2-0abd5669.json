@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-263 D2: last declared diagnostic (printing only): proteomics owner save and lipidomics owner save; classification in predictions.md",
+  "label": "KIT-263 D2 diagnostic 0abd5669, new file alone; ceiling 45 job-minutes",
+  "package_commit": "0abd5669e0c760d7a734c19f109440c024c1c860",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit263-prot-study-parameters-sections.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
