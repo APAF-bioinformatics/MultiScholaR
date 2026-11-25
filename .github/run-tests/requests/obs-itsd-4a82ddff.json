@@ -1,0 +1,20 @@
+{
+  "requested_by": "Observation for K242-P01 (AUDIT-KIT-242-plan-20261125): does ITSD change any value on the package's own lipid/metab fixtures and simulators (declarations, worker, KIT-172, KIT-190, KIT-188) plus one positive control; ceiling 60 job-minutes; decides only whether P01's reading holds per generator",
+  "label": "obs-itsd K242-P01 on obs-itsd-20261125 4a82ddff (staging 3eeaf100 + script)",
+  "package_commit": "4a82ddff88da4a7216fb2c215d1350a880d31ae1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "tools/obs-itsd/obs-itsd.R", "args": ["obs-itsd-out"], "out": "obs-itsd-out", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 50}
+  ],
+  "fetch_refs": ["kit-190-ruv-control-selection", "kit-188-ruv-default-calibration"],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
