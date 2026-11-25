@@ -1,0 +1,70 @@
+# Merge train 2 of 2026-11-25: KIT-200
+
+Coordinator's instruction after train 1 landed (staging 185ebf75): same procedure as train 1
+(`merge-train-20261125.md`).
+
+## Members
+
+- KIT-200 (`origin/kit-200-prot-da-proteins-without-values` at 269a7f7a): implementation audit
+  and closure check, AUDIT-KIT-200-impl-20261125, "ready to merge by the next train"; I01 to I07
+  closed. Three non-blocking text corrections C-a to C-c in the register are not applied by the
+  train (records only; left for the coordinator).
+- Not members: KIT-227 (merges after KIT-220, which is not ready); KIT-215 (implementation audit
+  running). No other branch is recorded in `tickets/kit/audits/DISPATCH-STATE.md` as audited and
+  ready to merge with no open repair.
+
+## Declaration (written before the run is sent)
+
+- Purpose: KIT-200's check on the merged tree (closure check, "For the next train").
+- Base commit: `185ebf75cc179fdf88df397c38473cdf9592bb6f` (`origin/v0.9-staging`, train 1's head).
+- Head commit (bound by the run): `6f206314` (full hash in the run request), the merge of KIT-200.
+  This file and the records commit after the run are under `docs/qa/` only.
+- Conflicts met: `docs/methods-decision-ledger.md` only (staging's rows to VAL-200 kept in order,
+  KIT-200's row after them written `VAL-211` for the coordinator to number when landing
+  the train, since owner-decision rows VAL-201 onward are being added to staging). NEWS merged
+  without conflict, under the one unreleased heading; `DESCRIPTION` unchanged. Code changed
+  relative to the base: `R/func_prot_da_model_stats.R`, `man/runTestsContrasts.Rd`, the new test
+  file.
+- Scope: KIT-200's R2b list (47 files, `kit-200/r2b/compare.tsv`). The ticket's section-9 grep
+  on the train tree adds only three helper files (`helper-*`, dropped by the ticket's rule), so
+  nothing is added. R CMD check on both sides. Settings as R2b (3 shards per side, no extra
+  packages, no env), except the per-file limit of `test-gui-entry-proteomics.R` at 120 minutes
+  (as train 1; a kill limit, not a threshold).
+- Ceiling: 540 job-minutes (R2b's 36.0 core-hours).
+- Decision: every file `same`, apart from `test-kit200-prot-da-no-value-proteins.R` only on head
+  and passing (538 in R2b); `test-gui-entry-proteomics.R` `same`; R CMD check findings identical
+  on both sides or fewer on head. Judged against train-1 staging (closure check). If it holds:
+  TRAIN GREEN. If not: the files and counts are reported; the train is not rebuilt here.
+- Attempts: one run; one re-send only for an instrument defect with no result judged.
+
+## Result
+
+Run 45518533965 (request `merge-train-20261125b-6f206314`, run-tests commit 271c3c6d), head
+6f206314 against base 185ebf75, sent once; conclusion success; 315.0 job-minutes of the 540
+ceiling (tests 282.5, check 31.7, plan and results 0.7). Tables in `merge-train-20261125b/`
+(`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`).
+
+Observed, 47 files: 46 `same`, 1 `only-on-head`:
+
+| file | base p/f | head p/f | verdict |
+|---|---|---|---|
+| test-kit200-prot-da-no-value-proteins.R | absent | 538/0 | only-on-head |
+| test-gui-entry-proteomics.R | 189/4 | 189/4 | same |
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides, all 6 findings identical, none only on
+head.
+
+Verdict: KIT-200 meets its declaration exactly (the same verdicts as R2b on 0cf0e440). TRAIN
+GREEN.
+
+Staging had moved to 67569959 (ledger rows VAL-201 to VAL-210 only) by the time the result was
+read, so the train lands by a merge, not a fast-forward; the ledger row stays `VAL-211`
+for the coordinator to number.
+
+Not checked: the trees after the run's head (docs only); any file outside the 47; the merge with
+staging 67569959.
+
+## Merge record (coordinator)
+
+Staging had moved from the train's base 185ebf75 to 67569959 while the run was in progress; the only difference is ten rows of the methods ledger (VAL-201 to VAL-210, owner's decisions of 2026-11-25), no package code, test or NEWS line. The train therefore landed by a merge and not by a fast-forward. The one conflict was the ledger: staging's rows were kept, and KIT-200's row, carried on the train as a placeholder, was numbered VAL-211 after them (also in `kit-200/outcome.md` and in this file). No run was repeated for the merge: the tested tree and the landed tree differ only in those ledger rows.
