@@ -1139,6 +1139,9 @@ jobs:
           $savedPath = $env:PATH
           $env:HOME = Join-Path $k 'home'; $env:USERPROFILE = $env:HOME; $env:K245_EXPECT_HOME = $env:HOME
           $env:K245_WORKSPACE = $env:GITHUB_WORKSPACE
+          # W1' P6 (audit I01): the runner image's own Git for Windows, put on R's PATH by the probe for P6 only.
+          $env:K245_WINDOWS_GIT_DIR = Split-Path -Parent (Get-Command git.exe -ErrorAction Stop).Source
+          "KIT245 Windows git for P6: $env:K245_WINDOWS_GIT_DIR ($(git --version))"
           [Console]::OutputEncoding = $utf8
           Push-Location $env:RUNNER_TEMP
           & $clean -Bundle "$env:APP_FOLDER\resources\runtime" -Script $probe -NoBundleArgument -Arguments (Join-Path $k 'out-windows'), windows-installed, main, ((Join-Path $k 'remote') -replace '\\', '/') *> $log
