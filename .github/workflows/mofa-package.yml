@@ -19,7 +19,7 @@ name: MOFA2 package test (KIT-062)
 on:
   push:
     branches:
-      - "run-mofa-smoke-k184"
+      - "run-mofa-smoke-k234"
     paths:
       - .github/mofa-smoke/package-params.json
   workflow_dispatch:
