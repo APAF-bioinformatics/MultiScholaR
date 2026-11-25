@@ -113,6 +113,13 @@ session owner none 1 (`da_groupB-groupA_long_annot.xlsx`). G15: the in-memory ma
 files on disk were not made by the store's DA; every route the ticket lists as allowed (G1 to G15) passed on head, and no
 other stored capture moved (R2).
 
+- **R4** (45512259372, the merge 0341f710 with staging cf8af245 against cf8af245; `r4-compare.tsv`, `r4-e17/`): 58 files
+  `same`; the new file only on head, 309/0; E17 on the tests-first tree 606b11d2 (script `e17-first.R`) fails twice:
+  `render=1`, "Report generated successfully!" (the base value); on head `render=0` and F-11's notice. The core file
+  676/25 on both sides: the 8 R3 failures are gone (E16); its verdict is `message-changed` only because two pre-existing
+  failures (`prot_owner`, `prot_owner_variants` save files) now print the expectation as `omicsSummaryCoreExpected(case,
+  step, field)` (E16's line-302 edit); their values are identical. The module file `same`. Check identical.
+
 ## Acceptance criteria
 
 | # | Evidence | State |
@@ -120,7 +127,7 @@ other stored capture moved (R2).
 | A1 | R1: every E row fails at its base value, G rows pass; R1h/R2: all pass on the fix | met |
 | A2 | control C (45491596893): (i) to (iii) hold; the re-freeze commit c854590b edits exactly the 152 changed leaves | met |
 | A3 | R2: every file `same` except the new file and the two W1 files at the nine cases; KIT-207's file `same` with E14; no unexpected `new-failure` or `message-changed`; check nothing only on head | met |
-| A4 | R3: no difference except A3's, other than the 8 core-side Report notes above | not met: stopped for a ruling |
+| A4 | R3's other 477 files `same`; R4 (45512259372): the core file 676/25 on both sides, its 8 R3 failures gone with E16, the verdict `message-changed` only by the deparsed expectation of E16's line-302 edit in two pre-existing failures; the module file `same`; check identical | met in substance (label-only verdict stated) |
 | A5 | NEWS (Fixes), ledger VAL-<merge>; no version, NAMESPACE or man/ change (all new functions @noRd); this file with "For the change report" | met |
 
 Declared edits of other tickets' files: E14 only (`tests/testthat/test-kit207-summary-head-guard.R:631`, in the fix
