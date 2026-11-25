@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-217 R1 instrument rerun 1 of 3 (VAL-54): T3/T4 info and T6/T10 (iv) split fixed in the tests only; same expected values; ceiling 45 job-minutes",
+  "label": "KIT-217 R1 instrument rerun 1 on kit-217 5e107a52",
+  "package_commit": "5e107a525ae11199786cf9643aba965b28d7a5cd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit217-intensity-filter-missing.R",
+    "test-metab-qc-shared.R",
+    "test-metab-02t-metabolite-intensity-filtering-characterization.R",
+    "test-metab-s4-qc-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
