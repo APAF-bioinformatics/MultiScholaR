@@ -141,3 +141,34 @@ train-15 state, so the verdict is `same` at 376/3.
 - `NEWS.md`: KIT-258's bullet in its place after the landed trains' bullets.
 - `kit-258/outcome.md` line 180 placeholder; the ticket's r1.3 line (I07).
 - Stacking: lands only with train 19, whose own run is another agent's.
+
+## Result
+
+Run 45712155865 (request `merge-train-20261126m-77b67929`, request commit 880d1ff3), dispatched without error; green
+(infrastructure). Head 77b67929 vs base b6b4ed6b. Tables: `merge-train-20261126m-compare.tsv`,
+`merge-train-20261126m-check-compare.txt` (same directory). One deviation from the declaration, in the request only:
+the two GUI-entry files (lipidomics, metabolomics) carried a 120-minute file timeout (the other files 60), as in
+train 15; no file came near either limit.
+
+**Job-minutes 210.9 = 14.06 core-hours** against the ceiling of 600 job-minutes (40.0 core-hours): tests head
+12.6/42.2/33.1, tests base 18.2/27.8/48.3, check head 15.2, check base 12.6, plan 0.4, results 0.5.
+
+Totals: 35 files, 32 `same`, 1 `only-on-head`, 1 `count-changed`, 1 `message-changed`, no `new-failure`, no `fixed`.
+Tests head 5543 passed / 96 failed; base 5379 / 96.
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit258-duplicate-completeness.R | only-on-head, 162/0 | absent | 162/0/0/0 | only-on-head: HELD (E7's first execution passes) |
+| test-metab-01m-s4-resolve-duplicate-intensity-characterization.R | count-changed, base + 2 | 17/0 | 19/0 | count-changed: HELD (source-pin test 8 to 10) |
+| test-metab-02u-resolve-duplicate-features-characterization.R | same | 17/0 | 17/0 | same: HELD |
+| test-kit214-sample-columns.R | same, 176/0 | 176/0 | 176/0 | same: HELD |
+| test-workflow-omics-binding-steps.R | message-changed, 57/2 | 57/2 | 57/2 | message-changed: HELD (KIT-094 snapshot expectation) |
+| test-workflow-omics-declarations.R | same, 43/25 | 43/25 | 43/25 | same: HELD |
+| test-kit254-omics-correlation-skip.R | same, 376/3 | 376/3 | 376/3 | same: HELD |
+| test-gui-entry-lipidomics.R / -metabolomics.R | same (19/16, 57/48) | 19/16, 57/48 | 19/16, 57/48 | same: HELD |
+| test-kit217 344/0; test-ruv-control-anova-grouping 139/0 | same | as stated | as stated | same: HELD |
+| the other 24 files | same | read from run | same | same: HELD |
+| R CMD check | nothing only on head | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical; only on head: none, only on base: none: HELD |
+
+**Decision.** Every prediction holds. TRAIN GREEN for KIT-258, landing only after train 19 lands with its code
+unchanged.
