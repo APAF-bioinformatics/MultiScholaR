@@ -1,0 +1,13 @@
+check	pass	detail
+wilson_gain_7_of_40	TRUE	lower 0.052859
+wilson_gain_6_of_40	TRUE	lower 0.041335
+wilson_two_sided_2_of_40	TRUE	0.0138 to 0.1650
+z_gain	TRUE	3.452433
+gain_shown_at_7_of_40	TRUE	cell 1 yes, cell 2 no
+skip_not_applied_when_gain	TRUE	
+skip_applied_without_gain	TRUE	
+c2_only_gain_not_skipped	TRUE	b true, a false: M3 not skipped by the rule as declared
+error_row_flags_cell	TRUE	cell incomplete, 39 valid, excluded from the gain rule
+report_only_excluded	TRUE	
+stress_tie_break	TRUE	equal counts: AD first, then the lower rate (AD5 = cell 3)
+E6_byte_identical	TRUE	6 files

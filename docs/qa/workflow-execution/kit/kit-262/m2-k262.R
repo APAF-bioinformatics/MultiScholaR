@@ -288,11 +288,17 @@ summary_file <- file.path(data_dir, "summary.tsv")
 rows_file <- file.path(data_dir, "rows.tsv")
 first <- TRUE
 fault_pending <- identical(Sys.getenv("K262_FAULT"), "1")
-for (cell in cells) {
-  g <- grid[grid$cell == cell, ]
-  tasks <- lapply(reps, function(r) list(cell = cell, r = r, seed = 262100000 + 100 * cell + r, omic = "lipid", n = g$n, g = g$g,
-    f = g$f, missing_id = g$missing_id, mech = g$mech, rate = g$rate, report_only = g$report_only,
-    e8 = use_e8 && cell %in% E8_CELLS && r <= e8_max, e1p = e1p, fault = FALSE))
+# Cells are run in batches of about 40 data sets so that the workers are busy whatever the replicate count (a lifecycle
+# with one replicate per cell would otherwise run one data set at a time). Results are written after every batch.
+cells_per_batch <- max(1L, floor(40 / length(reps)))
+batches <- split(cells, ceiling(seq_along(cells) / cells_per_batch))
+for (batch in batches) {
+  tasks <- unlist(lapply(batch, function(cell) {
+    g <- grid[grid$cell == cell, ]
+    lapply(reps, function(r) list(cell = cell, r = r, seed = 262100000 + 100 * cell + r, omic = "lipid", n = g$n, g = g$g,
+      f = g$f, missing_id = g$missing_id, mech = g$mech, rate = g$rate, report_only = g$report_only,
+      e8 = use_e8 && cell %in% E8_CELLS && r <= e8_max, e1p = e1p, fault = FALSE))
+  }), recursive = FALSE)
   if (fault_pending) { tasks[[1L]]$fault <- TRUE; fault_pending <- FALSE }
   done <- parallel::mclapply(tasks, function(task) tryCatch(m2Dataset(task), error = function(e) list(
     row = {x <- m2EmptyRow(task); x$error <- paste("instrument:", gsub("[\t\n]", " ", conditionMessage(e))); x}, rows = NULL)),
@@ -311,7 +317,7 @@ for (cell in cells) {
   utils::write.table(summary_df, summary_file, sep = "\t", quote = FALSE, row.names = FALSE, col.names = first, append = !first)
   if (!is.null(rows_df)) utils::write.table(rows_df, rows_file, sep = "\t", quote = FALSE, row.names = FALSE, col.names = first, append = !first)
   first <- FALSE
-  cat(sprintf("cell %d done: %d data sets, %d errors, %.1f s of sweeps\n", cell, nrow(summary_df),
+  cat(sprintf("cells %d to %d done: %d data sets, %d errors, %.1f s of sweeps\n", min(batch), max(batch), nrow(summary_df),
     sum(nzchar(summary_df$error)), sum(as.numeric(summary_df$seconds_sweep), na.rm = TRUE)))
 }
 

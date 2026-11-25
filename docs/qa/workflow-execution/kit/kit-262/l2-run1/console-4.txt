@@ -1,0 +1,5 @@
+cell 3 done: 4 data sets, 0 errors, 37.6 s of sweeps
+cell 25 done: 4 data sets, 0 errors, 37.3 s of sweeps
+cell 50 done: 4 data sets, 0 errors, 96.9 s of sweeps
+cell 62 done: 4 data sets, 0 errors, 101.4 s of sweeps
+cell 83 done: 4 data sets, 0 errors, 36.0 s of sweeps

@@ -1,0 +1,13 @@
+check	pass	detail
+A_composites	TRUE	0.00549469166662027 0.0551819161757163
+A_P_winner_5_k2	TRUE	
+A_C1_winner_10_k2	TRUE	
+A_C2_winner_5_k2_by_tie_rule	TRUE	
+A_usable_sets	TRUE	
+B_all_winners_5	TRUE	
+B_C1_readmits_10	TRUE	
+C_kb_below_min_k_cap	TRUE	
+D_nonpositive_truncated_separation_usable	TRUE	
+E_NA_complete_passes	TRUE	
+cause_split	TRUE	completeness cap_side NA
+reason_parser	TRUE	
