@@ -165,7 +165,7 @@ kit254Tab <- function(fx, code) {
 
 #' The owner's record (as Save writes it) replayed on a copy of the store cut to the design state; the replay's error
 #' or value, and the replayed head with its design's samples (read from the replay store after the replay closed it).
-kit254Replay <- function(fx, root) {
+kit254Replay <- function(fx, root, assays = "LCMS_Pos") {
     owner <- kit254Owner(fx)
     dir.create(root, recursive = TRUE, showWarnings = FALSE)
     json <- file.path(root, "analysis_record.json")
@@ -180,17 +180,21 @@ kit254Replay <- function(fx, root) {
     store_root <- dirname(dirname(list.files(fx$source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
     copy_root <- file.path(copy, substring(store_root, nchar(fx$source_dir) + 2L))
     prepared <- harness$kitPrepareReplayProject(copy_root, c("initial", paste0(fx$prefix, "_raw_data_s4")), api)
-    inputs <- stats::setNames(c(file.path(fx$source_dir, "import_sources", "LCMS_Pos_export.txt"), file.path(fx$source_dir, "design_matrix.tab")),
-        c(paste0(fx$binding$design_input_prefix, 1L), "design_file"))
+    inputs <- stats::setNames(c(file.path(fx$source_dir, "import_sources", paste0(assays, "_export.txt")),
+        file.path(fx$source_dir, "design_matrix.tab")), c(paste0(fx$binding$design_input_prefix, seq_along(assays)), "design_file"))
     scratch <- file.path(root, "scratch")
     dir.create(scratch)
     value <- NULL
     warned <- character()
+    warned_design <- character()
     # KIT-254 (OD-1 (a), VAL-247): the replay's statement is also raised as a warning of its class; it is kept here.
     error <- tryCatch({
         value <- kit172Quiet(withCallingHandlers(replayWorkflowAnalysisRecord(record, prepared, inputs, fx$paths, scratch),
             workflow_replay_correlation_skip = function(w) {
                 warned <<- c(warned, conditionMessage(w))
+                invokeRestart("muffleWarning")
+            }, workflow_replay_replicate_key_collision = function(w) {
+                warned_design <<- c(warned_design, conditionMessage(w))
                 invokeRestart("muffleWarning")
             }))
         NULL
@@ -208,7 +212,7 @@ kit254Replay <- function(fx, root) {
         paste(vapply(record$steps, function(step) as.character(step$state), ""), collapse = ","),
         if (is.null(error)) "none" else paste(class(error)[[1L]], conditionMessage(error)), format(head %||% "<none>"),
         paste(kit254Removed(runs %||% character()), collapse = ",")))
-    list(record = record, error = error, value = value, head = head, runs = runs, warned = warned)
+    list(record = record, error = error, value = value, head = head, runs = runs, warned = warned, warned_design = warned_design)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -424,6 +428,8 @@ for (name in names(kit254Configs)) {
         q <- kit254Ran(file.path(root, "a"), config$class, config$ruv)
         expect_true(isTRUE(kit254Apply(q$fx, q$nd, threshold = kit254T[[name]][["hi"]])), info = paste("Apply precondition", name))
         kit254ExpectHead(q$fx, "_correlation_filtered", paste(name, "Apply"))
+        # AUDIT-KIT-254-impl I01: the first Apply removed the sample G0 recorded (a moved threshold fails here, loudly).
+        expect_identical(kit254Runs(q$fx), kit254HiRuns[[name]], info = paste("Apply(t_hi) precondition", name))
         expect_true(isTRUE(kit254Skip(q$fx, q$nd)), info = paste("Skip precondition", name, paste(seen$notes, collapse = " | ")))
         kit254ExpectSkipAfterApply(q$fx, q$nd, paste(name, "in_process"), root)
     })
@@ -472,6 +478,8 @@ for (name in names(kit254Configs)) {
         probe <- kit254SourceProbe()
         q <- kit254Ran(file.path(root, "a"), config$class, config$ruv)
         expect_true(isTRUE(kit254Apply(q$fx, q$nd, threshold = kit254T[[name]][["hi"]])), info = paste("Apply precondition", name))
+        # AUDIT-KIT-254-impl I01: the first Apply removed the sample G0 recorded.
+        expect_identical(kit254Runs(q$fx), kit254HiRuns[[name]], info = paste("Apply(t_hi) precondition", name))
         expect_true(isTRUE(kit254Apply(q$fx, q$nd, threshold = kit254T[[name]][["lo"]])), info = paste("Apply again precondition", name))
         expect_length(probe$sources, 2L)
         kit254ExpectReapplied(q$fx, q$nd, probe$sources[[2L]], name, paste(name, "in_process"), root)
@@ -731,7 +739,9 @@ for (class in c("lipid", "metab")) {
         statement <- out$value$correlation_statement
         kit254Line("E8-statement", class, paste("statement", format(statement %||% "<none>")), paste("warned", length(out$warned)))
         expect_true(is.character(statement) && length(statement) == 1L, info = paste("E8 statement", class))
-        expect_true(isTRUE(grepl("LCMS_Pos: A_5", statement, fixed = TRUE)), info = paste("E8 statement names A_5 in LCMS_Pos", class))
+        expect_true(isTRUE(grepl("leaves out A_5 (below the threshold in LCMS_Pos)", statement, fixed = TRUE)),
+            info = paste("E8 statement names A_5, left out of the design, failing in LCMS_Pos", class))
+        expect_false(isTRUE(grepl("applied more than once", statement, fixed = TRUE)), info = paste("E8 one statement only", class))
         expect_true(isTRUE(grepl(format(hi), statement, fixed = TRUE)), info = paste("E8 statement names the threshold", class))
         expect_identical(out$warned, statement %||% "<none>", info = paste("E8 warning", class))
     })
@@ -798,4 +808,113 @@ test_that("KIT-254 G11 (OD-1 (a), VAL-247): a proteomics record carries no corre
             parameters = list(list(name = "threshold", value = 0.5)), input_entity_ids = list("a"), result_entity_id = "b"),
         list(state = "norm_complete", operation = "norm_complete", parameters = list())))
     expect_null(if (is.function(builder)) builder(record, NULL) else NULL)
+})
+
+# ------------------------------------------------------------------------------------------------
+# OD-1 (a), VAL-247, and AUDIT-KIT-254-impl point 6 (I08, I09): the replay statements on base-form records. Failing first
+# where a statement is expected (the statement code is absent on the tests-only commit); the guards pass on both.
+# ------------------------------------------------------------------------------------------------
+
+#' A record made with the wrappers in a given order on the run's result (as E8, KIT-212 G5): each element a threshold
+#' (the selection, on the head) or "skip" (the store step on the head).
+kit254Scripted <- function(fx, sequence) {
+    owner <- kit254Owner(fx)
+    config <- fx$workflow$config_list
+    for (step in sequence) {
+        if (identical(step, "skip")) {
+            kit172Quiet(commitWorkflowOmicsStoreStep(owner, paste0(fx$prefix, "_norm_complete"), paste0(fx$prefix, "_norm_complete"),
+                config, "Normalization complete (correlation filtering skipped)"))
+        } else {
+            kit172Quiet(runWorkflowOmicsReferenceCorrelation(fx$binding, owner, "group", step, config))
+        }
+    }
+    invisible(fx)
+}
+
+kit254First <- "repeats both as recorded"
+kit254Second <- "applied more than once"
+
+for (class in c("lipid", "metab")) {
+    test_that(paste("KIT-254 E15, E16, G12:", class, "a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none"), {
+        skip_if_not(workflowOwnerCapable())
+        root <- withr::local_tempdir()
+        seen <- kit254Notes()
+        hi <- kit254T[[class]][["hi"]]
+        lo <- kit254T[[class]][["lo"]]
+        for (case in list(list(row = "E15", sequence = list(hi, lo)), list(row = "E16", sequence = list(hi, "skip", lo)))) {
+            q <- kit254Ran(file.path(root, case$row), class)
+            kit254Scripted(q$fx, case$sequence)
+            out <- kit254Replay(q$fx, file.path(root, paste0(case$row, "-replay")))
+            statement <- out$value$correlation_statement
+            kit254Line(case$row, class, paste("statement", format(statement %||% "<none>")))
+            expect_null(out$error, info = paste(case$row, "replay precondition", class))
+            expect_true(isTRUE(grepl(kit254Second, statement, fixed = TRUE)) && isTRUE(grepl(paste0("(", format(lo), ")"), statement, fixed = TRUE)),
+                info = paste(case$row, "the second statement with the recorded threshold", class))
+            expect_false(isTRUE(grepl(kit254First, statement, fixed = TRUE)), info = paste(case$row, "never 'repeats both as recorded'", class))
+            expect_identical(out$warned, statement %||% "<none>", info = paste(case$row, "warning", class))
+        }
+        # G12: the filter applied (t_lo, removing no sample) and then skipped: no statement.
+        q <- kit254Ran(file.path(root, "g12"), class)
+        kit254Scripted(q$fx, list(lo, "skip"))
+        out <- kit254Replay(q$fx, file.path(root, "g12-replay"))
+        expect_null(out$error, info = paste("G12 replay precondition", class))
+        expect_identical(out$runs, kit254All, info = paste("G12 precondition: no sample left the design", class))
+        expect_null(out$value$correlation_statement)
+        expect_length(out$warned, 0L)
+    })
+}
+
+for (class in c("lipid", "metab")) {
+    test_that(paste("KIT-254 E17:", class, "two assays: the statement names the sample left out of the design, with the assay it failed in"), {
+        skip_if_not(workflowOwnerCapable())
+        root <- withr::local_tempdir()
+        seen <- kit254Notes()
+        values <- list(LCMS_Pos = kit172Values(172001L)$values, LCMS_Neg = kit172Values(172002L)$values)
+        fx <- kit254Fixture(file.path(root, "a"), class, values)
+        kit254Defer(fx)
+        nd <- omicNormReactiveState()
+        kit254Run(fx, nd)
+        kit254ExpectHead(fx, "_normalized", paste("E17 run", class))
+        testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(theObject, ...) {
+            runs <- as.character(methods::slot(theObject, "design_matrix")$Run)
+            assays <- names(methods::slot(theObject, fx$binding$data_slot))
+            stats::setNames(lapply(assays, function(assay) kit254E9Pairs(runs, assay)), assays)
+        }, .package = "MultiScholaR")
+        kit254Scripted(fx, list(0.5, "skip"))
+        expect_identical(kit254Removed(kit254Runs(fx)), "A_1", info = paste("E17 precondition", class))
+        out <- kit254Replay(fx, file.path(root, "replay"), assays = c("LCMS_Pos", "LCMS_Neg"))
+        statement <- out$value$correlation_statement
+        kit254Line("E17", class, paste("statement", format(statement %||% "<none>")))
+        expect_null(out$error, info = paste("E17 replay precondition", class))
+        expect_true(isTRUE(grepl("leaves out A_1 (below the threshold in LCMS_Pos)", statement, fixed = TRUE)), info = paste("E17", class))
+    })
+}
+
+test_that("KIT-254 E18, G13: with a merged design too, both statements and both warnings; the replayed states are unchanged", {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    seen <- kit254Notes()
+    q <- kit254Ran(file.path(root, "a"), "lipid")
+    kit254Scripted(q$fx, list(kit254T$lipid[["hi"]], "skip"))
+    kit254Da(q$fx)
+    # G13 (both commits): the replay's states and head design are the same with the statement code bound to nothing.
+    builder <- get0("workflowReplayCorrelationStatement", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    plain <- local({
+        if (is.function(builder)) testthat::local_mocked_bindings(workflowReplayCorrelationStatement = function(...) NULL, .package = "MultiScholaR")
+        kit254Replay(q$fx, file.path(root, "plain"))
+    })
+    stated <- kit254Replay(q$fx, file.path(root, "stated"))
+    expect_true(is.null(plain$error) && is.null(stated$error), info = "G13 replay precondition")
+    expect_identical(stated$value$states, plain$value$states)
+    expect_identical(stated$runs, plain$runs)
+    # E18: KIT-222's recorder fed by a merged design during the replay (its consumers' check, bound to one collision).
+    testthat::local_mocked_bindings(findOmicsDesignReplicateKeyCollisions = function(...) data.frame(key = "A_1", rule = "D1",
+        runs = "A_1, A_2", stringsAsFactors = FALSE), .package = "MultiScholaR")
+    out <- kit254Replay(q$fx, file.path(root, "both"))
+    kit254Line("E18", "lipid", paste("design", format(out$value$design_statement %||% "<none>")),
+        paste("correlation", format(out$value$correlation_statement %||% "<none>")))
+    expect_null(out$error, info = "E18 replay precondition")
+    expect_true(is.character(out$value$design_statement) && length(out$warned_design) == 1L, info = "E18 precondition: KIT-222's statement")
+    expect_true(is.character(out$value$correlation_statement), info = "E18 the correlation statement beside it")
+    expect_length(out$warned, 1L)
 })
