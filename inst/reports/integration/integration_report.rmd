@@ -23,6 +23,17 @@ cat("*", texts[["methods_draft_note"]], "*\n\n", sep = "")
 cat(MultiScholaR:::integrationMethodsText(record, texts), "\n")
 ```
 
+```{r limitations, results = "asis"}
+# KIT-239 (INT-28): the limitations of the model, with the analysis's own numbers read from the record; a record that
+# cannot be read gives the sentences true for every run and says so.
+texts_gui <- MultiScholaR:::integrationGuiTexts()
+heading("section_limitations")
+cat(texts_gui[["limits_lead"]], "\n\n")
+facts <- MultiScholaR:::integrationRecordLimitationFacts(record, texts)
+cat(paste0("- ", MultiScholaR:::integrationLimitationsText(facts, texts_gui)), sep = "\n")
+cat("\n")
+```
+
 ```{r inputs, results = "asis"}
 heading("section_inputs")
 show(tables$integration_inputs)

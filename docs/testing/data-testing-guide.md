@@ -1,9 +1,9 @@
 # MultiScholaR test build: a guide for testers
 
-This build is for testing MultiScholaR on public data before release. It is the normal application with two
-pre-release features that you can switch on: the **RUV design panel** (new choices for removing unwanted variation, on
-each omic's Normalisation tab) and the **Integration module** (combining several omics with MOFA2). Both are off unless
-you switch on the test setting below.
+This build is for testing MultiScholaR on public data before release. It is the normal application, with the
+**Integration module** (combining several omics with MOFA2) on for everyone, and one pre-release feature that you can
+switch on: the **RUV design panel** (new choices for removing unwanted variation, on each omic's Normalisation tab).
+It is off unless you switch on the test setting below.
 
 ## 1. Install
 
@@ -29,8 +29,8 @@ Nothing is downloaded when the application starts; everything it needs is inside
 ## 2. Switch on the test features
 
 The test setting is the environment variable `MULTISCHOLAR_TEST_FEATURES=1`. When it is on, the window title ends with
-**(test features on)**, the Integration tile on the home page can be clicked, and each omic's Normalisation tab shows
-the RUV design choices. Any other value, or no value, means off.
+**(test features on)** and each omic's Normalisation tab shows the RUV design choices. The Integration tile is on for
+everyone and needs no setting. Any other value, or no value, means off.
 
 - **Linux, once:** start from a terminal: `MULTISCHOLAR_TEST_FEATURES=1 ~/.local/share/multischolar/<version>/multischolar`
 - **Linux, always:** add the line `export MULTISCHOLAR_TEST_FEATURES=1` to `~/.profile`, log out and in again, then
@@ -58,8 +58,10 @@ steps without that limit. This is expected for the test build.
 - STRING needs a personal key (free from string-db.org). In the application, type it into **Integration, Enrichment,
   Your STRING key**. It is used for that one query, the field is emptied straight after, and it is never saved in the
   project, the record or the logs. Type it again for the next query.
-- If you use the R workbook (`integration_workflow_starter.rmd`) instead of the application, set the environment
-  variable `STRING_API_KEY` before you start R, or type the key when the workbook asks. It is not saved either.
+- If you run the integration from R with the package's `integration*` functions instead of the application, set the
+  environment variable `STRING_API_KEY` before you start R and pass it as
+  `integrationEnrichFactor(..., api_key = Sys.getenv("STRING_API_KEY"))`; never write the key in a script. It is not
+  saved either.
 - STRING, KEGG and Reactome are online services: enrichment needs an internet connection. The rest of the application
   works offline.
 
@@ -76,9 +78,9 @@ anything you cannot share.
 
 ## 6. Known limits of this build
 
-- The Integration module and the RUV design panel are **pre-release**: their wording, defaults and figures may still
-  change. The performance figures shown beside the RUV choices come from simulations and will be updated with public
-  data before release.
+- The RUV design panel is **pre-release**: its wording, defaults and figures may still change. The performance figures
+  shown beside the RUV choices come from simulations and will be updated with public data before release. In the
+  Integration module, eight Enrichment settings are marked "default not yet confirmed".
 - **DIA proteomics** (DIA, DIA with limpa, and enrichment after a DIA analysis) runs on **Linux only**; on Windows these
   routes stop with a message.
 - **Linux, DIA with limpa:** the fast engine is built for the processor of the build machine and can stop with

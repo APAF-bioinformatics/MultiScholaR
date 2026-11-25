@@ -4,6 +4,9 @@
 #' code should prefer the dedicated function and class reference topics where
 #' available.
 #'
+#' \code{plotNumSigDiffExpBarPlot} counts features at q < 0.05; use the DA results'
+#' \code{significant} column for another threshold (KIT-220).
+#'
 #' @name MultiScholaR-legacy-api
 #' @aliases %||% add_node_label addColumnsToEvidenceTbl addPeptideStartAndEnd addPhosphositesPositionsString
 #' @aliases addXMerStrings allPhosphositesPivotLonger allPhosphositesPivotWider averageTechReps batchQueryEvidence

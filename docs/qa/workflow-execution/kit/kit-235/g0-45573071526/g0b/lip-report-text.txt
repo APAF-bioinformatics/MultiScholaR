@@ -1,0 +1,22 @@
+Lipidomics analysis for lipid_canonical - report - created on 2026-11-25 08:13:45
+Your_fancy_self
+2026-11-25
+Sample Details
+Error running Main function: missing value where TRUE/FALSE needed
+Method Details
+Results
+Version Information
+Repository: Branch: Commit: Git Timestamp:
+
+Figure 1: QC metrics across normalization stages
+Differential Abundance Analysis
+
+Figure 2: Number of significant differentially abundant lipids for each comparison.
+## Warning: Volcano Plots directory not found at /tmp/RtmpQ8jrs7/gui-entry-lipid_canonical-4bbbb1399d1/project/lipid_canonical/results_summary/lipidomics/Publication_figures/Volcano_Plots
+Figure 3: Volcano plots of differentially abundant lipids in alphabetical order.
+Comments
+Opinions and Interpretation
+Pathway Enrichment Analysis
+## Warning: Enrichment Plots directory not found at /tmp/RtmpQ8jrs7/gui-entry-lipid_canonical-4bbbb1399d1/project/lipid_canonical/results_summary/lipidomics/Publication_figures/Enrichment_Plots
+Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant lipids. Plots are ordered alphabetically by comparison and direction.
+

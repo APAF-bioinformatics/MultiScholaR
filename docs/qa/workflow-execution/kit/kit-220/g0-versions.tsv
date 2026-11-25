@@ -1,0 +1,9 @@
+item	value
+R	R version 4.6.1 (2026-06-24)
+edgeR	4.10.1
+Glimma	2.15.2
+limma	3.68.4
+qvalue	2.44.0
+edgeR::decideTestsDGE exists	FALSE
+edgeR exports decideTests.DGEExact	TRUE
+edgeR exports decideTests.DGELRT	TRUE

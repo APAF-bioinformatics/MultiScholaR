@@ -1,0 +1,33 @@
+session	step	input	value	utc
+A	S1	tile-proteomics	click	2026-11-25T12:22:17Z
+A	S1	btn-start-analysis	click	2026-11-25T12:22:18Z
+A	S1	experiment_label	k250_a	2026-11-25T12:22:18Z
+A	S1	project_dir	/tmp/RtmpGSguvq/k250-work/projects-A	2026-11-25T12:22:18Z
+A	S1	btn-confirm-setup	click	2026-11-25T12:22:18Z
+A	h1a	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T12:22:23Z
+A	h1a	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T12:22:24Z
+A	h1a	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T12:22:24Z
+A	h1a	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T12:22:24Z
+A	h1a	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T12:22:25Z
+A	h1a	prot-import-process	click	2026-11-25T12:22:25Z
+A	G0	#proteomics_workflow-setup_import-cancel_organism	mouse at 983.6,556.7	2026-11-25T12:22:37Z
+A	h1a	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T12:22:44Z
+A	h1a	prot-import-process	click	2026-11-25T12:22:45Z
+A	G0	#proteomics_workflow-setup_import-cancel_organism	mouse at 983.6,556.7	2026-11-25T12:22:50Z
+A	h1a	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T12:22:52Z
+A	h1a	prot-import-process	click	2026-11-25T12:22:53Z
+A	h1a	proteomics_workflow-setup_import-confirm_organism	click	2026-11-25T12:22:56Z
+D2	S1	tile-proteomics	click	2026-11-25T12:23:06Z
+D2	S1	btn-start-analysis	click	2026-11-25T12:23:06Z
+D2	S1	experiment_label	k250_d2	2026-11-25T12:23:07Z
+D2	S1	project_dir	/tmp/RtmpGSguvq/k250-work/projects-D2	2026-11-25T12:23:07Z
+D2	S1	btn-confirm-setup	click	2026-11-25T12:23:07Z
+D2	h1d2	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T12:23:11Z
+D2	h1d2	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T12:23:12Z
+D2	h1d2	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T12:23:13Z
+D2	h1d2	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T12:23:13Z
+D2	h1d2	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T12:23:13Z
+D2	h1d2	prot-import-process	click	2026-11-25T12:23:14Z
+D2	G0	#proteomics_workflow-setup_import-cancel_organism	mouse at 983.6,556.7	2026-11-25T12:23:17Z
+D2	h1d2	proteomics_workflow-setup_import-mixed_species_fasta	FALSE	2026-11-25T12:23:20Z
+D2	h1d2	prot-import-process	click	2026-11-25T12:23:20Z

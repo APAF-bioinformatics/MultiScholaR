@@ -14,6 +14,9 @@
 #' @importFrom vroom vroom_write
 #' @export
 #' @param da_results_list,selected_contrast,uniprot_tbl,args_row_id,fdr_column,raw_p_value_column,log2fc_column,da_q_val_thresh,uniprot_id_column,gene_names_column,display_columns,output_dir,... Runtime inputs used by this function; see the usage section for accepted values.
+#' @param lfc_thresh The absolute log2 fold-change cutoff a highlighted protein reaches (KIT-220, VAL-191 (6): the
+#'   analysis's cutoff; a protein is highlighted when its FDR is below `da_q_val_thresh` and its absolute log2 fold
+#'   change is at least this). The default 1 keeps other callers as before.
 generateProtDAVolcanoPlotGlimma <- function(
   da_results_list,
   selected_contrast = NULL,
@@ -27,6 +30,7 @@ generateProtDAVolcanoPlotGlimma <- function(
   gene_names_column = "gene_names",
   display_columns = c("best_uniprot_acc"),
   output_dir = NULL,
+  lfc_thresh = 1,
   ...
 ) {
   if (isDIAResultManifest(da_results_list) && !is.null(selected_contrast)) {
@@ -213,9 +217,11 @@ generateProtDAVolcanoPlotGlimma <- function(
       FDR = ifelse(FDR == 0, min(FDR[FDR > 0], na.rm = TRUE) * 0.1, FDR),
       negLog10FDR = -log10(FDR),
       logFC = as.numeric(!!sym(log2fc_column)),
+      # KIT-220 (VAL-191 (6)): the user's q and fold-change cutoff, the lipidomics and metabolomics rule (it was
+      # |log2FC| >= 1 whatever cutoff was set).
       Status = dplyr::case_when(
-        logFC >= 1 & FDR < as.double(da_q_val_thresh) ~ 1,
-        logFC <= -1 & FDR < as.double(da_q_val_thresh) ~ -1,
+        FDR < as.double(da_q_val_thresh) & abs(logFC) >= as.double(lfc_thresh) & logFC > 0 ~ 1,
+        FDR < as.double(da_q_val_thresh) & abs(logFC) >= as.double(lfc_thresh) & logFC < 0 ~ -1,
         TRUE ~ 0
       )
     )

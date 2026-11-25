@@ -1,0 +1,9 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-kit244-limpa-pass-through.R	0	0	0	0	absent	204	0	0	0	ok	only-on-head		
+test-kit225-prot-norm-reset-source.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	116	0	0	0	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-kit174-ruv-grouping.R	77	0	0	0	ok	77	0	0	0	ok	same		

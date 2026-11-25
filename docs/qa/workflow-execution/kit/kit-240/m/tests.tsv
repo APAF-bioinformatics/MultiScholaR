@@ -1,0 +1,21 @@
+file	test	passed	failed	error	skipped	seconds
+test-integration-mofa-model.R	KIT-062: MOFA2 trains on the tier-1 corpus at the bundle's versions and recovers the planted factors	14	0	FALSE	FALSE	70.43
+test-integration-mofa-model.R	KIT-062: the trained factors, weights and variance explained equal the stored result within 1e-5 relative	3	0	FALSE	FALSE	0.04
+test-integration-mofa-model.R	KIT-062: the record replays on a copy of the inputs state to the same model	12	0	FALSE	FALSE	0.03
+test-integration-mofa-model.R	KIT-148: the trainer without the data in the model file gives KIT-147's model and warnings	8	0	FALSE	FALSE	16.24
+test-integration-model-tab-mofa.R	KIT-140: MOFA2 trained through the Model tab equals the model step and the stored double-precision result	26	0	FALSE	FALSE	86.18
+test-integration-model-tab-mofa.R	KIT-140: MOFA2 trained as a managed-worker action through the Model tab gives the identical model	13	0	FALSE	FALSE	94.15
+test-kit240-integration-default.R	KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown	11	0	FALSE	FALSE	0.28
+test-kit240-integration-default.R	KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it	17	0	FALSE	FALSE	0.35
+test-kit240-integration-default.R	KIT-240 T4: the software check says which piece is missing	0	0	FALSE	TRUE	0
+test-kit240-integration-default.R	KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so	13	0	FALSE	FALSE	0.11
+test-kit240-integration-default.R	KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged	19	0	FALSE	FALSE	18.13
+test-kit240-integration-default.R	KIT-240 T8: seeds trained without an ELBO give no rank and no sentence, and nothing fails	10	0	FALSE	FALSE	10.37
+test-kit240-integration-default.R	KIT-240 T9 (MOFA2 lane): every seed's final ELBO is finite and the reported model's rank is in 1 to 5	7	0	FALSE	FALSE	45.87
+test-kit240-integration-default.R	KIT-240 T10: the Enrichment tab marks its eight defaults not yet confirmed, and only those	12	0	FALSE	FALSE	0.06
+test-kit240-integration-default.R	KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true	8	0	FALSE	FALSE	0.02
+test-integration-workbook-mofa.R	KIT-143: MOFA2's defaults are the settings the reference workbook trained with	8	0	FALSE	FALSE	37.56
+test-integration-workbook-mofa.R	KIT-143: the module reproduces the reference workbook's MOFA2 configuration exactly on synthetic data	29	0	FALSE	FALSE	0.14
+test-integration-workbook-mofa.R	KIT-143 (KIT-234): the twelve integration functions run end to end on the corpus with MOFA2 and repeat the model from the record	12	0	FALSE	FALSE	146.52
+test-integration-record-mofa.R	KIT-142: with MOFA2, a saved integration is reopened, repeated from its record to the same model, and reported	29	0	FALSE	FALSE	152.46
+test-integration-results-mofa.R	KIT-063: an uploaded match, a MOFA2 model and its results on the corpus, with the planted truth	46	0	FALSE	FALSE	98.06

@@ -1,0 +1,7 @@
+mode	pair	old	new	count_in_base	count_in_head
+production	settings_provisional	Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones.	Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you.	1	0
+production	results_provisional	How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them.	These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you.	2	0
+production	mark	(provisional default)	(decided)	21	0
+test	settings_provisional	Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones.	Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you.	1	0
+test	results_provisional	How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them.	These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you.	2	0
+test	mark	(provisional default)	(decided)	21	0

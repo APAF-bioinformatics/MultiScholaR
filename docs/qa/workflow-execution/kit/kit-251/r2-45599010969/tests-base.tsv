@@ -1,0 +1,13 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-workflow-memory-mechanism-member.R	0	0	0	13	0	7	ok
+test-workflow-checkpoint-dia-state.R	174	0	0	4	0	26.2	ok
+test-workflow-gui-memory-repairs.R	0	0	0	6	0	5.4	ok
+test-prot-norm-input-current.R	321	0	0	0	10	1154.8	ok
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	0	354.3	ok
+test-e2e-browser-harness.R	126	0	0	1	0	5.9	ok
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	0	13.8	ok
+test-prot-02h-qc-protein-replicate-shared.R	0	0	0	5	0	6.8	ok
+test-prot-02p-qc-protein-orchestrator-shared.R	19	0	0	0	0	5.7	ok
+test-module-ci-prot-protein-qc.R	0	0	0	6	0	6.8	ok
+test-perf107-audit.R	190	1	0	1	0	23.2	failed
+test-kit251-replicate-filter-one-click.R	6	3	0	0	0	5.7	failed

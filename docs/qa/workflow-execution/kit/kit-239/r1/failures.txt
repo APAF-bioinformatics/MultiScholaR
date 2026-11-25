@@ -1,0 +1,476 @@
+file: test-integration-record.R
+test: KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers
+kind: failure
+message:
+  Expected `"section_limitations" %in% names(rt)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-integration-record.R
+test: KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers
+kind: failure
+message:
+  Expected `all(keys %in% names(gt))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  absent: limits_lead, limits_samples, limits_fixed_samples, limits_fixed_missing, limits_fixed_averaged, limits_fixed_model, limits_fixed_check, limits_services_none
+
+file: test-integration-record.R
+test: KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers
+kind: failure
+message:
+  Expected `at` > 0L.
+  Actual comparison: -1 <= 0
+  Difference: -1 <= 0
+
+file: test-integration-record.R
+test: KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers
+kind: failure
+message:
+  Expected `at` > `methods_at`.
+  Actual comparison: -1 <= 621785
+  Difference: -621786 <= 0
+
+file: test-integration-record.R
+test: KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none
+kind: failure
+message:
+  Expected `is.function(reader)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-integration-results.R
+test: KIT-239 (L1): the Results tab has a place for the limitations, after the notes from the model
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-results-limitations\"".
+  Actual text:
+  x | <div class="row">
+    |   <div class="col-sm-12">
+    |     <h3>Results of the factor model</h3>
+    |     <p>What the trained model found: how much of the variation of each data set's selected features each factor explains, how the factors relate to the groups, which features weigh most on each factor, and how the factors relate to each other.</p>
+    |     <div id="r-results_status" class="shiny-html-output" data-testid="integration-results-status"></div>
+    |     <h4>Settings of the results</h4>
+    |     <div data-testid="integration-results-settings">
+    |       <p>
+    |         <em>How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them.</em>
+    |       </p>
+    |       <div data-testid="integration-results-param-factors_shown">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_factors_shown-label" for="r-param_factors_shown">
+    |             Factors shown
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div>
+    |             <select id="r-param_factors_shown" class="shiny-input-select" multiple="multiple"><option value="all" selected>all factors</option></select>
+    |             <script type="application/json" data-for="r-param_factors_shown">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-top_features">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_top_features-label" for="r-param_top_features">
+    |             Number of features listed per factor and data set
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_top_features" type="number" class="shiny-input-number form-control" value="10" data-update-on="change" step="1"/>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-weight_scale">
+    |         <div id="r-param_weight_scale" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_weight_scale-label">
+    |           <label class="control-label" id="r-param_weight_scale-label" for="r-param_weight_scale">
+    |             Weights shown
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_weight_scale" value="scaled" checked="checked"/>
+    |                 <span>divided by the largest weight, so the strongest feature is 1 or -1</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_weight_scale" value="raw"/>
+    |                 <span>as estimated</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-design_covariate">
+    |         <div id="r-param_design_covariate" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_design_covariate-label">
+    |           <label class="control-label" id="r-param_design_covariate-label" for="r-param_design_covariate">
+    |             Groups the factors are compared with
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_design_covariate" value="group" checked="checked"/>
+    |                 <span>the group of each biological sample</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-association_test">
+    |         <div id="r-param_association_test" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_association_test-label">
+    |           <label class="control-label" id="r-param_association_test-label" for="r-param_association_test">
+    |             Test of each factor against the groups
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_association_test" value="anova" checked="checked"/>
+    |                 <span>one-way analysis of variance</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_association_test" value="kruskal_wallis"/>
+    |                 <span>Kruskal-Wallis rank test (does not assume the factor's values are normally distributed)</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |         <span class="help-block">Choose the test before looking at the results. Analysis of variance is the default; the Kruskal-Wallis test compares the ranks of the factor's values instead.</span>
+    |       </div>
+    |       <div data-testid="integration-results-param-p_adjust_method">
+    |         <div id="r-param_p_adjust_method" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_p_adjust_method-label">
+    |           <label class="control-label" id="r-param_p_adjust_method-label" for="r-param_p_adjust_method">
+    |             Adjustment of the p-values
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_p_adjust_method" value="BH" checked="checked"/>
+    |                 <span>Benjamini-Hochberg</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_p_adjust_method" value="holm"/>
+    |                 <span>Holm</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_p_adjust_method" value="bonferroni"/>
+    |                 <span>Bonferroni</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_p_adjust_method" value="none"/>
+    |                 <span>not adjusted</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-figure_format">
+    |         <div id="r-param_figure_format" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_figure_format-label">
+    |           <label class="control-label" id="r-param_figure_format-label" for="r-param_figure_format">
+    |             File type of the saved figures
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_figure_format" value="png" checked="checked"/>
+    |                 <span>PNG image</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_figure_format" value="pdf"/>
+    |                 <span>PDF</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-figure_width">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_figure_width-label" for="r-param_figure_width">
+    |             Width of the saved figures (inches)
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_figure_width" type="number" class="shiny-input-number form-control" value="8" data-update-on="change"/>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-figure_height">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_figure_height-label" for="r-param_figure_height">
+    |             Height of the saved figures (inches)
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_figure_height" type="number" class="shiny-input-number form-control" value="6" data-update-on="change"/>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-figure_dpi">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_figure_dpi-label" for="r-param_figure_dpi">
+    |             Resolution of the saved figures (dots per inch)
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_figure_dpi" type="number" class="shiny-input-number form-control" value="300" data-update-on="change" step="1"/>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-feature_values">
+    |         <div id="r-param_feature_values" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_feature_values-label">
+    |           <label class="control-label" id="r-param_feature_values-label" for="r-param_feature_values">
+    |             Values shown for the top features
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_feature_values" value="model_input" checked="checked"/>
+    |                 <span>the values given to the model</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |         <span class="help-block">The values each data set gave the model: the runs of a biological sample averaged, only the features the model used, and each feature scaled if that scaling was chosen; before MOFA2 centres and scales the data sets itself.</span>
+    |       </div>
+    |       <div data-testid="integration-results-param-heatmap_scaling">
+    |         <div id="r-param_heatmap_scaling" class="form-group shiny-input-radiogroup shiny-input-container" role="radiogroup" aria-labelledby="r-param_heatmap_scaling-label">
+    |           <label class="control-label" id="r-param_heatmap_scaling-label" for="r-param_heatmap_scaling">
+    |             Heatmap colours
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <div class="shiny-options-group">
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_heatmap_scaling" value="centre" checked="checked"/>
+    |                 <span>each feature centred on its mean</span>
+    |               </label>
+    |             </div>
+    |             <div class="radio">
+    |               <label>
+    |                 <input type="radio" name="r-param_heatmap_scaling" value="centre_scale"/>
+    |                 <span>each feature centred on its mean and scaled to standard deviation 1</span>
+    |               </label>
+    |             </div>
+    |           </div>
+    |         </div>
+    |         <span class="help-block">For display only: the values shown in the scatter plots and saved in the table do not change.</span>
+    |       </div>
+    |       <div data-testid="integration-results-param-umap">
+    |         <div class="form-group shiny-input-container">
+    |           <div class="checkbox">
+    |             <label>
+    |               <input id="r-param_umap" type="checkbox" class="shiny-input-checkbox"/>
+    |               <span>
+    |                 Draw a UMAP map of the factors
+    |                  
+    |                 <small class="text-muted">(provisional default)</small>
+    |               </span>
+    |             </label>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-umap_n_neighbors">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_umap_n_neighbors-label" for="r-param_umap_n_neighbors">
+    |             UMAP: number of neighbours
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_umap_n_neighbors" type="number" class="shiny-input-number form-control" value="15" data-update-on="change" step="1"/>
+    |         </div>
+    |         <span class="help-block">At least 2, and fewer than the number of biological samples.</span>
+    |       </div>
+    |       <div data-testid="integration-results-param-tsne">
+    |         <div class="form-group shiny-input-container">
+    |           <div class="checkbox">
+    |             <label>
+    |               <input id="r-param_tsne" type="checkbox" class="shiny-input-checkbox"/>
+    |               <span>
+    |                 Draw a t-SNE map of the factors
+    |                  
+    |                 <small class="text-muted">(provisional default)</small>
+    |               </span>
+    |             </label>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div data-testid="integration-results-param-tsne_perplexity">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_tsne_perplexity-label" for="r-param_tsne_perplexity">
+    |             t-SNE: perplexity
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_tsne_perplexity" type="number" class="shiny-input-number form-control" value="5" data-update-on="change"/>
+    |         </div>
+    |         <span class="help-block">Three times the perplexity must be less than the number of biological samples minus 1 (below 6.33 with 20 samples).</span>
+    |       </div>
+    |       <div data-testid="integration-results-param-map_seed">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-param_map_seed-label" for="r-param_map_seed">
+    |             Random seed for the maps
+    |              
+    |             <small class="text-muted">(provisional default)</small>
+    |           </label>
+    |           <input id="r-param_map_seed" type="number" class="shiny-input-number form-control" value="20261119" data-update-on="change" step="1"/>
+    |         </div>
+    |         <span class="help-block">Used by the UMAP map: on the same computer, the same factors, settings and seed give the same map. The t-SNE map starts from the factors' first two principal components and does not depend on the seed.</span>
+    |       </div>
+    |     </div>
+    |     <div id="r-advisories" class="shiny-html-output" data-testid="integration-results-advisories"></div>
+    |     <h4>Variance explained</h4>
+    |     <p>The percentage of the variation of each data set's selected features (the features given to the model, not all features measured) that each factor explains. A factor that explains variation in data sets of different omics is shared across those omics; one that explains variation in only one data set is specific to it. Two data sets of one omic (for example positive and negative mode) measure related molecules, so a factor active in both is not by itself shared across omics.</p>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-variance-plot" id="r-variance_plot" style="width:100%;height:420px;"></div>
+    |     <div id="r-variance_table" class="shiny-html-output shiny-table-output" data-testid="integration-results-variance-table"></div>
+    |     <h5>All factors together, per data set (its selected features)</h5>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-variance-total-plot" id="r-variance_total_plot" style="width:100%;height:320px;"></div>
+    |     <h4>How stable each factor is across training seeds</h4>
+    |     <div id="r-stability_intro" class="shiny-html-output" data-testid="integration-results-stability-intro"></div>
+    |     <div id="r-stability_table" class="shiny-html-output shiny-table-output" data-testid="integration-results-stability-table"></div>
+    |     <h4>Factors and the groups</h4>
+    |     <div id="r-association_intro" class="shiny-html-output" data-testid="integration-results-association-intro"></div>
+    |     <div id="r-claim" class="shiny-html-output" data-testid="integration-results-claim"></div>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-factors-plot" id="r-factors_plot" style="width:100%;height:520px;"></div>
+    |     <div id="r-association_table" class="shiny-html-output shiny-table-output" data-testid="integration-results-association-table"></div>
+    |     <h5>Factor values per biological sample</h5>
+    |     <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item" id="r-factor_values" style="width:100%;height:auto;"></div>
+    |     integration-results-factor-values
+    |     <h4>Factors against each other</h4>
+    |     <p>Each panel shows two factors; each point is one biological sample, coloured by its group. A factor's sign is arbitrary: a factor and its mirror image describe the same pattern.</p>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-pairs-plot" id="r-pairs_plot" style="width:100%;height:620px;"></div>
+    |     <h4>Features with the largest weights</h4>
+    |     <div id="r-weights_intro" class="shiny-html-output" data-testid="integration-results-weights-intro"></div>
+    |     <div class="row">
+    |       <div class="col-sm-6">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-weights_factor-label" for="r-weights_factor">Factor</label>
+    |           <div>
+    |             <select id="r-weights_factor" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="r-weights_factor" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-6">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="r-weights_view-label" for="r-weights_view">Data set</label>
+    |           <div>
+    |             <select id="r-weights_view" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="r-weights_view" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-weights-plot" id="r-weights_plot" style="width:100%;height:420px;"></div>
+    |     <div id="r-weights_table" class="shiny-html-output shiny-table-output" data-testid="integration-results-weights-table"></div>
+    |     <h5>Values of the top features against the factor</h5>
+    |     <div id="r-scatter_intro" class="shiny-html-output" data-testid="integration-results-scatter-intro"></div>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-scatter-plot" id="r-scatter_plot" style="width:100%;height:620px;"></div>
+    |     <h5>Heatmap of the top features</h5>
+    |     <div id="r-heatmap_intro" class="shiny-html-output" data-testid="integration-results-heatmap-intro"></div>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-heatmap-plot" id="r-heatmap_plot" style="width:100%;height:520px;"></div>
+    |     <h4>How the factors relate to each other</h4>
+    |     <p>The correlation (Pearson) of the factors' values across the biological samples. Each factor is meant to capture its own pattern; a correlation far from 0 means two factors share part of theirs.</p>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-correlation-plot" id="r-correlation_plot" style="width:100%;height:380px;"></div>
+    |     <div id="r-correlation_table" class="shiny-html-output shiny-table-output" data-testid="integration-results-correlation-table"></div>
+    |     <h4>Maps of the factors (UMAP, t-SNE)</h4>
+    |     <div id="r-maps_status" class="shiny-html-output" data-testid="integration-results-maps-status"></div>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-umap-plot" id="r-umap_plot" style="width:100%;height:480px;"></div>
+    |     <div class="shiny-plot-output html-fill-item" data-testid="integration-results-tsne-plot" id="r-tsne_plot" style="width:100%;height:480px;"></div>
+    |     <h4>Save the results</h4>
+    |     <p>
+    |       <em>How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them.</em>
+    |     </p>
+    |     <button class="btn btn-default action-button btn-primary" data-testid="integration-results-save" id="r-save" type="button"><span class="action-icon"><i class="far fa-floppy-disk" role="presentation" aria-label="floppy-disk icon"></i></span><span class="action-label">Save tables and figures to the project</span></button>
+    |     <div id="r-save_status" class="shiny-html-output" data-testid="integration-results-saved"></div>
+    |   </div>
+    | </div>
+
+file: test-integration-results.R
+test: KIT-239 (L1): the Results tab has a place for the limitations, after the notes from the model
+kind: failure
+message:
+  Expected `at` > `regexpr(...)`.
+  Actual comparison: -1 <= 14829
+  Difference: -14830 <= 0
+
+file: test-integration-results.R
+test: KIT-239 (L2): the Results tab states the limitations with this model's own numbers
+kind: failure
+message:
+  Expected `all(keys %in% names(texts))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  absent: limits_heading, limits_lead, limits_samples, limits_missing_samples, limits_averaged_item, limits_fixed_samples, limits_fixed_missing, limits_fixed_averaged, limits_fixed_model, limits_fixed_check, limits_fixed_services
+
+file: test-integration-results.R
+test: KIT-239 (L2): the Results tab states the limitations with this model's own numbers
+kind: failure
+message:
+  Expected `identical(html, "")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-integration-results.R:460:5
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-integration-results.R
+test: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds
+kind: failure
+message:
+  Expected `is.function(facts_of)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-integration-results.R
+test: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds
+kind: failure
+message:
+  Expected `is.function(text_of)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-integration-gui.R
+test: KIT-239 (L6): after training, the Model tab points to the limitations on the Results tab
+kind: failure
+message:
+  Expected `"model_limits_pointer" %in% names(texts)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

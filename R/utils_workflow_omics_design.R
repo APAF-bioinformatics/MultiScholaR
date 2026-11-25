@@ -275,6 +275,15 @@ commitOmicsDesignImport <- function(workflowData, imported, sourceDir, config) {
         normalised <- preflight$contrast_validation$contrasts_tbl
         if (isTRUE(importConfig$preflight_contrasts) && !is.null(normalised) && nrow(normalised) > 0L) contrasts <- normalised
     }
+    # KIT-222 (owner's OD-2): a design file carrying technical-replicate marks is refused when a replicate number is
+    # shared by an unmarked run or a key holds runs of two marking actions, before the bus.
+    keyed <- as.data.frame(imported$design_matrix)
+    if (all(c("group", "replicates") %in% names(keyed))) {
+        keyed <- keyed[!is.na(keyed$group) & keyed$group != "", , drop = FALSE]
+        keyed$tech_rep_group <- paste(keyed$group, keyed$replicates, sep = "_")
+        refusal <- omicsDesignSaveRefusal(keyed, unmarkedWithoutColumn = FALSE)
+        if (!is.null(refusal)) omicsDesignRefuse(sprintf("Invalid %s design import: %s", design$label_lower, refusal))
+    }
     workflowData$config_list <- imported$config_list
     workflowData$column_mapping <- imported$column_mapping
     workflowData$design_matrix <- imported$design_matrix

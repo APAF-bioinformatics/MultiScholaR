@@ -781,9 +781,13 @@ setMethod(
             # Ensure min_cor is finite; default if not
             if (!is.finite(min_cor)) min_cor <- 0
 
-            # Use finer breaks, similar to protein version, clamped to [0, 1]
-            # Note: Protein version uses 0.001 step, using 0.01 here for potentially better visibility first.
-            hist_breaks <- seq(0, 1, 0.01)
+            # Use finer breaks than the protein version's 0.001 step, for visibility.
+            # KIT-259 (A3): the axis and the bins extend below 0 to the lowest correlation; they were [0, 1], which
+            # dropped a negative correlation without a word. For correlations at or above 0 they are as before.
+            lower <- min(0, floor(min_cor * 10) / 10)
+            hist_breaks <- seq(lower, 1, 0.01)
+            # KIT-259 (A3): the pairs with no correlation are counted in a subtitle (none: no subtitle, as before).
+            missing_pairs <- sum(is.na(correlation_vec$pearson_correlation))
 
             # --- Create Plot ---
             tryCatch(
@@ -792,7 +796,7 @@ setMethod(
                         ggplot(aes(pearson_correlation)) +
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
                         # Set x-axis limits and breaks
-                        scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), expand = c(0, 0)) +
+                        scale_x_continuous(limits = c(lower, 1), breaks = seq(lower, 1, 0.1), expand = c(0, 0)) +
                         # # Set fixed y-axis scale, similar to protein version
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +
@@ -803,6 +807,12 @@ setMethod(
                             panel.grid.major = element_blank(),
                             panel.grid.minor = element_blank()
                         )
+                    if (missing_pairs > 0L) {
+                        pearson_plot <- pearson_plot + ggplot2::labs(subtitle = sprintf(paste(
+                            "%d sample pairs shown; %d have no correlation (too few shared values, or a sample with",
+                            "no variation) and are not shown."), sum(!is.na(correlation_vec$pearson_correlation)),
+                            missing_pairs))
+                    }
 
                     return(pearson_plot)
                 },
@@ -916,13 +926,15 @@ findMetabDuplicateFeatureIDs <- function(theObject) {
 
 # KIT-104 W2 (back-reference #9): the duplicate resolution per assay that `metabolomicsDeclarationBinding$resolve_duplicates`
 # runs, moved unchanged with its name from R/mod_metab_qc_duplicates_server_helpers.R (:1-51 at b423b764; the file was
-# deleted by KIT-104 W6).
+# deleted by KIT-104 W6). KIT-214 (VAL-173 (1)): with `designSamples` (the design's sample ids) a row's mean is over the
+# design's samples less the id column (`omicsDuplicateResolutionInput`); NULL keeps every numeric column, as before.
 resolveMetabDuplicateAssayData <- function(
     assayList
     , metaboliteIdCol
     , assayNames = names(assayList)
     , resolveDuplicateFeaturesByIntensityFn = resolveDuplicateFeaturesByIntensity
     , logWarnFn = logger::log_warn
+    , designSamples = NULL
 ) {
     statsList <- list()
 
@@ -942,6 +954,12 @@ resolveMetabDuplicateAssayData <- function(
                 , removed = 0
             )
             return(assayData)
+        }
+
+        if (!is.null(designSamples)) {
+            input <- omicsDuplicateResolutionInput(assayData, sampleCols, designSamples, metaboliteIdCol, assayName)
+            assayData <- input$table
+            sampleCols <- input$columns
         }
 
         resolvedAssay <- resolveDuplicateFeaturesByIntensityFn(

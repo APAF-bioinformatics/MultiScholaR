@@ -133,11 +133,12 @@ intResExpectPlanted <- function(results) {
     invisible(planted)
 }
 
-test_that("KIT-063: the provisional Results parameters are one table, resolved and checked", {
+test_that("KIT-063: the Results parameters are one table, resolved and checked", {
     spec <- integrationResultsParameterSpec()
     table <- integrationResultsParameterTable()
     expect_identical(table$parameter, names(spec))
-    expect_true(all(grepl("workbook", table$settled_by)))
+    # KIT-240 (VAL-221 (4)): every default kept by the owner's decision, which each row names.
+    expect_true(all(grepl("^VAL-221 \\(decided 2026-11-25", table$settled_by)))
     factors <- paste0("Factor", 1:5)
     p <- integrationResolveResultsParameters(list(), factors)
     expect_identical(p$factors_shown, factors)
@@ -421,4 +422,187 @@ test_that("KIT-151: the factors can be related to the groups by the Kruskal-Wall
     texts <- integrationGuiTexts()
     expect_identical(names(integrationResultsAssociationTable(results, texts)), unname(texts[c("col_factor", "col_samples_tested",
         "col_groups_n", "col_epsilon2", "col_h", "col_df", "col_p", "col_p_adjusted")]))
+})
+
+# KIT-239 (INT-28): the limitations of the model on the Results tab. Every sentence is read from the wording table at
+# test time (a computed one built with sprintf() from its entry and the model's own sample table), so these tests hold
+# whatever the final wording; on a tree without the entries or the helpers they fail at their first assertion.
+test_that("KIT-239 (L1): the Results tab has a place for the limitations, after the notes from the model", {
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    texts <- integrationGuiTexts()
+    ui <- as.character(htmltools::renderTags(mod_integration_results_ui("r"))$html)
+    expect_match(ui, 'data-testid="integration-results-limitations"', fixed = TRUE)
+    at <- regexpr('data-testid="integration-results-limitations"', ui, fixed = TRUE)
+    expect_gt(at, regexpr('data-testid="integration-results-advisories"', ui, fixed = TRUE))
+    expect_lt(at, regexpr(texts[["variance_heading"]], ui, fixed = TRUE))
+})
+
+test_that("KIT-239 (L2): the Results tab states the limitations with this model's own numbers", {
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    texts <- integrationGuiTexts()
+    keys <- c("limits_heading", "limits_lead", "limits_samples", "limits_missing_samples", "limits_averaged_item",
+        "limits_fixed_samples", "limits_fixed_missing", "limits_fixed_averaged", "limits_fixed_model", "limits_fixed_check",
+        "limits_fixed_services")
+    expect_true(all(keys %in% names(texts)), info = paste("absent:", paste(setdiff(keys, names(texts)), collapse = ", ")))
+    paths <- intResProject()
+    fixture <- intResModel(paths)
+    value <- fixture$run$value
+    views <- unique(value$variance_explained$view)
+    # Pages compared with whitespace collapsed and HTML's escapes of the apostrophe decoded.
+    norm <- function(x) gsub("\\s+", " ", gsub("&#39;|&#x27;|&rsquo;|&#8217;|\u2019", "'", paste(x, collapse = " ")))
+    # The longest fixed part of a computed sentence, to show that it is absent.
+    fragment <- function(template) {
+        parts <- strsplit(template, "%[ds]")[[1L]]
+        parts[[which.max(nchar(parts))]]
+    }
+    found <- function(sentence, html) grepl(norm(sentence), html, fixed = TRUE)
+    bus <- do.call(shiny::reactiveValues, omicWorkflowInitialBus(integrationGuiConfig()$shell))
+    shiny::isolate(bus$state_manager <- fixture$manager)
+    shiny::testServer(mod_integration_results_server, args = list(workflow_data = bus, paths = paths), {
+        bus$integration_model <- fixture$model
+        session$flushReact()
+        html <- norm(tryCatch(output$limitations$html, error = function(e) ""))
+        expect_false(identical(html, ""))
+        if (all(keys %in% names(texts))) {
+            for (key in c("limits_heading", "limits_lead", "limits_fixed_samples", "limits_fixed_missing",
+                "limits_fixed_model", "limits_fixed_check", "limits_fixed_services")) {
+                expect_true(found(texts[[key]], html), info = key)
+            }
+            # Point 1: the model's biological samples and those measured in every data set.
+            expect_true(found(sprintf(texts[["limits_samples"]], nrow(value$samples), value$shared_samples), html))
+            # Point 2: the samples missing from a data set, said if and only if there are any.
+            missing <- sum(value$samples$views_present < length(views))
+            if (missing > 0L) {
+                expect_true(found(sprintf(texts[["limits_missing_samples"]], missing, nrow(value$samples)), html))
+            } else {
+                expect_false(found(fragment(texts[["limits_missing_samples"]]), html))
+            }
+            # Point 3: per data set whose runs were averaged, its counts from its runs column; then why it matters.
+            averaged <- 0L
+            for (view in views) {
+                runs <- lengths(strsplit(as.character(value$samples[[paste0(view, "_runs")]]), ";", fixed = TRUE))
+                if (any(runs > 1L)) {
+                    averaged <- averaged + 1L
+                    expect_true(found(sprintf(texts[["limits_averaged_item"]], view, sum(runs > 1L), sum(runs > 0L),
+                        max(runs)), html), info = view)
+                }
+            }
+            message(sprintf("KIT-239 L2: %d samples, %d in every data set, %d missing from a data set, %d data sets averaged",
+                nrow(value$samples), as.integer(value$shared_samples), missing, averaged))
+            # The corpus averages runs in some data sets, so the bias sentence is checked present here (absent: L3).
+            expect_gt(averaged, 0L)
+            expect_true(found(texts[["limits_fixed_averaged"]], html))
+        }
+    })
+})
+
+test_that("KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds", {
+    ns <- asNamespace("MultiScholaR")
+    facts_of <- get0("integrationLimitationFacts", envir = ns, inherits = FALSE)
+    text_of <- get0("integrationLimitationsText", envir = ns, inherits = FALSE)
+    expect_true(is.function(facts_of))
+    expect_true(is.function(text_of))
+    texts <- integrationGuiTexts()
+    fragment <- function(template) {
+        parts <- strsplit(template, "%[ds]")[[1L]]
+        parts[[which.max(nchar(parts))]]
+    }
+    has <- function(lines, sentence) any(grepl(sentence, lines, fixed = TRUE))
+    # 23 biological samples in two data sets: `a` measures all, one run each; `b` lacks the last `missing` samples, and
+    # its first 7 samples have `runs` runs.
+    planted <- function(missing = 5L, runs = 3L) {
+        n <- 23L
+        samples <- data.frame(biological_sample = sprintf("S%02d", seq_len(n)), group = rep(c("A", "B"), length.out = n),
+            views_present = c(rep(2L, n - missing), rep(1L, missing)), stringsAsFactors = FALSE)
+        samples$a_runs <- sprintf("a%02d", seq_len(n))
+        b <- vapply(seq_len(n), function(i) paste(sprintf("b%02d_%d", i, seq_len(if (i <= 7L) runs else 1L)),
+            collapse = ";"), character(1))
+        b[samples$views_present < 2L] <- ""
+        samples$b_runs <- b
+        samples
+    }
+    if (is.function(facts_of) && is.function(text_of)) {
+        # (a) 5 samples missing from `b`, 7 of its samples averaged over 3 runs.
+        facts <- facts_of(planted(), 18L, c("a", "b"), "keep_missing")
+        expect_identical(c(facts$samples, facts$shared, facts$missing), c(23L, 18L, 5L))
+        b <- facts$averaged[facts$averaged$view == "b", ]
+        expect_identical(c(b$samples, b$repeated, b$most_runs), c(18L, 7L, 3L))
+        lines <- text_of(facts, texts)
+        expect_length(lines, 6L)
+        expect_true(has(lines, sprintf(texts[["limits_samples"]], 23L, 18L)))
+        expect_true(has(lines, sprintf(texts[["limits_missing_samples"]], 5L, 23L)))
+        expect_true(has(lines, sprintf(texts[["limits_averaged_item"]], "b", 7L, 18L, 3L)))
+        expect_false(has(lines, sprintf(texts[["limits_averaged_item"]], "a", 0L, 23L, 1L)))
+        expect_true(has(lines, texts[["limits_fixed_averaged"]]))
+        expect_true(has(lines, texts[["limits_fixed_services"]]))
+        # (b) The same with one run per sample: nothing averaged, so no bias sentence.
+        lines <- text_of(facts_of(planted(runs = 1L), 18L, c("a", "b"), "keep_missing"), texts)
+        expect_false(has(lines, texts[["limits_fixed_averaged"]]))
+        expect_false(has(lines, fragment(texts[["limits_averaged_item"]])))
+        # AUDIT-KIT-239-impl I01: samples missing from a data set and nothing averaged: the sentence that no runs were
+        # averaged, which must hold beside the missing-samples sentence.
+        expect_true(has(lines, texts[["limits_averaged_none"]]))
+        expect_true(has(lines, sprintf(texts[["limits_missing_samples"]], 5L, 23L)))
+        # (c) No enrichment run (the report's case): said so.
+        lines <- text_of(facts_of(planted(), 18L, c("a", "b"), "keep_missing", services = character()), texts)
+        expect_true(has(lines, texts[["limits_services_none"]]))
+        expect_false(has(lines, texts[["limits_fixed_services"]]))
+        # (d) One enrichment's database and release.
+        lines <- text_of(facts_of(planted(), 18L, c("a", "b"), "keep_missing", services = "KEGG Release 115.0"), texts)
+        expect_true(has(lines, sprintf(texts[["limits_services_report"]], "KEGG Release 115.0")))
+        # AUDIT-KIT-239-impl I03: with one database the sentence carries no plural tied to the count.
+        one <- sprintf(texts[["limits_services_report"]], "KEGG Release 115.0")
+        expect_false(grepl("these external databases|these releases", one))
+        # (h) AUDIT-KIT-239-impl I03: one sample missing from a data set: present, with no plural verb tied to the
+        # count.
+        lines <- text_of(facts_of(planted(missing = 1L), 22L, c("a", "b"), "keep_missing"), texts)
+        one <- sprintf(texts[["limits_missing_samples"]], 1L, 23L)
+        expect_true(has(lines, one))
+        expect_false(grepl("samples are missing", one, fixed = TRUE))
+        # (e) No sample missing from a data set: no missing-samples sentence; the model's treatment of missing values
+        # stays.
+        lines <- text_of(facts_of(planted(missing = 0L), 23L, c("a", "b"), "keep_missing"), texts)
+        expect_false(has(lines, fragment(texts[["limits_missing_samples"]])))
+        expect_true(has(lines, texts[["limits_fixed_missing"]]))
+        # (f) Nothing missing and nothing averaged: the sentence that no runs were averaged, and no bias sentence.
+        lines <- text_of(facts_of(planted(missing = 0L, runs = 1L), 23L, c("a", "b"), "keep_missing"), texts)
+        expect_true(has(lines, texts[["limits_averaged_none"]]))
+        expect_false(has(lines, texts[["limits_fixed_averaged"]]))
+        # (g) No facts (a record that cannot be read): the sentences true for every run, then that the numbers are
+        # missing.
+        lines <- text_of(NULL, texts)
+        expect_true(has(lines, texts[["limits_not_computed"]]))
+        for (key in c("limits_fixed_samples", "limits_fixed_missing", "limits_fixed_model", "limits_fixed_check")) {
+            expect_true(has(lines, texts[[key]]), info = key)
+        }
+        for (key in c("limits_samples", "limits_missing_samples", "limits_averaged_item")) {
+            expect_false(has(lines, fragment(texts[[key]])), info = key)
+        }
+        expect_false(has(lines, texts[["limits_averaged_none"]]))
+    }
+})
+
+# KIT-239 (L7): INT-28's content sits on the decided table entries (owner's decision of 2026-11-25, OD-2, with the
+# corrections R1-01, R1-03 and R1-04 told to the owner); no "weak" for a pattern whose size is stated in numbers.
+test_that("KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers", {
+    texts <- integrationGuiTexts()
+    has <- function(key, terms) for (term in terms) expect_match(texts[[key]], term, fixed = TRUE, info = key)
+    has("limits_fixed_samples", c("20", "60", "15", "descriptive", "at most 2 of 10", "slow training",
+        "recovered closely", "at least 0.9", "did not include", "7 to 10 of 10", "26 to 29 of 30"))
+    has("limits_fixed_missing", "missing at random")
+    has("limits_fixed_averaged", "too high")
+    has("limits_fixed_model", c("one group", "Gaussian", "one input per omic", "estimated before saving"))
+    has("limits_fixed_check", c("simulated", "one design"))
+    has("limits_fixed_services", c("STRING", "KEGG", "Reactome"))
+    has("help_scaling", c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30", "at least 0.9", "missing"))
+    # AUDIT-KIT-239-impl I01: true whenever no data set averaged runs, samples missing or not.
+    has("limits_averaged_none", "No biological sample has more than one run in any data set")
+    # AUDIT-KIT-239-impl I02 (KIT-246 option (a), draft pending the owner): no size claimed beyond the evidence.
+    has("help_scaling", c("could not be told from none", "recovered closely in 30 of 30 either way"))
+    for (phrase in c("too small to tell from none", "there was none")) {
+        expect_false(grepl(phrase, texts[["help_scaling"]], fixed = TRUE), info = phrase)
+    }
+    for (key in c("limits_fixed_samples", "help_scaling")) {
+        expect_false(grepl("weak", texts[[key]], ignore.case = TRUE), info = key)
+    }
 })

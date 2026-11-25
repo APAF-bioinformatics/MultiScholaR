@@ -858,7 +858,7 @@ omicNormRuvHeadTechnicalReplicates <- function(manager) {
         spec <- readWorkflowStateMetadata(manager, reference)$data
         design <- as.data.frame(materializeWorkflowTable(manager$.context, spec$components$design_matrix))
         isTRUE(resolveProtTechnicalReplicateBlock(design, spec$slots$group_id %||% NA_character_,
-            spec$slots$technical_replicate_id %||% NA_character_)$technical)
+            spec$slots$technical_replicate_id %||% NA_character_, check = FALSE)$technical)
     }), error = function(error) FALSE)
 }
 
@@ -1250,10 +1250,19 @@ omicNormItsdTables <- function(output, workflowData, normData, config) {
     if (is.null(shell) || !inherits(shell, binding$class)) return(invisible(NULL))
     id_col <- methods::slot(shell, binding$id_slot)
     annotation_cols <- shell@annotation_id_column
+    design_samples <- shell@design_matrix[[shell@sample_id]]
     rm(shell)
     build <- config$norm$itsd_table
+    # KIT-214 (E-8): each candidate's mean and CV over the design's samples that hold numbers (the builder's own rule only
+    # when there are none).
+    build_page <- function(page) {
+        sample_columns <- omicsDesignNumericColumnsOf(page, design_samples, id_col)
+        if (length(sample_columns)) build(page, id_col, annotation_cols, sample_columns = sample_columns) else {
+            build(page, id_col, annotation_cols)
+        }
+    }
     stored_tables <- tryCatch(readWorkflowOmicsItsdTables(binding, workflowData$state_manager, normData$assay_names,
-        function(page) build(page, id_col, annotation_cols)), error = function(e) {
+        build_page), error = function(e) {
         logger::log_warn(paste("Could not read the ITSD candidate tables:", conditionMessage(e)))
         NULL
     })

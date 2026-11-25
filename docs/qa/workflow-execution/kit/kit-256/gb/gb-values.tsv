@@ -1,0 +1,45 @@
+key	value
+gate	gb
+package_version	0.9.0
+package_sha	57238dcdabaa2443613e2b772901edc4f63a365e
+shinytest2_version	0.5.1
+chromote_version	0.5.1
+shiny_version	1.14.0
+p0.chrome	/usr/bin/google-chrome
+p0.answered	TRUE
+p0.attached	TRUE
+p0.app_warn	1
+p0.options	S1,S2,S3,S4
+step1.groups	A
+step1.summary	No technical replicates assigned yet.
+step2.set	["S1","S2"]
+step2.server_input	S1,S2
+step2.acted	TRUE
+step2.summary	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2
+step3.box	[]
+step4.sent	S3,S4
+step4.set	["S3","S4"]
+step4.acted	TRUE
+step4.summary	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2 | Group: A, Biological Replicate: 2 | Samples: S3, S4 | Technical Replicates: 1, 2
+step4.box	[]
+step5.box_before	["S1"]
+step5.acted	shiny-notification shiny-notification-warning :: ×Please select at least two samples.
+step5.summary_unchanged	TRUE
+step5.box_after	["S1"]
+step6.keys	A_1={S1,S2} A_2={S3,S4}
+notifications	shiny-notification shiny-notification-message :: ×Assigned 2 samples as technical replicates || shiny-notification shiny-notification-message :: ×Assigned 2 samples as technical replicates || shiny-notification shiny-notification-warning :: ×Please select at least two samples. || shiny-notification shiny-notification-message :: ×Design saved successfully!
+nc.p0.options	S1,S2,S3,S4
+nc.step1.groups	A
+nc.step1.summary	No technical replicates assigned yet.
+nc.step2.set	["S1","S2"]
+nc.step2.server_input	S1,S2
+nc.step2.acted	TRUE
+nc.step2.summary	Group: A, Biological Replicate: 1 | Samples: S1, S2 | Technical Replicates: 1, 2
+nc.box_after_step2	[]
+nc.box_set	["S1","S2"]
+nc.acted	shiny-notification shiny-notification-message :: ×Assigned 2 samples as technical replicates
+nc.summary_unchanged	TRUE
+nc.box	[]
+applog.lines	14
+applog.warnings	0
+applog.errors	0

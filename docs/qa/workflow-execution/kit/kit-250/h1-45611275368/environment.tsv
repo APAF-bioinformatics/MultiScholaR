@@ -1,0 +1,27 @@
+key	value
+run_mode	g0
+mode	test
+commit_under_test	77296fcf591f5ba591f18025be86231b2b275041
+records_commit	cf908a7d27aecd171b37279ff5aa02a05098f4bd
+diff_commit_under_test_vs_records	docs/qa/workflow-execution/kit/kit-250/correction-predictions.md docs/qa/workflow-execution/kit/kit-250/h1.R
+diff_only_records_folder	TRUE
+launch_form	tree
+launch_e_form	e
+network_requested	namespace
+r_version	R version 4.6.1 (2026-06-24)
+effective_user_outer	runner
+blas	/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+lapack	/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0
+threads_outer	OMP_NUM_THREADS= OPENBLAS_NUM_THREADS=
+threads_application	OMP/OPENBLAS/MKL_NUM_THREADS=1 (5.1); workers set 1 themselves
+chrome	/usr/bin/google-chrome
+chrome_version	Google Chrome 157.0.8103.78 
+shinytest2	0.5.1
+chromote	0.5.1
+processx	3.9.0
+MultiScholaR	0.9.0
+cpu	AMD EPYC 7763 64-Core Processor
+cores	4
+memory	MemTotal:       16372448 kB
+github_run_id	45611275368
+started_utc	2026-11-25T12:22:05Z

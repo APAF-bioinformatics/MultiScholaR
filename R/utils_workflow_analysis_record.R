@@ -642,7 +642,9 @@ validateWorkflowAnalysisRecord <- function(record) {
 }
 
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`; KIT-217 adds `intensity_filter_missing`): for
+#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
+#' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
+#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -659,11 +661,50 @@ workflowReplayRuleMarkers <- list(
     # made before counted every numeric column of the assay ("numeric_columns").
     intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
         earlier = "numeric_columns"),
+    # KIT-214 (VAL-173 (1)): lipid and metabolite duplicate resolution averages the design's samples ("design"); records
+    # made before averaged every numeric column of the assay ("numeric_columns").
+    duplicate_resolution_samples = list(option = "MultiScholaR.duplicate_resolution_samples", current = "design",
+        earlier = "numeric_columns"),
+    # KIT-224 (decision M8): the lipidomics and metabolomics legacy RUV-III-C correction keeps each feature's level
+    # ("restored"); records made before kept the shift by a constant per feature ("shifted").
+    ruv_feature_levels = list(option = "MultiScholaR.ruv_feature_levels", current = "restored", earlier = "shifted"),
+    # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
+    # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
+    # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
+    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"),
     # KIT-217 (VAL-173 (2); owner 2026-11-25): the lipid and metabolite intensity filter counts present values per
     # group (default: 2 values in at least 1 group; pool groups not counted) and so removes a feature with no value
     # ("group_counts"); records made before did not count missing values ("not_counted").
     intensity_filter_missing = list(option = "MultiScholaR.intensity_filter_missing", current = "group_counts",
         earlier = "not_counted"))
+
+#' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
+#' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
+#' @return One logical.
+#' @noRd
+workflowTreatModerationCurrent <- function() {
+    marker <- workflowReplayRuleMarkers$treat_moderation
+    !identical(getOption(marker$option), marker$earlier)
+}
+
+#' The DA model record's marker field (KIT-201): `list(treat_moderation = "as_main_test")` under the current rule, an
+#' empty list under the earlier one (a DA made before the change records none).
+#' @return A list to append to a DA model record.
+#' @noRd
+workflowTreatModerationRecord <- function() {
+    if (workflowTreatModerationCurrent()) list(treat_moderation = workflowReplayRuleMarkers$treat_moderation$current) else list()
+}
+
+#' The option a recorded DA replays under (KIT-201, D3): the current rule when its model record names it, else the earlier.
+#' @param model The record's DA model (`record$analyses$differential_abundance$model`).
+#' @return Named list for `withr::with_options()`.
+#' @noRd
+workflowDaReplayRuleOptions <- function(model) {
+    marker <- workflowReplayRuleMarkers$treat_moderation
+    recorded <- unlist(model$treat_moderation)
+    rule <- if (identical(as.character(recorded), marker$current)) marker$current else marker$earlier
+    stats::setNames(list(rule), marker$option)
+}
 
 #' The settings the lipid and metabolite intensity filter declares for its per-group count (KIT-217, SD-17): a step
 #' made under the earlier rule (no marker `intensity_filter_missing`) lists them with the value "not applicable:
@@ -781,7 +822,8 @@ assertWorkflowReplayDaSource <- function(manager, da, steps) {
 #' @param paths Experiment paths of the prepared project.
 #' @param scratch Directory for request and publication scratch.
 #' @param on_step Optional `function(step, manager)` called after each replayed step.
-#' @return `list(states, project_root)` after closing the owner.
+#' @return `list(states, project_root)` after closing the owner, with `design_statement` (KIT-222) when the record's design
+#'   analysed runs of two biological samples as one.
 #' @noRd
 replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, scratch, worker_cap = 12 * 1024^3,
     on_step = NULL) {
@@ -808,6 +850,11 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
         }
     }
+    # KIT-222 (owner's OD-4, 2026-11-25): a record whose design analysed runs of two biological samples as one replays
+    # as recorded; the consumers' refusal is replaced, inside this replay only, by a record of the collisions, and the
+    # result states that its numbers are not valid estimates.
+    key_collisions <- new.env(parent = emptyenv())
+    withr::local_options(list(MultiScholaR.replicate_key_collisions = key_collisions))
     identity <- readSavedStoreIdentity(file.path(project_root, ".workflow-entities", "store.json"))
     manager <- newWorkflowStateOwner(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
     on.exit(closeWorkflowStateOwner(manager), add = TRUE)
@@ -950,6 +997,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     da_manifest <- NULL
     if (!is.null(da)) {
         assertWorkflowReplayDaSource(manager, da, steps)
+        # KIT-201 (D3): the DA replays with the TREAT moderation it was made with (the earlier one when its model names none).
+        treat_rule <- workflowDaReplayRuleOptions(da$model)
         settings <- list()
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
         contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
@@ -966,11 +1015,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             # KIT-095: a binding that realises its formula from the head checks the record's against it first.
             omics_settings <- list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc)
             if (is.function(omics_binding$da_replay_check)) withWorkflowStateScope(manager, function() omics_binding$da_replay_check(manager, omics_settings))
-            withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,
-                getWorkflowStateReference(manager), omics_settings, contrasts))
+            withr::with_options(treat_rule, withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding,
+                manager, getWorkflowStateReference(manager), omics_settings, contrasts)))
         } else {
-            da_manifest <- runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
-                treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
+            da_manifest <- withr::with_options(treat_rule, runDIAReferenceDaAnalysis(list(formula_string = settings$formula,
+                da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths,
+                contrasts = contrasts, publish = FALSE))
         }
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = da$operation %||% "DA-contrast-output"), manager)
         # KIT-107 D5 (F-16): each recorded enrichment step, on the manifest the DA just produced.
@@ -1003,7 +1053,23 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             list(operation = analysis$operation, state = manager$current_state, description = analysis$operation), parameters))
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
     }
-    list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
+    replayed <- list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
+    if (!is.null(key_collisions$collisions) && nrow(key_collisions$collisions) > 0L) {
+        replayed$design_statement <- workflowReplayKeyCollisionStatement(key_collisions$collisions)
+        cli::cli_warn("{replayed$design_statement}", class = "workflow_replay_replicate_key_collision")
+    }
+    replayed
+}
+
+#' KIT-222 (owner's OD-4): the statement a replay of a record with a merged design carries in its result (DRAFT wording,
+#' docs/qa/workflow-execution/kit/kit-222/wording.md).
+#' @param collisions `findOmicsDesignReplicateKeyCollisions()`'s rows.
+#' @noRd
+workflowReplayKeyCollisionStatement <- function(collisions) {
+    paste0("This record's design analysed runs of two different biological samples as one (",
+        paste(sprintf("'%s': %s", collisions$key, collisions$runs), collapse = "; "), "). The replay repeats that ",
+        "analysis as recorded, so its results are not valid estimates. To obtain valid results, correct the design ",
+        "(mark the runs of each sample together) and run the analysis again.")
 }
 
 #' Text of one encoded record value, in full (KIT-029): atomic values comma-joined, lists as compact JSON,

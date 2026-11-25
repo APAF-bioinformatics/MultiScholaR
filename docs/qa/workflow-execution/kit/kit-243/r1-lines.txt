@@ -1,0 +1,40 @@
+KIT-243 E1 lipid	drawn_by_DA1=	planted=3	left=posmode_groupB-groupA_heatmap.png,posmode_groupB-groupA_heatmap.pdf,all_heatmaps_combined.pdf	marker=FALSE	notes=[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps) | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+KIT-243 E2 lipid	drawn_by_DA1=	planted=3	left=posmode_groupB-groupA_heatmap.png,posmode_groupB-groupA_heatmap.pdf,all_heatmaps_combined.pdf	marker=FALSE	notes=[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps) | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+KIT-243 E3 metab	drawn_by_DA1=	planted=3	left=posmode_groupB-groupA_heatmap.png,posmode_groupB-groupA_heatmap.pdf,all_heatmaps_combined.pdf	marker=FALSE	notes=[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps) | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+KIT-243 E4 prot	barplot_drawn_by_DA1=TRUE,TRUE	left=	error=none	marker=FALSE
+KIT-243 E4b prot	DA1_wrote=note	planted=treated_vs_control.html	left=TRUE	error=none	marker=FALSE
+KIT-243 E4m prot	DA1_wrote=note	planted=treated_vs_control.html	left=TRUE	error=none	marker=FALSE
+KIT-243 E5, E6, G2 lipid	status=<absent>	copies=1	render=1	copy_notes=[message] Publication files copied	report_notes=[message] Report generated successfully!
+KIT-243 E8 metab	status=<absent>	copies=1	render=1	copy_notes=[message] Publication files copied	report_notes=[message] Report generated successfully!
+KIT-243 E7 lipid	status=<absent>	copies=1	notes=[message] Publication files copied
+KIT-243 E9 trx	status=<absent>	copies=1	render=1	copy_notes=[message] Publication files copied
+KIT-243 E10 prot	status=<absent>	copies=1	render=1	copy_notes=[message] Publication files copied
+KIT-243 E12 prot	error=workflow_figure_unwritten cannot retain previous action output
+KIT-243 E13 lipid	status=success	left=3	tables=de_posmode_lipids_groupB-groupA_long_annot.xlsx	marker=FALSE	copies=1	render=1	notes=[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis. | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps) | [message] Differential expression analysis complete! | [warning] Warning: Could not save results to disk: KIT-243: the publication failed after staging
+KIT-243 G14 lipid	marker=FALSE	copies=1	notes=[message] Publication files copied
+KIT-243 E14 prot	contrasts=1	publication_requested=1	figures=8	left=treated_vs_control.unavailable.txt,da_proteins_num_sig_da_molecules.pdf,da_proteins_num_sig_da_molecules.png,da_proteins_num_sig_da_molecules.tab,da_proteins_num_sig_da_molecules.xlsx,all_volcano_plots_combined.pdf,treated_vs_control.pdf,treated_vs_control.png	marker=FALSE	copies=1	render=1	notes=[default] Running differential abundance analysis...
+KIT-243 G1 in-process lipidomics	status=<absent>	record=TRUE	copies=1	render=1	marker=FALSE	notes=[message] Publication files copied | [message] Report generated successfully!
+KIT-243 G1 in-process metabolomics	status=<absent>	record=TRUE	copies=1	render=1	marker=FALSE	notes=[message] Publication files copied | [message] Report generated successfully!
+KIT-243 G1 managed lipidomics	status=<absent>	record=TRUE	copies=1	render=1	marker=FALSE	notes=[message] Publication files copied | [message] Report generated successfully!
+KIT-243 G1 in-process transcriptomics	status=<absent>	record=TRUE	copies=1	render=1	marker=FALSE	notes=[message] Publication files copied | [message] Report generated successfully!
+KIT-243 G10 trx	figures=4	planted_left=	other=TRUE
+KIT-243 G1 in-process proteomics	status=<absent>	record=TRUE	copies=1	render=1	marker=FALSE	notes=[message] Publication files copied | [message] Report generated successfully!
+KIT-243 G1 managed proteomics	status=<absent>	record=TRUE	copies=1	render=1	marker=FALSE	notes=[message] Publication files copied | [message] Report generated successfully!
+KIT-243 G3 lipid	status=<absent>	copies=1	fallback=TRUE
+KIT-243 G4 prot	status=<absent>	copies=1
+KIT-243 G5 prot	status=<absent>	copies=1	notes=[message] Publication files copied
+KIT-243 G6b prot	status=<absent>	copies=1	notes=[message] Publication files copied
+KIT-243 G6 prot	status=<absent>	copies=1
+KIT-243 G6 lipid	status=<absent>	copies=1
+KIT-243 G9 lipid	b_heatmaps=posmode_groupA-groupB_heatmap.png,posmode_groupA-groupB_heatmap.pdf	copies=0	notes=[error] Copy error: The results folder /tmp/RtmpsSz7nG/file4ba578598b40/project holds differential analysis files that no differential analysis of this session made (da_output/de_posmode_lipids_groupA-groupB_long_annot.xlsx, publication_graphs/Heatmaps/posmode_groupA-groupB_heatmap.pdf, publication_graphs/Heatmaps/posmode_groupA-groupB_heatmap.png): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+KIT-243 G11 lipid	error=none	markers=
+KIT-243 E1 lipid
+KIT-243 E1 lipid
+KIT-243 E2 lipid
+KIT-243 E2 lipid
+KIT-243 E3 metab
+KIT-243 E3 metab
+KIT-243 E4b: pro
+KIT-243 E4m: pro
+KIT-243 E5, E6, 
+KIT-243 E5, E6,
