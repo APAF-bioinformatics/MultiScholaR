@@ -341,3 +341,8 @@ W1 after the merge: not needed (the KIT-245 code is byte-identical to W1'-fix's 
 the next checkpoint; N09's prediction (no lane difference under `MSR_BUNDLE`) at the next stage-full run. At the train
 the ledger rows are numbered and "correction <runs>" filled with R1c 45617558634, W1'-head 45617907710, W1'-fix
 45619494004, R2c 45626340616.
+
+## Ledger rows (coordinator, 2026-11-26)
+
+KIT-245's ledger rows are VAL-270 (Part S, the push safety) and VAL-271 (the product part), merged
+by merge train 9 (staging 828dd105).
