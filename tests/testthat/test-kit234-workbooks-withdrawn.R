@@ -225,8 +225,9 @@ test_that("KIT-234 W8: Push to GitHub refuses a project with no R Markdown file 
         fixed = TRUE)), info = paste(b$messages, collapse = " | "))
     expect_s3_class(b$error, "error")
     expect_match(conditionMessage(b$error), "R project file does not exist", fixed = TRUE)
-    pushed <- file.path(tempdir(), "kit234", "scripts", "proteomics", "kit234.Rmd")
-    expect_identical(unname(tools::md5sum(pushed)), unname(tools::md5sum(template)))
+    # KIT-245 Part S (declared edit, ticket 6.1): the staged copy is removed on every exit, so the md5 of the staged
+    # template is no longer there to read; the message above names the file chosen.
+    expect_false(dir.exists(file.path(tempdir(), "kit234")))
 })
 
 test_that("KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?integrationFindInputs points to it", {

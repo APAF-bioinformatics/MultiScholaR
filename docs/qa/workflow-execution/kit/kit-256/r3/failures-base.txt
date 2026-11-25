@@ -1,0 +1,79 @@
+file: test-kit256-tech-rep-selection-cleared.R
+test: KIT-256 E1: after a successful Assign the box is emptied (lipidomics, transcriptomics)
+kind: failure
+message:
+  Expected lipidomics last message for tech_rep_samples to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+
+file: test-kit256-tech-rep-selection-cleared.R
+test: KIT-256 E1: after a successful Assign the box is emptied (lipidomics, transcriptomics)
+kind: failure
+message:
+  Expected transcriptomics last message for tech_rep_samples to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+
+file: test-kit256-tech-rep-selection-cleared.R
+test: KIT-256 E2: after a successful Assign the box is emptied (proteomics, dia_long)
+kind: failure
+message:
+  Expected `last` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+
+file: test-kit256-tech-rep-selection-cleared.R
+test: KIT-256 E3: the next sample's runs added to what the box shows give two samples, not one
+kind: failure
+message:
+  Expected lipidomics samples of S1 to S4 to be identical to `list(c("S1", "S2"), c("S3", "S4"))`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `actual[[1]]`:   "S1" "S2" "S3" "S4"
+  `expected[[1]]`: "S1" "S2"          
+  
+  `actual[[2]]` is absent
+  `expected[[2]]` is a character vector ('S3', 'S4')
+
+file: test-kit256-tech-rep-selection-cleared.R
+test: KIT-256 E3: the next sample's runs added to what the box shows give two samples, not one
+kind: failure
+message:
+  Expected transcriptomics samples of S1 to S4 to be identical to `list(c("S1", "S2"), c("S3", "S4"))`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `actual[[1]]`:   "S1" "S2" "S3" "S4"
+  `expected[[1]]`: "S1" "S2"          
+  
+  `actual[[2]]` is absent
+  `expected[[2]]` is a character vector ('S3', 'S4')
+
+file: test-kit256-tech-rep-selection-cleared.R
+test: KIT-256 G3: an Assign that leaves the design identical also empties the box
+kind: failure
+message:
+  Expected `kit256Obs("G3", kit256Last(api$log, "tech_rep_samples", mark))` to be identical to `character(0)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ()
+trace (first lines):
+       ▆
+    1. ├─kit256SharedBuilder(...) at test-kit256-tech-rep-selection-cleared.R:228:3
+    2. │ ├─base::suppressMessages(...) at test-kit256-tech-rep-selection-cleared.R:70:3
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ └─shiny::testServer(...) at test-kit256-tech-rep-selection-cleared.R:70:3
+    5. │   ├─shiny:::withMockContext(...)
+    6. │   │ ├─shiny::isolate(...)
+    7. │   │ │ ├─shiny::..stacktraceoff..(...)
+    8. │   │ │ └─ctx$run(...)
+    9. │   │ │   ├─promises::with_promise_domain(...)
+   10. │   │ │   │ └─domain$wrapSync(expr)
+   11. │   │ │   ├─shiny::withReactiveDomain(...)
+

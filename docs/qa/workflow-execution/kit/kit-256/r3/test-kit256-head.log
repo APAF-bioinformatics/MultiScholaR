@@ -1,0 +1,20 @@
+kit256-tech-rep-selection-cleared: KIT256-OBS E1 lipidomics: character(0)
+.KIT256-OBS E1 transcriptomics: character(0)
+..KIT256-OBS E2 proteomics: character(0)
+.KIT256-OBS E3 lipidomics box after the first Assign: character(0)
+.KIT256-OBS E3 lipidomics keys of S1 to S4: S1,S2 S3,S4
+.KIT256-OBS E3 transcriptomics box after the first Assign: character(0)
+.KIT256-OBS E3 transcriptomics keys of S1 to S4: S1,S2 S3,S4
+.KIT256-OBS G1 too_few after the click: <no message>
+..KIT256-OBS G1 too_few after a rename: S1
+.KIT256-OBS G1 groups after the click: <no message>
+..KIT256-OBS G1 groups after a rename: S5 S6
+.KIT256-OBS G2: S5 S6
+..KIT256-OBS G3: character(0)
+.KIT256-OBS G3 then G2: S5 S6
+.KIT256-OBS G4: character(0)
+..
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit256-tech-rep-selection-cleared.R pass 20 fail 0 error 0 skip 0 warn 0
