@@ -61,6 +61,17 @@
 
 ### Fixes
 
+ * Proteomics differential analysis (DIA, label-free and TMT on the default route, the scripted wrappers, and the
+   older `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects): when Storey's q-value cannot be
+   computed for a comparison, the q-value column now holds the Benjamini-Hochberg adjusted p-values, as the warning and
+   the analysis record already said. Before, the column was left empty for every protein of that comparison, so nothing
+   was reported significant, the volcano plot was empty and the comparison had no proteins for enrichment. This happens
+   when no p-value in the comparison reaches 0.95, which is likely only when a few tens of proteins or fewer are
+   unchanged, for example in a small protein table or in a comparison in which nearly every protein changes strongly.
+   Comparisons whose q-values could be computed are unchanged. DIA with limpa, lipidomics and metabolomics in the
+   application, and transcriptomics were not affected. Analyses recorded before this change now replay with the
+   Benjamini-Hochberg values their record names. Saved results of such comparisons change when the analysis is
+   replayed (KIT-249).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
