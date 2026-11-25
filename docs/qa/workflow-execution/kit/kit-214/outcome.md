@@ -1,6 +1,7 @@
-# KIT-214 outcome (interim: step 0, G0 and R1 done; the fix commit waits for KIT-202's merge)
+# KIT-214 outcome
 
-Ticket `tickets/kit/KIT-214.md` r1.3 (owner decision VAL-173 (1); coordinator E-1 to E-8). Branch `kit-214` from
+Ticket `tickets/kit/KIT-214.md` r1.5 (owner decision VAL-173 (1); coordinator E-1 to E-8; r1.4 K202-I07; r1.5 the
+marker's snapshot prediction, written before R2). Branch `kit-214` from
 `v0.9-staging` 74b1caee.
 
 ## Step 0 (before R1)
@@ -43,11 +44,39 @@ Result: no hit. Nothing is put to the owner (VAL-130 (4)).
 
 ## Commits
 
-- (tests only; nothing under `R/`, `man/`, `NAMESPACE`): `tests/testthat/test-kit214-sample-columns.R` (E1 to E10,
-  T6 (i) to (v), G1, G2, G3, G7 (a) and (b)), `kit-214/g0-base-values.R` (G0), `kit-214/dup-samples-control.R` (S1,
-  runs in R2).
+- cd88f95f: tests only (nothing under `R/`, `man/`, `NAMESPACE`): `tests/testthat/test-kit214-sample-columns.R` (E1 to
+  E10, T6 (i) to (v), G1, G2, G3, G7 (a) and (b)), `kit-214/g0-base-values.R` (G0), `kit-214/dup-samples-control.R`
+  (S1).
+- fece3cbe: G0 and R1 records.
+- 49011d1f: merge of staging 185ebf75 (KIT-202 in); no conflict.
+- 8e0465e7: the fix (13 files: 11 under `R/`, `NEWS.md`, the ledger row `VAL-<merge>`). `man/`, `NAMESPACE`,
+  `DESCRIPTION` unchanged; the two kernels (`R/func_omics_qc_shared.R:116-160`, `R/func_lipid_qc_support_helpers.R`)
+  and the batch adaptors unchanged.
+- the R1b/R2 records commit, then bb36097e: merge of staging 67569959 (ledger rows only since 185ebf75; the ledger
+  conflict resolved with staging's rows first and this ticket's `VAL-<merge>` row after them).
 
-- cd88f95f is that commit.
+## The fix (8e0465e7)
+
+- **Own helpers (K202-I07, ticket 3 item 8).** `R/utils_workflow_omics_declarations.R`: `omicsDesignSampleColumnsOf`
+  (`:202`, rule-free D), `omicsDesignNumericColumnsOf` (D that hold numbers), `omicsDuplicateResolutionSampleColumns`
+  (`:227`, its own marker and refusal class `omics_duplicate_resolution_samples_invalid`, ticket 7's text),
+  `omicsDuplicateResolutionInput` (`:251`, the whole-matrix callers' conversion of every numeric column and D, only with
+  a duplicated id). KIT-202's `omicsIntensityFilterSampleColumns` is neither called nor edited.
+- **C1.** Lipid adaptor (`R/utils_workflow_lipid_declarations.R:65`); `resolveMetabDuplicateAssayData` gains
+  `designSamples = NULL` (`R/func_metab_s4_qc_methods.R:898`, `:921`), passed by the metabolite adaptor; partitioned
+  writer passes D to the batch kernel (`R/utils_workflow_omics_declarations.R:339`) and keeps `as_double` over every
+  numeric column; the declaration fixes `duplicate_resolution_samples = "design"` (`:315`); the marker row is last in
+  `workflowReplayRuleMarkers` (`R/utils_workflow_analysis_record.R:663`).
+- **C2, C3.** `R/mod_omic_qc_tabs.R:621` (count of D), `:666` (`Samples` = D; missingness over D that hold numbers);
+  `omicsAssayMissingPercent(scope, columns = NULL)` (`R/utils_workflow_omics_declarations.R:1361`), given D that hold
+  numbers by `readWorkflowOmicsShell`.
+- **C4.** `analyzeWorkflowOmicsItsd` passes D that hold numbers to `itsd$metrics` and `itsd$quant`
+  (`R/func_omics_qc_shared.R:256`); the two metric lambdas gain `...`.
+- **C5.** The two builders gain `sample_columns = NULL` (`@noRd`); the two `itsd_table` lambdas gain `...`;
+  `omicNormItsdTables` passes D that hold numbers per page (`R/mod_omic_norm_panels.R:1258`).
+- **C6.** Unchanged (E-3): no caller.
+- **Divergence recorded (N6).** The new code reads S4 slots with `methods::slot()` and `@`, as the surrounding package
+  code does, against `R-bioinformatics.md`'s accessor rule (existing-code scope rule).
 
 ## G0 and R1: run 45472096981 on cd88f95f (one request: a scripts job and one test job; base none)
 
@@ -84,12 +113,100 @@ Every failure is an assertion; none is an error:
 Inferred: stop rule 1 does not apply (no E row passes on base); the ticket goes on to the fix commit after KIT-202's
 merge, with R1b on the merged state.
 
+## R1b: run 45518385430 on 49011d1f (tests-only state merged with staging 185ebf75)
+
+Observed (`r1b/`): 122 passed, 44 failed, 0 errors; `failures.txt` names the same tests with the same actual values as
+R1. Line numbers of section 8's files re-read on the merge (KIT-202 moved `resolveMetabDuplicateAssayData` to `:891`,
+the duplicate declaration to `:243`, `omicsAssayMissingPercent` to `:1284`; 2.3's definition is KIT-202's 7.1, so stop
+rule 4 does not apply).
+
+## R2: run 45520213660, head 8e0465e7 against base 49011d1f (49 files, 3 shards per side, check, S1)
+
+Observed (`r2/compare.tsv`, `r2/check-compare.txt`, `s1/`); 280.1 job-minutes (ceiling 675):
+- `test-kit214-sample-columns.R`: base 122 passed, 44 failed; head 176 passed, 0 failed (`fixed`): every E row, T6 (i)
+  to (v), G1 to G3 and G7 pass on head.
+- `test-workflow-omics-binding-steps.R` (58/1 both sides) and `test-workflow-omics-declarations.R` (45/23 both sides):
+  `message-changed`, counts unchanged, as predicted in r1.5 before the run: the KIT-094 snapshot's duplicate step
+  (steps[[4]]) records 1 parameter instead of 0 in both omics (`r2/compare-failures-binding-steps.txt`), the KIT-073
+  registry the declaration's `fixed`. Both snapshots were recorded on the laptop and already fail on base; replaced at
+  the end-of-project re-record (VAL-181, VAL-189).
+- The other 46 files `same`, including `test-kit202-intensity-filter-samples.R` (G5), `test-metab-02f-...` (G6), the
+  three mocking files of the step-0 survey, the frozen QC families and `test-omics-norm-itsd-selection.R`.
+- Check: 0 errors, 3 warnings, 3 notes on both sides; findings identical (6 on both), none only on head.
+- S1 (`s1/compare.tsv`, `s1/dup-identity.tsv`, `s1/changed-rows.tsv`; both sides exit 0):
+  (i) base equal to head on 32 of 32 (A)/(A2) rows (both variants); non-vacuous for lipid and metabolite (module-CI
+  objects with 2 duplicated ids per assay, the A2 tables with 1); (ii) head equal to the oracle over D on 12 of 12 (B)
+  rows, base equal to the oracle over every numeric column on 12 of 12; (iii) head `whole` equal to `partitioned` on 22
+  of 22; (iv) head under the earlier option equal to base on 12 of 12. The run-time-classed input (module-CI
+  `duplicate_feature = TRUE` through the import) was classed unaffected (its vendor columns are dropped, as G0 showed).
+  Changed kept rows (`whole`, base against head): 5 ids: 2.2's two tables in both omics (base row 1, head row 2) and the
+  code-built module-CI MS-DIAL table (`P001`: base row 2, head row 1). The seed with a duplicated `Alignment ID` keeps
+  the same row under both rules (equal sample counts per candidate), as 2.2 predicts.
+
+Inferred: A2 (head side), A3 and A4 are met; nothing unpredicted, so stop rules 2 and 3 do not apply.
+
+## R3
+
+Run 45573131036: full suite, head bb36097e against staging 67569959, 20 shards per side, 1,270.2 job-minutes
+(ceiling 2,800). Observed (`r3/compare.tsv`): 481 files; 478 `same`; `test-kit214-sample-columns.R` `only-on-head`
+(176 passed); `test-workflow-omics-binding-steps.R` and `test-workflow-omics-declarations.R` `message-changed` with
+counts unchanged, as in R2. No `new-failure`, no other `message-changed`, no timeout or crash. Inferred: A5 met.
+
+## Budget
+
+Runs 45472096981, 45518385430, 45520213660, 45573131036: 1,582.8 job-minutes = 105.5 core-hours (4 cores),
+against 103.70 expected and 488.33 ceiling. No correction pass and no instrument rerun.
+
 ## Acceptance criteria
 
 - A1: met (G0).
-- A2: base side met (R1). R1b and the head side pending.
-- A3 to A6: pending (fix commit, R2 with S1, R3).
+- A2: met (R1, R1b base side; R2 head side).
+- A3: met (S1 in R2).
+- A4: met (R2), with the two predicted `message-changed` files of r1.5.
+- A5: met (R3: no difference other than A4's).
+- A6: NEWS and ledger row (`VAL-<merge>`, S1's run and count filled) added; `git diff 74b1caee bb36097e -- man/
+  NAMESPACE DESCRIPTION` empty; the kernels' bodies unchanged; this file ends with "For the change report".
 
 ## Not checked
-- The head: the fix is not written (it waits for KIT-202's merge); R1b.
-- S1 has not run; it runs first in R2.
+
+- Real data; Windows (no platform code).
+- The downstream reach of a changed kept row (ITSD normalisation, RUV, limma): S1 measures the step only.
+- Whether any KIT-159 harness record holds QC display values on the metabolomics corpora (C2 to C4 move them: an id of
+  0 is no longer a missing cell, the sample count is n, not n + 1).
+- The application driven in a browser: the displays are checked through their functions (`omicQcDataSummaryUi`,
+  `omicQcAssayStatsFrame`, `analyzeWorkflowOmicsItsd`, the `itsd_table` lambda), not through `omicNormItsdTables`'
+  output with an affected object.
+- Import Existing Design with numeric annotation columns: not executed; it reaches the same declared step (inferred).
+
+## For the change report
+
+**What was wrong, and who was affected.** In lipidomics and metabolomics, when a feature identifier appears on more than
+one row, the duplicate-resolution step keeps the row with the highest average intensity. It averaged every numeric
+column of the table, not only the samples. A numeric identifier, a numeric annotation column (retention time, m/z,
+score), or the numeric columns kept by Import Existing Design therefore entered the average and could decide which row
+was kept. This reached analyses with a duplicated identifier and a numeric non-sample column: custom imports with a
+repeated numeric identifier or a numeric annotation column, Import Existing Design, and objects built in code. MS-DIAL
+imports at their default identifier (unique) and the metabolomics workbooks (which call the S4 method that already
+averaged the design's samples) were not affected. The kept row then feeds every later step (ITSD normalisation if it is
+a standard, between-sample normalisation, RUV control selection, limma's shared prior and BH family). Separately, the
+Quality Control summary's "Number of Samples", the per-assay `Samples` and `Missingness` (where an identifier of 0 was a
+missing cell), the ITSD means and CVs in QC, and the normalisation's ITSD selection table counted every numeric column
+(display only): an MS-DIAL import showed one sample too many.
+
+**Code.** Base 185ebf75 (after KIT-202): `R/utils_workflow_lipid_declarations.R:61`, `R/func_metab_s4_qc_methods.R:906`,
+`R/utils_workflow_omics_declarations.R:259-266` (C1); `R/mod_omic_qc_tabs.R:619`, `:662-669`,
+`R/utils_workflow_omics_declarations.R:1246`, `:1284` (C2, C3); `R/func_omics_qc_shared.R:243-267`,
+`R/utils_omic_gui_config.R:2502-2526`, `:2728-2751` (C4, C5 lambdas); `R/func_lipid_norm_support_helpers.R:38-39`,
+`R/func_metab_norm_support_helpers.R:130-131` (C5). Fix 8e0465e7: see "The fix" above.
+
+**What changed in results.** Only the kept row of an identifier listed more than once, and only where a numeric
+non-sample column exists: on the synthetic fixtures 5 identifiers changed their kept row (S1, `s1/changed-rows.tsv`);
+all other inputs, including the GUI-entry lanes, the module-CI objects and real-shaped lane tables with a duplicated
+identifier, are byte-identical base against head. Display values: the seed MS-DIAL import shows 4 samples, not 5; its
+ITSD caffeine standard mean 48,400 and CV 0.38 %, not 38,721.4 and 55.89 %; the CV > 30 % count 0, not 2; with an
+identifier of 0 the missingness 0.0 %, not 2.5 %. Analyses recorded before this change replay with the earlier rule (the
+replay marker `duplicate_resolution_samples`).
+
+**Evidence.** G0 and R1 run 45472096981; R1b 45518385430; R2 and S1 45520213660 (synthetic and repository fixtures
+only: 2.2's two tables, the module-CI and GUI-entry objects, the MS-DIAL seed, lane tables with copied rows); R3
+45573131036. Limits: no real data; the step measured, not the downstream analysis.
