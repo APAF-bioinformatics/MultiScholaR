@@ -233,3 +233,13 @@ Windows; real data; R3 against staging dd769671 (R3 bound 67569959).
 - **Not a calibration fix.** This repair is a correctness and unit-invariance fix, not a calibration fix: on S1 the legacy route was anticonservative on both sides of it (complete-null objects with a call 0.60 and 0.67, FDP 0.36 and 0.42 at nominal 0.05; cause not established; KIT-188, KIT-190, KIT-210, the owner).
 - **Limits.** Missing values with zero-filling, and the Automatic k chosen from the uncentred cancor plot, still depend
   on the unit (KIT-185, KIT-188, KIT-210).
+
+## Corrections (coordinator, 2026-11-26)
+
+- The table row for `test-omics-summary-core.R` above gives the two digests of the leaf
+  `integration/transcriptomics_normalized_data.tsv` the wrong way round. As merge train 6's record
+  states (`merge-train-20261125f.md`, run 45608483144): the base's value equals the stored
+  7b9d35db..., and the head's value is e0e8d896....
+- Where this file's account of the earlier merge ac312e59 names the ledger row as VAL-260, the row
+  was still a placeholder at that time; it was numbered VAL-260 when merge train 6 landed
+  (c4505c7f).
