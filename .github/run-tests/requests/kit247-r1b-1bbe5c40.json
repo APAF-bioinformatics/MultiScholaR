@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-247 R1b: second tests-first pair for departure 3 (fix commit 0da49542): test-kit247-import-config.R on 1bbe5c40 = 6bd2c194 (without fix 2) + the test; D3 expected to fail, its guard to pass; 1 job, ceiling 30 job-minutes",
+  "label": "KIT-247 R1b failing-first (departure 3) on kit-247-r1b 1bbe5c40",
+  "package_commit": "1bbe5c406172d38367a6085e2ef1773bee29a6a2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit247-import-config.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
