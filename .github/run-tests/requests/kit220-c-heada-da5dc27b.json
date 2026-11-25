@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-220 control C head 1, instrument re-run 1 (VAL-54: dump directory relative; runs 45518516308, 45518524570); test-gui-entry-proteomics.R, test-gui-entry-lipidomics.R, test-gui-entry-metabolomics.R; ceiling 240 job-minutes",
+  "label": "KIT-220 control C head 1 at da5dc27b (re-run 1)",
+  "package_commit": "da5dc27b971b878431fd54d394d82bfa85d44f97",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "pkgload"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-220/redump.R",
+      "args": [
+        "kit220-c-heada-da5dc27b",
+        "test-gui-entry-proteomics.R",
+        "test-gui-entry-lipidomics.R",
+        "test-gui-entry-metabolomics.R"
+      ],
+      "out": "kit220-c-heada-da5dc27b",
+      "timeout_minutes": 240
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
