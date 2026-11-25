@@ -128,3 +128,6 @@ commit carried (A)'s rows (OD-1 was answered (A) before it), so its text is not 
 ticket's sibling check is placed right after `contrasts_tbl` is read (before line 114, as 3.1 item 2 requires).
 
 **A4 (full suite): by the checkpoint after merge (coordinator's ruling, 2026-11-26).** R3 is not run by this ticket.
+
+**Instrument rerun 1 result.** Run 45715339444: script exit 0 after 5 s; `g1-base.tsv` (93 digests: limma 19, limpa 20,
+ruv 17, kernel 19, alias 18) is kept in this directory. Prediction (exit 0, five cases, at least ten rows each) met.
