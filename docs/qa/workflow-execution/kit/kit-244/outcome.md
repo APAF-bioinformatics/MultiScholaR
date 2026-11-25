@@ -120,7 +120,7 @@ Tables: `g0-base-values.tsv`, `g0-best-partner.tsv`, `g0-pairs.tsv`. Every actio
 |---|---|---|
 | A1 | met | G0 run 45583972146; `g0-base-values.tsv`; B1 cites KIT-225 G0-2 and was observed again here at all five heads; binding as ruled |
 | A2 | met | R1: every E row fails at G0's value, every G row as base. R2 and R3: every E row passes on the fix. 05-core passes on R2's base side (the tests-only tree) |
-| A3 | met | R2: every file `same` except the new file (`fixed`) and the body-digest expectation at `:165` (one element). The 306 base failures are identical. Nothing new only on head in the check. KIT-224 was not straddled (both sides contain it) |
+| A3 | met | R2: every file `same` except the new file (`fixed`) and the body-digest expectation at `:165` (one element). The 306 base failures are identical. Nothing new only on head in the check. KIT-224 was not straddled: neither side contains it (it merged later, in merge train 6, c4505c7f). The merge train's two sides will both contain it, so its two `test-prot-norm-core.R` messages (VAL-213) are equal on both |
 | A4 | pending | the merge train's run. With the re-pin committed, the block passes (shown in R3) |
 | A5 | met | NEWS entry under the unreleased heading; ledger row `VAL-<merge>` after the last VAL row; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged |
 
@@ -136,8 +136,15 @@ Tables: `g0-base-values.tsv`, `g0-best-partner.tsv`, `g0-pairs.tsv`. Every actio
 
 - Expected 33.8, ceiling 107.0.
 - R2 ran above its expected 457 job-minutes, within its 660 ceiling. Its longest shard took 85.6 minutes, above the 75 per shard assumed.
-- R3 (the owner's re-pin and the merge) ran within the unused correction budget (660).
+- R3 was not in the ticket's plan (section 11: no own R3 unless the merge train's attribution fails). It was declared
+  before it was sent (purpose, base 7327607f, head 7daada75, 8 files, ceiling 300 job-minutes), cost 208.7
+  job-minutes, and keeps the total at 750.9 of the 1,605 job-minute ceiling. It is not a correction pass and does not
+  replace A4. Coordinator's ruling (2026-11-26): accepted as such; it changed no deciding comparison; recorded as told
+  to the owner, with the budget figure 50.06 core-hours against 33.8 expected.
 - No VAL-54 instrument rerun was needed.
+- Module CI runs started by this ticket's pushes (not requested; audit I11): 727.6 job-minutes over six runs, listed in
+  `runs.tsv`. Their only failures are staging's transcriptomics list (MCI-030.1, -031.1, -032.1); the merge push's
+  `e2e impacted (proteomics-dia-limpa)` lane passed (one press per journey).
 
 ## Wording (VAL-41; the owner sets it)
 
@@ -154,6 +161,13 @@ The refusal (class `prot_norm_limpa_peptide_input`) is shown after "Error in nor
 - **U1.** After an Apply and then a Skip, the record keeps the Apply's threshold. For a second press followed by a Skip, the live table now differs from what replay recomputes until U1 is repaired.
 - **F1, F3 to F5.** As in the ticket, section 12.
 - **Merge train.** The train's full run (A4).
+- **Replay after the lower-threshold sequence.** Replay after press 1, Apply at t_hi, press 2, Apply at 0.5 was not
+  run. By reading, replay filters L7 at 0.5, the live table; KIT-248's G0b (45597013061) observed replay's source on
+  this route. Two of the three links are observed (the live table, R2 E2; replay's source, KIT-248 G0b); the third,
+  the record naming 0.5, is read from the code.
+- **F6 (sessions saved before this change).** A session exported before this change after a second press keeps the
+  correlation result as its recorded start; in it, re-applied filters still act at the first threshold, and Reset may
+  be refused; the way out is Revert in Quality Control to Peptide Count Filter, then press. Development sessions only.
 
 ## For the change report
 
@@ -162,12 +176,12 @@ The refusal (class `prot_norm_limpa_peptide_input`) is shown after "Error in nor
   - (A) On DIA with limpa, after the correlation filter (or after RUV was set to Skip, which saves nothing), pressing "Run Normalization & RUV" again made the filtered table the new starting table. A filter re-applied at a lower threshold could not bring back the samples the first filter had removed, although the analysis record named the lower threshold. Skipping the filter kept those removals while recording "skipped". "Reset to Pre-Normalization" either changed nothing or was refused with a false reason.
   - (B) Pressing the button before DPC Quantification was accepted on a peptide table. The correlation filter and RUV covariates then failed with internal messages, and the RUV covariates said "retry", which cannot work.
 - **Who was affected.** Only users of DIA with limpa (an opt-in route), and only for these sequences.
-  - (A) changed results only when the first filter removed a sample and the second action was a lower threshold or a Skip. At the same or a higher threshold the samples kept were the same. No sample was ever removed twice at the same threshold.
+  - (A) changed results only when the first filter removed a sample and the second action was a lower threshold or a Skip. At the same or a higher threshold the samples kept were the same. The reason: a sample the first filter keeps keeps its best within-group partner, and the correlation between two kept samples does not change when other samples are removed (each pair uses only its own complete observations, and the filter removes samples, not proteins). So filtering the filtered table again at a second threshold keeps exactly the samples the unfiltered table keeps at the higher of the two thresholds. No sample was ever removed twice at the same threshold.
   - No result recorded in this programme went through the sequence.
 - **Code.**
   - Base 16112917: `R/utils_workflow_dia_norm.R:604` and `:628` (the kept-input condition); `R/utils_workflow_dia_products.R:939-947` (the guard).
   - Fix e4a37f2e: `R/utils_workflow_dia_norm.R:606` and `:630` add `correlation_filtered`; `R/utils_workflow_dia_products.R:942-951` refuses a peptide table first.
 - **What changed in results.**
-  - (A) After the second press, a re-applied filter acts at the chosen threshold on the table the first press designated, and a Skip commits that table. This is what the record states and what replay recomputes (a Skip after an Apply excepted: U1).
+  - (A) After the second press, a re-applied filter acts at the chosen threshold on the table the first press designated, and a Skip commits that table. This is what the record states and what replay recomputes (by reading for replay: two of its three links observed, see Not checked; a Skip after an Apply excepted: U1, repaired by KIT-248).
   - (B) No number changes.
 - **Evidence.** G0 45583972146 (base values; t_hi = 0.96361 removes run_0001; at base a re-apply at 0.5 after t_hi kept 11 samples, after the fix 12); R1 45588177269; R2 45591340671; R3 45605539062. The fixture is the "small" synthetic recipe (12 samples). It shows the mechanism, not effect sizes on real data.
