@@ -20,3 +20,10 @@ Wording candidates for the owner's pass (ticket F3; not changed here):
   threshold: <slider>" (`R/utils_workflow_saved_exports.R:224-231`) after a Skip whose data hold every sample.
 - NEWS (I07): the multi-assay qualification and "the table the normalisation produced (RUV-corrected when RUV was
   applied)" are drafts under VAL-41 too.
+- Closure check C3 (draft for the owner's pass) for the second statement: "The correlation filter was applied more than
+  once when this record was made; only the last threshold (<t>) is recorded, so this replay applies it once, to the table
+  the normalisation produced (RUV-corrected when RUV was applied), and its samples may differ from the analysis that was
+  run." ("in this record" and "the normalised table" are loose; on a record with leftovers of a Reset and a second run,
+  plan audit U1, "applied more than once" may be false while "may differ" stays true.)
+- Closure check C2: the NEWS replay sentence above replaced "replay as they ran" (false for a filter applied more than
+  once); a draft under VAL-41 too.

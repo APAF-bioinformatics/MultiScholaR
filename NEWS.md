@@ -94,8 +94,10 @@
    threshold, could remove further samples. A differential analysis run between Apply and Skip must now be run again
    (the Summary asks for it). In earlier releases the analysis after Skip used every sample, but the tab's summary
    and final PCA still showed the samples the filter had removed; they now show every sample. Analysis records made
-   by the development builds replay as they ran, with a statement naming the samples the filter left out, or, for a
-   filter applied more than once, saying that only the last threshold was recorded. (KIT-254)
+   by the development builds replay as recorded. When the filter was applied and then skipped, the replay reproduces
+   the analysis that was run and states the samples the filter left out; when it was applied more than once, the
+   replay states that only the last threshold was recorded, so its samples may differ from the analysis that was run.
+   (KIT-254)
 
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was

@@ -186,6 +186,47 @@ only on head. Stop rule 3 not triggered. 385 job-minutes (25.67 core-hours).
   correction is closed; the merge train repeats the full scope and R CMD check.
 - **Budget:** 1,108 job-minutes in all = 73.87 core-hours against the ticket's 115.00 ceiling.
 
+## Closure check (AUDIT-KIT-254-impl-20261126, "Closure check (2026-11-26)"): ready for a merge train
+
+No code or test repair. Record repairs in this commit: C1 (the re-apply recognition signature, here and in ledger row
+`VAL-<merge>`), C2 (NEWS's replay sentence), C3 (the second statement's draft, `wording.md`). VAL-247's correction is
+written by the coordinator at landing from the register's text.
+
+Notes:
+- **C4 (KIT-255).** Statement 1's assay detail is read from the columns the replayed filter removed. If KIT-255 (option
+  (a)) removes a failing sample from every assay without a replay rule for older records, the detail would name every
+  assay; E17 "pos" will fail in KIT-255's R2 and catch it. KIT-255 declares the move and derives the detail from the
+  pairs (per assay, no pair at or above t), or its replay marker keeps the earlier rule for older records.
+- **C5.** `workflowReplayDesignSamples` hydrates the two full states only to read column names; acceptable on a path
+  reached only by the validation harness and tests (no measured cost).
+- **C6 (a line for KIT-224's change report).** On the lipid-with-RUV fixture (F172, manual RUV, k 2, 5 %), threshold
+  0.99 removed only B_4 before KIT-224 (G0 45599722106: every other sample's best within-group partner at least 0.99) and
+  removes 10 of 12 samples after it (G0b 45628705535: the smallest best partner 0.957), because the old per-feature level
+  shift had raised replicate correlations; a threshold chosen under it filters differently.
+- **C7 (an inferred link).** E7's sample assertions at 0.960024 were never run on base code (R1d ran E7 at 0.5, nothing
+  removed, failing on its state and record assertions; R2d has the fix on both sides). Failing first at the final
+  constants follows from R1d's observed state and record failures, the precondition (the first Apply is the same code on
+  both commits) and base's Skip committing the filtered head (R1, R1d). No run owed.
+
+**The merge train's scope and predictions** (run-tests; base = the train's base, head = the train's head; `check: true`;
+4 shards; longest first; `file_timeouts` 120 for `test-prot-norm-core.R`; the train's env):
+- On staging abfc99ac, **61 files**: the ticket's grep (46: R2c's 44 plus `test-kit243-summary-current-outputs.R` and
+  `test-kit252-managed-failure-text.R`), the three frame files, the new file, `test-kit214-sample-columns.R`, and the ten
+  replay files (`test-integration-model.R`, `test-integration-mofa-model.R`, `test-kit200-prot-da-no-value-proteins.R`,
+  `test-kit201-treat-moderation.R`, `test-kit205-enrichment-background.R`, `test-kit215-not-tested-lists.R`,
+  `test-prot-annotation-uniprot-empty.R`, `test-prot-missing-value-counts.R`, `test-workflow-analysis-record.R`,
+  `test-workflow-omics-binding-steps.R`). With KIT-257 merged first, **62** (`test-kit257-norm-own-files.R`).
+- Predictions: the new file absent on base, head 379 passed, 0 failed; `test-omics-norm-state-guards.R` count-changed
+  647/0 to 651/0 (the T1/T8 set-up edit); every other file `same` at the base's counts (the files with pre-existing
+  failures, `test-workflow-analysis-record.R` 351/0 with 4 warnings, `test-kit243-summary-current-outputs.R` 246/0,
+  `test-kit257-norm-own-files.R` when KIT-257 is on the base, the replay consumers with no
+  `workflow_replay_correlation_skip` warning added); R CMD check nothing only on head.
+- **M2 against KIT-257** (`R/mod_omic_norm.R`): KIT-257's `omicNormOwnFiles` and KIT-254's `omicNormCorrelationStart`
+  and `clearOmicNormCorrelation` are inserted at the same place, after `omicNormApplyRunStart`. Resolution: keep
+  KIT-257's `omicNormOwnFiles` whole, then a closing `}` and a blank line, then KIT-254's two functions (the shared `}`
+  that follows closes `clearOmicNormCorrelation`). No semantic overlap: KIT-257 changes `omicNormApplyRunStart` and the
+  proteomics correlation, not `applyOmicNormCorrelation` or `skipOmicNormCorrelation`.
+
 ## Acceptance criteria
 
 | # | Criterion | Evidence | State |
@@ -247,8 +288,8 @@ recorded divergence under R.md's existing-code scope rule (I13).
   gives the run's result filtered once at t; record and replay agree with live. A DA run between Apply and Skip becomes
   stale and the Summary asks for it again. The record no longer shows a filter that was tried and undone (as for a Revert).
 - **How to recognise affected outputs.** Records: a `<prefix>_norm_complete` step directly after a
-  `<prefix>_correlation_filtered` step (case i); a `<prefix>_pearson_selection` step whose input entity is its own result
-  (case ii). Outputs: the DA tables, the exported session, the integration input and final S4 file, and
+  `<prefix>_correlation_filtered` step (case i); a `<prefix>_pearson_selection` step whose input is not the result of the step before it (its own result after a second
+  press; the skip state after Apply, Skip, Apply) (case ii). Outputs: the DA tables, the exported session, the integration input and final S4 file, and
   `study_parameters.txt` (a `min_pearson_correlation_threshold` line although Skip was pressed) of such sessions. The
   first signature also matches a record a script makes, after the fix too, by calling the wrappers in that order; it
   describes the record, not the version (I12).
