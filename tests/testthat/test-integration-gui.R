@@ -119,8 +119,9 @@ intGuiHtml <- function(tag) as.character(htmltools::renderTags(tag)$html)
 # KIT-138: the gate, the shell, the home page.
 # ------------------------------------------------------------------------------------------------
 
-test_that("KIT-138: with the gate off the home page and the integration module are as before", {
-    withr::local_options(MultiScholaR.integration_gui = NULL)
+# KIT-240 (T2): the tabs are on unless the option is set FALSE; set FALSE, the page is as before KIT-138.
+test_that("KIT-138: with the gate set off the home page and the integration module are as before", {
+    withr::local_options(MultiScholaR.integration_gui = FALSE)
     expect_false(integrationGuiEnabled())
     page <- intGuiHtml(app_ui(NULL))
     expect_match(page, '<div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">',
