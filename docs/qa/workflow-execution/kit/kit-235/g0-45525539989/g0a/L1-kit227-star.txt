@@ -1,0 +1,36 @@
+== chunk evaluation errors
+none
+== sample_details
+Error running Main function: missing value where TRUE/FALSE needed
+== method_details
+
+== results (first 400 characters)
+
+== length(results_data$numbers)
+0
+== parsed sections and keys
+  [Basic Information] keys: 'Workflow Name', 'Description', 'Timestamp'
+  [Version Information] keys: 'Repository', 'Branch', 'Commit', 'Commit Timestamp', 'Package Version', 'Source'
+  [Assay Information] keys: '* Number of Assays', '* Assay Names', '* Total Lipids'
+  [* Lipids per Assay] keys: 'assay_main'
+  [ITSD Normalization] keys: '* Applied'
+  [Log Transformation] keys: '* Applied'
+  [Between-Sample Normalization] keys: '* Method'
+  [Lipidomics Metadata] keys: '* Lipid ID Column', '* Annotation ID Column', '* Database Identifier Type', '* Sample ID Column', '* Group ID Column', '* Number of Samples', '* Number of Groups', '* Group Names', '* Internal Standard Regex'
+  [RUV-III Batch Correction] keys: '* Status', '* Grouping Variable', '* k value', '* Control features'
+  [Workflow Parameters] keys: 'Parameters from Final S4 Object'
+  [Additional Configuration Parameters] keys: ''
+  [ITSDNormalization] keys: 'Applied'
+  [Contrasts] keys: ''
+== extractor called alone: length
+41
+== extractor error
+<NULL>
+== AnalyzeSamples: length(numbers)
+46
+== error AnalyzeSamples would swallow
+none
+== fields from the extractor (no record overlay)
+{"num_assays":"NA","assay_names":"NA","itsd_applied":false,"itsd_method_type":"NA","itsd_aggregation":"NA","itsd_removed":false,"itsd_features_per_assay":"NA","log_transform_applied":true,"log_transform_offset":0,"normalisation_method":"cyclicloess","ruv_applied":true,"ruv_grouping_variable":"NA","ruv_assay_list":{"* Status":{"k":"NA","controls":"NA"},"* Grouping Variable":{"k":"NA","controls":"NA"},"* k value":{"k":"NA","controls":"NA"},"* Control features":{"k":"NA","controls":"NA"}},"best_k":"NA","num_neg_ctrl":"NA","best_percentage":"NA","ruv_number_k":2,"ruv_per_assay_details":"* Status: Applied; * Grouping Variable: group; * k value: 4; * Control features: 2","total_metabolites":"NA","ruv_design_methods":"<absent>"}
+== fields after AnalyzeSamples (record overlay when a record is present)
+{"num_assays":"NA","assay_names":"NA","itsd_applied":false,"itsd_method_type":"NA","itsd_aggregation":"NA","itsd_removed":false,"itsd_features_per_assay":"NA","log_transform_applied":true,"log_transform_offset":0,"normalisation_method":"cyclicloess","ruv_applied":true,"ruv_grouping_variable":"NA","ruv_assay_list":{"* Status":{"k":"NA","controls":"NA"},"* Grouping Variable":{"k":"NA","controls":"NA"},"* k value":{"k":"NA","controls":"NA"},"* Control features":{"k":"NA","controls":"NA"}},"best_k":"NA","num_neg_ctrl":"NA","best_percentage":"NA","ruv_number_k":2,"ruv_per_assay_details":"* Status: Applied; * Grouping Variable: group; * k value: 4; * Control features: 2","total_metabolites":"NA","ruv_design_methods":"<absent>"}
