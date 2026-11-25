@@ -699,7 +699,12 @@ workflowReplayRuleMarkers <- list(
     # it ("per_assay") writes the per-assay fields (KIT-260: the rows used, their identifier column and the rows matched
     # through the removed alternatives, in the ITSD product); a record made before replays with the earlier ITSD product
     # ("applied_flag": none of these fields), so that it replays exactly. Same name, option and tokens as KIT-242's row.
-    itsd_outcome = list(option = "MultiScholaR.itsd_outcome", current = "per_assay", earlier = "applied_flag"))
+    itsd_outcome = list(option = "MultiScholaR.itsd_outcome", current = "per_assay", earlier = "applied_flag"),
+    # KIT-242 (VAL-242 OD-1 (c), Q6.1, Q6.2 (c), OD-4 (c); VAL-290): lipid and metabolite RUV (legacy and declared) leaves a
+    # sample or feature with no value out of the search and the correction and puts it back as missing, keeps an assay
+    # with no usable controls or no supported number of factors without RUV, and stops on a failed computation
+    # ("by_cause"); records made before dropped an assay whose correction failed ("drop").
+    ruv_fallback = list(option = "MultiScholaR.ruv_fallback", current = "by_cause", earlier = "drop"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).

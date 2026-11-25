@@ -278,8 +278,19 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
 
     values <- list()
     factors <- list()
+    excluded <- list()
+    by_cause <- omicsRuvFallbackCurrent()
     for (assay_name in names(assays)) {
         values[[assay_name]] <- omicsRuvAssayValues(assays[[assay_name]], id_column, design_samples, assay_name)
+        # KIT-242 Part B (VAL-242 OD-1 (c), items iv to vi): under the current rule a sample with no value in the assay is
+        # left out of its factors, W and its DA (`applyOmicsRuvFactorsToDaInput`), and stays empty in the corrected assay.
+        if (by_cause) {
+            empty <- colSums(is.finite(values[[assay_name]])) == 0L
+            if (any(empty)) {
+                excluded[[assay_name]] <- colnames(values[[assay_name]])[empty]
+                values[[assay_name]] <- values[[assay_name]][, !empty, drop = FALSE]
+            }
+        }
         control_ids <- if (supplied) as.character(ruv_control_ids[[assay_name]])
         absent <- setdiff(control_ids, rownames(values[[assay_name]]))
         if (supplied && (!length(control_ids) || length(absent))) {
@@ -333,6 +344,7 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
             control_count = length(record$control_ids), controls_left_out = if (supplied) setdiff(control_ids, record$control_ids) else character(),
             complete_features = record$complete_features,
             not_tested = if (supplied) control_ids else character(), ruv_design = ruv_design, ruv_grouping_variable = grouping)
+        if (length(excluded[[assay_name]])) factors[[assay_name]]$samples_excluded <- excluded[[assay_name]]
     }
     # Audit F9: a supplied control with a missing value is no control, for W and for the correction alike.
     left_out <- Filter(length, lapply(factors, `[[`, "controls_left_out"))
@@ -359,9 +371,12 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
             if (supplied || first_pass) factors[[assay_name]]$control_ids else rownames(values[[assay_name]])
         })
         # KIT-224: the method runs under the earlier levels rule, so that the levels are restored once, below.
-        result <- withr::with_options(list(MultiScholaR.ruv_feature_levels = workflowReplayRuleMarkers$ruv_feature_levels$earlier),
+        # KIT-242: a correction that fails by cause stops with this kernel's own class.
+        result <- tryCatch(withr::with_options(list(MultiScholaR.ruv_feature_levels = workflowReplayRuleMarkers$ruv_feature_levels$earlier),
             ruvIII_C_Varying(subset_object, ruv_grouping_variable = grouping, ruv_number_k = lapply(factors[to_correct], `[[`, "k"),
-                ctrl = correction_controls))
+                ctrl = correction_controls)),
+            omics_ruv_failed = function(e) rlang::abort(sprintf("the RUV-III correction returned no corrected values for assay '%s' or for one of its samples",
+                paste(e$assay, collapse = ", ")), class = "omics_ruv_correction_failed", parent = e, call = NULL))
         result_assays <- methods::slot(result, slots$data)
         for (assay_name in to_correct) {
             corrected_assay <- result_assays[[assay_name]]
@@ -482,6 +497,11 @@ applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_st
         return(list(expr_matrix = expr_matrix, design_matrix = design_matrix, formula_string = formula_string,
             not_estimable = character(), not_tested = list(supplied_controls = supplied_controls, not_estimable = character()),
             not_observed = findOmicsRuvUnobservedGroups(expr_matrix, design_matrix, sample_id_col, group_col)))
+    }
+    # KIT-242 Part B (item v): a sample left out of the assay's factors for having no value there is left out of its DA.
+    if (length(assay_factors$samples_excluded)) {
+        expr_matrix <- expr_matrix[, !colnames(expr_matrix) %in% assay_factors$samples_excluded, drop = FALSE]
+        design_matrix <- design_matrix[!as.character(design_matrix[[sample_id_col]]) %in% assay_factors$samples_excluded, , drop = FALSE]
     }
     samples <- as.character(design_matrix[[sample_id_col]])
     absent <- setdiff(intersect(colnames(expr_matrix), samples), rownames(w))
