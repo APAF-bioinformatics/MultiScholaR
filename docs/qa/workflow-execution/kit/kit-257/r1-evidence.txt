@@ -1,0 +1,36 @@
+KIT-257 E1 after the declared run present: canonical_correlation_panels.png,canonical_correlation_panels.pdf,canonical_correlation_optimization_summary.xlsx
+KIT-257 E2 dispatched: 2 present at the first dispatch: TRUE,TRUE,TRUE
+KIT-257 G3 history moved: TRUE notes: [error] Normalization error: the publication's files could not be copied into the project
+KIT-257 E3 present: ruv_normalised_results_cln_with_replicates.tsv,normalised_results_cln_with_replicates.tsv,ruv_normalised_results_cln_with_replicates.RDS copy: COPY: Using RUV-normalized file names (RUV was applied) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,RUV_normalised_results.tsv,ruv_normalised_results.RDS
+KIT-257 E4 present: TRUE,TRUE,TRUE,TRUE,TRUE
+KIT-257 E7 after the first correlation present: ruv_normalised_results_cln_with_replicates.tsv DA at normalized = ran
+KIT-257 E7 present: ruv_normalised_results_cln_with_replicates.tsv copy: COPY: Using RUV-normalized file names (RUV was applied) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,RUV_normalised_results.tsv
+KIT-257 E9 present when the queued normalisation started: TRUE
+KIT-257 G5 normalisation in process head: normalized error: none notes: [message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+KIT-257 G5 normalisation managed head: normalized error: none notes: 
+KIT-257 G5 correlation in process head: correlation_filtered error: none notes: 
+KIT-257 G5 correlation managed head: correlation_filtered error: none notes: 
+KIT-257 E8 the correlation wrote: ruv_normalised_results_cln_with_replicates.tsv after the second press present: ruv_normalised_results_cln_with_replicates.tsv,normalised_results_cln_with_replicates.tsv,ruv_normalised_results_cln_with_replicates.RDS,normalised_results_cln_with_replicates.RDS errors: 0
+KIT-257 G5 limpa in process error: none dispatched: 0 designated: TRUE
+KIT-257 G5 limpa managed error: none dispatched: 1 designated: TRUE
+KIT-257 E5 lipid present: TRUE,TRUE,TRUE,TRUE QC_figures: lcms_pos_ruv_corrected_correlation.png,lcms_pos_ruv_corrected_density.png,lcms_pos_ruv_corrected_pca.png,lcms_pos_ruv_corrected_rle.png
+KIT-257 E6 lipid dispatched: 4 present at the first dispatch: TRUE,TRUE,TRUE,TRUE
+KIT-257 G5 lipid history moved: TRUE notes: [message] Normalization pipeline complete!
+KIT-257 E5 metab present: TRUE,TRUE,TRUE,TRUE QC_figures: lcms_pos_ruv_corrected_correlation.png,lcms_pos_ruv_corrected_density.png,lcms_pos_ruv_corrected_pca.png,lcms_pos_ruv_corrected_rle.png
+KIT-257 E6 metab dispatched: 4 present at the first dispatch: TRUE,TRUE,TRUE,TRUE
+KIT-257 G5 metab history moved: TRUE notes: [message] Normalization pipeline complete!
+KIT-257 G2 own file present: TRUE untouched: TRUE,TRUE,TRUE,TRUE
+KIT-257 E8: DIA with limpa, the pass-through pressed again removes both result-table names (fails before) ('test-kit257-norm-own-files.R:477:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 E8: DIA with limpa, the pass-through pressed again removes both result-table names (fails before) ('test-kit257-norm-own-files.R:477:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before) ('test-kit257-norm-own-files.R:498:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before) ('test-kit257-norm-own-files.R:498:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 E1: trx in process
+KIT-257 E1: trx in process
+KIT-257 E2: trx managed, t
+KIT-257 G3: trx, a directo
+KIT-257 G3: trx, a directo
+KIT-257 G3: trx, a directo
+KIT-257 E3: a correlation 
+KIT-257 E3: a correlation 
+KIT-257 E3: a correlation 
+KIT-257 E3: a correlation
