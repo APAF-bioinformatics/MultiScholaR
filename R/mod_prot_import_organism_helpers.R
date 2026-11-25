@@ -65,23 +65,26 @@ abortProtImportOrganismUnavailable <- function(message, parent = NULL) {
 PROT_IMPORT_UNTICK_ADVICE <- "untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
 
 #' The persistent notice of route (i): no organism with a taxonomy ID could be matched to the data's proteins, so no
-#' window is shown and the form's organism is used. Names that organism, or says the form has none.
+#' window is shown and the form's organism is used. The form's Taxonomy ID alone sets the UniProt query and the
+#' enrichment organism, so the sentence follows the taxon: name and taxon, the taxon alone, or no taxon.
 #' @noRd
 buildProtImportNoOrganismNotice <- function(organismName = NULL, taxonId = NULL) {
   has_name <- length(organismName) == 1L && !is.na(organismName) && nzchar(trimws(organismName))
   has_taxon <- length(taxonId) == 1L && !is.na(taxonId)
 
-  used <- if (has_name && has_taxon) {
+  used <- if (has_taxon && has_name) {
     sprintf(
       "This analysis will use the organism entered in the form: %s (taxon %s). "
       , trimws(organismName)
       , format(taxonId, scientific = FALSE)
     )
-  } else {
-    paste0(
-      "The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have "
-      , "no organism to use. "
+  } else if (has_taxon) {
+    sprintf(
+      "This analysis will use the Taxonomy ID entered in the form: %s (the form gives no organism name). "
+      , format(taxonId, scientific = FALSE)
     )
+  } else {
+    "The form has no Taxonomy ID, so UniProt annotation will have no organism to use. "
   }
 
   paste0(
