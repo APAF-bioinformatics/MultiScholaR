@@ -110,6 +110,8 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
     } else {
         runOmicNormHandler(input, workflowData, experimentPaths, normData, addLog, config)
     })
+    # KIT-261: under a managed session the Run button shows that a step of the omic is running.
+    if ("actions" %in% panels) registerOmicNormRunButtonState(session, config$binding$binding$omic_type, norm$panels$actions$run_label)
     shiny::observeEvent(input$reset_normalization, if (is.null(norm$reset)) {
         resetOmicNorm(workflowData, normData, addLog, config)
     } else {
@@ -254,6 +256,36 @@ runOmicNormPreQc <- function(workflowData, experimentPaths, normData, addLog, ge
         addLog(paste("Error generating Pre-QC:", e$message))
         invisible(FALSE)
     })
+}
+
+#' KIT-261: the Run button's label while a step of the omic runs (a draft for the owner's wording pass, VAL-41).
+#' @noRd
+omicNormRunButtonTexts <- function() list(busy = "Please wait: a step is still running...")
+
+#' KIT-261: under a managed session the Run button follows the omic's runner (a step of any of its tabs): disabled, with
+#' the busy label, while a step runs; enabled with its own label when none does. Sent only on a change (the first state
+#' is idle). Nothing is registered without a runner (in process); a runner without a step (a test double) counts as idle.
+#' The run rule's refusal (`omicNormRunStart`) stays the guard for a click that reaches the server before the disable
+#' reaches the page.
+#' @param session The tab's module session.
+#' @param omicType The binding's omic type.
+#' @param runLabel The button's own label, or NULL for the default.
+#' @return NULL, invisibly.
+#' @noRd
+registerOmicNormRunButtonState <- function(session, omicType, runLabel = NULL) {
+    runner <- workflowOmicsManagedActions(omicType)
+    if (is.null(runner)) return(invisible(NULL))
+    shown_idle <- TRUE
+    shiny::observe({
+        idle <- !is.function(runner$step$active) || is.null(runner$step$active())
+        if (identical(idle, shown_idle)) return()
+        shown_idle <<- idle
+        shinyjs::toggleState("run_normalization", condition = idle)
+        shiny::updateActionButton(session, "run_normalization",
+            label = if (idle) runLabel %||% "Run Normalization Pipeline" else omicNormRunButtonTexts()$busy,
+            icon = shiny::icon("play"))
+    })
+    invisible(NULL)
 }
 
 # ------------------------------------------------------------------------------------------------
