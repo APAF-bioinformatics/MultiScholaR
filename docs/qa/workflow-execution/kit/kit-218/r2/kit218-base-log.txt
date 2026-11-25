@@ -1,0 +1,105 @@
+kit218-da-wrapper-tail: 1234.
+KIT-218 G1 W1: completed; significant_rows 120 rows; comparisons: B_vs_A, C_vs_A
+...
+KIT-218 G1 W2: completed; significant_rows 61 rows; comparisons: B_vs_A
+...
+KIT-218 G1 W3: completed; significant_rows 60 rows; comparisons: B_vs_A
+...
+KIT-218 G1 W4: completed; significant_rows 60 rows; comparisons: B_vs_A
+..
+KIT-218 M1: caught message: <text>:1:2: unexpected input
+1: 2_
+     ^
+.567
+KIT-218 M2: mean log2FC of P11..P16 under B_vs_A = 0.0764; C_vs_A = 1.0322
+.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit218-da-wrapper-tail.R:136:5'): KIT-218 W1: two contrasts
+Expected W1 error to be NULL.
+Differences:
+`actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit218Completed(run, "W1 error") at test-kit218-da-wrapper-tail.R:136:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+── 2. Failure ('test-kit218-da-wrapper-tail.R:153:5'): KIT-218 W2: KIT-200's T9 
+Expected W2 error to be NULL.
+Differences:
+`actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit218Completed(run, "W2 error") at test-kit218-da-wrapper-tail.R:153:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+── 3. Failure ('test-kit218-da-wrapper-tail.R:172:5'): KIT-218 W3: one contrast 
+Expected W3 error to be NULL.
+Differences:
+`actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit218Completed(run, "W3 error") at test-kit218-da-wrapper-tail.R:172:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+── 4. Failure ('test-kit218-da-wrapper-tail.R:182:5'): KIT-218 W4: a data.frame 
+Expected W4 error to be NULL.
+Differences:
+`actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit218Completed(run, "W4 error") at test-kit218-da-wrapper-tail.R:182:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+── 5. Error ('test-kit218-da-wrapper-tail.R:259:5'): KIT-218 W5: a contrasts_tbl
+Error in `contrasts_tbl[, 1]`: incorrect number of dimensions
+Backtrace:
+     ▆
+  1. ├─testthat::expect_error(...) at test-kit218-da-wrapper-tail.R:259:5
+  2. │ └─testthat:::expect_condition_matching_(...)
+  3. │   └─testthat:::quasi_capture(...)
+  4. │     ├─testthat (local) .capture(...)
+  5. │     │ └─base::withCallingHandlers(...)
+  6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+  7. ├─kit218Quiet(...)
+  8. │ ├─utils::capture.output(value <- suppressWarnings(suppressMessages(expr))) at test-kit218-da-wrapper-tail.R:17:5
+  9. │ │ └─base::withVisible(...elt(i))
+ 10. │ ├─base::suppressWarnings(suppressMessages(expr))
+ 11. │ │ └─base::withCallingHandlers(...)
+ 12. │ └─base::suppressMessages(expr)
+ 13. │   └─base::withCallingHandlers(...)
+ 14. └─MultiScholaR::daAnalysisWrapperFunction(...)
+
+── 6. Failure ('test-kit218-da-wrapper-tail.R:268:5'): KIT-218 W6: a full_format
+Expected W6 error to be NULL.
+Differences:
+`actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: C_vs_A=groupC-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit218Completed(run, "W6 error") at test-kit218-da-wrapper-tail.R:268:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+── 7. Failure ('test-kit218-da-wrapper-tail.R:277:5'): KIT-218 W7: a first colum
+Expected W7 error to be NULL.
+Differences:
+`actual` is a character vector ('i In index: 1.\nCaused by error in `fit$coefficients[, coef]`:\n! subscript out of bounds')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit218Completed(run, "W7 error") at test-kit218-da-wrapper-tail.R:277:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit218-da-wrapper-tail.R:106:5
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit218-da-wrapper-tail.R pass 14 fail 6 error 1 skip 0 warn 0

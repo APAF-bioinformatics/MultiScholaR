@@ -1,32 +1,115 @@
-# KIT-218 outcome (interim: tests-only stage)
+# KIT-218 outcome
 
-Ticket r1.2. Branch `kit-218` from `v0.9-staging` f93dfd85. The fix commit waits until KIT-200 has merged into staging.
+The ticket is r1.4. Branch `kit-218` came from `v0.9-staging` f93dfd85. Staging dd769671 (with KIT-200 merged) was merged in at 9c586b58.
 
-## Step 0 (against f93dfd85)
+Commits:
+- 23db9b69: tests only (W1 to W4, G1, G3, M1).
+- 8fe6057e: R1 records.
+- e04d0c02: tests only (W5 to W7, M2; H1).
+- 9c586b58: merge of staging dd769671. Nothing of KIT-218's is under `R/`. This is R2's base.
+- 5c509642: the fix, NEWS and the ledger row `VAL-<merge>`.
 
-- Ticket already r1.2: Re-check 1's R01 to R03 applied; the owner's decisions are ledger row VAL-188 on staging (e6791275). Nothing duplicated.
-- Every cited line of `R/func_prot_da_model_wrapper.R` holds (`:150-154`, `:218-219`, `:222-233`, `:267-276`, `:304-312`, `:464`, `:499`, `:508-515`, `:522-531`); `R/func_prot_da_results_summary.R:245`, `:254-263`, `:317-322`; `R/func_prot_da_compat.R:115`, `:125`, `:132-133`, `:162-163`, `:597-601`; `R/func_prot_da_model_stats.R:823-824`; `R/func_prot_da_model_methods.R:427`; `NAMESPACE:109`.
-- Moved since 67064baf (KIT-208's merge ce59ad23), cited only in hand-offs, not in this ticket's code: `R/func_prot_da_results_methods.R` published count table, `:314-340` is now `:324-350`. `R/utils_workflow_dia_da.R:308-318` holds.
-- Open branches editing the wrapper file: only `merge-rehearsal`, `sim-k124-06`, `sim-k124-confirm` (predate KIT-126; not tickets), as the audit found.
-- R2 grep at the branch point: the same 8 files as the ticket lists.
+## Step 0
+
+**Against f93dfd85.**
+- The ticket was already r1.2. The owner's decisions are ledger row VAL-188, so nothing was duplicated.
+- Every cited line holds in:
+  - `R/func_prot_da_model_wrapper.R`: `:150-154`, `:218-219`, `:222-233`, `:267-276`, `:304-312`, `:464`, `:499`, `:508-515`, `:522-531`;
+  - `R/func_prot_da_results_summary.R`: `:245`, `:254-263`, `:317-322`;
+  - `R/func_prot_da_compat.R`: `:115`, `:125`, `:132-133`, `:162-163`, `:597-601`;
+  - `R/func_prot_da_model_stats.R:823-824`;
+  - `R/func_prot_da_model_methods.R:427`;
+  - `NAMESPACE:109`.
+- One line moved since 67064baf, cited only in a hand-off: KIT-208 moved the published count table in `R/func_prot_da_results_methods.R` from `:314-340` to `:324-350`.
+- Open branches that edit the wrapper file: only `merge-rehearsal`, `sim-k124-06` and `sim-k124-confirm`. All three predate KIT-126.
+
+**At the merge 9c586b58 (R05).**
+- `git diff --name-only debed95a 9c586b58 -- R/` lists 16 files: `func_lipid_qc.R`, `func_lipid_s4_normalization_methods.R`, `func_metab_qc_filtering_helpers.R`, `func_metab_s4_qc_methods.R`, `func_prot_da_model_stats.R` (KIT-200's later change: 6 lines added, 1 removed), `mod_integration_enrichment.R`, `utils_integration_enrichment.R`, `utils_integration_gui.R`, `utils_integration_record.R`, `utils_integration_workbook.R`, `utils_workflow_analysis_record.R`, `utils_workflow_integration_input.R`, `utils_workflow_integration_model.R`, `utils_workflow_lipid_declarations.R`, `utils_workflow_metab_declarations.R`, `utils_workflow_omics_declarations.R`.
+- The wrapper file and the tail helpers did not change between f93dfd85 and the merge.
+- R2's scope is the R2 grep at the merge: 10 files, plus `test-kit196-da-no-value-features.R`. KIT-201's and KIT-204's new files are not in staging, so the second of each pair to merge runs the other's file.
 
 ## R1 (run 45491079123, at debed95a)
 
-**Binding deviation (stated).** The ticket binds R1 to "the staging commit that holds KIT-200". KIT-200 is not yet in staging, and W2 and G3 need its kernel. R1 therefore ran on run-only branch `kit218-r1-with-kit200` = the tests-only commit 23db9b69 merged with KIT-200's head 3f8203c2. The ledger merge conflict (docs only) was resolved to staging's text. This branch is never merged. R2's base will be the tests-only commit once staging (with KIT-200) is merged into `kit-218`.
+**How R1 was bound.** R1 did not run on staging. KIT-200 was not in staging then, so R1 ran on the run-only branch `kit218-r1-with-kit200`. That branch is 23db9b69 merged with KIT-200's head 3f8203c2; its ledger conflict was resolved to staging's text. The branch is never merged.
 
-**Observed.**
-- `test-kit218-da-wrapper-tail.R`: 13 passed, 4 failed. W1, W2, W3 and W4 each failed at `expect_null`, with the caught message ending "Caused by error in `rownames_to_column()`: ! is.data.frame(df) is not TRUE" (purrr's two wrappers above it). This is the stated base value, so stop rules 1 and 2 do not fire.
-- G1 completed on every input: W1 120 rows (B_vs_A, C_vs_A), W2 61, W3 60, W4 60 rows with comparison `B_vs_A` only. That is the first-row truncation on base that P02 read. Stop rule 3 does not fire.
-- G3 passed (class `omics_da_no_observed_features`).
-- G2: `test-prot-07d-da-model-stats-shared.R` 60 passed, 0 failed, 1 skipped.
-- M1 (recorded, not judged): with groups `1`, `2`, `3` the caught message was `<text>:1:2: unexpected input / 1: 2_`. This is a parse error of the contrast name `2_vs_1`. The ticket expected a stop "inside `runTestsContrasts`"; where the parse happens was not traced.
+**What R1 showed.**
+- W1 to W4 failed at `expect_null`. The caught message ends "Caused by error in `rownames_to_column()`: ! is.data.frame(df) is not TRUE".
+- G1 completed with 120, 61, 60 and 60 rows. On W4's input it gave `B_vs_A` only, which is the first-row truncation.
+- G2 and G3 passed.
+- M1 is recorded in the R2 section.
 
-**Inferred.** The nesting is the only stop on these four inputs on base; the one-line fix plus OD-4 (a)'s one token is sufficient for them.
+Files: `r1/`.
 
-Files: `r1/tests.tsv`, `r1/failures.txt` (its message fields are empty: the runner's parser drops multi-line messages; the messages are in `r1/kit218-log.txt`).
+## R2 (run 45573395892): fix 5c509642 against base 9c586b58, 11 files, one shard per side, check
 
-## Not checked (so far)
+### Base side (the tests-only tree, with KIT-200 merged): it reproduces R1, as R05 requires
 
-- The fix and R2 (waiting for KIT-200's merge).
-- That KIT-200's merged kernel equals its head 3f8203c2, on which R1 ran.
-- Where M1's parse error is raised.
+- W1, W2, W3 and W4 fail at 'is.data.frame(df) is not TRUE'. This is the same as R1.
+- G1 completes with 120, 61, 60 and 60 rows. On W4's input it gives `B_vs_A` only. This is the same as R1.
+- G3 passes, as in R1.
+- **W5:** "Error in `contrasts_tbl[, 1]`: incorrect number of dimensions". This is the stated base value. Testthat counts it as an *error*, not a failure: `expect_error(class =)` re-raises an error of another class.
+- **W6:** fails at `expect_null` with the nesting message. Here the table is named `C_vs_A=groupC-groupA`.
+- **W7:** fails at `expect_null` with "Caused by error in `fit$coefficients[, coef]`: ! subscript out of bounds". This is the stated base value.
+- **M2:** the mean `log2FC` of P11 to P16 (the proteins with a group-B effect) is **0.0764 under the label `B_vs_A` and 1.0322 under `C_vs_A`**. The factor swap is reproduced on base.
+- **M1:** with groups 1, 2 and 3 the call stops with "<text>:1:2: unexpected input / 1: 2_". This is limma's `makeContrasts` parsing the name `2_vs_1`, inside `runTestsContrasts` (Re-check 2, RC9). The message is the same on head.
+
+No difference from R1, so stop rules 1 to 3 do not fire.
+
+### Head side
+
+- **The new file:** 64 passed, 0 failed. G1 and M2 are skipped, as declared.
+- **Verdicts:** the new file is `fixed`. The other 10 files are `same`. `test-prot-ruv-factors-in-model.R` fails 1 test identically on both sides (M29/M30, the legacy design's DA).
+- **Check:** 0 errors, 3 warnings, 3 notes on each side; 6 findings identical; nothing only on head.
+- **W2's printed count table (KIT-204 C14, not asserted):** `B_vs_A`, "Not significant", 61. All 61 proteins count as not significant, including P11 to P16. See "Not checked".
+
+Files: `r2/` (`compare.tsv`, `check-compare.txt`, `check-summary.txt`, `tests.tsv`, `tests-base.tsv`, and the new file's base and head logs).
+
+## Acceptance criteria
+
+| # | Verdict | Evidence |
+|---|---|---|
+| A1 | met | W1 to W4 failed in R1, reproduced in R2 base. W5 to W7 failed at their values in R2 base; W5 shows as an error, not a failure (above). On head W1 to W7, G2 and G3 pass; G1 and M2 are skipped |
+| A2 | met | G1 completed on W1 to W4's inputs (R1, R2 base) |
+| A3 | met | R2: the new file `fixed`, every other file `same`, nothing only on head in the check |
+| A4 | pending | shared full suite after merge |
+| A5 | met | NEWS entry; ledger row `VAL-<merge>`; `NAMESPACE`, `man/` and `DESCRIPTION` unchanged (the fix commit changes the wrapper, NEWS and the ledger only) |
+
+Stop rule 4 does not fire: no other difference, and no stored reference moved.
+
+Core-hours: R1 7.0 job-minutes (0.47). R2 tests 21.0 + 21.2 and check 16.1 + 13.2 = 71.5 job-minutes (4.77). Total 5.24 against 13.0 expected and 56.0 ceiling.
+
+## Not checked
+
+- **All 61 proteins count as not significant in W2's printed count table.** P11 to P16 carry a +1 effect with residual sd 0.3, so this is not what one would expect. W2 shows that the wrapper carries the DA step's `fdr_qvalue` unchanged. Whether the q-values from `runTestsContrasts` are themselves at or above 0.05 on this fixture was not traced (no R locally). It is recorded for the coordinator, and nothing was changed.
+- The limpa branch (F6), F7's disagreement, MetaboliteAssayData through the wrapper: not run.
+- Whether the wrapper's numbers equal the application's (P10): not added.
+- Windows; real data.
+
+## For the change report
+
+**What was wrong, and who was affected.**
+- The exported scripted function `daAnalysisWrapperFunction()` gave its per-comparison result tables to the summary step one list level too deep.
+- So every call stopped with "is.data.frame(df) is not TRUE" after the differential-abundance step had run, and returned nothing. This was established on complete data in R1 (45491079123) and R2 base (45573395892).
+- Only scripted callers were affected. Nothing in the application, replay or `inst/` calls the function.
+- History: the same nesting was in `deAnalysisWrapperFunction` at the tags `archive/v0.35` and `v0.3.6.3`, where by reading the workbooks' DA step stopped (not run).
+
+**Code.**
+- At base f93dfd85: `R/func_prot_da_model_wrapper.R:273-276` and `:306-309` (the nesting), `:154` (first row only), `:151` (factor passed as is).
+- At fix 5c509642: `R/func_prot_da_model_wrapper.R:23-26` (the refusal, class `prot_da_contrasts_invalid`), `:156`, `:159` (read as text, every row), `:272` and `:302` (the list passed once).
+
+**What changed in results.**
+- Before the fix nobody had results: every call stopped, so no earlier number changes.
+- On the inputs the tests cover, the function now completes, and its tables carry the DA step's `log2FC`, `fdr_qvalue` and `raw_pvalue` unchanged (W1).
+- Three inputs would have completed silently and wrongly once the nesting was fixed. They are closed:
+  - a data frame without `full_format` (base read its first row only: G1 gives `B_vs_A` only; OD-4 (a), W4);
+  - a character vector (now refused, W5);
+  - a comparisons column stored as a factor. On base, M2 recorded the swap: the six B-effect proteins average 0.08 under the label `B_vs_A` and 1.03 under `C_vs_A`, so one comparison's statistics stood under the other's name. Now they are read as text (W6, W7).
+
+**Still stops or limited.**
+- It still stops for bare expressions without `full_format` (F5), for digit-leading group names (F1, M1: limma's `makeContrasts` parse error) and, by reading, for limpa objects (F6).
+- Its gene-labelled volcano list is absent (F2).
+- Its first count table counts at q < 0.05 whatever threshold is set (F7).
+
+**Evidence and its limits.**
+- R1 45491079123 and R2 45573395892. The shared full suite comes after merge.
+- One synthetic design: 60 proteins, 12 samples, 3 groups. Limma branch only.
