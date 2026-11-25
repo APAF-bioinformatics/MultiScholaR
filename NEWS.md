@@ -522,6 +522,55 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics, RUV-III (Automatic and Manual, the default design): the negative-control features are
+   now chosen from a one-way analysis of variance on the RUV grouping column, and the automatic number of factors
+   removed is capped by the number of samples. Before this version the grouping column was removed before that analysis,
+   so no feature was tested and the controls were simply the first rows of each table, in the order the table held them,
+   and the automatic search had no upper limit on the number of factors it removed (up to 10 with 2 groups of 6 samples,
+   the number of samples minus the number of groups). Proteomics was not affected.
+
+   The controls are now the features with a Benjamini-Hochberg q-value above 0.05 that were measured in at least two
+   groups, taken from the highest p-value down; features with equal p-values are taken in the order of their names, so
+   the table's row order no longer decides. A feature measured in only one group is never a control.
+
+   The automatic search is unchanged, but the number of factors it finds is now capped as in proteomics: at most 2 with
+   fewer than 15 samples, 3 below 40, 4 below 80, 5 above. When the cap reduces it, the step says so, naming the assay,
+   the number found and the number removed. In Manual mode the number you choose is kept, with a warning when it is
+   above the cap. The record keeps the number found, the cap and the number removed, and whether each assay was
+   corrected. Because the controls are now the features that differ least between the groups, the automatic search can
+   find, at every percentage it tries, fewer controls measured in every sample than the number of factors it found; an
+   assay can then end with no usable percentage where the earlier row-order controls had one (in a simulated set of 24
+   samples with 5 % of values missing at random, one of two assays). Such an assay is left out of the RUV-corrected data
+   and recorded as 'dropped'; how often this happens is being measured before release.
+
+   Evidence (simulated lipidomics data, KIT-172's generator, 2 groups of 6 samples, one unwanted factor, without
+   internal-standard normalisation: it was requested but did not act on the simulated standards; capped at 2 factors;
+   metabolomics gave identical results on the 100 data sets checked): the new rule was no worse than the earlier repair
+   with the same cap in all eight scenarios tested, by pre-declared margins (0.10 on the share of data sets with any
+   false call, 0.05 on the false discovery proportion; intersection-union test at 5 %), for lipidomics and metabolomics
+   alike. Without the cap the new rule chose 5 to 6 factors on average and made many false calls (in data sets without
+   real differences, 32 to 34 of 50 had at least one); with the cap the false discovery proportion was 0.03 to 0.04
+   where the unwanted factor was not tied to the groups. When the unwanted variation happened to line up with the
+   groups, both rules that compare groups to choose controls still made a false call in about one null data set in five
+   (against about one in twelve for controls chosen blind to the groups). The evidence was produced with the correction
+   as it was before this version's level-keeping change (each feature shifted by a constant). The search's number of
+   factors, its percentage and its controls do not use the correction, so they are as measured; the false-call figures
+   do depend on it, because the differential analysis moderates each feature's variance by its mean abundance; that
+   change, measured separately, moved the average false discovery proportion and power by at most 0.0007. Caps of 3 to 5
+   at larger sample sizes are not yet measured. Below 12 samples the cap of 2 is a larger share of what the test has
+   left: with 2 groups of 3 samples, removing 2 factors leaves 2 of the 4 degrees of freedom the test counts, and with 2
+   groups of 2 it leaves none; this was not measured either (the limit is stated and the cap's rule kept, VAL-289).
+
+   Runs whose design names a group with 'pool' now leave those samples out of the control analysis, as proteomics does.
+   A grouping column missing from the design is now refused with a message instead of the assay being skipped silently;
+   scripts that call `getNegCtrlProtAnovaHelper()`, or the peptide percentage search, with a design lacking the grouping
+   column now get an error instead of row-order controls. Analysis records made before this version replay with the
+   controls and the number of factors they used.
+
+   The simulation figures shown for this design in the RUV design panel (for example 47.0% false discoveries in the
+   reference scenario) were measured with the earlier selection on tables whose rows were in random order; the panel now
+   says so.
+
  * Lipidomics and metabolomics RUV-III correction (Automatic and Manual, the default): each feature now keeps its mean
    abundance after the correction, as in proteomics. Before, every feature's corrected values were shifted by a
    constant that depended on the control features' levels and on the unit the intensities were expressed in. Fold

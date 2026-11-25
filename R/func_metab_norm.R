@@ -430,6 +430,7 @@ runPerAssayRuvOptimization <- function(
                     , object_error = paste0("error_neg_ctrl_selection: ", ctrl_list$message)
                     , ctrl_list   = NULL
                     , cancor_list = NULL
+                    , refusal     = if (inherits(ctrl_list, "multischolar_ruv_grouping_unusable")) ctrl_list
                 ))
             }
 
@@ -458,6 +459,14 @@ runPerAssayRuvOptimization <- function(
                 , cancor_list = cancor_list
             )
         })
+
+        # A grouping that cannot be used is refused to the caller, not recorded as failed rows (KIT-190). Signalled
+        # here, outside purrr::map, so the refusal reaches the caller with its own class and message.
+        for (pct_res in percentage_results) {
+            if (!is.null(pct_res$refusal)) {
+                stop(pct_res$refusal)
+            }
+        }
 
         # --- Per-assay derivation from shared percentage results ---
         design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
@@ -746,6 +755,9 @@ runPerAssayRuvOptimization <- function(
             )
 
         }, error = function(e) {
+            if (inherits(e, "multischolar_ruv_grouping_unusable")) {
+                return(list(refusal = e))
+            }
             logger::log_warn(paste("RUV manual mode failed for", assay_name, ":", e$message))
             list(
                 success               = FALSE
@@ -759,6 +771,14 @@ runPerAssayRuvOptimization <- function(
             )
         })
     })
+
+    # A grouping that cannot be used is refused to the caller (KIT-190); signalled outside purrr::imap so the
+    # refusal keeps its own class and message.
+    for (res in results) {
+        if (!is.null(res$refusal)) {
+            stop(res$refusal)
+        }
+    }
 
     names(results) <- assay_names
     return(results)

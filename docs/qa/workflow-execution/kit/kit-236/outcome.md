@@ -12,7 +12,7 @@
 |---|---|
 | 1b829e04 | Tests first: `tests/testthat/test-kit236-report-sentences.R` and the base templates `tests/testdata/kit236/base/` (the six templates verbatim at 29065062). No package code. |
 | da192fd4 | Tests: instrument fix 1 after R1 (VAL-54). No expected value changed. |
-| 6a45d288 | The fix: six templates under `inst/reports/`, the declared test edits (a) and (b), NEWS, the ledger row `VAL-<train12-2>`, `wording.md`. |
+| 6a45d288 | The fix: six templates under `inst/reports/`, the declared test edits (a) and (b), NEWS, the ledger row `VAL-297`, `wording.md`. |
 | (records) | This file, `runs.tsv`, and the copied result tables. |
 
 ## Runs (`runs.tsv`)

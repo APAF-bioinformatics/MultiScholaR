@@ -640,8 +640,8 @@ validateWorkflowAnalysisRecord <- function(record) {
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
 }
 
-#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
+#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds two rows, `ruv_control_grouping` and `ruv_k_bound`; KIT-205,
+#' VAL-129 (2), adds `enrichment_background`; KIT-202 adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
 #' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
 #' replay, `workflowDaReplayRuleOptions`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
@@ -670,7 +670,13 @@ workflowReplayRuleMarkers <- list(
     # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
     # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
     # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
-    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"))
+    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"),
+    # KIT-190 (VAL-82): lipidomics and metabolomics legacy RUV choose controls by the ANOVA on the grouping column
+    # ("kept"); records made before chose the first rows ("dropped").
+    ruv_control_grouping = list(option = "MultiScholaR.ruv_control_grouping", current = "kept", earlier = "dropped"),
+    # KIT-190 (VAL-182, VAL-235): the legacy lipidomics and metabolomics Automatic k is bounded by the sample-size cap
+    # ("sample_size"); records made before used the sweep's k unbounded ("none").
+    ruv_k_bound = list(option = "MultiScholaR.ruv_k_bound", current = "sample_size", earlier = "none"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).

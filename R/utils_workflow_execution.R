@@ -3379,8 +3379,16 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL, vari
     if (!is.null(values[["ruv_design", exact = TRUE]]) || !is.null(values[["ruv_control_rule", exact = TRUE]])) {
         recorded <- union(recorded, intersect(RUV_DESIGN_REQUEST_PARAMETERS, names(values)))
     }
+    fixed <- entry$declaration$fixed
+    # KIT-190: a managed new-design RUV step ran the declared design, which never selects controls by the ANOVA nor
+    # bounds the sweep's k, so the legacy declaration's markers are not recorded for it (as in process).
+    if (operation %in% c("lipid_ruv", "metab_ruv") && !is.null(values[["ruv_design", exact = TRUE]]) &&
+        !identical(values[["ruv_design", exact = TRUE]], "legacy")) {
+        fixed <- fixed[setdiff(names(fixed), c("ruv_control_grouping", "ruv_k_bound"))]
+        if (!length(fixed)) fixed <- NULL
+    }
     setWorkflowStepProvenance(owner$manager, operation, variant %||% entry$default_variant %||% NA_character_,
-        recorded, entry$declaration$fixed, values = values)
+        recorded, fixed, values = values)
     if (entry$completion == "fixture")
         return(commitWorkflowReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))

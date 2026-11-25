@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-ruv-control-anova-grouping.R	39	23	0	0	0	9.3	failed

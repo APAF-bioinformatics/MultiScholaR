@@ -1,0 +1,7 @@
+side	n_per_assay	assays	mode	ruv_seconds	journey_seconds	error	commit	worker_deadline_seconds
+head	5000	2	automatic	201.652	220.927		d6d67efea7e7a09f8ba41c28a99718dddb2ec796	1800
+head	5000	2	manual	22.732	39.704		d6d67efea7e7a09f8ba41c28a99718dddb2ec796	1800
+head	20000	2	automatic	791.053	827.081		d6d67efea7e7a09f8ba41c28a99718dddb2ec796	1800
+head	20000	2	manual	86.787	123.473		d6d67efea7e7a09f8ba41c28a99718dddb2ec796	1800
+base	20000	2	automatic	22.197	62.822		d4e2eb2cff0302c27f98b78f90bfb51dab6aee04	1800
+head	25000	2	automatic_projected_50000	988.81625	NA		d6d67efea7e7a09f8ba41c28a99718dddb2ec796	1800

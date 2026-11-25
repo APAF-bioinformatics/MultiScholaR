@@ -1,0 +1,20 @@
+    cell endpoint n excluded    estimate  statistic      p_value p_berger_boos
+N-r  N-r any_call 2        0  0.00000000 -0.4714045           NA         0.815
+N-s  N-s any_call 2        0  0.00000000 -0.4714045           NA         0.815
+N-w  N-w any_call 2        0  0.00000000 -0.4714045           NA         0.815
+E-r  E-r      fdp 2        0  0.03443449 -1.9172414 0.2495475045            NA
+E-s  E-s      fdp 2        0 -0.01035354 -1.8244275 0.2495475045            NA
+E-p  E-p      fdp 2        0 -0.02976190 -2.6800000 0.2495475045            NA
+E-g  E-g      fdp 2        0  0.04769231 -0.1216216 0.4997650023            NA
+E-w  E-w      fdp 2        0 -0.02277778 -6.8947368 0.0000099999            NA
+         skewness johnson_used no_worse tango_bb_agree
+N-r            NA           NA    FALSE           TRUE
+N-s            NA           NA    FALSE           TRUE
+N-w            NA           NA    FALSE           TRUE
+E-r  0.000000e+00        FALSE    FALSE             NA
+E-s -3.743622e-16        FALSE    FALSE             NA
+E-p  7.068721e-16        FALSE    FALSE             NA
+E-g  0.000000e+00        FALSE    FALSE             NA
+E-w -1.980568e-15        FALSE     TRUE             NA
+  all_cells_no_worse ships owner_asked
+1              FALSE   F+B       FALSE

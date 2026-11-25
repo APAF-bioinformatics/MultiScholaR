@@ -13,8 +13,8 @@ Base: `a50f93025c3aba59a2edbb41ee88431b7053cd10` (train 11's tip, fetched before
 
 | Order | Ticket | Branch head | Merge commit | Ledger row | Audit |
 |---|---|---|---|---|---|
-| 1 | KIT-249 | `origin/kit-249` 2288d944 | 758d23ee | `VAL-<train12-1>` (`VAL-<train12-1b>` reserved for the coordinator's correction row to VAL-237; not written here) | AUDIT-KIT-249-impl-20261125, closure check (2026-11-26) |
-| 2 | KIT-236 | `origin/kit-236` 8cd81769 | 55413b59 | `VAL-<train12-2>` | AUDIT-KIT-236-impl-20261125, closure check (2026-11-26) |
+| 1 | KIT-249 | `origin/kit-249` 2288d944 | 758d23ee | `VAL-295` (`VAL-296` reserved for the coordinator's correction row to VAL-237; not written here) | AUDIT-KIT-249-impl-20261125, closure check (2026-11-26) |
+| 2 | KIT-236 | `origin/kit-236` 8cd81769 | 55413b59 | `VAL-297` | AUDIT-KIT-236-impl-20261125, closure check (2026-11-26) |
 
 Head (bound by the run): `55413b59` (full hash in the request). This file, the predictions table and the records
 commit after the run are under `docs/qa/` only.
@@ -24,17 +24,17 @@ commit after the run are under `docs/qa/` only.
 - **KIT-249.** `kit-249` carries staging 3a6794b0, which the base (built before train 10 landed) does not. So the
   merge also brings staging's docs since train 10's tip: the ledger rows VAL-273 to VAL-280 and train 10's numbered
   records (`kit-259/outcome.md`, `merge-train-20261126c.md`), merged automatically except the ledger.
-  - `docs/methods-decision-ledger.md`: the base held train 10's row as `VAL-<train10-1>` and train 11's
-    `VAL-<train11-1>`; the branch held the same KIT-259 row landed as VAL-273 (status cell completed at landing),
+  - `docs/methods-decision-ledger.md`: the base held train 10's row as `VAL-273` and train 11's
+    `VAL-281`; the branch held the same KIT-259 row landed as VAL-273 (status cell completed at landing),
     VAL-274 to VAL-280 and KIT-249's `VAL-<merge>`. Resolved: staging's landed rows VAL-273 to VAL-280 (VAL-273
-    replaces the identical-but-for-status `VAL-<train10-1>` row, so the row is not duplicated), then train 11's
-    `VAL-<train11-1>` unchanged, then KIT-249's row as `VAL-<train12-1>`. This differs from "keep both" only in not
+    replaces the identical-but-for-status `VAL-273` row, so the row is not duplicated), then train 11's
+    `VAL-281` unchanged, then KIT-249's row as `VAL-295`. This differs from "keep both" only in not
     duplicating the KIT-259 row; it is the ledger as it will read once train 11 lands.
   - `NEWS.md`: KIT-257's entry (base) then KIT-249's, both kept. KIT-249's entry already carries the closure's W2a,
     W2b and W3 corrections (I05) on the branch.
   - `R/func_prot_da_model_stats.R` and the new test merged automatically.
 - **KIT-236.** `docs/methods-decision-ledger.md` (KIT-236 carried staging c4505c7f only: its row `VAL-<merge>`
-  against the base's rows through `VAL-<train12-1>`; kept the base's, then KIT-236's as `VAL-<train12-2>`; also in
+  against the base's rows through `VAL-295`; kept the base's, then KIT-236's as `VAL-297`; also in
   `kit-236/outcome.md`, commit table) and `NEWS.md` (both kept, the base's first). The six report templates under
   `inst/reports/`, the KIT-227 and KIT-235 test files (KIT-236's declared edits) and the new test merged
   automatically. No conflict under `R/`, `tests/` or `inst/`.
@@ -127,4 +127,91 @@ files read no template sentence it changes (its own run: all `same`). `test-work
 
 ## Result
 
-(filled after the run)
+Run 45667562462 (request `merge-train-20261126e-55413b59`, run-tests commit 955c0722, dispatched normally), head
+55413b59 against train 11's tip a50f9302, sent once; conclusion success; 565.9 job-minutes of the 1,560 ceiling (tests
+518.1, check 26.1, render job 20.8, plan and results 1.0). Tables in `merge-train-20261126e/` (`compare.tsv`,
+`tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`, `render-checks.tsv`).
+
+Observed, 103 files: 98 `same`, 5 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | prediction |
+|---|---|---|---|---|
+| test-kit249-prot-da-qvalue-fallback.R | absent | 144/0/0/0 | only-on-head | KIT-249, held |
+| test-workflow-saved-da.R | 776/175/0/0 | 755/196/0/0 | message-changed | KIT-249: counts held; newly failing held; changed messages 81, NOT the predicted 87 (below) |
+| test-kit236-report-sentences.R | absent | 289/0/0/0 | only-on-head | KIT-236, held |
+| test-kit227-report-ruv-sentences.R | 166/0/0/0 | 162/0/0/0 | count-changed | KIT-236, held |
+| test-kit235-lipid-metab-report-parser.R | 50/0/0/0 | 54/0/0/0 | count-changed | KIT-236, held |
+
+Every `same` file has the base counts in `merge-train-20261126e-predictions.tsv` where they were on record (0
+differences, script over `compare.tsv`), including the ten shared files (`test-gui-entry-proteomics.R` 168/25,
+`test-kit220-da-threshold-consumers.R` 79/0, `test-omic-summary-module.R` 1675/28, ...), `test-kit201-treat-moderation.R`
+89/0 and `test-kit243-summary-current-outputs.R` 246/0. Read from the run for the nine files not on record: see
+`compare.tsv` (all `same`).
+
+`test-workflow-saved-da.R`, parsed from `failures-base.txt` and `failures.txt` (each failure keyed by test and leaf; no
+key repeats on either side):
+- 21 newly failing on head, 0 only on base: the set equals R2's `saved-da-new.txt` exactly (held).
+- 175 failing on both sides: 94 identical, 81 with changed messages. Predicted 87 (I01's table). The 81 are
+  `products` 18, `dependencies` 18, `head_manifest` 12, `display` 11, `manifest` 11, `files` 11.
+- The 6 leaves of I01's 87 that did NOT change: the `files` leaf of the three qvalue cases (dia_changed_arguments,
+  dia_qvalue_only, dia_refused), in W1 (a) and in W2. Each fails on both sides with an identical message (for example
+  dia_qvalue_only: actual abadbba0…, expected f5079a9e…).
+- No `record`, `states`, `fits`, `fdr` or `limpa_one_contrast` leaf moved (held).
+- Inferred, not shown: I01 attributed the qvalue cases' `files` move to earlier clicks' files left in the shared
+  publication folder. On this base KIT-243 (staging since train 8) makes each DA remove its own earlier files, and
+  train 8 recorded these three cases' `files` messages as KIT-243's; so KIT-249's change to the fallback clicks' files
+  may no longer reach these three digests. The register's prediction was by reading on a base without KIT-243 in that
+  form; this is recorded as a deviation, not as held.
+
+Render job (KIT-236): exit 0; `checks.tsv` 140 rows, 140 "as predicted"; console "0 of 140 checks differ from the
+prediction" (held).
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdicts:
+- KIT-236: holds exactly (new file 289/0; KIT-227 166 -> 162, KIT-235 50 -> 54; the other 31 `same`; render 140/140).
+- KIT-249: holds except one count: `test-workflow-saved-da.R` changed messages 81 against the declared 87 (6 qvalue-case
+  `files` leaves unchanged). No move outside the declared set; the deviation is fewer moves, not more.
+- Check: identical.
+
+Train verdict: NOT GREEN as declared, on that one KIT-249 count; every other prediction held. The coordinator decides
+(the stop rule named "any other move"; this is a declared move that did not happen). The train is not rebuilt here. It
+lands, if at all, only after train 11 lands with its code unchanged.
+
+Not checked: train 11's own result; any file outside the 103; the digest values (read from the run, captured at the
+re-record under VAL-274); the full suite (each member's A4 at the next checkpoint).
+
+## Merge record (coordinator)
+
+Landed on `v0.9-staging` on 2026-11-26 by a merge of `merge-train-20261126e` (tip c19f02bd) into
+staging 12701142. The stacking condition held: train 11 landed with its code unchanged (0a774e0b,
+KIT-257 = VAL-281), and staging differs from the commit this train was built on (a50f9302) only
+under `docs/`. The only conflict at landing was the ledger: staging's rows kept through VAL-294,
+then this train's rows. Ledger rows: KIT-249 = VAL-295; the coordinator's correction of VAL-237's
+evidence sentence = VAL-296 (the KIT-249 audit's text); KIT-236 = VAL-297.
+
+The deviation and its ruling. The declaration predicted 87 changed messages in
+`tests/testthat/test-workflow-saved-da.R`; the run showed 81. The six that did not move are the
+`files` leaf of the three TREAT-0.5 cases (dia_changed_arguments, dia_qvalue_only, dia_refused) in
+W1 (a) and W2, identical on both sides. KIT-249's auditor settled it from the failure records and
+the code ("Train 12 result", AUDIT-KIT-249-impl-20261125): on a base with KIT-243 each analysis
+removes its own earlier files before it publishes, so those listings no longer carry the fallback
+clicks' output; the prediction of 87 was the auditor's error (true only on a base without
+KIT-243); the fix is shown acting in every fallback click (a page saved where q-values were empty
+before). The declared stop rule concerned moves outside the declared set; none occurred. Landed on
+that ruling; KIT-249's ledger row states both counts.
+
+Evidence: run 45667562462 (base a50f9302, head 55413b59; 103 test files, R CMD check and KIT-236's
+render job): 98 files the same; the two new test files only on head and passing (144/0 and 289/0);
+two declared count changes; `test-workflow-saved-da.R` 776/175 to 755/196 with exactly the 21
+declared newly failing expectations; the render job 140 of 140 checks as predicted; the check
+identical on both sides (0 errors, 3 warnings, 3 notes). 565.9 of 1,560 job-minutes.
+
+Carried by this landing: the KIT-112 captures of `test-workflow-saved-da.R` wait for the
+end-of-project re-record (VAL-274) and are not to be read as correct output until then; KIT-236's
+carried items for the second of KIT-236 and KIT-242 (the per-assay RUV factor counts, the
+normalisation and internal-standard sentences, the caption's method words, the volcano sentence
+at cutoffs above 0). Open with the owner: whether the notice names the comparisons that fell back
+to Benjamini-Hochberg and a sentence that BH is more conservative than Storey's q.
+
+Not shown by this record: the full suite on the landed tree (next checkpoint).

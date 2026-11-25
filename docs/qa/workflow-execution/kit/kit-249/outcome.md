@@ -208,3 +208,13 @@ and KIT-220's, + 7 named); 6 shards per side by the ticket's rule (r1.2), larges
 - The managed path and the record were not part of G0 (G0-d in process only); E5 and E6 cover them in R1.
 - G0-d's published outputs (Glimma pages, figures) were produced but not read.
 - Real data: not read.
+
+## Observed on merge train 12 (coordinator, 2026-11-26)
+
+Observed on merge train 12 (run 45667562462, head 55413b59 against a50f9302): every prediction held except one count:
+81 changed messages, not 87. The `files` leaf of dia_changed_arguments, dia_qvalue_only and dia_refused (W1 (a), W2)
+fails on both sides with identical messages (32357209..., abadbba0...; VAL-268's values): on this base KIT-243 removes
+each analysis's earlier files before it publishes, so those cases' listings no longer carry the fallback clicks'
+output. The 21 newly failing leaves are R2's exactly; nothing moved outside the declared set
+(AUDIT-KIT-249-impl-20261125, "Train 12 result"). Ledger rows: KIT-249 = VAL-295; the correction to VAL-237's
+evidence sentence = VAL-296.
