@@ -1,0 +1,294 @@
+key	value
+env.R	R version 4.6.1 (2026-06-24)
+env.ggplot2	4.0.3
+env.ragg	1.5.2
+env.scales	1.4.0
+env.rlang	1.3.0
+env.cli	3.6.6
+env.shiny	1.14.0
+env.gtable	0.3.6
+env.systemfonts	1.3.2
+env.textshaping	1.0.5
+env.warn	0
+env.shiny_running	FALSE
+env.display	<unset>
+env.capabilities	jpeg=TRUE,png=TRUE,tiff=TRUE,tcltk=TRUE,X11=TRUE,aqua=FALSE,http/ftp=TRUE,sockets=TRUE,libxml=FALSE,fifo=TRUE,cledit=FALSE,iconv=TRUE,NLS=TRUE,Rprof=TRUE,profmem=TRUE,cairo=TRUE,ICU=TRUE,long.double=TRUE,libcurl=TRUE
+env.ggsave_png_device	validate_device: function (...)  | png_dev(..., res = dpi, units = "in")
+env.device_option	function (file = if (onefile) "Rplots.pdf" else "Rplot%03d.pdf",  |     width, height, onefile, family, title, fonts, version, paper,  |     encoding, bg, fg, pointsize, pagecentre, colormodel, useDin
+env.current_device	null device 1
+env.global_handlers	<null>
+p1.warn_option_outside	0
+p1.prot_lfq-pre_norm_pca.png.warn	1
+p1.prot_lfq-pre_norm_pca.png.status	ok
+p1.prot_lfq-pre_norm_pca.png.warnings	<none>
+p1.prot_lfq-pre_norm_rle.png.warn	1
+p1.prot_lfq-pre_norm_rle.png.status	ok
+p1.prot_lfq-pre_norm_rle.png.warnings	<none>
+p1.prot_lfq-pre_norm_density.png.warn	1
+p1.prot_lfq-pre_norm_density.png.status	ok
+p1.prot_lfq-pre_norm_density.png.warnings	<none>
+p1.prot_lfq-pre_norm_correlation.png.warn	1
+p1.prot_lfq-pre_norm_correlation.png.status	ok
+p1.prot_lfq-pre_norm_correlation.png.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p1.prot_lfq-pre_norm_pca.png.warn	1
+p1.prot_lfq-pre_norm_pca.png.status	ok
+p1.prot_lfq-pre_norm_pca.png.warnings	<none>
+p1.prot_lfq-pre_norm_rle.png.warn	1
+p1.prot_lfq-pre_norm_rle.png.status	ok
+p1.prot_lfq-pre_norm_rle.png.warnings	<none>
+p1.prot_lfq-pre_norm_density.png.warn	1
+p1.prot_lfq-pre_norm_density.png.status	ok
+p1.prot_lfq-pre_norm_density.png.warnings	<none>
+p1.prot_lfq-pre_norm_correlation.png.warn	1
+p1.prot_lfq-pre_norm_correlation.png.status	ok
+p1.prot_lfq-pre_norm_correlation.png.warnings	<none>
+p1.prot_lfq-pre_norm_pca.png.warn	1
+p1.prot_lfq-pre_norm_pca.png.status	ok
+p1.prot_lfq-pre_norm_pca.png.warnings	<none>
+p1.prot_lfq-pre_norm_rle.png.warn	1
+p1.prot_lfq-pre_norm_rle.png.status	ok
+p1.prot_lfq-pre_norm_rle.png.warnings	<none>
+p1.prot_lfq-pre_norm_density.png.warn	1
+p1.prot_lfq-pre_norm_density.png.status	ok
+p1.prot_lfq-pre_norm_density.png.warnings	<none>
+p1.prot_lfq-pre_norm_correlation.png.warn	1
+p1.prot_lfq-pre_norm_correlation.png.status	ok
+p1.prot_lfq-pre_norm_correlation.png.warnings	<none>
+p1.prot_lfq-post_norm_pca.png.warn	1
+p1.prot_lfq-post_norm_pca.png.status	ok
+p1.prot_lfq-post_norm_pca.png.warnings	<none>
+p1.prot_lfq-post_norm_rle.png.warn	1
+p1.prot_lfq-post_norm_rle.png.status	ok
+p1.prot_lfq-post_norm_rle.png.warnings	<none>
+p1.prot_lfq-post_norm_density.png.warn	1
+p1.prot_lfq-post_norm_density.png.status	ok
+p1.prot_lfq-post_norm_density.png.warnings	<none>
+p1.prot_lfq-post_norm_correlation.png.warn	1
+p1.prot_lfq-post_norm_correlation.png.status	ok
+p1.prot_lfq-post_norm_correlation.png.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p1.prot_lfq.steps	import_refusal,import,design_refusal,design,qc_protein_cleanup,qc_protein_intensity_filter_refusal,qc_protein_intensity_filter,qc_protein_duplicate_removal,qc_protein_replicate_filter,da_refusal,norm_refusal,norm
+p1.prot_lfq.norm_head	normalized
+p1.prot_lfq.norm_notes	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+p1.prot_lfq.pre_qc_notes	[warning] Please complete correlation filtering before exporting session data.
+p1.prot_lfq.saves	pre_norm_pca.png=ok | pre_norm_rle.png=ok | pre_norm_density.png=ok | pre_norm_correlation.png=ok | pre_norm_pca.png=ok | pre_norm_rle.png=ok | pre_norm_density.png=ok | pre_norm_correlation.png=ok | pre_norm_pca.png=ok | pre_norm_rle.png=ok | pre_norm_density.png=ok | pre_norm_correlation.png=ok | post_norm_pca.png=ok | post_norm_rle.png=ok | post_norm_density.png=ok | post_norm_correlation.png=ok
+p1.prot_lfq.saved_ok	16/16
+p1.prot_dia-pre_norm_pca.png.warn	1
+p1.prot_dia-pre_norm_pca.png.status	ok
+p1.prot_dia-pre_norm_pca.png.warnings	<none>
+p1.prot_dia-pre_norm_rle.png.warn	1
+p1.prot_dia-pre_norm_rle.png.status	ok
+p1.prot_dia-pre_norm_rle.png.warnings	<none>
+p1.prot_dia-pre_norm_density.png.warn	1
+p1.prot_dia-pre_norm_density.png.status	ok
+p1.prot_dia-pre_norm_density.png.warnings	<none>
+p1.prot_dia-pre_norm_correlation.png.warn	1
+p1.prot_dia-pre_norm_correlation.png.status	ok
+p1.prot_dia-pre_norm_correlation.png.warnings	<none>
+p1.prot_dia-pre_norm_pca.png.warn	1
+p1.prot_dia-pre_norm_pca.png.status	ok
+p1.prot_dia-pre_norm_pca.png.warnings	<none>
+p1.prot_dia-pre_norm_rle.png.warn	1
+p1.prot_dia-pre_norm_rle.png.status	ok
+p1.prot_dia-pre_norm_rle.png.warnings	<none>
+p1.prot_dia-pre_norm_density.png.warn	1
+p1.prot_dia-pre_norm_density.png.status	ok
+p1.prot_dia-pre_norm_density.png.warnings	<none>
+p1.prot_dia-pre_norm_correlation.png.warn	1
+p1.prot_dia-pre_norm_correlation.png.status	ok
+p1.prot_dia-pre_norm_correlation.png.warnings	<none>
+p1.prot_dia-pre_norm_pca.png.warn	1
+p1.prot_dia-pre_norm_pca.png.status	ok
+p1.prot_dia-pre_norm_pca.png.warnings	<none>
+p1.prot_dia-pre_norm_rle.png.warn	1
+p1.prot_dia-pre_norm_rle.png.status	ok
+p1.prot_dia-pre_norm_rle.png.warnings	<none>
+p1.prot_dia-pre_norm_density.png.warn	1
+p1.prot_dia-pre_norm_density.png.status	ok
+p1.prot_dia-pre_norm_density.png.warnings	<none>
+p1.prot_dia-pre_norm_correlation.png.warn	1
+p1.prot_dia-pre_norm_correlation.png.status	ok
+p1.prot_dia-pre_norm_correlation.png.warnings	<none>
+p1.prot_dia-post_norm_pca.png.warn	1
+p1.prot_dia-post_norm_pca.png.status	ok
+p1.prot_dia-post_norm_pca.png.warnings	<none>
+p1.prot_dia-post_norm_rle.png.warn	1
+p1.prot_dia-post_norm_rle.png.status	ok
+p1.prot_dia-post_norm_rle.png.warnings	<none>
+p1.prot_dia-post_norm_density.png.warn	1
+p1.prot_dia-post_norm_density.png.status	ok
+p1.prot_dia-post_norm_density.png.warnings	<none>
+p1.prot_dia-post_norm_correlation.png.warn	1
+p1.prot_dia-post_norm_correlation.png.status	ok
+p1.prot_dia-post_norm_correlation.png.warnings	<none>
+p1.prot_dia.steps	import_refusal,import,design_refusal,design,qc_peptide_qvalue_filter,qc_peptide_protein_peptide_filter,qc_peptide_rollup,qc_peptide_intensity_filter,qc_peptide_sample_filter,qc_peptide_replicate_filter,qc_peptide_imputation,qc_protein_rollup,qc_protein_cleanup,qc_protein_intensity_filter,qc_protein_duplicate_removal,qc_protein_replicate_filter,da_refusal,norm_refusal,norm
+p1.prot_dia.norm_head	normalized
+p1.prot_dia.norm_notes	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+p1.prot_dia.pre_qc_notes	[warning] Please complete correlation filtering before exporting session data.
+p1.prot_dia.saves	pre_norm_pca.png=ok | pre_norm_rle.png=ok | pre_norm_density.png=ok | pre_norm_correlation.png=ok | pre_norm_pca.png=ok | pre_norm_rle.png=ok | pre_norm_density.png=ok | pre_norm_correlation.png=ok | pre_norm_pca.png=ok | pre_norm_rle.png=ok | pre_norm_density.png=ok | pre_norm_correlation.png=ok | post_norm_pca.png=ok | post_norm_rle.png=ok | post_norm_density.png=ok | post_norm_correlation.png=ok
+p1.prot_dia.saved_ok	16/16
+p1.warn_option	1
+p2.prot_lfq.pre_norm.s4	ProteinQuantitativeData, 400 x 10
+p2.prot_lfq.pre_norm.pca.build	ok
+p2.prot_lfq.pre_norm.pca.ggsave.status	ok
+p2.prot_lfq.pre_norm.pca.ggsave.warnings	<none>
+p2.prot_lfq.pre_norm.pca.cairo.status	ok
+p2.prot_lfq.pre_norm.rle.build	ok
+p2.prot_lfq.pre_norm.rle.ggsave.status	ok
+p2.prot_lfq.pre_norm.rle.ggsave.warnings	<none>
+p2.prot_lfq.pre_norm.rle.cairo.status	ok
+p2.prot_lfq.pre_norm.density.build	ok
+p2.prot_lfq.pre_norm.density.ggsave.status	ok
+p2.prot_lfq.pre_norm.density.ggsave.warnings	<none>
+p2.prot_lfq.pre_norm.density.cairo.status	ok
+p2.prot_lfq.pre_norm.correlation.build	ok
+facts.prot_lfq.pre_norm.n_pairs	20
+facts.prot_lfq.pre_norm.values	0.963450,0.965973,0.967041,0.967364,0.968172,0.969155,0.970156,0.970357,0.970712,0.970780,0.971097,0.971114,0.971761,0.971778,0.971956,0.972106,0.972918,0.972931,0.973379,0.973576
+facts.prot_lfq.pre_norm.n_nonfinite	0
+facts.prot_lfq.pre_norm.n_above_1	0
+facts.prot_lfq.pre_norm.max_bin	5
+facts.prot_lfq.pre_norm.max_bin_over_4	TRUE
+facts.prot_lfq.pre_norm.layer_data	ok
+facts.prot_lfq.pre_norm.censored_bars	1
+facts.prot_lfq.pre_norm.layer_count_max	5
+facts.prot_lfq.pre_norm.build_warnings	<none>
+p2.prot_lfq.pre_norm.correlation.ggsave.status	ok
+p2.prot_lfq.pre_norm.correlation.ggsave.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p2.prot_lfq.pre_norm.correlation.cairo.status	ok
+p2.prot_lfq.pre_norm.pearson_native.build	ok
+p2.prot_lfq.pre_norm.pearson_native.ggsave.status	ok
+p2.prot_lfq.pre_norm.pearson_native.ggsave.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p2.prot_lfq.pre_norm.pearson_native.cairo.status	ok
+p2w2.prot_lfq.pre_norm.correlation.status	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}
+p2w2.prot_lfq.pre_norm.correlation.backtrace	     ▆ /   1. ├─withr::with_options(...) /   2. │ └─base::force(code) /   3. ├─global k259Capture(...) /   4. │ ├─base::tryCatch(...) /   5. │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /   6. │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /   7. │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /   8. │ ├─base::withCallingHandlers(...) /   9. │ └─base::force(expr) /  10. ├─ggplot2::ggsave(...) /  11. │ └─base::lapply(plot, grid.draw) /  12. │   ├─grid (local) FUN(X[[i]], ...) /  13. │   └─ggplot2 (local) `grid.draw.ggplot2::ggplot`(X[[i]], ...) /  14. │     ├─base::print(x) /  15. │     └─ggplot2 (local) `print.ggplot2::ggplot`(x) /  16. │       ├─ggplot2::ggplot_gtable(data) /  17. │       └─ggplot2 (local) `ggplot_gtable.ggplot2::ggplot_built`(data) /  18. │         └─ggplot2:::by_layer(...) /  19. │           ├─rlang::try_fetch(...) /  20. │           │ ├─base::tryCatch(...) /  21. │           │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /  22. │           │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /  23. │           │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /  24. │           │ └─base::withCallingHandlers(...) /  25. │           └─ggplot2 (local) f(l = layers[[i]], d = data[[i]]) /  26. │             └─l$draw_geom(d, layout) /  27. │               └─ggplot2 (local) draw_geom(..., self = self) /  28. │                 └─self$geom$handle_na(data, self$computed_geom_params) /  29. │                   └─ggplot2 (local) handle_na(..., self = self) /  30. │                     └─ggplot2::remove_missing(...) /  31. │                       └─cli::cli_warn(msg) /  32. │                         └─rlang::warn(format_warning(message, .envir = .envir), ...) /  33. │                           └─base::warning(cnd) /  34. │                             └─base::withRestarts(...) /  35. │                               └─base (local) withOneRestart(expr, restarts[[1L]]) /  36. │                                 └─base (local) doWithOneRestart(return(expr), restart) /  37. ├─base::.handleSimpleError(...) /  38. │ └─rlang (local) h(simpleError(msg, call)) /  39. │   └─handlers[[1L]](cnd) /  40. │     └─cli::cli_abort(...) /  41. │       └─rlang::abort(...) /  42. │         └─rlang:::signal_abort(cnd, .file) /  43. │           └─base::signalCondition(cnd) /  44. └─`<fn>`(`<rlng_rrr>`)
+p2.prot_lfq.post_norm.s4	ProteinQuantitativeData, 400 x 10
+p2.prot_lfq.post_norm.pca.build	ok
+p2.prot_lfq.post_norm.pca.ggsave.status	ok
+p2.prot_lfq.post_norm.pca.ggsave.warnings	<none>
+p2.prot_lfq.post_norm.pca.cairo.status	ok
+p2.prot_lfq.post_norm.rle.build	ok
+p2.prot_lfq.post_norm.rle.ggsave.status	ok
+p2.prot_lfq.post_norm.rle.ggsave.warnings	<none>
+p2.prot_lfq.post_norm.rle.cairo.status	ok
+p2.prot_lfq.post_norm.density.build	ok
+p2.prot_lfq.post_norm.density.ggsave.status	ok
+p2.prot_lfq.post_norm.density.ggsave.warnings	<none>
+p2.prot_lfq.post_norm.density.cairo.status	ok
+p2.prot_lfq.post_norm.correlation.build	ok
+facts.prot_lfq.post_norm.n_pairs	20
+facts.prot_lfq.post_norm.values	0.963421,0.966290,0.966923,0.967624,0.968288,0.969604,0.970112,0.970579,0.970951,0.971015,0.971017,0.971252,0.971785,0.971962,0.972545,0.972647,0.972714,0.973400,0.973523,0.973726
+facts.prot_lfq.post_norm.n_nonfinite	0
+facts.prot_lfq.post_norm.n_above_1	0
+facts.prot_lfq.post_norm.max_bin	5
+facts.prot_lfq.post_norm.max_bin_over_4	TRUE
+facts.prot_lfq.post_norm.layer_data	ok
+facts.prot_lfq.post_norm.censored_bars	1
+facts.prot_lfq.post_norm.layer_count_max	5
+facts.prot_lfq.post_norm.build_warnings	<none>
+p2.prot_lfq.post_norm.correlation.ggsave.status	ok
+p2.prot_lfq.post_norm.correlation.ggsave.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p2.prot_lfq.post_norm.correlation.cairo.status	ok
+p2.prot_lfq.post_norm.pearson_native.build	ok
+p2.prot_lfq.post_norm.pearson_native.ggsave.status	ok
+p2.prot_lfq.post_norm.pearson_native.ggsave.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p2.prot_lfq.post_norm.pearson_native.cairo.status	ok
+p2w2.prot_lfq.post_norm.correlation.status	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}
+p2w2.prot_lfq.post_norm.correlation.backtrace	     ▆ /   1. ├─withr::with_options(...) /   2. │ └─base::force(code) /   3. ├─global k259Capture(...) /   4. │ ├─base::tryCatch(...) /   5. │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /   6. │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /   7. │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /   8. │ ├─base::withCallingHandlers(...) /   9. │ └─base::force(expr) /  10. ├─ggplot2::ggsave(...) /  11. │ └─base::lapply(plot, grid.draw) /  12. │   ├─grid (local) FUN(X[[i]], ...) /  13. │   └─ggplot2 (local) `grid.draw.ggplot2::ggplot`(X[[i]], ...) /  14. │     ├─base::print(x) /  15. │     └─ggplot2 (local) `print.ggplot2::ggplot`(x) /  16. │       ├─ggplot2::ggplot_gtable(data) /  17. │       └─ggplot2 (local) `ggplot_gtable.ggplot2::ggplot_built`(data) /  18. │         └─ggplot2:::by_layer(...) /  19. │           ├─rlang::try_fetch(...) /  20. │           │ ├─base::tryCatch(...) /  21. │           │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /  22. │           │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /  23. │           │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /  24. │           │ └─base::withCallingHandlers(...) /  25. │           └─ggplot2 (local) f(l = layers[[i]], d = data[[i]]) /  26. │             └─l$draw_geom(d, layout) /  27. │               └─ggplot2 (local) draw_geom(..., self = self) /  28. │                 └─self$geom$handle_na(data, self$computed_geom_params) /  29. │                   └─ggplot2 (local) handle_na(..., self = self) /  30. │                     └─ggplot2::remove_missing(...) /  31. │                       └─cli::cli_warn(msg) /  32. │                         └─rlang::warn(format_warning(message, .envir = .envir), ...) /  33. │                           └─base::warning(cnd) /  34. │                             └─base::withRestarts(...) /  35. │                               └─base (local) withOneRestart(expr, restarts[[1L]]) /  36. │                                 └─base (local) doWithOneRestart(return(expr), restart) /  37. ├─base::.handleSimpleError(...) /  38. │ └─rlang (local) h(simpleError(msg, call)) /  39. │   └─handlers[[1L]](cnd) /  40. │     └─cli::cli_abort(...) /  41. │       └─rlang::abort(...) /  42. │         └─rlang:::signal_abort(cnd, .file) /  43. │           └─base::signalCondition(cnd) /  44. └─`<fn>`(`<rlng_rrr>`)
+p2.prot_lfq.ok	20/20
+p2.prot_dia.pre_norm.s4	ProteinQuantitativeData, 385 x 8
+p2.prot_dia.pre_norm.pca.build	ok
+p2.prot_dia.pre_norm.pca.ggsave.status	ok
+p2.prot_dia.pre_norm.pca.ggsave.warnings	<none>
+p2.prot_dia.pre_norm.pca.cairo.status	ok
+p2.prot_dia.pre_norm.rle.build	ok
+p2.prot_dia.pre_norm.rle.ggsave.status	ok
+p2.prot_dia.pre_norm.rle.ggsave.warnings	<none>
+p2.prot_dia.pre_norm.rle.cairo.status	ok
+p2.prot_dia.pre_norm.density.build	ok
+p2.prot_dia.pre_norm.density.ggsave.status	ok
+p2.prot_dia.pre_norm.density.ggsave.warnings	<none>
+p2.prot_dia.pre_norm.density.cairo.status	ok
+p2.prot_dia.pre_norm.correlation.build	ok
+facts.prot_dia.pre_norm.n_pairs	12
+facts.prot_dia.pre_norm.values	0.958940,0.959787,0.960505,0.961156,0.961524,0.962273,0.962386,0.962470,0.963306,0.963702,0.964186,0.967927
+facts.prot_dia.pre_norm.n_nonfinite	0
+facts.prot_dia.pre_norm.n_above_1	0
+facts.prot_dia.pre_norm.max_bin	3
+facts.prot_dia.pre_norm.max_bin_over_4	FALSE
+facts.prot_dia.pre_norm.layer_data	ok
+facts.prot_dia.pre_norm.censored_bars	0
+facts.prot_dia.pre_norm.layer_count_max	3
+facts.prot_dia.pre_norm.build_warnings	<none>
+p2.prot_dia.pre_norm.correlation.ggsave.status	ok
+p2.prot_dia.pre_norm.correlation.ggsave.warnings	<none>
+p2.prot_dia.pre_norm.correlation.cairo.status	ok
+p2.prot_dia.pre_norm.pearson_native.build	ok
+p2.prot_dia.pre_norm.pearson_native.ggsave.status	ok
+p2.prot_dia.pre_norm.pearson_native.ggsave.warnings	<none>
+p2.prot_dia.pre_norm.pearson_native.cairo.status	ok
+p2w2.prot_dia.pre_norm.correlation.status	ok
+p2.prot_dia.post_norm.s4	ProteinQuantitativeData, 385 x 8
+p2.prot_dia.post_norm.pca.build	ok
+p2.prot_dia.post_norm.pca.ggsave.status	ok
+p2.prot_dia.post_norm.pca.ggsave.warnings	<none>
+p2.prot_dia.post_norm.pca.cairo.status	ok
+p2.prot_dia.post_norm.rle.build	ok
+p2.prot_dia.post_norm.rle.ggsave.status	ok
+p2.prot_dia.post_norm.rle.ggsave.warnings	<none>
+p2.prot_dia.post_norm.rle.cairo.status	ok
+p2.prot_dia.post_norm.density.build	ok
+p2.prot_dia.post_norm.density.ggsave.status	ok
+p2.prot_dia.post_norm.density.ggsave.warnings	<none>
+p2.prot_dia.post_norm.density.cairo.status	ok
+p2.prot_dia.post_norm.correlation.build	ok
+facts.prot_dia.post_norm.n_pairs	12
+facts.prot_dia.post_norm.values	0.959074,0.959746,0.960430,0.961333,0.961638,0.962348,0.962610,0.963337,0.963349,0.963399,0.963812,0.967843
+facts.prot_dia.post_norm.n_nonfinite	0
+facts.prot_dia.post_norm.n_above_1	0
+facts.prot_dia.post_norm.max_bin	4
+facts.prot_dia.post_norm.max_bin_over_4	FALSE
+facts.prot_dia.post_norm.layer_data	ok
+facts.prot_dia.post_norm.censored_bars	0
+facts.prot_dia.post_norm.layer_count_max	4
+facts.prot_dia.post_norm.build_warnings	<none>
+p2.prot_dia.post_norm.correlation.ggsave.status	ok
+p2.prot_dia.post_norm.correlation.ggsave.warnings	<none>
+p2.prot_dia.post_norm.correlation.cairo.status	ok
+p2.prot_dia.post_norm.pearson_native.build	ok
+p2.prot_dia.post_norm.pearson_native.ggsave.status	ok
+p2.prot_dia.post_norm.pearson_native.ggsave.warnings	<none>
+p2.prot_dia.post_norm.pearson_native.cairo.status	ok
+p2w2.prot_dia.post_norm.correlation.status	ok
+p2.prot_dia.ok	20/20
+p3.plots	prot_lfq-pre_norm_correlation.png.rds | prot_lfq-post_norm_correlation.png.rds | prot_dia-pre_norm_correlation.png.rds | prot_dia-post_norm_correlation.png.rds
+p3.chrome	/usr/bin/google-chrome
+p3.driver	error: [0] <rlang_error/error/condition> Chrome debugging port not open after 10 seconds. ℹ You can inspect the failed AppDriver object via `rlang::last_error()$app` ℹ AppDriver logs: {shinytest2} R info   12:23:46.36 Start AppDriver initialization {shinytest2} R info   12:23:46.36 Starting Shiny app {shinytest2} R info   12:23:54.96 Creating new ChromoteSession {shinytest2} R info   12:24:05.10 Error while initializing AppDriver:                                   Chrome debugging port not open after 10 seconds. {shiny}      R stderr ----------- ℹ Loading MultiScholaR {shiny}      R stderr ----------- ------------------------------------------------------------------- {shiny}      R stderr ----------- Welcome to MultiScholaR! {shiny}      R stderr -----------  {shiny}      R stderr ----------- IMPORTANT: Please run MultiScholaR::loadDependencies()  {shiny}      R stderr -----------            to ensure all required packages are installed and loaded. {shiny}      R stderr ----------- ------------------------------------------------------------------- {shiny}      R stderr ----------- Loading required package: shiny {shiny}      R stderr -----------  {shiny}      R stderr ----------- Attaching package: ‘shiny’ {shiny}      R stderr -----------  {shiny}      R stderr ----------- The following object is masked from ‘package:MultiScholaR’: {shiny}      R stderr -----------  {shiny}      R stderr -----------     runTests {shiny}      R stderr -----------  {shiny}      R stderr ----------- Running application in test mode. {shiny}      R stderr -----------  {shiny}      R stderr ----------- Listening on http://127.0.0.1:7323 {shiny}      R stdout ----------- Overriding `library()` / `require()` to load local package: MultiScholaR  {shiny}      R stdout ----------- Disabling Shiny autoloading of R/ files `options(shiny.autoload.r = FALSE)` as dev package directory is the same as the app directory Caused by error in `startup()`: ! Chrome debugging port not open after 10 seconds. {call: app_initialize(self, private, app_dir = app_dir, ..., load_timeout = load_timeout,      timeout = timeout, wait = wait, expect_values_screenshot_args = expect_values_screenshot_args, } ==> [1] <error_stop_port_search/rlang_error/error/condition> Chrome debugging port not open after 10 seconds. {call: startup(port = port, ...)}
+p3.app_top.env.R	R version 4.6.1 (2026-06-24)
+p3.app_top.env.ggplot2	4.0.3
+p3.app_top.env.ragg	1.5.2
+p3.app_top.env.scales	1.4.0
+p3.app_top.env.rlang	1.3.0
+p3.app_top.env.cli	3.6.6
+p3.app_top.env.shiny	1.14.0
+p3.app_top.env.gtable	0.3.6
+p3.app_top.env.systemfonts	1.3.2
+p3.app_top.env.textshaping	1.0.5
+p3.app_top.env.warn	2
+p3.app_top.env.shiny_running	FALSE
+p3.app_top.env.display	<unset>
+p3.app_top.env.capabilities	jpeg=TRUE,png=TRUE,tiff=TRUE,tcltk=TRUE,X11=TRUE,aqua=FALSE,http/ftp=TRUE,sockets=TRUE,libxml=FALSE,fifo=TRUE,cledit=FALSE,iconv=TRUE,NLS=TRUE,Rprof=TRUE,profmem=TRUE,cairo=TRUE,ICU=TRUE,long.double=TRUE,libcurl=TRUE
+p3.app_top.env.ggsave_png_device	validate_device: function (...)  | png_dev(..., res = dpi, units = "in")
+p3.app_top.env.device_option	function (file = if (onefile) "Rplots.pdf" else "Rplot%03d.pdf",  |     width, height, onefile, family, title, fonts, version, paper,  |     encoding, bg, fg, pointsize, pagecentre, colormodel, useDin
+p3.app_top.env.current_device	null device 1
+p3.app_top.env.global_handlers	<null>
+p3.app_top.prot_lfq-pre_norm_correlation.png.status	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}
+p3.app_top.prot_lfq-pre_norm_correlation.png.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p3.app_top.prot_lfq-pre_norm_correlation.png.backtrace	     ▆ /   1. ├─base::tryCatch(...) /   2. │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /   3. │   ├─base (local) tryCatchOne(...) /   4. │   │ └─base (local) doTryCatch(return(expr), name, parentenv, handler) /   5. │   └─base (local) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) /   6. │     └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /   7. │       └─base (local) doTryCatch(return(expr), name, parentenv, handler) /   8. ├─base::withCallingHandlers(...) /   9. ├─base::saveRDS(...) /  10. ├─base::do.call(...) /  11. ├─base (local) `<fn>`(...) /  12. ├─global `<fn>`(...) /  13. │ └─.app_dir() /  14. │   └─k259ProbeRun("app_top", plots, out) /  15. │     ├─k259Capture(...) /  16. │     │ ├─base::tryCatch(...) /  17. │     │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /  18. │     │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /  19. │     │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /  20. │     │ ├─base::withCallingHandlers(...) /  21. │     │ └─base::force(expr) /  22. │     └─ggplot2::ggsave(target, plot, width = 10, height = 8, dpi = 150) /  23. │       └─base::lapply(plot, grid.draw) /  24. │         ├─grid (local) FUN(X[[i]], ...) /  25. │         └─ggplot2 (local) `grid.draw.ggplot2::ggplot`(X[[i]], ...) /  26. │           ├─base::print(x) /  27. │           └─ggplot2 (local) `print.ggplot2::ggplot`(x) /  28. │             ├─ggplot2::ggplot_gtable(data) /  29. │             └─ggplot2 (local) `ggplot_gtable.ggplot2::ggplot_built`(data) /  30. │               └─ggplot2:::by_layer(...) /  31. │                 ├─rlang::try_fetch(...) /  32. │                 │ ├─base::tryCatch(...) /  33. │                 │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /  34. │                 │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /  35. │                 │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /  36. │                 │ └─base::withCallingHandlers(...) /  37. │                 └─ggplot2 (local) f(l = layers[[i]], d = data[[i]]) /  38. │                   └─l$draw_geom(d, layout) /  39. │                     └─ggplot2 (local) draw_geom(..., self = self) /  40. │                       └─self$geom$handle_na(data, self$computed_geom_params) /  41. │                         └─ggplot2 (local) handle_na(..., self = self) /  42. │                           └─ggplot2::remove_missing(...) /  43. │                             └─cli::cli_warn(msg) /  44. │                               └─rlang::warn(format_warning(message, .envir = .envir), ...) /  45. │                                 └─base::warning(cnd) /  46. │                                   └─base::withRestarts(...) /  47. │                                     └─base (local) withOneRestart(expr, restarts[[1L]]) /  48. │                                       └─base (local) doWithOneRestart(return
+p3.app_top.prot_lfq-post_norm_correlation.png.status	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}
+p3.app_top.prot_lfq-post_norm_correlation.png.warnings	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+p3.app_top.prot_lfq-post_norm_correlation.png.backtrace	     ▆ /   1. ├─base::tryCatch(...) /   2. │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /   3. │   ├─base (local) tryCatchOne(...) /   4. │   │ └─base (local) doTryCatch(return(expr), name, parentenv, handler) /   5. │   └─base (local) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) /   6. │     └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /   7. │       └─base (local) doTryCatch(return(expr), name, parentenv, handler) /   8. ├─base::withCallingHandlers(...) /   9. ├─base::saveRDS(...) /  10. ├─base::do.call(...) /  11. ├─base (local) `<fn>`(...) /  12. ├─global `<fn>`(...) /  13. │ └─.app_dir() /  14. │   └─k259ProbeRun("app_top", plots, out) /  15. │     ├─k259Capture(...) /  16. │     │ ├─base::tryCatch(...) /  17. │     │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /  18. │     │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /  19. │     │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /  20. │     │ ├─base::withCallingHandlers(...) /  21. │     │ └─base::force(expr) /  22. │     └─ggplot2::ggsave(target, plot, width = 10, height = 8, dpi = 150) /  23. │       └─base::lapply(plot, grid.draw) /  24. │         ├─grid (local) FUN(X[[i]], ...) /  25. │         └─ggplot2 (local) `grid.draw.ggplot2::ggplot`(X[[i]], ...) /  26. │           ├─base::print(x) /  27. │           └─ggplot2 (local) `print.ggplot2::ggplot`(x) /  28. │             ├─ggplot2::ggplot_gtable(data) /  29. │             └─ggplot2 (local) `ggplot_gtable.ggplot2::ggplot_built`(data) /  30. │               └─ggplot2:::by_layer(...) /  31. │                 ├─rlang::try_fetch(...) /  32. │                 │ ├─base::tryCatch(...) /  33. │                 │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers) /  34. │                 │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]]) /  35. │                 │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler) /  36. │                 │ └─base::withCallingHandlers(...) /  37. │                 └─ggplot2 (local) f(l = layers[[i]], d = data[[i]]) /  38. │                   └─l$draw_geom(d, layout) /  39. │                     └─ggplot2 (local) draw_geom(..., self = self) /  40. │                       └─self$geom$handle_na(data, self$computed_geom_params) /  41. │                         └─ggplot2 (local) handle_na(..., self = self) /  42. │                           └─ggplot2::remove_missing(...) /  43. │                             └─cli::cli_warn(msg) /  44. │                               └─rlang::warn(format_warning(message, .envir = .envir), ...) /  45. │                                 └─base::warning(cnd) /  46. │                                   └─base::withRestarts(...) /  47. │                                     └─base (local) withOneRestart(expr, restarts[[1L]]) /  48. │                                       └─base (local) doWithOneRestart(return
+p3.app_top.prot_dia-pre_norm_correlation.png.status	ok
+p3.app_top.prot_dia-pre_norm_correlation.png.warnings	<none>
+p3.app_top.prot_dia-pre_norm_correlation.png.backtrace	<none>
+p3.app_top.prot_dia-post_norm_correlation.png.status	ok
+p3.app_top.prot_dia-post_norm_correlation.png.warnings	<none>
+p3.app_top.prot_dia-post_norm_correlation.png.backtrace	<none>

@@ -1,0 +1,27 @@
+key	predicted	pattern	observed	held
+p1.prot_lfq.saved_ok	testServer: the 8 pre/post figures of the label-free lane are saved without error	^8/8$	16/16	FALSE
+p1.prot_dia.saved_ok	testServer: the 8 pre/post figures of the DIA-NN lane are saved without error	^8/8$	16/16	FALSE
+p1.prot_lfq.norm_head	the label-free normalisation completes under testServer	^normalized$	normalized	TRUE
+p1.prot_dia.norm_head	the DIA-NN normalisation completes under testServer	^normalized$	normalized	TRUE
+p1.prot_lfq.norm_notes	with its completion notice	Normalization completed	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.	TRUE
+p1.warn_option	the testServer lane runs at warn = 1 (helper-gui-entry.R:277)	^1$	1	TRUE
+facts.prot_lfq.pre_norm.n_pairs	20 within-group pairs (5 + 5 samples)	^20$	20	TRUE
+facts.prot_lfq.post_norm.n_pairs	20 within-group pairs	^20$	20	TRUE
+facts.prot_dia.pre_norm.n_pairs	12 within-group pairs (4 + 4 runs)	^12$	12	TRUE
+facts.prot_lfq.pre_norm.max_bin_over_4	a 0.001 bin holds more than 4 pairs	^TRUE$	TRUE	TRUE
+facts.prot_lfq.post_norm.max_bin_over_4	also after normalisation	^TRUE$	TRUE	TRUE
+facts.prot_dia.pre_norm.max_bin_over_4	no DIA-NN bin holds more than 4	^FALSE$	FALSE	TRUE
+facts.prot_dia.post_norm.max_bin_over_4	no DIA-NN bin holds more than 4	^FALSE$	FALSE	TRUE
+facts.prot_lfq.pre_norm.censored_bars	ggplot2 sets at least one bar's ymax to NA	^[1-9]	1	TRUE
+facts.prot_dia.pre_norm.censored_bars	none for DIA-NN	^0$	0	TRUE
+p2.prot_lfq.ok	plain process, warn 0: every label-free figure renders on both devices	^20/20$	20/20	TRUE
+p2.prot_dia.ok	plain process, warn 0: every DIA-NN figure renders on both devices	^20/20$	20/20	TRUE
+p2.prot_lfq.pre_norm.correlation.ggsave.warnings	with the removed-rows warning	outside the scale range	<rlang_warning/warning/condition> Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).	TRUE
+p2w2.prot_lfq.pre_norm.correlation.status	warn 2: the label-free figure fails as in the browser	Problem while converting geom to grob.*converted from warning.*outside the scale range	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}	TRUE
+p2w2.prot_lfq.post_norm.correlation.status	warn 2: and after normalisation	Problem while converting geom to grob.*converted from warning.*outside the scale range	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}	TRUE
+p2w2.prot_dia.pre_norm.correlation.status	warn 2: the DIA-NN figure renders	^ok$	ok	TRUE
+p3.app_observer.env.warn	the application's process under shinytest2 runs at warn >= 2	^[2-9]	<not observed>	NA
+p3.app_observer.prot_lfq-pre_norm_correlation.png.status	in the app's observer the label-free figure fails	^error: .*Problem while converting geom to grob	<not observed>	NA
+p3.app_observer.prot_lfq-post_norm_correlation.png.status	and the post-normalisation one	^error: .*Problem while converting geom to grob	<not observed>	NA
+p3.app_observer.prot_dia-pre_norm_correlation.png.status	the DIA-NN figure renders in the app	^ok$	<not observed>	NA
+p3.app_top.prot_lfq-pre_norm_correlation.png.status	before the app object is built it fails too	^error: .*Problem while converting geom to grob	error: [0] <rlang_error/error/condition> Problem while converting geom to grob. ℹ Error occurred in the 1st layer. Caused by error: ! (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: ggplot2::geom_histogram(breaks = breaks)} ==> [1] <simpleError/error/condition> (converted from warning) Removed 1 row containing missing values or values outside the scale range (`geom_bar()`). {call: NULL}	TRUE

@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45610170354	9ea11ba2	G0 diagnostic: label-free and DIA-NN Pearson figures under testServer, direct producer calls (ggsave/ragg and cairo png, warn 0 and 2), and in shinytest2's app process	20.8	20 of 26 predictions held, 2 not held (a miscount: the pre figures are drawn three times, every save ok), 4 not observed (Chrome port not open: the in-observer probe never ran); app_top probe in shinytest2's process: warn = 2, the browser's error reproduced
