@@ -4,6 +4,15 @@
 
 ### New features
 
+ * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
+   analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
+   could not find with 20 and 60 samples; how missing values are treated; which data sets averaged several runs per
+   sample, and why such averages can be too high for low-abundance features; that the model treats all samples as one
+   group with normally distributed variation and takes one input per omic; what the check against the original
+   analysis script covered; and which external enrichment services the analysis used, with their releases. The Model
+   tab points to them after training, and its help for per-feature scaling now states the simulated pattern's size in
+   numbers (KIT-239).
+
  * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
    `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
    be called but are not yet validated): `mapStrainToReference()` maps a
@@ -61,6 +70,22 @@
 
 ### Fixes
 
+ * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
+   protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
+   shown twice (KIT-251).
+ * Every omic: when a step run by the application's worker ends without an error of its own (the application's
+   memory limit for one step, the time limit for one step, a process that stopped or could not start, a table that
+   changed while the step ran, a result whose files could not be written, an internal check), the message now says
+   in plain words what happened, whether the step's result was saved, and what to do; before, it showed an
+   internal code such as 'managed action ended: memory_guard'. The wording is a draft for the owner's review
+   (KIT-252).
+
+ * Proteomics import with 'Mixed species FASTA': when the 'Select Primary Organism' window appears, the import now
+   finishes only when an organism is confirmed there; Cancel clears the import and says so, and the data must be
+   imported again. Before, the import counted as finished before the
+   choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
+   annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
+   with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
@@ -156,6 +181,10 @@
    so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
    name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
    delivered to a user.
+ * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
+   `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
+   those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).
+
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session
@@ -322,8 +351,29 @@
    change, no longer replays; it is refused with the same message. The first change does not affect data imported in
    the application, whose names come from the annotation; the others change only g:Profiler runs in which some
    protein has no gene name (KIT-208).
+ * Proteomics enrichment, g:Profiler: the results table, its downloads and the tab's 'Download results' archive no
+   longer show g:Profiler's adjusted p-value under the names pvalue and qvalue; p.adjust holds it, a new column
+   p_adjust_method names the correction as g:Profiler reports it (for example g_SCS; 'not recorded' when the answer
+   does not say), and Count is the number of the list's genes in the term (it showed the term's size). The published
+   per-comparison enrichment tables and the enrichment workbook also carry p_adjust_method. The g:Profiler figure's
+   axis and hover text, in the application, the published figures and the report, now say 'adjusted p-value' (the
+   points do not move), and the archive's summary says 'Adjusted p-value cutoff'. No term, flag or order changes.
+   Projects saved before this change show the corrected table when opened; files written or downloaded before it
+   (the published tables, figures and report included) keep the old labels until the enrichment is run again.
+   Present since the legacy pipeline (KIT-226).
 
 ### Scientific changes
+
+ * Lipidomics and metabolomics RUV-III correction (Automatic and Manual, the default): each feature now keeps its mean
+   abundance after the correction, as in proteomics. Before, every feature's corrected values were shifted by a
+   constant that depended on the control features' levels and on the unit the intensities were expressed in. Fold
+   changes are unchanged where the sample-correlation filter keeps the same samples. The moderated p- and q-values of
+   the differential analysis can change, because limma's variance trend is fitted against each feature's mean
+   abundance, and the sample-correlation filter can keep different samples. The abundances in the exported and
+   displayed tables, the sample-correlation plot, the session file and the RUV-corrected matrices offered to the
+   integration change; PCA, RLE and the PC boxplots do not. Analyses recorded before this change replay as they were
+   made. Transcriptomics: the RUVIII export file and the RUV-corrected integration input keep each gene's logCPM
+   level; the differential analysis is not affected (KIT-224).
 
  * Lipidomics and metabolomics: the internal-standard pattern proposed at import for every metabolomics file and every
    lipidomics file except LipidSearch (the MS-DIAL pattern, which was proposed whatever the file's format) no longer
@@ -362,6 +412,21 @@
    message. The helpers `lipidIntensityFilteringHelper()` and `metaboliteIntensityFilteringHelper()` take a new optional
    argument `sample_columns`; without it they count every numeric column except the identifier column and warn which
    columns they counted. (KIT-202, VAL-118)
+
+ * Lipidomics and metabolomics: duplicate resolution now chooses, for an identifier listed more than once, the row with
+   the highest average over the design's samples. Before, it averaged every numeric column of the table. So a numeric
+   identifier or annotation column (for example a retention time or m/z chosen as annotation, or the numeric columns of
+   a design imported from a folder) entered the average and could decide which row was kept. Where the duplicated rows
+   were measured in different numbers of samples, the row whose measured values average highest is now kept, even if it
+   was measured in fewer samples. Not affected: MS-DIAL
+   imports at their default identifier (their identifiers are unique), scripts that call the S4 method
+   `resolveDuplicateFeatures()` (it already averaged the design's samples), and tables without a
+   duplicated identifier or whose only numeric columns are the samples. The Quality Control summary's sample count and
+   missingness, and the internal-standard means and CVs in Quality Control and in the normalisation's selection table,
+   now also count only the design's samples. An MS-DIAL import showed one sample too many, and an identifier of 0 was
+   counted as a missing value. Analyses recorded before this change replay with the earlier rule. A design sample that
+   is missing from a table with a duplicated identifier, or is not numeric, is now refused with a message. (KIT-214,
+   VAL-173)
 
  * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
    those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
@@ -723,7 +788,7 @@ First staging build with every omic in the distributable (Linux and Windows) and
    corrected object given together with the factors, stops. The corrected matrix of this design
    (for figures, export and integration) keeps each feature's mean abundance. Without `ruv_factors` every
    result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts
-   each feature by a constant.
+   each feature by a constant (KIT-224 later removed the shift; see the unreleased section).
 
 ### Other changes
 

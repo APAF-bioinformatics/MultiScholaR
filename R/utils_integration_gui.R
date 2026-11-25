@@ -257,10 +257,16 @@ integrationGuiTexts <- function() {
         param_scaling = "Scaling of each feature",
         choice_scaling_none = "none: the values as saved",
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
-        # KIT-151 (INT-24).
+        # KIT-151 (INT-24). KIT-239: the simulated pattern's size and the condition in numbers (KIT-151 d, z-summary.tsv:
+        # F2 |r| >= 0.9 in 26 against 12 of 30 with missing values, 29 against 26 without, 30 of 30 at 60 samples). The
+        # last sentence is AUDIT-KIT-239-impl I02's (KIT-246 option (a)): a draft pending the owner's answer.
         help_scaling = paste("Each selected feature is scaled to mean 0 and standard deviation 1, after the features are",
-            "chosen (the choice uses the values as saved). In simulations with few samples and missing values this found",
-            "weak factors of the smaller data sets more often; otherwise it made no practical difference."),
+            "chosen (the choice uses the values as saved). In simulations with 20 samples in which about a fifth of the",
+            "values were missing, mostly low ones, this recovered closely (a correlation of at least 0.9 with the true",
+            "pattern) a pattern carried by a tenth of the features of the two smallest data sets, each changed by about as",
+            "much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing values the",
+            "difference could not be told from none (29 rather than 26 of 30); with 60 samples the pattern was recovered",
+            "closely in 30 of 30 either way."),
         # KIT-151 (audit SCI-12): what scale_views does.
         param_scale_views = "Divide each data set by its overall standard deviation",
         help_scale_views = paste("Each data set is divided by one number, the standard deviation of all its values, so that",
@@ -405,6 +411,63 @@ integrationGuiTexts <- function() {
             "read the p-values with that in mind."),
         # %s: the omic, then its correction in words.
         claim_correction = "%s: correction for unwanted variation %s",
+        # KIT-239 (INT-28): the limitations of the model, on the Results tab after the notes from the model and in the
+        # integration report after its Methods draft (`integrationLimitationsText`). The `limits_fixed_*` sentences hold
+        # for every run; the others are filled from the model's sample table or the record. Sources of every number:
+        # docs/qa/workflow-execution/kit/kit-239/wording.md.
+        limits_heading = "Limitations of this model",
+        limits_lead = "Read these before drawing conclusions from the factors.",
+        # %d: the biological samples in the model, then those measured in every data set.
+        limits_samples = "This model has %d biological samples; %d of them are measured in every data set.",
+        limits_fixed_samples = paste("How small a pattern the model can find depends on the number of samples. In",
+            "simulations made for this software with 20 samples (two groups of 10), a pattern carried only by the two",
+            "smallest of four data sets, in a tenth of their features, each changed by about two-thirds of its measurement",
+            "noise, was recovered closely (a correlation of at least 0.9 with the true pattern) in at most 2 of 10",
+            "simulated data sets, whichever setting was tried; the settings tried did not include this software's current",
+            "default feature selection. With 60 samples and the slow training this software uses, the same pattern was",
+            "recovered in 7 to 10 of 10, and with this software's default settings a pattern as large as the noise was",
+            "recovered in 26 to 29 of 30 simulated data sets with 20 samples. MOFA2's documentation says that factor models",
+            "are useful only with large numbers of samples, at least more than 15. A pattern this model does not show may",
+            "still be in the data: treat the factors as descriptive."),
+        # %d: the biological samples missing from at least one data set, then the biological samples in the model.
+        limits_missing_samples = paste("Biological samples missing from at least one data set: %d of %d; the model",
+            "leaves those values out."),
+        limits_fixed_missing = paste("Where a value is missing, the model leaves it out (MOFA2 does not impute it), which",
+            "assumes that whether a value is missing does not depend on the value itself (missing at random). Values",
+            "missing because they were too low to measure are not modelled as such, so the model's estimates for",
+            "low-abundance features can be biased. MOFA2 fills missing values with each feature's mean only to compute",
+            "where training starts."),
+        # %s: the data set; %d: its biological samples with two or more runs, its biological samples, the most runs of
+        # one biological sample.
+        limits_averaged_item = "%s: the runs of %d of its %d biological samples were averaged (at most %d runs for one sample).",
+        limits_averaged_none = "No biological sample has more than one run in any data set, so no runs were averaged.",
+        # Said only when runs were averaged.
+        limits_fixed_averaged = paste("Each average uses only the runs in which the value was measured. When a value is",
+            "missing from some of a sample's runs because it was too low to measure, the average of the other runs is too",
+            "high; this affects low-abundance features most."),
+        limits_fixed_model = paste("The model treats all samples as one group (the groups are not given to it, and MOFA2's",
+            "option for several groups of samples is not used), assumes normally distributed (Gaussian) variation in every",
+            "data set, and takes one input per omic (one input can hold several data sets, such as positive and negative",
+            "ion mode). The integration fills in no missing value itself; values that an omic's own workflow estimated",
+            "before saving are treated as measured."),
+        limits_fixed_check = paste("Given the settings of the analysis script it was adapted from, this software trains the",
+            "identical model; this was checked on simulated data only, because the script's own data were not available.",
+            "The check is about the software, not about any biological result, and this software's default settings",
+            "differ from the script's. The defaults for the input matrix, the feature selection, the scaling and the",
+            "convergence rule were chosen from simulations of one design, not from real data; the number of factors comes",
+            "from the analysis script."),
+        # The Results tab (it comes before the Enrichment tab).
+        limits_fixed_services = paste("Enrichment, at the Enrichment tab, needs external services: STRING, queried over the",
+            "internet (by default its version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome",
+            "for metabolites and lipids. Its results depend on the release used, which is recorded with each result."),
+        # The report. %s: the databases and releases the analysis's enrichment used.
+        limits_services_report = paste("The enrichment in this analysis used %s; its results depend on the release of",
+            "each external database named."),
+        limits_services_none = "No enrichment was run in this analysis.",
+        # The report, when the record's integration block cannot be read.
+        limits_not_computed = "This analysis's own numbers could not be read from its record.",
+        # The Model tab, after training.
+        model_limits_pointer = "Read the limitations of this model on the Results tab before drawing conclusions from it.",
         col_samples_tested = "Samples",
         col_groups_n = "Groups",
         col_group_r2 = "Variation between groups (%)",

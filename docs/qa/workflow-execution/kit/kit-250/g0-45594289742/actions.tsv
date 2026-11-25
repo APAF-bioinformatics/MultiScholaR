@@ -1,0 +1,80 @@
+session	step	input	value	utc
+A	S1	tile-proteomics	click	2026-11-25T10:34:22Z
+A	S1	btn-start-analysis	click	2026-11-25T10:34:22Z
+A	S1	experiment_label	k250_a	2026-11-25T10:34:22Z
+A	S1	project_dir	/tmp/RtmpesDm7E/k250-work/projects-A	2026-11-25T10:34:22Z
+A	S1	btn-confirm-setup	click	2026-11-25T10:34:23Z
+A	a	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T10:34:27Z
+A	a	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T10:34:28Z
+A	a	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T10:34:29Z
+A	a	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T10:34:29Z
+A	a	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T10:34:29Z
+A	a	prot-import-process	click	2026-11-25T10:34:30Z
+A	G0	#shiny-modal .modal-footer button[data-dismiss='modal'], #shiny-modal .modal-footer button[data-bs-dismiss='modal']	mouse at 983.6,556.7	2026-11-25T10:34:35Z
+A	S3	proteomics_workflow-design_matrix-builder-new_factor	WT	2026-11-25T10:34:38Z
+A	S3	proteomics_workflow-design_matrix-builder-add_factor	click	2026-11-25T10:34:38Z
+A	S3	proteomics_workflow-design_matrix-builder-new_factor	KO	2026-11-25T10:34:38Z
+A	S3	proteomics_workflow-design_matrix-builder-add_factor	click	2026-11-25T10:34:39Z
+A	S3	proteomics_workflow-design_matrix-builder-selected_runs	wt_1,wt_2,wt_3,wt_4	2026-11-25T10:34:39Z
+A	S3	proteomics_workflow-design_matrix-builder-factor1_select	WT	2026-11-25T10:34:40Z
+A	S3	proteomics_workflow-design_matrix-builder-assign_metadata	click	2026-11-25T10:34:40Z
+A	S3	proteomics_workflow-design_matrix-builder-selected_runs	ko_1,ko_2,ko_3,ko_4	2026-11-25T10:34:40Z
+A	S3	proteomics_workflow-design_matrix-builder-factor1_select	KO	2026-11-25T10:34:41Z
+A	S3	proteomics_workflow-design_matrix-builder-assign_metadata	click	2026-11-25T10:34:41Z
+A	S3	proteomics_workflow-design_matrix-builder-contrast_group1	KO	2026-11-25T10:34:41Z
+A	S3	proteomics_workflow-design_matrix-builder-contrast_group2	WT	2026-11-25T10:34:42Z
+A	S3	proteomics_workflow-design_matrix-builder-add_contrast	click	2026-11-25T10:34:42Z
+A	S3	proteomics_workflow-design_matrix-builder-save_results	click	2026-11-25T10:34:42Z
+B	S1	tile-proteomics	click	2026-11-25T10:34:55Z
+B	S1	btn-start-analysis	click	2026-11-25T10:34:55Z
+B	S1	experiment_label	k250_b	2026-11-25T10:34:56Z
+B	S1	project_dir	/tmp/RtmpesDm7E/k250-work/projects-B	2026-11-25T10:34:56Z
+B	S1	btn-confirm-setup	click	2026-11-25T10:34:56Z
+B	b	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T10:35:00Z
+B	b	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T10:35:01Z
+B	b	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T10:35:01Z
+B	b	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T10:35:02Z
+B	b	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T10:35:02Z
+B	b	prot-import-process	click	2026-11-25T10:35:02Z
+B	G0	#proteomics_workflow-workflow_tabs a[data-value='design']	mouse at 453.5,550.1	2026-11-25T10:35:06Z
+C	S1	tile-proteomics	click	2026-11-25T10:35:15Z
+C	S1	btn-start-analysis	click	2026-11-25T10:35:15Z
+C	S1	experiment_label	k250_c	2026-11-25T10:35:15Z
+C	S1	project_dir	/tmp/RtmpesDm7E/k250-work/projects-C	2026-11-25T10:35:16Z
+C	S1	btn-confirm-setup	click	2026-11-25T10:35:16Z
+C	c	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T10:35:20Z
+C	c	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T10:35:21Z
+C	c	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T10:35:21Z
+C	c	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T10:35:22Z
+C	c	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T10:35:22Z
+C	c	prot-import-process	click	2026-11-25T10:35:22Z
+C	c	proteomics_workflow-setup_import-confirm_organism	click	2026-11-25T10:35:26Z
+D1	S1	tile-proteomics	click	2026-11-25T10:35:33Z
+D1	S1	btn-start-analysis	click	2026-11-25T10:35:34Z
+D1	S1	experiment_label	k250_d1	2026-11-25T10:35:34Z
+D1	S1	project_dir	/tmp/RtmpesDm7E/k250-work/projects-D1	2026-11-25T10:35:34Z
+D1	S1	btn-confirm-setup	click	2026-11-25T10:35:34Z
+D1	d1	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T10:35:39Z
+D1	d1	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T10:35:39Z
+D1	d1	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T10:35:40Z
+D1	d1	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T10:35:40Z
+D1	d1	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T10:35:40Z
+D1	d1	prot-import-process	click	2026-11-25T10:35:41Z
+D1	G0	#shiny-modal .modal-footer button[data-dismiss='modal'], #shiny-modal .modal-footer button[data-bs-dismiss='modal']	mouse at 983.6,556.7	2026-11-25T10:35:44Z
+D1	d1	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T10:35:47Z
+D1	d1	prot-import-process	click	2026-11-25T10:35:47Z
+D1	d1	proteomics_workflow-setup_import-confirm_organism	click	2026-11-25T10:35:50Z
+D2	S1	tile-proteomics	click	2026-11-25T10:35:58Z
+D2	S1	btn-start-analysis	click	2026-11-25T10:35:58Z
+D2	S1	experiment_label	k250_d2	2026-11-25T10:35:58Z
+D2	S1	project_dir	/tmp/RtmpesDm7E/k250-work/projects-D2	2026-11-25T10:35:59Z
+D2	S1	btn-confirm-setup	click	2026-11-25T10:35:59Z
+D2	d2	proteomics_workflow-setup_import-search_results_standard	upload report.tsv	2026-11-25T10:36:03Z
+D2	d2	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T10:36:04Z
+D2	d2	proteomics_workflow-setup_import-taxon_id	10090	2026-11-25T10:36:04Z
+D2	d2	proteomics_workflow-setup_import-organism_name	Mus musculus	2026-11-25T10:36:05Z
+D2	d2	proteomics_workflow-setup_import-mixed_species_fasta	TRUE	2026-11-25T10:36:05Z
+D2	d2	prot-import-process	click	2026-11-25T10:36:05Z
+D2	G0	#shiny-modal .modal-footer button[data-dismiss='modal'], #shiny-modal .modal-footer button[data-bs-dismiss='modal']	mouse at 983.6,556.7	2026-11-25T10:36:09Z
+D2	d2	proteomics_workflow-setup_import-mixed_species_fasta	FALSE	2026-11-25T10:36:11Z
+D2	d2	prot-import-process	click	2026-11-25T10:36:12Z

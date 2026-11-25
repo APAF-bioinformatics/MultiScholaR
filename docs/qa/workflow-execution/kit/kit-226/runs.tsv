@@ -1,0 +1,6 @@
+run_id	commit	purpose	job_minutes	core_hours	result
+45504002943	09d92168	R1 failing-first, tests-only commit, 3 files, 1 shard	13.8	0.92	every new expectation of T1-T5 and G2 (OD-3/OD-5 rows) failed at its stated base value (19 failures); G1, G3 and G2 data/mapping guards passed; test-enrichment-significance.R:497 failed at its base value; test-prot-11-enrichment-module-contracts.R is quarantined (Q-163, whole-file skip): its three declared expectations did not run
+45506344960	77ab881f vs 09d92168	R2 fix against tests-only, 23 files, 3 shards per side, R CMD check both sides	166.9	11.13	new file and test-enrichment-significance.R fixed; 18 files same; new failures only in test-omic-enrich-module.R, test-omics-enrich-core.R, test-gui-entry-proteomics.R, all at stored leaves of section 5 awaiting the re-freeze; check identical (0 E, 3 W, 3 N both sides)
+45587822866	3a48351b (staging 16112917 + script)	control C base: W1 dump and prot_dia record	39.4	2.63	base equals stored at all 49 changed leaves; 51 pre-existing differences (equal on base and head)
+45587827135	da3ca8d0 (kit-226 merged with 16112917)	control C head 1	34.7	2.32	changed leaves exactly the 49 predicted, each at R2 head value
+45587831399	da3ca8d0	control C head 2, separate job	38.9	2.59	W1 dump byte-identical to head 1; prot_dia leaves equal to head 1
