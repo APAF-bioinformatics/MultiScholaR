@@ -37,6 +37,32 @@ that occurs before any judged assertion, on the code before the fix, is an instr
 only, no expected value changes, at most three reruns, ceiling unchanged); an unexpected pass or failure of a judged
 assertion is a result.
 
-## R2: the fix against the tests-only commit (to be declared before it is sent)
+## R1 result (run 45698567707, 2026-11-26): as predicted
 
-Declared in this file when R1 has returned and the fix is written.
+All 52 predicted failures and 67 passes of the new file, 1 of the kit250 file (G3), 2 of the 01c file, 0 errors, by
+assertion at the stated values (the old text with a 5 s default and no id; no refusal; the import completing). G3 and
+G4 pass. Stop rules 1 and 2 did not fire. About 13.0 job-minutes (0.87 core-hours) against 12 expected and 45 ceiling.
+The per-test failing set is identical to the prediction (checked from `failures.txt`).
+
+## R2: the fix against the tests-only commit
+
+- **Purpose:** show the new rows, the two declared-edit files passing on the fix, and no regression elsewhere.
+- **Binding:** base 2269d03ad00746e0db3be900819c8240a2d1a52a (tests only), head = the records commit on `kit-265` that
+  follows the fix c40435efe (it adds NEWS, ledger, README-free documents only: no further change under R/).
+- **Files (the ticket's section 10.3, recounted at the branch point 82a5df02: 9 files by the stated `git grep`, plus
+  the new one):** `test-kit265-organism-routes.R`, `test-e2e-test-mode-integration.R`, `test-kit250-organism-dialog.R`,
+  `test-module-ci-prot-import.R`, `test-prot-01c-import-module-contracts.R`, `test-prot-01d-import-module-characterization.R`,
+  `test-prot-import-core.R`, `test-workflow-gui-memory-lifetimes.R`, `test-workflow-server-shared.R`,
+  `test-workflow-ui-shared.R`. One shard per side, `check: true`.
+- **Ceiling:** 340 job-minutes (22.67 core-hours). **Expected:** 113.5 job-minutes (7.57 core-hours).
+- **Decides:** A2 and A3.
+
+| File | Base (tests only) | Head (fix) |
+|---|---|---|
+| `test-kit265-organism-routes.R` | 67 passed, 52 failed (R1) | 119 passed, 0 failed (`fixed`) |
+| `test-kit250-organism-dialog.R` | 118 / 1 (R1) | 119 / 0 (`fixed`) |
+| `test-prot-01c-import-module-contracts.R` | 436 / 2 (R1) | 438 / 0 (`fixed`) |
+| the seven other files | any state | `same` |
+| R CMD check | | findings identical on both sides |
+
+Stop rules: an unpredicted verdict stops the work; a head failure or a differing check is the one correction pass.

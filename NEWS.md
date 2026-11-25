@@ -82,6 +82,15 @@
 
 ### Fixes
 
+ * Proteomics import with 'Mixed species FASTA' ticked: when no organism window can be shown, the import no longer keeps
+   the organism typed in the form without saying so. If no organism in the FASTA file can be matched to the search
+   results' proteins, a notice now says which organism will be used and how to change it. If the organisms in the
+   FASTA file cannot be counted, the search results have no protein column, or the FASTA file cannot be read or
+   processed, the import is stopped with a message saying what failed and what to do. It is also stopped when none of
+   the proteins in the search results could be found in the FASTA file. Before, these imports finished with the
+   form's organism (Homo sapiens by default), which then set the UniProt annotation, the Taxon ID in the study
+   parameters and the enrichment organism. The organism window now says that only the selected organism is looked up
+   in UniProt and tested for enrichment. No result of an import that completes changes (KIT-265).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

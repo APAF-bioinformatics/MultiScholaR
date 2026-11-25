@@ -1,0 +1,2 @@
+run_id	commit	purpose	job_minutes	result
+45698567707	2269d03a (tests only; R/ = 82a5df02)	R1 failing-first: new file, test-kit250-organism-dialog.R, test-prot-01c	13.0	as predicted: new file 67 passed / 52 failed / 0 errors, kit250 118/1 (G3), 01c 436/2 (the two declared edits); G3 and G4 pass; stop rules 1 and 2 not fired
