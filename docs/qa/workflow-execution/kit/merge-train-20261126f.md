@@ -12,7 +12,7 @@ must be rebuilt.
 
 | Order | Ticket | Branch head | Merge commit | Ledger rows | Audit |
 |---|---|---|---|---|---|
-| 1 | KIT-254 | `origin/kit-254` bb015ef8 | a32edeb1 | `VAL-<train13-1>` (the fix), `VAL-<train13-2>` (the replay statements); `VAL-<train13-c>` reserved for the coordinator's correction of VAL-247 (not written here) | AUDIT-KIT-254-impl-20261126, closure check |
+| 1 | KIT-254 | `origin/kit-254` bb015ef8 | a32edeb1 | `VAL-298` (the fix), `VAL-299` (the replay statements); `the correction noted in VAL-247` reserved for the coordinator's correction of VAL-247 (not written here) | AUDIT-KIT-254-impl-20261126, closure check |
 
 - The run binds head `a32edeb1`; the full hash is in the request.
 - This file, the predictions table and the records commit are under `docs/qa/` only.
@@ -45,8 +45,8 @@ clearOmicNormCorrelation <- function(normData) {
 under the one unreleased heading.
 
 **`docs/methods-decision-ledger.md`.** An append. The base's rows are kept as they are: VAL-273 to VAL-280,
-`VAL-<train11-1>`, `VAL-<train12-1>` and `VAL-<train12-2>`. KIT-254's two rows follow with clean status cells. Its
-`VAL-<merge>` and `VAL-<merge-2>` placeholders became `VAL-<train13-1>` and `VAL-<train13-2>`, in the ledger and in
+`VAL-281`, `VAL-295` and `VAL-297`. KIT-254's two rows follow with clean status cells. Its
+`VAL-<merge>` and `VAL-<merge-2>` placeholders became `VAL-298` and `VAL-299`, in the ledger and in
 `kit-254/outcome.md`. VAL-247's correction is not made here.
 
 **No other conflict.** `DESCRIPTION`, `NAMESPACE` and `man/` are unchanged.
@@ -111,4 +111,64 @@ the train's run its merge check.
 
 ## Result
 
-(filled after the run)
+Run 45669839790 bound head a32edeb1 against base eb6c4000, train 12's tip (request `merge-train-20261126f-a32edeb1`,
+run-tests commit d16a4dd5). It was dispatched normally, sent once, and concluded success. It used 570.7 job-minutes of
+the 660 ceiling, 28.8 of them for the check. The tables are in `merge-train-20261126f/`: `compare.tsv`, `tests.tsv`,
+`tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`.
+
+Of the 62 files, 60 are `same` and 2 are not. Both were predicted:
+
+| File | Base p/f/e/s | Head p/f/e/s | Verdict | Prediction |
+|---|---|---|---|---|
+| test-kit254-omics-correlation-skip.R | absent | 379/0/0/0 | only-on-head | 379/0: held |
+| test-omics-norm-state-guards.R | 647/0/0/0 | 651/0/0/0 | count-changed | 647 to 651: held |
+
+- **Counts.** Every file's base and head counts equal the declared expectations in
+  `merge-train-20261126f-predictions.tsv`, with no exception. For example: `test-prot-norm-core.R` 1548/306,
+  `test-workflow-analysis-record.R` 351/0, the kit243 file 246/0, the kit252 file 72/0, the kit257 file 133/0, the
+  kit201 file 89/0, `test-workflow-omics-binding-steps.R` 58/1.
+- **Replay statements.** The per-file warning counts are identical base against head in all 61 files present on both
+  sides, so no replay consumer gained a correlation statement or a `workflow_replay_correlation_skip` warning. Only
+  the new file's log carries the statements.
+- **R CMD check.** 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head. The
+  portable-file-names NOTE lists 238 paths on each side.
+
+**Verdict:** every prediction held. TRAIN GREEN.
+
+**Train 12.** It landed while this run was out, as bbbfdc1a (KIT-249 VAL-295, KIT-236 VAL-297, VAL-296). eb6c4000 is
+an ancestor of staging, and `git diff eb6c4000 bbbfdc1a` outside `docs/` is empty. So train 12 landed with its code
+unchanged, and the condition this train was built on holds.
+
+**At landing.** The train lands by a merge. Its ledger still carries `VAL-281`, `VAL-295` and
+`VAL-297` in their pre-landing forms, which staging numbers VAL-281, VAL-295 and VAL-297. Staging's rows win
+that conflict. The coordinator numbers `VAL-298` and `VAL-299` and writes `the correction noted in VAL-247`, the
+correction of VAL-247.
+
+**Not checked:**
+- the trees after the run's head (docs only);
+- files outside the 62;
+- the owner's wording items, C2 and C3.
+
+## Merge record (coordinator)
+
+Landed on `v0.9-staging` on 2026-11-26 by a merge of `merge-train-20261126f` (tip 5b76b72d) into
+staging bbbfdc1a. The stacking condition held: train 12 landed with its code unchanged (KIT-249 =
+VAL-295, KIT-236 = VAL-297), and staging differs from the commit this train was built on
+(eb6c4000) only under `docs/`. The only conflict at landing was the ledger: staging's rows kept
+through VAL-297, then this train's two rows. Ledger rows: KIT-254's fix = VAL-298; its replay
+statements = VAL-299. Ledger row VAL-247 (the owner's decision) is corrected in place, with a
+dated note, to name both statements as the option was put (the KIT-254 audit's exact text), and
+its status cell updated.
+
+Evidence: run 45669839790 (base eb6c4000, head a32edeb1; 62 test files and R CMD check, both
+environment switches set on both sides): 60 files the same; the new test file only on head and
+passing (379/0); `test-omics-norm-state-guards.R` 647/0 to 651/0 as declared; identical warning
+counts on both sides in every shared file (no replay consumer gained a correlation statement);
+the check identical on both sides (0 errors, 3 warnings, 3 notes). 570.7 of 660 job-minutes. One
+authorised code resolution, against KIT-257 in `R/mod_omic_norm.R` (both sets of functions kept).
+
+Recorded for the owner (parked row 46): the lipidomics-with-RUV test case runs at a constructed
+threshold (0.960024) after KIT-224; the replay statement had its own one correction. The
+statements' wording is the owner's.
+
+Not shown by this record: the full suite on the landed tree (next checkpoint).

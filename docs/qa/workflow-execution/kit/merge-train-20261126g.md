@@ -13,7 +13,7 @@ Base: `f8c871f3ce42fc72315ab97550360bc9ce132f09` (train 13's tip, fetched before
 
 | Order | Ticket | Branch head | Merge commit | Ledger row | Audit |
 |---|---|---|---|---|---|
-| 1 | KIT-248 | `origin/kit-248` 5dd2a6c2 | d1018f6b | `VAL-<train14-1>` (`VAL-<train14-1b>` reserved for the coordinator's stored-value row; not written here) | AUDIT-KIT-248-impl-20261126, I03 |
+| 1 | KIT-248 | `origin/kit-248` 5dd2a6c2 | d1018f6b | `VAL-300` (`VAL-301` reserved for the coordinator's stored-value row; not written here) | AUDIT-KIT-248-impl-20261126, I03 |
 
 Head (bound by the run): `d1018f6b` (full hash in the request). This file, the predictions table and the records
 commit after the run are under `docs/qa/` only.
@@ -29,11 +29,11 @@ study parameters, and a replay keeps every sample.
   `R/utils_workflow_dia_products.R`: `kit-248` already held staging 0a774e0b (KIT-257) with I03's authorised
   resolution of `runDIAReferenceCorrelation`; the base holds KIT-257 too, so it merged automatically and the merged
   function is I03's text exactly (the file equals `kit-248`'s).
-- **`docs/methods-decision-ledger.md`.** The base held train 11's row as `VAL-<train11-1>`; `kit-248` held it landed
-  as VAL-281 (identical but for the landing numbering: `VAL-<train11-1b>` -> VAL-282 and the run id), VAL-282 and its own
+- **`docs/methods-decision-ledger.md`.** The base held train 11's row as `VAL-281`; `kit-248` held it landed
+  as VAL-281 (identical but for the landing numbering: `VAL-282` -> VAL-282 and the run id), VAL-282 and its own
   `VAL-<merge>`. Resolved: VAL-281 and VAL-282 (staging's landed rows; VAL-281 replaces the placeholder copy, so the
-  KIT-257 row is not listed twice), then the base's `VAL-<train12-1>`, `VAL-<train12-2>`, `VAL-<train13-1>`,
-  `VAL-<train13-2>` unchanged, then KIT-248's row as `VAL-<train14-1>`; also in `kit-248/outcome.md:237`. Staging's
+  KIT-257 row is not listed twice), then the base's `VAL-295`, `VAL-297`, `VAL-298`,
+  `VAL-299` unchanged, then KIT-248's row as `VAL-300`; also in `kit-248/outcome.md:237`. Staging's
   later rows VAL-283 to VAL-294 are on neither side of this merge; they are the coordinator's at landing.
 - **`NEWS.md`.** The base's entries (KIT-236, KIT-254) then KIT-248's, both kept.
 - `DESCRIPTION` and `NAMESPACE` unchanged.
@@ -100,4 +100,60 @@ in limpa or mixOmics files may read differently from those records; the verdict 
 
 ## Result
 
-(filled after the run)
+Run 45676428221 (request `merge-train-20261126g-d1018f6b`, dispatched normally; `meta.txt` names the request file,
+package_commit d1018f6b, base_commit f8c871f3; its request_commit reads 3b2fc169, another agent's later request commit
+on `run-tests`, which contains this request file unchanged), sent once; conclusion success; 809.1 job-minutes of the
+1,460 ceiling (tests 778.1, check 30.3, plan and results 0.8). Library: limpa 1.4.2, mixOmics 6.36.0 installed. Tables
+in `merge-train-20261126g/` (`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`).
+
+Observed, 81 files: 77 `same`, 4 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | prediction |
+|---|---|---|---|---|
+| test-kit248-correlation-skip-record.R | absent | 206/0/0/0 | only-on-head | held (0 skipped) |
+| test-prot-norm-core.R | 1548/306/0/0 | 1548/306/0/0 | message-changed | held: exactly the 12 labels (below) |
+| test-workflow-operation-registry.R | 1095/2/0/0 | 1099/2/0/0 | count-changed | held: the 2 failures identical on both sides, each the `integration_mofa_model` difference |
+| test-workflow-partitions.R | 439/0/0/2 | 440/0/0/2 | count-changed | held (base read from the run: 439, as R2) |
+
+`test-prot-norm-core.R`, parsed from both failure files (keyed by test and leaf; 282 keys on each side, none only on
+one side): 12 changed messages, exactly the provenance and record leaves of dia_correlation_skip,
+dia_normalization_refused and dia_normalization_retry in W1 (a) and W2 (for example dia_correlation_skip provenance:
+actual `4aac9383…` on base, `dcfdf833…` on head). Nothing else in the file moved.
+
+Every other file `same` at the base counts on record (0 differences, script over `compare.tsv` against
+`merge-train-20261126g-predictions.tsv`), including `test-workflow-saved-da.R` 755/196, `test-kit257-norm-own-files.R`
+133/0, `test-kit244-limpa-pass-through.R` 204/0 with 0 skipped, `test-omics-norm-state-guards.R` 651/0. Read from the
+run: `test-kit172-log2-rule.R` 212/0, `test-module-ci-trx-qc.R` 38/0/1 error (KIT-248 R2 had 34/1/1 without these
+packages), `test-workflow-omics-owner.R` 78/1, all `same`.
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdict: every prediction held. TRAIN GREEN, landing only after trains 12 and 13 land with their code unchanged.
+
+Not checked: trains 12 and 13 at landing; any file outside the 81; the full suite (KIT-248's A4 at the next
+checkpoint).
+
+## Merge record (coordinator)
+
+Landed on `v0.9-staging` on 2026-11-26 by a merge of `merge-train-20261126g` (tip 0c8866ec) into
+staging 988512e6. The stacking condition held: trains 12 and 13 landed with their code unchanged
+(KIT-249 = VAL-295, KIT-236 = VAL-297, KIT-254 = VAL-298 and VAL-299), and staging differs from
+the commit this train was built on (f8c871f3) only under `docs/`. The only conflict at landing was
+the ledger: staging's rows kept through VAL-299, then this train's row. Ledger rows: KIT-248 =
+VAL-300; the coordinator's stored-value row for the six `provenance` and `record` values of
+`tests/testthat/test-prot-norm-core.R` (already on the re-record list since KIT-187, VAL-104; not
+edited) = VAL-301. In the same commit the line numbers in VAL-282 are corrected (768 and 802; the
+block moved by one line with KIT-244's re-pin).
+
+Evidence: run 45676428221 (base f8c871f3, head d1018f6b; 81 test files and R CMD check, limpa and
+mixOmics installed, both environment switches set on both sides): 77 files the same; the new test
+file only on head and passing (206/0, none skipped); `test-prot-norm-core.R` 1548/306 on both
+sides with exactly the twelve declared messages changed; the registry and partitions files with
+their declared count changes; the check identical on both sides (0 errors, 3 warnings, 3 notes).
+809.1 of 1,460 job-minutes.
+
+With this landing KIT-244 and KIT-248 are both on staging: on DIA with limpa, "press again, then
+Skip" no longer gives a live result that differs from replay.
+
+Not shown by this record: the full suite on the landed tree (next checkpoint).

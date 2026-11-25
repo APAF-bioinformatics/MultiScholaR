@@ -189,7 +189,7 @@ only on head. Stop rule 3 not triggered. 385 job-minutes (25.67 core-hours).
 ## Closure check (AUDIT-KIT-254-impl-20261126, "Closure check (2026-11-26)"): ready for a merge train
 
 No code or test repair. Record repairs in this commit: C1 (the re-apply recognition signature, here and in ledger row
-`VAL-<train13-1>`), C2 (NEWS's replay sentence), C3 (the second statement's draft, `wording.md`). VAL-247's correction is
+`VAL-298`), C2 (NEWS's replay sentence), C3 (the second statement's draft, `wording.md`). VAL-247's correction is
 written by the coordinator at landing from the register's text.
 
 Notes:
@@ -235,7 +235,7 @@ Notes:
 | A2 | each E row fails at G0's value on the tests-only commit; G rows pass; edited T1/T8 pass on base; all pass on the fix | R1 45604366935; R2 head side | met (R1; head side of R2: 292 passed, 0 failed) |
 | A3 | R2 base against head: every file `same` except the new file; check nothing only on head | R2 45609913680 | met |
 | A4 | the merge train's full suite; `test-omics-norm-state-guards.R` count-changed by the T1/T8 edit | the train | not this branch's run (the coordinator's train) |
-| A5 | NEWS, ledger, outcome with "For the change report"; `man/`, `NAMESPACE` unchanged | 964d6f65; this file | met (ledger `VAL-<train13-1>`, numbered at merge) |
+| A5 | NEWS, ledger, outcome with "For the change report"; `man/`, `NAMESPACE` unchanged | 964d6f65; this file | met (ledger `VAL-298`, numbered at merge) |
 
 **OD-1 (owner: (a), VAL-247).** The main fix makes no replay change (the coordinator's ruling); the replay statement
 under (a) is the separate follow-up above, with its own failing-first run (R1b) and comparison (R2b).

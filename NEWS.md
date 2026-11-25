@@ -82,6 +82,12 @@
 
 ### Fixes
 
+ * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
+   greyed out and says a step is still running while another step of the same analysis runs, for example the
+   quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those
+   figures were drawn (often the first press after opening the tab) was refused with "A step is still running..."
+   although the button looked ready. In transcriptomics, a press made while any of its steps ran was refused the same
+   way. This came in with the 0.9 development builds after v0.9.0. No result changes (KIT-261).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

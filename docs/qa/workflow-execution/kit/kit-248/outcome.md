@@ -234,7 +234,7 @@ job-minutes. **Every failure is at its predicted value; G1, G2 and E10b pass.**
   `pearson-selection` or `legacy` whose outcome says skipped to `pearson-skip` (OD-1 (a), (a′)); a `pearson-skip` branch
   commits the correlation's source unfiltered (`normalization_final %||%` the head) with the Skip's config, description
   and provenance (R1-01).
-- NEWS (### Fixes), ledger `VAL-<train14-1>`, `wording.md`. `man/`, `NAMESPACE`, `DESCRIPTION` unchanged.
+- NEWS (### Fixes), ledger `VAL-300`, `wording.md`. `man/`, `NAMESPACE`, `DESCRIPTION` unchanged.
 
 ### R2 (run 45649121588; base 2630bf57, head 29072595; 80 files, 4 shards per side, check): observed
 
