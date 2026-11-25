@@ -1,0 +1,217 @@
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E8: lipid managed tab names A2 and B_6 and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Warning: Assay A2 was normalised without sample(s) B_6, which have no value in A2; they are left empty in A2 only. | Post-normalization QC plots generated | RUV-III skipped | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E8: lipid in process tab names A2 and B_6 and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Warning: Assay A2 was normalised without sample(s) B_6, which have no value in A2; they are left empty in A2 only. | Post-normalization QC plots generated | RUV-III skipped | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3b: lipid an assay with duplicate feature ids stops, naming the cause and 'Resolve Duplicates'
+kind: failure
+message:
+  Expected `conditionMessage(err)` to match regexp "2 duplicated feature identifiers \\(A2_F001, A2_F002\\)".
+  Actual text:
+  x | Assay 'A2': Error converting tibble to matrix: duplicate 'row.names' are not allowed. Skipping normalization.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3b: lipid an assay with duplicate feature ids stops, naming the cause and 'Resolve Duplicates'
+kind: failure
+message:
+  Expected `conditionMessage(err)` to match string "Run 'Resolve Duplicates' in the Quality Control tab".
+  Actual text:
+  x | Assay 'A2': Error converting tibble to matrix: duplicate 'row.names' are not allowed. Skipping normalization.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: lipid an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `marker$current` to be identical to "per_assay".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('per_assay')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: lipid an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `marker$earlier` to be identical to "applied_flag".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('applied_flag')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: lipid an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `workflowOperationEntry(paste0(prefix, "_itsd_normalisation"))$declaration$fixed$itsd_outcome` to be identical to "per_assay".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('per_assay')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: lipid an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `itsd$applied_per_assay` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: lipid an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `outcomes$itsd_applied_per_assay` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: lipid an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `has_marker` to be identical to `identical(rule, "current")`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  current
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E8: metab managed tab names A2 and B_6 and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Warning: Assay A2 was normalised without sample(s) B_6, which have no value in A2; they are left empty in A2 only. | Post-normalization QC plots generated | RUV-III skipped | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E8: metab in process tab names A2 and B_6 and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Warning: Assay A2 was normalised without sample(s) B_6, which have no value in A2; they are left empty in A2 only. | Post-normalization QC plots generated | RUV-III skipped | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3b: metab an assay with duplicate feature ids stops, naming the cause and 'Resolve Duplicates'
+kind: failure
+message:
+  Expected `conditionMessage(err)` to match regexp "2 duplicated feature identifiers \\(A2_F001, A2_F002\\)".
+  Actual text:
+  x | Assay 'A2': Error converting tibble to matrix: duplicate 'row.names' are not allowed. Skipping normalization.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3b: metab an assay with duplicate feature ids stops, naming the cause and 'Resolve Duplicates'
+kind: failure
+message:
+  Expected `conditionMessage(err)` to match string "Run 'Resolve Duplicates' in the Quality Control tab".
+  Actual text:
+  x | Assay 'A2': Error converting tibble to matrix: duplicate 'row.names' are not allowed. Skipping normalization.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: metab an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `marker$current` to be identical to "per_assay".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('per_assay')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: metab an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `marker$earlier` to be identical to "applied_flag".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('applied_flag')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: metab an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `workflowOperationEntry(paste0(prefix, "_itsd_normalisation"))$declaration$fixed$itsd_outcome` to be identical to "per_assay".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('per_assay')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: metab an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `itsd$applied_per_assay` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: metab an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `outcomes$itsd_applied_per_assay` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11b: metab an older record replays the ITSD step exactly; a new one records the per-assay fields
+kind: failure
+message:
+  Expected `has_marker` to be identical to `identical(rule, "current")`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  current
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 Part C: the protein normalisation text equals the earlier text when no sample is removed
+kind: error
+message:
+  Error in `diaProteinNormalisationText(FALSE, 60L, 12L, "cyclicloess")`: could not find function "diaProteinNormalisationText"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(...) at test-kit242-normalisation-fallback.R:717:3
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-workflow-omics-worker.R
+test: KIT-078: every omics compute declaration runs from a frozen request through the worker's entry point
+kind: failure
+message:
+  Expected `result$error %||% ""` to match regexp "duplicated feature identifiers.*Resolve Duplicates".
+  Actual text:
+  x | Assay 'LCMS_Pos': Error converting tibble to matrix: duplicate 'row.names' are not allowed. Skipping normalization.
+  lipidomics
+
+file: test-workflow-omics-worker.R
+test: KIT-078: every omics compute declaration runs from a frozen request through the worker's entry point
+kind: failure
+message:
+  Expected `result$error %||% ""` to match regexp "duplicated feature identifiers.*Resolve Duplicates".
+  Actual text:
+  x | Assay 'LCMS_Pos': Error converting tibble to matrix: duplicate 'row.names' are not allowed. Skipping normalization.
+  metabolomics
+

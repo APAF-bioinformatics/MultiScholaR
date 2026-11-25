@@ -120,3 +120,50 @@ row passes at head). Everything else as R2a: the predicted moves (`test-gui-entr
 `test-metab-02w-…`, `test-omic-norm-module.R`, the two declarations files, and the message-changed
 `test-prot-norm-core.R`, `test-workflow-omics-binding-steps.R`, `test-workflow-omics-declarations.R`), the rest same;
 check identical. A verdict outside this: stop and report, no second correction.
+
+### R1c (run 45621160740, a5a87d7a; 21.6 job-minutes, 1.44 core-hours): observed
+
+As predicted: E8 (4 tests, the wording), E3b (2), E11b (2: no `itsd_outcome` marker; the earlier and current journeys'
+fields), the text pin (1: no `diaProteinNormalisationText`) and the worker test's between-sample check (2 expectations:
+the message) fail; every other test of both files passes (267 + 275 passed). Stop rule 1 did not fire.
+
+Correction commit: 25fed307.
+
+### R2a-2 (run 45625379503, base 17d1ecc4, head 25fed307, 138 files, 9 shards per side, check; 815.0 job-minutes, 54.33 core-hours): observed against the prediction
+
+- **As predicted:** `test-kit172-reopen.R` same (T9: the project saved by the base commit replays exactly);
+  `test-workflow-operation-registry.R` same; `test-gui-entry-proteomics.R` same (prot_dia_limpa); the new file fixed
+  (290 passed, 0 failed); check identical (6 findings on both, none only on head); the predicted moves as in R2a for
+  `test-gui-entry-lipidomics.R` (10), `test-gui-entry-metabolomics.R` (30), `test-kit172-downstream.R` (14),
+  `test-metab-02w-…` (3), `test-omic-norm-module.R` (56), and the message-changed `test-prot-norm-core.R`,
+  `test-workflow-omics-binding-steps.R`, `test-workflow-omics-declarations.R`; 126 files same.
+- **Outside the written prediction (stop, as ruled; no second correction):**
+  1. `test-workflow-omics-worker.R` is `count-changed` (passed 289 to 277, 0 failures), not `same`: every expectation
+     passes; the declared edit skips the six later checks of the refused step per omic. A wrong verdict label in my
+     prediction, not a failure.
+  2. `test-workflow-lipid-declarations.R` and `test-workflow-metab-declarations.R` each move one more expectation than
+     in R2a (3 against 2): KIT-031's and KIT-032's registration tests pin the ITSD declaration's `fixed` as
+     `list(method = "ITSD")`, and the ruled marker adds `itsd_outcome`. A stored expectation of the marker class
+     (8.1's provenance row) that my prediction did not list.
+
+### The stored expectations that moved, by file and key (to the owner with the three by-file questions)
+
+Full list, one row per moved expectation: `r2a2-45625379503/moved-expectations.tsv` (file, test, expectation, key).
+No stored value was edited.
+
+| File | Moved | Keys |
+|---|---|---|
+| `test-gui-entry-lipidomics.R` | 10 | lane lipid_canonical, steps da, da_load, session_export, summary_copy, summary_export, summary_refusal, summary_report, summary_save, and the norm log output (2) |
+| `test-gui-entry-metabolomics.R` | 30 | lanes metab_lc, **metab_gc**, **metab_combined** (the last two not named in 8.1), each at steps da, da_load, session_export, summary_copy, summary_export, summary_refusal, summary_report, summary_save, and the norm log output (6) |
+| `test-kit172-downstream.R` | 14 | T10 lipid and metab: the first warning's text and the warning count (in process, managed); the count of warning notifications |
+| `test-metab-02w-normalise-between-samples-characterization.R` | 3 | "preserves all-NA sample fallback": the warning, `design_matrix$Run`, the assay table (Sample_2 has no value in the only assay, so it leaves the design) |
+| `test-omic-norm-module.R` | 56 | (b) lipid and metab, RUV skip and ITSD off (5 each); RUV manual with a manual ITSD selection (12 each); (b, c) RUV automatic (11 each): provenance digests |
+| `test-workflow-lipid-declarations.R` | 3 | the ITSD declaration's `fixed`; the journey's `itsd_applied` outcome; the report overlay's `itsd_applied` |
+| `test-workflow-metab-declarations.R` | 3 | the same three for metab |
+| `test-prot-norm-core.R` | (message-changed; base already failing) | KIT-111 W1 (a) frozen references: the new marker parameter rows |
+| `test-workflow-omics-binding-steps.R` | (message-changed; base already failing) | KIT-094 snapshot: the steps' parameter lists |
+| `test-workflow-omics-declarations.R` | (message-changed; base already failing) | KIT-073 frozen dump |
+| `test-workflow-omics-worker.R` | declared edit (`:15-23`) | the between-sample step on the raw fixture refuses (duplicate ids) |
+
+Budget: 210.78 expected / 782.0 ceiling core-hours, as the coordinator told the owner. Used to date: G0 2.76, R1a 0.66,
+R1b-A 0.93, R2a 49.77, R1c 1.44, R2a-2 54.33 = 109.89.
