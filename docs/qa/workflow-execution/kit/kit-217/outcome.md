@@ -342,3 +342,24 @@ done about it.
   `test-workflow-omics-binding-steps.R` `message-changed` (I04's content); `test-omic-enrich-module.R` `same`, or I11's
   known-unstable failure on one side; every other file `same`; check findings only on head: none. Decides: the
   auditor's closure check.
+
+## Merge-train comparison run (45666403751, 13742d43 vs staging 3a6794b0): observed
+
+Every declared prediction held (tables in `mt/`):
+- 48 files `same`, among them `test-kit214-sample-columns.R` (176/0 on both sides: the adjacency guard),
+  `test-gui-entry-transcriptomics.R` (16/13 on both) and `test-omic-enrich-module.R` (1011/59 on both).
+- `test-kit217-intensity-filter-missing.R` `only-on-head`, 344 passed, 0 failed.
+- `test-metab-qc-shared.R` `count-changed`, no failure; `test-workflow-operation-registry.R` `count-changed`, the same
+  two failures, passes 354 -> 358 and 264 -> 268.
+- `test-omic-qc-module.R` `new-failure`, test (b)'s four expectations.
+- `test-gui-entry-lipidomics.R` 16 of 35 and `test-gui-entry-metabolomics.R` 48 of 105 failing on head, every lane from
+  `qc_intensity` on, `states` only.
+- `test-gui-entry-proteomics.R` `new-failure`: base 168 passed / 25 failed, head 92 / 101; every per-step comparison from
+  `design` on fails in all five lanes; the only part that differs from base is `states` (every artifact difference in
+  head's messages, e.g. the DA long tables of prot_dia, prot_tmt, prot_lfq and prot_lfq_fragpipe at `da`, appears with the
+  same digests in base's).
+- `test-workflow-omics-declarations.R` and `test-workflow-omics-binding-steps.R` `message-changed`.
+- R CMD check: 6 findings, identical on both sides, none only on head.
+
+Budget: stage 2 has used 2,102.0 + 456.9 = 2,558.9 job-minutes = 170.6 core-hours, against 103.00 expected and 505.33
+ceiling (the ticket's ceiling, 514.52 with M).
