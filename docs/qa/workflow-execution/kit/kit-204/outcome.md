@@ -111,6 +111,23 @@ under `R/` and one Rd page (KIT-220), so ticket 6.4 would ask for R3b on the mer
 2026-11-25 that the next full-suite checkpoint on staging stands in for R3b (as for KIT-218's A4 and KIT-222's A5). R2b
 on the merged tree is run (below, when recorded).
 
+## R2b on the merge with staging (declared before sending)
+
+Merge 89ce2a1f = `kit-204` (fdbb6751) + `v0.9-staging` 7327607f, the five conflicts resolved as
+AUDIT-KIT-204-impl-20261125 section 6 states. R2b: base 7327607f (staging's head), head 89ce2a1f, `check: true`, 3
+shards per side, ceiling 60 minutes per test job and 90 per check (36.0 core-hours, within the ticket's R2b row). Files:
+R2's 30 (above) plus `test-kit220-da-threshold-consumers.R`, `test-kit218-da-wrapper-tail.R`, `test-kit212-da-current.R`,
+`test-kit215-not-tested-lists.R` (KIT-249 and KIT-201 are not on staging). Predictions (the register's "the train must
+hold"):
+- `test-kit204-prot-da-not-tested.R`: only on head, 81 passed, 0 failed;
+- `test-omic-da-module.R`: exactly the 13 `prot_main` `values` expectations newly failing, each by the one line, nothing
+  else;
+- `test-kit220-da-threshold-consumers.R`: `same`;
+- the five GUI-entry lanes (`test-gui-entry-proteomics.R`): `same`;
+- every other file `same`;
+- R CMD check: findings identical, none only on head.
+Decides: whether the merged tree holds 6.2's verdicts. R3b: the coordinator's ruling (the next full-suite checkpoint).
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
