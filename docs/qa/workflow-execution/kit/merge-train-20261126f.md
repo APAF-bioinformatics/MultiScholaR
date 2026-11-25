@@ -111,4 +111,40 @@ the train's run its merge check.
 
 ## Result
 
-(filled after the run)
+Run 45669839790 bound head a32edeb1 against base eb6c4000, train 12's tip (request `merge-train-20261126f-a32edeb1`,
+run-tests commit d16a4dd5). It was dispatched normally, sent once, and concluded success. It used 570.7 job-minutes of
+the 660 ceiling, 28.8 of them for the check. The tables are in `merge-train-20261126f/`: `compare.tsv`, `tests.tsv`,
+`tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`.
+
+Of the 62 files, 60 are `same` and 2 are not. Both were predicted:
+
+| File | Base p/f/e/s | Head p/f/e/s | Verdict | Prediction |
+|---|---|---|---|---|
+| test-kit254-omics-correlation-skip.R | absent | 379/0/0/0 | only-on-head | 379/0: held |
+| test-omics-norm-state-guards.R | 647/0/0/0 | 651/0/0/0 | count-changed | 647 to 651: held |
+
+- **Counts.** Every file's base and head counts equal the declared expectations in
+  `merge-train-20261126f-predictions.tsv`, with no exception. For example: `test-prot-norm-core.R` 1548/306,
+  `test-workflow-analysis-record.R` 351/0, the kit243 file 246/0, the kit252 file 72/0, the kit257 file 133/0, the
+  kit201 file 89/0, `test-workflow-omics-binding-steps.R` 58/1.
+- **Replay statements.** The per-file warning counts are identical base against head in all 61 files present on both
+  sides, so no replay consumer gained a correlation statement or a `workflow_replay_correlation_skip` warning. Only
+  the new file's log carries the statements.
+- **R CMD check.** 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head. The
+  portable-file-names NOTE lists 238 paths on each side.
+
+**Verdict:** every prediction held. TRAIN GREEN.
+
+**Train 12.** It landed while this run was out, as bbbfdc1a (KIT-249 VAL-295, KIT-236 VAL-297, VAL-296). eb6c4000 is
+an ancestor of staging, and `git diff eb6c4000 bbbfdc1a` outside `docs/` is empty. So train 12 landed with its code
+unchanged, and the condition this train was built on holds.
+
+**At landing.** The train lands by a merge. Its ledger still carries `VAL-<train11-1>`, `VAL-<train12-1>` and
+`VAL-<train12-2>` in their pre-landing forms, which staging numbers VAL-281, VAL-295 and VAL-297. Staging's rows win
+that conflict. The coordinator numbers `VAL-<train13-1>` and `VAL-<train13-2>` and writes `VAL-<train13-c>`, the
+correction of VAL-247.
+
+**Not checked:**
+- the trees after the run's head (docs only);
+- files outside the 62;
+- the owner's wording items, C2 and C3.
