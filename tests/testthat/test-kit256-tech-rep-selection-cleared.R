@@ -229,10 +229,12 @@ test_that("KIT-256 G3: an Assign that leaves the design identical also empties t
     kit256AssignFirstPair(api)
     before <- api$design()
     api$set(tech_rep_samples = c("S1", "S2"), tech_rep_assignment_mode = "lowest")
+    mark <- api$mark()
     api$set(assign_tech_reps = 2L)
     # Precondition: the design is identical, so the row exercises the Assign observer's own clear, not the flag.
     expect_identical(api$design(), before)
-    expect_identical(kit256Obs("G3", kit256Last(api$log, "tech_rep_samples")), character(0))
+    # Read from the mark: only what this Assign sent (AUDIT-KIT-256-impl-20261126 I01).
+    expect_identical(kit256Obs("G3", kit256Last(api$log, "tech_rep_samples", mark)), character(0))
     # G2's check then holds.
     api$set(tech_rep_samples = c("S5", "S6"))
     mark <- api$mark()
