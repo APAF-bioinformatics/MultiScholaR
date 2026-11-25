@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-247 R1' (correction pass, tests only e6871939 on the merged tree): N1, N2 fail, N3 passes, native-session's KIT-026 errors as in R2 (declared in kit-247/correction-declaration.md); 1 job, ceiling 30 job-minutes",
+  "label": "KIT-247 R1' tests only e6871939",
+  "package_commit": "e687193996d3861e05bdcf2d76ea7bd22f8056e5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit247-resave-no-session.R",
+    "test-workflow-native-session.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
