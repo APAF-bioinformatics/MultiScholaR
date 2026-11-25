@@ -259,3 +259,10 @@ Falsifiers 0. No mean difference, rate or statistic was computed or read. 8.06 c
 `reestimate.R plan`, run once (run 45521457364; spent 11.21): R per cell N-r 100, N-s 100, N-w 250, E-r 200, E-s 200,
 E-p 300, E-g 200, E-w 200 (equal to the auditor's recomputation); target per cell 0.97249, achieved joint probability
 under equality 0.987; projected 73.6 core-hours in total (ceiling 100). Files: `bound-s1/plan.tsv`, `plan-summary.tsv`.
+
+## Bounded-k stage 2 (counted; 8 runs at 0413a169)
+
+Observed (mechanics only; no endpoint read and `decide.R` not run): all 8 jobs completed; falsifiers 0 in every job;
+every job passed the stage-1 check; journey errors as in each `bound-s2/*/provenance.json`. 733.3 job-minutes, 48.89
+core-hours; programme total about 61.4 core-hours (ceiling 100). Returned files committed under `bound-s2/` for the
+auditor's check before `decide.R decide` runs.
