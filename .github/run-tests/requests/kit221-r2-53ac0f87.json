@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-221 R2: fix 4654fd60 (tip 53ac0f87) against tests-only e80e558d, 45 files, check, head g1.R; expected 36.0 ceiling 55.2 core-hours",
+  "label": "KIT-221 R2 head 53ac0f87 vs base e80e558d",
+  "package_commit": "53ac0f870bb4a676846254beba608f1beb92bb1b",
+  "base_commit": "e80e558d68709b75556b02a6b8e383652dfa3a30",
+  "tools_ref": "",
+  "tests": ["test-dia-limpa-ruv-rules.R","test-enrichment-significance.R","test-gui-entry-proteomics.R","test-kit128-no-biological-replication-prot.R","test-kit129-run-path.R","test-kit174-ruv-grouping.R","test-kit200-prot-da-no-value-proteins.R","test-kit201-treat-moderation.R","test-kit204-prot-da-not-tested.R","test-kit205-enrichment-background.R","test-kit208-gprofiler-identifiers.R","test-kit212-da-current.R","test-kit215-not-tested-lists.R","test-kit218-da-wrapper-tail.R","test-kit220-da-threshold-consumers.R","test-kit221-da-several-comparisons.R","test-kit243-summary-current-outputs.R","test-kit248-correlation-skip-record.R","test-kit249-prot-da-qvalue-fallback.R","test-lipid-07-s4-da-plot-methods.R","test-lipid-08-s4-da-analysis-methods.R","test-metab-02k-da-numsig-barplot-characterization.R","test-metab-02p-da-analysis-characterization.R","test-metab-s4-da-methods-direct-shared.R","test-module-ci-prot-da.R","test-omic-da-module.R","test-omics-da-list-routing.R","test-prot-07b-da-handlers-compat.R","test-prot-07c-da-results-characterization.R","test-prot-07c-da-results-output-shared.R","test-prot-07-da-analysis.R","test-prot-07d-da-model-stats-shared.R","test-prot-annotation-uniprot-empty.R","test-prot-da-compat-shared.R","test-prot-design-log2.R","test-protein-da-golden-master.R","test-prot-ruv-factors-in-model.R","test-prot-s4-norm-methods-direct-shared.R","test-reference-mapping-enrichment.R","test-workflow-analysis-record.R","test-workflow-figure-paths.R","test-workflow-memory-mechanism-member.R","test-workflow-operations.R","test-workflow-saved-da.R","test-workflow-saved-installed.R"],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {"test-gui-entry-proteomics.R": 50},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-221/g1.R",
+      "args": ["kit221-g1", "head"],
+      "env": {},
+      "out": "kit221-g1",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
