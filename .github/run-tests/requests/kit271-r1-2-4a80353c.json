@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-271 R1 instrument re-run 1 of 3 (VAL-54): commit 4a80353c on kit-271 repairs the export helper of the test file (run 45709521655: the native export failed in the fixture's mechanics, 'saved table changed during read', no result judged); no expected value changes; ceiling 45 job-minutes; decides A1",
+  "label": "KIT-271 R1-2 instrument repair 4a80353c",
+  "package_commit": "4a80353ccce5452ed8096303901646ed92a1faee",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit271-limpa-table-name.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
