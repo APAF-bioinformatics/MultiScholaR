@@ -1,0 +1,13 @@
+file: test-kit200-prot-da-no-value-proteins.R
+test: KIT-200 T9: the scripted wrapper daAnalysisWrapperFunction completes on T2's object
+kind: failure
+message:
+  Expected T9 error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\nCaused by error in `purrr::map()`:\ni In index: 1.\ni With name: B_vs_A=groupB-groupA.\nCaused by error in `rownames_to_column()`:\n! is.data.frame(df) is not TRUE')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit200Completed(run, "T9 error") at test-kit200-prot-da-no-value-proteins.R:682:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit200-prot-da-no-value-proteins.R:69:5
+
