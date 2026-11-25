@@ -1,0 +1,8 @@
+run_id	commit	purpose	minutes	result
+45594073040	56ad3187	G0-1 prot_lfq (main, b to h)	32.2	78 of 78 predictions held
+45594077082	56ad3187	G0-2 prot_dia_limpa (main, e)	12.2	18 of 18 held
+45594081675	56ad3187	G0-3 lipid, metab, trx	24.0	130 of 140 held; observations 1 to 3; 4 trx group keys not observed (probe defect)
+45594085728	56ad3187	G0-4 browser prot_lfq	17.5	instrument defect: timed out waiting for the normalisation status (Skip pressed with no wait)
+45597423706	19caa137	G0-4 VAL-54 rerun 1 of 3 (waits by head state, export notice)	18.2	no observation: Skip had no effect for 300 s, head stayed normalized
+45598375255	dbef1d85	G0-3 trx probe VAL-54 rerun 1 of 1 (design read as its component)	11.7	no error; trx moved-sample groups still absent: not observed
+45600644799	633feb90	G0-4 VAL-54 rerun 2 of 3 (Skip waits for the completion notice)	18.7	no observation: completion notice never shown in 300 s; stopped (cause not established)

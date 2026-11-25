@@ -1,0 +1,7 @@
+key	value
+not_cran	true
+browser_dependencies	TRUE
+chrome	/usr/bin/google-chrome
+error	Timed out waiting for JavaScript script to return `true` ℹ `timeout`: 300000 ℹ `script`: Array.from(document.querySelectorAll('.shiny-notification')).some(function(n){return (n.textContent||'').indexOf('Normalization completed')!==-1;})
+outcome	error
+seconds	392.1

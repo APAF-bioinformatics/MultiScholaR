@@ -1,6 +1,6 @@
 # KIT-247 outcome: gate G0 (observation of the base)
 
-**State: G0 judged; stopped as the ticket requires.** R1 and all package code wait for the owner's OD-1, OD-2 and
+**State: stopped at G0-4 (the browser lane): after the first run and two VAL-54 instrument reruns the lane never reached the design tab, and the cause is not established as an instrument defect, so by the brief it is treated as a result and reported.** G0-1, G0-2 and G0-3 are judged. R1 and all package code wait for the owner's OD-1, OD-2 and
 OD-4 (stop rule 6). E-5 (should the Summary's Save refuse when the DA's contrasts differ from the bus's?) stays open
 for the coordinator. No package code was changed: `git diff --name-only 16112917 <each commit below>` lists only this
 folder.
@@ -48,9 +48,10 @@ folder.
 | G0-1 prot_lfq (main, b to h) | 45594073040 | 78 / 0 / 0 |
 | G0-2 prot_dia_limpa (main, e) | 45594077082 | 18 / 0 / 0 |
 | G0-3 lipid, metab, trx | 45594081675 | 130 / 10 / 0 (6 observations below; 4 trx keys with no value: probe defect) |
-| G0-3 trx probe rerun | G03T_RUN | G03T_RESULT |
+| G0-3 trx probe rerun (VAL-54, 1 of 1) | 45598375255 | no error; the four trx group keys still `<absent>`: not observed (rerun budget spent) |
 | G0-4 browser | 45594085728 | instrument defect, nothing observed |
-| G0-4 browser rerun 1 | G04B_RUN | G04B_RESULT |
+| G0-4 browser rerun 1 (VAL-54) | 45597423706 | no observation: after Run the head was `normalized` (status pending); Skip then had no effect for 300 s (head stayed `normalized`, no notification) |
+| G0-4 browser rerun 2 (VAL-54) | 45600644799 | no observation: the head reached `normalized`, but the run's completion notice ('Normalization completed') never appeared within 300 s |
 
 ### What the base does (OBSERVED, every route run)
 
@@ -121,15 +122,22 @@ folder.
   (INFERRED; no application log was captured). These e2e lanes had only been skipped on runners before.
 - Rerun 1 of 3 (VAL-54; 19caa137): each press waited for the head state (`normalized`/`ruv_corrected`, then
   `correlation_filtered`) and the export for its notice; the status recorded after the run and after the Skip.
-  G04B_TEXT
+- Rerun 2 of 3 (633feb90): Skip waited for the run's completion notice; that notice never appeared in 300 s although
+  the head was `normalized`.
+- What is known (OBSERVED): in the browser on a runner, the label-free normalisation (RUV skipped) commits
+  `normalized`, but neither a completion notice nor a working Skip follows within 300 s; the stepper's normalisation
+  status stays pending. In process (G0-1, testServer) the same lane completes and shows "Normalization completed (RUV
+  skipped)!". The browser's application log was not captured, so whether the normalisation never finishes in the
+  managed browser session (an application observation, as KIT-233 A5 saw the state committed about 80 s before the
+  step ended) or the driver misses its end (an instrument defect) is not established. Not sent: rerun 3.
 
 ## Stop rules
 
 - **1** (both readings wrong for a route): not triggered. Path 1 read the new design's table with no QC on every
   route that runs it (label-free, lipid, metab, trx; limpa refuses); path 2 returned the previous design's table on
   every route, and the next run's source carried the old group where observed (label-free, limpa, lipid, metab;
-  trx: G03T_STOP1).
-- **2** (the browser cannot reach Save Design after a normalisation): G04B_STOP2
+  trx: the groups were not observed; Reset returned `trx_reset`, the run read it, path 1 read the new `trx_raw_data_s4`).
+- **2** (the browser cannot reach Save Design after a normalisation): NOT DECIDED. The browser lane never completed a normalisation, so it never reached the design tab; this neither shows nor rules out that Save Design is reachable. By reading (2.1) nothing disables the tab or the button.
 - **5** (an unchanged re-save gives different table identities): not triggered on any omic; item 1 compares the
   store's identities as written.
 
@@ -138,5 +146,6 @@ folder.
 - TMT and DIA (iq) (no G0 lane; the ticket reads them as label-free and as refused on class).
 - Import Existing Design as the re-save (E7).
 - The cause of label-free (f0)'s "saved with warnings".
+- G0-4 (the browser click and the stepper after a re-save); trx's moved-sample groups (G0-3).
 - Real data; Windows; the integration tab's reading of a stale input.
 - The DA outcome for a batch- or factor-only change (E22; by reading).

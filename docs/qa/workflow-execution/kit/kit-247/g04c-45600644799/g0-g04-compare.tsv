@@ -1,0 +1,9 @@
+key	predicted	pattern	observed	held
+button.visible	after the normalisation the design tab shows Save Design	^TRUE$	<not observed>	NA
+button.enabled	and it is enabled (nothing disables it, 2.1)	^TRUE$	<not observed>	NA
+after.head	the click commits the design state again: the head is the design state	^protein_s4_initial$	<not observed>	NA
+after.commits_increased	a new state record is written to the store	^TRUE$	<not observed>	NA
+after.history_unchanged	the later states stay in the active history	^TRUE$	<not observed>	NA
+after.status_unchanged_except_design	the stepper does not change (QC and normalisation still complete)	^TRUE$	<not observed>	NA
+after.status	the stepper says Quality Control complete	quality_control=complete	<not observed>	NA
+after.notes	the success text	saved successfully	<not observed>	NA
