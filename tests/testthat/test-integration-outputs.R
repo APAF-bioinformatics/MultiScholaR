@@ -93,7 +93,7 @@ test_that("KIT-152: the Results parameters gain the outputs' settings, each with
         figure_format = "choice", figure_width = "number", figure_height = "number", figure_dpi = "whole",
         feature_values = "choice", heatmap_scaling = "choice", umap = "flag", umap_n_neighbors = "whole", tsne = "flag",
         tsne_perplexity = "number", map_seed = "whole"))
-    expect_true(all(grepl("provisional", integrationResultsParameterTable()$settled_by)))
+    expect_true(all(grepl("^VAL-221 \\(decided", integrationResultsParameterTable()$settled_by)))
     factors <- paste0("Factor", 1:5)
     p <- integrationResolveResultsParameters(list(), factors)
     expect_identical(p[c("feature_values", "heatmap_scaling", "umap", "umap_n_neighbors", "tsne", "tsne_perplexity", "map_seed")],

@@ -4,6 +4,18 @@
 
 ### New features
 
+ * Multi-omics integration (MOFA2) is now part of the application: the Integration tile on the home page opens six tabs
+   (Import, Sample Matching, Model, Results, Enrichment, Record) that combine two or more omics processed in the same
+   project and saved for integration at their Summary tab. The installers include MOFA2 and the Python it uses. From R,
+   the Model tab needs the Bioconductor package MOFA2, the R package reticulate and a Python with the module mofapy2
+   (0.7.3 is the version tested); without them it says which one is missing and how to install it. Without
+   RETICULATE_PYTHON, the first software check lets reticulate download and set up a Python of its own (about 50 MB,
+   observed with reticulate 1.46.0), and a mofapy2 installed into the system Python is then not used. The Results tab
+   now shows where the reported model ranks among the training seeds by the final value of MOFA2's training objective
+   (the ELBO), how far it is below the highest and the range over the seeds. The test setting
+   `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
+   hides the tabs. The Enrichment tab marks its eight defaults not yet confirmed (KIT-240).
+
  * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
    analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
    could not find with 20 and 60 samples; how missing values are treated; which data sets averaged several runs per
@@ -97,6 +109,30 @@
    threshold the samples kept were already the same. Pressing 'Run Normalization & RUV' before DPC Quantification now
    refuses with a message saying which Quality Control steps to apply first; before, it was accepted and the
    correlation filter and RUV covariates then failed with messages that did not say why (KIT-244).
+
+ * 'Push to GitHub' (Summary tab, every omic) is no longer offered in the installed application, where it could not
+   work: it needs a git program, which the installed application does not have on Windows, and a
+   `<project id>.Rproj` file, which the application never creates. The Summary tab says what to do instead, and that
+   the project's scripts folder holds copies of the input files and analysis data. In R (outside the installed
+   application) the panel and `pushProjectToGithub()` are unchanged apart from the fix below (KIT-245).
+ * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
+   digits, '.', '-' and '_' only, not ending in '.', not a Windows device name); an ID that climbed out of R's
+   temporary folder (such as `../../../../Documents`) could make it delete that folder.
+   It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
+   repository on GitHub, never writes the token to a file (git receives it only for the push), and removes its
+   temporary copy whatever the outcome. A failure GitHub reports after the creation still leaves the new repository
+   empty, and the message names it. The push sends the omic's scripts folder `scripts/<omic>/` as it is: the design
+   and contrast tables, `study_parameters.txt`, `analysis_record.json` and any exported session state; for
+   lipidomics, metabolomics and transcriptomics `import_sources/` (exact copies of the input files) and the imported
+   tables; for proteomics the session archive (`filtered_session_*.msdia.tar`), its `.RDS` files,
+   `peptide-checkpoints/` and `reference_mapping/inputs/`. The repository is created private in the GitHub
+   organisation you name; private means visible to that organisation's owners and to the members its settings allow
+   (KIT-245).
+ * Design builder, every omic: the technical-replicate list is emptied after each successful 'Assign Technical
+   Replicates'. Before, in every earlier release with the design builder, it kept the runs just marked; adding the
+   next sample's runs and pressing Assign made two biological samples one, with no warning. To add runs to a sample
+   already marked, select all of its runs again together with the new ones; runs selected on their own become a
+   separate sample. A refused Assign keeps the selection. (KIT-256)
 
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
@@ -660,9 +696,12 @@
    which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
    (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
    are in `?integrationTrainModel` (KIT-234).
- * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
-   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several, it asks in the R console
-   when R runs interactively, and otherwise stops with an error.
+ * 'Push to GitHub' is no longer offered in the installed application (KIT-245). In R, the button and
+   `pushProjectToGithub()` need the git program and the project's `<project id>.Rproj` file and use the one R
+   Markdown file in the project folder; with no R Markdown file they say so, and with several (for example after
+   reports of two omics in one project) they ask in the R console when R runs interactively and otherwise stop with an
+   error. They send the omic's scripts folder, which holds copies of the input files (lipidomics, metabolomics,
+   transcriptomics) or the saved session with its data (proteomics).
 
 
 ### Scientific changes
