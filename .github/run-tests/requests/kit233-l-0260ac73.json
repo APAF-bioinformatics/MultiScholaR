@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-233 run L, instrument rerun 2 of 3 (VAL-54: rerun 1 45525410012 showed driver mechanics faults at S2 dialog, S6.1 signal, S8.2 press); lifecycle L-0 to L-5; ceiling 60 job-minutes",
+  "label": "KIT-233 L rerun 2 on kit-233-journey 0260ac73 (commit under test 67569959)",
+  "package_commit": "0260ac735c3e285ec60ce03b3b014f8f31c5a790",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-233/journey.R",
+      "args": [
+        "lifecycle",
+        "6756995954684128d617ab92dab983bdcaa05394"
+      ],
+      "out": "k233-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log|html|md)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
