@@ -190,7 +190,8 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     expect_identical(unname(status[c("input_manifests", "views")]), c("input", "input"))
     expect_identical(status[["precision"]], "decided")
     expect_identical(status[["input_matrix"]], "decided")
-    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates")]), rep("provisional_default", 3L))
+    # KIT-240 (VAL-221 (4)): the defaults that were provisional are decided.
+    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates")]), rep("decided", 3L))
     # KIT-151: decided by the user (INT-12, INT-15, INT-24).
     expect_identical(unname(status[c("feature_selection", "convergence_mode", "scaling", "scale_views")]), rep("decided", 4L))
     # The model: versions, checksum, training.
@@ -206,7 +207,7 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     results <- block$results
     expect_identical(results$label, "integration-results")
     expect_identical(vapply(results$parameters, `[[`, "", "name"), names(integrationResultsParameterSpec()))
-    expect_identical(unique(vapply(results$parameters, `[[`, "", "status")), "provisional_default")
+    expect_identical(unique(vapply(results$parameters, `[[`, "", "status")), "decided")
     saved <- shiny::isolate(bus$integration_results)
     expect_identical(results$tables$file, saved$tables)
     expect_identical(results$tables$sha256, unname(vapply(file.path(saved$tables_dir, saved$tables), intRecSha, "")))
@@ -253,10 +254,11 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         sprintf(t[["methods_seeds"]], 5L, 20261119L, 20261123L, 20261119L,
             paste(sprintf("Factor%d 1.000", 1:5), collapse = ", ")),
         sprintf(t[["methods_association"]], "Benjamini-Hochberg"),
-        t[["methods_claim_none"]], t[["methods_claim_uncorrected"]],
-        "Settings that were provisional defaults at the time of the analysis: ", "Number of factors (5)")) {
+        t[["methods_claim_none"]], t[["methods_claim_uncorrected"]])) {
         expect_true(grepl(fragment, methods, fixed = TRUE), info = fragment)
     }
+    # KIT-240 (VAL-221 (4)): no default awaits the owner's decision, so no setting is listed as one.
+    expect_false(grepl(sub("%s.*$", "", t[["methods_provisional"]]), methods, fixed = TRUE))
     # Nothing hard-coded: the versions are the record's, and precision is decided, so not listed as provisional.
     expect_false(grepl("1.22.0", methods, fixed = TRUE))
     expect_false(grepl("Numeric precision (", methods, fixed = TRUE))
@@ -307,8 +309,9 @@ test_that("KIT-142: the record, workbook, study parameters and report are saved 
     expect_identical(readLines(saved$files[[4L]])[[2L]], saved$methods)
     expect_true(all(INTEGRATION_RECORD_SHEETS %in% openxlsx::getSheetNames(saved$files[[2L]])))
     settings <- openxlsx::read.xlsx(saved$files[[2L]], sheet = "integration_settings", check.names = FALSE)
-    expect_true(all(c("provisional default", "decided", "set by the user", "from the data") %in%
-        settings[[integrationRecordTexts()[["col_status"]]]]))
+    # KIT-240 (VAL-221 (4)): no default awaits the owner's decision.
+    expect_true(all(c("decided", "set by the user", "from the data") %in% settings[[integrationRecordTexts()[["col_status"]]]]))
+    expect_false("provisional default" %in% settings[[integrationRecordTexts()[["col_status"]]]])
     # A report the renderer did not write stops the save by name; nothing is lost silently.
     nothing <- function(record_path, output_dir, format) invisible(NULL)
     directory <- file.path(project$root, "again")

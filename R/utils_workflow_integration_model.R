@@ -267,25 +267,26 @@ INTEGRATION_MODEL_OPERATION <- "integration_mofa_model"
 # Decision D7 (KIT-060): below this many biological samples measured in every view the model warns; it does not refuse.
 INTEGRATION_FEW_SAMPLES <- 16L
 
-#' The model's method parameters with their provisional defaults: the one table the user's integration workbook
-#' settles (`settled_by`). The provisional values are the ones the MOFA2 smoke lane trained with on the tier-1 corpus
-#' (run 44423980807: MOFA2 1.22.0, mofapy2 0.7.3; every other MOFA2 option at its default), and the decisions of
-#' 2026-11-19 (INT-2, INT-3) and KIT-060 D4.
+#' The model's method parameters with their defaults, each with the decision that settled it (`settled_by`: the
+#' methods-ledger row). The first values were the ones the MOFA2 smoke lane trained with on the tier-1 corpus (run
+#' 44423980807: MOFA2 1.22.0, mofapy2 0.7.3; every other MOFA2 option at its default); KIT-240: those not decided
+#' earlier were kept by the owner's decision VAL-221 (2026-11-25), the values unchanged.
 #' @return Named list by parameter: `default`, `choices` (NULL for a number or a flag), `settled_by`.
 #' @noRd
 integrationMofaParameterSpec <- function() {
-    workbook <- "workbook (provisional)"
+    # KIT-240 (VAL-221 (4)): the values kept, the decision named.
+    kept <- "VAL-221 (decided 2026-11-25: %s)"
     list(
         # KIT-153 (INT-23, user 2026-11-21): each data set's normalised matrix before RUV by default; the RUV-corrected
         # matrix selectable where every data set in the model has one.
         input_matrix = list(default = "uncorrected", choices = c("uncorrected", "ruv_corrected"),
             settled_by = "INT-23 (decided 2026-11-21: the normalised matrix before RUV; the RUV-corrected matrix selectable)"),
         technical_replicates = list(default = "average", choices = "average",
-            settled_by = "INT-2 (averaged per biological sample); the workbook may override"),
+            settled_by = "INT-2 (decided 2026-11-19: averaged per biological sample)"),
         internal_standards = list(default = "drop", choices = c("drop", "keep"),
-            settled_by = "INT-3 (dropped); the workbook may override"),
+            settled_by = "INT-3 (decided 2026-11-19: dropped)"),
         missing_samples = list(default = "keep_missing", choices = c("keep_missing", "drop_incomplete"),
-            settled_by = "KIT-060 D4 (kept as missing in that view); the workbook may override"),
+            settled_by = "INT-010 (KIT-060 D4, decided 2026-11-17: kept as missing in that data set)"),
         # INT-12 (user, 2026-11-21): decided. The features whose variance lies furthest above the data set's fitted
         # mean-variance trend (`integrationFeatureSelectionScore`), 1,000 per data set (a smaller data set keeps all),
         # among the features observed in at least half the biological samples; raw variance and none stay selectable.
@@ -302,19 +303,22 @@ integrationMofaParameterSpec <- function() {
             settled_by = "INT-24 (decided 2026-11-21: each selected feature scaled to mean 0 and standard deviation 1)"),
         scale_views = list(default = TRUE, choices = NULL,
             settled_by = "INT-24 (decided 2026-11-21: each data set divided by its overall standard deviation)"),
-        center_groups = list(default = TRUE, choices = NULL, settled_by = workbook),
-        num_factors = list(default = 5L, choices = NULL, settled_by = workbook),
+        # MOFA2's group centring: the app passes no sample groups (`create_mofa(views)`), so it centres each feature over
+        # all samples.
+        center_groups = list(default = TRUE, choices = NULL,
+            settled_by = sprintf(kept, "TRUE kept; with one sample group, each feature is centred over all samples")),
+        num_factors = list(default = 5L, choices = NULL, settled_by = sprintf(kept, "5 factors")),
         # INT-15 (user, 2026-11-21): decided. Training stops by its convergence rule well within 10,000 rounds (none of
         # the 1,020 slow fits of KIT-151 run b passed 3,486); whether it stopped by the rule or at the limit is kept.
         convergence_mode = list(default = "slow", choices = c("fast", "medium", "slow"),
             settled_by = "INT-15 (decided 2026-11-21: slow)"),
         maxiter = list(default = 10000L, choices = NULL,
             settled_by = "INT-15 (decided 2026-11-21: a limit training stops well within)"),
-        seed = list(default = 20261119L, choices = NULL, settled_by = workbook),
+        seed = list(default = 20261119L, choices = NULL, settled_by = sprintf(kept, "20261119, the seed of the reported model")),
         # INT-14 (user, 2026-11-21): the model is trained from several seeds and each factor's agreement across them
-        # reported (`integrationSeedStability`); the reported model is the declared seed's. The number is provisional.
+        # reported (`integrationSeedStability`); the reported model is the declared seed's. VAL-221 (2): five seeds.
         training_seeds = list(default = 5L, choices = NULL,
-            settled_by = "INT-14 (several seeds decided 2026-11-21); the number is provisional, awaiting the user"),
+            settled_by = paste("INT-14 (several seeds, 2026-11-21);", sprintf(kept, "5 seeds, the declared seed and the next four"))),
         # INT-6 (user, 2026-11-19): decided, not provisional. Double precision (KIT-062 diagnosis run 44462198417:
         # MOFA2's float32 default followed one of two training paths depending on the CPU model and thread count);
         # single precision uses less memory for very large studies, and its results differ more between computers.
@@ -327,7 +331,8 @@ integrationMofaParameterSpec <- function() {
                 "computer and software, not guaranteed across processors)")))
 }
 
-#' The provisional-parameter table (one row per method parameter), for the ticket, the ledger and the GUI.
+#' The method-parameter table (one row per method parameter, with the decision behind each default), for the ticket,
+#' the ledger and the GUI.
 #' @return `data.frame(parameter, default, choices, settled_by)`.
 #' @noRd
 integrationMofaParameterTable <- function() {
@@ -1103,14 +1108,15 @@ integrationMofaOptions <- function(parameters) {
 #' Whether MOFA2 can train here (KIT-062; D6: Python optional and probed): the R packages MOFA2 and reticulate, and a
 #' Python reticulate reaches with the module `mofapy2` (the bundle sets RETICULATE_PYTHON). The package loads without
 #' either (both are in Suggests).
-#' @return `list(available, reason)`.
+#' @return `list(available, reason)`; KIT-240: when not available, also `missing` (`"MOFA2"`, `"reticulate"` or
+#'   `"mofapy2"`), the piece the Model tab names.
 #' @noRd
 integrationMofaCapability <- function() {
     if (!requireNamespace("MOFA2", quietly = TRUE)) {
-        return(list(available = FALSE, reason = "the R package MOFA2 is not installed"))
+        return(list(available = FALSE, reason = "the R package MOFA2 is not installed", missing = "MOFA2"))
     }
     if (!requireNamespace("reticulate", quietly = TRUE)) {
-        return(list(available = FALSE, reason = "the R package reticulate is not installed"))
+        return(list(available = FALSE, reason = "the R package reticulate is not installed", missing = "reticulate"))
     }
     # KIT-151 (INT-17): the maths library is pinned before anything starts Python in this process.
     integrationPinMathsLibrary()
@@ -1118,7 +1124,8 @@ integrationMofaCapability <- function() {
     if (!isTRUE(found)) {
         python <- Sys.getenv("RETICULATE_PYTHON", unset = "")
         return(list(available = FALSE, reason = sprintf("no Python with the module mofapy2 is available to reticulate%s",
-            if (nzchar(python)) sprintf(" (RETICULATE_PYTHON is %s)", python) else " (RETICULATE_PYTHON is not set)")))
+            if (nzchar(python)) sprintf(" (RETICULATE_PYTHON is %s)", python) else " (RETICULATE_PYTHON is not set)"),
+            missing = "mofapy2"))
     }
     list(available = TRUE, reason = NA_character_)
 }
@@ -1276,9 +1283,11 @@ integrationTrainMofa <- function(views, options) {
             "integration_mofa_unavailable")
     }
     stats_slot <- methods::slot(model, "training_stats")
-    # KIT-151 (INT-14): a further seed's model keeps only its factors and its training length.
+    # KIT-151 (INT-14): a further seed's model keeps only its factors and its training length; KIT-240 (VAL-221 (1)): and
+    # its final ELBO.
     if (isTRUE(options$factors_only)) {
-        return(list(factors = MOFA2::get_factors(model)[[1L]], iterations = length(stats_slot$time)))
+        return(list(factors = MOFA2::get_factors(model)[[1L]], iterations = length(stats_slot$time),
+            elbo_last = integrationLastFinite(stats_slot$elbo)))
     }
     # KIT-148: MOFA2's overall-level check, placed where its loading gave it (before the correlated-factors check, the
     # last of its checks).
@@ -1509,11 +1518,13 @@ integrationModelFromAligned <- function(aligned, resolved, parameters, store) {
     options <- integrationMofaOptions(resolved)
     fit <- trainer(aligned$views, options)
     reclaimWorkflowMemory()
-    # KIT-151 (INT-14): the other seeds, one model at a time; of each only its factors and its training length are kept.
+    # KIT-151 (INT-14): the other seeds, one model at a time; of each only its factors and its training length are kept,
+    # KIT-240 (VAL-221 (1)): and its final ELBO (NA from a trainer that gives none).
     others <- list()
     for (seed in integrationTrainingSeeds(resolved)[-1L]) {
         other <- trainer(aligned$views, utils::modifyList(options, list(seed = seed, factors_only = TRUE)))
-        others[[length(others) + 1L]] <- list(seed = seed, factors = other$factors, iterations = as.integer(other$iterations))
+        others[[length(others) + 1L]] <- list(seed = seed, factors = other$factors, iterations = as.integer(other$iterations),
+            elbo_last = as.numeric(other$elbo_last %||% NA_real_))
         other <- NULL
         reclaimWorkflowMemory()
     }
@@ -1560,10 +1571,12 @@ integrationMatchFactors <- function(reported, other) {
 #' factors paired with each other seed's (`integrationMatchFactors`), and per factor the median and the lowest absolute
 #' correlation over the other seeds.
 #' @param fit The reported model (`integrationTrainMofa()`'s form).
-#' @param others Per other seed `list(seed, factors, iterations)`.
+#' @param others Per other seed `list(seed, factors, iterations, elbo_last)`.
 #' @param parameters Resolved parameters.
-#' @return `list(rule, seeds, models (seed, iterations, stopped_by, factors), agreement (factor, seed, matched_factor,
-#'   abs_r), stability (factor, other_models, agreement_median, agreement_lowest))`.
+#' @return `list(rule, seeds, models (seed, iterations, factors, stopped_by, elbo_last), agreement (factor, seed,
+#'   matched_factor, abs_r), stability (factor, other_models, agreement_median, agreement_lowest), elbo_rank)`; KIT-240
+#'   (VAL-221 (1)): `elbo_last` each model's final ELBO, `elbo_rank` the reported model's rank by it
+#'   (`integrationElboRank`). The stability table describes only the reported model's factors.
 #' @noRd
 integrationSeedStability <- function(fit, others, parameters) {
     reported <- fit$factors
@@ -1573,6 +1586,8 @@ integrationSeedStability <- function(fit, others, parameters) {
         factors = as.integer(c(ncol(reported), vapply(others, function(o) ncol(o$factors), integer(1)))),
         stringsAsFactors = FALSE)
     models$stopped_by <- vapply(models$iterations, integrationStoppedBy, character(1), maxiter = parameters$maxiter)
+    models$elbo_last <- c(integrationLastFinite(fit$elbo),
+        vapply(others, function(o) as.numeric(o$elbo_last %||% NA_real_), numeric(1)))
     agreement <- do.call(rbind, c(list(data.frame(factor = character(), seed = integer(), matched_factor = character(),
         abs_r = numeric(), stringsAsFactors = FALSE)), lapply(others, function(o) {
         m <- integrationMatchFactors(reported, o$factors)
@@ -1587,9 +1602,42 @@ integrationSeedStability <- function(fit, others, parameters) {
         agreement_lowest = vapply(factors, function(f) if (length(others)) min(agreement$abs_r[agreement$factor == f])
             else NA_real_, numeric(1), USE.NAMES = FALSE),
         stringsAsFactors = FALSE)
-    list(rule = "the declared seed, then the next whole numbers", seeds = seeds, models = models, agreement = agreement,
+    out <- list(rule = "the declared seed, then the next whole numbers", seeds = seeds, models = models, agreement = agreement,
         stability = stability)
+    # Absent (not NULL-valued) when the rank is not known, as in a product trained before KIT-240.
+    out$elbo_rank <- integrationElboRank(models$elbo_last)
+    out
 }
+
+#' The last finite value of an ELBO trace (KIT-240); NA when there is none.
+#' @param trace The trace (MOFA2's `training_stats$elbo`).
+#' @noRd
+integrationLastFinite <- function(trace) {
+    trace <- as.numeric(trace)
+    trace <- trace[is.finite(trace)]
+    if (length(trace)) trace[[length(trace)]] else NA_real_
+}
+
+#' The reported model's rank among the seeds by final ELBO (KIT-240; VAL-221 (1)). The ELBO is MOFA2's training
+#' objective, a lower bound on the model evidence; higher is better. All seeds train one model on the same data with the
+#' same options, so their values are comparable.
+#' @param elbo_last The final ELBO of each model, the reported (declared seed's) model first.
+#' @return `list(rank, of, below_best, range, relative_spread)`: the rank (1 = highest; ties take the best rank), the
+#'   number of models, the highest value less the reported model's and the highest less the lowest (ELBO units), and the
+#'   range over the absolute highest value (kept in the product and the record, not shown); NULL with fewer than two
+#'   models or a missing value.
+#' @noRd
+integrationElboRank <- function(elbo_last) {
+    if (length(elbo_last) < 2L || anyNA(elbo_last)) return(NULL)
+    best <- max(elbo_last)
+    list(rank = as.integer(sum(elbo_last > elbo_last[[1L]]) + 1L), of = length(elbo_last), below_best = best - elbo_last[[1L]],
+        range = best - min(elbo_last), relative_spread = (best - min(elbo_last)) / abs(best))
+}
+
+#' An ELBO difference as the Results tab and the methods paragraph write it (KIT-240): two decimals, in ELBO units.
+#' @param x A difference of final ELBOs.
+#' @noRd
+integrationElboText <- function(x) sprintf("%.2f", as.numeric(x))
 
 #' How training stopped (KIT-151; INT-15): `convergence_rule` when it took fewer rounds than the limit (MOFA2's rule
 #' stopped it), `round_limit` when it reached the limit.

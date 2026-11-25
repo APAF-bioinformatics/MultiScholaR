@@ -29,8 +29,8 @@ Nothing is downloaded when the application starts; everything it needs is inside
 ## 2. Switch on the test features
 
 The test setting is the environment variable `MULTISCHOLAR_TEST_FEATURES=1`. When it is on, the window title ends with
-**(test features on)**, the Integration tile on the home page can be clicked, and each omic's Normalisation tab shows
-the RUV design choices. Any other value, or no value, means off.
+**(test features on)** and each omic's Normalisation tab shows the RUV design choices. The Integration tile is on for
+everyone and needs no setting. Any other value, or no value, means off.
 
 - **Linux, once:** start from a terminal: `MULTISCHOLAR_TEST_FEATURES=1 ~/.local/share/multischolar/<version>/multischolar`
 - **Linux, always:** add the line `export MULTISCHOLAR_TEST_FEATURES=1` to `~/.profile`, log out and in again, then

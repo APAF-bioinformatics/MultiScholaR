@@ -4,6 +4,17 @@
 
 ### New features
 
+ * Multi-omics integration (MOFA2) is now part of the application: the Integration tile on the home page opens six tabs
+   (Import, Sample Matching, Model, Results, Enrichment, Record) that combine two or more omics processed in the same
+   project and saved for integration at their Summary tab. The installers include MOFA2 and the Python it uses. From R,
+   the Model tab needs the Bioconductor package MOFA2, the R package reticulate and a Python with the module mofapy2
+   (0.7.3 is the version tested); without them it says which one is missing and how to install it. Without
+   RETICULATE_PYTHON, reticulate may set up a Python of its own, and a mofapy2 installed into the system Python is then
+   not used. The Results tab now shows where the reported model ranks among the training seeds by the final value of
+   MOFA2's training objective (the ELBO), how far it is below the highest and the range over the seeds. The test setting
+   `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
+   hides the tabs (KIT-240). Draft wording, awaiting the owner (VAL-41).
+
  * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
    `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
    be called but are not yet validated): `mapStrainToReference()` maps a

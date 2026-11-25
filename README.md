@@ -20,7 +20,7 @@
 - **Modular Architecture:** Flexible object-oriented design for easy tool integration.
 - **Reproducibility:** Standardized workflows with automated, publication-ready reporting.
 - **Advanced Quality Control:** Stringent measures including FDR thresholds, intensity filtering, and automated batch effect correction (RUV-IIIc).
-- **Multi-Omics Integration:** Seamlessly integrate Proteomics, Metabolomics, and Lipidomics data.
+- **Multi-Omics Integration:** combine proteomics, metabolomics, lipidomics and transcriptomics processed in one project (MOFA2).
 
 </td>
 </tr>
@@ -58,10 +58,10 @@ graph TD
         LipEnrich --> LipReport["Lipidomics Report"]
     end
 
-    %% Multi-Omics Integration (Union)
-    ProtDE -.-> Integration["Multi-Omics Integration<br/>(MOFA2 / MixOmics)"]
-    MetDE -.-> Integration
-    LipDE -.-> Integration
+    %% Multi-Omics Integration (the normalised matrices saved at each omic's Summary tab)
+    ProtQC -.-> Integration["Multi-Omics Integration<br/>(MOFA2)"]
+    MetQC -.-> Integration
+    LipQC -.-> Integration
 
     %% Styling
     style Integration fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
@@ -106,7 +106,7 @@ For **programmatic, reproducible analyses**, typically for advanced users or bat
 | **Proteomics**   | DIA-NN, TMT-PD, LFQ-Fragpipe | Peptide rollup (IQ), Auto-RUV-IIIc, Mixed Species support |
 | **Metabolomics** | LC-MS, GC-MS (MS-Dial)       | Intensity QC, Internal Standard Normalization             |
 | **Lipidomics**   | MS-Dial, LipidSearch         | Lipid-class specific analysis, QC & filtering             |
-| **Integration**  | MOFA2, MixOmics              | Multi-view factor analysis, Cross-omics enrichment        |
+| **Integration**  | MOFA2                        | Shared factors across two or more omics processed in the same project (the Integration tabs); for each data set, pathway enrichment of the features that follow a factor: STRING for protein and gene data sets (your own STRING key), KEGG and Reactome for metabolite and lipid data sets |
 
 ## Contributors
 

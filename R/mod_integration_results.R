@@ -194,7 +194,13 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             shiny::req(usable(value))
             seeds <- value$seeds
             if (length(seeds) < 2L) return(shiny::p(texts[["stability_single"]]))
-            shiny::p(sprintf(texts[["stability_intro"]], length(seeds), paste(seeds, collapse = ", "), seeds[[1L]]))
+            # KIT-240 (VAL-221 (1)): the model shown's rank by final ELBO (when known), and what the table leaves out.
+            rank <- value$elbo_rank
+            shiny::tagList(
+                shiny::p(sprintf(texts[["stability_intro"]], length(seeds), paste(seeds, collapse = ", "), seeds[[1L]])),
+                if (!is.null(rank)) shiny::p(sprintf(texts[["stability_elbo_rank"]], as.integer(rank$rank), as.integer(rank$of),
+                    integrationElboText(rank$below_best), integrationElboText(rank$range))),
+                shiny::p(texts[["stability_limit"]]))
         })
         output$stability_table <- shiny::renderTable({
             value <- results()

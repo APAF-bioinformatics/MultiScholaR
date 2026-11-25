@@ -12,16 +12,16 @@ arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) != 3L) stop("usage: Rscript --vanilla entry.R <port> <run folder> <shell pid>")
 
 # KIT-156: the test setting for data testing. MULTISCHOLAR_TEST_FEATURES=1 in the environment the application is started
-# from switches on, for this session only, the two pre-release features that are off by default: the RUV design panel
-# (option MultiScholaR.ruv_design_panel) and the integration module (MultiScholaR.integration_gui). The package's
-# defaults are unchanged; without the variable this file does exactly what it did before. The options live in this R
+# from switches on, for this session only, the pre-release feature that is off by default: the RUV design panel (option
+# MultiScholaR.ruv_design_panel). KIT-240: the integration module is on by the package's own default
+# (MultiScholaR.integration_gui), so every launcher shows it and this setting no longer touches it. The package's
+# defaults are unchanged; without the variable this file does exactly what it did before. The option lives in this R
 # process, so the application must run here: where the shell's probe chose the systemd worker (whose controller is a
-# separate unit that would not see them), the plain launcher is used instead, and the reason says so.
+# separate unit that would not see it), the plain launcher is used instead, and the reason says so.
 if (identical(Sys.getenv("MULTISCHOLAR_TEST_FEATURES"), "1")) {
-    options(MultiScholaR.ruv_design_panel = TRUE, MultiScholaR.integration_gui = TRUE)
+    options(MultiScholaR.ruv_design_panel = TRUE)
     cat(sprintf("MSR-TEST-FEATURES %s\n", jsonlite::toJSON(list(variable = "MULTISCHOLAR_TEST_FEATURES",
-        ruv_design_panel = getOption("MultiScholaR.ruv_design_panel"),
-        integration_gui = getOption("MultiScholaR.integration_gui")), auto_unbox = TRUE)))
+        ruv_design_panel = getOption("MultiScholaR.ruv_design_panel")), auto_unbox = TRUE)))
     probe <- tryCatch(jsonlite::fromJSON(Sys.getenv("MSR_LAUNCHER_PROBE"), simplifyVector = FALSE), error = function(error) NULL)
     if (is.list(probe) && identical(probe$launcher, "systemd")) {
         Sys.setenv(MSR_LAUNCHER_PROBE = jsonlite::toJSON(list(launcher = "process", reason = paste(

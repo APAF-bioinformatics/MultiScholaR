@@ -133,11 +133,12 @@ intResExpectPlanted <- function(results) {
     invisible(planted)
 }
 
-test_that("KIT-063: the provisional Results parameters are one table, resolved and checked", {
+test_that("KIT-063: the Results parameters are one table, resolved and checked", {
     spec <- integrationResultsParameterSpec()
     table <- integrationResultsParameterTable()
     expect_identical(table$parameter, names(spec))
-    expect_true(all(grepl("workbook", table$settled_by)))
+    # KIT-240 (VAL-221 (4)): every default kept by the owner's decision, which each row names.
+    expect_true(all(grepl("^VAL-221 \\(decided 2026-11-25", table$settled_by)))
     factors <- paste0("Factor", 1:5)
     p <- integrationResolveResultsParameters(list(), factors)
     expect_identical(p$factors_shown, factors)
