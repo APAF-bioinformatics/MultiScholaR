@@ -1,0 +1,260 @@
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E7 (E1 to E4 with RUV) lipid_ruv in process: a Skip after an Apply commits the run's result
+kind: failure
+message:
+  Expected `kit254Runs(q$fx)` to be identical to `kit254HiRuns[[name]]`.
+  Differences:
+  `actual`:   "B_2" "B_3"                                                      
+  `expected`: "A_1" "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2" "B_3" "B_5" "B_6"
+  
+  Apply(t_hi) precondition lipid_ruv
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E7 (E5, E6 with RUV) lipid_ruv in process: a re-applied filter reads the run's result
+kind: failure
+message:
+  Expected `kit254Runs(q$fx)` to be identical to `kit254HiRuns[[name]]`.
+  Differences:
+  `actual`:   "B_2" "B_3"                                                      
+  `expected`: "A_1" "A_2" "A_3" "A_4" "A_5" "A_6" "B_1" "B_2" "B_3" "B_5" "B_6"
+  
+  Apply(t_hi) precondition lipid_ruv
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `is.character(statement) && length(statement) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names A_5, left out of the design, failing in LCMS_Pos lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl(format(hi), statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names the threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: lipid the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E8 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `is.character(statement) && length(statement) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names A_5, left out of the design, failing in LCMS_Pos metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `isTRUE(grepl(format(hi), statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E8 statement names the threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 G1, G2, G3, E8: metab the first correlation action after a run, a higher threshold again, a scripted record
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E8 warning metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E15 the second statement with the recorded threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E15 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E16 the second statement with the recorded threshold lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: lipid a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E16 warning lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E15 the second statement with the recorded threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E15 warning metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E16 the second statement with the recorded threshold metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E15, E16, G12: metab a filter applied twice, and Apply, Skip, Apply, get the second statement only; no sample left, none
+kind: failure
+message:
+  Expected `out$warned` to be identical to `statement %||% "<none>"`.
+  Differences:
+  `actual`:           
+  `expected`: "<none>"
+  
+  E16 warning metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `out$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <workflow_replay_inputs/rlang_error/error/condition>, a list
+  `expected` is NULL
+  
+  E17 replay precondition lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `out$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <workflow_replay_inputs/rlang_error/error/condition>, a list
+  `expected` is NULL
+  
+  E17 replay precondition metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E18, G13: with a merged design too, both statements and both warnings; the replayed states are unchanged
+kind: failure
+message:
+  Expected `is.character(out$value$correlation_statement)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E18 the correlation statement beside it
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E18, G13: with a merged design too, both statements and both warnings; the replayed states are unchanged
+kind: failure
+message:
+  Expected `out$warned` to have length 1.
+  Actual length: 0.
+
