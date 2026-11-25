@@ -1,0 +1,12 @@
+id	route	step	kind	what	covered_by	source
+K1	prot_lfq	S9.d	3	the enrichment results download writes no archive on Windows (utils::zip needs a zip program the shell's environment has not; shiny answers 404)	KIT-241 (R0); expected in WL, before KIT-241 merges	KIT-237 2.2, 5.2 S9
+K2	prot_lfq	S10.5	3	the lane's expected_exports differential_abundance.xlsx, normalized_intensities.xlsx, summary_stats.xlsx: no code under R/ writes these names for proteomics (by reading, dd769671)	manifest label; for the coordinator	journey-route-lfq.R
+K3	lipid_canonical	S10.5	3	the lane's expected_exports lipid_summary.xlsx, differential_abundance.xlsx: not asserted by the lane's own test (by reading)	manifest label; for the coordinator	journey-route-omics.R
+K4	metab_lc	S10.5	3	the lane's expected_exports feature_summary.xlsx, differential_abundance.xlsx: not asserted by the lane's own test (by reading)	manifest label; for the coordinator	journey-route-omics.R
+K5	all	S10	D-1	runDIANativeTarR left its staging folder in TMP on Windows (run 44598642342); repaired in code by KIT-156 (R/utils_workflow_dia_sessions.R:45-48), never re-run on Windows	KIT-156	KIT-237 2.2
+K6	all	-	-	GUI-entry families: session_summary Windows path form (2 steps per lane) and norm_log text digest (8 steps) under testServer	R1 (test helper guiEntryMask)	KIT-237 2.2, 9
+K7	trx_screen	-	-	trx_screen GUI-entry lane: module session has been destroyed under testServer (its browser lane passes)	R2	KIT-237 2.2, 9
+K8	prot_tmt	-	-	W-C project root 94: enrichment_analysis-stringdb_plot text digests (21 failures, not classified)	R3	KIT-237 2.2, 9
+K9	all	-	-	Windows suite files workflow-native-session, workflow-execution, omic-da-module (+3), gui-entry-transcriptomics (unclassified)	R3	KIT-237 2.2, 9
+K10	DIA	-	-	DIA routes refuse on Windows by design (R/utils_workflow_dia_relational_rollup.R:11-13); a DIA control reached is a finding, not a route	owner's D4	KIT-237 2.2, stop rule 5
+K11	all	-	-	KIT-233 section 9 rows (known before its journey), merged or not at the commit under test	KIT-233 known.tsv	KIT-233 9

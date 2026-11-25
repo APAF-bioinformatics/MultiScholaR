@@ -1,0 +1,362 @@
+# KIT-237 (r1.2, OD-1 (b), owner 2026-11-25, VAL-225): the three further Windows routes for KIT-233's journey machinery,
+# one route table each, on the fixtures of the existing e2e lanes (tests/testdata/e2e/manifest.json):
+#   lipid_canonical  lipidomics, LipidSearch LCMS_Pos + LCMS_Neg, 6 samples (WT_1..3, KO_1..3), contrast KO_vs_WT;
+#                    entry :335-370, SHA-256 design.tsv :365, lipidsearch_lcms_neg.txt :367, lipidsearch_lcms_pos.txt :368
+#   metab_lc         metabolomics, custom LCMS_Pos + LCMS_Neg feature tables, 6 samples, contrast KO_vs_WT;
+#                    entry :221-260, SHA-256 design.tsv :251, lcms_neg_features.tsv :253, lcms_pos_features.tsv :254
+#   trx_screen       transcriptomics, counts.tsv, 12 samples (RPMI, Sera), contrast Sera_vs_RPMI;
+#                    entry :372-410, SHA-256 counts.tsv :407, design.tsv :409
+# Sourced by journey-win.R after journey.R and journey-route-lfq.R (which defines k237StepHome).
+#
+# journey.R's step functions are the proteomics shell's (namespace `proteomics_workflow-`, the proteomics digest keys
+# and stepper). These routes therefore carry their own step functions, in journey.R's form (one k233Action per press,
+# its classifier, captures and records), over the shared lipid/metab/trx shell: tabset `<omic>_workflow-<omic>_tabs`
+# with values import, design, qc, norm, de, summary; test ids `<prefix>-...` (R/utils_omic_gui_config.R:1079-1121,
+# :1275-1300, :1953-1960; R/mod_omic_summary.R:60). Import settings are the lane's (the user's own choices of assay
+# names, format and columns: tests/testthat/helper-e2e-browser.R:809-866; test-e2e-transcriptomics-screen.R:31-33); every
+# later step runs at the rendered defaults, and a default refused on the fixture gets the lane's value for that step
+# only, pressed again (WL-1's rule). Completion: the digest's step status or R6 state in test mode; the DOM signal is
+# the application's own message notification (R/mod_omic_design.R:260, R/mod_omic_qc_tabs.R:753, R/mod_omic_norm.R:349,
+# :482, :549, :650, R/mod_omic_da.R:514, R/mod_omic_summary.R:259-332, R/utils_workflow_summary.R:439, :468). These DOM
+# signals are by reading only; WL-5 on these routes is their first check.
+
+K237_ROUTES <- if (exists("K237_ROUTES", inherits = FALSE)) K237_ROUTES else list()
+K237_RUNS <- if (exists("K237_RUNS", inherits = FALSE)) K237_RUNS else list()
+
+k237OmicRoute <- function(id, omic, prefix, qc_tabset, trx = FALSE) {
+    steps <- list(
+        list(id = "S1", name = "home and project (the rendered default base directory kept)", fn = "k237StepHome",
+            tile = paste0("tile-", omic), omic = omic, tab_testid = paste0(prefix, "-tab-import")),
+        list(id = "S2", name = "import (the lane's assay names, format and files)", fn = "k237StepImportOmic"),
+        list(id = "S3", name = "design", fn = "k237StepDesignOmic"),
+        list(id = "S5", name = "quality control", fn = "k237StepQcOmic"),
+        list(id = "S6", name = "normalisation", fn = "k237StepNormOmic"))
+    if (!trx) steps <- c(steps, list(list(id = "S7", name = "export", fn = "k237StepExportOmic")))
+    steps <- c(steps, list(
+        list(id = "S8", name = "differential analysis", fn = "k237StepDaOmic"),
+        list(id = "S10", name = "summary", fn = "k237StepSummaryOmic")))
+    list(id = id, omic = omic, prefix = prefix, trx = trx, tabs_id = sprintf("%s_workflow-%s_tabs", omic, omic),
+        qc_tabset = qc_tabset, steps = steps)
+}
+
+K237_ROUTES$lipid_canonical <- k237OmicRoute("LIPIDOMICS", "lipidomics", "lipid", "lipid_qc_tabs")
+K237_ROUTES$metab_lc <- k237OmicRoute("METABOLOMICS", "metabolomics", "metab", "metab_qc_tabs")
+K237_ROUTES$trx_screen <- k237OmicRoute("TRANSCRIPTOMICS", "transcriptomics", "trx", "trx_qc_tabs", trx = TRUE)
+
+#' Named files (5.2) by reading: the design files (test-e2e-lipidomics-canonical.R:18-21), the DA tables
+#' (:51-55), study parameters, the publication workbook and the session export (:91-113), the report (the template
+#' copied to scripts/<omic>, as on proteomics), and the lane's `expected_exports` matched by name anywhere.
+k237OmicFiles <- function(omic, exports, trx = FALSE) {
+    src <- sprintf("^scripts/%s/", omic)
+    files <- list(
+        S3 = paste0(src, c("design_matrix\\.tab$", "contrast_strings\\.tab$")),
+        S8.2 = sprintf("^results/%s/[^/]*/?(de|da)_[^/]*_long_annot\\.(tsv|xlsx)$", omic),
+        S10.1 = paste0(src, "study_parameters\\.txt$"),
+        S10.2 = sprintf("(^|/)Publication_tables/DA_results_%s\\.xlsx$", omic),
+        S10.3 = sprintf("%s%s_report\\.rmd$", src, omic),
+        S10.5 = c(paste0(src, "session_state_[^/]*\\.RDS$"), sprintf("(^|/)%s$", gsub(".", "\\.", exports, fixed = TRUE))))
+    if (trx) names(files)[names(files) == "S8.2"] <- "S8"
+    files
+}
+
+k237OmicRun <- function(id, omic, dataset, contrast, import, exports, trx = FALSE) {
+    force(import)
+    function(G, dir, label) {
+        design <- utils::read.delim(file.path(dir, "design.tsv"), stringsAsFactors = FALSE)
+        groups <- unique(design$group)
+        list(dataset = dataset, omic = omic, groups = groups,
+            members = lapply(stats::setNames(groups, groups), function(g) design$sample[design$group == g]),
+            contrasts = list(contrast), label = label, description = sprintf("KIT-237 %s journey on %s", omic, dataset),
+            permissive = TRUE, project_dir = NULL, import = import(dir), files = k237OmicFiles(omic, exports, trx),
+            last_step = "S10.5", summary_step = "S10", fixture_dir = dir)
+    }
+}
+
+# Import actions: list(kind = "set" | "upload", input, value); ids under `<omic>_workflow-import-`.
+K237_RUNS$lipid_canonical <- k237OmicRun("lipid_canonical", "lipidomics", "lipid_canonical", c("KO", "WT"),
+    function(dir) list(
+        list(kind = "set", input = "assay1_name", value = "LCMS_Pos"),
+        list(kind = "set", input = "vendor_format", value = "lipidsearch"),
+        list(kind = "upload", input = "assay1_file_std", value = file.path(dir, "lipidsearch_lcms_pos.txt")),
+        list(kind = "set", input = "assay2_name", value = "LCMS_Neg"),
+        list(kind = "upload", input = "assay2_file_std", value = file.path(dir, "lipidsearch_lcms_neg.txt")),
+        list(kind = "set", input = "sanitize_names", value = FALSE)),
+    c("lipid_summary.xlsx", "differential_abundance.xlsx"))
+
+K237_RUNS$metab_lc <- k237OmicRun("metab_lc", "metabolomics", "metab_lc", c("KO", "WT"),
+    function(dir) list(
+        list(kind = "set", input = "assay1_name", value = "LCMS_Pos"),
+        list(kind = "set", input = "vendor_format", value = "custom"),
+        list(kind = "upload", input = "assay1_file_std", value = file.path(dir, "lcms_pos_features.tsv")),
+        list(kind = "set", input = "assay2_name", value = "LCMS_Neg"),
+        list(kind = "upload", input = "assay2_file_std", value = file.path(dir, "lcms_neg_features.tsv")),
+        list(kind = "set", input = "metabolite_id_col_custom", value = "Feature.Name"),
+        list(kind = "set", input = "annotation_col_custom", value = ""),
+        list(kind = "set", input = "sample_cols_pattern", value = "^(WT|KO)_"),
+        list(kind = "set", input = "is_pattern", value = "^ITSD|_d[0-9]+$"),
+        list(kind = "set", input = "sanitize_names", value = FALSE)),
+    c("feature_summary.xlsx", "differential_abundance.xlsx"))
+
+K237_RUNS$trx_screen <- k237OmicRun("trx_screen", "transcriptomics", "trx_screen", c("Sera", "RPMI"),
+    function(dir) list(list(kind = "upload", input = "assay1_file_std", value = file.path(dir, "counts.tsv"))),
+    c("DA_results_transcriptomics.xlsx", "transcriptomics_normalized_data.tsv", "ruviii_before_and_after.png"),
+    trx = TRUE)
+
+# --- helpers ------------------------------------------------------------------------------------------------------
+
+k237Id <- function(route, module, input) sprintf("%s_workflow-%s-%s", route$omic, module, input)
+k237Tab <- function(route, value) list(route$tabs_id, value)
+
+k237Status <- function(st, omic, key) {
+    value <- st$dg$step_status_per_omic[[omic]][[key]]
+    if (is.null(value)) NA_character_ else as.character(value)
+}
+
+k237HasState <- function(st, omic, states) {
+    head <- st$dg$r6_current_state_per_omic[[omic]]
+    any(c(as.character(head), as.character(unlist(st$dg$r6_state_history_per_omic[[omic]]))) %in% states)
+}
+
+#' One press with journey.R's classifier; on a refusal and only where the route gives the lane's values, those values
+#' are set and the same press made once more (WL-1's rule).
+k237Press <- function(S, spec, permissive = NULL) {
+    res <- k233Action(S, spec)
+    if (identical(res$outcome, "refused") && isTRUE(S$R$permissive) && is.function(permissive)) {
+        retry <- spec
+        retry$step <- paste0(spec$step, "r")
+        retry$name <- paste(spec$name, "(the lane's value, WL-1's rule)")
+        retry$prepare <- permissive
+        res <- k233Action(S, retry)
+    }
+    res
+}
+
+# --- steps --------------------------------------------------------------------------------------------------------
+
+k237StepImportOmic <- function(S, R, step, route) {
+    prepare <- function(S) {
+        for (a in R$import) {
+            id <- k237Id(route, "import", a$input)
+            if (identical(a$kind, "upload")) {
+                up <- k233Upload(S, "S2", id, a$value)
+                if (!up$ok) return(list(refuse = paste("upload", basename(a$value), ":", up$text)))
+            } else {
+                k233Set(S, "S2", id, a$value)
+            }
+        }
+        NULL
+    }
+    k233Action(S, list(step = "S2", name = step$name, target = paste0(route$prefix, "-import-process"), by = "testid",
+        tabs = list(k237Tab(route, "import")), prepare = prepare,
+        digest = function(st) identical(k237Status(st, route$omic, "setup_import"), "complete"),
+        dom = function(st) any(vapply(st$notes, function(n) identical(n$type, "message") &&
+            !grepl("sanitized|Processing", n$text), logical(1)))))
+}
+
+#' The design builder as journey.R's S3 does it (factors, metadata per group, the contrast, Save), on the omic's
+#' builder ids.
+k237StepDesignOmic <- function(S, R, step, route) {
+    builder <- function(x) k237Id(route, "design", paste0("builder-", x))
+    tabs <- builder("main_tabs")
+    prepare <- function(S) {
+        if (!k233WaitFor(S, sprintf("document.getElementById(%s) !== null", k233Json(builder("selected_runs"))), 60)) {
+            return(list(refuse = "the design builder was not shown within 60 s"))
+        }
+        k233ActivateTab(S, tabs, "Factors")
+        for (g in R$groups) {
+            k233Set(S, "S3", builder("new_factor"), g)
+            p <- k233Press(S, "S3", builder("add_factor"))
+            if (!isTRUE(p$ok)) return(list(refuse = paste("not reachable as a user:", p$reason)))
+            k233Idle(S, 10)
+        }
+        k233ActivateTab(S, tabs, "Assign Metadata")
+        options <- k233Options(S, builder("selected_runs"))
+        for (g in R$groups) {
+            runs <- options[k233Norm(options) %in% k233Norm(R$members[[g]])]
+            if (length(runs) != length(R$members[[g]])) {
+                return(list(refuse = sprintf("driver: %d of %d samples of %s found among the builder's %d", length(runs),
+                    length(R$members[[g]]), g, length(options))))
+            }
+            k233Selectize(S, "S3", builder("selected_runs"), runs)
+            k233WaitFor(S, sprintf("document.getElementById(%s) !== null", k233Json(builder("replicate_start"))), 30)
+            tryCatch(S$G$helpers$e2e_wait_for_select_options(S$driver, builder("factor1_select"), g, timeout = 30000),
+                error = function(e) NULL)
+            k233Selectize(S, "S3", builder("factor1_select"), g, multiple = FALSE)
+            p <- k233Press(S, "S3", builder("assign_metadata"))
+            if (!isTRUE(p$ok)) return(list(refuse = paste("not reachable as a user:", p$reason)))
+            k233Idle(S, 10)
+        }
+        k233ActivateTab(S, tabs, "Contrasts")
+        for (pair in R$contrasts) {
+            choices <- k233Options(S, builder("contrast_group1"))
+            matched <- S$G$helpers$e2e_match_available_values(pair, choices)
+            k233Selectize(S, "S3", builder("contrast_group1"), matched[[1L]], multiple = FALSE)
+            k233Selectize(S, "S3", builder("contrast_group2"), matched[[2L]], multiple = FALSE)
+            p <- k233Press(S, "S3", builder("add_contrast"))
+            if (!isTRUE(p$ok)) return(list(refuse = paste("not reachable as a user:", p$reason)))
+            k233Idle(S, 10)
+        }
+        NULL
+    }
+    k233Action(S, list(step = "S3", name = step$name, target = builder("save_results"),
+        tabs = list(k237Tab(route, "design")), prepare = prepare,
+        digest = function(st) identical(k237Status(st, route$omic, "design_matrix"), "complete"),
+        dom = function(st) k233Noted(st, "Design matrix and contrasts saved successfully", "message")))
+}
+
+#' QC: the rendered sub-tabs recorded; on trx the expression filter first (its Apply, R6 state trx_expression_filtered);
+#' then Finalize QC, as the lanes run it (the other sub-tabs at their defaults are not pressed; recorded as such).
+k237StepQcOmic <- function(S, R, step, route) {
+    qc <- function(x) k237Id(route, "qc", x)
+    k233ActivateTab(S, route$tabs_id, "qc")
+    titles <- character()
+    started <- Sys.time()
+    while (!length(titles) && k233Seconds(started) < 60) {
+        titles <- as.character(unlist(k233Js(S, sprintf(K233_TITLES_JS, k233Json(qc(route$qc_tabset))))))
+        if (!length(titles)) Sys.sleep(1)
+    }
+    k233Observation(S$G, S$label, "S5 rendered QC sub-tabs", sprintf("%s (pressed: %sFinalize QC)",
+        paste(titles, collapse = " > "), if (route$trx) "the expression filter's Apply, then " else ""))
+    if (route$trx) {
+        res <- k233Action(S, list(step = "S5.1", name = "expression filter at the defaults", target = "trx-qc-apply-filter",
+            by = "testid", tabs = list(k237Tab(route, "qc")),
+            digest = function(st) k237HasState(st, route$omic, "trx_expression_filtered"),
+            dom = function(st) any(vapply(st$notes, function(n) identical(n$type, "message"), logical(1)))))
+        if (!identical(res$outcome, "complete")) return(res)
+    }
+    k233Action(S, list(step = if (route$trx) "S5.2" else "S5.1", name = "Finalize QC", target = qc("s4_finalize-finalize_qc"),
+        tabs = list(k237Tab(route, "qc"), list(qc(route$qc_tabset), "Finalize QC")),
+        digest = function(st) identical(k237Status(st, route$omic, "quality_control"), "complete"),
+        dom = function(st) k233Noted(st, "QC complete", "message")))
+}
+
+#' Normalisation at the rendered defaults (method, RUV mode, ITSD as rendered, recorded); then, except on trx, the
+#' correlation filter at the rendered threshold. The lane's values (ITSD off, method none, RUV skip; skip the filter)
+#' only after a refusal (WL-1's rule).
+k237StepNormOmic <- function(S, R, step, route) {
+    norm <- function(x) k237Id(route, "norm", x)
+    tabs <- list(k237Tab(route, "norm"))
+    prepare <- function(S) {
+        k233Observation(S$G, S$label, "S6 rendered defaults", sprintf("apply_itsd=%s norm_method=%s ruv_mode=%s",
+            k233Clean(k233InputValue(S, norm("apply_itsd"))), k233Clean(k233InputValue(S, norm("norm_method"))),
+            k233Clean(k233InputValue(S, norm("ruv_mode")))))
+        NULL
+    }
+    lane <- function(S) {
+        if (!route$trx) k233Set(S, "S6.1r", norm("apply_itsd"), FALSE)
+        k233Set(S, "S6.1r", norm("norm_method"), "none")
+        k233Set(S, "S6.1r", norm("ruv_mode"), "skip")
+        NULL
+    }
+    first <- k237Press(S, list(step = "S6.1", name = "normalisation at the defaults", target = paste0(route$prefix, "-norm-run"),
+        by = "testid", tabs = tabs, prepare = prepare,
+        digest = function(st) if (route$trx) identical(k237Status(st, route$omic, "normalization"), "complete") else
+            k237HasState(st, route$omic, paste0(route$prefix, c("_norm_complete", "_ruv_corrected", "_normalized"))),
+        dom = function(st) k233Noted(st, "Normali[sz]ation (pipeline )?complete", "message")), lane)
+    if (route$trx || !identical(first$outcome, "complete")) return(first)
+    corr_tabs <- c(tabs, list(list(norm("norm_qc_tabs"), "Correlation Filtering")))
+    second <- k233Action(S, list(step = "S6.2", name = "correlation filter at the rendered threshold",
+        target = norm("apply_correlation_filter"), tabs = corr_tabs,
+        digest = function(st) k237HasState(st, route$omic, paste0(route$prefix, "_correlation_filtered")),
+        dom = function(st) k233Noted(st, "Correlation filtering complete", "message")))
+    if (!identical(second$outcome, "refused") || !isTRUE(R$permissive)) return(second)
+    # The lane's value for this step: Skip instead of Apply (helper-e2e-browser.R:1464-1465), pressed once.
+    k233Action(S, list(step = "S6.2r", name = "skip the correlation filter (the lane's value, WL-1's rule)",
+        target = norm("skip_correlation_filter"), tabs = corr_tabs,
+        digest = function(st) k237HasState(st, route$omic, paste0(route$prefix, c("_correlation_filtered", "_norm_complete"))),
+        dom = function(st) any(vapply(st$notes, function(n) identical(n$type, "message"), logical(1)))))
+}
+
+k237StepExportOmic <- function(S, R, step, route) {
+    k233Action(S, list(step = "S7", name = step$name, target = paste0(route$prefix, "-norm-export-session"), by = "testid",
+        tabs = list(k237Tab(route, "norm")),
+        digest = function(st) identical(k237Status(st, route$omic, "normalization"), "complete"),
+        dom = function(st) k233Noted(st, "Session data exported successfully", "message")))
+}
+
+k237StepDaOmic <- function(S, R, step, route) {
+    tabs <- list(k237Tab(route, "de"))
+    run <- list(name = "run the differential analysis at the defaults", target = paste0(route$prefix, "-da-run"),
+        by = "testid", tabs = tabs,
+        digest = function(st) identical(k237Status(st, route$omic, "differential_analysis"), "complete"),
+        dom = function(st) any(vapply(st$notes, function(n) identical(n$type, "message") &&
+            grepl("complete", n$text, ignore.case = TRUE), logical(1))))
+    if (route$trx) return(k233Action(S, c(list(step = "S8"), run)))
+    loaded <- k233Action(S, list(step = "S8.1", name = "load the filtered session",
+        target = paste0(route$prefix, "-da-load-session"), by = "testid", tabs = tabs,
+        digest = function(st) k237HasState(st, route$omic, "loaded_for_de"),
+        dom = function(st) k233Noted(st, "Session loaded successfully", "message")))
+    if (!identical(loaded$outcome, "complete")) return(loaded)
+    k233Action(S, c(list(step = "S8.2"), run))
+}
+
+#' The summary as journey.R's S10 does it, on the omic's ids (the shared summary module, R/mod_omic_summary.R); trx
+#' runs its RUVIII export first (S10.0). N3 against study_parameters.txt; the report's N4 is a proteomics sentence and
+#' is not computed here.
+k237StepSummaryOmic <- function(S, R, step, route) {
+    sm <- function(x) k237Id(route, "summary", x)
+    p <- route$prefix
+    tabs <- list(k237Tab(route, "summary"))
+    summary_id <- sm("session_summary")
+    copy_id <- sm("copy_status")
+    actions <- list(
+        list(step = "S10.1", name = "Save Workflow Arguments", target = paste0(p, "-summary-save-args"),
+            prepare = function(S) {
+                k233Set(S, "S10.1", sm("experiment_label"), R$label)
+                k233Set(S, "S10.1", sm("description"), R$description)
+                NULL
+            },
+            dom = function(st) grepl("Parameters saved [OK]", k233Text(st, summary_id), fixed = TRUE),
+            outputs = summary_id, after = function(S, res, cap) k237NumberN3(S, R, route)),
+        list(step = "S10.2", name = "Copy to Publication Directory", target = paste0(p, "-summary-copy-publication"),
+            dom = function(st) grepl("Files copied", k233Text(st, summary_id), fixed = TRUE),
+            outputs = c(copy_id, summary_id)),
+        list(step = "S10.3", name = "Generate Report", target = paste0(p, "-summary-generate-report"),
+            sels = sprintf("[data-testid='%s-summary-download-report']", p),
+            dom = function(st) isTRUE(st$vis[[1L]]) || k233Noted(st, "Report generated successfully", "message"),
+            outputs = summary_id),
+        list(step = "S10.4", name = "Download Report", custom = function(S) k237DownloadReport(S, R, route)),
+        list(step = "S10.5", name = "Export Session State", target = paste0(p, "-summary-export-state"),
+            dom = function(st) k233Noted(st, "Session state exported to:", "message")))
+    if (route$trx) {
+        actions <- c(list(list(step = "S10.0", name = "RUVIII export", target = "trx-summary-ruviii-export",
+            texts = sm("ruviii_status"),
+            dom = function(st) grepl("M = group", k233Text(st, sm("ruviii_status")), fixed = TRUE),
+            outputs = sm("ruviii_status"))), actions)
+    }
+    res <- list(outcome = "complete")
+    for (a in actions) {
+        a$by <- a$by %||% "testid"
+        a$tabs <- tabs
+        a$texts <- unique(c(a$texts, summary_id, copy_id))
+        res <- k233Action(S, a)
+        if (!identical(res$outcome, "complete")) return(res)
+    }
+    res
+}
+
+k237DownloadReport <- function(S, R, route) {
+    p <- k233Press(S, "S10.4", paste0(route$prefix, "-summary-download-report"), "testid")
+    if (!isTRUE(p$ok)) return(list(outcome = "refused", message = paste("not reachable as a user:", p$reason)))
+    path <- tryCatch(S$G$helpers$e2e_get_download(S$driver, k237Id(route, "summary", "download_report"),
+        artifact_dir = S$G$work, filename = paste0(S$label, "-report-download")), error = function(e) conditionMessage(e))
+    if (!file.exists(path) || file.size(path) == 0) {
+        return(list(outcome = "refused", message = paste("the download gave no file:", path)))
+    }
+    note <- sprintf("report %d bytes, sha256 %s", file.size(path), k233Sha(path))
+    list(outcome = "complete", message = "", dom_t = NA, dig_t = NA, agreement = "dom_only", note = note)
+}
+
+k237NumberN3 <- function(S, R, route) {
+    sm <- function(x) k237Id(route, "summary", x)
+    file <- file.path(k233ProjectPaths(R)$source, "study_parameters.txt")
+    lines <- k233ReadLog(file)
+    field <- function(label) {
+        hit <- grep(paste0("^", label, ": "), lines, value = TRUE)
+        if (length(hit)) sub(paste0("^", label, ": "), "", hit[[1L]]) else NA_character_
+    }
+    if (file.exists(file)) file.copy(file, file.path(S$G$out, paste0(S$label, "-study_parameters.txt")), overwrite = TRUE)
+    where <- sprintf("summary inputs vs scripts/%s/study_parameters.txt", route$omic)
+    k233Number(S, "N3", "label", k233Clean(k233InputValue(S, sm("experiment_label"))), field("Workflow Name"), where)
+    k233Number(S, "N3", "description", k233Clean(k233InputValue(S, sm("description"))), field("Description"), where)
+}
