@@ -147,19 +147,21 @@ OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in al
   both sides: `test-kit224-ruv-feature-levels.R` (1), `test-workflow-operation-registry.R` (2).
 - Check: 0 errors, 3 warnings, 3 notes on both sides; findings identical (6), none only on head.
 
-## R3 (the ticket's one correction pass: test E7, tests only): NOT RUN
+## R3 (the ticket's one correction pass: test E7, tests only; declared before the request; owner's allowance VAL-306)
 
 - Purpose: the mean half of VAL-284 (1) had no falsifying test (audit I02). E7: id V, row A (0, 300, 300, NA) against
   row B (NA, NA, 250, 250), both measured in 2 of 4; A's mean of its measured values 300 (200 with the zero averaged),
   B's 250; the decided rule keeps A, KIT-214's rule keeps B.
-- Not run. The base side needs a tests-only commit on `5dfe2bc8` pushed to a base branch; that push was refused by the
-  permission system on 2026-11-26 and is parked for the owner. No commit or run for R3 is recorded in `runs.tsv`.
-- E7's failure under KIT-214's rule is shown by reading only until the owner allows the base push (KIT-214 averages
-  A's non-missing values to 200, below B's 250, and keeps B).
-- E7's first execution is the merge train's run, head side only. Prediction there: `test-kit258-duplicate-completeness.R`
-  only on head, 162 passed, 0 failed (142 + 20: E7 adds seven tests, four on the declared step with three
-  expectations each, one on the two kernels with four, two on the S4 methods with two each). Any other count, or a
-  failure in E7: stop and report; no code change.
+- Base: `cf57228a87befccd74f5051eb7a0a1e51b3ca922` on `kit-258-r2-base` (the R2 base `5dfe2bc8` plus the E7 test file as
+  on kit-258 `aa6cffce`, nothing under `R/`). Head: the kit-258 commit holding this section (code identical to
+  `e337e72b`; only tests and records differ).
+- Files: `tests/testthat/test-kit258-duplicate-completeness.R` only. One run, 1 shard per side, no check, ceiling about
+  30 job-minutes for both jobs (the ticket's correction ceiling of 705 is unchanged).
+- Prediction (audit Re-check 1): head 162 passed, 0 failed (142 + E7's 20 expectations); base 112 passed, 50 failed:
+  the 42 known failures plus E7's 8 kept-row expectations (4 on the declared step, 2 on the kernels, 2 on the S4
+  methods) failing under KIT-214's rule, E7's other 12 passing.
+- Stop rule: any other count or failure is a result: stop and report; no code change and no second run (an HTTP 500 or
+  502 at dispatch with no run created: one manual start, recorded).
 
 ## Acceptance criteria
 
