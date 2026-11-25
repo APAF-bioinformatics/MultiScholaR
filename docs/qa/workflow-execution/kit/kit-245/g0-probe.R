@@ -145,8 +145,9 @@ recorder <- function(endpoint, ..., .token = NULL) {
     tok <- if (is.null(.token) || !nzchar(as.character(.token))) "none" else
         if (identical(as.character(unclass(.token)), DUMMY)) "dummy" else "other"
     a <- list(...)
+    f <- function(x) if (is.null(x)) "NULL" else paste(format(x), collapse = ",")
     REC$calls <- c(REC$calls, sprintf("%s [.token=%s; org=%s; name=%s; private=%s; auto_init=%s]", endpoint, tok,
-        format(a$org), format(a$name), format(a$private), format(a$auto_init)))
+        f(a$org), f(a$name), f(a$private), f(a$auto_init)))
     if (tok != "dummy") {
         say("RECORDER_FOREIGN_TOKEN", paste("endpoint", endpoint, "token", tok))
         fault("the recorder saw a token that is not the dummy (stop rule 7)")
