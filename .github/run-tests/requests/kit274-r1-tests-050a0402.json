@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-274 R1: tests-only 050a0402 (T1 to T12 failing-first; X1 base line from the KIT-264 file); one shard, no base; ceiling 45 job-minutes, expected 20 (1.33 core-hours; ticket total expected 28.20, ceiling 103.0)",
+  "label": "KIT-274 R1 tests-only 050a0402",
+  "package_commit": "050a04028feb2653b8710a0cc446d24bae8e4ae6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit274-trx-no-ruv-export.R",
+    "test-kit264-trx-export-current.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
