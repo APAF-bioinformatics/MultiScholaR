@@ -1,0 +1,67 @@
+{
+  "selected_omics": "lipidomics",
+  "initialized_omics": "lipidomics",
+  "project_dir_keys": "lipidomics",
+  "experiment_label": "k253_lipid",
+  "workflow_type_per_omic": {
+    "lipidomics": "LIPIDOMICS"
+  },
+  "step_status_per_omic": {
+    "lipidomics": {
+      "setup_import": "complete",
+      "design_matrix": "complete",
+      "quality_control": "complete",
+      "normalization": "pending",
+      "differential_analysis": "disabled",
+      "session_summary": "disabled"
+    }
+  },
+  "r6_current_state_per_omic": {
+    "lipidomics": "lipid_normalized"
+  },
+  "r6_state_history_per_omic": {
+    "lipidomics": [
+      "initial",
+      "lipid_raw_data_s4",
+      "lipid_qc_complete",
+      "lipid_log2",
+      "lipid_normalized"
+    ]
+  },
+  "active_tab_per_omic": {
+    "lipidomics": "norm"
+  },
+  "export_paths": {
+    "lipidomics": {
+      "setup_import": {
+        "timestamp": "2026-11-25 10:45:51",
+        "n_assays": 2,
+        "assay_names": [
+          "LCMS_Pos",
+          "LCMS_Neg"
+        ],
+        "detected_format": "lipidsearch",
+        "n_lipids": [
+          10,
+          10
+        ],
+        "n_samples": 6,
+        "artifacts": {
+          "written": true,
+          "paths": {
+            "data_cln_LCMS_Pos": "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/data_cln_LCMS_Pos.tab",
+            "data_cln_LCMS_Neg": "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/data_cln_LCMS_Neg.tab",
+            "assay_manifest": "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/assay_manifest.txt",
+            "column_mapping": "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/column_mapping.json",
+            "import_summary": "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/lipidomics_import_summary.tsv"
+          },
+          "source_copies": [
+            "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/import_sources/assay1_0.txt",
+            "/tmp/RtmpJ7nS6R/k253-work/projects-L0/k253_lipid/scripts/lipidomics/import_sources/assay2_0.txt"
+          ]
+        }
+      }
+    }
+  },
+  "report_fingerprints": []
+}

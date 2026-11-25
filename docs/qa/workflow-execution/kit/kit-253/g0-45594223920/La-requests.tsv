@@ -1,0 +1,8 @@
+id	operation	request_seen_s	request_mtime_s	completion_seen_s	completion_mtime_s	status	expected_head	error
+wfx-3f8150eaaed614338b0f5bfaf03438f7	lipid_qc_figures	-0.01	-9.66	-0.01	-1.06	complete	cafde26d04cab47a3b2697c031836f419f7e16513be6e0234ff7eb130d1fee41	
+wfx-50e33d77aff627af8d71d19155a15a30	lipid_filtering_metrics	-0.01	-20.98	-0.01	-16.95	complete	28f85c3783d48e35e89d3d089d8960a4acf79ff7fcfd7ee34921a6c8fafdb112	
+wfx-39fa4d8e980cfff7794c1ade4aa19929	lipid_qc_figures	0.21	0.13	4.42	4.24	complete	97250b3fec15f9cbad1615a6b45139ff3387b13ea1883e662585a506d19b4711	
+wfx-07d7e955f41ffa6c6ab1706dde8de563	lipid_log2	4.42	4.35	9.04	8.89	complete	eb8a67158e280b2d41322bc84613819e31bd49072eaa597eb7df3d98b871535f	
+wfx-7ad423c751ef9c047254af87844cfa43	lipid_between_sample_normalisation	9.04	9.01	13.66	13.65	complete	30c20510594e78befcbdd15c2cd801814d868bbd5262d79b7554366cd9d6dba7	
+wfx-e3a8ed0010e2ff2bb377a8fcf9a87f16	lipid_qc_figures	13.86	13.76	22.29	22.25	complete	6ca1da64216a9c03971f11fd0d5803798e03fc347869a673bd3a8baeb394551a	
+wfx-185509c0d8bf0b804ec6641731d9c6cf	lipid_composite_figure	22.49	22.38	38.23	38.2	stale	f26bb286f3f164db8d0c930407e86da2d01cf25d4b2fc94e26f1eda17ab26f78	

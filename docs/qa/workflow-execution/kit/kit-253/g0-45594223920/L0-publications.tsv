@@ -1,0 +1,5 @@
+dir	status	state_id	last_write_s	after
+k253_lipid/scripts/lipidomics/.workflow-export/a-088792cdb25f47cd	complete	eaa78839d6d6cf37cafe53ebec346ae4548509c27ef702b4eb9034926eda4bb7	36.94	TRUE
+k253_lipid/scripts/lipidomics/.workflow-export/a-16864402d4252419	complete	eaa78839d6d6cf37cafe53ebec346ae4548509c27ef702b4eb9034926eda4bb7	21.02	FALSE
+k253_lipid/scripts/lipidomics/.workflow-export/a-203be064309ede69	complete	435728f1c8b74d81efda7421790c440ef3886c148c8c85d0490dfe93175d0b84	4.05	FALSE
+k253_lipid/scripts/lipidomics/.workflow-export/a-6e7d2d489e85b95d	complete	435728f1c8b74d81efda7421790c440ef3886c148c8c85d0490dfe93175d0b84	-1.12	FALSE

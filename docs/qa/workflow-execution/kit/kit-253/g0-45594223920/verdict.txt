@@ -1,0 +1,6 @@
+G0: observed as predicted (stop rule 1)
+P0: control proven
+P-a: as predicted
+P-c: as predicted
+L0: control proven
+L-a: as predicted

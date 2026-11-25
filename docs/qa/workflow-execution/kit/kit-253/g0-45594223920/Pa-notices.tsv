@@ -1,0 +1,6 @@
+browser_s	type	text
+0.26	default	Applying proteomics step ...
+25.06	default	Applying proteomics step ...
+25.66	warning	Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).
+31.66	error	Error applying proteomics step: managed action ended: stale
+31.66	error	Error in normalization: managed action ended: stale

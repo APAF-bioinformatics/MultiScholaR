@@ -1,0 +1,7 @@
+target: proteomics = the first normalization-qc-figures request whose request.rds appears after the normalization-ruv request's completion.rds reads complete (R1-01); lipidomics = the first lipid_composite_figure request
+press inside = the target's request.rds exists and its completion.rds does not, checked immediately before and after the click
+as predicted (press sequences): target status stale; no publication request folder outside the store written after the press; no file written after the press at a path in the matching positive control's publication footprint; no completion notice (proteomics); the head moved between the press and the target's completion (the press wrote it); later actions of the omic's chain that completed after the target are recorded (later_chain_complete, later_requests), not judged
+positive control proven: target status complete; the completion notice seen; a non-empty publication footprint = the files outside the store written after the target appeared, less those already written by the chain between the run press and the target's appearance
+instrument defect (stop rule 3): no target seen, the target completed before the press, the press control not found, or the session did not reach the normalisation
+contradicted (stop rule 2): any press sequence not as predicted while its press was inside and its control proven
+notices: compared with the predicted texts and recorded; not a falsifier (section 5's falsifiers are the status and the publication)

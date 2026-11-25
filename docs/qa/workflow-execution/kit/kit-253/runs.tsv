@@ -1,1 +1,2 @@
 run_id	commit	purpose	job_minutes	result
+45594223920	85df7ca1 (binds 16112917)	G0: P0, P-a, P-c, L0, L-a in one scripts job	28.2	observed as predicted (stop rule 1): P-a, P-c, L-a stale, nothing published; P0, L0 controls proven

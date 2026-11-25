@@ -1,0 +1,15 @@
+key	value
+commit_under_test	16112917329a63ab062655f04db5bf1dd7df9729
+records_commit	85df7ca14b4233ab68c2c4c167e955bfdcd0df01
+diff_vs_commit_under_test	docs/qa/workflow-execution/kit/kit-253/g0.R docs/qa/workflow-execution/kit/kit-253/outcome.md docs/qa/workflow-execution/kit/kit-253/runs.tsv
+diff_only_records	TRUE
+journey_ref	origin/kit-233-journey
+journey_blob	7cc74bcf00d3e201b4f7b220eeb20394c131442f
+journey_lines	2154
+r_version	R version 4.6.1 (2026-06-24)
+MultiScholaR	0.9.0
+shinytest2	0.5.1
+chromote	0.5.1
+cores	4
+github_run_id	45594223920
+started_utc	2026-11-25T10:32:43Z

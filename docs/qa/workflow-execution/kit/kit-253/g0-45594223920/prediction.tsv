@@ -1,0 +1,6 @@
+seq	omic	press	target	expected_status	expected_publication	expected_notices
+P0	proteomics	none (positive control)	normalization-qc-figures	complete	TRUE	completion notice
+P-a	proteomics	Reset to Pre-Normalization	normalization-qc-figures	stale	FALSE	Error applying proteomics step: managed action ended: stale || Error in normalization: managed action ended: stale
+P-c	proteomics	Save Design	normalization-qc-figures	stale	FALSE	Error applying proteomics step: managed action ended: stale || Error in normalization: managed action ended: stale
+L0	lipidomics	none (positive control)	lipid_composite_figure	complete	TRUE	completion notice
+L-a	lipidomics	Reset to Pre-Normalization	lipid_composite_figure	stale	FALSE	Error applying lipidomics step: managed action ended: stale || Normalization pipeline complete!

@@ -1,0 +1,16 @@
+id	operation	request_seen_s	request_mtime_s	completion_seen_s	completion_mtime_s	status	expected_head	error
+wfx-19771f341dfdc1bcb35c0699e0e266c5	precursor_rollup	-0.02	-132.81	-0.02	-120.88	complete	e70f79572a636f0ed98830f8a1aa9bfe5e2df5621b65758c05b3db3d5ae1b087	
+wfx-1db6622c5d024141b535c6afac79f786	peptide_qvalue_filter	-0.02	-158.28	-0.02	-148.41	complete	3d947cdd5e2555d0b0226221d5f3855e98fc91224c3447b9f2c3ec4f169f4e14	
+wfx-32963cc9db364c5d3af12ec5be35860a	minimum_peptides_per_sample	-0.02	-105.7	-0.02	-95.25	complete	62a88ab707bc3439523cf72544f20c273189c45f7aeefd905f7c7dfe233bb1e0	
+wfx-3becdc4a40b8c4fe9c181081d5ca37e0	protein_replicate_filter	-0.02	-12.87	-0.02	-2.41	complete	b9af589ecc48d23ffb960cb153818780864ba24c03e36d407826205149a3819e	
+wfx-517855e3e8f678d7955a0f12d0f1f9a5	peptide_protein_evidence_filter	-0.02	-146.38	-0.02	-135.52	complete	ac3aa289249da49aebe969353e5bb94c4ee33b67ac4ea515c9c3c320316d05b0	
+wfx-6311fd3a40a3e7dc05d6074ab9848c05	peptide_replicate_filter	-0.02	-93.11	-0.02	-81.67	complete	1a06f1959b68d731accf17569260d8095006685f2994b9ac307f5515d153939c	
+wfx-740869b28c225a23ce20001d1853b770	protein_iq_rollup	-0.02	-65.16	-0.02	-54.67	complete	9023c66dba0d8780f91a3e73254e9c30ef093212cc3e144a05d63dcee58d95af	
+wfx-acef8c4ee3c1252b2b11b60f8ed6d7b8	protein_duplicate_removal	-0.02	-25.17	-0.02	-15.27	complete	92419052c94d7e32e823778b114e458cf4d4eb8eb2f89c08191444eda1e3f0f4	
+wfx-c4453da3cc1fa706e3e945310a565fb8	peptide_imputation	-0.02	-79.39	-0.02	-67.85	complete	1c54985e68e2403f9362e1784cf056c305d47fdfe0bfd5fa804e5885dc78e49b	
+wfx-cc401d818797c9a8c5cd58f3ee58a556	protein_accession_cleanup	-0.02	-52.35	-0.02	-41.48	complete	d953c6d6a8af1eb1434dad0fb649664bc10c5e02134c82b8d138e4cbb9bf4e9a	
+wfx-d4bed944de3a7248a37057c2f2dfef38	peptide_intensity_filter	-0.02	-118.62	-0.02	-107.95	complete	8799e27a984c43f32c71a8308fd969960aa333c0ec893edeafc40f2524c81c76	
+wfx-f0cd43cf4bb0418dc1a4a032b619b8aa	protein_intensity_filter	-0.02	-39.15	-0.02	-27.67	complete	53ec8921c1fbd48e9b7a7e4806f759a3f8317cb7f105bf8feb994143dbc62628	
+wfx-ab4980c3e08340b9a82d10510fb8b157	normalization-qc-figures	0.21	0.19	7.03	6.87	complete	9437fa940031b0b6a6b882ce66d1d3abab86e678d74667f67e67292f7e134300	
+wfx-65266aff91cbfde4bb8337ddb8d2eff7	normalization-ruv	10.05	9.95	25.11	24.91	complete	c1e55e684f22e3ad2ee47cfc337fa29d3401f4550ad9489613ee7e29e0d3088d	
+wfx-5cc526ab159b79d6ce2407c993e2603d	normalization-qc-figures	25.11	25.09	31.55	31.43	stale	3471258e2cac351c85928cd34fdbae411ff34eb7d63d1b5f039d29e917177e0d	

@@ -1,0 +1,77 @@
+{
+  "selected_omics": "proteomics",
+  "initialized_omics": "proteomics",
+  "project_dir_keys": "proteomics",
+  "experiment_label": "k253_prot",
+  "workflow_type_per_omic": {
+    "proteomics": "DIA"
+  },
+  "step_status_per_omic": {
+    "proteomics": {
+      "setup_import": "complete",
+      "design_matrix": "complete",
+      "quality_control": "complete",
+      "normalization": "pending",
+      "differential_expression": "disabled",
+      "enrichment_analysis": "disabled",
+      "session_summary": "disabled"
+    }
+  },
+  "r6_current_state_per_omic": {
+    "proteomics": "ruv_corrected"
+  },
+  "r6_state_history_per_omic": {
+    "proteomics": [
+      "initial",
+      "raw_data_s4",
+      "qvalue_filtered",
+      "protein_peptide_filtered",
+      "precursor_rollup",
+      "intensity_filtered",
+      "sample_filtered",
+      "replicate_filtered",
+      "imputed",
+      "protein_s4_created",
+      "protein_accession_cleaned",
+      "protein_intensity_filtered",
+      "duplicates_removed",
+      "protein_replicate_filtered",
+      "ruv_corrected"
+    ]
+  },
+  "active_tab_per_omic": {
+    "proteomics": "normalization"
+  },
+  "export_paths": {
+    "proteomics": {
+      "setup_import": {
+        "timestamp": "2026-11-25 10:32:57",
+        "search_file": "report.tsv",
+        "detected_format": "diann",
+        "data_type": "peptide",
+        "fasta_file": "proteins.fasta",
+        "taxon_id": 9606,
+        "organism": "Homo sapiens",
+        "n_rows": 8989,
+        "n_runs": 8,
+        "n_proteins": 400,
+        "n_peptides": 1037,
+        "mixed_species_selection": {
+          "selected_organism": "Homo sapiens",
+          "selected_taxon_id": 9606,
+          "filter_applied": false,
+          "organism_distribution": [
+            {
+              "organism_name": "Homo sapiens",
+              "taxon_id": 9606,
+              "protein_count": 400,
+              "percentage": 100,
+              "rank": 1
+            }
+          ]
+        }
+      }
+    }
+  },
+  "report_fingerprints": []
+}

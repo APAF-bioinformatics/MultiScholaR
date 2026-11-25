@@ -1,0 +1,7 @@
+browser_s	type	text
+0.26	default	Applying proteomics step ...
+26.66	default	Applying proteomics step ...
+26.88	message	Design saved successfully. You can close this builder.
+31.06	message	Design matrix and contrasts saved successfully!
+34.06	error	Error applying proteomics step: managed action ended: stale
+34.06	error	Error in normalization: managed action ended: stale
