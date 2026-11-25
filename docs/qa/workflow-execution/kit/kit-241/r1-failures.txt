@@ -1,0 +1,27 @@
+file: test-kit241-enrich-download-zip.R
+test: E1: the archive is written with no zip program (one g:Profiler table)
+kind: failure
+message:
+  Expected `file.exists(archive)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit241-enrich-download-zip.R
+test: E2: the archive is written with no zip program (no result tables)
+kind: failure
+message:
+  Expected `file.exists(archive)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit241-enrich-download-zip.R
+test: E3: the error note is archived with no zip program
+kind: failure
+message:
+  Expected `file.exists(archive)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

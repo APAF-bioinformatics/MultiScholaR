@@ -99,6 +99,13 @@ test_that("KIT-142: with MOFA2, a saved integration is reopened, repeated from i
     expect_true(all(c("expectations", "variance_explained") %in% groups))
     loaded <- suppressWarnings(MOFA2::load_model(saved$files[[5L]]))
     expect_identical(ncol(MOFA2::get_factors(loaded)[[1L]]), 5L)
+    # KIT-239 (L8, a guard): the Limitations' fixed sentence holds for the model MOFA2 trained: every likelihood Gaussian
+    # (the record's MOFA2 options, decoded) and one group of samples (`get_factors` gives one matrix per group).
+    opts <- decodeWorkflowRecordValue(block$model$mofa2_options)
+    message(sprintf("KIT-239 L8: likelihoods %s; groups %d", paste(unlist(opts$model$likelihoods), collapse = ", "),
+        length(MOFA2::get_factors(loaded))))
+    expect_true(length(opts$model$likelihoods) > 0L && all(unlist(opts$model$likelihoods) == "gaussian"))
+    expect_identical(length(MOFA2::get_factors(loaded)), 1L)
     expect_identical(nrow(utils::read.delim(saved$files[[6L]], colClasses = "character")), sum(rows))
     expect_identical(block$model$versions$MOFA2, "1.22.0")
     expect_identical(block$model$versions$mofapy2, "0.7.3")

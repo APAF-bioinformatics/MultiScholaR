@@ -203,7 +203,15 @@ completeProtImportSuccessState <- function(
 ) {
   # KIT-102 W6: the import frame's completion helper makes today's single write (setup_import complete, design_matrix
   # pending). Its notification is not used: the modal closes and the success text shows below, after the log lines.
-  updated_status <- complete(notify = FALSE)
+  # KIT-250: while the organism dialog is open the import is not complete; Confirm completes it.
+  waiting <- isTRUE(localData$waiting_for_organism_selection)
+  if (waiting) {
+    updated_status <- workflowData$tab_status
+    updated_status$setup_import <- "incomplete"
+    workflowData$tab_status <- updated_status
+  } else {
+    updated_status <- complete(notify = FALSE)
+  }
 
   messageFn("========================================")
   messageFn("[mod_prot_import] Data import completed successfully!")
@@ -215,7 +223,7 @@ completeProtImportSuccessState <- function(
   ))
   messageFn("========================================")
 
-  if (!isTRUE(localData$waiting_for_organism_selection)) {
+  if (!waiting) {
     removeModal()
     showNotification("Data import successful!", type = "message")
   } else {
@@ -244,7 +252,18 @@ resetProtImportWorkflowStateOnError <- function(
   removeModal()
   showNotification(paste("Error:", errorMessage), type = "error", duration = 10)
   localData$processing <- FALSE
+  # KIT-250: a failed import leaves no organism dialog waiting (removeModal above closed any).
+  localData$waiting_for_organism_selection <- FALSE
+  localData$organism_unconfirmed <- FALSE
 
+  invisible(clearProtImportWorkflowState(workflowData))
+}
+
+#' The workflow fields an import writes, cleared, and `setup_import` written `incomplete`: the error path's
+#' clearing (`resetProtImportWorkflowStateOnError`), shared with the organism dialog's Cancel (KIT-250).
+#' @return The new statuses, invisibly.
+#' @noRd
+clearProtImportWorkflowState <- function(workflowData) {
   workflowData$data_tbl <- NULL
   workflowData$data_format <- NULL
   workflowData$data_type <- NULL
