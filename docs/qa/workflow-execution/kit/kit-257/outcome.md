@@ -241,3 +241,37 @@ RUV-corrected figures. The composite and the report did not use them.
 - Not in this ticket: F1, the transcriptomics RUVIII export is never cleared, so after a later normalisation without
   RUV the report can still state that RUVIII was applied with an earlier k and show its figure. Routed to its own
   ticket (parked-20261125 row 38 (2)); until it has an owner this report states it.
+
+## Correction pass, part 2 (after trains 8 and 9; declared before R2' is sent)
+
+- Merged `origin/v0.9-staging` 828dd105 into `kit-257` (4a8801db): conflicts only in `NEWS.md` and the ledger (append
+  collisions; both kept, staging's first; KIT-257's row `VAL-<merge>` after VAL-272). Code under `R/` and `tests/`
+  merged without conflict.
+- M1 tests first (a092f2c2): the DA's own earlier figure under a `~` project path (KIT-243 E16's mocked owner; HOME a
+  temporary folder, restored on exit). Then M1 (2c05df04): `removeWorkflowDaOwnFigures`'s removal is
+  `removeWorkflowOwnFiles(own, <KIT-243's text with %s>)`; the rendered message is KIT-243's unchanged.
+- 19d58720: the W2 harness lines (I03) run only where `removeProtNormOwnFiles` exists, so the tests-only base runs W2
+  as staging does.
+- R2' binding: base `run-kit257-r2p-base` 0cc18658 = staging 828dd105 plus KIT-257's tests only (the new test file and
+  the W2 harness lines); head `kit-257` 19d58720. Files: `test-prot-norm-core.R`, `test-kit129-run-path.R`,
+  `test-prot-design-log2.R`, `test-kit257-norm-own-files.R`, `test-workflow-native-session.R`,
+  `test-kit243-summary-current-outputs.R`, `test-kit244-limpa-pass-through.R`, `test-workflow-saved-da.R`,
+  `test-trx-da-without-ruv.R`, `test-kit196-da-no-value-features.R`, `test-module-ci-trx-da.R`; check; env
+  `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`, `MULTISCHOLAR_KIT105_W3_DUMP=1` (as merge train 8); 3+3 shards and 2 check
+  jobs; ceiling 785 job-minutes (the ticket's correction pass).
+- Predictions (staging's current counts, merge-train-20261126a `tests.tsv`):
+
+  | File | Prediction |
+  |---|---|
+  | `test-kit257-norm-own-files.R` | `fixed`: base fails E1 to E10, E8b, G3, G5, the G2 `~` row and M1 at their base values (G1, G2 pass); head all pass. The two `~` rows skip, saying so, only if this R does not read HOME again (then they observe nothing) |
+  | `test-prot-norm-core.R` | 1548/306 both sides; `message-changed` only at W1 (a)'s and W2's `dia_normalization_refused` and `dia_normalization_retry` `files` (head 53f7545d and b51063f4, base bbfad929); everything else, W3 included, identical |
+  | `test-kit243-summary-current-outputs.R` | `same`, 246/0 (M1 keeps KIT-243's text and semantics) |
+  | `test-kit244-limpa-pass-through.R` | `same`, 204/0 |
+  | `test-workflow-saved-da.R` | `same`, 776/175 |
+  | `test-kit129-run-path.R` | `same`, 711/0 (1 skipped) |
+  | `test-prot-design-log2.R` | `same`, 226/0 |
+  | `test-workflow-native-session.R` | `same`, 734/0 (2 skipped) |
+  | `test-trx-da-without-ruv.R` | `same`, 103/0 |
+  | `test-kit196-da-no-value-features.R` | `same`, 540/0 |
+  | `test-module-ci-trx-da.R` | `same`, 52/1 |
+  | R CMD check | identical findings |
