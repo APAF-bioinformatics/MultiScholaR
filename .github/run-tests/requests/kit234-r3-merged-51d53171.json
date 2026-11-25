@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-234 R3: merged head 51d53171 (owner answers r1.3, staging dd769671 merged) against staging dd769671; R2 scope, check, W6; ceiling 345 job-minutes; decides A7, A12, stop rules 2-4",
+  "label": "KIT-234 R3 51d53171 vs staging dd769671",
+  "package_commit": "51d531718fee20684525a3b347fcbd3e09e942f8",
+  "base_commit": "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+  "tools_ref": "",
+  "tests": [
+    "test-app-shell-shared.R",
+    "test-applets-direct-shared.R",
+    "test-enrichment-significance.R",
+    "test-go-propagation.R",
+    "test-integration-gui.R",
+    "test-integration-removed-factors.R",
+    "test-integration-workbook-mofa.R",
+    "test-integration-workbook.R",
+    "test-kit202-intensity-filter-samples.R",
+    "test-module-ci-trx-app.R",
+    "test-workflow-saved-da.R",
+    "test-integration-workbook-api.R",
+    "test-github-management-direct-shared.R",
+    "test-kit234-workbooks-withdrawn.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-234/w6.R",
+      "args": [],
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
