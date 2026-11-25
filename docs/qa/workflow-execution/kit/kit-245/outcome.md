@@ -175,11 +175,11 @@ visible to the organisation's owners and to the members its settings allow (GitH
 ## Not checked
 
 - An authenticated push to github.com or any real GitHub answer (no token, no network by rule).
-- The R function on Windows with git present (run-tests is Linux only; the installed Windows application has no
-  git). In particular: R on Windows may unset a variable set to the empty string (`Sys.setenv`, through the C
-  runtime), which would leave `GIT_CONFIG_VALUE_0` missing so that git refuses the push after the repository was
-  created; INFERRED risk for R users on Windows only, not observed. The alternative carrying the same configuration
-  in `GIT_CONFIG_PARAMETERS` would avoid an empty variable.
+- (Closed by the correction: the R function on Windows with git present was observed in W1'-head, failing as I01
+  said, and in W1'-fix, pushing.) Still not checked on Windows: the user's real helpers (Git Credential Manager),
+  and the process list during a push.
+- R2c (the correction's base against head with check) and the staging merge: stopped at the NEWS conflict.
+- N02: the organisation name is not validated (legacy; no rule given).
 - The Linux systemd launcher (the probe runs the installed Rscript directly; `MSR_BUNDLE` is passed to its units per
   `R/utils_workflow_execution.R:1441-1445`, read, not run).
 - A user's own credential helper being bypassed (no helper existed on the runners).
@@ -225,3 +225,40 @@ visible to the organisation's owners and to the members its settings allow (GitH
 path to GitHub); R1s 45598693322 and R2s 45600718143 (Part S); R1p 45604664357 and R2p 45606131371 (product (b));
 W1 45606206919 (the fix in the installed bundles). Limits: Linux test runners only; no real GitHub call; Windows
 only as the installed application (no git).
+
+## Correction pass (AUDIT-KIT-245-impl-20261125; the ticket's one correction)
+
+Coordinator's rulings applied: I01 (the helper on git's command line, `-c credential.helper=` then the helper
+single-quoted on Unix; the token only in `MSR_GITHUB_PUSH_TOKEN`; not `GIT_CONFIG_PARAMETERS`), I02 (S6), I03 (a final
+'.', `...`, Windows device names refused; letters listed; the 2.31 floor kept), I04 (the observer refuses under
+`MSR_BUNDLE`), N01 (the helper answers only `get` for https://github.com: one helper string), I05 (the examples, the
+register's text), I06 (the ledger rows in train form; VAL-218 folded, approved), I07 (drafts in `wording.md`, not in the
+code). N02 (the organisation name): the register gives no exact rule, so nothing is invented: recorded for the
+coordinator. Commits: ad9c8b7a (tests only), f76429cc (tests only: S7 mechanics), 7718350f (fix and records repairs).
+
+How I01 fails first: on Linux the mechanism itself is asserted (S1: the command carries `-c credential.helper=` and
+the single-quoted helper with the variable's name; no `GIT_CONFIG_COUNT`), which fails on the audited head; the Windows
+failure itself is shown by W1'-head on the audited product tree. Windows git: the runner image's own Git for Windows
+(2.56.1) is put on R's `PATH` by the probe for case P6 only; nothing installed, uploaded or cached; guards as the Linux
+host (recorder, `insteadOf` of https://github.com/ to a local bare repository, `GIT_ALLOW_PROTOCOL=file`, dead proxy).
+
+- **R1c, run 45617558634** (`r1c-tests.tsv`, `r1c-failures.txt`): S1's four mechanism assertions, S6's example.com
+  assertion (the old helper answers every host), S7's seven IDs (`...`, `a.`, `nul`, `NUL.txt`, `con`, `COM1`,
+  `lpt9.log`: accepted and reaching `unlink`/`dir.create`, both stood in) and E2 (the observer pushed under
+  `MSR_BUNDLE`) failed by assertion as declared; S6's github.com and store checks passed (Linux), as declared.
+  Instrument defect (VAL-54, 1 of 3): S7's two accepted-ID rows stopped at `.gitignore` ("cannot open the connection")
+  because the `dir.create` stand-in left no staging folder; their decisive assertion (not refused) passed. Fixed in
+  f76429cc (the accepted rows use the real functions inside `tempdir()`; no expected value changed); its observation is
+  R2's base side.
+- **W1'-head, run 45617907710** (`w1c-head-values.tsv`; Windows only; product tree 9efafdad, which the audited head
+  41171e21 equals under `R/`): P6 with git 2.56.1: the POST, then git "error: missing config value GIT_CONFIG_VALUE_0" /
+  "fatal: unable to parse command-line config", the push failed (exit 128) and named the repository; the credential
+  check under the same block exit 128 with no answer. **I01 OBSERVED.**
+- **W1'-fix, run 45619494004** (`w1c-fix-values.tsv`; product tree 7718350f): Windows P6: the push succeeds locally
+  (tree as at G0), recorder 1, nothing holds the token; credential check: the token for github.com, nothing for
+  example.com, the decoy never answers, the decoy store is not written. A3 and AS3 again on all five hosts. **Met.**
+- **R2c: not run.** Stopped before it: merging `origin/v0.9-staging` (c4505c7f) conflicts in `NEWS.md` as well as the
+  ledger (both add a bullet at the top of `### Fixes`: KIT-245's two and KIT-251's one); the coordinator's rule is
+  "anything else conflicting: stop". The merge was aborted; nothing committed. Staging does not touch
+  `R/func_github_management.R`, `R/mod_omic_summary.R`, their tests, `packaging/` or the workflow since e0747fc1, so
+  W1'-fix holds for the merged tree.

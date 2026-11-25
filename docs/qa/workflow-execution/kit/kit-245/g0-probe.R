@@ -333,6 +333,73 @@ if (caseSet == "main") {
         say("P4.remote_branches", names(git2r::branches(git2r::repository(bare4))))
     })
 
+    # ---- (10) P6 (W1', audit I01, I02): Windows with git present. The runner image's own Git for Windows is put on
+    # R's PATH for this case only (K245_WINDOWS_GIT_DIR, set by the step); the guards are the redirect of
+    # https://github.com/ to a local bare repository, GIT_ALLOW_PROTOCOL=file and the dead proxy, checked first.
+    runCase("P6", (function() {
+        gitDir <- Sys.getenv("K245_WINDOWS_GIT_DIR")
+        if (!isWindows || !nzchar(gitDir)) {
+            say("P6", "skipped: not the Windows invocation")
+        } else {
+            oldPath <- Sys.getenv("PATH")
+            Sys.setenv(PATH = paste(gitDir, oldPath, sep = ";"), GCM_INTERACTIVE = "never")
+            on.exit(Sys.setenv(PATH = oldPath), add = TRUE)
+            say("P6.Sys.which(git)", Sys.which("git"))
+            say("P6.git --version", gitText("--version")$text)
+            q <- gitText(c("config", "--global", "--get-regexp", "^(url|http)\\."))
+            say("P6.git_config_global_url_http", q$text)
+            if (!any(grepl("insteadof https://github.com/$", q$text)) ||
+                !any(q$text == "http.proxy http://127.0.0.1:9")) {
+                fault("P6: git does not see the redirect of https://github.com/ and the dead proxy")
+            }
+            # The push, through the function under test, to the local bare repository.
+            bare <- file.path(remoteRoot, ORG, "k245-p6.git")
+            dir.create(bare, recursive = TRUE, showWarnings = FALSE)
+            git2r::init(bare, bare = TRUE)
+            runPush("P6", makeProject("k245-p6", dataFiles = TRUE), "k245-p6")
+            tree <- gitText(c("--git-dir", bare, "ls-tree", "-r", "--name-only", "refs/heads/main"))
+            say("P6.pushed_tree", if (length(tree$text)) tree$text else "<none>")
+            # The credential mechanism with no network: the function's own git options (fix) or the audited head's
+            # environment block (base), under a global configuration of two decoy helpers.
+            home <- file.path(outDir, "p6-home")
+            dir.create(home, showWarnings = FALSE)
+            store <- file.path(home, "decoy-store")
+            decoy <- file.path(home, "gitconfig-decoy")
+            writeLines(c("[credential]", "\thelper = \"!f() { echo username=decoy; echo password=decoy; }; f\"",
+                sprintf("\thelper = \"store --file %s\"", normalizePath(store, winslash = "/", mustWork = FALSE))), decoy)
+            oldGlobal <- Sys.getenv("GIT_CONFIG_GLOBAL")
+            Sys.setenv(GIT_CONFIG_GLOBAL = decoy)
+            on.exit(Sys.setenv(GIT_CONFIG_GLOBAL = oldGlobal), add = TRUE)
+            ns <- asNamespace("MultiScholaR")
+            fixed <- exists("githubPushCredentialHelper", envir = ns, inherits = FALSE)
+            say("P6.mechanism", if (fixed) "git -c options (fix)" else "GIT_CONFIG_COUNT environment block (audited head)")
+            fill <- function(host, operation = "fill", extra = character()) {
+                input <- c("protocol=https", paste0("host=", host), extra, "")
+                if (fixed) {
+                    cmd <- sprintf("git -c credential.helper= -c %s credential %s",
+                        shQuote(get("githubPushCredentialHelper", envir = ns)()), operation)
+                    out <- withr::with_envvar(c(MSR_GITHUB_PUSH_TOKEN = DUMMY),
+                        suppressWarnings(system(cmd, intern = TRUE, input = input)))
+                } else {
+                    out <- withr::with_envvar(c(GIT_CONFIG_COUNT = "2", GIT_CONFIG_KEY_0 = "credential.helper",
+                        GIT_CONFIG_VALUE_0 = "", GIT_CONFIG_KEY_1 = "credential.helper",
+                        GIT_CONFIG_VALUE_1 = "!f() { echo username=x-access-token; echo \"password=$MSR_GITHUB_PUSH_TOKEN\"; }; f",
+                        MSR_GITHUB_PUSH_TOKEN = DUMMY),
+                        suppressWarnings(system(paste("git credential", operation), intern = TRUE, input = input)))
+                }
+                list(status = if (is.null(attr(out, "status"))) 0L else attr(out, "status"), text = out)
+            }
+            gh <- fill("github.com")
+            say("P6.credential_github_status", gh$status)
+            say("P6.credential_github_gives_dummy", yn(paste0("password=", DUMMY) %in% gh$text))
+            say("P6.credential_github_gives_decoy", yn("password=decoy" %in% gh$text))
+            other <- fill("example.com")
+            say("P6.credential_example_gives_dummy", yn(any(grepl(DUMMY, other$text, fixed = TRUE))))
+            fill("github.com", "approve", c("username=x-access-token", paste0("password=", DUMMY)))
+            say("P6.decoy_store_written", yn(file.exists(store)))
+        }
+    })())
+
     # ---- (9) P5: (b)'s feasibility: the Summary UI of the four omics.
     runCase("P5", {
         for (omic in c("proteomics", "lipidomics", "metabolomics", "transcriptomics")) {
