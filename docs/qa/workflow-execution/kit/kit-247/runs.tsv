@@ -5,3 +5,7 @@ run_id	commit	purpose	minutes	result
 45612382879	3ec7bcf8 vs 526ec2aa	R2 base against head, 66 files, check	533	new file fixed (117/0), import-config 2/2 only on head, 63 same, check identical; NEW FAILURE test-workflow-native-session.R (KIT-026 test): stop rule 3
 45629316617	e6871939	R1' correction pass, tests only (no-session rows, native-session)	21	as predicted: N1, N2 fail, N3 passes; KIT-026 errors as in R2
 45629323979	d3a95721 vs 42846c0e	R2' correction pass, 69 files, check	545	as predicted: 66 files same (test-workflow-native-session.R same again), 3 kit247 files only on head all pass (117, 2, 7), check identical
+45666094374	fbf729ef	R1'' second correction, tests only (E7, I02, I07, G3)	42	as predicted except I07 lipid (failed); later shown to be I02's planted failure leaking (instrument)
+45666101179	1ab4630e vs abfc99ac	R2'' comparison, 76 files, check	568	73 files same, check identical; kit247 file on head 151/5: I07 lipid and I02's second save, both from the leaked planted failure (instrument); recorded as it is, superseded by the final comparison
+45676491133	97fd133f	R1''' tests only (I07 recording, I07b, E15b, VAL-288 rows)	66	instrument: every lipid lane after I02 failed its design save with the planted error; VAL-288 rows fail as predicted
+45688025752	5c1229f4	R1'''b VAL-54 instrument rerun 1 of 3 (I02's failure scoped)	58	as predicted: I02, I07 (both lanes), I07b, E15b, G3 pass; F288a (2 lanes), F288b fail, F288c errors; I07 lipid classified: the run completes, DA on the NEW groups, record agrees
