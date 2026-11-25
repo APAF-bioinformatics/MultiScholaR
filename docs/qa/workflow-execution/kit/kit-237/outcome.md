@@ -81,9 +81,42 @@ minutes; WL ceiling 220 job-minutes (14.67 core-hours), expected 102; at most th
 - SC-07: WL-2, WL-3 and the four user-mode sessions run before the three added journeys.
 - SC-08: `LongPathsEnabled` restored after the driver (finally).
 
+## WL: declaration and predictions (written before the run, 2026-11-25)
+
+- **Purpose:** the lifecycle on the installed Windows application, one journey per omic shipped on Windows (OD-1 (b),
+  VAL-225); decides "instrument proven on Windows" (WL-0, WL-0u, WL-1 to WL-4 without a fail) and WL-5.
+- **Binding:** commit under test `7327607f` (`v0.9-staging` head, merged into this branch as c4829951; its product
+  tree equals e0747fc1, KIT-233's fourth L, which differs from it only in `docs/methods-decision-ledger.md`; the bundle
+  is built from this branch's tree, whose package paths equal `7327607f`'s, so the early check and the journey step's
+  check bind it); journey driver `76e4b519` (`kit-233-journey`, instrument proven by run 45601782272, VAL-234); route
+  files at the commit that adds this declaration; mode test (WL; the user mode of VAL-216 is WJ''s, with WL-0u
+  proving the chooser); e2e lanes on, GUI-entry lanes off; `deadline_minutes` 150.
+- **Machine:** a GitHub-hosted `windows-2025` runner (Windows Server 2025 Datacenter, 4 cores), Windows' long-path
+  support switched off during the journey (`LongPathsEnabled` 0, restored afterwards), the application's default
+  project folder.
+- **Bounds:** journey step `timeout-minutes` 160, internal deadline 150 minutes, hard wait per step 10 minutes; WL
+  ceiling 220 job-minutes (14.67 core-hours), expected 102 (6.80); at most three VAL-54 instrument reruns, each
+  recorded here and in `runs.tsv`; a result is not re-run.
+- **Predictions:**
+  1. WL-0 passes in full (commit checks; Chrome; launch and attach; launcher `process`; firewall; LongPathsEnabled 0;
+     the application's `.libPaths()` inside the bundle; no test-features line).
+  2. WL-1 on `prot_lfq`: S1 to S10.5 complete with at least one heavy step run by a worker. Known findings, not new:
+     S9.d's download not a zip that opens (K1, KIT-241 not merged), three kind-3 placeholder export names (K2).
+     N1 to N3 equal.
+  3. WL-4 (a), (b), (c) pass on LFQ; WL-4 (a) on `metab_lc` passes.
+  4. WL-2 and WL-3 pass.
+  5. WL-0u: uncertain (the chooser has never been driven on Windows); predicted to pass on all four routes if the
+     chooser's first volume is the drive holding the default project folder.
+  6. The three added journeys reach S10.5. Known: on `lipid_canonical` and `metab_lc` "Analyze Internal Standards"
+     refuses with "No internal standards found" (K12, KIT-242) and QC goes on; placeholder export names (K3, K4).
+     `trx_screen`'s sample-key check is equal (KIT-222 merged; a shared key would be a finding). `metab_lc` N2 equal.
+  7. WL-5 passes on LFQ (KIT-233's L-5 passed on the same signals); on the three added routes uncertain (first check of
+     their DOM signals).
+  8. The whole journey finishes inside the 150-minute deadline.
+
 ## Observed
 
-Nothing has run.
+Nothing has run yet.
 
 ## Checked locally (no R)
 
