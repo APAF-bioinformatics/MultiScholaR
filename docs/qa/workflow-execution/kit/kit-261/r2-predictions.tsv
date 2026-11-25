@@ -1,0 +1,45 @@
+file	predicted_verdict	note
+test-prot-norm-core.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit129-run-path.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-omics-norm-state-guards.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-omic-da-module.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-prot-norm-worker-figures.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-workflow-omics-application-reads.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-workflow-omics-worker.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit243-summary-current-outputs.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit212-da-current.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit257-norm-own-files.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-workflow-omics-residency.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit207-summary-head-guard.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-gui-entry-metabolomics.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-omic-norm-module.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit261-norm-run-button.R	fixed	base = tests-only 4de95bbb: 85 passed, 20 failed (the E rows, as R1 45671049216); head: 105 passed, 0 failed
+test-omic-summary-module.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit259-pearson-histogram-figure-failure.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-module-ci-trx-summary.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-trx-norm-module.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-module-ci-trx-da.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-gui-entry-lipidomics.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-module-ci-trx-norm.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-omics-norm-core.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit252-managed-failure-text.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-gui-entry-transcriptomics.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-metab-03d-norm-module-characterization.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-module-ci-trx-app.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-omic-design-module.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-omic-norm-ruv-design.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-workflow-kit-harness.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-kit174-ruv-grouping.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-prot-05d-norm-module-characterization.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-workflow-ruv-pearson-diagnostic.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-ci-impact-audit.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-ci-impact-router.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-workflow-server-shared.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-lipid-12a-norm-module-characterization.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-ci-impact-e2e.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-prot-05c-norm-module-seams.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-prot-05b-norm-module-contracts.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-metab-03c-norm-module-seams.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-metab-03b-norm-module-helper-characterization.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+test-lipid-12-norm-module-contracts.R	same	no stored reference moves (ticket section 6); identical failure lists on both sides count as same
+R CMD check	identical	no finding only on head or only on base
