@@ -160,4 +160,61 @@ need `sva`, `limpa` or `mixOmics` (this run installs all three); the verdict is 
 
 ## Result
 
-(filled after the run)
+Run 45681065939 (request `merge-train-20261126h-4308c5ae`, run-tests commit 0e351e1c, dispatched normally), head
+4308c5ae against train 14's tip e69b411e, sent once; conclusion success; about 947.9 job-minutes of the 2,200 ceiling
+(tests 918.7, check 28.3, plan and results 0.8; summed from the API's job start and end times). Tables in
+`merge-train-20261126h/` (`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`, `compare-failures.txt.gz`).
+
+Observed, 166 files: 152 `same`, 14 not `same`. Compared against the declaration, file by file:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | prediction |
+|---|---|---|---|---|
+| test-ruv-control-anova-grouping.R | absent | 139/0/0/0 | only-on-head | KIT-190, held |
+| test-kit204-prot-da-not-tested.R | absent | 81/0/0/0 | only-on-head | KIT-204, held |
+| test-kit217-intensity-filter-missing.R | absent | 344/0/0/0 | only-on-head | KIT-217, held |
+| test-workflow-omics-ruv-cancor-once.R | 16/0/0/0 | 16/0/0/0 | same | **MISS**: declared base 14/2 failing at `:73`, verdict `fixed`; base passes, so `same` (the register's own statement, "the row-order rule passes on staging", was right; the brief's was not) |
+| test-omic-norm-module.R | 639/0/0/0 | 639/0/0/0 | same | KIT-190, held (the 12 re-dumped values pass; train 14's base values untouched) |
+| test-prot-norm-core.R | 1548/306/0/0 | 1548/306/0/0 | message-changed | KIT-190, held: 2 failures change message, the lipid and metab RUV declaration test; 303 identical |
+| test-workflow-omics-binding-steps.R | 58/1/0/0 | 57/2/0/0 | message-changed | KIT-190 + KIT-217, held |
+| test-workflow-omics-declarations.R | 45/23/0/0 | 43/25/0/0 | message-changed | combined prediction 43/25 held (not 41/27: the two tickets' new failures are the same two expectations) |
+| test-workflow-operation-registry.R | 1099/2/0/0 | 1107/2/0/0 | count-changed | KIT-217, held; the same two failures, identical on both sides |
+| test-omic-da-module.R | 1289/80/0/0 | 1288/81/0/0 | message-changed | KIT-204, held (one more failing expectation, 12 message changes in a 13-block difference) |
+| test-metab-qc-shared.R | 20/0/0/0 | 23/0/0/0 | count-changed | KIT-217, held |
+| test-omic-qc-module.R | 160/0/0/0 | 156/4/0/0 | new-failure | KIT-217, held |
+| test-gui-entry-proteomics.R | 168/25/0/0 | 92/101/0/0 | new-failure | KIT-217, held |
+| test-gui-entry-lipidomics.R | 35/0/0/0 | 19/16/0/0 | new-failure | KIT-217, held |
+| test-gui-entry-metabolomics.R | 105/0/0/0 | 57/48/0/0 | new-failure | KIT-217, held |
+| **test-kit254-omics-correlation-skip.R** | 379/0/0/0 | 376/3/0/0 | new-failure | **UNDECLARED MOVE (finding)**: predicted `same` |
+
+`test-workflow-figure-paths.R`: 0 failures on both sides (the "259" flake did not occur). Every other `same` file has the
+base counts of the predictions table (0 differences by script over `compare.tsv`); the four files declared "read from
+the run" read `test-module-ci-trx-qc.R` 38/0/1/0, `test-workflow-omics-owner.R` 78/1/0/0,
+`test-kit172-log2-rule.R` 212/0/0/0, `test-workflow-saved-exports.R` (see `compare.tsv`), all `same`. No skip in the new
+files (sva present). `test-kit214-sample-columns.R` 176/0 and `test-gui-entry-transcriptomics.R` 16/13 `same`.
+
+**The finding: `test-kit254-omics-correlation-skip.R`** (KIT-254 in the base, KIT-190 in the head). Three failures, all
+`lipid_ruv` (the E7 tests with RUV): the run's sample list after the correlation filter at `t_hi` reads
+`A_1 A_2 A_3 A_4 B_2 B_3 B_4` where the test expects `A_2 A_3 A_4 A_5 A_6 B_1 B_2 B_3 B_4` (precondition "Apply(t_hi)
+lipid_ruv", and the re-apply check). Inferred, not shown: KIT-190 chooses other RUV control features, so the
+RUV-corrected values on KIT-254's lipid fixture change and the correlation filter keeps other samples; the expectations
+were written against the earlier control rule. The metabolomics RUV case passes. Neither ticket's register lists this
+file as moving (KIT-190's register named it as a scope file and predicted `same`; it was absent from its R2, which ran on
+staging without KIT-254). Not fixed and not re-run here (the stop rule). Someone with the authority over the test has
+to decide: re-pin its expected samples under KIT-190's rule or order the merges differently.
+
+**R CMD check:** 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on
+base (held).
+
+Verdicts:
+- KIT-204: holds exactly.
+- KIT-217: holds exactly (344/0; 168/25 -> 92/101; lipid 16 of 35 and metab 48 of 105; test (b)'s four; registry +8).
+- KIT-190: holds except (1) the cancor-once base count (a miss in the declaration, favourable: base 16/0 not 14/2) and
+  (2) the undeclared `test-kit254-omics-correlation-skip.R` failures, an interaction with train 13 (KIT-254).
+- Check: identical.
+
+Train verdict: NOT GREEN as declared, on those two items; every other prediction held. The coordinator decides; the
+train is not rebuilt or re-run here. It lands, if at all, only after trains 13 and 14 land with their code unchanged.
+
+Not checked: trains 13 and 14's own results (train 14's run 45676428221 was out when this one was sent; its result was
+not read); any file outside the 166; the full suite; the digest values (read from the run).
