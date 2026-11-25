@@ -8,10 +8,10 @@
 # normalisation markers), E13 (KIT-145's guard counts the other samples), E17 (Part C: a proteomics sample with no
 # value leaves the design), E26 (a sample with no value in any assay leaves the design), NA1 and NA2 (the record never
 # says applied for an assay left unchanged), and the guards G1, G2, G3 and G7 (runs without a fallback are unchanged:
-# the earlier rule and the current one give identical results). Part B's rows (E14 to E16, E18 to E25, NA3, G4, G5,
-# G8, G9; E16 and NA3 were run failing-first in R1a) are written on a base holding KIT-224 and KIT-190; item vii's (E21,
-# G6) after KIT-255's OD-1. None of these rows runs the correlation filter (KIT-255's kernels): they assume nothing
-# about which sample columns exist after it.
+# the earlier rule and the current one give identical results). Part B's rows (E14 to E16, E18 to E20, E22 to E25, E25e,
+# NA3, E11c, the row of ruling (7), G4, G5, G8, G9; E16 and NA3 were run failing-first in R1a) follow at the end of the
+# file, written on a base holding KIT-224 and KIT-190; item vii (E21, G6) moved to KIT-255 (VAL-283). None of these rows
+# runs the correlation filter (KIT-255's kernels): they assume nothing about which sample columns exist after it.
 #
 # Synthetic objects (ticket section 4): two assays A1, A2 of 40 features, 2 groups x 6 samples (KIT-172's design),
 # levels about 20 log2, one loading per sample N(0, 0.5^2), noise N(0, 0.25^2), 5 standards `IS_<assay>_<i>` whose
@@ -176,9 +176,12 @@ kit242Tab <- function(class, object, managed, inputs) {
         session$flushReact()
       }
       res$normalization_complete <- shiny::isolate(session$userData$probe_norm$normalization_complete)
+      res$ruv_complete <- shiny::isolate(session$userData$probe_norm$ruv_complete)
+      res$ruv_results <- shiny::isolate(session$userData$probe_norm$ruv_optimization_results)
     }))))
   })
-  list(log = as.character(unlist(probe$log)), notes = notes$notes, normalization_complete = res$normalization_complete)
+  list(log = as.character(unlist(probe$log)), notes = notes$notes, normalization_complete = res$normalization_complete,
+    ruv_complete = res$ruv_complete, ruv_results = res$ruv_results)
 }
 
 for (class in c("lipid", "metab")) {
@@ -720,3 +723,467 @@ test_that("KIT-242 Part C: the protein normalisation text equals the earlier tex
     fixed = TRUE)
 })
 
+# ==== Part B (ticket r1.6; the coordinator's rulings of 2026-11-26): legacy RUV-III-C and the declared design ===========
+# Rows E14 to E16, E18 to E20, E22 to E25, E25e (VAL-290), NA3, the marker row E11c, the row of ruling (7), and the guards
+# G4, G5, G8 and G9. Rules (VAL-242 OD-1 (c), OD-3 (d), Q6.1, Q6.2 (c); VAL-290): in each assay a sample or a feature with
+# no value is left out of the search and the correction and put back as missing; a feature the control vector does not
+# name is not a control; an assay with no usable controls, or for which no number of factors is supported by the data,
+# keeps its values without RUV, with a notice and a record; a failed computation and an invalid argument stop
+# (`omics_ruv_failed`); no assay is dropped. Seeds 242000 + k as above.
+
+kit242RuvRule <- function(rule) list(MultiScholaR.ruv_fallback = rule)
+
+#' The object's tables as tibbles (the legacy RUV method's input type; the owner's states are tibbles).
+kit242Tibbles <- function(object, binding) {
+  methods::slot(object, binding$data_slot) <- lapply(methods::slot(object, binding$data_slot), tibble::as_tibble)
+  object
+}
+
+#' Intensities without standards, A2's sample B_6 with no value (the object of E18 to E20; G0 C4 after ITSD).
+kit242RuvEmptySampleValues <- function(k) {
+  v <- kit242Draw(k, n_is = c(A1 = 0L, A2 = 0L))
+  v$A2[, "B_6"] <- NA_real_
+  v
+}
+
+#' C12 a-decl's object: every A2 feature misses one value, so no A2 feature is observed in every sample.
+kit242RuvIncompleteValues <- function(k) {
+  v <- kit242Draw(k, n_is = c(A1 = 0L, A2 = 0L))
+  runs <- kit242Runs()
+  for (j in seq_len(nrow(v$A2))) v$A2[j, runs[((j - 1L) %% length(runs)) + 1L]] <- NA_real_
+  v
+}
+
+#' QC, log2 and between-sample normalisation through the declarations.
+kit242RuvChain <- function(binding, owner, config, method = "cyclicloess") {
+  kit242Prepare(binding, owner, config)
+  kit172Quiet(runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, method, config))
+}
+
+#' Legacy RUV on an object as the declaration's kernel computes it with nothing to leave out: the search, the bound on k,
+#' then `ruvIII_C_Varying` (the reference "legacy RUV on a one-assay object of A2 without B_6" of E18 and E19).
+kit242LegacyRuvReference <- function(binding, object, parameters) {
+  results <- binding$optimise_ruv(object, parameters$ruv_mode, parameters[setdiff(names(parameters), "ruv_mode")])
+  k <- omicsRuvKBound(object, results, parameters$ruv_mode, binding$extract_best_k(results))$best_k
+  list(k = k, object = ruvIII_C_Varying(object, ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_number_k = k,
+    ctrl = binding$extract_controls(results)))
+}
+
+#' One assay of an object without some sample columns (the object's other assays removed).
+kit242OneAssayWithout <- function(object, binding, assay, samples) {
+  tables <- methods::slot(object, binding$data_slot)
+  methods::slot(object, binding$data_slot) <- stats::setNames(list(tables[[assay]][, setdiff(names(tables[[assay]]), samples)]), assay)
+  object
+}
+
+kit242ManualRuv <- function() utils::modifyList(kit172LegacyRuv("manual"), list(manual_k = 1L, manual_percentage = 10))
+
+#' Write the owner's record, close it, and replay the record on a copy of its project (E11's procedure).
+kit242ReplayRecord <- function(fixture, root, harness, api) {
+  owner <- fixture$owner
+  json <- file.path(root, "record.json")
+  kit172Quiet(writeWorkflowAnalysisRecord(owner, json))
+  history <- unlist(owner$getHistory())
+  closeDIAStateAdapter(owner)
+  record <- jsonlite::read_json(json, simplifyVector = FALSE)
+  source_dir <- fixture$source_dir
+  copy <- withr::local_tempdir(.local_envir = parent.frame())
+  stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
+  store_root <- dirname(dirname(list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
+  copy_root <- file.path(copy, substring(store_root, nchar(source_dir) + 2L))
+  operations <- vapply(record$steps, function(s) s$operation, "")
+  states <- vapply(record$steps, function(s) s$state, "")
+  prepared <- harness$kitPrepareReplayProject(copy_root, states[seq_len(sum(cumprod(operations %in% c("import", "design_builder"))))], api)
+  files <- c(list.files(file.path(source_dir, "import_sources"), full.names = TRUE), file.path(source_dir, "design_matrix.tab"))
+  sums <- vapply(files, function(f) digest::digest(file = f, algo = "sha256"), "")
+  inputs <- character()
+  for (input in record$inputs) {
+    hit <- files[sums == (input$sha256 %||% "")]
+    if (length(hit)) inputs[[input$role]] <- hit[[1L]]
+  }
+  replay <- suppressWarnings(suppressMessages(harness$kitReplayJourney(record, prepared, store_root, inputs, fixture$paths,
+    withr::local_tempdir(.local_envir = parent.frame()), api)))
+  list(record = record, history = history, replay = replay)
+}
+
+for (class in c("lipid", "metab")) {
+  binding <- kit172Binding(class)
+  prefix <- binding$prefix
+
+  # ---- E14: no control found in A2 (Q6.2 (c), no usable controls); today A2 is dropped -------------------------------
+  test_that(paste("KIT-242 E14:", class, "legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning"), {
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(14L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    run <- kit242Conditions(ruvIII_C_Varying(object, ruv_grouping_variable = "group", ruv_number_k = list(A1 = 1L, A2 = 1L),
+      ctrl = list(A1 = sprintf("A1_F%03d", 1:8), A2 = c("absent_1", "absent_2"))), "omics_ruv_not_applied")
+    expect_identical(names(methods::slot(run$value, binding$data_slot)), c("A1", "A2"))
+    expect_length(run$kept, 1L)
+    if (length(run$kept)) {
+      expect_identical(run$kept[[1L]]$assay, "A2")
+      expect_identical(run$kept[[1L]]$reason, "no_usable_controls")
+    }
+    a2 <- kit242Matrix(run$value, binding, "A2")
+    expect_false(is.null(a2))
+    if (!is.null(a2)) expect_equal(a2, kit242Matrix(object, binding, "A2"), tolerance = 0)
+    expect_false(kit242Equal(kit242Matrix(object, binding, "A1"), kit242Matrix(run$value, binding, "A1")))
+  })
+
+  # ---- E15: no control in any assay; today the input object is returned with no condition ---------------------------
+  test_that(paste("KIT-242 E15:", class, "legacy RUV-III-C with no control in any assay keeps both, each with a classed warning"), {
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(15L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    run <- kit242Conditions(ruvIII_C_Varying(object, ruv_grouping_variable = "group", ruv_number_k = list(A1 = 1L, A2 = 1L),
+      ctrl = list(A1 = c("absent_1", "absent_2"), A2 = c("absent_3", "absent_4"))), "omics_ruv_not_applied")
+    expect_identical(vapply(run$kept, function(w) w$assay, ""), c("A1", "A2"))
+    for (assay in c("A1", "A2")) expect_equal(kit242Matrix(run$value, binding, assay), kit242Matrix(object, binding, assay), tolerance = 0)
+  })
+
+  # ---- E16: an invalid k stops (an argument; every option); today the assay is dropped with a logger line -------------
+  test_that(paste("KIT-242 E16:", class, "legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)"), {
+    values <- lapply(kit242Draw(16L, n_is = c(A1 = 0L, A2 = 0L)), log2)
+    object <- kit242Tibbles(kit242Object(values, class), binding)
+    controls <- list(A1 = sprintf("A1_F%03d", 1:8), A2 = sprintf("A2_F%03d", 1:8))
+    err <- expect_error(suppressWarnings(suppressMessages(ruvIII_C_Varying(object, ruv_grouping_variable = "group",
+      ruv_number_k = list(A1 = 1L, A2 = -1L), ctrl = controls))), class = "omics_ruv_failed")
+    expect_identical(err$assay, "A2")
+    expect_identical(err$reason, "invalid_k")
+  })
+
+  # ---- E18: legacy Automatic, A2 with B_6 empty (item 1a i to iii); today A2 is dropped (G0 C4) -----------------------
+  test_that(paste("KIT-242 E18:", class, "legacy Automatic RUV corrects A2 without B_6, keeps B_6 empty there and in A1 keeps it"), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- kit242Owner(kit242Object(kit242RuvEmptySampleValues(18L), class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    expect_identical(owner$current_state, paste0(prefix, "_ruv_corrected"))
+    after <- owner$getState(owner$current_state)
+    a2 <- kit242Matrix(after, binding, "A2")
+    expect_false(is.null(a2))
+    expect_true(all(is.finite(kit242Matrix(after, binding, "A1")[, "B_6"])))
+    if (is.null(a2) || inherits(run, "error")) return(invisible())
+    expect_true(all(is.na(a2[, "B_6"])))
+    reference <- kit172Quiet(kit242LegacyRuvReference(binding, kit242OneAssayWithout(normalised, binding, "A2", "B_6"),
+      kit172LegacyRuv("automatic")))
+    ref <- kit242Matrix(reference$object, binding, "A2")
+    others <- setdiff(kit242Runs(), "B_6")
+    expect_identical(sort(rownames(a2)), sort(rownames(ref)))
+    expect_equal(a2[rownames(ref), others], ref[, others], tolerance = 0)
+    expect_identical(as.integer(run$value$best_k$A2), as.integer(reference$k$A2))
+    expect_identical(run$value$ruv_samples_excluded$A2, "B_6")
+  })
+
+  # ---- E19: legacy Manual on the same object; today omics_ruv_insufficient_controls stops the run ---------------------
+  test_that(paste("KIT-242 E19:", class, "legacy Manual RUV corrects A2 without B_6 and keeps B_6 empty there"), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- kit242Owner(kit242Object(kit242RuvEmptySampleValues(19L), class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit242ManualRuv(), config)), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    if (inherits(run, "error")) return(invisible())
+    a2 <- kit242Matrix(owner$getState(paste0(prefix, "_ruv_corrected")), binding, "A2")
+    expect_false(is.null(a2))
+    if (is.null(a2)) return(invisible())
+    expect_true(all(is.na(a2[, "B_6"])))
+    reference <- kit172Quiet(kit242LegacyRuvReference(binding, kit242OneAssayWithout(normalised, binding, "A2", "B_6"), kit242ManualRuv()))
+    ref <- kit242Matrix(reference$object, binding, "A2")
+    others <- setdiff(kit242Runs(), "B_6")
+    expect_equal(a2[rownames(ref), others], ref[, others], tolerance = 0)
+  })
+
+  # ---- E20: the declared design (items iv to vi); today A2 cannot be given factors ----------------------------------
+  test_that(paste("KIT-242 E20:", class, "the declared design computes A2's factors on the 11 samples and leaves B_6 out of A2's DA"), {
+    skip_if_not_installed("ruv")
+    object <- kit242Tibbles(kit242Object(lapply(kit242RuvEmptySampleValues(20L), log2), class), binding)
+    run <- tryCatch(kit172Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user")), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    if (inherits(run, "error")) return(invisible())
+    others <- setdiff(kit242Runs(), "B_6")
+    w <- run$factors$A2$W
+    expect_identical(rownames(w), others)
+    expect_identical(run$factors$A2$samples_excluded, "B_6")
+    reference <- kit172Quiet(runOmicsRuvFactors(kit242OneAssayWithout(object, binding, "A2", "B_6"), "groups_all_features", 1L, "user"))
+    expect_equal(w, reference$factors$A2$W, tolerance = 0)
+    corrected <- kit242Matrix(run$corrected, binding, "A2")
+    expect_true(all(is.na(corrected[, "B_6"])))
+    expect_equal(corrected[, others], kit242Matrix(reference$corrected, binding, "A2")[rownames(corrected), others], tolerance = 0)
+    design <- as.data.frame(kit172Design())
+    expr <- kit242TableMatrix(object, binding, "A2")
+    da <- applyOmicsRuvFactorsToDaInput(expr, design, "~ 0 + group", "Run", run$factors$A2, "A2", "group")
+    ref_da <- applyOmicsRuvFactorsToDaInput(expr[, others], design, "~ 0 + group", "Run", reference$factors$A2, "A2", "group")
+    expect_identical(colnames(da$expr_matrix), others)
+    expect_equal(da$expr_matrix, ref_da$expr_matrix, tolerance = 0)
+    expect_identical(as.character(da$design_matrix$Run), others)
+    kept <- as.character(ref_da$design_matrix$Run) %in% others
+    expect_equal(da$design_matrix$W1, ref_da$design_matrix$W1[kept], tolerance = 0)
+    expect_identical(da$formula_string, ref_da$formula_string)
+  })
+
+  # ---- E22: Q6.1, a feature with exactly one value; today the search fails at the control alignment ----------------
+  test_that(paste("KIT-242 E22:", class, "a feature with one value is not a control and the search and correction of A2 run"), {
+    skip_if_not(workflowOwnerCapable())
+    v <- kit242Draw(22L, n_is = c(A1 = 0L, A2 = 0L))
+    v$A2["A2_F001", -1L] <- NA_real_
+    fixture <- kit242Owner(kit242Object(v, class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    if (inherits(run, "error")) return(invisible())
+    after <- owner$getState(paste0(prefix, "_ruv_corrected"))
+    a2 <- kit242Matrix(after, binding, "A2")
+    expect_false(is.null(a2))
+    if (!is.null(a2)) expect_false(kit242Equal(kit242Matrix(normalised, binding, "A2"), a2))
+    expect_identical(run$value$ruv_status$A2, "corrected")
+    controls <- run$optimisation$A2$control_genes_index
+    expect_false(isTRUE(unname(controls["A2_F001"])))
+  })
+
+  # ---- E23: Q6.1, a feature with no value; today NIPALS refuses and A2 is dropped -------------------------------------
+  test_that(paste("KIT-242 E23:", class, "a feature with no value is left out of the search and correction and kept empty"), {
+    skip_if_not(workflowOwnerCapable())
+    v <- kit242Draw(23L, n_is = c(A1 = 0L, A2 = 0L))
+    v$A2["A2_F001", ] <- NA_real_
+    fixture <- kit242Owner(kit242Object(v, class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config, method = "none")
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    if (inherits(run, "error")) return(invisible())
+    a2 <- kit242Matrix(owner$getState(paste0(prefix, "_ruv_corrected")), binding, "A2")
+    expect_false(is.null(a2))
+    if (is.null(a2)) return(invisible())
+    expect_true("A2_F001" %in% rownames(a2))
+    if ("A2_F001" %in% rownames(a2)) expect_true(all(is.na(a2["A2_F001", ])))
+    expect_false(kit242Equal(kit242Matrix(normalised, binding, "A2"), a2))
+    expect_identical(run$value$ruv_features_excluded$A2, "A2_F001")
+  })
+
+  # ---- E24: Q6.2 (c), no usable controls (C12 a-decl's object): A2 kept without RUV, recorded and told -----------------
+  test_that(paste("KIT-242 E24:", class, "an assay with no usable controls keeps its values without RUV, recorded per assay"), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- kit242Owner(kit242Object(kit242RuvIncompleteValues(24L), class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    if (inherits(run, "error")) return(invisible())
+    after <- owner$getState(paste0(prefix, "_ruv_corrected"))
+    a2 <- kit242Matrix(after, binding, "A2")
+    expect_false(is.null(a2))
+    if (!is.null(a2)) expect_equal(a2, kit242Matrix(normalised, binding, "A2"), tolerance = 0)
+    expect_false(kit242Equal(kit242Matrix(normalised, binding, "A1"), kit242Matrix(after, binding, "A1")))
+    outcomes <- kit242Outcomes(owner, paste0(prefix, "_ruv_corrected"))
+    expect_true(isTRUE(outcomes$ruv_applied))
+    expect_identical(outcomes$ruv_applied_per_assay, list(A1 = TRUE, A2 = FALSE))
+    expect_true(outcomes$ruv_not_applied_reason_per_assay$A2 %in% c("no_usable_controls", "no_factor_supported"))
+    expect_true(is.na(outcomes$k_per_assay$A2))
+    expect_match(run$value$ruv_not_applied_text$A2, "RUV-III was not applied to assay A2", fixed = TRUE)
+  })
+
+  for (managed in c(TRUE, FALSE)) {
+    test_that(paste("KIT-242 E24:", class, if (managed) "managed" else "in process", "tab names A2 as not corrected and warns"), {
+      skip_if_not(workflowOwnerCapable())
+      tab <- kit242Tab(class, kit242Object(kit242RuvIncompleteValues(24L), class), managed,
+        list(apply_itsd = FALSE, norm_method = "cyclicloess", ruv_mode = "automatic", log_offset = 0))
+      expect_true(isTRUE(tab$ruv_complete))
+      expect_true(any(grepl("RUV-III was not applied to assay A2", tab$log, fixed = TRUE)), info = paste(tab$log, collapse = " | "))
+      types <- vapply(tab$notes, function(note) as.character(note$type), "")
+      messages <- vapply(tab$notes, function(note) as.character(note$message), "")
+      expect_true(any(types == "warning" & grepl("RUV-III was not applied to assay A2", messages, fixed = TRUE)))
+    })
+  }
+
+  # ---- E25: Q6.2 (c), a failed computation after k and controls are set; today A2 is dropped (`:700`) -----------------
+  test_that(paste("KIT-242 E25:", class, "a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step"), {
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(25L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    real <- RUVIIIC::RUVIII_C_Varying
+    local_mocked_bindings(RUVIII_C_Varying = function(k, Y, M, toCorrect, potentialControls) {
+      if (any(startsWith(colnames(Y), "A2_"))) stop("planted RUV-III-C failure")
+      real(k = k, Y = Y, M = M, toCorrect = toCorrect, potentialControls = potentialControls)
+    }, .package = "MultiScholaR")
+    err <- expect_error(suppressWarnings(suppressMessages(ruvIII_C_Varying(object, ruv_grouping_variable = "group",
+      ruv_number_k = list(A1 = 1L, A2 = 1L), ctrl = list(A1 = sprintf("A1_F%03d", 1:8), A2 = sprintf("A2_F%03d", 1:8))))),
+      class = "omics_ruv_failed")
+    expect_identical(err$assay, "A2")
+    expect_identical(err$reason, "correction_error")
+  })
+
+  # ---- E25e (VAL-290): no elbow at any percentage: kept without RUV, with the notice; today both assays are dropped ----
+  test_that(paste("KIT-242 E25e:", class, "when no number of factors is supported by the data, every assay keeps its values, recorded"), {
+    skip_if_not(workflowOwnerCapable())
+    local_mocked_bindings(findBestKElbow = function(...) NA_integer_)
+    fixture <- kit242Owner(kit242Object(kit242Draw(125L, n_is = c(A1 = 0L, A2 = 0L)), class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)), error = function(e) e)
+    expect_false(inherits(run, "error"))
+    if (inherits(run, "error")) return(invisible())
+    after <- owner$getState(paste0(prefix, "_ruv_corrected"))
+    for (assay in c("A1", "A2")) expect_equal(kit242Matrix(after, binding, assay), kit242Matrix(normalised, binding, assay), tolerance = 0)
+    outcomes <- kit242Outcomes(owner, paste0(prefix, "_ruv_corrected"))
+    expect_false(isTRUE(outcomes$ruv_applied))
+    expect_identical(outcomes$ruv_applied_per_assay, list(A1 = FALSE, A2 = FALSE))
+    expect_identical(outcomes$ruv_not_applied_reason_per_assay, list(A1 = "no_factor_supported", A2 = "no_factor_supported"))
+    expect_match(run$value$ruv_not_applied_text$A1, "no number of unwanted factors was supported by the data", fixed = TRUE)
+  })
+
+  test_that(paste("KIT-242 E25e:", class, "in process tab says RUV-III was not applied"), {
+    skip_if_not(workflowOwnerCapable())
+    local_mocked_bindings(findBestKElbow = function(...) NA_integer_)
+    tab <- kit242Tab(class, kit242Object(kit242Draw(125L, n_is = c(A1 = 0L, A2 = 0L)), class), FALSE,
+      list(apply_itsd = FALSE, norm_method = "cyclicloess", ruv_mode = "automatic", log_offset = 0))
+    expect_true(any(startsWith(tab$log, "RUV-III not applied")), info = paste(tab$log, collapse = " | "))
+    expect_false(any(tab$log == "RUV-III correction applied"))
+  })
+
+  # ---- ruling (7) (KIT-190's leftover, parked row 48 addendum (3)): the search succeeds, the correction fails ---------
+  test_that(paste("KIT-242 ruling 7:", class, "when the correction fails after the search, the tab neither completes RUV nor shows k as removed"), {
+    skip_if_not(workflowOwnerCapable())
+    local_mocked_bindings(RUVIII_C_Varying = function(k, Y, M, toCorrect, potentialControls) stop("planted RUV-III-C failure"),
+      .package = "MultiScholaR")
+    tab <- kit242Tab(class, kit242Object(kit242Draw(127L, n_is = c(A1 = 0L, A2 = 0L)), class), FALSE,
+      list(apply_itsd = FALSE, norm_method = "cyclicloess", ruv_mode = "automatic", log_offset = 0))
+    expect_false(isTRUE(tab$ruv_complete))
+    expect_false(any(tab$log == "RUV-III correction applied"))
+    for (assay in c("A1", "A2")) {
+      summary <- omicNormRuvSummary(tab$ruv_results[[assay]])
+      expect_false(startsWith(summary, "Best k") || startsWith(summary, "Factors removed"), info = paste(assay, summary))
+    }
+  })
+
+  # ---- NA3: the RUV record never names an assay the RUV state lacks, nor "applied" for one left as it was ----------
+  test_that(paste("KIT-242 NA3:", class, "every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected"), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- kit242Owner(kit242Object(kit242RuvIncompleteValues(12L), class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    try(suppressWarnings(suppressMessages(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config))),
+      silent = TRUE)
+    # r1.5 (K242-RC4-N06): under Q6.2 (c) the step completes.
+    expect_identical(owner$current_state, paste0(prefix, "_ruv_corrected"))
+    if (!identical(owner$current_state, paste0(prefix, "_ruv_corrected"))) return(invisible())
+    before <- owner$getState(paste0(prefix, "_normalized"))
+    after <- owner$getState(paste0(prefix, "_ruv_corrected"))
+    outcomes <- kit242Outcomes(owner, paste0(prefix, "_ruv_corrected"))
+    named <- names(outcomes$k_per_assay)
+    expect_setequal(named, c("A1", "A2"))
+    for (assay in named) {
+      corrected <- kit242Matrix(after, binding, assay)
+      expect_false(is.null(corrected), info = paste(assay, "named by the record, present in the RUV state"))
+      applied <- outcomes$ruv_applied_per_assay[[assay]]
+      expect_true(is.logical(applied) && length(applied) == 1L, info = paste(assay, "per-assay outcome present"))
+      if (!is.null(corrected) && kit242Equal(kit242Matrix(before, binding, assay), corrected)) {
+        expect_false(isTRUE(applied), info = paste(assay, "unchanged, so not recorded as RUV-corrected"))
+      }
+    }
+  })
+
+  # ---- E11c: older records (OD-4 (c)): the RUV marker and its earlier rule --------------------------------------------
+  test_that(paste("KIT-242 E11c:", class, "the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays"), {
+    marker <- workflowReplayRuleMarkers$ruv_fallback
+    expect_identical(marker$option, "MultiScholaR.ruv_fallback")
+    expect_identical(marker$current, "by_cause")
+    expect_identical(marker$earlier, "drop")
+    expect_identical(workflowOperationEntry(paste0(prefix, "_ruv"))$declaration$fixed$ruv_fallback, "by_cause")
+    expect_identical(omicsRuvOperation(binding, "declared")$fixed$ruv_fallback, "by_cause")
+    # (ii) under the earlier token E14's call gives the earlier result: A2 dropped, no classed warning.
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(14L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    earlier <- withr::with_options(kit242RuvRule("drop"), kit242Conditions(ruvIII_C_Varying(object, ruv_grouping_variable = "group",
+      ruv_number_k = list(A1 = 1L, A2 = 1L), ctrl = list(A1 = sprintf("A1_F%03d", 1:8), A2 = c("absent_1", "absent_2"))),
+      "omics_ruv_not_applied"))
+    expect_length(earlier$kept, 0L)
+    expect_identical(names(methods::slot(earlier$value, binding$data_slot)), "A1")
+    # (iii) a record made under each rule replays with no mismatch (the earlier one without the marker).
+    skip_if_not(workflowOwnerCapable())
+    harness <- new.env(parent = globalenv())
+    sys.source(testthat::test_path("..", "..", "tools", "profiling", "workflow_kit.R"), harness)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    for (rule in c("drop", "by_cause")) {
+      root <- withr::local_tempdir()
+      fixture <- kit172Quiet(kit172Owner(root, kit242Object(kit242RuvIncompleteValues(24L), class), class))
+      owner <- fixture$owner
+      config <- fixture$workflow$config_list
+      withr::with_options(kit242RuvRule(if (identical(rule, "drop")) "drop" else NULL), {
+        kit242RuvChain(binding, owner, config)
+        kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config))
+      })
+      replayed <- kit242ReplayRecord(fixture, root, harness, api)
+      step <- Filter(function(s) identical(s$state, paste0(prefix, "_ruv_corrected")), replayed$record$steps)[[1L]]
+      has_marker <- any(vapply(step$parameters, function(p) identical(p$name, "ruv_fallback"), logical(1)))
+      expect_identical(has_marker, identical(rule, "by_cause"), info = rule)
+      expect_identical(replayed$replay$states, replayed$history, info = rule)
+      expect_identical(as.character(replayed$replay$mismatches), character(), info = rule)
+    }
+  })
+
+  # ---- G4: legacy Automatic where every assay corrects: identical under the earlier and the current rule ------------
+  # ---- G8: legacy Manual, no sparse feature: the same ---------------------------------------------------------------
+  for (mode in c("automatic", "manual")) {
+    test_that(paste("KIT-242", if (identical(mode, "automatic")) "G4:" else "G8:", class, mode,
+      "legacy RUV where every assay corrects is identical under the earlier and the current rule"), {
+      skip_if_not(workflowOwnerCapable())
+      object <- kit242Object(kit242Draw(if (identical(mode, "automatic")) 44L else 48L, n_is = c(A1 = 0L, A2 = 0L)), class)
+      parameters <- if (identical(mode, "automatic")) kit172LegacyRuv("automatic") else kit242ManualRuv()
+      journey <- function(rule) {
+        fixture <- kit242Owner(object, class, env = parent.frame())
+        owner <- fixture$owner
+        config <- fixture$workflow$config_list
+        withr::with_options(kit242RuvRule(rule), {
+          kit242RuvChain(binding, owner, config)
+          kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, parameters, config))
+        })
+        state <- owner$getState(paste0(prefix, "_ruv_corrected"))
+        list(tables = methods::slot(state, binding$data_slot), design = state@design_matrix,
+          outcomes = kit242Outcomes(owner, paste0(prefix, "_ruv_corrected")))
+      }
+      current <- journey(NULL)
+      earlier <- journey("drop")
+      # RUV corrected every assay (the guard's precondition).
+      expect_identical(unlist(current$outcomes$ruv_status_per_assay), c(A1 = "corrected", A2 = "corrected"))
+      expect_identical(current$tables, earlier$tables)
+      expect_identical(current$design, earlier$design)
+      added <- c("ruv_applied_per_assay", "ruv_not_applied_reason_per_assay")
+      expect_identical(current$outcomes[setdiff(names(current$outcomes), added)], earlier$outcomes)
+    })
+  }
+
+  # ---- G5: the declared design on an object with no empty sample: unchanged -------------------------------------------
+  test_that(paste("KIT-242 G5:", class, "the declared design with no empty sample is identical under the earlier and the current rule"), {
+    skip_if_not_installed("ruv")
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(45L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    current <- kit172Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user"))
+    earlier <- withr::with_options(kit242RuvRule("drop"), kit172Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user")))
+    expect_identical(current$factors, earlier$factors)
+    expect_identical(methods::slot(current$corrected, binding$data_slot), methods::slot(earlier$corrected, binding$data_slot))
+  })
+
+  # ---- G9: a feature with values that RUV-III-C returns all non-finite is still removed (`:713-715`), as today --------
+  test_that(paste("KIT-242 G9:", class, "a feature with values returned all non-finite by RUV-III-C is removed, as today"), {
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(49L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    real <- RUVIIIC::RUVIII_C_Varying
+    local_mocked_bindings(RUVIII_C_Varying = function(k, Y, M, toCorrect, potentialControls) {
+      out <- real(k = k, Y = Y, M = M, toCorrect = toCorrect, potentialControls = potentialControls)
+      if ("A2_F040" %in% colnames(out)) out[, "A2_F040"] <- NA_real_
+      out
+    }, .package = "MultiScholaR")
+    out <- suppressWarnings(suppressMessages(ruvIII_C_Varying(object, ruv_grouping_variable = "group",
+      ruv_number_k = list(A1 = 1L, A2 = 1L), ctrl = list(A1 = sprintf("A1_F%03d", 1:8), A2 = sprintf("A2_F%03d", 1:8)))))
+    a2 <- kit242Matrix(out, binding, "A2")
+    expect_false(is.null(a2))
+    if (!is.null(a2)) expect_false("A2_F040" %in% rownames(a2))
+  })
+}
