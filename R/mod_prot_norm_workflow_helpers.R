@@ -492,11 +492,12 @@ runProtNormNormalizationWorkflow <- function(
       withDIAStateScope(workflowData$state_manager, function()
         assertDIALimpaDesignationNotNormalised(workflowData$state_manager, normData))
       # KIT-041: the route's normalisation ran in the protein QC stage; RUV covariates follow the correlation step.
-      pass_through <- function() {
+      # KIT-259 (B2): after the completion notice, one warning names the figures that could not be drawn.
+      pass_through <- function() withProtNormFigureNotice({
         completed <- runDIAReferenceLimpaNormalisationPassThrough(settings, workflowData, normData, generatePostNormalizationQcFn)
         showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode %||% "covariates"), type = "message", duration = 10)
         completed
-      }
+      }, showNotificationFn)
       # KIT-122: on a managed session the worker saves the source's QC figures before the pass-through draws them.
       runner <- workflowOmicsManagedActions("proteomics")
       if (is.null(runner)) return(pass_through())
@@ -522,9 +523,10 @@ runProtNormNormalizationWorkflow <- function(
       if (!is.null(runner)) dispatchProtNormNormalization(runner, settings, workflowData, normData, experimentPaths,
         omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
         finish, function(e) handleErrorFn(error = e), preQc = generatePreNormalizationQcFn) else
-        finish(runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
+        # KIT-259 (B2): after the completion notice, one warning names the figures that could not be drawn.
+        withProtNormFigureNotice(finish(runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
           omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
-          getRuvGroupingVariableFn, pre_qc = generatePreNormalizationQcFn))
+          getRuvGroupingVariableFn, pre_qc = generatePreNormalizationQcFn)), showNotificationFn)
     }, prot_norm_input_current = function(condition) {
       showNotificationFn(conditionMessage(condition), type = "message", duration = 10)
       invokeRestart("muffleMessage")
@@ -604,9 +606,12 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   publish <- function(result) {
     prior_plot <- ggplot2::get_last_plot()
     on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
-    completed <- withDIAStateScope(manager, function() entry$publish(manager, settings, held$result[c("value", "reference")],
-      workflowData, normData, experimentPaths, omicType, experimentLabel, postQc, ruvQc))
-    finish(completed)
+    # KIT-259 (B2): after the completion notice, one warning names the figures that could not be drawn.
+    withProtNormFigureNotice({
+      completed <- withDIAStateScope(manager, function() entry$publish(manager, settings, held$result[c("value", "reference")],
+        workflowData, normData, experimentPaths, omicType, experimentLabel, postQc, ruvQc))
+      finish(completed)
+    })
   }
   figures <- function() {
     saved <- held$result$value

@@ -92,13 +92,14 @@ generateProtNormPreNormalizationQcArtifacts <- function(
 
   messageFn("*** PRE-NORM QC: Generating PCA plot (Step 1/4) ***")
   pca_start_time <- timeFn()
-  pca_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "pca",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-
-  pca_path <- saveArtifactFn(qcDir, "pre_norm_pca.png", pca_plot, width = 8, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  pca_path <- drawProtNormQcFigure(qcDir, "pre_norm_pca.png", 8, 6, function() {
+    pca_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "pca",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "pre_norm_pca.png", pca_plot, width = 8, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_filtering", "pca", pca_path)
 
-  rm(pca_plot)
   gcFn()
 
   pca_elapsed <- as.numeric(difftime(timeFn(), pca_start_time, units = "secs"))
@@ -106,13 +107,14 @@ generateProtNormPreNormalizationQcArtifacts <- function(
 
   messageFn("*** PRE-NORM QC: Generating RLE plot (Step 2/4) ***")
   rle_start_time <- timeFn()
-  rle_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "rle",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-
-  rle_path <- saveArtifactFn(qcDir, "pre_norm_rle.png", rle_plot, width = 10, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  rle_path <- drawProtNormQcFigure(qcDir, "pre_norm_rle.png", 10, 6, function() {
+    rle_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "rle",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "pre_norm_rle.png", rle_plot, width = 10, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_filtering", "rle", rle_path)
 
-  rm(rle_plot)
   gcFn()
 
   rle_elapsed <- as.numeric(difftime(timeFn(), rle_start_time, units = "secs"))
@@ -121,12 +123,14 @@ generateProtNormPreNormalizationQcArtifacts <- function(
   messageFn("*** PRE-NORM QC: Generating Density plot (Step 3/4) ***")
   density_start_time <- timeFn()
 
-  density_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "density",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-  density_path <- saveArtifactFn(qcDir, "pre_norm_density.png", density_plot, width = 8, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  density_path <- drawProtNormQcFigure(qcDir, "pre_norm_density.png", 8, 6, function() {
+    density_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "density",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "pre_norm_density.png", density_plot, width = 8, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_filtering", "density", density_path)
 
-  rm(density_plot)
   gcFn()
 
   density_elapsed <- as.numeric(difftime(timeFn(), density_start_time, units = "secs"))
@@ -142,12 +146,14 @@ generateProtNormPreNormalizationQcArtifacts <- function(
 
   pearson_start_time <- timeFn()
 
-  correlation_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "correlation",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-  corr_path <- saveArtifactFn(qcDir, "pre_norm_correlation.png", correlation_plot, width = 10, height = 8)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  corr_path <- drawProtNormQcFigure(qcDir, "pre_norm_correlation.png", 10, 8, function() {
+    correlation_plot <- resolveProtNormQcPlotValue(current_s4, aesthetics, "correlation",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "pre_norm_correlation.png", correlation_plot, width = 10, height = 8)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_filtering", "correlation", corr_path)
 
-  rm(correlation_plot)
   gcFn()
 
   pearson_elapsed <- as.numeric(difftime(timeFn(), pearson_start_time, units = "secs"))
@@ -181,41 +187,47 @@ generateProtNormPostNormalizationQcArtifacts <- function(
   qcPlotPaths <- initPathsFn(qcPlotPaths)
 
   messageFn("*** POST-NORM QC: Generating PCA plot ***")
-  pca_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "pca",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-
-  pca_path <- saveArtifactFn(qcDir, "post_norm_pca.png", pca_plot, width = 8, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  pca_path <- drawProtNormQcFigure(qcDir, "post_norm_pca.png", 8, 6, function() {
+    pca_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "pca",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "post_norm_pca.png", pca_plot, width = 8, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_normalization", "pca", pca_path)
 
-  rm(pca_plot)
   gcFn()
 
   messageFn("*** POST-NORM QC: Generating RLE plot ***")
-  rle_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "rle",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-
-  rle_path <- saveArtifactFn(qcDir, "post_norm_rle.png", rle_plot, width = 10, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  rle_path <- drawProtNormQcFigure(qcDir, "post_norm_rle.png", 10, 6, function() {
+    rle_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "rle",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "post_norm_rle.png", rle_plot, width = 10, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_normalization", "rle", rle_path)
 
-  rm(rle_plot)
   gcFn()
 
   messageFn("*** POST-NORM QC: Generating Density plot ***")
-  density_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "density",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-  density_path <- saveArtifactFn(qcDir, "post_norm_density.png", density_plot, width = 8, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  density_path <- drawProtNormQcFigure(qcDir, "post_norm_density.png", 8, 6, function() {
+    density_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "density",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "post_norm_density.png", density_plot, width = 8, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_normalization", "density", density_path)
 
-  rm(density_plot)
   gcFn()
 
   messageFn("*** POST-NORM QC: Generating Pearson correlation plot ***")
-  correlation_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "correlation",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-  corr_path <- saveArtifactFn(qcDir, "post_norm_correlation.png", correlation_plot, width = 10, height = 8)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  corr_path <- drawProtNormQcFigure(qcDir, "post_norm_correlation.png", 10, 8, function() {
+    correlation_plot <- resolveProtNormQcPlotValue(normalizedS4, aesthetics, "correlation",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "post_norm_correlation.png", correlation_plot, width = 10, height = 8)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "post_normalization", "correlation", corr_path)
 
-  rm(correlation_plot)
   gcFn()
 
   messageFn("*** POST-NORM QC: Running garbage collection ***")
@@ -246,41 +258,47 @@ generateProtNormRuvCorrectedQcArtifacts <- function(
   qcPlotPaths <- initPathsFn(qcPlotPaths)
 
   messageFn("*** RUV QC: Generating PCA plot ***")
-  pca_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "pca",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-
-  pca_path <- saveArtifactFn(qcDir, "ruv_corrected_pca.png", pca_plot, width = 8, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  pca_path <- drawProtNormQcFigure(qcDir, "ruv_corrected_pca.png", 8, 6, function() {
+    pca_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "pca",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "ruv_corrected_pca.png", pca_plot, width = 8, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "ruv_corrected", "pca", pca_path)
 
-  rm(pca_plot)
   gcFn()
 
   messageFn("*** RUV QC: Generating RLE plot ***")
-  rle_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "rle",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-
-  rle_path <- saveArtifactFn(qcDir, "ruv_corrected_rle.png", rle_plot, width = 10, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  rle_path <- drawProtNormQcFigure(qcDir, "ruv_corrected_rle.png", 10, 6, function() {
+    rle_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "rle",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "ruv_corrected_rle.png", rle_plot, width = 10, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "ruv_corrected", "rle", rle_path)
 
-  rm(rle_plot)
   gcFn()
 
   messageFn("*** RUV QC: Generating Density plot ***")
-  density_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "density",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-  density_path <- saveArtifactFn(qcDir, "ruv_corrected_density.png", density_plot, width = 8, height = 6)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  density_path <- drawProtNormQcFigure(qcDir, "ruv_corrected_density.png", 8, 6, function() {
+    density_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "density",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "ruv_corrected_density.png", density_plot, width = 8, height = 6)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "ruv_corrected", "density", density_path)
 
-  rm(density_plot)
   gcFn()
 
   messageFn("*** RUV QC: Generating Pearson correlation plot ***")
-  correlation_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "correlation",
-    plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
-  corr_path <- saveArtifactFn(qcDir, "ruv_corrected_correlation.png", correlation_plot, width = 10, height = 8)
+  # KIT-259 (B2): a figure that cannot be drawn is replaced by its placeholder.
+  corr_path <- drawProtNormQcFigure(qcDir, "ruv_corrected_correlation.png", 10, 8, function() {
+    correlation_plot <- resolveProtNormQcPlotValue(ruvCorrectedS4, aesthetics, "correlation",
+      plotPcaFn, plotRleFn, buildDensityFn, buildCorrelationFn, buildProductFn)
+    saveArtifactFn(qcDir, "ruv_corrected_correlation.png", correlation_plot, width = 10, height = 8)
+  })
   qcPlotPaths <- recordPathFn(qcPlotPaths, "ruv_corrected", "correlation", corr_path)
 
-  rm(correlation_plot)
   gcFn()
 
   messageFn("*** RUV QC: Running garbage collection ***")

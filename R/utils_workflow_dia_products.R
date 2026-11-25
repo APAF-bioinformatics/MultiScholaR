@@ -77,11 +77,15 @@ rebuildWorkflowDiaQcPlot <- function(product) {
       show_legend = TRUE))
   }
   if (identical(type, "correlation")) {
+    # KIT-259 (A2): no within-group pair with a correlation gives a labelled figure, not an error.
+    if (!any(is.finite(data$pearson_correlation))) {
+      return(buildProtPearsonUnavailablePlot(data, parameters$color_variable))
+    }
     breaks <- seq(min(round(data$pearson_correlation - 0.5, 2), na.rm = TRUE),
       1, 0.001)
     return(ggplot2::ggplot(data, ggplot2::aes(.data[["pearson_correlation"]])) +
       ggplot2::geom_histogram(breaks = breaks) +
-      ggplot2::scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4)) +
+      protPearsonCountScale() +
       ggplot2::xlab("Pearson Correlation") + ggplot2::ylab("Counts") +
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
         panel.grid.minor = ggplot2::element_blank(),
@@ -1085,9 +1089,11 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
                 norm_data$filtering_summary_text <- sprintf(
                     "Filtering Summary through Normalization & RUV:\n\n* Pre-normalization proteins: [Previous step]\n* Post-RUV filtering: %d proteins\n* Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n* Normalization method: %s\n* RUV mode: %s\n* RUV k value: %d\n* Negative control %%: %.1f",
                     final$metadata$proteins, settings$norm_method, settings$ruv_mode, saved$best_k, saved$percentage)
-                if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+                # KIT-259 (B2): a canonical-correlation figure that cannot be drawn is replaced by its placeholder.
+                if (!is.null(saved$ruv_result$best_cancor_plot)) drawProtNormQcFigure(staged$protein_qc_dir,
+                    "ruv_corrected_cancor.png", 8, 6, function() ggplot2::ggsave(
                     file.path(staged$protein_qc_dir, "ruv_corrected_cancor.png"),
-                    saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+                    saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150))
             }
             # KIT-122: on a managed session the worker built the composite from these staged images and saved its files
             # (`saveWorkflowDiaCompositeFigure`); their bytes are written here. Not found saved (no runner, or other
@@ -2070,9 +2076,13 @@ computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
         directory <- tempfile("dia-qc-figures-", tmpdir = workflowShortScratchRoot())
         dir.create(directory)
         on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+        # KIT-259 (B2): a figure that cannot be drawn is skipped and logged; the publication then draws it, or replaces
+        # it by its placeholder.
         for (kind in names(diaQcStageFigureSizes)) {
             size <- diaQcStageFigureSizes[[kind]]
-            saveProtNormQcPlotArtifact(directory, paste0(kind, ".png"), plot(kind), width = size[[1L]], height = size[[2L]])
+            drawProtNormQcFigure(directory, paste0(kind, ".png"), size[[1L]], size[[2L]], function()
+                saveProtNormQcPlotArtifact(directory, paste0(kind, ".png"), plot(kind), width = size[[1L]], height = size[[2L]]),
+                placeholder = FALSE, signal = FALSE)
         }
     }
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
@@ -2149,17 +2159,22 @@ saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
     published <- workflowRequestExperimentPaths(request)$protein_qc_dir
     if (!is.null(published)) file.copy(list.files(published, pattern = "^pre_norm_.*[.]png$", full.names = TRUE), directory)
     states <- c(list(post_norm = saved$normalized), if (!skipped) list(ruv_corrected = saved$final))
+    # KIT-259 (B2): a figure that cannot be drawn is replaced by the publication's placeholder, so that the composite's
+    # identity matches the publication's staged images.
     for (stage in names(states)) for (kind in names(diaQcStageFigureSizes)) {
         size <- diaQcStageFigureSizes[[kind]]
-        plot <- resolveDIAReferenceQcPlot(states[[stage]], aesthetics, kind, buildProtNormQcPlotProduct,
-            plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
-        saveProtNormQcPlotArtifact(directory, paste0(stage, "_", kind, ".png"), plot, width = size[[1L]], height = size[[2L]])
+        drawProtNormQcFigure(directory, paste0(stage, "_", kind, ".png"), size[[1L]], size[[2L]], function() {
+            plot <- resolveDIAReferenceQcPlot(states[[stage]], aesthetics, kind, buildProtNormQcPlotProduct,
+                plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
+            saveProtNormQcPlotArtifact(directory, paste0(stage, "_", kind, ".png"), plot, width = size[[1L]], height = size[[2L]])
+        }, signal = FALSE)
     }
     identities <- diaCompositeFigureIdentities(manager, product, parameters$ruv_mode, directory)
     absent <- names(identities)[!vapply(identities, function(identity) diaCompositeFigureSaved(manager, identity), NA)]
     if (!length(absent)) return(invisible(NULL))
-    if (!skipped && !is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
-        file.path(directory, "ruv_corrected_cancor.png"), saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+    if (!skipped && !is.null(saved$ruv_result$best_cancor_plot)) drawProtNormQcFigure(directory, "ruv_corrected_cancor.png",
+        8, 6, function() ggplot2::ggsave(file.path(directory, "ruv_corrected_cancor.png"), saved$ruv_result$best_cancor_plot,
+            width = 8, height = 6, dpi = 150), signal = FALSE)
     omic_type <- workflowActionSpec(request$operation)$omic_type
     generateProtNormCompositeQcFigure(parameters$ruv_mode, directory, omic_type)
     files <- stats::setNames(file.path(directory, paste0(omic_type, "_composite_QC_figure.", names(identities))), names(identities))
