@@ -10,7 +10,11 @@ order KIT-234, then this). No R was run on the laptop; every computation ran on 
 |---|---|
 | fce22178 | Tests only (nothing under `R/`): L1 to L3 (`test-integration-results.R`), L4, L5 (`test-integration-record.R`), L6 (`test-integration-gui.R`), the guard L8 (`test-integration-record-mofa.R`) |
 | 09286c2d | The change, L7, NEWS, the ledger row `VAL-<merge>`, `wording.md`, R1's tables |
-| (this commit) | Records: R2's and R3's tables, `runs.tsv`, this file |
+| 0813acb7 | Records: R2's and R3's tables, `runs.tsv`, this file |
+| 9bb30a1c | Merge of `v0.9-staging` 16112917 (conflict only in the ledger: staging's rows kept, this ticket's after VAL-229) |
+| c764d390 | Tests only, for the implementation audit (I01 to I06; nothing under `R/`) |
+| c3888b67 | Wording commit: I01, I02 (draft pending the owner), I03, the I06 guard, the ledger row and INT-28's column (I07), `wording.md` |
+| (this commit) | Records: R4's tables, `runs.tsv`, this file |
 
 ## Runs (`runs.tsv`)
 
@@ -21,8 +25,26 @@ order KIT-234, then this). No R was run on the laptop; every computation ran on 
 | R2 45577927341 | head 09286c2d, base fce22178 | `r2/compare.tsv`: results 170+6 failed on base, 241 passed 0 failed on head (`fixed`); record 134+5 / 155+0 (`fixed`); gui 399+1 / 401+0 (`fixed`); the other 16 scope files `same` (identical counts and status, the six MOFA2 files skipping on both). Check: 0 errors, 3 warnings, 3 notes on both; findings identical (6), none only on head (`r2/check-compare.txt`). Head logs: "KIT-239 L2: 20 samples, 19 in every data set, 1 missing from a data set, 5 data sets averaged"; "KIT-239 L4: Limitations at 626759, after Methods (draft) at 621785, before Data sets combined at 630384; 20 samples, 19 shared" |
 | R3 45577930225 | 09286c2d, MOFA lane `run-mofa-smoke-k239` 81882eae | `test-integration-record-mofa.R` 29 passed, 0 failed, not skipped (`r3/tests.tsv`); "KIT-239 L8: likelihoods gaussian, gaussian, gaussian, gaussian, gaussian, gaussian; groups 1" (`r3/console.log`). The Word report rendered from the real MOFA2 model holds the Limitations section after the Methods draft (`r3/report-limitations.txt`) |
 
-Job minutes 183.0 (R1 17.8 + 0.1, R2 151.1, R3 14.0) = 12.2 core-hours; expected 21.2, ceiling 96.0. No correction pass,
-no instrument rerun, R4 not used.
+| R4 45588000576 | head c3888b67, base c764d390 | `r4/compare.tsv`: on base exactly the eight new assertions fail at their stated values (`r4/failures-base.txt`): L3 count 1 ("samples are missing") and one database ("these external databases"), L7 `limits_averaged_none`'s term, `help_scaling`'s new terms and its two old phrases, L5 unreadable enrichment (`character()`, not NULL). On head 0 failures: results 258 passed, record 167; gui 401, `test-integration-model.R` 263 and `test-integration-removed-factors.R` 526 passed (3 skipped) identical on both sides |
+
+Job minutes 266.1 (R1 17.8 + 0.1, R2 151.1, R3 14.0, R4 83.1) = 17.7 core-hours; expected 21.2, ceiling 96.0. R4's two jobs
+went 23.1 minutes above its 60-minute line, taken from the unused instrument line as declared before the request (total
+ceiling unchanged). No correction pass, no instrument rerun.
+
+## Implementation audit (AUDIT-KIT-239-impl-20261125) and the wording commit
+
+- I01: `limits_averaged_none` now "No biological sample has more than one run in any data set, so no runs were averaged."
+  (the earlier text was false beside the missing-samples sentence when samples are missing and nothing was averaged).
+- I02: `help_scaling`'s last sentence is KIT-246 option (a): "Without missing values the difference could not be told from
+  none (29 rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way." **Draft; the
+  owner's answer on parked row 10 of 2026-11-25 is pending and may change it.**
+- I03: agreement-free texts for `limits_missing_samples` and `limits_services_report`.
+- I04: L7 holds the must-survive terms. I05: L4 and L5 assert the missing-samples and runs-averaged counts on the report
+  path. I06: entries recorded but none readable give the general services sentence (KIT-181's GO-only case is owed to
+  KIT-181). I07: ledger row and INT-28's implementation column. I10: ticket corrected (transcriptomics two runs per sample).
+- I01 and I03 were corrected after the owner's acceptance and are to be told to the owner; final polish stays the owner's.
+- After the merge of staging 16112917 R2 and R3 were not rerun on the merged tree: the merge touched no integration file
+  (only the ledger conflicted). R4 ran on the merged tree.
 
 ## Acceptance
 
@@ -48,10 +70,10 @@ from the Record tab with it); a record built before this ticket renders the sect
 
 ## Wording observations for the owner's final polish (not changed: the texts are decided)
 
-- `limits_missing_samples` with one sample reads "1 of the 20 biological samples are missing" (seen in R3's report).
+- `limits_missing_samples` with one sample read "1 of the 20 biological samples are missing" (R3): fixed by I03.
 - `limits_averaged_item` reads "the runs of 20 of its 20 biological samples were averaged" when every sample was averaged.
-- KIT-234's `?integrationTrainModel` point 4 (origin/kit-234) leaves out "The integration fills in no missing value
-  itself;", which the ticket's row 4 (implemented here) keeps: the two homes differ by that clause.
+- (Earlier note on KIT-234's point-4 clause removed: KIT-234 1ba403a9 restored it; the six sentences agree word for word.)
+- The lead differs: "from the factors." here, "from a model." on the help page (I08, the owner's polish).
 
 ## Not checked
 
@@ -82,5 +104,5 @@ Code (base dd769671 / fix 09286c2d): `help_scaling` `R/utils_integration_gui.R:2
 (new); `R/utils_integration_record.R:56` and `:1084` (new); `inst/reports/integration/integration_report.rmd:26-35`
 (new chunk).
 
-Evidence: R1 45575122659, R2 45577927341, R3 45577930225; the numbers in the sentences are KIT-151 c and d's simulations
+Evidence: R1 45575122659, R2 45577927341, R3 45577930225, R4 45588000576; the numbers in the sentences are KIT-151 c and d's simulations
 (one simulated design, 20 and 60 samples, sources in `wording.md`), whose limits the sentences state.
