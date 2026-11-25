@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-265 H1: the fix in a headless browser (sessions A to D: no-organism notice, refused import, advised untick, route (i)(c) refusal); commit under test 4a8915ac; ceiling 60 job-minutes",
+  "label": "KIT-265 H1 on kit-265 01485d52 (commit under test 4a8915ac)",
+  "package_commit": "01485d525fdd3a4148d660e8f09ee2f848376135",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-265/h1.R",
+      "args": [
+        "h1",
+        "4a8915ac9de13190aba32b779e0c75b0076d3e5b"
+      ],
+      "out": "k265h1-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
