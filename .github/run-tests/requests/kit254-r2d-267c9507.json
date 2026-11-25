@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-254 R2d (the statement's one correction, coordinator's rulings): head 267c9507 vs base db727407 (kit-254 + staging 828dd105), 3 files, no check; predictions in kit-254/r2d-predictions.md; ceiling 150 job-minutes",
+  "label": "KIT-254 R2d base db727407 head 267c9507",
+  "package_commit": "267c9507a25e9cd31e3fc0f0693cb4f6872547e9",
+  "base_commit": "db7274075949f8a69f88f27cc7a0557fdb19dba5",
+  "tools_ref": "",
+  "tests": [
+    "test-omics-norm-state-guards.R",
+    "test-kit254-omics-correlation-skip.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
