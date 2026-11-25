@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	core_hours	result
+45713532325	15829c8fc8a505b0b13800a5cd1c8b105c72049d	L1: blind lifecycle E1 to E10 and G2 (request kit211-l1-15829c8f; expected 2.00, ceiling 3.67 core-h)	23.4	1.56	all checks pass at the first attempt (l1/checks.tsv; script 832 s)
