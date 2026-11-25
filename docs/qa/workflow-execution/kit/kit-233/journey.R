@@ -1519,6 +1519,13 @@ k233StepQc <- function(S, R, step, route) {
             digest = \(st) k233DigestHas(st, state), dom = \(st) k233Noted(st, "applied successfully", "message"),
             outputs = paste0(prefix, spec_tab$outputs))
         res <- k233Action(S, spec)
+        if (identical(id, "replicate_filter") && identical(step$group, "protein_qc")) {
+            texts <- vapply(res$cap$notes %||% list(), \(n) as.character(n$text %||% ""), character(1))
+            k233Observation(S$G, S$label, paste(spec$step, "KIT-251 check (one click)"), sprintf(
+                "outcome %s; head %s; 'already running' warnings %d; working notices %d", res$outcome,
+                k233Clean(res$row$head_state), sum(grepl("already running", texts, fixed = TRUE)),
+                sum(grepl("Applying|working", texts, ignore.case = TRUE))))
+        }
         if (identical(res$outcome, "refused") && isTRUE(R$permissive) && length(spec_tab$permissive)) {
             retry <- spec
             retry$step <- paste0(spec$step, "r")
@@ -1748,9 +1755,16 @@ k233DaFile <- function(R, contrast) {
     if (file.exists(exact)) return(exact)
     hit <- files[k233Norm(sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))) == k233Norm(contrast)]
     if (length(hit)) return(hit[[1L]])
-    files <- list.files(k233ProjectPaths(R)$base, "_long_annot\\.tsv$", full.names = TRUE, recursive = TRUE)
-    hit <- files[k233Norm(sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))) == k233Norm(contrast)]
-    if (length(hit)) hit[[1L]] else NA_character_
+    files <- unique(c(files, list.files(k233ProjectPaths(R)$base, "_long_annot\\.tsv$", full.names = TRUE,
+        recursive = TRUE)))
+    stems <- sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))
+    hit <- files[k233Norm(stems) == k233Norm(contrast)]
+    if (length(hit)) return(hit[[1L]])
+    pair <- strsplit(contrast, "_vs_", fixed = TRUE)[[1L]]
+    if (length(pair) != 2L) pair <- strsplit(contrast, "-", fixed = TRUE)[[1L]]
+    if (length(pair) != 2L) return(NA_character_)
+    stem <- k233MatchContrast(stems, pair)
+    if (is.na(stem)) NA_character_ else files[match(stem, stems)]
 }
 
 k233NumberN2 <- function(S, R) {
@@ -1887,9 +1901,9 @@ k233L0 <- function(G, label = "L0", test_mode = TRUE) {
         crit("user mode: no digest in the page", is.null(st$dg), "the digest exists only in test mode (R/utils_test_mode.R:71)")
     }
     crit("no worker code reads test mode", NA, paste(
-        "not executable by the driver; code read: worker publication forces the option off",
-        "(R/utils_workflow_execution.R:3149-3150, :3214-3215), but workers inherit the controller's environment",
-        "(processx env 'current', :508) and is_test_mode() also reads MULTISCHOLAR_TEST_MODE (R/utils_test_mode.R:22-27)"))
+        "not executable by the driver; code read (KIT-233 addendum, KIT-252 plan audit section 6): the worker inherits",
+        "the application's environment variables under the plain launcher (so MULTISCHOLAR_TEST_MODE, if set as a",
+        "variable), not the R option; no code run on the worker reads test mode"))
     crit(sprintf("network: %s", G$phase$launch$network), G$phase$launch$network %in% c("namespace", "proxy", "firewall"),
         k233Clean(vapply(G$env, \(r) paste(r$key, r$value, sep = "="), character(1))[2:4]))
     crit("the inner phase's effective user equals the outer phase's", identical(Sys.info()[["effective_user"]],

@@ -37,7 +37,7 @@ changed before J, as section 14 allows.
 | L-0 legacy RUV route (no `MSR-TEST-FEATURES`; panel absent at S6) | pass | `ruv_design_summary` absent |
 | L-0 `AppDriver` attaches by URL | pass | (information for KIT-159 G13, not evidence for it) |
 | L-0 digest read; controller in test mode | pass | digest keys listed |
-| L-0 no worker code reads test mode | recorded | Not executable by the driver. Code read: workers inherit `MULTISCHOLAR_TEST_MODE` from the controller's environment, and `is_test_mode()` reads it (`R/utils_test_mode.R:22-27`), so forcing the option off (`R/utils_workflow_execution.R:3149-3150`, `:3214-3215`) does not switch test mode off in a worker. INFERRED |
+| L-0 no worker code reads test mode | recorded | Not executable by the driver. Corrected wording (KIT-233 addenda of 2026-11-25; KIT-252 plan audit section 6): the worker inherits the application's environment variables under the plain launcher (so `MULTISCHOLAR_TEST_MODE`, if set as a variable), not the R option; no code run on the worker reads test mode. The earlier inference here (option forced off does not switch test mode off in a worker) cited lines that run in the controller, not the worker |
 | L-0 network namespace; inner user = outer user (R1-02) | pass | links `lo` only; `runner` = `runner` |
 | L-0 20 MB DIA-NN table uploads with no size error | pass | 22.0 MB, "Upload complete" |
 | L-0 a tall tab's outputs inside a saved image | pass | Pane images are cut at the viewport height (about 1,065 px); the outputs below are saved as their own element images |
@@ -72,8 +72,8 @@ changed before J, as section 14 allows.
 
 | # | Kind | What | Evidence | Known? |
 |---|---|---|---|---|
-| A1 | 1 | In **test mode**, offline, enrichment is refused for want of annotation. The ticket expected the test-mode substitute to run (`R/utils_workflow_enrichment.R:967`). The design step stored an empty annotation table (0 rows), not NULL, and the gate refuses an empty table even in test mode | `l3-.../findings.tsv` F02; steps S9 | new as against the ticket's T-list (section 2); the remedy text "Save the design again" does not apply offline (KIT-223 covers the enrichment refusal remedy) |
-| A2 | 2 | One click on Protein Replicate Filter shows "A protein replicate filter action is already running". The harness pressed this button twice on purpose (`helper-e2e-browser.R:1336-1341`) | `l3-.../steps.tsv` S5.5 warnings | new |
+| A1 | 1 (now expected) | In **test mode**, offline, enrichment is refused for want of annotation. The ticket expected the test-mode substitute to run (`R/utils_workflow_enrichment.R:967`). The design step stored an empty annotation table (0 rows), not NULL, and the gate refuses an empty table even in test mode | `l3-.../findings.tsv` F02; steps S9 | triaged 2026-11-25: KIT-175's design (an empty table is refused in every mode); S9 is now expected refused offline in L and J (addendum item 3); remedy text = wording row ENR-22 |
+| A2 | 2 | One click on Protein Replicate Filter shows "A protein replicate filter action is already running". The harness pressed this button twice on purpose (`helper-e2e-browser.R:1336-1341`) | `l3-.../steps.tsv` S5.5 warnings | KIT-251 |
 | A3 | 2 | A worker killed during Precursor Rollup is shown as "Error applying precursor rollup: managed action ended: worker_failed": internal words, no remedy | `l3-.../observations.tsv` (L3w), F07 | new (UI wording) |
 | A4 | obs | Import is marked complete before the organism dialog is answered. A later dialog (the design save's progress dialog) replaces an unanswered organism dialog. A user who skips the dialog keeps the default organism without being told | `l1-.../steps.tsv` S2/S3 modals | new |
 | A5 | obs | The normalisation tab's RUV state is committed about 80 s before the step finishes. The correlation filter could be pressed meanwhile, and it completed | `l1-.../steps.tsv` S6.1/S6.2 | new (observation only) |

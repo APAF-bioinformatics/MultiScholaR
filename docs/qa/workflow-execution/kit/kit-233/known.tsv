@@ -1,25 +1,31 @@
-ticket	state_at_67569959	what_the_journey_may_show	step
-KIT-200	unmerged (ledger decisions only, no merge commit on v0.9-staging)	proteomics DA stops on a protein with no value	S8
-KIT-201	unmerged (ledger decisions only, no merge commit on v0.9-staging)	TREAT moderation not what the record states	S8 record
-KIT-204	unmerged (ledger decisions only, no merge commit on v0.9-staging)	DA summary counts untested proteins as Not tested	S8
-KIT-220	unmerged (ledger decisions only, no merge commit on v0.9-staging)	published counts and figures at q < 0.05 whatever the threshold; interactive volcano coloured at abs(log2FC) >= 1	S8, S10
-KIT-215	unmerged (ledger decisions only, no merge commit on v0.9-staging)	lists not tested shown wrongly; no list	S9
-KIT-226	unmerged (ledger decisions only, no merge commit on v0.9-staging)	g:Profiler table columns mislabelled	S9
-KIT-216	unmerged (ledger decisions only, no merge commit on v0.9-staging)	session file, Save and Load after enrichment; stale-table refusals	S10 after S9
-KIT-212	unmerged (ledger decisions only, no merge commit on v0.9-staging)	Save, Report, Copy not refusing a DA not run on the current table	S10
-KIT-213	unmerged (ledger decisions only, no merge commit on v0.9-staging)	study_parameters.txt prints store ids for pairs, results	S10 file
-KIT-219	unmerged (ledger decisions only, no merge commit on v0.9-staging)	Copy and Report present enrichment files no current enrichment made	S10
-KIT-227	unmerged (ledger decisions only, no merge commit on v0.9-staging)	Report RUV sentences	S10 report
-KIT-228	unmerged (ledger decisions only, no merge commit on v0.9-staging)	a Save writing no new integration input leaves the earlier one	S10
-KIT-223	unmerged (ledger decisions only, no merge commit on v0.9-staging)	false or stale user texts (Scale warning, enrichment refusal remedy)	S6, S9
-KIT-174	unmerged (ledger decisions only, no merge commit on v0.9-staging)	RUV grouping help; report filtering section confidence claim (O-22)	S6, S10 report
-KIT-188	unmerged (ledger decisions only, no merge commit on v0.9-staging)	legacy RUV Automatic default false-discovery behaviour (O-3)	S6 (not visible)
-KIT-210	unmerged (ledger decisions only, no merge commit on v0.9-staging)	RUV-III-C fills missing values with zero on the DIA legacy route (O-4)	S6-S10 numbers (not visible)
-KIT-211	unmerged (ledger decisions only, no merge commit on v0.9-staging)	protein missing-value filter and test treat values at the threshold differently (O-9)	S5-S8 numbers (not visible)
-KIT-234	unmerged (ledger decisions only, no merge commit on v0.9-staging)	project creation copies workbooks (R/app_server.R:328-346)	S1, project folder
+ticket	state_at_e0747fc1	what_the_journey_may_show	step
+KIT-200	merged 6f206314	proteomics DA stops on a protein with no value	S8
+KIT-201	unmerged at e0747fc1	TREAT moderation not what the record states	S8 record
+KIT-204	unmerged at e0747fc1	DA summary counts untested proteins as Not tested	S8
+KIT-220	merged 50239c31	published counts and figures at q < 0.05 whatever the threshold; interactive volcano coloured at abs(log2FC) >= 1	S8, S10
+KIT-215	merged 29d0ec04	lists not tested shown wrongly; no list	S9
+KIT-226	unmerged at e0747fc1	g:Profiler table columns mislabelled	S9
+KIT-216	unmerged at e0747fc1	session file, Save and Load after enrichment; stale-table refusals	S10 after S9
+KIT-212	merged 742b76b8	Save, Report, Copy not refusing a DA not run on the current table	S10
+KIT-213	unmerged at e0747fc1	study_parameters.txt prints store ids for pairs, results	S10 file
+KIT-219	unmerged at e0747fc1	Copy and Report present enrichment files no current enrichment made	S10
+KIT-227	merged eb0db68c	Report RUV sentences	S10 report
+KIT-228	unmerged at e0747fc1	a Save writing no new integration input leaves the earlier one	S10
+KIT-223	unmerged at e0747fc1	false or stale user texts (Scale warning, enrichment refusal remedy)	S6, S9
+KIT-174	merged 3d80d17e (part (a))	RUV grouping help; report filtering section confidence claim (O-22)	S6, S10 report
+KIT-188	unmerged at e0747fc1	legacy RUV Automatic default false-discovery behaviour (O-3)	S6 (not visible)
+KIT-210	unmerged at e0747fc1	RUV-III-C fills missing values with zero on the DIA legacy route (O-4)	S6-S10 numbers (not visible)
+KIT-211	unmerged at e0747fc1	protein missing-value filter and test treat values at the threshold differently (O-9)	S5-S8 numbers (not visible)
+KIT-234	merged c8b6a458	project creation copies workbooks (R/app_server.R:328-346)	S1, project folder
 H-3	open (plan section 13)	protein intensity filter rule	S5
 H-9	open (plan section 13)	a failed native export stays pending	S7
 H-15	open (plan section 13)	DIA-NN multi-accession keys lose gene names	S9
 H-17	open (plan section 13)	RUV-III-C singular inverse (very large fold changes)	S8
 KIT-175	merged d2179e3b	with the network closed the empty UniProt answer is a persistent warning: expected, not a finding	S3
 KIT-160 2.3	property of the taxon setting (KIT-160 2.3)	at taxon 9606 only human accessions are annotated	S3, S9
+KIT-250	unmerged at e0747fc1	organism dialog: Cancel keeps the form's 9606 silently (L finding A4)	S2
+KIT-251	unmerged at e0747fc1	Protein Replicate Filter button listened to twice: a false 'already running' (A2); J records the one-click check	S5.5
+KIT-252	unmerged at e0747fc1	internal failure codes such as worker_failed shown to users (A3)	any step
+KIT-253	unmerged at e0747fc1	normalisation state committed about 80 s before the step finishes (A5)	S6.1
+ENR-22 (wording)	wording row	S9 offline refusal remedy text; S9 is expected refused offline in L and J (addendum item 3)	S9
+DA-11 (wording)	wording row	tab contrast names (KO_vs_WT) differ from file names (groupKO-groupWT) (A7)	S8
