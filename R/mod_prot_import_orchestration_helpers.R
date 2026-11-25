@@ -101,6 +101,9 @@ startProtImportProcessing <- function(
   requireValue(fastaPath)
 
   localData$processing <- TRUE
+  # KIT-250: a new import starts with no organism dialog waiting and no earlier Cancel shown.
+  localData$waiting_for_organism_selection <- FALSE
+  localData$organism_unconfirmed <- FALSE
 
   announceStart(
     searchResultsPath = searchResultsPath

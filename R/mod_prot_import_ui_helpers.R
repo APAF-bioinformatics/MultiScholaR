@@ -1,10 +1,26 @@
-buildProtImportStatusUi <- function(isProcessing, dataTbl, dataFormat, dataType) {
+# KIT-250: the organism dialog's texts (drafts; the owner sets the final wording, VAL-41).
+PROT_IMPORT_ORGANISM_CANCELLED_TEXT <- paste(
+  "Import not finished: no organism was chosen. Press 'Process Imported Data' again and choose the organism in the",
+  "window that follows, or untick 'Mixed species FASTA' and enter the organism yourself."
+)
+PROT_IMPORT_ORGANISM_WAITING_TEXT <- "Choose the organism in the window to finish the import."
+
+buildProtImportStatusUi <- function(isProcessing, dataTbl, dataFormat, dataType, waitingForOrganism = FALSE,
+                                    organismUnconfirmed = FALSE) {
   if (isProcessing) {
     return(shiny::tags$div(
       class = "alert alert-info",
       shiny::tags$strong("Processing..."),
       " Please wait while data is being imported and validated."
     ))
+  }
+
+  # KIT-250: with 'Mixed species FASTA' the import is finished only when the organism is confirmed.
+  if (isTRUE(waitingForOrganism)) {
+    return(shiny::tags$div(class = "alert alert-info", PROT_IMPORT_ORGANISM_WAITING_TEXT))
+  }
+  if (isTRUE(organismUnconfirmed)) {
+    return(shiny::tags$div(class = "alert alert-warning", PROT_IMPORT_ORGANISM_CANCELLED_TEXT))
   }
 
   if (!is.null(dataTbl)) {
@@ -19,7 +35,7 @@ buildProtImportStatusUi <- function(isProcessing, dataTbl, dataFormat, dataType)
   NULL
 }
 
-buildProtImportDataSummaryUi <- function(dataTbl, setupImportLog) {
+buildProtImportDataSummaryUi <- function(dataTbl, setupImportLog, organismPending = FALSE) {
   shiny::req(dataTbl)
   shiny::req(setupImportLog)
 
@@ -39,9 +55,13 @@ buildProtImportDataSummaryUi <- function(dataTbl, setupImportLog) {
     ))
   }
 
-  listItems <- append(listItems, list(
-    shiny::tags$li(paste("Organism:", summaryInfo$organism, "(taxon:", summaryInfo$taxon_id, ")"))
-  ))
+  # KIT-250: no organism is shown before one is confirmed in the organism dialog.
+  organismLine <- if (isTRUE(organismPending)) {
+    "Organism: not confirmed"
+  } else {
+    paste("Organism:", summaryInfo$organism, "(taxon:", summaryInfo$taxon_id, ")")
+  }
+  listItems <- append(listItems, list(shiny::tags$li(organismLine)))
 
   shiny::tags$div(
     class = "well",
