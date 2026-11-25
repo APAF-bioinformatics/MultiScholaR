@@ -505,14 +505,15 @@ k237WL0 <- function(G, S, wf) {
 # block (a real connection attempt from the application's R, made by the journey step; read here). Test mode.
 # ---------------------------------------------------------------------------------------------------------------
 
-#' The deadline, planted: while S2 waits, the driver's internal deadline is moved to 5 s ahead; the step must end
+#' The deadline, planted: while S2 waits, the driver's internal deadline is moved to 1 s in the past (W02: LFQ S2
+#' completes 1.5 to 2.1 s after the press, so a deadline 5 s ahead never ended it); the step must end
 #' `deadline`, every later step `not_reached (deadline)`, a kind-5 finding must be written, and the tables must exist.
 #' The real deadline is restored when the session ends.
 k237DeadlineHook <- function(S, el) {
     if (isTRUE(S$deadline_planted)) return(invisible(NULL))
     S$deadline_planted <- TRUE
     S$deadline_real <- S$G$deadline_at
-    S$G$deadline_at <- as.numeric(Sys.time()) + 5
+    S$G$deadline_at <- as.numeric(Sys.time()) - 1
     invisible(NULL)
 }
 
@@ -529,7 +530,7 @@ K237_PLANT_MODAL_JS <- r"---((function (show) {
   w.innerHTML = '<div id="shiny-modal" class="modal fade in show" style="display:block;" tabindex="-1">' +
     '<div class="modal-dialog"><div class="modal-content"><div class="modal-header">' +
     '<h4 class="modal-title">KIT-237 planted progress dialog</h4></div><div class="modal-body">' +
-    '<div class="progress"><div class="progress-bar" style="width:50%"></div></div></div></div></div></div>';
+    '<div class="progress"><div class="progress-bar" style="width:50%%"></div></div></div></div></div></div>';
   document.body.appendChild(w);
   return true;
 })(%s))---"
@@ -557,9 +558,11 @@ k237WLprime <- function(G) {
     S1 <- k237Launch(G, "WP1")
     k237WL0(G, S1, wf)
     k237Criterion(G, "WL-0", "outbound block: the installed application's R cannot reach a reserved address (a firewall DROP is logged for it, none for the same attempt from a program without a rule)",
-        identical(wf$outbound_drop_r, "yes") && identical(wf$outbound_drop_control, "no"),
-        sprintf("R attempt: %s; DROP for R: %s; DROP for control: %s; %s", wf$outbound_r_said %||% "-",
-            wf$outbound_drop_r %||% "-", wf$outbound_drop_control %||% "-", wf$outbound_method %||% ""))
+        identical(wf$outbound_drop_r, "yes") && identical(wf$outbound_drop_control, "no") &&
+            identical(wf$outbound_allow_control, "yes"),
+        sprintf("R attempt: %s; DROP for R: %s; DROP for control: %s; ALLOW for control: %s; %s", wf$outbound_r_said %||% "-",
+            wf$outbound_drop_r %||% "-", wf$outbound_drop_control %||% "-", wf$outbound_allow_control %||% "-",
+            wf$outbound_method %||% ""))
     if (is.null(S1$driver)) {
         k237StopSession(S1)
         return(k237Verdict(G, "instrument not proven (WL'): launch or attach failed"))
@@ -591,7 +594,8 @@ k237WLprime <- function(G) {
     k237Criterion(G, "WL-2", "S1 refused with 'Base directory does not exist: <path>' within 60 s",
         length(s1) == 1L && identical(s1[[1L]]$outcome, "refused") &&
             grepl(paste("Base directory does not exist:", missing), s1[[1L]]$message, fixed = TRUE) &&
-            as.numeric(s1[[1L]]$seconds) - 60 <= 60 && nzchar(k233Clean(s1[[1L]]$terminal_screenshot)),
+            as.numeric(s1[[1L]]$seconds) - 60 <= 60 &&
+            grepl("-terminal.png at ", k233Clean(s1[[1L]]$terminal_screenshot), fixed = TRUE),
         sprintf("S1 %s after %s s: %s; terminal screenshot: %s", if (length(s1)) s1[[1L]]$outcome else "-",
             if (length(s1)) s1[[1L]]$seconds else "-", if (length(s1)) s1[[1L]]$message else "-",
             if (length(s1)) k233Clean(s1[[1L]]$terminal_screenshot) else "-"))
@@ -612,10 +616,10 @@ k237WLprime <- function(G) {
     s2d <- Filter(function(r) identical(r$step, "S2"), rows)
     later <- Filter(function(r) !r$step %in% c("S1", "S2"), rows)
     five <- Filter(function(f) identical(f$session, "WPd") && identical(f$kind, 5L), G$findings)
-    k237Criterion(G, "WL-D", "the internal deadline (planted at S2): S2 deadline, later steps not_reached (deadline), a kind-5 finding, the tables written",
+    k237Criterion(G, "WL-D", "the internal deadline (planted at S2): S2 deadline, later steps not_reached (deadline), a kind-5 finding",
+        # W08: the tables exist from WL-0 on, so their clause is not a test; the job-level end at a deadline is not planted.
         length(s2d) == 1L && identical(s2d[[1L]]$outcome, "deadline") && length(later) > 0 &&
-            all(vapply(later, function(r) identical(r$outcome, "not_reached (deadline)"), logical(1))) && length(five) >= 1L &&
-            all(file.exists(file.path(G$out, c("steps.tsv", "findings.tsv", "numbers.tsv")))),
+            all(vapply(later, function(r) identical(r$outcome, "not_reached (deadline)"), logical(1))) && length(five) >= 1L,
         sprintf("S2 %s; later: %s; kind-5 findings %d; deadline restored: %s", if (length(s2d)) s2d[[1L]]$outcome else "-",
             paste(vapply(later, function(r) r$outcome, character(1)), collapse = ","), length(five),
             !is.null(Sd$deadline_real)))
@@ -648,12 +652,22 @@ k237WLprime <- function(G) {
         k237StopSession(S)
         guard("WL-5", k237L5(G, label))
     }
-    Su <- k237RunSession(G, lfq, G$runs$prot_lfq("k237_wlpu"), "WPu", test_mode = FALSE, upto = "S2")
-    k237StopSession(Su)
-    s2u <- Filter(function(r) identical(r$session, "WPu") && identical(r$step, "S2"), G$steps)
-    k237Criterion(G, "WL-0u", "the chooser selects every input file in user mode on prot_lfq",
-        length(s2u) == 1L && identical(s2u[[1L]]$outcome, "complete") && length(Su$chooser) == 2L && all(Su$chooser),
-        sprintf("S2 %s; chooser selections %d of 2", if (length(s2u)) s2u[[1L]]$outcome else "-", sum(Su$chooser %in% TRUE)))
+    # W06 (b): the chooser in user mode on each of the four routes (as WL's WL-0u); (d): on LFQ the user-mode session
+    # goes on to S8 (the only lifecycle use of user mode beyond S2; its later steps are recorded, not judged).
+    for (id in names(routes)) {
+        label <- paste0("WPu-", id)
+        Su <- k237RunSession(G, routes[[id]], G$runs[[id]](paste0("k237_wlpu_", id)), label, test_mode = FALSE,
+            upto = if (identical(id, "prot_lfq")) "S8" else "S2")
+        k237StopSession(Su)
+        s2u <- Filter(function(r) identical(r$session, label) && identical(r$step, "S2"), G$steps)
+        wanted <- if (identical(id, "prot_lfq")) 2L else sum(vapply(Su$R$import %||% list(),
+            function(a) identical(a$kind, "upload"), logical(1)))
+        k237Criterion(G, "WL-0u", sprintf("the chooser selects every input file in user mode on %s", id),
+            length(s2u) == 1L && identical(s2u[[1L]]$outcome, "complete") && length(Su$chooser) == wanted &&
+                all(Su$chooser),
+            sprintf("S2 %s; chooser selections %d of %d", if (length(s2u)) s2u[[1L]]$outcome else "-",
+                sum(Su$chooser %in% TRUE), wanted))
+    }
     k237Verdict(G)
 }
 
@@ -856,7 +870,7 @@ k237Verdict <- function(G, stop_text = NULL) {
     proven <- is.null(stop_text) && !any(results[blocking] == "fail")
     # WL-0u is required on all four routes (SC-02): a missing route's row counts as not proven.
     routes_u <- sum(names == "WL-0u")
-    if (!identical(G$phase$run_mode, "WLprime") && !is.null(G$routes) && routes_u < length(G$routes)) proven <- FALSE
+    if (!is.null(G$routes) && routes_u < length(G$routes)) proven <- FALSE
     l5 <- !any(results[names == "WL-5"] == "fail")
     writeLines(c(stop_text %||% sprintf("instrument %s on Windows (WL-0, WL-0u, WL-1 to WL-4: %d pass, %d fail, %d recorded)",
         if (proven) "proven" else "not proven", sum(results[blocking] == "pass"), sum(results[blocking] == "fail"),
@@ -954,7 +968,7 @@ k237Runs <- function(G, fixtures, request) {
 
 k237WriteEnvironment <- function(G, request, rebound) {
     wf <- G$workflow
-    S <- G$sessions[["WL1"]]
+    S <- G$sessions[["WL1"]] %||% G$sessions[["WP1"]]
     R <- if (is.null(S)) NULL else S$R
     chrome <- tryCatch(as.character(chromote::find_chrome()), error = function(e) "")
     chrome_version <- if (nzchar(chrome)) tryCatch(paste(suppressWarnings(system2(chrome, "--version", stdout = TRUE,

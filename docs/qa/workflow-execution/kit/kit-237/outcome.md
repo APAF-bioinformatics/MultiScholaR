@@ -248,6 +248,8 @@ Observed (each against its prediction):
   runs). WL3w (observation): a worker ended during the longest LFQ QC step; the step refused "managed action ended:
   worker_failed".
 
+Scope of 'proven': on `metab_lc`, N2 compared 0 with 0 (6 metabolites, none significant), so N2's power to see a difference is shown on LFQ only (WL-4 (b)); its DA-table plant needed 'Show: All Results'. WL-5 cross-checks the page against the digest where both exist: on `lipid_canonical` and `metab_lc` 8 steps agree and 10 have the page's signal only (S6.1w, S7, S8.1, S8.3 and the S10 actions, after the re-runs' fixes); on `prot_lfq` 9 and 10; on `trx_screen` 7 and 6. A user-mode run relies on the page alone at those steps.
+
 Inferred: the instrument (KIT-233's driver 76e4b519 under `journey-win.R` at 8f3b08ee) observes, on the installed
 Windows application at 7327607f, completion, refusal, crash, timeout (rerun 1's S8.1/S8.3), "not reachable" (runs 1 and
 rerun 1's chooser), planted silent outputs, and the digest/page agreement on each of the four routes, through their
@@ -267,9 +269,8 @@ instrument reruns within 1,410; two of three instrument reruns used).
 
 ## A defect found in rerun 2's records after the verdict (no criterion judged it)
 
-The RA-02 terminal screenshot was also taken on 12 completed steps at 0.0 s (for example `WL1-16-S10.1-terminal.png`):
-the trigger read every error notification of the page, including earlier steps' (S9's). The refusals' screenshots
-(WL2 S1, S5.4, S6.1, S9) are at the refusal. Repaired for WL' (only notifications and dialogs from the action's own
+The RA-02 terminal screenshot was also taken on 27 completed steps at 0.0 s (24 in rerun 1) (for example `WL1-16-S10.1-terminal.png`):
+the trigger read every error notification of the page, including earlier steps' (S9's). The screenshots of WL2 S1, WL1 S9, lipid and metab S5.4 (0.5 s) and WL3w S5.4 (1.4 s) are at the refusal; lipid and metab S6.1's were taken at 0.0 s, triggered by S5.4's earlier note, so WL holds no screenshot of the 'A step is still running' refusal (its text is in steps.tsv and in the step's notifications JSON in the run artifact). Repaired for WL' (only notifications and dialogs from the action's own
 start count); no WL criterion read the column.
 
 ## Weak fixtures (recorded, nothing built)
@@ -283,31 +284,75 @@ start count); no WL criterion read the column.
   exercised on these routes. A stronger fixture would carry standards in the column and form the method matches by
   default (KIT-242's P01 finding).
 
-## WL' declaration (SC-11; written before any send; not sent: the ticket's auditor reads it first)
+## WL' declaration (SC-11; r1.6 after the auditor's "not yet", W01 to W13; written before any send; not sent)
 
-- **Purpose:** prove, on the installed build it runs on, what WL proved (WL-0, WL-2, WL-3, WL-4 (a) to (c), WL-5 on each
-  route, the chooser once in user mode) and RA-01's pieces WL did not meet: the internal deadline (WL-D, planted at
-  S2), a progress dialog open over 60 s (WL-M, planted in the page for 75 s with a 120-s hard wait), and the outbound
-  block (WL-0: a connection attempt from the installed application's R to 192.0.2.1:47011, RFC 5737 TEST-NET-1, with
-  a DROP required in the Windows Firewall log and none for the same attempt from the step's shell to :47012). Also
-  RA-02 (terminal screenshot at the refusal, required on WL-2) and RA-03/RA-05 as since rerun 1. Decides "instrument
-  proven (WL')"; it is the WL' that section 7 places in the WJ' job at the release commit, sent once now on the
-  current tree so its new pieces are proven before the release.
+- **Purpose:** prove, on the installed build it runs on, what WL proved (WL-0, WL-0u on the four routes, WL-2, WL-3,
+  WL-4 (a) to (c) on LFQ, WL-5 on each route) and RA-01's pieces WL did not meet: the internal deadline (WL-D, planted
+  at S2), a progress dialog open over 60 s (WL-M, planted in the page for 75 s with a 120-s hard wait), and the
+  outbound block (WL-0: a connection attempt from the installed application's R to 192.0.2.1:47011, RFC 5737
+  TEST-NET-1, with a DROP required in the Windows Firewall log, none for the same attempt from the step's shell to
+  :47012, and an ALLOW logged for :47012). Also RA-02 (terminal screenshot at the refusal, required on WL-2) and
+  RA-03/RA-05 as since rerun 1. It is the WL' that section 7 places in the WJ' job at the release commit, sent once now
+  on the current tree. Scope as judged (W06 (a)): the LFQ session to S8, carrying WL-4 (a) to (c) and WL-5 (WL-1's
+  criteria are not judged in WL'); the chooser on all four routes (W06 (b), coordinator); on LFQ the user-mode session
+  continues to S8, the only lifecycle use of user mode beyond S2, its later steps recorded, not judged (W06 (d),
+  coordinator; it fits the 35-minute internal deadline by estimate, about 27 minutes in all); RA-01's "not reachable"
+  is met by rerun 1's rows (W06 (c), coordinator), no new plant.
 - **Binding (at send):** commit under test = the `v0.9-staging` head merged into `run-k237-journey` just before the
-  request (SC-03 (a)); driver `76e4b519`; routes = the commit holding this declaration; mode test (the chooser once in
-  user mode); `e2e` false, `gui_entry` false; `test_features` false.
-- **Bounds:** journey step `timeout_minutes` 45, internal deadline `deadline_minutes` 35, hard wait per step 10 minutes
-  (120 s for the planted dialog); job ceiling 90 minutes = 37 set-up + 45 + 3 check + 5 margin (6.00 core-hours);
-  expected 68 minutes = 37 + 28 journey + 3 (4.53 core-hours). Not in r1.4's table (there WL' rides in WJ''s job):
-  the coordinator places it (the instrument line has 1,252 of 1,410 job-minutes left, or a new line). At most three
-  VAL-54 instrument reruns; a result is not re-run.
+  request (SC-03 (a)); driver `76e4b519`; mode test (the chooser in user mode); `e2e` false, `gui_entry` false;
+  `test_features` false. `route_commit` is the commit holding the W01, W02, W03 and W09 repairs (the commit that adds
+  this text; its hash is given in the hand-back and written into the request at send). Before the send, `outcome.md`
+  records the staging commit merged, and the product change since 7327607f: `git diff --stat 7327607f <commit under
+  test> -- $PKG_PATHS`, which at 828dd105 includes KIT-214 (duplicate resolution on lipid and metab, S5), KIT-240
+  (`entry.R`: integration on by default), KIT-201, KIT-243 and KIT-241.
+- **Bounds and budget:** journey step `timeout_minutes` 45, internal deadline `deadline_minutes` 35, hard wait per step
+  10 minutes (120 s for the planted dialog); budget line "WL' standalone" (coordinator, W12): ceiling 90 job-minutes =
+  37 set-up + 45 + 3 check + 5 margin (6.00 core-hours), expected 68 (4.53); its re-sends from the instrument line, which
+  drops from 1,410 to 1,320 so the total stays 1,880. At most three VAL-54 re-sends; a result is not re-run.
+- **Decision:** WL' is 'instrument proven (WL')' when no blocking row fails and `verdict.txt` says proven. The blocking
+  rows are WL-0 including the outbound row, WL-0u, WL-2, WL-3, WL-4, WL-D and WL-M. WL-5 is reported as in WL. A pass
+  proves these pieces on the build of the commit under test. It does not replace the WL' inside WJ''s job (section 7)
+  and licenses nothing at the release commit. If WL' is not proven after three VAL-54 instrument re-sends: stop; WJ' is
+  not sent; the coordinator is told.
+- **Failure classes:**
+  1. WL-D, WL-M and WL-2's screenshot test the driver's own machinery: a fail is an instrument fault (VAL-54).
+  2. The outbound row: as below.
+  3. A WL-0, WL-2, WL-3, WL-4, WL-5 or chooser row that fails because the application behaves differently from
+     7327607f (a new refusal, a changed message or control) is a product finding, recorded and not re-run. Only a wrong
+     selector or text of the instrument, against unchanged behaviour, is an instrument fault.
+  4. Any finding not listed below is new, goes to the coordinator, and is never chased in this run.
+- **Outbound row, classified before the send:**
+  1. DROP for 47011, no DROP for 47012 (and, if built, an ALLOW for 47012): pass. (The ALLOW is built: W03 (b).)
+  2. Log absent; or no line for 192.0.2.1 at all within the 60 s poll; or `outbound_r_said` is not a connection failure
+     (an R error or a parse error): instrument fault (the attempt or the log was not observed); VAL-54.
+  3. A DROP for 47012: the control is invalid (the runner drops that address for every program); instrument fault,
+     re-sent with another TEST-NET-1 address.
+  4. With (b): an ALLOW for 47012 and no DROP for 47011 is a result. The program rules did not stop the installed R. It
+     is recorded as a finding against the network condition of WL, the lifecycle step and WJ', and never re-run.
+     Without (b), case 4 cannot be told from case 2. It is classified as case 2 once; if it occurs again, the
+     coordinator is told it is a result.
+- **The busy refusal (K14; W04, coordinator's ruling):** the product defect gets its own ticket, repaired before the
+  release commit; until it merges, WL' re-presses as WL did (S6.1w, recorded); WJ' re-presses nothing.
 - **Request (to be written as `requests/wlp-<date>.json` only at send):** `"run": "WLprime"`, `commit_under_test`,
   `journey_commit` 76e4b519…, `route_commit`, `route_files` [lfq, omics], `routes` [the four], `mode` "test",
   `platforms` ["windows"], `e2e` false, `gui_entry` false, `test_features` false, `deadline_minutes` 35,
-  `timeout_minutes` 45, `inputs` as `wl-20261125.json`.
-- **Predictions:** WL-0 passes, including the outbound block (DROP logged for the R attempt, none for the control;
-  uncertain only in whether the log records it within 10 s); WL-4 (a), (b), (c), WL-2 (with a terminal screenshot at
-  0.5 s), WL-3 pass; WL-D passes (S2 `deadline` about 5 s after the press, S3 to S10 `not_reached (deadline)`, one
-  kind-5 finding); WL-M passes (the planted dialog recorded as progress for about 75 s, the step `timeout` at 120 s,
-  no `refused`); WL-5 passes on the four routes to S8; the chooser passes; total journey about 28 minutes.
-
+  `timeout_minutes` 45, `inputs` as `wl-20261125.json`. The plan step now refuses a `run` other than WL or WLprime,
+  a `deadline_minutes` not at least 5 below `timeout_minutes`, and commits that are not 40-character hashes (W11).
+- **Predictions:**
+  - WL-0 passes, the outbound row within the 60-s poll; WL-0u passes on the four routes; WL-4 (a), (b), (c), WL-2 (a
+    terminal screenshot at about 0.5 s), WL-3 pass.
+  - WL-D: S2 `deadline` at the poll after the press (under 1.5 s; LFQ S2's own completion came 1.5 to 2.1 s after the
+    press in WL), S3 to S10 `not_reached (deadline)`, one kind-5 finding, the real deadline restored.
+  - WL-M: the planted dialog recorded as progress for about 75 s, the step `timeout` at 120 s, no `refused`.
+  - WL-5 passes on the four routes to S8.
+  - Expected findings, and no others:
+    - WP1: S6.2 kind 3 planted (WL-4 (c)); S8 kind 3 and kind 4 planted (WL-4 (a), (b)).
+    - WP2: S1 kind 1 refused. WP3: S2 kind 1 crashed.
+    - WPd: S2 kind 5. WPm: PM kind 1 timeout, planted.
+    - WP5-lipid_canonical and WP5-metab_lc: S5.4 refused 'No internal standards found' (K12); S6.1 refused 'A step is
+      still running…' then S6.1w complete (K14), with the S6.1 terminal screenshot at about 0.5 s.
+- **Limits stated now:** WL-D's former "tables written" clause was vacuous (the tables exist from WL-0 on) and is
+  removed; the plant shows the step-level deadline handling, not the job-level end at a deadline (the driver exiting 0
+  with every table, then the check and upload), which occurs only if the real 35-minute deadline is reached (W08).
+  WJ' needs a driver entry point that does not exist yet: `k237Main` runs only WL or WLprime. The accurate wording for
+  any text about the network is "network blocked for the installed application's programs".
