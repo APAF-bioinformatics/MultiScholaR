@@ -301,3 +301,63 @@ empty sample's pairs are NA and gain A3's subtitle); KIT-247 (P17).
 - Optional follow-ups (coordinator): I04 (wrap the covariates' finish/publish and the managed `preQc` delivery with
   `withProtNormFigureNotice`; guard the covariates' cancor `ggsave`); I05 (re-raise `workflow_execution_stale` and
   `workflow_execution_busy`); I10 (`logger::skip_formatter`); I11 (test-only).
+
+## 8. The second correction (VAL-287), branch `kit-259b`
+
+Authority: the owner's decision VAL-287 (2026-11-26): a second, narrow correction (AUDIT-KIT-259-impl-20261126 I02,
+I04, I05, I11) and item (ii), a report sentence naming the Figure 1 panels replaced by a placeholder. KIT-259 itself is
+merged (train 10, VAL-273). Branch `kit-259b` from origin/v0.9-staging 127011429. Predictions:
+`second-correction-predictions.md`, committed before each run.
+
+| Commit | What |
+|---|---|
+| 99b021fa | tests only: `tests/testthat/test-kit259b-second-correction.R`; R1 predictions |
+| 417b6d7e | tests only: R1's two instrument fixes; declared edit of B-E1 (`test-kit259-pearson-histogram-figure-failure.R`: the file list gains the placeholder's marker) |
+| eaab6e57 | the fix (R/ and the four proteomics templates) |
+| 2f2352e6 | R1 records and R2 predictions |
+| (records commit) | R2 records, NEWS, ledger row, `wording.md` W10, W11, this section |
+
+**What changed.**
+- I02: the lipid/metab x breaks are `round(seq(lower, 1, 0.1), 1)` when `lower < 0` (non-negative data keep today's
+  expression) (`R/func_lipid_s4_correlation_methods.R`, `R/func_metab_s4_qc_methods.R`, the `scale_x_continuous` line).
+- I04: `withProtNormFigureNotice` wraps the RUV covariates step in process and managed
+  (`R/mod_prot_norm_workflow_helpers.R`, `runProtNormRuvCovariatesObserver`, `dispatchProtNormRuvCovariates`) and the
+  managed pre-figure redraw's delivery (`dispatchProtNormNormalization`); its notice names the step that finished, or,
+  for the redraw (shown before the normalisation runs), only the figure. The covariates step's canonical-correlation
+  figure is drawn through `drawProtNormQcFigure` (`publishDIAReferenceRuvCovariates`).
+- I05: `drawProtNormQcFigure` re-raises `workflow_execution_stale`, `workflow_execution_busy` and R's memory-allocation
+  error ("cannot allocate vector|memory"). With `qcDir` NULL a failing figure is logged only: no placeholder, no
+  warning, NULL returned (documented; I05-G1).
+- (ii), the source chosen: a marker the placeholder writer leaves, `<figure>.png.placeholder` (one line, the reason),
+  beside the placeholder. It is the smallest sound source: the composite is assembled from those images, so a marker
+  beside each says exactly which panels are notes; the record holds no figure outcome. A drawn figure removes its
+  marker; a normalisation run removes the post-normalisation and RUV-corrected markers at its start, with the earlier
+  run's own files (KIT-257's `removeProtNormOwnFiles`). The four proteomics templates read the markers in the QC folder
+  the composite is copied from (`current_project_paths$feature_qc_dir`), in a new chunk `QC_metrics_placeholders`
+  after Figure 1, and print one sentence naming the panels (letters from the composite's layout: two columns without
+  RUV, three with, panel m the canonical correlation; without a recorded RUV state, the panels are named by their
+  content). With no marker nothing is printed.
+- KIT-236 (train 12) changes the same templates: `git merge-tree` of this branch with origin/merge-train-20261126e
+  merges the four templates without conflict (the new chunk sits after the Figure 1 chunk, which train 12 does not
+  change); only the ledger conflicts, as every branch's does.
+
+**Observed.**
+- R1 (run 45676566887, at 99b021fa; 13.5 job-minutes; `r1b-45676566887/`): **I02 is real.** A3-E5 failed on the old
+  code by the printed label, lipid and metab: `-3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 ...
+  1.000000e+00`. I05-E1, I04-E1 (both), (ii)-E1, (ii)-E2 and (ii)-E3 (four) failed as predicted. Two instrument defects
+  (VAL-54, no result for those rows): I04-E2 errored (since KIT-257 the runner receives a function giving the actions)
+  and (ii)-G1 failed (each knit used its own temporary folder, which the chunk's message names). Fixed in 417b6d7e,
+  every expectation unchanged; re-sent once, as R2's base side.
+- R2 (run 45679572528, base 417b6d7e, head 2f2352e6; 77 files, check, 5 shards per side; 489.5 job-minutes;
+  `r2b-45679572528/`): every prediction held. 75 files `same`; `fixed`: `test-kit259b-second-correction.R` (28 passed,
+  20 failed, 4 skipped on base; 64 passed, 0 failed, 0 skipped on head; on base I04-E2 now fails by assertion and
+  (ii)-G1 passes on the four templates) and `test-kit259-pearson-histogram-figure-failure.R` (84/1 to 85/0, the
+  declared edit). R CMD check identical (6 findings on both sides). I11-G1 (the partial PNG replaced by the
+  placeholder's bytes) passes on both sides.
+
+**Not checked.** A rendered report: a render needs the GUI lanes' projects (KIT-236's render harness lands with train
+12); the template chunk is tested by knitting the template's own chunks (the sentence, and with no marker the Figure 1
+section knits to the same text). Multi-assay lipid/metab labels; Windows; real data.
+
+**Budget.** 13.5 + 489.5 = 503.0 job-minutes = 33.5 core-hours; KIT-259 in all 61.3 of 131.33.
+
