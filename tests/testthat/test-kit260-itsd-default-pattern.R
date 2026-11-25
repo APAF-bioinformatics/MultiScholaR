@@ -341,7 +341,7 @@ test_that("KIT-260 E8: the stored 0.9.0 pattern governs; the record and the repo
       env$`%||%` <- function(a, b) if (!is.null(a)) a else b
       env$d66_log <- function(...) invisible(NULL)
       report <- readLines(template, warn = FALSE, encoding = "UTF-8")
-      for (label in c("Hierarchical Parser", "Method Section")) {
+      for (label in c("Hierarchical Parser", "Sample Analysis Functions", "Method Section")) {
         start <- grep(paste0("^```\\{r ", label, "[,}]"), report)
         end <- start + which(report[-seq_len(start)] == "```")[[1L]]
         chunk <- tempfile(fileext = ".Rmd")
@@ -449,7 +449,7 @@ kit260ReportNote <- function(class, file) {
   env$`%||%` <- function(a, b) if (!is.null(a)) a else b
   env$d66_log <- function(...) invisible(NULL)
   report <- readLines(system.file("reports", spec$dir, spec$file, package = "MultiScholaR"), warn = FALSE, encoding = "UTF-8")
-  for (label in c("Hierarchical Parser", "Method Section")) {
+  for (label in c("Hierarchical Parser", "Sample Analysis Functions", "Method Section")) {
     start <- grep(paste0("^```\\{r ", label, "[,}]"), report)
     end <- start + which(report[-seq_len(start)] == "```")[[1L]]
     chunk <- tempfile(fileext = ".Rmd")
@@ -617,6 +617,10 @@ test_that("KIT-260 I05: a record from a build before KIT-260 whose ITSD used sta
   config <- fixture$workflow$config_list
   withr::with_options(list(MultiScholaR.itsd_outcome = "applied_flag"),
     kit172Quiet(runWorkflowOmicsReferenceItsdNormalisation(binding, owner, "median", NULL, config)))
+  # The gate itself (AUDIT-KIT-260-impl CC03): under the earlier token the origin's ITSD product holds only `final`.
+  origin_spec <- readWorkflowStateMetadata(owner, owner$.context$snapshot$states$metab_itsd_norm)$data
+  origin_product <- hydrateSavedWorkflowEntity(owner$.context$store, origin_spec$products$metab_itsd_normalisation_science)$value
+  expect_identical(names(origin_product), "final")
   kit172Quiet({
     runWorkflowOmicsReferenceLog2(binding, owner, 0, config)
     runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, "cyclicloess", config)
