@@ -1,0 +1,7 @@
+head	fd9da180be7898e9aa07adbf8b0a7eb003855edf
+staging_base	7327607fbed47c01a45bda9998cfb17c4999455a
+R	R version 4.6.1 (2026-06-24)
+started	2026-11-25 12:07:51
+phase0_lipid	TRUE
+phase0_metab	TRUE
+finished	2026-11-25 12:10:16

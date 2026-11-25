@@ -1,0 +1,201 @@
+item	object	class	route	observable	value
+PHASE0	K2	lipid	in_process	run head	lipid_normalized
+PHASE0	K2	lipid	in_process	Apply head	lipid_correlation_filtered
+STOP-i	K2	lipid	phase 0 in process (log2, quantile)	B_6 best within-group correlation, LCMS_Pos	0.981240 (passes at 0.5)
+STOP-i	K2	lipid	phase 0 in process (log2, quantile)	B_6 best within-group correlation, LCMS_Neg	0.012826 (fails at 0.5)
+STOP-i	K2	lipid	phase 0 in process (log2, quantile)	stop rule (i): fails in exactly LCMS_Neg	TRUE
+PHASE0	K2	lipid	in_process	design samples	11; B_6 absent
+PHASE0	K2	lipid	in_process	LCMS_Pos sample columns	12; B_6 present
+PHASE0	K2	lipid	in_process	LCMS_Neg sample columns	11; B_6 absent
+PHASE0	K2	lipid	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+PHASE0	K2	lipid	in_process	seconds	11.7
+PHASE0	K2	lipid	managed	run completed	TRUE
+PHASE0	K2	lipid	managed	Apply settled	TRUE
+PHASE0	K2	lipid	managed	operations	lipid_qc_figures,lipid_log2,lipid_between_sample_normalisation,lipid_qc_figures,lipid_composite_figure,lipid_pearson_pairs,lipid_pearson_selection
+PHASE0	K2	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+PHASE0	K2	lipid	managed	head	lipid_correlation_filtered
+PHASE0	K2	lipid	managed	errors in log	<none>
+PHASE0	K2	lipid	managed	notes	[default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [message] Normalization pipeline complete! | [default] Applying correlation filter... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [message] Correlation filtering complete! Ready for DE analysis.
+PHASE0	K2	lipid	managed	design samples	11; B_6 absent
+PHASE0	K2	lipid	managed	LCMS_Pos sample columns	12; B_6 present
+PHASE0	K2	lipid	managed	LCMS_Neg sample columns	11; B_6 absent
+PHASE0	K2	lipid	managed	managed design = in-process design	TRUE
+PHASE0	K2	lipid	managed	seconds	29.9
+PHASE0	K2	lipid	managed	PHASE 0 PASSED	TRUE
+PHASE0	K2	metab	in_process	run head	metab_normalized
+PHASE0	K2	metab	in_process	Apply head	metab_correlation_filtered
+STOP-i	K2	metab	phase 0 in process (log2, quantile)	B_6 best within-group correlation, LCMS_Pos	0.981240 (passes at 0.5)
+STOP-i	K2	metab	phase 0 in process (log2, quantile)	B_6 best within-group correlation, LCMS_Neg	0.012826 (fails at 0.5)
+STOP-i	K2	metab	phase 0 in process (log2, quantile)	stop rule (i): fails in exactly LCMS_Neg	TRUE
+PHASE0	K2	metab	in_process	design samples	11; B_6 absent
+PHASE0	K2	metab	in_process	LCMS_Pos sample columns	12; B_6 present
+PHASE0	K2	metab	in_process	LCMS_Neg sample columns	11; B_6 absent
+PHASE0	K2	metab	in_process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+PHASE0	K2	metab	in_process	seconds	8.9
+PHASE0	K2	metab	managed	run completed	TRUE
+PHASE0	K2	metab	managed	Apply settled	TRUE
+PHASE0	K2	metab	managed	operations	metab_qc_figures,metab_log2,metab_between_sample_normalisation,metab_qc_figures,metab_composite_figure,metab_pearson_pairs,metab_pearson_selection
+PHASE0	K2	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered
+PHASE0	K2	metab	managed	head	metab_correlation_filtered
+PHASE0	K2	metab	managed	errors in log	<none>
+PHASE0	K2	metab	managed	notes	[default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [message] Normalization pipeline complete! | [default] Applying correlation filter... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [message] Correlation filtering complete! Ready for DE analysis.
+PHASE0	K2	metab	managed	design samples	11; B_6 absent
+PHASE0	K2	metab	managed	LCMS_Pos sample columns	12; B_6 present
+PHASE0	K2	metab	managed	LCMS_Neg sample columns	11; B_6 absent
+PHASE0	K2	metab	managed	managed design = in-process design	TRUE
+PHASE0	K2	metab	managed	seconds	27.9
+PHASE0	K2	metab	managed	PHASE 0 PASSED	TRUE
+BUILD	K1	lipid	declaration	head	lipid_correlation_filtered
+BUILD	K1	lipid	declaration	B_6 best within-group correlation per assay	A1=0.982840; A2=NA
+K1	K1	lipid	declaration	A2 between-sample warning	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+K1	K1	lipid	declaration	A2 normalised equals its log2 input (non-IS rows; tol 0)	TRUE
+K1	K1	lipid	declaration	A1 normalised equals its log2 input (non-IS rows; tol 0)	FALSE
+K1	K1	lipid	declaration	design samples	11; B_6 absent
+K1	K1	lipid	declaration	A1 sample columns	12; B_6 present
+K1	K1	lipid	declaration	A2 sample columns	11; B_6 absent
+BUILD	K1	lipid	declaration	seconds	7.7
+BUILD	K2	lipid	declaration	head	lipid_correlation_filtered
+STOP-i	K2	lipid	declaration (design-state values)	B_6 best within-group correlation, LCMS_Pos	0.975839 (passes at 0.5)
+STOP-i	K2	lipid	declaration (design-state values)	B_6 best within-group correlation, LCMS_Neg	-0.014881 (fails at 0.5)
+STOP-i	K2	lipid	declaration (design-state values)	stop rule (i): fails in exactly LCMS_Neg	TRUE
+o1	K2	lipid	declaration	design samples	11; B_6 absent
+o1	K2	lipid	declaration	LCMS_Pos sample columns	12; B_6 present
+o1	K2	lipid	declaration	LCMS_Neg sample columns	11; B_6 absent
+BUILD	K2	lipid	declaration	seconds	3.6
+BUILD	K0	lipid	declaration	head	lipid_correlation_filtered
+BUILD	K0	lipid	declaration	B_6 best within-group correlation per assay	LCMS_Pos=0.975839; LCMS_Neg=0.971150
+K0	K0	lipid	declaration	design samples	12; B_6 present
+K0	K0	lipid	declaration	LCMS_Pos sample columns	12; B_6 present
+K0	K0	lipid	declaration	LCMS_Neg sample columns	12; B_6 present
+BUILD	K0	lipid	declaration	seconds	3.5
+BUILD	K1	metab	declaration	head	metab_correlation_filtered
+BUILD	K1	metab	declaration	B_6 best within-group correlation per assay	A1=0.982840; A2=NA
+K1	K1	metab	declaration	A2 between-sample warning	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+K1	K1	metab	declaration	A2 normalised equals its log2 input (non-IS rows; tol 0)	TRUE
+K1	K1	metab	declaration	A1 normalised equals its log2 input (non-IS rows; tol 0)	FALSE
+K1	K1	metab	declaration	design samples	11; B_6 absent
+K1	K1	metab	declaration	A1 sample columns	12; B_6 present
+K1	K1	metab	declaration	A2 sample columns	11; B_6 absent
+BUILD	K1	metab	declaration	seconds	8.3
+BUILD	K2	metab	declaration	head	metab_correlation_filtered
+STOP-i	K2	metab	declaration (design-state values)	B_6 best within-group correlation, LCMS_Pos	0.975839 (passes at 0.5)
+STOP-i	K2	metab	declaration (design-state values)	B_6 best within-group correlation, LCMS_Neg	-0.014881 (fails at 0.5)
+STOP-i	K2	metab	declaration (design-state values)	stop rule (i): fails in exactly LCMS_Neg	TRUE
+o1	K2	metab	declaration	design samples	11; B_6 absent
+o1	K2	metab	declaration	LCMS_Pos sample columns	12; B_6 present
+o1	K2	metab	declaration	LCMS_Neg sample columns	11; B_6 absent
+BUILD	K2	metab	declaration	seconds	3.4
+BUILD	K0	metab	declaration	head	metab_correlation_filtered
+BUILD	K0	metab	declaration	B_6 best within-group correlation per assay	LCMS_Pos=0.975839; LCMS_Neg=0.971150
+K0	K0	metab	declaration	design samples	12; B_6 present
+K0	K0	metab	declaration	LCMS_Pos sample columns	12; B_6 present
+K0	K0	metab	declaration	LCMS_Neg sample columns	12; B_6 present
+BUILD	K0	metab	declaration	seconds	3.8
+o2	K1	lipid	tab in process	omicDaPreflight value	status=error; stage=preflight; errorMessage=Assay 'A1' has sample column(s) missing from design: B_6
+o2	K1	lipid	tab in process	notifications	[error] Assay 'A1' has sample column(s) missing from design: B_6
+o2	K1	lipid	tab in process	seconds	0.2
+o2	K2	lipid	tab in process	omicDaPreflight value	status=error; stage=preflight; errorMessage=Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o2	K2	lipid	tab in process	notifications	[error] Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o2	K2	lipid	tab in process	seconds	0.1
+o2	K1	metab	tab in process	omicDaPreflight value	status=error; stage=preflight; errorMessage=Assay 'A1' has sample column(s) missing from design: B_6
+o2	K1	metab	tab in process	notifications	[error] Assay 'A1' has sample column(s) missing from design: B_6
+o2	K1	metab	tab in process	seconds	0.1
+o2	K2	metab	tab in process	omicDaPreflight value	status=error; stage=preflight; errorMessage=Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o2	K2	metab	tab in process	notifications	[error] Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o2	K2	metab	tab in process	seconds	0.1
+o3	K2	lipid	worker	source head	lipid_correlation_filtered
+o3	K2	lipid	worker	handoff status	complete
+o3	K2	lipid	worker	handoff error	none
+o3	K2	lipid	worker	handoff texts naming 'missing from design'	<none>
+o3	K2	lipid	worker	assay tables (names of each 'assays' list found)	none
+o3	K2	lipid	worker	rows per assay	none
+o3	K2	lipid	worker	errors	none
+o3	K2	lipid	worker	handoff fields / result fields	schema+status+token+result+directory / checkpoint+reference+native+operation+roots+owned
+o3	K2	lipid	worker accepted	acceptance	complete
+o3	K2	lipid	worker accepted	contrast value: assays with a table	none
+o3	K2	lipid	worker accepted	contrast value: rows per assay	none
+o3	K2	lipid	worker accepted	contrast value: errors	Assay 'LCMS_Pos' has sample column(s) missing from design: B_6,Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o3	K2	lipid	worker accepted	manifest acceptance	stopped: Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+o3	K2	lipid	worker	seconds	0.5
+o3	K2	metab	worker	source head	metab_correlation_filtered
+o3	K2	metab	worker	handoff status	complete
+o3	K2	metab	worker	handoff error	none
+o3	K2	metab	worker	handoff texts naming 'missing from design'	<none>
+o3	K2	metab	worker	assay tables (names of each 'assays' list found)	none
+o3	K2	metab	worker	rows per assay	none
+o3	K2	metab	worker	errors	none
+o3	K2	metab	worker	handoff fields / result fields	schema+status+token+result+directory / checkpoint+reference+native+operation+roots+owned
+o3	K2	metab	worker accepted	acceptance	complete
+o3	K2	metab	worker accepted	contrast value: assays with a table	LCMS_Pos,LCMS_Neg
+o3	K2	metab	worker accepted	contrast value: rows per assay	LCMS_Pos=520,LCMS_Neg=520
+o3	K2	metab	worker accepted	contrast value: errors	none
+o3	K2	metab	worker accepted	manifest acceptance	accepted
+o3	K2	metab	worker	seconds	5.7
+o4	K1	metab	both	B_6 columns (correlation state | removed by hand)	A1 | 
+o4	K1	metab	runMetabolitesDA	assays (correlation state | removed by hand)	A1+A2 | A1+A2
+o4	K1	metab	runMetabolitesDA	A1 rows (correlation state | removed by hand)	40 | 40
+o4	K1	metab	runMetabolitesDA	A1 identical	TRUE
+o4	K1	metab	runMetabolitesDA	A2 rows (correlation state | removed by hand)	40 | 40
+o4	K1	metab	runMetabolitesDA	A2 identical	TRUE
+o4	K1	metab	runMetabolitesDA	ALL IDENTICAL	TRUE
+o4	K1	metab	declaration	assays (correlation state | removed by hand)	A1+A2 | A1+A2
+o4	K1	metab	declaration	A1 rows (correlation state | removed by hand)	40 | 40
+o4	K1	metab	declaration	A1 identical	TRUE
+o4	K1	metab	declaration	A2 rows (correlation state | removed by hand)	40 | 40
+o4	K1	metab	declaration	A2 identical	TRUE
+o4	K1	metab	declaration	ALL IDENTICAL	TRUE
+o4	K1	metab	both	seconds	9.2
+o4	K2	metab	both	B_6 columns (correlation state | removed by hand)	LCMS_Pos | 
+o4	K2	metab	runMetabolitesDA	assays (correlation state | removed by hand)	LCMS_Pos+LCMS_Neg | LCMS_Pos+LCMS_Neg
+o4	K2	metab	runMetabolitesDA	LCMS_Pos rows (correlation state | removed by hand)	520 | 520
+o4	K2	metab	runMetabolitesDA	LCMS_Pos identical	TRUE
+o4	K2	metab	runMetabolitesDA	LCMS_Neg rows (correlation state | removed by hand)	520 | 520
+o4	K2	metab	runMetabolitesDA	LCMS_Neg identical	TRUE
+o4	K2	metab	runMetabolitesDA	ALL IDENTICAL	TRUE
+o4	K2	metab	declaration	assays (correlation state | removed by hand)	LCMS_Pos+LCMS_Neg | LCMS_Pos+LCMS_Neg
+o4	K2	metab	declaration	LCMS_Pos rows (correlation state | removed by hand)	520 | 520
+o4	K2	metab	declaration	LCMS_Pos identical	TRUE
+o4	K2	metab	declaration	LCMS_Neg rows (correlation state | removed by hand)	520 | 520
+o4	K2	metab	declaration	LCMS_Neg identical	TRUE
+o4	K2	metab	declaration	ALL IDENTICAL	TRUE
+o4	K2	metab	both	seconds	6.6
+o5	K1	lipid	integration	writer	TRUE
+o5	K1	lipid	integration	files	features_lipidomics_A1.parquet,features_lipidomics_A2.parquet,integration_input.json,matrix_lipidomics_A1.parquet,matrix_lipidomics_A2.parquet,samples.parquet
+o5	K1	lipid	integration	A1 view feature table has a column B_6	TRUE
+o5	K1	lipid	integration	A1 view feature table columns	feature_id,display_name,assay,is_internal_standard,LipidName,LipidClass,B_6
+o5	K1	lipid	integration	samples table rows	11
+o5	K1	lipid	integration	samples table has B_6	FALSE
+o5	K1	lipid	integration	matrix sample columns per view	lipidomics_A1=11; lipidomics_A2=11
+o5	K1	lipid	integration	seconds	0.3
+o5	K2	lipid	integration	writer	TRUE
+o5	K2	lipid	integration	files	features_lipidomics_LCMS_Neg.parquet,features_lipidomics_LCMS_Pos.parquet,integration_input.json,matrix_lipidomics_LCMS_Neg.parquet,matrix_lipidomics_LCMS_Pos.parquet,samples.parquet
+o5	K2	lipid	integration	LCMS_Pos view feature table has a column B_6	TRUE
+o5	K2	lipid	integration	LCMS_Pos view feature table columns	feature_id,display_name,assay,is_internal_standard,LipidName,LipidClass,B_6
+o5	K2	lipid	integration	samples table rows	11
+o5	K2	lipid	integration	samples table has B_6	FALSE
+o5	K2	lipid	integration	matrix sample columns per view	lipidomics_LCMS_Pos=11; lipidomics_LCMS_Neg=11
+o5	K2	lipid	integration	seconds	0.3
+o5	K1	metab	integration	writer	TRUE
+o5	K1	metab	integration	files	features_metabolomics_A1.parquet,features_metabolomics_A2.parquet,integration_input.json,matrix_metabolomics_A1.parquet,matrix_metabolomics_A2.parquet,samples.parquet
+o5	K1	metab	integration	A1 view feature table has a column B_6	TRUE
+o5	K1	metab	integration	A1 view feature table columns	feature_id,display_name,assay,is_internal_standard,Metabolite,Ontology,B_6
+o5	K1	metab	integration	samples table rows	11
+o5	K1	metab	integration	samples table has B_6	FALSE
+o5	K1	metab	integration	matrix sample columns per view	metabolomics_A1=11; metabolomics_A2=11
+o5	K1	metab	integration	seconds	0.2
+o5	K2	metab	integration	writer	TRUE
+o5	K2	metab	integration	files	features_metabolomics_LCMS_Neg.parquet,features_metabolomics_LCMS_Pos.parquet,integration_input.json,matrix_metabolomics_LCMS_Neg.parquet,matrix_metabolomics_LCMS_Pos.parquet,samples.parquet
+o5	K2	metab	integration	LCMS_Pos view feature table has a column B_6	TRUE
+o5	K2	metab	integration	LCMS_Pos view feature table columns	feature_id,display_name,assay,is_internal_standard,Metabolite,Ontology,B_6
+o5	K2	metab	integration	samples table rows	11
+o5	K2	metab	integration	samples table has B_6	FALSE
+o5	K2	metab	integration	matrix sample columns per view	metabolomics_LCMS_Pos=11; metabolomics_LCMS_Neg=11
+o5	K2	metab	integration	seconds	0.2
+K0	K0	lipid	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+K0	K0	lipid	declaration	DA groupB-groupA rows per assay	520,520
+K0	K0	lipid	declaration	DA groupB-groupA errors	none
+K0	K0	lipid	declaration	seconds	3.6
+K0	K0	metab	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+K0	K0	metab	declaration	DA groupB-groupA rows per assay	520,520
+K0	K0	metab	declaration	DA groupB-groupA errors	none
+K0	K0	metab	declaration	seconds	2.8

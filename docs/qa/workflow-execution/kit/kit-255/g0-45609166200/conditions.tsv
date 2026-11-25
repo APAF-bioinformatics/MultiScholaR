@@ -1,0 +1,21 @@
+object	class	step	kind	text
+K1	lipid	itsd	warning	Assay 'A1' is not a tibble. Attempting to coerce.
+K1	lipid	itsd	warning	Assay 'A2' is not a tibble. Attempting to coerce.
+K1	lipid	itsd	warning	Assay 'A2': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: B_6. Normalized values will be NA for these samples.
+K1	lipid	between_sample	warning	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+K1	lipid	correlation	warning	.local: 'tech_rep_remove_regex' is not defined. 
+K1	lipid	correlation	warning	many-to-many relationship detected while pairing samples by `group`
+K1	lipid	correlation	warning	many-to-many relationship detected while pairing samples by `group`
+K2	lipid	correlation	warning	.local: 'tech_rep_remove_regex' is not defined. 
+K2	lipid	correlation	warning	many-to-many relationship detected while pairing samples by `group`
+K2	lipid	correlation	warning	many-to-many relationship detected while pairing samples by `group`
+K0	lipid	correlation	warning	.local: 'tech_rep_remove_regex' is not defined. 
+K0	lipid	correlation	warning	many-to-many relationship detected while pairing samples by `group`
+K0	lipid	correlation	warning	many-to-many relationship detected while pairing samples by `group`
+K1	metab	itsd	warning	Assay 'A1' is not a tibble. Attempting to coerce.
+K1	metab	itsd	warning	Assay 'A2' is not a tibble. Attempting to coerce.
+K1	metab	itsd	warning	Assay 'A2': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: B_6. Normalized values will be NA for these samples.
+K1	metab	between_sample	warning	Assay 'A2': At least one sample column contains only NA values. Skipping normalization.
+K1	metab	correlation	warning	.local: 'tech_rep_remove_regex' is not defined. 
+K2	metab	correlation	warning	.local: 'tech_rep_remove_regex' is not defined. 
+K0	metab	correlation	warning	.local: 'tech_rep_remove_regex' is not defined. 
