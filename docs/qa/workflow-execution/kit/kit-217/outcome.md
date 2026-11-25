@@ -140,3 +140,14 @@ Then R2 again (correction pass) and R3.
   `qc_intensity`; `test-workflow-omics-declarations.R` and `test-workflow-omics-binding-steps.R` `message-changed`;
   everything else (including the registry, 01k and 01q files) `same`; check findings only on head: none. Decides:
   R3 if it holds; otherwise stop and report (no further correction).
+
+## R2 again (45575799976, 54b60b83 vs 3eeaf100): observed
+
+- Everything as declared except one verdict: `test-workflow-operation-registry.R` is `count-changed`, not `same`. Its
+  two failing expectations are the same on both sides (the `integration_mofa_model` registry lists; no entry in
+  `compare-failures`); the KIT-025 random-number scan passes again (item 2 holds); the extra passes are 354 -> 358 and
+  264 -> 268 in the per-parameter label and defaults checks (KIT-039, KIT-027), one each for the four new declared
+  parameters. R2 at ba962c19 already showed these counts; I left them out of the prediction.
+- GUI-entry: 16 of 35 per lane fail, the steps from `qc_intensity` on, in all four lanes (G7 as corrected in r1.7).
+- `test-lipid-01k-…` and `test-metab-01q-…` `same` (item 3 holds). Check findings identical (0 only on head).
+- **Stopped (the coordinator's rule: anything outside the prediction stops; no further correction).** R3 not sent.
