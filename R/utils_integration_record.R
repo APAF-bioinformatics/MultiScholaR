@@ -1077,7 +1077,8 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
 #' The facts of the report's Limitations section (KIT-239, INT-28), from the record only: the matched samples and the
 #' runs averaged (`integrationLimitationFacts`), and the databases with the releases the analysis's enrichment used, read
 #' from the record's enrichment table (`integrationRecordEnrichmentTables`; its columns by their headers, its rows of
-#' the external databases STRING, KEGG and Reactome; none gives `character()`).
+#' the external databases STRING, KEGG and Reactome; none gives `character()`, and enrichment entries of which none is
+#' readable give NULL, the services not known).
 #' @param record An analysis record of an integration store (built or read from JSON).
 #' @return `integrationLimitationFacts()`'s value; NULL without a complete integration block.
 #' @noRd
@@ -1088,6 +1089,8 @@ integrationRecordLimitationFacts <- function(record, texts = integrationRecordTe
     summary <- integrationRecordEnrichmentTables(block, texts)$summary
     external <- summary[[texts[["col_enrich_database"]]]] %in% c("STRING", "KEGG", "Reactome")
     services <- unique(as.character(summary[[texts[["col_enrich_release"]]]][external]))
+    # AUDIT-KIT-239-impl I06: entries recorded but none readable: the services are not known (not "none was run").
+    if (!length(services) && length(block$enrichment)) services <- NULL
     integrationLimitationFacts(m$samples, m$shared_samples, as.character(integrationRecordFrame(m$view_summary)$view),
         m$missing_samples, services)
 }

@@ -258,14 +258,15 @@ integrationGuiTexts <- function() {
         choice_scaling_none = "none: the values as saved",
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
         # KIT-151 (INT-24). KIT-239: the simulated pattern's size and the condition in numbers (KIT-151 d, z-summary.tsv:
-        # F2 |r| >= 0.9 in 26 against 12 of 30 with missing values, 29 against 26 without, 30 of 30 at 60 samples).
+        # F2 |r| >= 0.9 in 26 against 12 of 30 with missing values, 29 against 26 without, 30 of 30 at 60 samples). The
+        # last sentence is AUDIT-KIT-239-impl I02's (KIT-246 option (a)): a draft pending the owner's answer.
         help_scaling = paste("Each selected feature is scaled to mean 0 and standard deviation 1, after the features are",
             "chosen (the choice uses the values as saved). In simulations with 20 samples in which about a fifth of the",
             "values were missing, mostly low ones, this recovered closely (a correlation of at least 0.9 with the true",
             "pattern) a pattern carried by a tenth of the features of the two smallest data sets, each changed by about as",
             "much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing values the",
-            "gain was too small to tell from none (29 rather than 26 of 30); with 60 samples there was none (30 of 30",
-            "either way)."),
+            "difference could not be told from none (29 rather than 26 of 30); with 60 samples the pattern was recovered",
+            "closely in 30 of 30 either way."),
         # KIT-151 (audit SCI-12): what scale_views does.
         param_scale_views = "Divide each data set by its overall standard deviation",
         help_scale_views = paste("Each data set is divided by one number, the standard deviation of all its values, so that",
@@ -429,7 +430,7 @@ integrationGuiTexts <- function() {
             "are useful only with large numbers of samples, at least more than 15. A pattern this model does not show may",
             "still be in the data: treat the factors as descriptive."),
         # %d: the biological samples missing from at least one data set, then the biological samples in the model.
-        limits_missing_samples = paste("%d of the %d biological samples are missing from at least one data set; the model",
+        limits_missing_samples = paste("Biological samples missing from at least one data set: %d of %d; the model",
             "leaves those values out."),
         limits_fixed_missing = paste("Where a value is missing, the model leaves it out (MOFA2 does not impute it), which",
             "assumes that whether a value is missing does not depend on the value itself (missing at random). Values",
@@ -439,7 +440,7 @@ integrationGuiTexts <- function() {
         # %s: the data set; %d: its biological samples with two or more runs, its biological samples, the most runs of
         # one biological sample.
         limits_averaged_item = "%s: the runs of %d of its %d biological samples were averaged (at most %d runs for one sample).",
-        limits_averaged_none = "Each biological sample has one run in every data set, so no runs were averaged.",
+        limits_averaged_none = "No biological sample has more than one run in any data set, so no runs were averaged.",
         # Said only when runs were averaged.
         limits_fixed_averaged = paste("Each average uses only the runs in which the value was measured. When a value is",
             "missing from some of a sample's runs because it was too low to measure, the average of the other runs is too",
@@ -460,8 +461,8 @@ integrationGuiTexts <- function() {
             "internet (by default its version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome",
             "for metabolites and lipids. Its results depend on the release used, which is recorded with each result."),
         # The report. %s: the databases and releases the analysis's enrichment used.
-        limits_services_report = paste("The enrichment in this analysis used %s; its results depend on these external",
-            "databases at these releases."),
+        limits_services_report = paste("The enrichment in this analysis used %s; its results depend on the release of",
+            "each external database named."),
         limits_services_none = "No enrichment was run in this analysis.",
         # The report, when the record's integration block cannot be read.
         limits_not_computed = "This analysis's own numbers could not be read from its record.",
