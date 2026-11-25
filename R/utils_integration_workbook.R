@@ -229,18 +229,31 @@ integrationConfirmMatch <- function(project, match) {
 #' @section Limitations:
 #' Read these before drawing conclusions from a model.
 #'
-#' - At about 20 samples, small or weak signals are not found: in the project's simulations, a factor present only in
-#'   the smaller data sets with a modest signal in each feature was not recovered by any setting. MOFA2's own guidance
-#'   is that factor models need more than about 15 samples. Treat the factors as descriptive.
-#' - Missing values are left out of the model, which treats them as missing at random. Values missing because they
-#'   were below the detection limit are not modelled as such, and MOFA2 fills them with means only to choose its
-#'   starting point.
-#' - The runs of one biological sample are averaged over the values that were observed. When low values are missing
-#'   because they were too low to measure, this average is biased upward for low-abundance features.
-#' - One group of samples (MOFA2's multi-group mode is not used), Gaussian models only, no imputation, and one input
-#'   per omic.
-#' - The agreement with the reference workbook was shown on synthetic data only.
-#' - Pathway and network enrichment depends on external services (STRING, KEGG, Reactome) and their current releases.
+#' - How small a pattern the model can find depends on the number of samples. In simulations made for this software
+#'   with 20 samples (two groups of 10), a pattern carried only by the two smallest of four data sets, in a tenth of
+#'   their features, each changed by about two-thirds of its measurement noise, was recovered closely (a correlation
+#'   of at least 0.9 with the true pattern) in at most 2 of 10 simulated data sets, whichever setting was tried; the
+#'   settings tried did not include this software's current default feature selection. With 60 samples the same
+#'   pattern was recovered in 7 to 10 of 10, and with this software's default settings a pattern as large as the
+#'   noise was recovered in 26 to 29 of 30 simulated data sets with 20 samples. MOFA2's documentation says that
+#'   factor models are useful only with large numbers of samples, at least more than 15. A pattern this model does
+#'   not show may still be in the data: treat the factors as descriptive.
+#' - Where a value is missing, the model leaves it out (MOFA2 does not impute it), which assumes that whether a value
+#'   is missing does not depend on the value itself (missing at random). Values missing because they were too low to
+#'   measure are not modelled as such, so the model's estimates for low-abundance features can be biased. MOFA2 fills
+#'   missing values with each feature's mean only to compute where training starts.
+#' - Each average uses only the runs in which the value was measured. When a value is missing from some of a sample's
+#'   runs because it was too low to measure, the average of the other runs is too high; this affects low-abundance
+#'   features most.
+#' - The model treats all samples as one group (the groups are not given to it, and MOFA2's option for several groups
+#'   of samples is not used), assumes normally distributed (Gaussian) variation in every data set, and takes one
+#'   input per omic (one input can hold several data sets, such as positive and negative ion mode).
+#' - Given the settings of the analysis script it was adapted from, this software trains the identical model; this
+#'   was checked on simulated data only, because the script's own data were not available. The check is about the
+#'   software, not about any biological result, and this software's default settings differ from the script's.
+#' - Enrichment, at the Enrichment tab, needs external services: STRING, queried over the internet (by default its
+#'   version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome for metabolites and lipids.
+#'   Its results depend on the release used, which is recorded with each result.
 #' @param project The value of [integrationOpenProject()].
 #' @param confirmed The value of [integrationConfirmMatch()].
 #' @param input_matrix `NULL` for the default, or which values each data set enters the model with (one of the

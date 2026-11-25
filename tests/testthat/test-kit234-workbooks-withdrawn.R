@@ -11,8 +11,8 @@
 #       each omic's module server starts (base: recreated holding the workbooks);
 #   W8  "Push to GitHub" with no R Markdown file says so; with one report template it uses that file (base: several
 #       workbooks, so utils::menu stops in a non-interactive R);
-#   W9  ?integrationTrainModel holds a Limitations section with INT-28's content terms, and ?integrationFindInputs names
-#       integrationTrainModel (base: absent).
+#   W9  ?integrationTrainModel holds a Limitations section with INT-28's content terms ("synthetic" or "simulated"
+#       accepted alike), and ?integrationFindInputs names integrationTrainModel (base: absent).
 # W6 (the installed library and the built tarball) is the script docs/qa/workflow-execution/kit/kit-234/w6.R in
 # run-tests' scripts job. The application cases drive app_server with testServer as test-app-shell-shared.R does, with
 # the real setupDirectories under a temporary root and the module servers and UI stood in.
@@ -237,8 +237,10 @@ test_that("KIT-234 W9: ?integrationTrainModel states INT-28's limitations and ?i
     train <- flat(rd("integrationTrainModel"))
     expect_true(grepl("\\section{Limitations}", train, fixed = TRUE))
     section <- if (grepl("\\section{Limitations}", train, fixed = TRUE)) sub("^.*\\\\section\\{Limitations\\}", "", train) else ""
-    for (term in c("20 samples", "missing at random", "Gaussian", "synthetic", "STRING")) {
+    for (term in c("20 samples", "missing at random", "Gaussian", "STRING")) {
         expect_true(grepl(term, section, fixed = TRUE), info = term)
     }
+    # The check against the reference script on generated data, in either word (the owner sets the wording).
+    expect_true(grepl("synthetic|simulated", section), info = "synthetic or simulated")
     expect_true(grepl("integrationTrainModel", flat(rd("integrationFindInputs")), fixed = TRUE))
 })
