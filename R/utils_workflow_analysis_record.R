@@ -992,7 +992,58 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         replayed$design_statement <- workflowReplayKeyCollisionStatement(key_collisions$collisions)
         cli::cli_warn("{replayed$design_statement}", class = "workflow_replay_replicate_key_collision")
     }
+    # KIT-254 (owner's OD-1 (a), VAL-247): a lipid or metabolomics record whose correlation filter was applied and then
+    # skipped replays as recorded, and the result says so with the samples left out.
+    correlation_statement <- workflowReplayCorrelationStatement(record, manager)
+    if (!is.null(correlation_statement)) {
+        replayed$correlation_statement <- correlation_statement
+        cli::cli_warn("{correlation_statement}", class = "workflow_replay_correlation_skip")
+    }
     replayed
+}
+
+#' KIT-254 (owner's OD-1 (a), VAL-247): the statement a replay carries when a lipidomics or metabolomics record has its
+#' skip step (`<prefix>_norm_complete`) directly after its correlation filter (`<prefix>_correlation_filtered`): the
+#' skip was then recorded on the filtered table, and the replay reproduces that analysis. Per assay it names the samples
+#' the filter left out (the assay's sample columns among the design's samples, in the replayed states before and after
+#' the filter). Records made from KIT-254 on have no such pattern. DRAFT wording, docs/qa/workflow-execution/kit/kit-254/wording.md.
+#' @param record The analysis record.
+#' @param manager The replay's owner after the steps were replayed (read only when the pattern is found).
+#' @return The statement, or NULL.
+#' @noRd
+workflowReplayCorrelationStatement <- function(record, manager) {
+    steps <- record$steps
+    operations <- vapply(steps, function(step) as.character(step$operation %||% ""), character(1))
+    texts <- character()
+    for (binding in omicsDeclarationBindings()) {
+        selections <- which(operations == paste0(binding$prefix, "_pearson_selection"))
+        for (i in selections[selections > 1L & selections < length(steps)]) {
+            if (!identical(operations[[i + 1L]], paste0(binding$prefix, "_norm_complete"))) next
+            threshold <- workflowReplayParameters(steps[[i]]$parameters, "min_pearson_correlation_threshold")$min_pearson_correlation_threshold
+            before <- workflowReplayAssaySamples(binding, manager, steps[[i - 1L]]$state)
+            after <- workflowReplayAssaySamples(binding, manager, steps[[i]]$state)
+            left_out <- vapply(names(before), function(assay) {
+                gone <- setdiff(before[[assay]], after[[assay]] %||% character())
+                sprintf("%s: %s", assay, if (length(gone)) paste(gone, collapse = ", ") else "none")
+            }, character(1))
+            texts <- c(texts, paste0("This record shows the correlation filter applied (threshold ", format(threshold %||% NA),
+                ") and then skipped: the step 'correlation filtering skipped' was recorded on the filtered table. The replay ",
+                "reproduces the analysis as it was computed, so these samples are left out although the filter was skipped: ",
+                paste(left_out, collapse = "; "), "."))
+        }
+    }
+    if (!length(texts)) return(NULL)
+    paste(texts, collapse = " ")
+}
+
+#' The sample columns of each assay of a replayed omics state, among its design's samples (KIT-254).
+#' @return A named list of character vectors, one per assay.
+#' @noRd
+workflowReplayAssaySamples <- function(binding, manager, state) {
+    meta <- readWorkflowOmicsMetadata(binding, manager, state)
+    runs <- as.character(as.data.frame(meta$design_matrix)[[meta$slots$sample_id %||% "Run"]])
+    object <- readWorkflowOmicsState(binding, manager, state)
+    lapply(methods::slot(object, binding$data_slot), function(assay) intersect(colnames(assay), runs))
 }
 
 #' KIT-222 (owner's OD-4): the statement a replay of a record with a merged design carries in its result (DRAFT wording,
