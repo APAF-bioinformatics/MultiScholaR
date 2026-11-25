@@ -1,8 +1,8 @@
 {
-  "label": "k234-direct-run-mofa",
-  "package_commit": "652c962b99257049e50a1b8f37b2ee5ee607d5bb",
+  "label": "k239-r3-l8",
+  "package_commit": "09286c2d6c252cf2a73517d2ed3fcc98b25e2d4e",
   "tests": [
-    "test-integration-workbook-mofa.R"
+    "test-integration-record-mofa.R"
   ],
   "record": false,
   "runs": 1
