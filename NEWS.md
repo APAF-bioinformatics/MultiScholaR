@@ -94,6 +94,16 @@
    of its analysis record); if it is not 'group', run the normalisation again with 'group' and, if you know the batches,
    add batch to the model formula. The normalisation tab now warns when the chosen column puts samples of different
    groups together (KIT-174).
+ * Proteomics: 'Reset to Pre-Normalization' now returns to the table the normalisation started from. Before, it
+   returned to the newest of a fixed list of step names. When the normalisation had started before the Protein
+   Replicate Filter, that was, on label-free (MaxQuant, FragPipe, Spectronaut) and TMT data, the design table (so the
+   next normalisation ran without the quality-control filters), and on DIA with iq a peptide table (undoing the protein
+   roll-up and protein Quality Control; the next normalisation then failed). On DIA with limpa every Reset returned the
+   precursor roll-up (undoing Log2 Matrix, Peptide Accession Cleanup, DPC Quantification, Between-Sample Normalisation
+   and the Peptide Count Filter). Reset pressed before any normalisation also undid Quality Control steps; it now leaves
+   Quality Control as it is. When the starting table can no longer be found, Reset now changes nothing and says so
+   (KIT-225).
+
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session

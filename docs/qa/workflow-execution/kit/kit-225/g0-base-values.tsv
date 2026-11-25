@@ -1,0 +1,88 @@
+case	step	value
+E1	first_run_source	04-duplicates_removed
+E1	history_before_reset	initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,normalized
+E1	current_state	protein_s4_initial
+E1	head	01-protein_s4_initial
+E1	history	initial,protein_s4_initial
+E1	previous_state	protein_s4_initial
+E1	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)
+E1	second_run_source	01-protein_s4_initial
+E2	first_run_source	04-duplicates_removed
+E2	history_before_reset	initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,normalized
+E2	current_state	protein_s4_initial
+E2	head	01-protein_s4_initial
+E2	history	initial,protein_s4_initial
+E2	previous_state	protein_s4_initial
+E2	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)
+E2	second_run_source	01-protein_s4_initial
+E3	designated	08-peptide_count_filtered
+E3	history_before_reset	initial,raw_data_s4,qvalue_filtered,precursor_rollup,log2_matrix,peptide_accession_cleaned,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered
+E3	current_state	precursor_rollup
+E3	head	03-precursor_rollup
+E3	history	initial,raw_data_s4,qvalue_filtered,precursor_rollup
+E3	previous_state	precursor_rollup
+E3	notice	[warning 5] Normalization has been reset to pre-normalization state (precursor_rollup)
+E3	A1_pass_through	completed
+E3	A1_designated	03-precursor_rollup
+E3	A1_correlation_apply	error [workflow_operation_input/rlang_error/error/condition] operation "pearson-pairs" expects <ProteinQuantitativeData>, the source is <PeptideQuantitativeData>
+E3	A1_after_apply_state	precursor_rollup
+E3-fresh	current_state_after_reset	precursor_rollup
+E3-fresh	A1_pass_through	completed
+E3-fresh	A1_correlation_skip	error [saved_entity_unsupported/rlang_error/error/condition] table read scope requires a Parquet descriptor
+E3-fresh	A1_after_skip_state	correlation_filtered
+E3-fresh	A1_ruv_covariates	error [saved_entity_outputs_pending/rlang_error/error/condition] correlation outputs are pending; retry that action
+E3-fresh	A1_after_covariates_state	correlation_filtered
+E4	first_run_source	11-protein_intensity_filtered
+E4	current_state	imputed
+E4	head	08-imputed
+E4	history	initial,raw_data_s4,qvalue_filtered,protein_peptide_filtered,precursor_rollup,intensity_filtered,sample_filtered,replicate_filtered,imputed
+E4	previous_state	imputed
+E4	notice	[warning 5] Normalization has been reset to pre-normalization state (imputed)
+E5	history_after_second_chain	initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered,normalized
+E5	second_run_source	09-duplicates_removed
+E5	current_state	protein_replicate_filtered
+E5	head	05-protein_replicate_filtered
+E5	history	initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered
+E5	previous_state	protein_replicate_filtered
+E5	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_replicate_filtered)
+E6	current_state	protein_s4_initial
+E6	head	01-protein_s4_initial
+E6	history	initial,protein_s4_initial
+E6	previous_state	protein_s4_initial
+E6	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)
+E6b	current_state	protein_s4_initial
+E6b	head	01-protein_s4_initial
+E6b	history	initial,protein_s4_initial
+E6b	previous_state	protein_s4_initial
+E6b	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)
+E6c	current_state	protein_s4_initial
+E6c	head	01-protein_s4_initial
+E6c	history	initial,protein_s4_initial
+E6c	previous_state	protein_s4_initial
+E6c	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_s4_initial)
+E7	history_before_reset	initial,protein_replicate_filtered,normalized
+E7	reset	completed
+E7	current_state	protein_replicate_filtered
+E7	history	initial,protein_replicate_filtered
+G1	history_before_reset	initial,protein_replicate_filtered,normalized,correlation_filtered
+G1	current_state	protein_replicate_filtered
+G1	head	01-protein_replicate_filtered
+G1	history	initial,protein_replicate_filtered
+G1	previous_state	protein_replicate_filtered
+G1	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_replicate_filtered)
+G1	history_equal	TRUE
+G1	head_is_prf1	TRUE
+G1	provenance_equal	TRUE
+G1	input_reference_null	TRUE
+G1	tab_status	pending,disabled
+G2	history_before_reset	initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered,normalized,correlation_filtered
+G2	current_state	protein_replicate_filtered
+G2	head	05-protein_replicate_filtered
+G2	history	initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered
+G2	previous_state	protein_replicate_filtered
+G2	notice	[warning 5] Normalization has been reset to pre-normalization state (protein_replicate_filtered)
+G2	history_equal	TRUE
+G2	head_is_prf1	TRUE
+G2	provenance_equal	TRUE
+G2	input_reference_null	TRUE
+G2	tab_status	pending,disabled

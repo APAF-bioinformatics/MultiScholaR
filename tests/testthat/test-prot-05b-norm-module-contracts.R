@@ -2903,8 +2903,8 @@ test_that("runProtNormResetWorkflow sequences reset helpers and notification", {
     workflowData = workflow_data,
     normData = norm_data,
     output = output,
-    revertStateManagerFn = function(workflowData, messageFn) {
-      calls$revert <<- list(workflowData = workflowData)
+    revertStateManagerFn = function(workflowData, normData = NULL, messageFn) {
+      calls$revert <<- list(workflowData = workflowData, normData = normData)
       list(previousState = "sample_filtered", revertedS4 = "state")
     },
     resetReactiveStateFn = function(normData, workflowData) {
@@ -2928,6 +2928,8 @@ test_that("runProtNormResetWorkflow sequences reset helpers and notification", {
   )
 
   expect_identical(calls$revert$workflowData, workflow_data)
+  # KIT-225: the revert is given the tab's state (its recorded normalisation source).
+  expect_identical(calls$revert$normData, norm_data)
   expect_identical(calls$resetReactive$normData, norm_data)
   expect_identical(calls$resetOutputs$output, output)
   expect_equal(calls$buildNotification, "sample_filtered")
