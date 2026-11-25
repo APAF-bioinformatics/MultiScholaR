@@ -12,8 +12,10 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) >= 2L)
-out_dir <- normalizePath(args[[1L]], mustWork = FALSE)
-dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+# Instrument fix 1 (VAL-54; runs 45518516308, 45518524570): the directory is made before it is made absolute, so the test
+# processes (working directory tests/testthat) can write the dumps.
+dir.create(args[[1L]], showWarnings = FALSE, recursive = TRUE)
+out_dir <- normalizePath(args[[1L]], mustWork = TRUE)
 files <- args[-1L]
 status <- data.frame(file = character(), exit = integer(), seconds = numeric(), stringsAsFactors = FALSE)
 for (file in files) {
