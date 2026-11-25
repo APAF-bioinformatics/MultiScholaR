@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-243 G0: base values before tests (record after Save per omic, record vs store, DA figures written per fixture); R/ = staging 16112917; ceiling 60 job-minutes; decides E4/E4b/E12 design and stop rule 4",
+  "label": "KIT-243 G0 base values on 4f547a13 (R/ as v0.9-staging 16112917)",
+  "package_commit": "4f547a13724319f8ddd6196167717a4666300020",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-243/g0-base-values.R",
+      "args": ["kit243-g0"],
+      "env": {"NOT_CRAN": "true"},
+      "out": "kit243-g0",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
