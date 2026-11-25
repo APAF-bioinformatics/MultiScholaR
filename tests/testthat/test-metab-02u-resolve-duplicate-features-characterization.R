@@ -171,9 +171,7 @@ test_that("metabolomics S4 duplicate-resolution source retains ITSD separation a
     target_text,
     "\\.new_itsd_id = paste0\\(!!rlang::sym\\(specific_name_col\\)"
   )
-  expect_match(
-    target_text,
-    "dplyr::slice_max\\(order_by = \\.data\\$avg_intensity,"
-  )
+  # KIT-258 (VAL-254): the non-ITSD row is kept by the shared rule (keepDuplicateResolutionRow).
+  expect_match(target_text, "keepDuplicateResolutionRow\\(\\)")
   expect_match(target_text, "dplyr::select\\(-\\.original_row_id\\)")
 })

@@ -691,6 +691,18 @@
    is missing from a table with a duplicated identifier, or is not numeric, is now refused with a message. (KIT-214,
    VAL-173)
 
+ * Lipidomics and metabolomics, duplicated identifiers: the row measured in the most of the design's samples is now
+   kept; among rows measured in equally many, the one with the highest average of its measured values; if still tied,
+   the first in the table. A missing value or an intensity of exactly 0 counts as not measured, for the count and for
+   the average, as at import (a zero can reach this step from a design folder read by Import Existing Design, or from an
+   object built in code). Before (from KIT-214), the highest average alone decided, so a row measured in few samples
+   could be kept over a row measured in all (2 of 6 samples averaging 210,000 over 6 of 6 averaging 150,000); in earlier
+   releases the average also included numeric identifier and annotation columns. The kept row brings its own name and
+   annotation. One more measured sample always wins, whatever the intensities: a complete low-level row is kept over a
+   row missing in one sample. The rule applies to a duplicated internal standard as to any feature, and the kept row
+   feeds the internal-standard normalisation; the S4 method `resolveDuplicateFeatures()` still keeps and renames
+   duplicated internal standards. Analyses saved earlier replay their earlier choice. (KIT-258, VAL-254, VAL-284)
+
  * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
    those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
    Before, it also held proteins that could not be tested (no value in a compared group, or none in the analysed
