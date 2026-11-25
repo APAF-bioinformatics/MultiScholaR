@@ -1477,6 +1477,149 @@ Coverage at the 8 levels: DI10K (`fixed_onedir`, 40 of 4,840) beside DI10b (`fix
 
 **Spend:** 21.1 job-minutes, 1.40 core-hours. Line DI10K: 0.77 + 0.84 + 1.40 = **3.01 of 6**.
 
+## P1K: the confirmatory rank cell in the form of KIT-162's primary endpoint (VAL-176; branch `kit-159-p1cell`)
+
+**Generator change: needed, and made.** The owner's cell (one contrast, 40 positives of 4,840,
+effect off the pAUC ceiling, fixed one-directional draw, C4e g = 5) could not be expressed by
+parameters. The rank family pools every contrast in both the statistic and its calibration
+(`valCovStats` and `valRankEffect` at 9f3b7c49). C4e-170 runs at scale 1, where a one-contrast
+pAUC is at its ceiling (re-audit 4 (2)). Coordinator's ruling of 2026-11-25; budget line P1K,
+6 core-hours (ticket r1.26).
+
+**The change** (`harness/msrval/R/coverage.R`, 9f3b7c49 to 3939ffe2):
+- l.16-19: doc lines.
+- l.67-70: `valCoverageCells(confirmatory = TRUE)` appends C4e-171 (regime C4e, family
+  `c4e:4840p1`, n 5, condition `matrix4840p1_block`) after C4e-170. Its own index gives seeds
+  1,017,100,000 + s and 1,517,100,000 + t, and baseline seed 2,100,000,171.
+- l.222-224: `valCovSpec`'s C4e branch reads `4840p1` as 4,840 features, `rank = TRUE`,
+  `contrast = 2L`. The other families evaluate as before.
+- l.335-350: `valSpecMatrix(..., contrast = NULL)` passes `contrast` to `valRankEffect` and
+  `valCovStats`.
+- l.616-641: `valRankEffect(form, g, nsim = 50L, contrast = NULL)` applies the existing rule (the
+  grid value with mean plain-arm pAUC in [0.4, 0.8] nearest 0.6) to one contrast column on the same
+  calibration data sets. The cache key is unchanged when `contrast` is NULL.
+- l.749-753: `valCovStats(..., contrast = NULL)` restricts truth, estimates and p to the column.
+
+**Observed.**
+- **P1K-t** (run 45465782349 at f8cd5df8, tests only): four tests failed because the cell did not
+  exist (`nrow(conf)` 170 against 171; `valRankEffect` has no `contrast` argument; no such
+  family). Two tests passed on the old code: the 170 earlier cells, their seeds and the pinned
+  table's SHA-256; and the dispatch of C4e-148 (`pauc_diff`, 160 positives), C4e-147 and C4e-170
+  with `valRankEffect` mocked. The pooled calibration was reproduced at 0.35.
+- **P1K-f** (run 45468618081 at 3939ffe2): `test-p1k.R` 6 of 6; `coverage`, `coverage-rank`,
+  `coverage-table`, `repair2` and `repair4` pass; no lints. **One existing test failed:**
+  `test-di10k.R`'s catalogue test assumed DI10K's cell was the last confirmatory row and counted
+  one (171 against 170). C4e-170's own row and behaviour were unchanged.
+- **P1K-c** (run 45471561697 at 70648f6d, the item's one correction pass, test file only): that
+  test now counts two confirmatory cells and reads C4e-170 at row `nrow(cells) + 1`, with its
+  asserted content unchanged. `di10k` 5 of 5, `p1k` 6 of 6, no lints.
+- **The effect rule's value, before any coverage run** (`t2/p1k-calibration.txt`): one-contrast
+  effect **0.40**, mean plain-arm pAUC **0.5932**; pooled 0.35, 0.6017 (the pinned rows' effect).
+  Predicted before the run from normal theory: 0.40 (0.621).
+
+**Draft declaration:** `t2/p1k-declaration-draft.md`. It contains:
+- the cell beside C4e-148 and KIT-162's P1;
+- the effect rule and its value;
+- configuration checks K1 (effect 0.40) and K2 (`pauc_diff` target in [0.025, 0.075]: a
+  model-based 0.044, scaled by the model's error on C4e-148, about 0.050);
+- the pass rule and readings;
+- exact intervals, tail probabilities and the statistic's discreteness;
+- the cost estimate.
+
+Not frozen; for the harness auditor.
+
+**Not checked.** No coverage simulation of C4e-171. The K2 model is approximate (Hill's t-to-z,
+moderated t taken as known variance). The plan `t2/p1k-plan.tsv` is not written yet; it is
+committed with the final declaration.
+
+**Spend on P1K:** 0.94 + 0.97 + 0.93 = **2.84 of 6** core-hours; 3.16 left. The draft's proposed
+ceiling (4.13) does not fit, and a fitting one (3.13) has a 35-minute script limit against an
+upper per-chunk estimate of 45 minutes. That is the coordinator's choice.
+
+### P1K: the auditor's repairs and the final declaration (declared; NOT sent)
+
+**The auditor's P1K check** (`AUDIT-KIT-159-impl-recheck-20261124.md`, "P1K: change and draft
+declaration") found the change sound and asked for four repairs:
+- **R-P1 (code):** record the one-sided misses, which KIT-162 6.7 and C66 need.
+- **R-P2:** a `degenerate` row is not offered.
+- **R-P3:** reword K2 and replace the scratch-script citation.
+- **R-P4:** the Pass reading, in the register's text.
+
+The coordinator raised P1K from 6 to 9 core-hours (P1's cap 69.6 -> 66.6) and set a 50-minute
+script limit (ceiling 4.13), recorded as ticket r1.27.
+
+**R-P1, tests first, then the change.**
+- **P1K-RP1t** (run 45475429181 at 0e0b43f4): the two new tests fail at absence (`miss_low` and
+  `miss_high` not in the detail; actual NULL). The six earlier tests pass: 170 cells, seeds, the
+  pinned SHA-256, and the dispatch.
+- **Change** (a303bf3f, `coverage.R` `valCombineCoverage`): per statistic and level,
+  `miss_low` = simulations with the lower bound above the target, `miss_high` = simulations with
+  the upper bound below it, as counts.
+- **P1K-RP1f** (run 45478836416): `p1k` 8 of 8; `di10k`, `coverage`, `coverage-rank`,
+  `coverage-table`, `repair2` and `repair4` pass; no lints.
+- **How the pinned table stays byte-identical:**
+  - it is a committed file that no run regenerates;
+  - `valSummariseCoverage` builds regime rows from named columns only, so the new detail columns
+    never reach a regime table (tested);
+  - the SHA-256 test passes;
+  - T-COV-ENDS-2 still rebuilds the committed T2 table from its detail.
+- **One request refused** at plan before any job (its `requested_by` was over 300 characters). It
+  was re-requested under a new name; no job ran and nothing was charged.
+
+**R-P2 to R-P4** are applied in `t2/p1k-declaration-draft.md` and carried into the final
+declaration.
+
+**Final declaration committed alone** at 746eb296: `t2/p1k-declaration.md` and `t2/p1k-plan.tsv`
+(request PK, C4e-171, four ranges of 500 simulations and 5,000 targets, `fixed_onedir`). **Not
+sent**: the auditor confirms it first. When sent: `val-tests.R p1k-out --files metrics
+--coverage-plan t2/p1k-plan.tsv --request PK --nsim 2000 --target-sims 20000 --chunks 4`, script
+limit 50 minutes.
+
+**Spend on P1K:** 0.94 + 0.97 + 0.93 + 1.12 + 1.00 = **4.96 of 9**; 4.04 left, which is 0.09 below
+the run's 4.13 ceiling. The coordinator decides whether the 4.13 ceiling stands.
+
+### P1K: result (run 45482122988 at 746eb296)
+
+Sent after the auditor confirmed the final declaration. Budget: ticket r1.28 raised P1K to 9.5
+core-hours; the frozen declaration's figure of 9 is stale and was not edited.
+
+**Outcome by the declared reading: PASS.**
+- K1 holds: every row has `effect` 0.40.
+- K2 holds: the `pauc_diff` target is 0.04775, inside [0.025, 0.075].
+- Not `degenerate`: the zero-width share is 0, and the target is far from ±1.
+- No coverage below level - 0.02 at any of the 8 levels.
+
+Therefore, as the declaration reads it: the C4e g = 5 delete-one-block jackknife covers P1's form
+(a paired pAUC difference to FPR 0.01 on one contrast, 40 positives of 4,840, one direction, fixed
+draw) at the decision levels, under the listed differences. KIT-162 quotes this cell's coverage and
+one-sided misses at 97.5 % and 98.33 %, not the pooled rows' coverage or label. It does not license
+heterogeneous or compressed fold changes, untested UPS keys counted as misses, the package's
+normalisation route, KIT-162's arm-versus-baseline rankings, or a P1 near its ceiling in real data.
+
+**Observed.** Script exit 0, 1,344 s. Chunks exit 0,0,0,0, no cell missing, wall 1,298 s. Process
+4,899 s: 1,748 s of simulations and 3,152 s of targets. `metrics` tests: 0 failed.
+
+| level | coverage | misses | exact 95 % | miss_low | miss_high | label |
+|---|---|---|---|---|---|---|
+| 0.95 | 0.9925 | 15 | 0.9877 to 0.9958 | 7 | 8 | conservative |
+| 0.975 | 0.9985 | 3 | 0.9956 to 0.9997 | 2 | 1 | conservative |
+| 0.9833 | 0.9985 | 3 | 0.9956 to 0.9997 | 2 | 1 | conservative |
+| 0.9875 | 0.9995 | 1 | 0.9972 to 1 | 1 | 0 | conservative |
+| 0.9917 | 0.9995 | 1 | 0.9972 to 1 | 1 | 0 | conservative |
+| 0.9938 | 0.9995 | 1 | 0.9972 to 1 | 1 | 0 | conservative |
+| 0.9958 | 1 | 0 | 0.9982 to 1 | 0 | 0 | conservative |
+| 0.9967 | 1 | 0 | 0.9982 to 1 | 0 | 0 | conservative |
+
+- **One-sided miss rates at the decision levels** (exact 95 % intervals): 2 of 2,000 at the lower
+  bound (0.00012 to 0.00361) and 1 of 2,000 at the upper bound (0.00001 to 0.00278), at both
+  97.5 % and 98.33 %.
+- No level is below nominal, so no tail probability is significant.
+- `se_inflation` 1.509; `half_width_ratio` 2.14 at 95 % and 2.35 at 97.5 %.
+- Beside the pooled C4e g = 5 rank rows: 0.99, 0.9935, 0.996 and so on (`t2/p1k-exact.tsv`).
+- 40 positives per simulation; the target is 0.0477 (the population model gave 0.049).
+
+**Spend:** 32.2 job-minutes, 2.14 core-hours. Line P1K: 4.96 + 2.14 = **7.10 of 9.5**.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).

@@ -89,8 +89,9 @@ test_that("KIT-153: a data set's normalised matrix and its RUV-corrected matrix 
     values[2L, 3L] <- NA_real_
     corrected <- intMatCorrect(values)
     dir <- intMatInput(root, "proteomics", "proteomics", values, corrected, intMatCorrection)
+    # KIT-184: with a corrected matrix and a correction of k = 1, the removed factor is written beside it.
     expect_setequal(list.files(dir), c("integration_input.json", "matrix_proteomics.parquet", "features_proteomics.parquet",
-        "corrected_proteomics.parquet", "samples.parquet"))
+        "corrected_proteomics.parquet", "removed_proteomics.parquet", "samples.parquet"))
     input <- readIntegrationInput(dir)
     manifest <- input$manifest
     expect_identical(manifest$schema, "multischolar.integration_input.v2")

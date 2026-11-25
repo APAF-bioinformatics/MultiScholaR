@@ -4,6 +4,19 @@
 
 ### New features
 
+ * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
+   `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
+   be called but are not yet validated): `mapStrainToReference()` maps a
+   strain's proteins to their orthologues in one well-annotated reference of the same species by reciprocal best hits
+   of DIAMOND v2.2.8 searches in both directions (repeat masking off, full extension, 80 % coverage of both sequences,
+   e-value 1e-5, no identity floor by default; every status reported and counted; a strain protein takes a reference
+   accession only when one-to-one). Four UniProt reference proteomes (release 2026_04, CC BY 4.0) ship with the
+   package: E. coli K-12 MG1655, S. aureus NCTC 8325, K. pneumoniae MGH 78578 and S. pyogenes SF370 (STRING
+   unavailable for SF370). `matchStrainGenesToProteins()` matches the strain's genes (locus tags) to its proteins from
+   the GFF3 or GTF annotation without sequence search. Proteomics enrichment can use the orthologues' accessions, with
+   the reference's own GO table, unmapped groups left out of the query lists and the background, and the counts of
+   changed and unchanged features by mapped and unmapped; the integration features gain the mapping columns.
+
  * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
    test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
    with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
@@ -14,6 +27,37 @@
    p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
    pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
    a session with default settings are unchanged (KIT-191).
+
+ * Integration inputs record the unwanted factors a correction for unwanted variation (RUV) removed: where an omic
+   applied RUV to a data set, saving its Summary writes one more file, `removed_<data set>.parquet`, beside the
+   normalised and the corrected matrix (a basis of the difference between the two over the features measured in every
+   run, checked against the correction's number of factors; contract v2, an addition that earlier versions read as
+   before). An input saved earlier must be saved again at the omic's Summary step before the correlation-adjusted
+   enrichment test can run with the adjustment for removed RUV factors (KIT-184).
+
+ * Integration enrichment, an optional adjustment for removed RUV factors: the setting "Adjust for removed RUV factors"
+   (`adjust_ruv_factors`), in the Enrichment tab and in `integrationEnrichFactor(overrides = )`, off unless chosen.
+   Switched on, the correlation-adjusted tests (the default test and the form with negative correlations counted as
+   zero) put the unwanted factors the RUV correction removed from the data set into their model (intercept, factor,
+   removed factors), so a feature counts for what it shares with the factor beyond those factors; for a model trained
+   on RUV-corrected values and features measured in every run this is identical to fitting that model to the corrected
+   values. In a check on simulated data (12 biological samples, 2 removed factors) the adjusted test called sets with
+   no link to what was tested, of the kinds the check decided on, in at most 5.4 % of cases (95 % interval of that
+   largest figure 4.5 to 6.4 %; sets made only of the most variable features: up to 9.4 %, against 6.8 % without the
+   adjustment; sets in which half the features truly followed the main factor, tested against an unrelated covariate:
+   up to 8.6 %, against up to 7.0 %) and found more true terms than the test without it. In that check it did not
+   protect sets of features that share unwanted variation when that variation follows the groups: such sets were called
+   on the model's main factor in 8.1 to 29.6 % of cases with the adjustment, against 2.0 to 11.2 % without it and 1.6
+   to 2.8 % had the true unwanted factors been known. No
+   result changes unless the setting is switched on: every model, one trained on RUV-corrected values included, is
+   tested as before on the values before RUV without the factors. Every result of a correlation-adjusted test now
+   carries the line "Adjusted for removed RUV factors: yes (n factor(s))." or "... no." in the tab, in
+   `integrationEnrichFactor()`'s summaries and in records. The adjusted test is refused when fewer than max(4, the
+   smallest number of samples per feature) biological samples are left after one per removed factor, when the factor is
+   a combination of the removed factors, and for a data set without usable removed factors. The pre-ranked test, the
+   permutation test and STRING do not use the removed factors. A recorded result replays in the form it was saved in; a
+   result recorded before this version replays without the adjustment (VAL-53, VAL-58, VAL-62, VAL-160, VAL-178;
+   KIT-184).
 
 ### Fixes
 
@@ -157,8 +201,38 @@
    accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
    has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
    annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
+ * Proteomics: when the protein table built in a script already carries gene names and the protein annotation is
+   also present, the differential analysis tables lost every gene name (the two name columns collided); they now take
+   the annotation's name and fall back to the table's own. In such tables a column that both carry is now named
+   `<name>.input` (the table's) and `<name>` (the annotation's), where it was `<name>.x` and `<name>.y`. On the
+   g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
+   proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
+   (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab still shows
+   such a list like a tested list that found no terms, until KIT-215 changes the tab. The analysis record also states,
+   for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
+   background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
+   change, no longer replays; it is refused with the same message. The first change does not affect data imported in
+   the application, whose names come from the annotation; the others change only g:Profiler runs in which some
+   protein has no gene name (KIT-208).
 
 ### Scientific changes
+
+ * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
+   numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
+   it counted in how many samples a feature was below it. An MS-DIAL table imported with its default identifier column
+   ('Peak ID' or 'Alignment ID', whichever the export has), whose identifiers are whole numbers, had that column counted
+   as a sample, so the threshold could be set by identifier numbers and whether a feature was removed could depend on
+   its row number. For example, on an MS-DIAL metabolite table of 8 features and 4 samples at the 10th percentile and
+   0.5, the threshold was 4.9 instead of 16,410 and no feature was removed instead of 2. A custom-format table with a
+   numeric identifier or annotation column was affected in the same way, and so were the metabolomics workbooks, which
+   keep retention time and m/z columns, and designs imported from a folder whose tables hold MS-DIAL's numeric columns
+   (retention time, m/z, scores). Tables with no such column (for example LipidSearch imports, and custom imports whose
+   identifier and annotation columns are text) give the same results as before. Analyses saved before this change
+   replay as they were made. A design sample that is missing from a table or is not numeric is now refused with a
+   message. The helpers `lipidIntensityFilteringHelper()` and `metaboliteIntensityFilteringHelper()` take a new optional
+   argument `sample_columns`; without it they count every numeric column except the identifier column and warn which
+   columns they counted. (KIT-202, VAL-118)
 
  * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
    those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.

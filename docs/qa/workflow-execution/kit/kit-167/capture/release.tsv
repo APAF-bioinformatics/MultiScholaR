@@ -1,0 +1,13 @@
+url	source	release	release_date	used
+https://ftp.uniprot.org/pub/databases/uniprot/current_release/RELEASE.metalink	ftp RELEASE.metalink, present	2026_04	NA	TRUE
+https://rest.uniprot.org/uniparc/stream?query=upid:UP000000530&format=fasta	uniparc UP000000530	2026_04	NA	NA
+https://rest.uniprot.org/uniparc/stream?query=upid:UP000001734&format=fasta	uniparc UP000001734	2026_04	NA	NA
+https://rest.uniprot.org/uniparc/stream?query=upid:UP000002436&format=fasta	uniparc UP000002436	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000265&format=tsv&fields=accession,gene_primary,gene_oln,xref_string,xref_kegg	uniprotkb xref UP000000265	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000265&format=tsv&fields=accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed,protein_existence,annotation_score	uniprotkb go UP000000265	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000625&format=tsv&fields=accession,gene_primary,gene_oln,xref_string,xref_kegg	uniprotkb xref UP000000625	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000625&format=tsv&fields=accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed,protein_existence,annotation_score	uniprotkb go UP000000625	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000750&format=tsv&fields=accession,gene_primary,gene_oln,xref_string,xref_kegg	uniprotkb xref UP000000750	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000750&format=tsv&fields=accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed,protein_existence,annotation_score	uniprotkb go UP000000750	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000008816&format=tsv&fields=accession,gene_primary,gene_oln,xref_string,xref_kegg	uniprotkb xref UP000008816	2026_04	NA	NA
+https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000008816&format=tsv&fields=accession,id,protein_name,gene_names,organism_name,length,go_id,reviewed,protein_existence,annotation_score	uniprotkb go UP000008816	2026_04	NA	NA

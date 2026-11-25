@@ -1,0 +1,16 @@
+      1 KIT-184 G1 lipidomics_LCMS_Neg: largest sine of the principal angle to the DA's stored factors 6.87e-12
+      1 KIT-184 G1 lipidomics_LCMS_Neg: status exact, k declared 1, written 1, rank 1, features 43 of 43, s_(k+1)/s_1 3.9e-15, share 1, largest relative residual 2.62e-13
+      1 KIT-184 G1 lipidomics_LCMS_Neg: status exact, k declared 1, written 1, rank 1, features 44 of 44, s_(k+1)/s_1 2.39e-15, share 1, largest relative residual 3.22e-13
+      1 KIT-184 G1 lipidomics_LCMS_Neg: status exact, k declared 2, written 2, rank 2, features 44 of 44, s_(k+1)/s_1 8.05e-15, share 1, largest relative residual 3.52e-14
+      1 KIT-184 G1 lipidomics_LCMS_Pos: largest sine of the principal angle to the DA's stored factors 2.82e-12
+      1 KIT-184 G1 lipidomics_LCMS_Pos: status exact, k declared 1, written 1, rank 1, features 43 of 43, s_(k+1)/s_1 4.26e-15, share 1, largest relative residual 1.24e-12
+      1 KIT-184 G1 lipidomics_LCMS_Pos: status exact, k declared 1, written 1, rank 1, features 44 of 44, s_(k+1)/s_1 2.61e-15, share 1, largest relative residual 5.36e-13
+      1 KIT-184 G1 lipidomics_LCMS_Pos: status exact, k declared 2, written 2, rank 2, features 44 of 44, s_(k+1)/s_1 6.42e-15, share 1, largest relative residual 4.35e-14
+      1 KIT-184 G1 metabolomics_GCMS: status exact, k declared 1, written 1, rank 1, features 44 of 44, s_(k+1)/s_1 2.39e-15, share 1, largest relative residual 3.22e-13
+      1 KIT-184 G1 metabolomics_LCMS_Pos: status exact, k declared 1, written 1, rank 1, features 44 of 44, s_(k+1)/s_1 2.61e-15, share 1, largest relative residual 5.36e-13
+      1 KIT-184 G1 proteomics: status approximate, k declared 2, written 2, rank 4, features 63 of 63, s_(k+1)/s_1 0.0928, share 0.993247772, largest relative residual 0.805
+      1 KIT-184 G1 proteomics: status exact, k declared 1, written 1, rank 1, features 63 of 63, s_(k+1)/s_1 3.73e-15, share 1, largest relative residual 2.97e-09
+      1 KIT-184 G1 proteomics: status exact, k declared 2, written 2, rank 2, features 63 of 63, s_(k+1)/s_1 4.27e-15, share 1, largest relative residual 2.03e-09
+      2 KIT-184 G1 proteomics: status exact, k declared 2, written 2, rank 2, features 64 of 64, s_(k+1)/s_1 4.42e-15, share 1, largest relative residual 1.39e-13
+      1 KIT-184 G1 transcriptomics: status exact, k declared 2, written 2, rank 2, features 4622 of 4622, s_(k+1)/s_1 2.26e-15, share 1, largest relative residual 1.08e-13
+      1 KIT-184 G1 transcriptomics: status exact, k declared 2, written 2, rank 2, features 4622 of 4622, s_(k+1)/s_1 2e-15, share 1, largest relative residual 7.72e-14

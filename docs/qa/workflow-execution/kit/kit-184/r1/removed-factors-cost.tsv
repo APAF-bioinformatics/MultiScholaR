@@ -1,0 +1,4 @@
+case	features	runs	k	seconds	rss_before_mib	hwm_after_mib	increase_mib	status	rank	share
+small	2000	60	2	1.835	68.6	391.2	322.6	exact	2	1
+ceiling	20000	500	2	9.635	236.2	976.3	740.1	exact	2	1
+ceiling_k4	20000	500	4	10.087	236	976.3	740.3	exact	4	1
