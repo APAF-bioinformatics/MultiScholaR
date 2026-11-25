@@ -1,0 +1,83 @@
+{
+  "requested_by": "KIT-222 audit-repair run (AUDIT-KIT-222-impl-20261125, coordinator's ruling): head 8414c68e vs staging dd769671; R2c scope, proteomics design, I08 integration files, check, C1, base-side run of the new file; ceiling 600 min; decides merge-train readiness (G1 must pass)",
+  "label": "KIT-222 audit repairs 8414c68e vs dd769671",
+  "package_commit": "8414c68efd98d456f0b8d0cc2d70242325342b70",
+  "base_commit": "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-transcriptomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-prot-04-design.R",
+    "test-applets-direct-shared.R",
+    "test-kit128-design-replicates.R",
+    "test-kit128-tech-reps-lipid-metab.R",
+    "test-kit128-tech-reps-trx.R",
+    "test-module-ci-lipid-design.R",
+    "test-module-ci-metab-design.R",
+    "test-module-ci-prot-design.R",
+    "test-module-ci-trx-design.R",
+    "test-omic-design-module.R",
+    "test-omics-design-core.R",
+    "test-prot-04a-design-module-characterization.R",
+    "test-prot-04b-design-server-shared.R",
+    "test-prot-design-core.R",
+    "test-workflow-gui-memory-lifetimes.R",
+    "test-prot-design-log2.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-enrichment-options.R",
+    "test-integration-enrichment.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-feature-selection.R",
+    "test-integration-gui.R",
+    "test-integration-input-matrix.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-outputs.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-removed-factors.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-integration-workbook.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-kit222-replicate-keys.R"
+  ],
+  "shards": 4,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-222/c1-keys.R",
+      "args": [
+        "kit222-c1"
+      ],
+      "out": "kit222-c1",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-222/base-tests.R",
+      "args": [
+        "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+        "kit222-base"
+      ],
+      "out": "kit222-base",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
