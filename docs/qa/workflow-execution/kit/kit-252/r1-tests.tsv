@@ -1,0 +1,6 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit252-managed-failure-text.R	12	60	0	0	0	52.5	failed
+test-workflow-execution.R	112	2	0	10	0	21.4	failed
+test-workflow-omics-application-reads.R	229	1	0	0	0	408.9	failed
+test-omic-da-module.R	1315	54	0	0	0	450.9	failed
+test-prot-norm-core.R	1547	307	0	0	28	1050.6	failed

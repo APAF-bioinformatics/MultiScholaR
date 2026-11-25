@@ -1,0 +1,191 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+MSR-LAUNCHER {"launcher":"process","reason":"KIT-233 hosted runner: no user D-Bus"}
+INFO [2026-11-25 10:34:12] MSR-LAUNCHER {"launcher":"process","reason":"KIT-233 hosted runner: no user D-Bus"}
+Loading required package: shiny
+Running application in test mode.
+
+Listening on http://127.0.0.1:18233
+   app_server: shinyFiles package is available
+   app_server: Created volumes. Type = character, class = character
+   app_server: volumes length = 1
+   app_server: Volume names: Computer
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a (5 items)
+  data_dir                       : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics (4 items)
+  timestamp                      : 20261125_103423
+  time_dir                       : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/publication_graphs/filtering_qc/20261125_103423 (0 items)
+  clean_features_dir             : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/integration (0 items)
+  pathway_dir                    : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/data/UniProt (0 items)
+------------------------------------------
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a (5 items)
+  data_dir                       : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/scripts/proteomics (5 items)
+  results_dir                    : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics (4 items)
+  timestamp                      : 20261125_103423
+  time_dir                       : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/publication_graphs/filtering_qc/20261125_103423 (0 items)
+  clean_features_dir             : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/integration (0 items)
+  pathway_dir                    : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/data/UniProt (0 items)
+------------------------------------------
+--- Initializing server module for: proteomics ---
+   Looking for server function: mod_proteomics_server
+   Calling server function for proteomics
+--- Entering mod_prot_design_server ---
+=== ENRICHMENT ANALYSIS MODULE SERVER STARTED ===
+Module ID: enrichment_analysis
+   Workflow data stored for proteomics
+   Selected omics: proteomics
+   Processing omic: proteomics
+   [proteomics] Starting UI module load
+   [proteomics] Looking for function: mod_proteomics_ui
+   [proteomics] Function exists check: TRUE
+   [proteomics] Function retrieved. Type: closure, Class: function
+   [proteomics] Function formals:
+$id
+
+
+   [proteomics] Calling function with id: proteomics_workflow
+   [proteomics] Function call completed. Result type: list, class: shiny.tag.list   [proteomics] Function call completed. Result type: list, class: list
+   Total tab items created: 1
+[mod_prot_import] Mixed species FASTA disabled - organism inputs enabled
+[mod_prot_import] Mixed species FASTA enabled - organism inputs disabled
+========================================
+[mod_prot_import] Starting data import process
+========================================
+[mod_prot_import] Search results: /tmp/RtmpGU18LM/fb19580dde6e9f47113ed061/0.tsv
+[mod_prot_import] FASTA file: /tmp/RtmpGU18LM/c1ba37fbeee8c4efab64bc2a/0.fasta
+[mod_prot_import] Detected format: diann
+[mod_prot_import] Reading DIANN data...
+[mod_prot_import] Data imported: 8989 rows
+[mod_prot_import] Storing imported data...
+[mod_prot_import] Sanitizing sample names...
+[mod_prot_import] Processing FASTA file...
+Reading FASTA file...
+Processing standard UniProt FASTA format...
+Reading FASTA file with seqinr...
+
+Processing 400 FASTA entries...
+  |                                                          |                                                  |   0%  |                                                          |============                                      |  25%  |                                                          |=========================                         |  50%  |                                                          |======================================            |  75%  |                                                          |==================================================| 100%
+
+Binding rows and creating final table...
+Saving results...
+[mod_prot_import] Analyzing organism distribution...
+[mod_prot_import] Mixed species FASTA - analyzing organism distribution
+[mod_prot_import] Loading configuration...
+[mod_prot_import] Loading configuration
+[1] "Read globalParameters: number_of_cpus = 8"
+[1] "Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = Run, Precursor.Id, Protein.Group, Protein.Ids, Stripped.Sequence, Modified.Sequence, Precursor.Charge, Precursor.Quantity, Precursor.Normalised"
+[1] "Read plotRle: yaxis_limit = -3, 3"
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+[mod_prot_import] Finalizing import...
+[mod_prot_import] Finalizing import
+========================================
+[mod_prot_import] Data import completed successfully!
+[mod_prot_import] Rows: 8989, Proteins: 400, Format: diann
+========================================
+[mod_prot_import] Waiting for organism selection from user...
+
+
+=== DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===
+=== DA TAB: Contrast detection complete ===
+
+
+=== DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===
+=== DA TAB: Contrast detection complete ===
+
+
+=== DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===
+=== DA TAB: Contrast detection complete ===
+   Data rows: 400
+   Protein column: Protein.Group
+   Taxon ID: 10090
+=== Starting getUniprotAnnotationsFull ===
+Processing quantitative data with 400 rows for UniProt annotation
+Using protein ID column: Protein.Group
+Target organism taxon ID: 10090
+Extracting unique protein groups from actual data...
+Found 400 unique protein groups in data
+First 5 protein groups: P00001, P00002, P00003, P00004, P00005
+Splitting protein groups to individual proteins...
+Expanded 400 protein groups into 400 unique individual proteins
+First 10 individual proteins: P00001, P00002, P00003, P00004, P00005, P00006, P00007, P00008, P00009, P00010
+UniProt IDs detected (or non-Ensembl format). Proceeding with direct query.
+
+=== FINAL CHECK BEFORE UniProt API SUBMISSION ===
+Temporary table dimensions: 400 rows x 1 cols
+First 5 IDs in temp_protein_table$Protein.Ids:
+ID Type Check: [OK] UniProt IDs - Ready for API
+=== END FINAL CHECK ===
+
+Calling getUniprotAnnotations for comprehensive annotation retrieval...
+   Cache dir: /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/cache/uniprot_annotations
+   Taxon ID: 10090
+   Input table rows: 400
+   Force download: FALSE
+   DEBUG66: Cache miss, calling directUniprotDownload...
+Fetching UniProt annotations...
+   Input: 400 unique protein IDs
+   Taxon ID: 10090
+   Batch size: 25
+   Output path: /tmp/RtmpesDm7E/k250-work/projects-A/k250_a/results/proteomics/cache/uniprot_annotations/uniprot_results.tsv
+Found 400 unique protein IDs from input
+Querying 400 valid UniProt IDs
+Split into 16 chunks for processing
+   First chunk protein IDs:
+Processing chunk 1 of 16 with 25 IDs
+   Chunk protein IDs:
+ [1] "P00001" "P00002" "P00003" "P00004" "P00005" "P00006" "P00007" "P00008"
+ [9] "P00009" "P00010" "P00011" "P00012" "P00013" "P00014" "P00015" "P00016"
+[17] "P00017" "P00018" "P00019" "P00020" "P00021" "P00022" "P00023" "P00024"
+[25] "P00025"
+   Error message: In index: 1.
+   Error class: purrr_error_indexed, rlang_error, error, condition
+UniProt annotation ended without a table: request_failed
+Warning: UniProt annotation is empty: UniProt could not be reached (0 of 400 accessions annotated)
+
+
+=== DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===
+=== DA TAB: Contrast detection complete ===
