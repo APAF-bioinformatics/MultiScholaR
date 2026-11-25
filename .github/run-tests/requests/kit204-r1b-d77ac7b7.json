@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-204 R1b (instrument rerun 1 of 3 after R1 45574481570: test arithmetic on a missing q, N9's object arguments): tests-only commit, same purpose and values; ceiling 60 job-minutes",
+  "label": "KIT-204 R1b tests first on kit-204 d77ac7b7",
+  "package_commit": "d77ac7b75e430e1534b94b97f96409b7abfb9639",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit204-prot-da-not-tested.R"],
+  "shards": 1,
+  "file_timeout_minutes": 50,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
