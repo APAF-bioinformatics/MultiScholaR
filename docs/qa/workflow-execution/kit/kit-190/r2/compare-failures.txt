@@ -1,0 +1,208 @@
+== test-prot-norm-core.R | message-changed | the lipid and metab RUV declaration give the recorded result through the moved owner stripper
+-- base:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "4ed0ad715822816437cab31277730797ecc89c1d6e50c0d36f86cc295695f7f0"
+  `expected`: "dea4b04738e8b80a58bbd8639b8eef9eb90ae27d6c6da30da0d434592f9d10df"
+  
+  metab_ruv
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "5065333a303ee04a7037bc8094905696cf29187c03c5b0206575b3f79397a58d"
+  `expected`: "0921c3d1d2dae12528e3b3690680e84dc1d9749fea2226a419aeade1b11390f6"
+  
+  lipid_ruv
+-- head:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "8c7ccb2f4de2e9167834c961dfa69e7177b8af796b16a422d8ac0a7066f0c5e9"
+  `expected`: "dea4b04738e8b80a58bbd8639b8eef9eb90ae27d6c6da30da0d434592f9d10df"
+  
+  metab_ruv
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "ee6bea863fb64257f316cebd8206234c05ca7423aaddb914b9697fc46a5d463f"
+  `expected`: "0921c3d1d2dae12528e3b3690680e84dc1d9749fea2226a419aeade1b11390f6"
+  
+  lipid_ruv
+
+== test-kit172-downstream.R | new-failure | KIT-172 T7: lipid every step runs on concentration data, the counts hold and nothing is imputed
+-- base:
+  <passes>
+-- head:
+  Expected `unobserved` >= 1L.
+  Actual comparison: 0 < 1
+  Difference: -1 < 0
+
+== test-kit172-downstream.R | new-failure | KIT-172 T7: metab every step runs on concentration data, the counts hold and nothing is imputed
+-- base:
+  <passes>
+-- head:
+  Expected `unobserved` >= 1L.
+  Actual comparison: 0 < 1
+  Difference: -1 < 0
+
+== test-omic-norm-module.R | new-failure | (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4a78110cca76ff9c61c08581bdd9fdd65c0ceff949a8058f23cac1fc98f957e2"
+  `expected`: "192b57453a5a04a562b0bf6651a0b84233a30c87874738d5124908587868d273"
+  
+  lipid manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "6decbca7e6cff7933125a74e07d00eb2a7a77ca550f0f39cff735581786e1d36"
+  `expected`: "59874b22b54cbd563881934070fad28f40b6100e05352b785020ca7e8d8bd634"
+  
+  lipid manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b24dc573f84ff42e78751895d31ceb1fbdb7c6e0f4f83b4c937e6e1169e02c2a"
+  `expected`: "012507dc293871cfb0228cbb15ffd923577c258590ee5f247591ffb30384b489"
+  
+  lipid manual skip_correlation provenance
+
+== test-omic-norm-module.R | new-failure | (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3dcc9e1e545fe69bf96a9e358dbfa724308f343c8d9c661aecf4f304a3dc82cc"
+  `expected`: "19403ac0f3d6a9ab746871c1a93556eb86c00b105ede7d84c50be6e06b16dfd1"
+  
+  metab manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "45b9e00c739f2781e43dc2b04f0247c45b9b71066bff7eea259a07d9f0d1df39"
+  `expected`: "1367d1e211d35cc29d794333c116056c9261e2329bfcc7af362546ece93bf7da"
+  
+  metab manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "bf47863c68285332838a0d678227adeff348ffbfe44685ebafe20e526e617c65"
+  `expected`: "e451d2517d0158d131bc019d4d796164797f41e5005a21adcb659e778304dda5"
+  
+  metab manual skip_correlation provenance
+
+== test-omic-norm-module.R | new-failure | (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a60bd90376c9ea14d4d1aea14ba0b98587bef6440ecbc75a96b19c84eeb95c0d"
+  `expected`: "0e246af8d57eeb1ea9ce401e40a3a92056643a24e65b07fe800069677474ff70"
+  
+  lipid automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a60bd90376c9ea14d4d1aea14ba0b98587bef6440ecbc75a96b19c84eeb95c0d"
+  `expected`: "0e246af8d57eeb1ea9ce401e40a3a92056643a24e65b07fe800069677474ff70"
+  
+  lipid automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a60bd90376c9ea14d4d1aea14ba0b98587bef6440ecbc75a96b19c84eeb95c0d"
+  `expected`: "0e246af8d57eeb1ea9ce401e40a3a92056643a24e65b07fe800069677474ff70"
+  
+  lipid automatic run provenance
+
+== test-omic-norm-module.R | new-failure | (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2183e32b5d9ea17ff6a0b1e3733ac0d5fd404922e7b61fe1bc95c7f19aac89ae"
+  `expected`: "3f182e3fd9706a91fcf0aa294d79db676e7fff4bfa8e65452e1e944ea1b6c162"
+  
+  metab automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2183e32b5d9ea17ff6a0b1e3733ac0d5fd404922e7b61fe1bc95c7f19aac89ae"
+  `expected`: "3f182e3fd9706a91fcf0aa294d79db676e7fff4bfa8e65452e1e944ea1b6c162"
+  
+  metab automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2183e32b5d9ea17ff6a0b1e3733ac0d5fd404922e7b61fe1bc95c7f19aac89ae"
+  `expected`: "3f182e3fd9706a91fcf0aa294d79db676e7fff4bfa8e65452e1e944ea1b6c162"
+  
+  metab automatic run provenance
+
+== test-workflow-omics-binding-steps.R | message-changed | KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+-- base:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  records
+-- head:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 10
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+  `actual$metabolomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[10]]` is absent
+  
+  records
+
+== test-workflow-omics-ruv-cancor-once.R | new-failure | metab sweep is 1:1 with imputing at every percentage, with missing values
+-- base:
+  <passes>
+-- head:
+  Expected `all(vapply(new, function(assay) isTRUE(assay$success), logical(1)))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+== test-workflow-omics-ruv-cancor-once.R | new-failure | lipid sweep is 1:1 with imputing at every percentage, with missing values
+-- base:
+  <passes>
+-- head:
+  Expected `all(vapply(new, function(assay) isTRUE(assay$success), logical(1)))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

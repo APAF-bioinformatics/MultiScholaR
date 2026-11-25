@@ -1581,16 +1581,20 @@ selectWorkflowDiaExpression <- function(matrix, feature_id) {
 }
 
 #' Reuse a narrow DA display-selection index without repeating fit or FDR work.
+#' KIT-204 (VAL-129 (1)): the counts include `not_tested`, the rows without a p-value. The identity token is `v2`: under
+#' a source load the software component stays the same while the version does, so a `v1` product (without the count)
+#' would otherwise be served.
 #' @param manager Current saved-result owner.
 #' @param reference One immutable complete contrast-result table.
 #' @param qvalue,lfc Existing display cutoffs, included in selection identity.
-#' @return Selected ordinals/flags and full-population counts, never result collections.
+#' @return Selected ordinals/flags and full-population counts (total, significant, up, down, not_tested), never result
+#'   collections.
 #' @noRd
 resolveDIAResultSelection <- function(manager, reference, qvalue, lfc) {
     if (length(qvalue) != 1L || !is.finite(qvalue) || qvalue < 0 || qvalue > 1 ||
         length(lfc) != 1L || !is.finite(lfc) || lfc < 0) cli::cli_abort("invalid result cutoffs")
     identity <- newSavedWorkflowScientificIdentity(reference$entity_id, "full-testing-population",
-        digest::digest(list(qvalue, lfc), algo = "sha256"), "DA-display-selection-v1", manager$.context$software)
+        digest::digest(list(qvalue, lfc), algo = "sha256"), "DA-display-selection-v2", manager$.context$software)
     store <- manager$.context$store
     hit <- resolveSavedWorkflowEntity(store, "scientific_product", identity)
     if (identical(hit$status, "hit")) return(hit$value$value)
@@ -1599,12 +1603,12 @@ resolveDIAResultSelection <- function(manager, reference, qvalue, lfc) {
     metadata <- workflowSavedTableMetadata(data.frame(source_order = integer(), up = logical(), down = logical()),
         "source_order", 3L)
     metadata$rows <- NULL
-    counts <- data.frame(total = as.double(scope$metadata$rows), significant = 0, up = 0, down = 0)
+    counts <- data.frame(total = as.double(scope$metadata$rows), significant = 0, up = 0, down = 0, not_tested = 0)
     rows <- saveWorkflowTable(store, NULL, basename(tempfile("da-selection-")), identity, "source_order",
         metadata = metadata, write_fn = function(path, restoration) {
             writer <- openWorkflowTableWriter(path, restoration, store$progress)
             on.exit(abortWorkflowTableWriter(writer), add = TRUE)
-            streamSavedWorkflowTable(scope, c("fdr_qvalue", "log2FC"), function(data, offset, row_names) {
+            streamSavedWorkflowTable(scope, c("fdr_qvalue", "log2FC", "raw_pvalue"), function(data, offset, row_names) {
                 significant <- !is.na(data$fdr_qvalue) & data$fdr_qvalue < qvalue
                 # Preserve the existing DuckDB display comparison for NaN effects.
                 up <- significant & ((!is.na(data$log2FC) & data$log2FC > lfc) | is.nan(data$log2FC))
@@ -1612,6 +1616,7 @@ resolveDIAResultSelection <- function(manager, reference, qvalue, lfc) {
                 counts$significant <<- counts$significant + sum(significant)
                 counts$up <<- counts$up + sum(up)
                 counts$down <<- counts$down + sum(down)
+                counts$not_tested <<- counts$not_tested + sum(is.na(data$raw_pvalue))
                 selected <- which(significant)
                 appendWorkflowTableWriter(writer, data.frame(source_order = as.integer(offset + selected),
                     up = up[selected], down = down[selected]))

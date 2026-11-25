@@ -1,0 +1,13 @@
+check	ok
+E-a	TRUE
+E-b	TRUE
+E-c	TRUE
+E-d	TRUE
+E-e	TRUE
+N-a	TRUE
+N-b	TRUE
+N-c	TRUE
+swap_worse	TRUE
+swap_mirrored	TRUE
+aggregation_all	TRUE
+aggregation_nw	TRUE

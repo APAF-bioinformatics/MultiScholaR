@@ -1,0 +1,33 @@
+{
+  "ticket": "KIT-190 bound",
+  "phase": "stage2",
+  "head_commit": "0413a16932b455373ea15819391c2385d5aca5a3",
+  "trees": {
+    "F": "d6d67efea7e7a09f8ba41c28a99718dddb2ec796",
+    "D": "a1c12d28bfd6e8291f3e360ab75b6875458d8c88"
+  },
+  "script_sha256": "7d76467a37c9fcf890a557efa0ba8b26498052301f18f15f9231f87177cc5b5a",
+  "seed_rule": "190000000 + 10000 * cell + r; cells N-r 1 to E-g 6, N-w 7, E-w 8",
+  "cells": "N-s",
+  "journeys": {
+    "N-s D": 50,
+    "N-s D+B": 100,
+    "N-s F": 50,
+    "N-s F+B": 100
+  },
+  "falsifiers": {
+    "k_readback": 0,
+    "pct_readback": 0,
+    "oracle": 0,
+    "instrument": 0
+  },
+  "journey_errors": 0,
+  "seconds_median_per_journey": {
+    "bounded": 15.5115,
+    "B": "NA",
+    "F": 35.4445,
+    "D": 35.4985
+  },
+  "wall_seconds": 1678.99716472626,
+  "checks": []
+}

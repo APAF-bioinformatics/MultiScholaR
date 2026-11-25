@@ -1,0 +1,170 @@
+# Merge train 18 of 2026-11-26: KIT-263
+
+**This train is STACKED on merge train 17 (KIT-246), itself stacked on train 16 (KIT-261) and train 15 (KIT-190,
+KIT-204, KIT-217).** It was branched from `origin/merge-train-20261126j` at its tip
+`2b5fa8435d326b3c4d76cdaa639e0911361cdcf9` (fetched before building). Staging is 4d588ba3. **Train 18 lands only if
+trains 15, 16 and 17 all land with their code unchanged.** If any is rebuilt or its code changes, this train is rebuilt
+and its check repeated.
+
+## Train
+
+Base: `2b5fa8435d326b3c4d76cdaa639e0911361cdcf9` (train 17's tip).
+
+| Order | Ticket | Branch head | Merge commit | Ledger row | Audit |
+|---|---|---|---|---|---|
+| 1 | KIT-263 | `origin/kit-263` 1cf78e20 | 0090ae3d | `VAL-328` (replaces `VAL-<merge>`) | AUDIT-KIT-263-impl-20261126 (verdict ready) |
+
+Head (bound by the run): `0090ae3d453e207cd8061790dee960ae8cb1bbf7`. This file and the predictions are in the
+declaration commit after it, under `docs/` only; the records commit after the run likewise.
+
+### Conflicts met and their resolutions
+
+- **`NEWS.md`**: KIT-261's and KIT-246's bullets (base) against KIT-263's, at the top of `### Fixes`. Both kept, the
+  base's first, then KIT-263's; no text changed.
+- **`docs/methods-decision-ledger.md`**: the base's appended rows against KIT-263's. Kept the base's rows in order,
+  then KIT-263's as `VAL-328`. Trains 16 and 17 hold staging's later VAL rows only partly: NOT repaired here;
+  the coordinator resolves the ledger at landing.
+- `docs/qa/workflow-execution/kit/kit-263/outcome.md` line 26 names the placeholder; it now also names
+  `VAL-328`.
+- No conflict under `R/`, `tests/`, `inst/`, `man/`, `DESCRIPTION` or `NAMESPACE`. Code files changed against the
+  base: `R/func_general_filemgmt_study_parameter_writer.R`, `R/utils_workflow_summary.R`,
+  `man/createWorkflowArgsFromConfig.Rd`, `tests/testthat/test-omic-summary-module.R`,
+  `tests/testthat/test-kit263-prot-study-parameters-sections.R`.
+
+### Path lengths
+
+Checked before sending: every path new since the base is at most 72 bytes with the `MultiScholaR/` prefix
+(`docs/qa/workflow-execution/kit/kit-263/r2-check-compare.txt`, `tests/testthat/test-kit263-prot-study-parameters-sections.R`).
+
+## Declaration (written before the run is sent)
+
+**Purpose.** KIT-263's merge check on the merged tree.
+
+**Scope recount.** The ticket's grep (`git grep -lE "createWorkflowArgsFromConfig|createWorkflowArgsFn|
+saveWorkflowSummaryParameters|study_parameters|Parameters from Final S4 Object|Additional Configuration Parameters"
+-- tests/testthat`) gives 47 hits on the base 2b5fa843 (44 test files and 3 helpers) and 48 on the head (the new KIT-263
+file). Scope = the 44 base test files, plus `test-kit263-prot-study-parameters-sections.R`,
+`test-gui-entry-proteomics.R` and `test-kit217-intensity-filter-missing.R` = **47 test files**, as the audit's I09
+expected (47). No difference from 47. `test-prot-norm-core.R` is not in scope, so `MULTISCHOLAR_KIT105_W3_DUMP` is not set.
+
+**Run settings.** `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` on both sides; no extra packages (as KIT-263's R2); reference
+BLAS; 3 shards per side (the ticket's R2); `test-gui-entry-proteomics.R` file timeout 120 min; check on both sides; no
+scripts.
+
+**Ceiling.** 600 job-minutes = 40.0 core-hours: KIT-263's R2 row (ticket section 10: 6 x 70 + 2 x 90), which is its
+merge-check ceiling. Expected about 350 job-minutes (about 23 core-hours).
+
+### Predictions
+
+| File | Base | Head | Verdict |
+|---|---|---|---|
+| test-e2e-lipidomics-canonical.R | read from run | same as base | same |
+| test-e2e-metabolomics-lc-gc.R | read from run | same as base | same |
+| test-e2e-proteomics-dia-limpa.R | read from run | same as base | same |
+| test-e2e-proteomics-dia.R | read from run | same as base | same |
+| test-e2e-proteomics-enrichment.R | read from run | same as base | same |
+| test-e2e-proteomics-tmt-lfq.R | read from run | same as base | same |
+| test-general-filemgmt-config-direct-shared.R | read from run | same as base | same |
+| test-general-filemgmt-config-roundtrip-contracts.R | read from run | same as base | same |
+| test-general-filemgmt-report-helpers-shared.R | read from run | same as base | same |
+| test-general-filemgmt-s4-contracts.R | read from run | same as base | same |
+| test-gui-entry-proteomics.R | 92/101 (train 15's prediction) | same as base | same |
+| test-integration-input-lipid-metab.R | read from run | same as base | same |
+| test-integration-input-transcriptomics.R | read from run | same as base | same |
+| test-integration-record-mofa.R | read from run | same as base | same |
+| test-integration-record.R | 200/0/0/0 (train 17's head) | 200/0/0/0 | same |
+| test-integration-workbook-mofa.R | read from run | same as base | same |
+| test-kit172-downstream.R | read from run | same as base | same |
+| test-kit206-prot-norm-export-guard.R | read from run | same as base | same |
+| test-kit207-summary-head-guard.R | read from run | same as base | same |
+| test-kit212-da-current.R | read from run | same as base | same |
+| test-kit217-intensity-filter-missing.R | 344/0/0/0 | 344/0/0/0 | same |
+| test-kit224-ruv-feature-levels.R | read from run | same as base | same |
+| test-kit227-report-ruv-sentences.R | read from run | same as base | same |
+| test-kit235-lipid-metab-report-parser.R | read from run | same as base | same |
+| test-kit236-report-sentences.R | 289/0 | 289/0 | same |
+| test-kit243-summary-current-outputs.R | read from run | same as base | same |
+| test-kit248-correlation-skip-record.R | 206/0 | 206/0 | same |
+| test-kit254-omics-correlation-skip.R | 379/0 | 379/0 | same |
+| test-kit263-prot-study-parameters-sections.R | absent | 11/0/0/0 | only-on-head |
+| test-lipid-14a-summary-module-characterization.R | read from run | same as base | same |
+| test-lipid-15-summary-module-seams.R | read from run | same as base | same |
+| test-metab-05-summary-module-characterization.R | read from run | same as base | same |
+| test-module-ci-lipid-summary.R | read from run | same as base | same |
+| test-module-ci-metab-da.R | read from run | same as base | same |
+| test-module-ci-metab-summary.R | read from run | same as base | same |
+| test-module-ci-prot-summary.R | read from run | same as base | same |
+| test-module-ci-trx-summary.R | read from run | same as base | same |
+| test-omics-summary-core.R | read from run | same as base | same |
+| test-omic-summary-module.R | 1675/28 | 1675/28 | same |
+| test-prot-12a-summary-module-characterization.R | read from run | same as base | same |
+| test-prot-12-summary-module-contracts.R | read from run | same as base | same |
+| test-workflow-analysis-record.R | read from run | same as base | same |
+| test-workflow-figure-paths.R | read from run | same as base | same |
+| test-workflow-integration-input.R | read from run | same as base | same |
+| test-workflow-memory-mechanism-member.R | read from run | same as base | same |
+| test-workflow-native-session.R | read from run | same as base | same |
+| test-workflow-omics-application-reads.R | read from run | same as base | same |
+| R CMD check | | | identical findings, nothing only on head |
+
+Where "read from run" is shown the base count was not found in the earlier trains' declarations; the prediction is
+`same` and the count is read from the run (stated as such).
+
+### Decision and attempts
+
+- Every prediction holds: TRAIN GREEN, landing only after trains 15, 16 and 17 land with their code unchanged.
+- Any other verdict is a result: recorded with its files and counts, not repaired or re-sent.
+- One run; one re-send only for an instrument defect with no result judged. An HTTP 500/502 at dispatch with no run
+  created: started once by hand with the README's command, recorded.
+
+## What the coordinator resolves at landing
+
+- The ledger: `VAL-328` takes its number; its `<id>` and `<t>` fill; the earlier trains' placeholders and
+  staging's VAL-298 to VAL-301 rows are reconciled as trains 16 and 17 left them.
+- `NEWS.md`: KIT-261's, KIT-246's and KIT-263's bullets in that order if landed in sequence.
+- `kit-263/outcome.md` line 26 placeholder.
+
+## Result
+
+Run 45699156973 (request `merge-train-20261126k-0090ae3d`, request commit 68f197fc), dispatched without error; green
+(infrastructure). Head 0090ae3d vs base 2b5fa843. Tables: `merge-train-20261126k-compare.tsv`,
+`merge-train-20261126k-check-compare.txt` (same directory).
+
+**Job-minutes 294.1 = 19.61 core-hours** against the ceiling of 600 job-minutes (40.0 core-hours): tests head 41/64/47,
+tests base 42/45/30, check head 12.9, check base 12.2, plan 0.3, results 0.7.
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit263-prot-study-parameters-sections.R | only-on-head, 11/0/0/0 | absent | 11/0/0/0 | only-on-head: HELD |
+| test-omic-summary-module.R | same, 1675/28 | 1675/28 | 1675/28 | same: HELD |
+| test-gui-entry-proteomics.R | same as base (92/101) | 92/101 | 92/101 | same: HELD |
+| test-kit217-intensity-filter-missing.R | same, 344/0 | 344/0 | 344/0 | same: HELD |
+| test-kit248-correlation-skip-record.R | same, 206/0 | 206/0 | 206/0 | same: HELD |
+| test-kit236-report-sentences.R | same, 289/0 | 289/0 | 289/0 | same: HELD |
+| test-kit254-omics-correlation-skip.R | same, 379/0 | 376/3 | 376/3 | verdict same HELD; the stated count 379/0 NOT held: both sides show 376/3 (see below) |
+| test-integration-record.R | same, 200/0 | 200/0 | 200/0 | same: HELD |
+| the other 39 files | same | same | same | same: HELD (counts in the compare table) |
+| R CMD check | nothing only on head | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical; only on head: none, only on base: none: HELD |
+
+Totals: 47 files, 46 `same`, 1 `only-on-head` (the KIT-263 file), no `new-failure`, no `message-changed`, no
+`count-changed`.
+
+**One prediction not held, as recorded.** The `test-kit254-omics-correlation-skip.R` count was predicted from the audit
+as 379/0 (the count of the earlier trains' declarations). It is 376/3 on BOTH sides. These are the three failures
+train 15 already recorded as an undeclared move of that file (KIT-190 with KIT-254, E7 lipid_ruv; train 15's record,
+base 379/0 to head 376/3, and its resolution (a) of 2026-11-26 on its own branch). They are in the base here because
+train 17's base carries train 15's head. Not repaired here, not re-sent. This train adds nothing to it: the file's
+failures are identical on both sides (verdict `same`).
+
+**Decision.** KIT-263 introduces no regression: its new file passes 11/0 on head; every other file and R CMD check
+are identical between the train-17 tip and the merge head. TRAIN GREEN, with the kit254 count noted above. Landing
+only after trains 15, 16 and 17 land with their code unchanged.
+
+## Merge record (coordinator)
+
+Landed on v0.9-staging on 2026-11-26 by a no-fast-forward merge of this branch at 373198a1 onto 7911babb (merge trains 15, 16 and 17 landed).
+
+- Verdict: green for KIT-263. Run 45699156973 (47 files and R CMD check; 294.1 of 600 job-minutes): the new file 11/0 only on head, 46 files same, check identical. One stated count was the coordinator's brief error: tests/testthat/test-kit254-omics-correlation-skip.R reads 376/3 on both sides (declared 379/0), the train-15 state closed by VAL-325; the verdict same held.
+- Ledger at landing: staging's rows kept through VAL-327; KIT-263 = VAL-328. VAL-279's "twice" stands on the application path (no correction row). The separate defect it records is ticket KIT-269.
+- NEWS order under Fixes: KIT-261, KIT-246, KIT-263.
+- Stacking: built on train 17's tip, itself on trains 16 and 15; train 15 landed with one further tests-only edit of that one test file, which this train does not touch (VAL-325).

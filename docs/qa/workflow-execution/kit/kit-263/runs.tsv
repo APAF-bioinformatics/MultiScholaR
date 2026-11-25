@@ -1,0 +1,6 @@
+run_id	commit	purpose	job_minutes	result
+45676487966	8c83cf05	R1 tests-only, new file	11.2	result: T1 3 not 6, T2 and T3 failed on a fixture without a state owner; stopped (unpredicted R1 verdict, the brief's rule); the re-send followed the coordinator's classification made before it
+45679194881	19010df7	D1 declared diagnostic, printing only	11.8	finding: Additional block empty via formatConfigList error
+45681727116	0abd5669	D2 declared diagnostic (application owner path), printing only	11.1	classification (ii): twice
+45684163296	7be5aa5a	R1-2 re-send, instrument rule 1 of 3, fixture rebuilt, expectations unchanged	12.0	T1 6 vs 0, T4 error, T5 NULL, T2 T3 pass: as predicted
+45686553122	447bdf29 vs 7be5aa5a	R2 43 files x 3 shards per side + check both	267.5	42 same, new file fixed (11/0/0), check identical
