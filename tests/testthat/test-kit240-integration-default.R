@@ -304,3 +304,24 @@ test_that("KIT-240 T9 (MOFA2 lane): every seed's final ELBO is finite and the re
     expect_identical(rank$of, 5L)
     expect_true(rank$below_best >= 0 && rank$range >= rank$below_best)
 })
+
+# KIT-240 r1.3 (coordinator's ruling on AUDIT-KIT-240-plan Re-check 1, R1-04): the Enrichment tab marks the eight
+# defaults that are not yet confirmed (their `settled_by` says they await confirmation), beside each setting's label; the
+# confirmed ones carry no mark. Base: no mark on the tab (the tab never read `settled_by`).
+test_that("KIT-240 T10: the Enrichment tab marks its eight defaults not yet confirmed, and only those", {
+    texts <- integrationGuiTexts()
+    ui <- k240Plain(k240Html(mod_integration_enrichment_ui("e")))
+    marked <- c(correlation_method = "enrich_correlation_method", min_samples = "enrich_min_samples",
+        string_species = "enrich_string_species", kegg_organism = "enrich_kegg_organism",
+        reactome_organism = "enrich_reactome_organism", min_set_size = "enrich_min_set", max_set_size = "enrich_max_set",
+        seed = "enrich_seed")
+    mark <- sprintf(" (%s)", texts[["mark_provisional"]])
+    for (name in names(marked)) {
+        expect_match(ui, paste0(texts[[marked[[name]]]], mark, "</label>"), fixed = TRUE, info = name)
+    }
+    expect_false(grepl(paste0(texts[["enrich_string_fdr"]], mark), ui, fixed = TRUE))
+    # Eight marks, no more; the mark's words say plainly that the default is not yet confirmed.
+    expect_identical(lengths(regmatches(ui, gregexpr(mark, ui, fixed = TRUE))), 8L)
+    expect_match(texts[["mark_provisional"]], "not yet confirmed", fixed = TRUE)
+    expect_false(grepl("owner", texts[["mark_provisional"]], fixed = TRUE))
+})
