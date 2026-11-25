@@ -1,0 +1,73 @@
+case	moment	field	predicted	basis
+a	dialog_open	modal_open	Select Primary Organism	2.2 step 1
+a	dialog_open	dialog_selected	9606	fixture FASTA: one organism, preselected (func_prot_import_organisms.R:223)
+a	dialog_open	setup_import	complete	2.2 step 3: complete() before the answer
+a	dialog_open	design_matrix	pending	2.2 step 3
+a	dialog_open	setup_log_taxon_id	10090	2.2 step 2: the form's value
+a	dialog_open	setup_log_organism	Mus musculus	2.2 step 2
+a	dialog_open	mixed_species_selection	absent	2.2 step 2
+a	dialog_open	import_status	~^\[OK\] Data imported successfully!	2.2 P02
+a	dialog_open	form_taxon_disabled	TRUE	2.1
+a	after_cancel	cancel_hit_button	TRUE	the Cancel button is the topmost element at its centre
+a	after_cancel	modal_open	none	2.2 step 4
+a	after_cancel	setup_import	complete	2.2 step 4; stop rule 1 if not
+a	after_cancel	design_matrix	pending	2.2 step 4
+a	after_cancel	later_tabs	all disabled	2.2 step 3
+a	after_cancel	setup_log_taxon_id	10090	2.2 step 4: the form's value kept
+a	after_cancel	setup_log_organism	Mus musculus	2.2 step 4
+a	after_cancel	mixed_species_selection	absent	2.2 step 4
+a	after_cancel	import_status	~^\[OK\] Data imported successfully!	2.2 P02
+a	after_cancel	data_summary	~Organism: Mus musculus \(taxon: 10090 \)	2.2 P02 (ui_helpers.R:42-44)
+a	after_cancel	notices	none	2.2 step 4: Cancel runs no server code
+a	after_cancel	notice_naming_organism	none	2.2 step 4; stop rule 1 if not
+a	after_cancel	form_taxon_id	10090	a disabled input keeps its value
+a	after_cancel	form_organism_name	Mus musculus	a disabled input keeps its value
+a2	design	design_tab_active	TRUE	R1-01: statuses close no tab (mod_omic_workflow.R:32-48)
+a2	design	data_available	TRUE	R1-01: data_tbl and config_list exist (mod_omic_design.R:127-130)
+a2	design	builder_shown	TRUE	R1-01 (mod_omic_design.R:77)
+a2	design	design_save_outcome	complete	R1-01: a design can be saved after Cancel
+a2	design	design_matrix	complete	R1-01
+a2	design	design_log_taxon_id	10090	R1-01: saved with the form's organism (uniprot_full_helpers.R:122)
+b	after_click	click_reached_tab	FALSE	2.3: the dialog's backdrop takes the mouse (INFERRED)
+b	after_click	design_tab_active	FALSE	2.3
+b	after_click	modal_open	Select Primary Organism	2.3: easyClose = FALSE
+c	after_confirm	modal_open	none	2.2 step 5
+c	after_confirm	setup_import	complete	2.2 step 5
+c	after_confirm	design_matrix	pending	2.2 step 5
+c	after_confirm	setup_log_taxon_id	9606	2.2 step 5 (:178-196)
+c	after_confirm	setup_log_organism	Homo sapiens	2.2 step 5
+c	after_confirm	mixed_species_selection	9606	2.2 step 5
+c	after_confirm	mixed_filter_applied	FALSE	filter unticked by default (:31-35)
+c	after_confirm	notice_primary	present	2.2 step 5 (:222-227)
+c	after_confirm	notice_success	present	2.2 step 5 (:222-227)
+c	after_confirm	import_status	~^\[OK\] Data imported successfully!	ui_helpers.R:1-19
+c	after_confirm	data_summary	~Organism: Homo sapiens \(taxon: 9606 \)	the setup log updated by Confirm
+c	after_confirm	form_taxon_id	9606	Confirm updates the form (:175)
+c	after_confirm	form_organism_name	Homo sapiens	Confirm updates the form (:176)
+d1	after_cancel	setup_import	complete	as (a)
+d1	after_cancel	setup_log_taxon_id	10090	as (a)
+d1	after_reimport	reimport_dialog_shown	TRUE	the option still ticked
+d1	after_reimport	modal_open	none	Confirm removes the dialog
+d1	after_reimport	setup_import	complete	stop rule 4 if refused or failing
+d1	after_reimport	design_matrix	pending	completeOmicImport (mod_omic_import.R:97-109)
+d1	after_reimport	later_tabs	all disabled	no later step run
+d1	after_reimport	setup_log_taxon_id	9606	Confirm
+d1	after_reimport	setup_log_organism	Homo sapiens	Confirm
+d1	after_reimport	mixed_species_selection	9606	Confirm
+d1	after_reimport	notice_primary	present	Confirm
+d1	after_reimport	notice_success	present	Confirm
+d1	after_reimport	notice_error	none	stop rule 4 if not
+d2	after_cancel	setup_import	complete	as (a)
+d2	after_cancel	setup_log_taxon_id	10090	as (a)
+d2	after_reimport	import_completed	TRUE	stop rule 4 if not
+d2	after_reimport	modal_open	Processing Data	P01: the waiting flag stays TRUE, so the processing dialog is not removed
+d2	after_reimport	setup_import	complete	stop rule 4 if not
+d2	after_reimport	design_matrix	pending	completeOmicImport
+d2	after_reimport	later_tabs	all disabled	no later step run
+d2	after_reimport	setup_log_taxon_id	10090	the form's value, now enabled
+d2	after_reimport	setup_log_organism	Mus musculus	the form's value
+d2	after_reimport	mixed_species_selection	absent	a fresh setup log without the option
+d2	after_reimport	form_mixed_species	FALSE	unticked by the driver
+d2	after_reimport	notice_success	absent	P01: the waiting branch shows nothing (:218-223)
+d2	after_reimport	notice_error	none	stop rule 4 if not
+d2	after_reimport	import_status	~^\[OK\] Data imported successfully!	processing FALSE and data_tbl present
