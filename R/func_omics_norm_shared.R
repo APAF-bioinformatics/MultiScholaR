@@ -143,7 +143,7 @@ normaliseOmicsAssayMatrix <- function(assay_matrix, assay_name, method, feature_
     out <- assay_matrix
     out[, kept] <- fitted
     out[, empty] <- NA_real_
-    rlang::warn(sprintf(paste("Assay '%s': sample(s) %s have no value in this assay. The assay was normalised (%s) without",
+    rlang::warn(sprintf(paste("Assay '%s': samples %s have no value in this assay. The assay was normalised (%s) without",
         "them, and they are left empty in this assay only."), assay_name, paste(empty, collapse = ", "), method),
         class = "omics_normalisation_sample_excluded", assay = assay_name, sample = empty, method = method)
     list(matrix = out, excluded = empty)
@@ -164,7 +164,7 @@ omicsRemoveSamplesEmptyEverywhere <- function(assays, design, sample_id, exclude
     if (!length(removed)) return(list(assays = assays, design = design, removed = character()))
     assays <- lapply(assays, function(table) table[, setdiff(names(table), removed), drop = FALSE])
     design <- design[!as.character(design[[sample_id]]) %in% removed, , drop = FALSE]
-    rlang::warn(sprintf("Sample(s) %s have no value in any assay and were removed from the design.", paste(removed, collapse = ", ")),
+    rlang::warn(sprintf("Samples %s have no value in any assay and were removed from the design.", paste(removed, collapse = ", ")),
         class = "omics_normalisation_sample_removed", sample = removed)
     list(assays = assays, design = design, removed = removed)
 }

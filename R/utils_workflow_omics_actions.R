@@ -351,7 +351,7 @@ omicsItsdReportResult <- function(value, addLog, warn) {
     notes <- c(
         vapply(names(itsd$not_applied_reason_per_assay), function(assay) sprintf(paste("Internal-standard normalisation was not",
             "applied to assay %s: %s."), assay, reason_text(itsd$not_applied_reason_per_assay[[assay]])), character(1)),
-        vapply(names(itsd$samples_without_standard_per_assay), function(assay) sprintf(paste("Assay %s: sample(s) %s have no",
+        vapply(names(itsd$samples_without_standard_per_assay), function(assay) sprintf(paste("Assay %s: samples %s have no",
             "internal-standard signal; their values in %s are set missing, in this assay only."), assay,
             paste(itsd$samples_without_standard_per_assay[[assay]], collapse = ", "), assay), character(1)))
     for (note in notes) addLog(paste("Warning:", note))
@@ -369,10 +369,10 @@ omicsItsdReportResult <- function(value, addLog, warn) {
 omicsBetweenSampleReportResult <- function(value, addLog, warn) {
     per <- value$per_assay
     if (is.null(per)) return(invisible(FALSE))
-    notes <- vapply(names(per$samples_excluded), function(assay) sprintf(paste("Assay %s was normalised without sample(s) %s,",
+    notes <- vapply(names(per$samples_excluded), function(assay) sprintf(paste("Assay %s was normalised without samples %s,",
         "which have no value in %s; they are left empty in %s only."), assay, paste(per$samples_excluded[[assay]], collapse = ", "),
         assay, assay), character(1))
-    if (length(per$samples_removed)) notes <- c(notes, sprintf("Sample(s) %s have no value in any assay and were removed from the design.",
+    if (length(per$samples_removed)) notes <- c(notes, sprintf("Samples %s have no value in any assay and were removed from the design.",
         paste(per$samples_removed, collapse = ", ")))
     for (note in notes) addLog(paste("Warning:", note))
     if (length(notes)) warn(paste(notes, collapse = " "))

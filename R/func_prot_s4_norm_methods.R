@@ -79,7 +79,7 @@ setMethod(
       removed_samples <- colnames(frozen_protein_matrix)[colSums(!is.na(frozen_protein_matrix)) == 0]
       if (length(removed_samples)) {
         frozen_protein_matrix <- frozen_protein_matrix[, setdiff(colnames(frozen_protein_matrix), removed_samples), drop = FALSE]
-        rlang::warn(sprintf(paste("Sample(s) %s have no value in the protein table and were removed from the table, the design",
+        rlang::warn(sprintf(paste("Samples %s have no value in the protein table and were removed from the table, the design",
           "and the quantified EList before between-sample normalisation."), paste(removed_samples, collapse = ", ")),
           class = "omics_normalisation_sample_removed", sample = removed_samples)
       }

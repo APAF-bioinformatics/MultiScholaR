@@ -1219,6 +1219,26 @@ diaProteinPeptideCountFilterOperation <- function() {
         merge = c(protein_quant_table = "concatenate", design_matrix = "design", protein_id_table = "concatenate"))
 }
 
+#' The protein normalisation step's text (KIT-242 Part C): byte-identical to earlier releases' whenever no sample is
+#' removed; a line naming the removed samples otherwise.
+#' @param skipped Whether the method is `none`.
+#' @param protein_count,samples The state's counts.
+#' @param method The method.
+#' @param removed The samples removed (no value in the table).
+#' @return The text.
+#' @noRd
+diaProteinNormalisationText <- function(skipped, protein_count, samples, method, removed = character()) {
+    parts <- list(
+        if (skipped) "Between-Sample Normalisation Skipped (none)\n" else "Between-Sample Normalisation Applied Successfully\n",
+        "================================================\n",
+        sprintf("Proteins remaining: %d\n", protein_count), sprintf("Samples: %d\n", samples),
+        sprintf("Method: %s\n", method),
+        if (skipped) "The quantified log2 matrix is carried unchanged (the limpa script's choice).\n" else "")
+    if (length(removed)) parts <- c(parts, list(sprintf("Warning: samples %s have no value and were removed from the design.\n",
+        paste(removed, collapse = ", "))))
+    do.call(paste, c(parts, list("State saved as: 'protein_normalised'\n")))
+}
+
 #' @noRd
 computeDIAReferenceProteinNormalisation <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
     variant = "whole", now_fn = Sys.time) {
@@ -1250,15 +1270,7 @@ computeDIAReferenceProteinNormalisation <- function(manager, reference, paramete
         config$outcomes$samples_removed <- removed
         config$samples_removed <- removed
     }
-    text <- paste(
-        if (skipped) "Between-Sample Normalisation Skipped (none)\n" else "Between-Sample Normalisation Applied Successfully\n",
-        "================================================\n",
-        sprintf("Proteins remaining: %d\n", protein_count), sprintf("Samples: %d\n", samples),
-        sprintf("Method: %s\n", method),
-        if (skipped) "The quantified log2 matrix is carried unchanged (the limpa script's choice).\n" else "",
-        if (length(removed)) sprintf("Warning: sample(s) %s have no value and were removed from the design.\n",
-            paste(removed, collapse = ", ")) else "",
-        "State saved as: 'protein_normalised'\n")
+    text <- diaProteinNormalisationText(skipped, protein_count, samples, method, removed)
     list(checkpoint = checkpoint, reference = checkpoint$components$protein_quant_table,
         state_name = "protein_normalised",
         description = if (skipped) "Between-sample normalisation skipped (none): the quantified matrix carried unchanged" else

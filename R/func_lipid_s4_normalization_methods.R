@@ -154,6 +154,10 @@ setMethod(
         # KIT-242 (VAL-242 OD-2 (b), OD-3 (d)): the assays not normalised to standards, with the reason, and the samples
         # without standard signal, per assay.
         itsd_collector$not_applied <- list()
+        # KIT-242 (OD-4 (c), the coordinator's ruling on N05): a record made before replays with the earlier ITSD record
+        # (applied always TRUE, no per-assay fields), so that it replays exactly (`workflowReplayRuleMarkers$itsd_outcome`).
+        itsd_outcome_marker <- workflowReplayRuleMarkers$itsd_outcome
+        itsd_current <- !identical(getOption(itsd_outcome_marker$option), itsd_outcome_marker$earlier)
         itsd_collector$samples_without <- list()
 
         # --- Process Each Assay ---
@@ -163,12 +167,14 @@ setMethod(
             message(sprintf("-- Processing assay: %s", assay_index_name))
             # KIT-242 (VAL-242 OD-2 (b)): no standard in this assay: not normalised to standards, recorded, with a notice.
             notApplied <- function(reason, text) {
+                if (!itsd_current) return(warning(text, immediate. = TRUE))
                 itsd_collector$not_applied[[assay_index_name]] <- reason
                 itsd_collector$counts_per_assay[[assay_index_name]] <- 0L
                 rlang::warn(text, class = "omics_itsd_not_applied", assay = assay_index_name, reason = reason)
             }
             # KIT-242 (VAL-242: a method failure or a malformed assay stops).
             itsdFailed <- function(reason, text, parent = NULL) {
+                if (!itsd_current) return(warning(text, immediate. = TRUE))
                 rlang::abort(text, class = "omics_itsd_failed", assay = assay_index_name, reason = reason, parent = parent,
                     call = NULL)
             }
@@ -303,12 +309,16 @@ setMethod(
                 itsd_collector$samples_without[[assay_index_name]] <- as.character(problematic_factors$Sample)
                 # KIT-242 (VAL-242 OD-3 (d)): the sample is set missing in this assay only (the between-sample step then
                 # leaves it out of this assay), recorded per assay and sample, with a notice.
-                rlang::warn(sprintf(
+                itsd_text <- sprintf(
                     "Assay '%s': Aggregate ITSD signal (SampleNormFactor) is NA or zero for samples: %s. Normalized values will be NA for these samples.",
                     assay_index_name, paste(problematic_factors$Sample, collapse = ", ")
-                ),
-                    class = "omics_itsd_sample_without_standard", assay = assay_index_name,
-                    sample = as.character(problematic_factors$Sample))
+                )
+                if (itsd_current) {
+                    rlang::warn(itsd_text, class = "omics_itsd_sample_without_standard", assay = assay_index_name,
+                        sample = as.character(problematic_factors$Sample))
+                } else {
+                    warning(itsd_text, immediate. = TRUE)
+                }
                 # Set factor to NA to ensure division results in NA
                 norm_factors_long <- norm_factors_long |>
                     dplyr::mutate(SampleNormFactor = dplyr::if_else(is.na(.data$SampleNormFactor) | .data$SampleNormFactor == 0, NA_real_, .data$SampleNormFactor))
@@ -382,12 +392,17 @@ setMethod(
             if (!"ITSDNormalization" %in% names(theObject@args)) {
                 theObject@args$ITSDNormalization <- list()
             }
-            # KIT-242 (VAL-242 OD-2 (b)): applied only when at least one assay was normalised to its standards.
-            theObject@args$ITSDNormalization$applied <- length(itsd_collector$features_per_assay) > 0
-            theObject@args$ITSDNormalization$applied_per_assay <- as.list(stats::setNames(
-                assay_names %in% names(itsd_collector$features_per_assay), assay_names))
-            theObject@args$ITSDNormalization$not_applied_reason_per_assay <- as.list(itsd_collector$not_applied)
-            theObject@args$ITSDNormalization$samples_without_standard_per_assay <- as.list(itsd_collector$samples_without)
+            # KIT-242 (VAL-242 OD-2 (b)): applied only when at least one assay was normalised to its standards; per assay
+            # the outcome, the reason where not applied, and the samples without standard signal (current rule only).
+            if (itsd_current) {
+                theObject@args$ITSDNormalization$applied <- length(itsd_collector$features_per_assay) > 0
+                theObject@args$ITSDNormalization$applied_per_assay <- as.list(stats::setNames(
+                    assay_names %in% names(itsd_collector$features_per_assay), assay_names))
+                theObject@args$ITSDNormalization$not_applied_reason_per_assay <- as.list(itsd_collector$not_applied)
+                theObject@args$ITSDNormalization$samples_without_standard_per_assay <- as.list(itsd_collector$samples_without)
+            } else {
+                theObject@args$ITSDNormalization$applied <- TRUE
+            }
             theObject@args$ITSDNormalization$method_type <- "average_centered"
             theObject@args$ITSDNormalization$itsd_aggregation <- tolower(itsd_aggregation)
             theObject@args$ITSDNormalization$itsd_pattern_columns <- itsd_pattern_columns # Record actual columns used (potentially default)
@@ -397,11 +412,12 @@ setMethod(
             # Store per-assay ITSD feature information for reporting
             if (length(itsd_collector$features_per_assay) > 0) {
                 theObject@args$ITSDNormalization$itsd_features_per_assay <- as.list(itsd_collector$features_per_assay)
+                if (!itsd_current) theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)
                 message(sprintf("   Stored ITSD feature names for %d assays", length(itsd_collector$features_per_assay)))
             }
             # KIT-242: the count of standards used per assay, 0 where none matched (the count of standards matched, not of
             # standards observed in each sample).
-            if (length(itsd_collector$counts_per_assay) > 0) {
+            if (itsd_current && length(itsd_collector$counts_per_assay) > 0) {
                 theObject@args$ITSDNormalization$itsd_counts_per_assay <- as.list(itsd_collector$counts_per_assay)[
                     intersect(assay_names, names(itsd_collector$counts_per_assay))]
             }
@@ -728,6 +744,18 @@ setMethod(
             if (!lipid_id_col_name %in% colnames(assay_tibble)) {
                 malformed(sprintf("Assay '%s': Lipid ID column '%s' not found. Skipping normalization.", assay_name, lipid_id_col_name))
                 return(assay_tibble)
+            }
+            # KIT-242 (VAL-242: a malformed assay stops): duplicate feature identifiers (the QC tab's duplicate resolution
+            # not run) stop with the cause and what to do; earlier, the matrix conversion failed and the assay was skipped.
+            if (current_rule) {
+                feature_ids <- as.character(assay_tibble[[lipid_id_col_name]])
+                duplicated_ids <- unique(feature_ids[duplicated(feature_ids)])
+                if (length(duplicated_ids)) {
+                    abortOmicsNormalisation(assay_name, "malformed_assay", normalisation_method_final, sprintf(paste(
+                        "Between-sample normalisation was not run: assay '%s' has %d duplicated feature identifiers (%s).",
+                        "Run 'Resolve Duplicates' in the Quality Control tab, then run the normalisation again."), assay_name,
+                        length(duplicated_ids), paste(utils::head(duplicated_ids, 3L), collapse = ", ")))
+                }
             }
 
             # --- Identify Sample Columns ---

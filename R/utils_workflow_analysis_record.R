@@ -669,7 +669,12 @@ workflowReplayRuleMarkers <- list(
     # KIT-242 Part C: proteomics between-sample normalisation removes a sample with no value from the protein table, the
     # DPC EList and the design ("remove"); records made before kept it, so scale emptied the whole table ("keep").
     protein_normalisation_fallback = list(option = "MultiScholaR.protein_normalisation_fallback", current = "remove",
-        earlier = "keep"))
+        earlier = "keep"),
+    # KIT-242 (VAL-242 OD-2 (b), OD-3 (d), OD-4 (c)): the lipid and metabolite ITSD step records its outcome per assay
+    # (applied only where a standard was used; the reason, the count of standards, the samples without standard signal)
+    # and stops on a method failure ("per_assay"); records made before recorded it as applied, with no per-assay fields
+    # ("applied_flag"), and replay so, exactly.
+    itsd_outcome = list(option = "MultiScholaR.itsd_outcome", current = "per_assay", earlier = "applied_flag"))
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).

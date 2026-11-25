@@ -312,7 +312,8 @@ omicsItsdNormalisationOperation <- function(binding) {
         parameters = c("itsd_aggregation", "itsd_feature_ids"), product_type = paste0(binding$prefix, ".itsd_normalisation_result"),
         global_statistics = c(mean_standard_factor =
             "the mean over all samples of each assay's per-sample aggregate standard signal, computed once before any sample is scaled"),
-        fixed = list(method = "ITSD"),
+        # KIT-242 (OD-4 (c)): records made before replay with the earlier ITSD record (`workflowReplayRuleMarkers$itsd_outcome`).
+        fixed = list(method = "ITSD", itsd_outcome = "per_assay"),
         kernel = function(object, parameters, store) {
             omicsAssertManualItsdPresent(binding, object, parameters$itsd_feature_ids)
             normaliseUntransformedDataFn <- normaliseUntransformedData
@@ -324,10 +325,14 @@ omicsItsdNormalisationOperation <- function(binding) {
                 omics_itsd_sample_without_standard = function(w) invokeRestart("muffleWarning"))
             object <- NULL
             itsd <- normalised@args$ITSDNormalization
-            list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")),
-                itsd = list(applied_per_assay = itsd$applied_per_assay, not_applied_reason_per_assay = itsd$not_applied_reason_per_assay,
+            value <- list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")))
+            # Under the earlier record (an older record's replay) the value is as it was, so the replay is exact.
+            if (!is.null(itsd$applied_per_assay)) {
+                value$itsd <- list(applied_per_assay = itsd$applied_per_assay, not_applied_reason_per_assay = itsd$not_applied_reason_per_assay,
                     counts_per_assay = itsd$itsd_counts_per_assay, samples_without_standard_per_assay = itsd$samples_without_standard_per_assay,
-                    pattern = normalised@internal_standard_regex, columns = itsd$itsd_pattern_columns))
+                    pattern = normalised@internal_standard_regex, columns = itsd$itsd_pattern_columns)
+            }
+            value
         })
 }
 
