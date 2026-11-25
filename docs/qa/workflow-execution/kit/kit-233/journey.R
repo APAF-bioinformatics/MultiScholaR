@@ -973,6 +973,16 @@ k233Upload <- function(S, step, id, path, timeout_s = S$hard_s) {
 #' text in the status output, or a modal that is neither expected nor a progress modal) followed by no completion
 #' within 60 s; the session's disconnection or the application's exit; the hard wait. Warnings never end a step;
 #' progress modals are recorded and never end a step.
+#' RA-02 (result audit of the fourth L): the viewport at the moment a terminal signal first appears, before the 60 s
+#' grace lets a notice go; one image per step (the first signal), listed with the step's files.
+k233TerminalShot <- function(S, spec) {
+    if (!is.null(S$terminal_shot) || is.null(S$driver)) return(invisible(NULL))
+    path <- file.path(S$G$out, sprintf("%s-%02d-%s-terminal.png", S$label, S$nn, spec$step))
+    tryCatch(S$driver$get_screenshot(path, selector = "viewport"), error = \(e) NULL)
+    S$terminal_shot <- path
+    invisible(path)
+}
+
 k233Wait <- function(S, spec, since) {
     started <- Sys.time()
     hard <- spec$hard_s %||% S$hard_s
@@ -1023,10 +1033,16 @@ k233Wait <- function(S, spec, since) {
         # A user answers an expected dialog before going on: an open expected dialog holds the step's completion.
         if (!expected && (if (is.na(g)) d else g)) return(k233Settle(S, spec, result("complete"), started))
         errors <- Filter(\(n) identical(n$type, "error"), st$notes)
-        if (length(errors) && is.null(err)) err <- list(t = el, msg = errors[[1L]]$text)
+        if (length(errors) && is.null(err)) {
+            err <- list(t = el, msg = errors[[1L]]$text)
+            k233TerminalShot(S, spec)
+        }
         if (!is.null(spec$status_out) && !is.null(spec$refusal) && is.null(ref)) {
             text <- k233Text(st, spec$status_out)
-            if (grepl(spec$refusal, text, ignore.case = TRUE)) ref <- list(t = el, msg = text)
+            if (grepl(spec$refusal, text, ignore.case = TRUE)) {
+                ref <- list(t = el, msg = text)
+                k233TerminalShot(S, spec)
+            }
         }
         if (is.null(open)) {
             mod <- NULL
@@ -1034,6 +1050,7 @@ k233Wait <- function(S, spec, since) {
             mod <- NULL
         } else if (!isTRUE(open$progress) && (is.null(mod) || !identical(mod$start, open$start))) {
             mod <- list(t = el, start = open$start, msg = sprintf("modal '%s': %s", open$title, open$text))
+            k233TerminalShot(S, spec)
         }
         for (signal in list(err, ref, mod)) {
             if (!is.null(signal) && el - signal$t >= 60) return(result("refused", signal$msg))
@@ -1162,6 +1179,10 @@ k233Capture <- function(S, spec, res, since) {
         if (file.exists(path) && file.size(path) > 0) files[[basename(path)]] <<- k233Sha(path)
     }
     note <- character()
+    if (!is.null(S$terminal_shot)) {
+        keep(S$terminal_shot)
+        S$terminal_shot <- NULL
+    }
     if (is.null(S$driver)) return(list(files = files, notes = list(), console_errors = character(), modals = list(),
         outputs_summary = "", outputs = list(), note = "no browser session"))
     box <- k233Js(S, K233_MARK_PANE_JS)
@@ -1748,23 +1769,29 @@ k233DaCount <- function(path, threshold, lfc) {
         sprintf(" and |log2FC| >= %s", lfc) else ""), column = qcol[[1L]])
 }
 
+#' The saved DA table of a contrast shown in the tab (RA-03, result audit of the fourth L): the table whose stem equals
+#' the contrast's normalised name, else the one whose stem parses as `group<a>-group<b>` with <a> and <b> equal (after
+#' normalisation) to the contrast's two group names in order. More than one candidate is refused (NA). The value
+#' carries the candidate count in the attribute `candidates`.
 k233DaFile <- function(R, contrast) {
     dir <- k233ProjectPaths(R)$da
-    files <- list.files(dir, "_long_annot\\.tsv$", full.names = TRUE)
-    exact <- file.path(dir, paste0("da_proteins_", gsub("[^A-Za-z0-9_-]", "_", contrast), "_long_annot.tsv"))
-    if (file.exists(exact)) return(exact)
-    hit <- files[k233Norm(sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))) == k233Norm(contrast)]
-    if (length(hit)) return(hit[[1L]])
-    files <- unique(c(files, list.files(k233ProjectPaths(R)$base, "_long_annot\\.tsv$", full.names = TRUE,
-        recursive = TRUE)))
+    files <- unique(c(list.files(dir, "_long_annot\\.tsv$", full.names = TRUE),
+        list.files(k233ProjectPaths(R)$base, "_long_annot\\.tsv$", full.names = TRUE, recursive = TRUE)))
     stems <- sub("^da_proteins_(.*)_long_annot\\.tsv$", "\\1", basename(files))
+    found <- function(hit) {
+        hit <- unique(normalizePath(hit))
+        value <- if (length(hit) == 1L) hit[[1L]] else NA_character_
+        attr(value, "candidates") <- length(hit)
+        value
+    }
     hit <- files[k233Norm(stems) == k233Norm(contrast)]
-    if (length(hit)) return(hit[[1L]])
+    if (length(hit)) return(found(hit))
     pair <- strsplit(contrast, "_vs_", fixed = TRUE)[[1L]]
-    if (length(pair) != 2L) pair <- strsplit(contrast, "-", fixed = TRUE)[[1L]]
-    if (length(pair) != 2L) return(NA_character_)
-    stem <- k233MatchContrast(stems, pair)
-    if (is.na(stem)) NA_character_ else files[match(stem, stems)]
+    if (length(pair) != 2L) return(found(character()))
+    sides <- regmatches(stems, regexec("^group(.+)-group(.+)$", stems))
+    exact <- vapply(sides, \(m) length(m) == 3L && k233Norm(m[[2L]]) == k233Norm(pair[[1L]]) &&
+        k233Norm(m[[3L]]) == k233Norm(pair[[2L]]), logical(1))
+    found(files[exact])
 }
 
 k233NumberN2 <- function(S, R) {
@@ -1792,8 +1819,11 @@ k233NumberN2 <- function(S, R) {
         file <- k233DaFile(R, contrast)
         saved <- if (is.na(file)) list(count = NA_integer_, rule = "no saved DA table") else k233DaCount(file, threshold, lfc)
         if (!is.na(file)) file.copy(file, file.path(S$G$out, paste0(S$label, "-", basename(file))), overwrite = TRUE)
-        k233Number(S, "N2", contrast, shown, saved$count, sprintf("da_summary_stats vs %s (%s)",
-            if (is.na(file)) "no file" else basename(file), saved$rule))
+        base <- normalizePath(k233ProjectPaths(R)$base, mustWork = FALSE)
+        where <- if (is.na(file)) "no file" else if (startsWith(file, paste0(base, "/")))
+            substring(file, nchar(base) + 2L) else file
+        k233Number(S, "N2", contrast, shown, saved$count, sprintf("da_summary_stats vs %s (%s; candidates %d)",
+            where, saved$rule, attr(file, "candidates") %||% 0L))
         S$n2[[contrast]] <- list(shown = shown, file = file, threshold = threshold, lfc = lfc, saved = saved$count)
     }
     invisible(S$n2)
