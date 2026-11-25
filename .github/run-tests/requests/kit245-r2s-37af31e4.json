@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-245 Part S R2s: fix 37af31e4 against tests-only 009fdb38; new file passes, 11 regression files same (KIT-234 W8 declared edit), R CMD check nothing only on head; ceiling 300 job-minutes; decides AS2",
+  "label": "KIT-245 Part S R2s base 009fdb38 head 37af31e4 with check",
+  "package_commit": "37af31e404761f3b1ba79056645ae9275740f1d2",
+  "base_commit": "009fdb3894ec6e1a801cbad0c366ad3e0c814d75",
+  "tools_ref": "",
+  "tests": [
+    "test-kit245-github-push-safety.R",
+    "test-github-management-direct-shared.R",
+    "test-kit234-workbooks-withdrawn.R",
+    "test-lipid-14a-summary-module-characterization.R",
+    "test-lipid-15-summary-module-seams.R",
+    "test-metab-05-summary-module-characterization.R",
+    "test-module-ci-trx-summary.R",
+    "test-module-ui-wrapper-direct-shared.R",
+    "test-omic-gui-config.R",
+    "test-omic-summary-module.R",
+    "test-optional-packages.R",
+    "test-prot-12-summary-module-contracts.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
