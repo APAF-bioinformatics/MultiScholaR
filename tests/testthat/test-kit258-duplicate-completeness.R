@@ -1,25 +1,27 @@
 # KIT-258 (VAL-254): lipidomics and metabolomics duplicate resolution keeps, among the rows of one duplicated id, the
 # row measured (not NA) in the most of the averaged columns (the design's samples, KIT-214), then the highest mean of
-# its measured values, then the first in the table (today's tie rule, Q-C1). Tests E1 to E4, G1 to G3, T1 (a), T1 (b)
-# and T2 of the ticket's section 10. E5 (zeros, OD-1) and E6 (the 12-sample example, OD-2) are written after the
-# owner's answers and are not here. Every "not measured" value below is NA; no duplicated row holds a zero.
-# Base values (KIT-214's rule, the highest mean alone) are the ticket's: E1 to E4 keep row A (E3 row Q).
+# its measured values, then the first in the table (today's tie rule, Q-C1). Tests E1 to E6, G1 to G3, T1 (a), T1 (b)
+# and T2 of the ticket's section 10. "Measured" is a value neither missing nor zero, for the count and for the mean
+# (the owner's OD-1 (b), VAL-284); the ordering is strict (OD-2 (a), VAL-284). E1 to E4 and the guards hold no zero;
+# E5 is the zero example, E6 the 12-sample example of OD-2.
+# Base values (KIT-214's rule, the highest mean alone) are the ticket's: E1 to E5 keep row A (E3 row Q), E6 the 11/12 row.
 
 # ---- Helper section: the tables -------------------------------------------------------------------------------------
 
-# Six design samples, two groups of three.
+# Six design samples, two groups of three (E5: four, two groups of two; E6: twelve, two groups of six).
 k258Samples <- sprintf("S%d", 1:6)
-k258Design <- function() {
-  groups <- rep(c("A", "B"), each = 3L)
-  data.frame(Run = k258Samples, group = groups, tech_rep_group = paste(groups, c(1:3, 1:3), sep = "_"),
+k258Design <- function(samples = k258Samples) {
+  n <- length(samples) %/% 2L
+  groups <- rep(c("A", "B"), each = n)
+  data.frame(Run = samples, group = groups, tech_rep_group = paste(groups, c(seq_len(n), seq_len(n)), sep = "_"),
     stringsAsFactors = FALSE)
 }
 
-# Rows from a list of (feature_id, name, six values); `name` is text, unique per row (the row's annotation).
-k258Table <- function(...) {
+# Rows from a list of (feature_id, name, values); `name` is text, unique per row (the row's annotation).
+k258Table <- function(..., samples = k258Samples) {
   rows <- list(...)
   values <- do.call(rbind, lapply(rows, function(row) row$values))
-  colnames(values) <- k258Samples
+  colnames(values) <- samples
   cbind(data.frame(feature_id = vapply(rows, function(row) row$id, ""), name = vapply(rows, function(row) row$name, ""),
     stringsAsFactors = FALSE), as.data.frame(values))
 }
@@ -49,21 +51,41 @@ k258G3Table <- function() k258Table(
   k258Row("K", "X", c(100, 100, 100, 100, 100, 100)),
   k258Row("L", "Z", c(10, 11, 12, 13, 14, 15)))
 
-# The ticket's cases on the declared step: table, duplicated id, the name of the row kept now and under KIT-214.
-k258Cases <- list(
-  E1 = list(table = k258E1Table, id = "D", head = "B", base = "A"),
-  E2 = list(table = k258E2Table, id = "D", head = "B", base = "A"),
-  E3 = list(table = k258E3Table, id = "F", head = "R", base = "Q"),
-  G1 = list(table = k258G1Table, id = "H", head = "V", base = "V"),
-  G3 = list(table = k258G3Table, id = "K", head = "W", base = "W"))
+# E5 (OD-1 (b), VAL-284), four samples built in code (zeros kept): id Z, row A (0, 0, 0, 500), measured in 1 of 4
+# (mean 500); row B (NA, 100, 100, 100), measured in 3 of 4 (mean 100); id Y once. Under KIT-214's rule A's mean is
+# 125 (zeros averaged) against B's 100, so A; under a zero counted as measured A would be 4 of 4, so A as well.
+k258Samples4 <- sprintf("S%d", 1:4)
+k258E5Table <- function() k258Table(
+  k258Row("Z", "A", c(0, 0, 0, 500)),
+  k258Row("Z", "B", c(NA, 100, 100, 100)),
+  k258Row("Y", "C", c(10, 11, 12, 13)), samples = k258Samples4)
+# E6 (OD-2 (a), VAL-284; ticket section 5), twelve samples: id X, row "real" at 1,000,000 in the six of group A and
+# 100,000 in five of group B, missing in the sixth (11 of 12, mean 590,909.09); row "noise" at 2,000 in all 12;
+# id W once. The ordering as decided keeps the complete noise row: the stated consequence of VAL-284 (2), not a defect.
+k258Samples12 <- sprintf("S%d", 1:12)
+k258E6Table <- function() k258Table(
+  k258Row("X", "real", c(rep(1e6, 6L), rep(1e5, 5L), NA)),
+  k258Row("X", "noise", rep(2000, 12L)),
+  k258Row("W", "other", seq(1000, 12000, by = 1000)), samples = k258Samples12)
 
-k258Build <- function(omic, table) {
+# The ticket's cases on the declared step: table, its samples, the duplicated id, the name of the row kept now and
+# under KIT-214.
+k258Cases <- list(
+  E1 = list(table = k258E1Table, samples = k258Samples, id = "D", head = "B", base = "A"),
+  E2 = list(table = k258E2Table, samples = k258Samples, id = "D", head = "B", base = "A"),
+  E3 = list(table = k258E3Table, samples = k258Samples, id = "F", head = "R", base = "Q"),
+  E5 = list(table = k258E5Table, samples = k258Samples4, id = "Z", head = "B", base = "A"),
+  E6 = list(table = k258E6Table, samples = k258Samples12, id = "X", head = "noise", base = "real"),
+  G1 = list(table = k258G1Table, samples = k258Samples, id = "H", head = "V", base = "V"),
+  G3 = list(table = k258G3Table, samples = k258Samples, id = "K", head = "W", base = "W"))
+
+k258Build <- function(omic, table, samples = k258Samples) {
   if (identical(omic, "lipidomics")) {
-    createLipidomicsAssayData(lipid_data = list(LCMS_Pos = table), design_matrix = k258Design(),
+    createLipidomicsAssayData(lipid_data = list(LCMS_Pos = table), design_matrix = k258Design(samples),
       lipid_id_column = "feature_id", annotation_id_column = "name", sample_id = "Run", group_id = "group",
       technical_replicate_id = "tech_rep_group")
   } else {
-    createMetaboliteAssayData(metabolite_data = list(LCMS_Pos = table), design_matrix = k258Design(),
+    createMetaboliteAssayData(metabolite_data = list(LCMS_Pos = table), design_matrix = k258Design(samples),
       metabolite_id_column = "feature_id", annotation_id_column = "name", sample_id = "Run", group_id = "group",
       technical_replicate_id = "tech_rep_group")
   }
@@ -130,7 +152,7 @@ k258Design0 <- list(source = "fixed", value = "design")
 k258RankNow <- list(source = "fixed", value = "measured_then_mean")
 k258KIT214 <- list(MultiScholaR.duplicate_resolution_rank = "mean")
 
-# ---- E1 to E3, G1, G3: the declared step, both omics, both variants ---------------------------------------------------
+# ---- E1 to E3, E5, E6, G1, G3: the declared step, both omics, both variants -------------------------------------------
 
 for (case in names(k258Cases)) {
   for (omic in c("lipidomics", "metabolomics")) {
@@ -143,7 +165,7 @@ for (case in names(k258Cases)) {
         test_that(sprintf("KIT-258 %s (%s, %s): duplicate resolution keeps row %s", case, omic, variant, spec$head), {
           skip_if_not(workflowOwnerCapable())
           table <- spec$table()
-          object <- k258WithRow(k258Build(omic, table))
+          object <- k258WithRow(k258Build(omic, table, spec$samples))
           run <- k258Step(object, variant)
           expect_identical(run$variant, variant)
           expected_row <- as.character(which(table$name == spec$head))
@@ -156,30 +178,40 @@ for (case in names(k258Cases)) {
   }
 }
 
-# ---- E4: the exported kernels and the S4 methods on E1's table (scripted route) -------------------------------------
+# ---- E4 (E1's table), E5, E6: the exported kernels and the S4 methods (scripted route) --------------------------------
 
-test_that("KIT-258 E4: the exported kernels keep the most completely measured row", {
-  table <- k258E1Table()
-  for (kernel in c("resolveDuplicateFeaturesByIntensity", "resolveLipidDuplicateFeaturesByIntensity")) {
-    resolved <- kit172Quiet(get(kernel, asNamespace("MultiScholaR"))(table, "feature_id", k258Samples))
-    expect_identical(k258KeptName(resolved, "D"), "B", info = kernel)
-    expect_identical(k258KeptName(resolved, "E"), "C", info = kernel)
-  }
-})
+k258Scripted <- list(
+  E4 = list(table = k258E1Table, samples = k258Samples, id = "D", head = "B", other = c("E", "C")),
+  E5 = list(table = k258E5Table, samples = k258Samples4, id = "Z", head = "B", other = c("Y", "C")),
+  E6 = list(table = k258E6Table, samples = k258Samples12, id = "X", head = "noise", other = c("W", "other")))
 
-for (omic in c("lipidomics", "metabolomics")) {
+for (case in names(k258Scripted)) {
   local({
-    omic <- omic
-    test_that(sprintf("KIT-258 E4 (%s): the S4 method resolveDuplicateFeatures keeps the most completely measured row",
-      omic), {
-      table <- k258E1Table()
-      # The S4 methods require their descriptive-name column (`lipid`, `metabolite`); no internal-standard regex.
-      table[[if (identical(omic, "lipidomics")) "lipid" else "metabolite"]] <- table$name
-      object <- k258Build(omic, table)
-      resolved <- kit172Quiet(resolveDuplicateFeatures(object))
-      expect_identical(k258KeptName(k258Assays(resolved)[[1L]], "D"), "B")
-      expect_identical(k258KeptName(k258Assays(resolved)[[1L]], "E"), "C")
+    case <- case
+    spec <- k258Scripted[[case]]
+    test_that(sprintf("KIT-258 %s: the exported kernels keep row %s", case, spec$head), {
+      table <- spec$table()
+      for (kernel in c("resolveDuplicateFeaturesByIntensity", "resolveLipidDuplicateFeaturesByIntensity")) {
+        resolved <- kit172Quiet(get(kernel, asNamespace("MultiScholaR"))(table, "feature_id", spec$samples))
+        expect_identical(k258KeptName(resolved, spec$id), spec$head, info = kernel)
+        expect_identical(k258KeptName(resolved, spec$other[[1L]]), spec$other[[2L]], info = kernel)
+      }
     })
+
+    for (omic in c("lipidomics", "metabolomics")) {
+      local({
+        omic <- omic
+        test_that(sprintf("KIT-258 %s (%s): the S4 method resolveDuplicateFeatures keeps row %s", case, omic, spec$head), {
+          table <- spec$table()
+          # The S4 methods require their descriptive-name column (`lipid`, `metabolite`); no internal-standard regex.
+          table[[if (identical(omic, "lipidomics")) "lipid" else "metabolite"]] <- table$name
+          object <- k258Build(omic, table, spec$samples)
+          resolved <- kit172Quiet(resolveDuplicateFeatures(object))
+          expect_identical(k258KeptName(k258Assays(resolved)[[1L]], spec$id), spec$head)
+          expect_identical(k258KeptName(k258Assays(resolved)[[1L]], spec$other[[1L]]), spec$other[[2L]])
+        })
+      })
+    }
   })
 }
 

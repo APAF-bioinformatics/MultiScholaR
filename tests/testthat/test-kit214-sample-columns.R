@@ -3,8 +3,8 @@
 # in the table's order (KIT-202 7.1). Tests E1 to E10, T6 (i) to (v), G1, G2, G3 and G7 of the ticket's section 10.
 # G5 and G6 are other files (R2). Base values are G0's (docs/qa/workflow-execution/kit/kit-214/g0-base-values.R) and
 # the ticket's hand computations (section 2.2, section 10).
-# KIT-258 (VAL-254) declared edits (its section 6, items 1 and 2): `k214Earlier` also sets the rank option to KIT-214's
-# rule ("mean"), so it means "a build before KIT-214" again; `k214OracleKept` states KIT-258's rule.
+# KIT-258 (VAL-254, VAL-284) declared edits (its section 6, items 1 and 2): `k214Earlier` also sets the rank option to
+# KIT-214's rule ("mean"), so it means "a build before KIT-214" again; `k214OracleKept` states KIT-258's rule.
 
 # ---- Helper section: the application's import path ------------------------------------------------------------------
 # Copied from KIT-202's tests (branch kit-202-intensity-filter-samples at f9d7d910,
@@ -231,14 +231,15 @@ k214Stats <- function(object, env = parent.frame()) {
 
 # ---- Oracles: base R only, from the rule (ticket 2.3, 10 S1), not from package code ------------------------------------
 
-# Per id with more than one row (KIT-258's rule, VAL-254; KIT-214's was the mean alone): the rows with the most measured
-# (not NA) values over `columns`; among them the largest mean of a row's measured values (-Inf when none); among those
-# the first row in input order is kept. Returns the sorted "id|.row" pairs of every kept row.
+# Per id with more than one row (KIT-258's rule, VAL-254 and VAL-284; KIT-214's was the mean alone): a value is measured
+# when neither NA nor 0; the rows with the most measured values over `columns`; among them the largest mean of a row's
+# measured values (-Inf when none); among those the first row in input order is kept. Returns the sorted "id|.row"
+# pairs of every kept row.
 k214OracleKept <- function(table, id_column, columns) {
   values <- do.call(cbind, lapply(columns, function(column) as.numeric(table[[column]])))
-  counts <- apply(values, 1L, function(x) sum(!is.na(x)))
+  counts <- apply(values, 1L, function(x) sum(!is.na(x) & x != 0))
   means <- apply(values, 1L, function(x) {
-    x <- x[!is.na(x)]
+    x <- x[!is.na(x) & x != 0]
     if (length(x)) mean(x) else -Inf
   })
   keys <- as.character(table[[id_column]])
