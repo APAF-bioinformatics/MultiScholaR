@@ -1,0 +1,5 @@
+run_id	commit	purpose	minutes	result
+45575068720	fce22178	R1 request kit239-r1-fce22178 pushed blank by mistake (a failed Write); stopped at plan, nothing run; not counted as an attempt	0.1	plan failure (request invalid), no result
+45575122659	fce22178	R1 failing-first: test-integration-record.R, -results.R, -gui.R, base none	17.8	L1 to L6 fail at their stated base values; no other failure in the three files; L4 not skipped
+45577927341	09286c2d vs fce22178	R2 regressions: 19 scope files in 2 shards per side, R CMD check both sides	151.1	results, record, gui: fixed (new tests only); 16 other files same; check identical (0 E, 3 W, 3 N both sides)
+45577930225	09286c2d	R3 MOFA lane (branch run-mofa-smoke-k239, 81882eae): test-integration-record-mofa.R with L8	14.0	29 passed 0 failed 0 skipped; likelihoods gaussian x6, groups 1
