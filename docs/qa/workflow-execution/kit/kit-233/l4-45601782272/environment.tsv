@@ -1,0 +1,30 @@
+key	value
+run_mode	lifecycle
+mode	test
+commit_under_test	e0747fc198817596e3e66397a87e06b2f869c6a7
+records_commit	76e4b519ba32490fa44cc788683f86dd8c0ac787
+diff_commit_under_test_vs_records	docs/qa/workflow-execution/kit/kit-233/journey.R docs/qa/workflow-execution/kit/kit-233/known.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/coverage.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/environment-inner.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/environment.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/findings.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/index.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/inner-console.log docs/qa/workflow-execution/kit/kit-233/l0-45523435786/lifecycle.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/numbers.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/observations.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/review-index.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/sessions.tsv docs/qa/workflow-execution/kit/kit-233/l0-45523435786/steps.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/coverage.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/environment-inner.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/environment.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/findings.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/index.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/inner-console.log docs/qa/workflow-execution/kit/kit-233/l1-45525410012/lifecycle.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/numbers.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/observations.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/review-index.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/sessions.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/steps.tsv docs/qa/workflow-execution/kit/kit-233/l1-45525410012/verdict.txt docs/qa/workflow-execution/kit/kit-233/l2-45573306268/coverage.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/environment-inner.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/environment.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/findings.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/index.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/inner-console.log docs/qa/workflow-execution/kit/kit-233/l2-45573306268/lifecycle.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/numbers.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/observations.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/review-index.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/sessions.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/steps.tsv docs/qa/workflow-execution/kit/kit-233/l2-45573306268/verdict.txt docs/qa/workflow-execution/kit/kit-233/l3-45577106977/L1-report-text.txt docs/qa/workflow-execution/kit/kit-233/l3-45577106977/coverage.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/environment-inner.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/environment.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/findings.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/index.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/inner-console.log docs/qa/workflow-execution/kit/kit-233/l3-45577106977/lifecycle.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/numbers.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/observations.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/review-index.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/sessions.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/steps.tsv docs/qa/workflow-execution/kit/kit-233/l3-45577106977/verdict.txt docs/qa/workflow-execution/kit/kit-233/outcome.md docs/qa/workflow-execution/kit/kit-233/runs.tsv
+diff_only_records_folder	TRUE
+launch_form	tree
+launch_e_form	e
+network_requested	namespace
+r_version	R version 4.6.1 (2026-06-24)
+effective_user_outer	runner
+blas	/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+lapack	/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0
+threads_outer	OMP_NUM_THREADS= OPENBLAS_NUM_THREADS=
+threads_application	OMP/OPENBLAS/MKL_NUM_THREADS=1 (5.1); workers set 1 themselves
+chrome	/usr/bin/google-chrome
+chrome_version	Google Chrome 157.0.8103.78 
+shinytest2	0.5.1
+chromote	0.5.1
+processx	3.9.0
+MultiScholaR	0.9.0
+cpu	AMD EPYC 9V74 80-Core Processor
+cores	4
+memory	MemTotal:       16372448 kB
+github_run_id	45601782272
+started_utc	2026-11-25T11:19:20Z
+effective_user_inner	runner
+effective_user_equal	TRUE
+pandoc	runner pandoc 2.9.2.1 

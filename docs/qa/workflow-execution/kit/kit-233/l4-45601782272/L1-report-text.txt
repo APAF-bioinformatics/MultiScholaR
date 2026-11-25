@@ -1,0 +1,45 @@
+DIANN analysis for k233_lifecycle - report - created on 2026-11-25 11:26:13
+Prepared with MultiScholaR; analyst: [to be completed]
+2026-11-25
+Sample Details
+SAMPLE DETAILS
+There are 8 samples in total which consists of:• 8 biological samples with no technical replicates.• Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]
+Method Details
+METHOD DETAILS
+Data analyses were performed with MultiScholaR; the software version and build are listed under ‘Software and build’. SOP reference: [to be completed by the analyst].
+Data import, filtering and normalisation
+Precursor-level identifications and quantities were imported from the DIA-NN main report (one row per precursor and run). Peptide and protein quantification was then performed using a series of filtering and aggregation steps to ensure high-confidence identifications and accurate quantification. Initially, low-confidence peptide identifications were removed using q-value and proteotypic peptide filtering, retaining only peptides with a q-value threshold of 0.01 and only those that are proteotypic. Precursor ion intensities were then aggregated into peptide-level quantification values, combining all charge states of the same peptide sequence while keeping different modified peptides (peptidoforms) as separate entries.
+Intensity threshold filtering was applied to remove peptides where a significant proportion of samples fell below a specified log-intensity threshold. By default, peptides were excluded if 50% or more of the samples were below the lowest 1st percentile of intensity values. Proteins were required to have a minimum of 2 peptides, which could include different modifications of the same sequence, to be considered for further analysis.
+Sample quality control and filtering
+Samples with poor performance, indicated by an unusually low number of identified peptides, were identified and removed to ensure data quality and reliable downstream analysis. Such samples may be compromised due to issues in sample preparation, instrument performance, or other technical factors. Including these low-quality samples in downstream analysis could introduce bias and reduce the statistical power to detect true biological differences. Samples with fewer than 500 peptides were excluded from further analysis. This minimum peptide threshold ensures that all retained samples have sufficient protein coverage for reliable quantification and statistical testing. Of 8 initial samples, 8 samples were retained after filtering. The following samples were removed due to insufficient peptide counts: .
+Peptides appearing in only one replicate across all groups were also excluded to maintain measurement reproducibility. Protein-level quantification was performed using the IQ algorithm, implementing the maxLFQ algorithm to generate protein abundance values. Peptide intensities were aggregated into protein-level quantification without normalisation at this stage, resulting in a protein quantification matrix with log2-transformed intensity values for each protein across all samples.
+FASTA reference and protein accession cleanup
+Protein identifications were validated against a standard UniProt FASTA database, providing comprehensive protein metadata including evidence levels, reviewed status, gene names, and isoform information. This metadata was used to select the highest-quality protein identifications during accession cleanup.
+Mixed-Species FASTA Database The analysis used a mixed-species FASTA database containing proteins from multiple organisms. The primary organism was identified as Homo sapiens (NCBI Taxonomy ID: 9606). After quality control filtering, N/A proteins remained for normalisation.
+Using the protein intensity matrix, zero values were replaced with NA denoting these are missing values. Protein filtering was then applied based on missing value patterns and intensity thresholds to ensure robust statistical analysis. Intensities below the 1st percentile of all intensities in the table were treated as missing. Within each experimental group a protein failed if the share of its values that were missing exceeded the allowed share, 50% (shown rounded to three decimals); a protein was retained only if it passed in every experimental group. The data matrix was then log (base 2) transformed and between-sample normalisation were performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015).
+To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative control proteins, which are proteins with little or no changes in protein abundances between different samples. For this study, an automatic optimisation process was run, which identified that using 5% of features as empirical negative controls (16 proteins) provided the best separation of biological groups. Based on this, 2 unwanted components were selected for removal. Following RUV-III batch correction and subsequent missing value cleanup, 314 proteins were retained for differential abundance analysis.
+At each stage of the data normalisation, the samples were checked for batch effects using principal component analysis (PCA) plot, density boxplots, relative log-expression (RLE) plots and the distribution of the Pearson correlation between replicate samples within groups.
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].
+Results
+Quality Control
+Figure 1 shows four quality-control views at three stages of processing: after log2 transformation (left column: panels a, d, g, j), after between-sample normalisation (centre column: b, e, h, k) and after RUVIII-C correction (right column: c, f, i, l).• Principal component analysis (panels a-c): samples plotted on the first two principal components, coloured by experimental group.• Density plots (panels d-f): the distribution of protein intensities per sample.• Relative log expression (panels g-i): per-sample deviations from the protein-wise median.• Pearson correlation (panels j-l): the distribution of between-sample correlations within groups.
+Whether technical variation was reduced and biological signal retained is assessed from these panels by the analyst; this report draws no automated conclusion from them.
+
+Figure 1: QC metrics across normalisation stages
+Differential Abundance Analysis
+DIFFERENTIAL ABUNDANCE ANALYSIS
+Differential abundance analysis of proteins was performed using the adjusted abundance matrix for the comparisons defined in the contrast table. The ‘limma’ R package (Ritchie et al., 2015) was used. A linear model was fitted using the formula ‘~ 0 + group’ with the ‘lmFit’ function, and p-values were calculated using the ‘eBayes’ function. A trended and robust empirical Bayes analysis was performed. The false discovery rate correction was applied to the moderated p-values by calculating the q-values (Storey, 2002). The standard empirical Bayes method was used to test for any deviation from zero log-fold-change. Significant differentially expressed proteins were defined as those with q-values less than 0.05.
+Volcano plots of differentially expressed proteins across all groups are shown in Figure 3, with a threshold of q-value &lt; 0.05 and no log fold-change threshold. Full details of all proteins are provided in the supplementary results table DA_results_proteomics.xlsx within the Publication_tables folder.
+The number of significant differentially expressed proteins is summarised in Figure 2 (q-value &lt; 0.05). For the comparison KO_vs_WT, there were 10 upregulated and 6 downregulated proteins.
+
+Figure 2: Number of significant differentially expressed proteins for each comparison.
+
+Figure 3: Volcano plots of differentially expressed proteins one per comparison.
+Analyst interpretation
+ANALYST INTERPRETATION
+[To be completed by the analyst: quality-control assessment from Figure 1, technical performance, limitations of this dataset, and recommendations for downstream analysis. Nothing in this section is generated automatically.]
+GO Enrichment Analysis
+No enrichment analysis was run for this project.
+Software and build
+MultiScholaR version: 0.9.0Source commit: not recordedBuild: 90626fc6fd4739428468b9df4d1336bc07e8dcd71289de2d186579e5ea7ea2dfR: R version 4.6.1 (2026-06-24)BLAS: /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+

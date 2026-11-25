@@ -1,16 +1,37 @@
 # KIT-233 outcome: the lifecycle run L (discovery, test mode)
 
-**State: stopped at stop rule 1 (ticket r1.2, section 8).** The instrument is not proven: after the first send and three
-VAL-54 instrument reruns, two lifecycle criteria still fail (L-1 "N1 to N4 computed" and L-4 (b)). Both fail for one
-driver defect: the driver does not map the DA tab's contrast name to the saved DA table's file name. J (PXD055981 s500)
-was not sent. L-u (the user-mode observation) was not sent. No package code was changed.
+**State: L instrument proven** by the owner-allowed fourth run (VAL-234), run 45601782272 on driver `76e4b519`, commit
+under test v0.9-staging `e0747fc1`. All L-0 to L-4 criteria pass (25 pass, 1 recorded: "no worker code reads test
+mode"), and L-5 passes. J (PXD055981 s500) is not started: it waits for the release commit. L-u is not sent.
 
-- Commit under test: `67569959` (v0.9-staging). Records branch `kit-233-journey`. Driver commits: `1809c51f` (first
-  send), `4793c9e8`, `0260ac73`, `628545be` (instrument fixes 1 to 3). `git diff --name-only 67569959 <driver commit>`
-  touches only this folder (checked by the driver, `environment.tsv` key `diff_only_records_folder`).
-- Runs: `runs.tsv`. Each run's returned tables are in `l<n>-<run id>/`.
-- KIT-159 conditions (r1.2, section 10): L-0 and KIT-159's G13 are never cited as evidence for each other. L-0's launch
-  and attach results (below) go to KIT-159 as information only. Nothing under `kit-159/` was changed.
+- **Earlier runs.** The first send and VAL-54's three instrument reruns (on `1809c51f`, `4793c9e8`, `0260ac73`,
+  `628545be`, commit under test `67569959`) ended at stop rule 1.
+- **The third rerun's defect.** The driver mapped the DA tab's contrast (`KO_vs_WT`) to no saved table, because the
+  table is named by the design's contrast (`da_proteins_groupKO-groupWT_long_annot.tsv`). So N2 was not computed and
+  L-4 (b) could not run.
+- **The fix for the fourth run.** The tab's contrast is mapped to the saved table by its two group names in order. It is
+  a mechanics fix: no expected value, threshold, bound or stop rule changed.
+- **Which commit L binds, and why.** The fourth L binds staging `e0747fc1`, merged into `kit-233-journey` as `8664431b`.
+  Merge trains 3 and 4 changed steps the journey walks: KIT-234 (S1), KIT-220 and KIT-227 (the report sentences behind
+  N4), and KIT-212 and KIT-215 (S10 and S9). KIT-237 and KIT-238 run on this tree.
+- **Records.** `runs.tsv`; each run's returned tables are in `l<n>-<run id>/` (`l4-45601782272/` is the fourth).
+- **KIT-159 conditions (r1.2, section 10).** L-0 and KIT-159's G13 are never cited as evidence for each other. L-0's
+  launch and attach results go to KIT-159 as information only. Nothing under `kit-159/` was changed.
+
+### The fourth L (45601782272, `l4-45601782272/`)
+
+- **Lifecycle criteria.** Every criterion of the table below passes, including L-1 "N1 to N4 computed" and L-4 (b).
+- **Interface numbers against the saved files:**
+  - N1: 314 proteins and 8 samples, equal.
+  - N2: `KO_vs_WT` 16, equal to `da_proteins_groupKO-groupWT_long_annot.tsv` (`fdr_qvalue < 0.05`).
+  - N3: the label and description, equal.
+  - N4: the report's 10 up + 6 down = 16, equal.
+  - The planted copy (row 1's q moved across 0.05) gives 15 against 16 shown, so a kind-4 finding is recorded as planted.
+- **Step outcomes and timings.** As in the third rerun's table below, with times about 10 to 20 % shorter. S6.1 took
+  86.5 s.
+- **S9 refused offline**, as the addendum of 2026-11-25 (item 3) now expects.
+- **KIT-251 record at S5.5** (one click): outcome `complete`; head `protein_replicate_filtered`; one "already
+  running" warning; one working notice. KIT-251's defect (A2) is still present: it is not merged at `e0747fc1`.
 
 ## Observed
 

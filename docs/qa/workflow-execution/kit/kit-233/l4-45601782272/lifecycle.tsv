@@ -1,0 +1,28 @@
+criterion	item	result	evidence
+L-0	Chrome found	pass	/usr/bin/google-chrome
+L-0	shinytest2 loads	pass	0.5.1
+L-0	the entry.R launch passes its trailing arguments, starts and answers on the port	pass	answered=TRUE after 3.1 s; usage error=FALSE; Rscript --vanilla -e options(shiny.testmode = TRUE, shiny.maxRequestSize = 2 * 1024^3); source("packaging/electron/entry.R") 18233 /tmp/RtmpZGRnVD/k233-work/run-L0 19564
+L-0	the MSR-LAUNCHER line names process	pass	MSR-LAUNCHER {"launcher":"process","reason":"KIT-233 hosted runner: no user D-Bus"}
+L-0	legacy RUV route: no MSR-TEST-FEATURES line and MULTISCHOLAR_TEST_FEATURES unset (the panel's absence in the page is checked at S6 of L-1)	pass	entry.R sets MultiScholaR.ruv_design_panel only under MULTISCHOLAR_TEST_FEATURES=1 (packaging/electron/entry.R:20-22)
+L-0	AppDriver attaches by URL	pass	
+L-0	test_state_digest is read; the controller sees test mode	pass	digest keys: selected_omics,initialized_omics,project_dir_keys,experiment_label,workflow_type_per_omic,step_status_per_omic,r6_current_state_per_omic,r6_state_history_per_omic,active_tab_per_omic,export_paths,report_fingerprints
+L-0	no worker code reads test mode	recorded	not executable by the driver; code read (KIT-233 addendum, KIT-252 plan audit section 6): the worker inherits the application's environment variables under the plain launcher (so MULTISCHOLAR_TEST_MODE, if set as a variable), not the R option; no code run on the worker reads test mode
+L-0	network: namespace	pass	network=namespace | network_links=lo | network_closed_by=network namespace with loopback only; proxies http://127.0.0.1:9
+L-0	the inner phase's effective user equals the outer phase's	pass	inner runner, outer runner
+L-0	a 20 MB DIA-NN table uploads with no size error (the raised limit)	pass	22.0 MB; progress text: Upload complete; 0 s
+L-4	(a) the emptied DA results table gives a kind-3 finding naming it	pass	tbody emptied: TRUE; empty outputs at the second check: proteomics_workflow-differential_expression-da_results_table
+L-1	every step's row has an outcome and seconds	pass	S1 complete; S2 complete; S3 complete; S4.1 complete; S4.2 complete; S4.3 complete; S4.4 complete; S4.5 complete; S4.6 complete; S4.7 complete; S5.1 complete; S5.2 complete; S5.3 complete; S5.4 complete; S5.5 complete; S6.1 complete; S6.2 complete; S7 complete; S8.1 complete; S8.2 complete; S8.3 complete; S9 refused; S10.1 complete; S10.2 complete; S10.3 complete; S10.4 complete; S10.5 complete
+L-1	reached S10's last action	pass	S10.3 complete; S10.4 complete; S10.5 complete
+L-1	S3 complete with KIT-175's annotation warning in its notifications	pass	complete Protein annotation was not retrieved: UniProt could not be reached (Couldn't connect to server [rest.uniprot.org]: Failed to connect to 127.0.0.1 port 9 after 0 ms: Connection refused). The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run. To try again, save the design again.
+L-1	the organism modal answered and recorded at S2	pass	Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection
+L-1	every screenshot and JSON exists and is non-empty	pass	137 files, 137 present; rows with all four kinds: 26 of 26
+L-1	the R log is present	pass	app-L1.log, 49833 bytes
+L-1	N1 to N4 computed	pass	N1 equal; N1 equal; N2 equal; N3 equal; N3 equal; N4 equal
+L-1	the active-tab check recorded for every press	pass	
+L-1	every progress modal seen recorded as such, none classified terminal	pass	Processing Data (1 s) || Processing Design Matrix (0 s); Retrieving UniProt Annotations (4 s)
+L-0	for a tall tab, each named output's box lies inside a saved image (pane or its own)	pass	40 outputs on panes taller than the viewport; not covered: 
+L-0	the RUV design panel is absent at S6 (legacy route)	pass	ruv_design_summary present: FALSE
+L-4	(b) a q moved across 0.05 gives a kind-4 finding	pass	shown 16, planted copy 15
+L-5	the digest and the DOM signals agree on completion at every step of L-1	pass	17 agree, 9 DOM only
+L-2	S1 refused with 'Base directory does not exist: <path>'; S2 to S10 not_reached	pass	S1 refused: Base directory does not exist: /tmp/RtmpZGRnVD/k233-work/no-such-folder; later rows: not_reached,not_reached,not_reached,not_reached,not_reached,not_reached,not_reached,not_reached,not_reached; error notification at browser time 1795606006838
+L-3	the controller killed while S2 waits: S2 recorded crashed (not timeout)	pass	S2 crashed: the application process exited (status -9); killed 1.47819519042969e-05 s after the press

@@ -1,0 +1,18 @@
+session	what	text	utc
+L0	format detection after the 20 MB upload	Detected format: DIA-NN | Confidence: 100%	2026-11-25T11:19:40Z
+L1	S2 detected format	Detected format: DIA-NN | Confidence: 100%	2026-11-25T11:19:49Z
+L1	S2 organism modal	Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection | rendered values: selected_organism=9606 | filter_to_organism=FALSE | answered: TRUE	2026-11-25T11:19:51Z
+L1	S4 rendered sub-tabs	Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation (titles from live omicGuiConfig; expected Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation)	2026-11-25T11:20:06Z
+L1	S5 rendered sub-tabs	IQ Protein Rollup > Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter (titles from live omicGuiConfig; expected IQ Protein Rollup > Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter)	2026-11-25T11:21:33Z
+L1	S5.5 KIT-251 check (one click)	outcome complete; head protein_replicate_filtered; 'already running' warnings 1; working notices 1	2026-11-25T11:22:35Z
+L1	S6 rendered defaults	ruv_mode=automatic method=cyclicloess ruv_design_panel_present=FALSE	2026-11-25T11:22:35Z
+L1	S6.2 rendered threshold	0.5	2026-11-25T11:24:03Z
+L1	S8 rendered defaults	formula=~ 0 + group q=0.05 lfc=0	2026-11-25T11:24:38Z
+L1	S9 rendered settings	contrast=KO_vs_WT taxon=9606 up=0 down=0 q=0.05	2026-11-25T11:25:08Z
+L3	S2 detected format	Detected format: DIA-NN | Confidence: 100%	2026-11-25T11:27:57Z
+L2o	S2 detected format	Detected format: Unknown format | Confidence: 0%	2026-11-25T11:28:08Z
+L2o	design.tsv given as the search results (L-2 observation)	S1 complete  | S2 refused Error: Failed to import data: Missing required DIA-NN columns: Protein.Group, Stripped.Sequence, Run | S3 not_reached  | S4 not_reached  | S5 not_reached  | S6 not_reached  | S7 not_reached  | S8 not_reached  | S9 not_reached  | S10 not_reached 	2026-11-25T11:29:10Z
+L3w	S2 detected format	Detected format: DIA-NN | Confidence: 100%	2026-11-25T11:29:20Z
+L3w	S2 organism modal	Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection | rendered values: selected_organism=9606 | filter_to_organism=FALSE | answered: TRUE	2026-11-25T11:29:22Z
+L3w	S4 rendered sub-tabs	Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation (titles from live omicGuiConfig; expected Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation)	2026-11-25T11:29:34Z
+L3w	worker killed during S4.3 (Precursor Rollup, the longest QC step of L-1, 13.6 s)	worker killed: TRUE at 1.6 s; the step: refused Error applying precursor rollup: managed action ended: worker_failed	2026-11-25T11:31:01Z
