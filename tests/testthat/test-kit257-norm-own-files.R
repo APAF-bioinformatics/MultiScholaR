@@ -713,3 +713,35 @@ test_that("KIT-257 E10 (I05): a proteomics normalisation that stops after its st
     expect_identical(k257ProtHead(fixture), head)
     expect_match(shown, "were removed when this run started", fixed = TRUE)
 })
+
+# ------------------------------------------------------------------------------------------------
+# Merge obligation M1 (AUDIT-KIT-257-impl): KIT-243's DA removal routed through removeWorkflowOwnFiles. Written before
+# the routing: on the merged tree KIT-243's core does not expand a leading `~`, so the removal refuses (fails before).
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-257 M1 (I02 at the DA): the DA's own earlier figure is removed under a project path beginning with `~` (fails before)", {
+    root <- withr::local_tempdir()
+    home <- file.path(root, "home")
+    dir.create(home)
+    # HOME is a temporary folder for this test only (restored on exit): the real home directory is never touched.
+    withr::local_envvar(HOME = home)
+    skip_if_not(identical(normalizePath(path.expand("~"), mustWork = FALSE), normalizePath(home)),
+        "this R does not read HOME again after start-up")
+    graphs <- "~/Study/publication_graphs"
+    own <- file.path(graphs, "Heatmaps", "posmode_groupB-groupA_heatmap.png")
+    planted <- k257Plant(file.path(home, "Study", "publication_graphs", "Heatmaps", basename(own)))
+    user <- k257Plant(file.path(home, "Study", "publication_graphs", "Heatmaps", "my_notes.png"), "user")
+    # KIT-243 E16's form: an owner whose accepted manifest's names are `own`.
+    testthat::local_mocked_bindings(usesWorkflowReferenceStates = function(manager) TRUE,
+        isSavedWorkflowReference = function(reference) TRUE, workflowDaMadeFiles = function(manager, paths, omicType) own,
+        .package = "MultiScholaR")
+    manager <- list(.context = list(snapshot = list(da_results = list(entity_id = "kit257"))))
+    error <- tryCatch({
+        removeWorkflowDaOwnFigures(manager, list(publication_graphs_dir = graphs), "lipidomics")
+        NULL
+    }, error = function(e) e)
+    k257Log("M1 ~", "error:", if (is.null(error)) "none" else conditionMessage(error), "own present:", file.exists(planted))
+    expect_null(error)
+    expect_false(file.exists(planted))
+    expect_true(k257Holds(user, "user"))
+})
