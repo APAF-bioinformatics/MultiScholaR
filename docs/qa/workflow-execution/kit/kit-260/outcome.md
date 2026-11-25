@@ -243,6 +243,50 @@ line in `test-integration-gui.R` and confirmed the 20 captures of `test-omic-nor
 - Budget: 484.4 job-minutes (32.3 core-hours, within this run's 73.33); the ticket's total is 1,753.5 job-minutes =
   116.9 core-hours (ceiling 201.33).
 
+### The coordinator's rulings on run 45665921270 (2026-11-26), and where things stand
+
+1. **`test-integration-gui.R`, KIT-240's `facts[[6L]]`**: test code reading a position, a declared test edit
+   (the coordinator's). 513ae741 (tests only) makes the KIT-139 test find the fact by its text:
+   `expect_match(facts, "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE,
+   all = FALSE)`, so a later added fact cannot move it.
+2. **Open with the owner (row 50), put once together with KIT-242's same movements; not edited here.** Stored references
+   and registration pins moved by the replay marker `itsd_outcome` (old values on staging abfc99ac, new values from
+   `r2c-45665921270/failures.txt`):
+
+   | File | Key | Old (staging) | New (kit-260 be377464) |
+   |---|---|---|---|
+   | `tests/testthat/test-omic-norm-module.R` | `omicNormFrozen` lipid manual run `provenance` | 1ab8a05076a605820dc0d14e237215f9abfaa251d04c7076ca03825877e57dc2 | 5fb69439ca6f755c340b20d38d5ffec9c5a2061349a7f8c5f198afe98924079f |
+   | | lipid manual skip_correlation `provenance` | 0b68624dba919ae6e6852528493ba338d672d75d235b8437c2895e8c6f724bf5 | 6c1bc031bc84407f9885c22dd5d36832fbbdda02c0a96bfb9e1ed6e0a4415f0b |
+   | | lipid manual reset `provenance` | 6f03ec2fff1c90a3a1728422205f6ebe8d929a0e97a02b42dc0e053b026e5942 | d675df2b63edd2a834774dd9f4c2261228d6aa35460ae436cda34c966da40c28 |
+   | | metab manual run `provenance` | 24204497ce33beb525005c4869fd60e6f560a7c1f6eb2293cc928049e1410ba2 | 9424d6af9de6e2ec5323a33ccb1a2f5fd96390ad2597f0734d6d368dbd7aa300 |
+   | | metab manual skip_correlation `provenance` | 667cc9562bd90c598ef04d93d5fe30d6ad1818b89c02f50d86dcfec344a11371 | a586d6828e1ba97bcd7b3f4fe9161c1480589c1e1b9466d96e843b44950bfc87 |
+   | | metab manual reset `provenance` | 279b01b63aa09b94e9ccaa8e085154e7b281eb0fd48361548782ceead23456e3 | 29b24751a67690c1827837ad097d4f5fd5435fa7a9a6e02c57362f505afc2c45 |
+   | | lipid automatic run, final_plot, final_plot_failing `provenance` (3 keys, one value) | 024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a | 846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd |
+   | | metab automatic run, final_plot, final_plot_failing `provenance` (3 keys, one value) | 6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848 | 96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f |
+   | `tests/testthat/test-workflow-lipid-declarations.R:47` | `declarations$lipid_itsd_normalisation$fixed` | `list(method = "ITSD")` | `list(method = "ITSD", itsd_outcome = "per_assay")` |
+   | `tests/testthat/test-workflow-metab-declarations.R:47` | `declarations$metab_itsd_normalisation$fixed` | `list(method = "ITSD")` | `list(method = "ITSD", itsd_outcome = "per_assay")` |
+
+3. **The KIT-073 and KIT-094 laptop fixtures** (`test-workflow-omics-declarations.R`, `test-workflow-omics-binding-steps.R`)
+   fail on both sides already and their messages change (one more recorded parameter per ITSD and later step); they wait
+   for the end-of-project re-record, as VAL-241 (iii) says (VAL-181, VAL-189).
+4. **No further comparison run now. The next run of this branch is the merge train's.** Its predictions for these
+   files, under either owner answer on row 50:
+
+   | File | Owner allows (re-pinned with the new values before the train) | Left for the re-record (not re-pinned) |
+   |---|---|---|
+   | `test-omic-norm-module.R` | `same` (head passes its new values; base staging passes its own) | 12 `provenance` expectations fail on head only: `new-failure` |
+   | `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | `same` | 1 expectation each fails on head only: `new-failure` |
+   | `test-integration-gui.R` | `same` (the KIT-139 test passes: VAL-275's line and the fact found by text) | `same` |
+   | `test-workflow-omics-declarations.R`, `test-workflow-omics-binding-steps.R` | `message-changed` (fail on both; deferred, VAL-181/189) | `message-changed` (the same) |
+   | `test-omics-norm-core.R` | `count-changed` (one more passing expectation) | `count-changed` |
+   | `test-kit260-itsd-default-pattern.R` | `only-on-head`, all pass | `only-on-head`, all pass |
+   | every other file of the 130 | `same` | `same` |
+
+   R CMD check: findings identical on both sides.
+5. **Merge order:** with or after KIT-242. One `itsd_outcome` row in `workflowReplayRuleMarkers` and one `fixed` entry on
+   each ITSD declaration (KIT-242 declares the same); the ticket merging second renames one of the two
+   `omicsItsdReportResult` definitions and keeps one per-assay log line.
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
