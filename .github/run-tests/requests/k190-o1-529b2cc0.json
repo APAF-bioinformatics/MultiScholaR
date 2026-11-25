@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-190 O1 (VAL-280): test-workflow-omics-ruv-cancor-once.R alone, base 687ba6f3 (without the edit) against head 529b2cc0 (edit 6b465f1e); declared in r2-audit/predictions.md before sending: base 14/2, head 16/0, fixed",
+  "label": "KIT-190 O1 cancor-once 529b2cc0",
+  "package_commit": "529b2cc0bf3fc2fdcb7b1eae267f3a99afdbb20c",
+  "base_commit": "687ba6f323eb05692afa8074b8664648bed6b4ef",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-omics-ruv-cancor-once.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
