@@ -10,9 +10,23 @@ Branch `kit-250` from `v0.9-staging` e0747fc1. The import, design and test files
 | d6bbcafb | tests only: `tests/testthat/test-kit250-organism-dialog.R` (E1a to E7, G1 to G3) and the declared edit `test-prot-01c-import-module-contracts.R:2099-2108`; nothing under `R/` |
 | 7b674539 | the fix (5 files under `R/`) |
 | da0593f7 | NEWS, ledger row `VAL-<merge>`, `wording.md` |
-| (records) | R1 and R2 tables, this file, `runs.tsv` |
+| f842a8ec | records: R1 and R2 tables, this file, `runs.tsv` |
+| 8239aae1 | merge of `v0.9-staging` 63143aa3 (ledger: staging's rows kept, KIT-250's row after VAL-259; nothing else conflicted) |
+| 43c1a304 | correction pass, tests only: E8; I02's assertions in E4 and E5; I03's in E3 |
+| 77296fcf | correction pass, fix: I02 (W1's fixed id, removed when the next import starts) |
+| cf908a7d | correction pass: `correction-predictions.md` (runs declared before sending) and `h1.R` |
+| 6377cde6 | correction pass, test mechanics only (VAL-54 instrument rerun 1 of 3): E8's seams replace the caller's arguments of the same name |
+| (records) | the correction pass's records, this file |
 
-Core-hours: 112.7 job-minutes = 7.51 core-hours (G0 0.99, R1 0.57, R2 5.95, refused request 0.01), against the ticket's expected 24.0 and ceiling 102.0. No correction pass and no instrument rerun were used.
+Core-hours: 299.8 job-minutes = 19.99 core-hours against the ticket's expected 24.0 and ceiling 102.0:
+- first pass: G0 0.99, R1 0.57, R2 5.95, the refused request 0.01;
+- correction pass: R2' 5.55, R2'' 6.04, H1 0.89.
+
+The correction pass is the ticket's one correction (AUDIT-KIT-250-impl-20261125). R2' was an instrument defect (VAL-54); R2'' is its rerun 1 of 3.
+
+Commit order (AUDIT I09): in the first pass the fix 7b674539 was committed 31 s after the tests-only commit d6bbcafb and 13 s before R1 was sent. R1 ran the tests-only commit (`package_commit` d6bbcafb), so the falsification stands. In the correction pass the tests-only commit 43c1a304 precedes the fix 77296fcf.
+
+Conventions (AUDIT I10): the new comments and a few parameter lines exceed R.md's 100 characters, as the module's existing KIT comments do. The test file uses `function(...)` for its fakes, as the module's tests do.
 
 # Gate G0 (base observation, run 45594289742)
 
@@ -112,20 +126,120 @@ R CMD check: 0 errors, 3 warnings and 3 notes on both sides; the findings are id
 
 The confirm guards (`test-prot-01c` :1792-1895 and :1905-1934; `test-prot-01d` :626-645) pass on head, as predicted by reading.
 
+## Correction pass (AUDIT-KIT-250-impl-20261125, I01 to I12)
+
+What was done:
+- **I01 (a), E8.** A `shiny::testServer` test of the module's observers with a real DIA owner (pattern of `test-workflow-gui-memory-lifetimes.R`). In one session it presses:
+  - a ticked import;
+  - the module's own Cancel (`input$cancel_organism`, `R/mod_prot_import_server_helpers.R:446-452`);
+  - 'Process Imported Data' again;
+  - Confirm;
+  - a third ticked import, Cancel, then untick and import.
+
+  `MockShinySession` carried it. Cancel's and Confirm's modal and notification seams go through `cancelOrganismSelectionFn` and `confirmOrganismSelectionFn`.
+- **I02, the fix (77296fcf).**
+  - W1 is shown under the fixed id `prot_import_organism_cancelled` (`R/mod_prot_import_organism_helpers.R:256-257`; constant in `R/mod_prot_import_ui_helpers.R:8`). A second Cancel therefore replaces it.
+  - `startProtImportProcessing` removes W1 beside the flag reset (`R/mod_prot_import_orchestration_helpers.R:95`, `:109`), as KIT-175's notice is removed.
+  - The seam's default is a no-op outside a Shiny session. A plain `shiny::removeNotification` default would break the three existing function-level tests that call `startProtImportProcessing` without a session: `test-prot-01c` :1469 and the F-11 test, and `test-prot-01d` :664. That is a deviation from the register's literal "`removeNotification = shiny::removeNotification`", made for this reason.
+  - Nothing else in `R/` changed.
+- **I02 tests.** E4 asserts the id. E5 asserts the removal at the start.
+- **I03 tests.** E3 asserts on the whole window:
+  - `data-backdrop="static"`, `data-bs-backdrop="static"`, `data-keyboard="false"` and `data-bs-keyboard="false"` (the installed Shiny 1.14.0 renders all four);
+  - no close button in the header.
+- **I12** (neither observer checks that the window is waiting): recorded under "Not checked"; no code change.
+
+R2' (run 45611281361, base 43c1a304, head 77296fcf):
+- **Instrument defect (VAL-54).** E8's `completeSuccessStateFn` fake added `messageFn`, which `finalizeProtImportProcessing` also passes. On both sides the import observer failed with "formal argument "messageFn" matched by multiple actual arguments", so E8 was not judged.
+- **What was judged:**
+  - E4 and E5 failed on base as predicted;
+  - the six other files were `same`;
+  - the check findings were identical.
+- **Repair (6377cde6, test mechanics only):** the fakes now replace the caller's arguments (`utils::modifyList`). No expectation was changed.
+- **Rerun as R2''.** Its base 34f3f606 is 43c1a304 with the same patch, on run branch `kit-250-r2c-base`.
+
+R2'' (run 45614051035, base 34f3f606, head 6377cde6; `R/` as 77296fcf). Every prediction in `correction-predictions.md` held:
+
+| File | Base | Head | Verdict |
+|---|---|---|---|
+| `test-kit250-organism-dialog.R` | 114 / 5 | 119 / 0 | fixed |
+| `test-prot-01c-import-module-contracts.R` | 437 / 0 | 437 / 0 | same |
+| `test-prot-01d-import-module-characterization.R` | 79 / 0 | 79 / 0 | same |
+| `test-module-ci-prot-import.R` | 107 / 0 | 107 / 0 | same |
+| `test-module-ci-trx-app.R` | 50 / 0 | 50 / 0 | same |
+| `test-workflow-gui-memory-lifetimes.R` | 81 / 0 (11 skipped) | 81 / 0 (11 skipped) | same |
+| `test-workflow-server-shared.R` | 226 / 0 | 226 / 0 | same |
+
+Base failures in the new file: exactly the five declared, with 0 errors. They are E4 (the id), E5 (the removal at the start) and three in E8 (W1's id at Cancel; the removal at the second and fourth start).
+
+E8 otherwise passes on both sides. This is observed in a Shiny session:
+- Cancel through the module's observer clears the import (`data_tbl`, `config_list` NULL; setup incomplete);
+- with the owner still attached, the re-import shows the window again;
+- Confirm completes the import on 9606 with its table;
+- Cancel, then untick and import, completes and removes the processing window.
+
+E3's new assertions pass on both sides (guards). R CMD check: identical findings on both sides (0 errors, 3 warnings, 3 notes).
+
+H1 (run 45611275368, I01 (b)): the corrected head 77296fcf in a headless browser on a runner. Records commit cf908a7d, which adds only `h1.R` and `correction-predictions.md` under this folder (`environment.tsv`: `diff_only_records_folder TRUE`). Test mode, network namespace. **61 of 61 predictions as predicted** (`h1-45611275368/g0-base-values.tsv`, `verdict.txt`).
+
+Session A: the form was set to 10090 / Mus musculus, then the option ticked.
+- **Window open:**
+  - setup_import incomplete, design disabled;
+  - the status panel shows W2;
+  - the Data Summary says "Organism: not confirmed" and names neither Mus musculus nor 10090.
+- **Esc** (`Input.dispatchKeyEvent`) and **a mouse click on the backdrop** at (10, 10), which landed on `div#shiny-modal`: the window stays open.
+- **Cancel by a real mouse click** (the topmost element was the button's label):
+  - the window closes, setup stays incomplete and the setup log is gone;
+  - the status panel shows W1, with no success text, and the Data Summary is empty;
+  - exactly one W1 notification (warning) appears.
+- **The Design tab after Cancel:**
+  - `data_available` FALSE;
+  - Save Design not visible;
+  - 'Import Existing Design' visible (it asks for its own organism);
+  - the design status stays disabled.
+- **'Process Imported Data' again:**
+  - the window opens, W1 is gone (count 0) and there is no error;
+  - so the re-import over a cleared bus with the owner attached works.
+- **A second Cancel:** one W1, not two.
+- **Again, then Confirm:**
+  - complete; 9606 / Homo sapiens; both notices; W1 count 0;
+  - "[OK] Data imported successfully!" and "Organism: Homo sapiens (taxon: 9606 )";
+  - the builder's `data_available` TRUE.
+
+Session D2: Cancel, untick, import.
+- It completes, the "Processing Data" window closes and "Data import successful!" is shown.
+- W1 is gone.
+- The setup log holds 10090 / Mus musculus, which the user now entered in the enabled form.
+
+To tell the owner, and notes (not changed here):
+- **I04 (owner item D-1).** With 'Mixed species FASTA' ticked, four routes complete the import with the disabled form's organism and no window:
+  - FASTA headers without organisms: the warning does not name the organism;
+  - an error while counting organisms: the warning names no organism;
+  - no usable protein column: silent;
+  - FASTA processing failed: silent.
+
+  This is pre-existing and outside VAL-240's Cancel scope. The audit recommends (a): refuse in the three silent or erroring cases, and name the organism in the warning.
+- **I06 (owner item D-2).** Where the O3 limit is stated. The corrected draft and the open question are in `wording.md`.
+- **I07.** A re-import over a completed analysis replaces the earlier table, FASTA table, configuration and setup log before the window appears. A Cancel then leaves the earlier analysis's design, later states and tab statuses over a cleared import, with nothing on screen saying so. The session owner names the cancelled import's input files. A failed re-import leaves the same state today. This is for a follow-up (coordinator).
+- **I08.** What Cancel does not clear: `taxon_id`, `organism_name`, `fasta_metadata`, the mappings, `organism_distribution`, the owner's snapshot and input hashes, and the project files `aa_seq_tbl_final.RDS`, `fasta_metadata.RDS`, `config.ini` and the cache. None lets the builder save a design. 'Import Existing Design' asks for its own organism.
+- **I11 (merge note for KIT-178).** KIT-178's count line "after 'Data import successful!'" must, for a mixed import, also sit in `confirmProtImportOrganismSelection`. Confirm receives no `dataImportResult`, so the counts must be carried there, with a test of the mixed case. KIT-233's J' answers the window with Confirm and is compatible; A4 in its `known.tsv` closes at the merge.
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
 |---|---|---|
 | A1 | met | G0 above; `g0-45594289742/` |
-| A2 | met | R1: E1a to E7 and the declared edit fail by assertion, G1 to G3 pass. R2: all of them pass on head |
-| A3 | met | R2: every file `same` except the new file and the declared edit (both `fixed`); check findings identical |
-| A4 | met | NEWS under `### Fixes`; ledger row `VAL-<merge>` after VAL-233; this file with "For the change report" |
+| A2 | met | R1: E1a to E7 and the declared edit fail by assertion, G1 to G3 pass. R2: all of them pass on head. Correction pass: R2'' shows the new assertions (E4, E5, E8) failing on the tests-only commit and passing on the fix |
+| A3 | met | R2: every file `same` except the new file and the declared edit (both `fixed`); check findings identical. R2'': the same for the correction pass |
+| A4 | met | NEWS under `### Fixes` (wording corrected per I05 (1)); ledger row `VAL-<merge>` after VAL-259 with all five cells (I05 (3)); this file with "For the change report" |
+| I01 (b) | met | H1, run 45611275368: 61 of 61 predictions in a browser on the corrected head |
 
 Stop rule 3 (a G row failing on head, or an unpredicted R2 verdict): not fired.
 
 ## Not checked
 
-- The fix in a browser. G0 ran on base only, and the ticket declares no head browser run. The head is judged by the unit tests E1a to E7 and G1 to G3.
+- I12: neither the Confirm nor the Cancel observer checks that the window is waiting. A Confirm click queued while the import observer still runs after the window was sent, followed by an error in that observer, would complete an import with no table. Very narrow and harmless, since the builder stays hidden; no code change by the coordinator's ruling.
+- H1 covered DIA-NN in test mode only. It did not cover other routes, user mode with the file chooser, or a FASTA with more than one organism.
+- I07's mixed state in practice (QC, normalisation or DA over a cleared import).
 - `workflowData$taxon_id` outside (a2), and `mixed_species_analysis` on base: proxies only (see above).
 - The UniProt cache (P04). It is not in this ticket and has its own ticket; in G0 the network was closed, so nothing was cached.
 - Enrichment with a partially annotated mixed data set.
@@ -133,7 +247,7 @@ Stop rule 3 (a G row failing on head, or an unpredicted R2 verdict): not fired.
 - User mode (G0 ran in test mode with uploads, not the file chooser).
 - A FASTA with more than one organism (the fixture has one).
 - Routes other than DIA-NN.
-- Interaction with the DIA session owner after a Cancel: the owner keeps the first import's store, as after a failed import today. G0 (d1) showed a re-import works on base with the data still in place; on head the state after Cancel is the error path's state.
+- The DIA session owner after a Cancel keeps the cancelled import's store and input hashes (I08). The re-import after it works (E8; H1).
 - The full suite: none of its own; the merge train's.
 
 ## For the change report
@@ -160,10 +274,12 @@ Quality control, normalisation and differential-analysis numbers were not affect
   - `R/mod_prot_import_processing_helpers.R:206`: `complete()` before the answer.
   - `:218-223`: the waiting branch.
   - `R/mod_prot_import_organism_helpers.R:219`: the only place the waiting flag was reset.
-- After the fix, `kit-250` 7b674539: see the table under "The fix".
+- After the fix, `kit-250` 7b674539 and 77296fcf: see the table under "The fix" and the correction pass.
+- **Since when:** first on `main` in 179eb0d2 (2025-12-04, "process multi-organism fasta files"); in the tags v0.3.6.3, v0.5.0-rc1 and v0.9.0 (`git log 436cdbe8 -S'waiting_for_organism_selection'`; `git tag --contains`).
 
 **What changed in results.**
-- With the option ticked, nothing downstream can run until an organism is confirmed. After Cancel the import is cleared and the page says "Import not finished: no organism was chosen. …" (draft wording).
+- With the option ticked and the 'Select Primary Organism' window shown, the Design Matrix Builder cannot save a design until an organism is confirmed: Cancel clears the import, and the page says "Import not finished: no organism was chosen. …" (draft wording). 'Import Existing Design' stays available and asks for its own organism.
+- Not changed: with the option ticked but no window (FASTA headers without organisms, an error while counting organisms, FASTA processing that failed, no protein column) the import completes with the form's organism as before (AUDIT-KIT-250-impl I04). After a re-import over a completed analysis, Cancel leaves that analysis's later steps in place over a cleared import (I07).
 - After Confirm, the organism, the annotation, the enrichment organism and the study parameters are the confirmed one, exactly as before.
 - Imports with the option unticked are unchanged.
 - A re-import after Cancel no longer leaves a window open.
@@ -176,4 +292,9 @@ Quality control, normalisation and differential-analysis numbers were not affect
 - G0, run 45594289742: base behaviour in a headless browser on a runner, with a real mouse Cancel. The fixture was prot_dia (Homo sapiens, 400 proteins); the form was set to Mus musculus / 10090; test mode; network closed. All 72 predictions held. After Cancel the design saved with "Target organism taxon ID: 10090".
 - R1, run 45602311219: the defect shown at function level on the tests-only commit.
 - R2, run 45603816096: the fix, base against head, with R CMD check.
-- Limits: the fixture holds one organism; DIA-NN route only; test mode; no browser run on head.
+- Correction pass:
+  - R2'', run 45614051035: E8 shows the module's Cancel observer and the re-import in a Shiny session; W1's id and its removal are shown;
+  - H1, run 45611275368: the fix in a browser, 61 of 61 predictions.
+- Limits: the fixture holds one organism; DIA-NN route only; test mode.
+
+**Rollback** (AUDIT I05 (4)): revert the merge commit, which takes the fix and the tests-only commit together; reverting the fix alone leaves E1a to E7 and the declared edit failing. No stored format, record field or saved state changes (`organism_unconfirmed` is a session field).

@@ -70,8 +70,9 @@
 
 ### Fixes
 
- * Proteomics import with 'Mixed species FASTA': the import now finishes only when the organism is chosen in the 'Select
-   Primary Organism' window; Cancel leaves it unfinished and says so. Before, the import counted as finished before the
+ * Proteomics import with 'Mixed species FASTA': when the 'Select Primary Organism' window appears, the import now
+   finishes only when an organism is confirmed there; Cancel clears the import and says so, and the data must be
+   imported again. Before, the import counted as finished before the
    choice, and Cancel kept the organism in the (disabled) form, Homo sapiens by default, without a message; protein
    annotation, the enrichment's organism and the study parameters then used that organism. A second import after Cancel
    with the option unticked no longer leaves the 'Processing Data' window open (KIT-250).

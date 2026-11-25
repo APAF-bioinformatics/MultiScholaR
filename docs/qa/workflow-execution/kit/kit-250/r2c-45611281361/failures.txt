@@ -1,0 +1,246 @@
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `ev$errors` to be identical to `character()`.
+  Differences:
+  `actual`:   "formal argument \"messageFn\" matched by multiple actual arguments"
+  `expected`:                                                                     
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `isTRUE(local_data$waiting_for_organism_selection)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `is.null(workflow$data_tbl)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `ev$errors` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "formal argument \"messageFn\" matched by multiple actual arguments"
+  - "formal argument \"messageFn\" matched by multiple actual arguments"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `isTRUE(local_data$waiting_for_organism_selection)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `is.null(workflow$data_tbl)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `ev$errors` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "formal argument \"messageFn\" matched by multiple actual arguments"
+  - "formal argument \"messageFn\" matched by multiple actual arguments"
+  - "formal argument \"messageFn\" matched by multiple actual arguments"
+  - "formal argument \"messageFn\" matched by multiple actual arguments"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `"removeModal:import" %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `"note::Data import successful!" %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `workflow$tab_status$setup_import` to be identical to "complete".
+  Differences:
+  `actual`:   "incomplete"
+  `expected`: "complete"  
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window
+kind: failure
+message:
+  Expected `is.null(workflow$data_tbl)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit250-organism-dialog.R:310:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
