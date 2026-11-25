@@ -29,8 +29,9 @@ Total 174 job-minutes = 11.6 core-hours (expected 25.33, ceiling 110.0). No corr
 S1 to S4 (shinytest2 0.5.1, chromote 0.5.1, shiny 1.14.0). After Assign of {S1, S2} (`lowest`) the summary showed one
 biological replicate {S1, S2} and the box read `["S1","S2"]` (step 3). The box then held S1 to S4 (step 4); Assign
 gave one biological replicate of four runs, and the box kept them. A refused Assign ({S1}) left the box `["S1"]` and the
-summary unchanged. The saved design had one key `A_1={S1,S2,S3,S4}`. App log: 0 warnings, 0 errors. 23 of 24
-predictions held; the one that did not is the instrument note below.
+summary unchanged. The saved design had one key `A_1={S1,S2,S3,S4}`. App log: 0 warnings, 0 errors. 18 of 19
+predictions held (the G0 gate has 19: 14 shared with GB and 5 of its own); the one that did not is the
+instrument note below.
 
 **R1 (run 45620278822; `r1/`).** 14 passed, 6 failed, 0 errors. Each failure is an assertion at the ticket's base value:
 E1 lipidomics and transcriptomics, last message `c("S1","S2")`; E2 proteomics `c("S1","S2")`; E3 lipidomics and
@@ -61,8 +62,12 @@ repaired recorder and read the texts.
 ## Inferred
 
 - The flush-order reading of the ticket (section 2) holds in a real browser: on base the selection observer's re-send
-  keeps the box filled; with the flag the box is empty after the Assign (GB step 3, step 4), and the direct clear covers
-  the Assign that leaves the design identical (GB no-change; G3 under testServer).
+  keeps the box filled; with the flag the box is empty after the Assign (GB step 3, step 4), and the direct clear empties
+  it after an Assign that leaves the design identical (GB's second session, in the browser). Under testServer, G3 as
+  first written read the last message of the whole session, which the first Assign's clear already supplied, so it
+  would have passed with the direct clear (`R/mod_omic_design_builder.R:667`) removed (AUDIT-KIT-256-impl-20261126
+  I01). G3 now reads from a mark set just before its second Assign (83d6ffd7), so it fails on the old code and guards
+  the direct clear; R3 below.
 - Every omic and route uses the same server and input id; proteomics was observed at module level (E2), not in a
   browser.
 
@@ -98,6 +103,35 @@ repaired recorder and read the texts.
 - Windows.
 - How often users built a sample in two Assigns, or merged two samples this way (VAL-249: not known).
 - The help sentence is a draft only (`wording.md`); not in the interface.
+- Head with the direct clear (`:667`) removed was not run; G3 failing there is inferred from R3's base side.
+
+## Unrelated finding recorded (I05; ticket F1, no change here)
+
+`selected_runs` (Assign Metadata) carries over the same way: nothing clears it after Assign Metadata
+(`R/mod_omic_design_builder.R:531`, `:544-546`; the observer `:650-656`). Adding the next group's runs to a leftover
+selection and pressing Assign moves the earlier runs to the new group too, numbered again from `replicate_start`, and
+also clears those runs' technical-replicate marks (`R/func_omics_design_shared.R:622-623`). It is visible to the user
+(design table, groups, contrast choices, technical-replicate summary), not a silent merge, and legacy on `main`
+(`main:R/mod_lipid_design_builder.R:594`, `:607`). Recorded only; no change without a ruling
+(AUDIT-KIT-256-impl-20261126 I05).
+
+## Merge-train declaration (I06)
+
+- Branch state: `kit-256` merged with `v0.9-staging` 42846c0e (3ae09360; NEWS and ledger appends kept both, staging's
+  first; nothing else conflicted). Paths changed against staging: about 30, the longest under 100 bytes.
+- Scope: the 17 files of ticket section 10 and `test-kit256-tech-rep-selection-cleared.R`.
+  - The new file is `only-on-head`, 20 passed 0 failed.
+  - The 17 are predicted `same`, base against head; check identical.
+  - Do not assert 189/4 for `test-gui-entry-proteomics.R` (unmeasured since KIT-250 landed): read it from the run.
+    `test-gui-entry-transcriptomics.R` 16/13 carries train 6's changed messages (VAL-236) on both sides.
+- If KIT-247 lands first, in the same train or before: add `test-kit247-design-resave.R`, `test-kit247-import-config.R`
+  and `test-kit247-resave-no-session.R`, predicted at KIT-247's own head values. If KIT-256 lands first, KIT-247's
+  train runs the KIT-256 file.
+- Conflicts at the train as in train 7: the ledger keeps staging's rows, then KIT-256's row as `VAL-<n>` (this file's
+  `VAL-<merge>` replaced to match); NEWS keeps every entry under the one unreleased heading.
+- At landing (I04): the KIT-256 row's status cell is in the train form with `<date>`, `<n>`, `<id>` to fill; VAL-249's
+  status cell becomes "decided; implemented by KIT-256 (`VAL-<n>`), merged into `v0.9-staging` <date> by merge train
+  <n>".
 
 ## For the change report
 
