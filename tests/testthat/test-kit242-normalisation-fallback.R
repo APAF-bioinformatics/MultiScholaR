@@ -342,7 +342,7 @@ for (class in c("lipid", "metab")) {
       tab <- kit242Tab(class, kit242EmptySampleObject(class), managed,
         list(apply_itsd = FALSE, norm_method = "cyclicloess", ruv_mode = "skip", log_offset = 0))
       expect_true(isTRUE(tab$normalization_complete))
-      expect_true(any(grepl("Assay A2 was normalised without sample(s) B_6", tab$log, fixed = TRUE)), info = paste(tab$log, collapse = " | "))
+      expect_true(any(grepl("Assay A2 was normalised without samples B_6", tab$log, fixed = TRUE)), info = paste(tab$log, collapse = " | "))
       types <- vapply(tab$notes, function(note) as.character(note$type), "")
       messages <- vapply(tab$notes, function(note) as.character(note$message), "")
       expect_true(any(types == "warning" & grepl("B_6", messages, fixed = TRUE)))
@@ -434,6 +434,89 @@ for (class in c("lipid", "metab")) {
       step <- Filter(function(s) identical(s$state, paste0(prefix, "_normalized")), record$steps)[[1L]]
       has_marker <- any(vapply(step$parameters, function(p) identical(p$name, "normalisation_fallback"), logical(1)))
       expect_identical(has_marker, identical(rule, "exclude"), info = rule)
+      source_dir <- fixture$source_dir
+      copy <- withr::local_tempdir()
+      stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
+      store_root <- dirname(dirname(list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
+      copy_root <- file.path(copy, substring(store_root, nchar(source_dir) + 2L))
+      operations <- vapply(record$steps, function(s) s$operation, "")
+      states <- vapply(record$steps, function(s) s$state, "")
+      prepared <- harness$kitPrepareReplayProject(copy_root, states[seq_len(sum(cumprod(operations %in% c("import", "design_builder"))))], api)
+      files <- c(list.files(file.path(source_dir, "import_sources"), full.names = TRUE), file.path(source_dir, "design_matrix.tab"))
+      sums <- vapply(files, function(f) digest::digest(file = f, algo = "sha256"), "")
+      inputs <- character()
+      for (input in record$inputs) {
+        hit <- files[sums == (input$sha256 %||% "")]
+        if (length(hit)) inputs[[input$role]] <- hit[[1L]]
+      }
+      replay <- suppressWarnings(suppressMessages(harness$kitReplayJourney(record, prepared, store_root, inputs, fixture$paths,
+        withr::local_tempdir(), api)))
+      expect_identical(replay$states, history, info = rule)
+      expect_identical(as.character(replay$mismatches), character(), info = rule)
+    }
+  })
+
+  # ---- E3b (r1.6, the coordinator's ruling on item 2): duplicate feature ids are a malformed assay and stop ----------
+  test_that(paste("KIT-242 E3b:", class, "an assay with duplicate feature ids stops, naming the cause and 'Resolve Duplicates'"), {
+    v <- kit242Draw(32L)
+    object <- kit242Object(lapply(v, log2), class)
+    tables <- methods::slot(object, binding$data_slot)
+    tables$A2 <- rbind(tables$A2, tables$A2[1:2, , drop = FALSE])
+    methods::slot(object, binding$data_slot, check = FALSE) <- tables
+    err <- tryCatch(suppressWarnings(suppressMessages(normaliseBetweenSamples(object, normalisation_method = "cyclicloess"))),
+      error = function(e) e)
+    expect_s3_class(err, "omics_normalisation_failed")
+    if (inherits(err, "omics_normalisation_failed")) {
+      expect_identical(err$assay, "A2")
+      expect_identical(err$reason, "malformed_assay")
+      expect_match(conditionMessage(err), "2 duplicated feature identifiers \\(A2_F001, A2_F002\\)")
+      expect_match(conditionMessage(err), "Run 'Resolve Duplicates' in the Quality Control tab", fixed = TRUE)
+    }
+  })
+
+  # ---- E11b (r1.6, the coordinator's ruling on item 1): the ITSD record's marker ------------------------------------
+  test_that(paste("KIT-242 E11b:", class, "an older record replays the ITSD step exactly; a new one records the per-assay fields"), {
+    marker <- workflowReplayRuleMarkers$itsd_outcome
+    expect_identical(marker$current, "per_assay")
+    expect_identical(marker$earlier, "applied_flag")
+    expect_identical(workflowOperationEntry(paste0(prefix, "_itsd_normalisation"))$declaration$fixed$itsd_outcome, "per_assay")
+    skip_if_not(workflowOwnerCapable())
+    v <- kit242Draw(33L)
+    object <- kit242Object(v, class, list(A2 = ifelse(startsWith(rownames(v$A2), "IS_"), "ISTD", "PC")))
+    harness <- new.env(parent = globalenv())
+    sys.source(testthat::test_path("..", "..", "tools", "profiling", "workflow_kit.R"), harness)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    earlier <- list(MultiScholaR.itsd_outcome = "applied_flag", MultiScholaR.normalisation_fallback = "warn")
+    for (rule in c("earlier", "current")) {
+      root <- withr::local_tempdir()
+      fixture <- kit172Quiet(kit172Owner(root, object, class))
+      owner <- fixture$owner
+      config <- fixture$workflow$config_list
+      withr::with_options(if (identical(rule, "earlier")) earlier else list(MultiScholaR.itsd_outcome = NULL), kit172Quiet({
+        commitWorkflowOmicsStoreStep(owner, paste0(prefix, "_qc_finalize"), paste0(prefix, "_qc_complete"), config, "QC complete")
+        runWorkflowOmicsReferenceItsdNormalisation(binding, owner, "median", NULL, config)
+        runWorkflowOmicsReferenceLog2(binding, owner, 0, config)
+        runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, "cyclicloess", config)
+      }))
+      itsd <- owner$getState(paste0(prefix, "_itsd_norm"))@args$ITSDNormalization
+      outcomes <- kit242Outcomes(owner, paste0(prefix, "_itsd_norm"))
+      if (identical(rule, "earlier")) {
+        expect_null(itsd$applied_per_assay)
+        expect_true(isTRUE(itsd$applied))
+        expect_true(isTRUE(outcomes$itsd_applied))
+        expect_null(outcomes$itsd_applied_per_assay)
+      } else {
+        expect_identical(itsd$applied_per_assay, list(A1 = TRUE, A2 = FALSE))
+        expect_identical(outcomes$itsd_applied_per_assay, list(A1 = TRUE, A2 = FALSE))
+      }
+      json <- file.path(root, "record.json")
+      kit172Quiet(writeWorkflowAnalysisRecord(owner, json))
+      history <- unlist(owner$getHistory())
+      closeDIAStateAdapter(owner)
+      record <- jsonlite::read_json(json, simplifyVector = FALSE)
+      step <- Filter(function(s) identical(s$state, paste0(prefix, "_itsd_norm")), record$steps)[[1L]]
+      has_marker <- any(vapply(step$parameters, function(p) identical(p$name, "itsd_outcome"), logical(1)))
+      expect_identical(has_marker, identical(rule, "current"), info = rule)
       source_dir <- fixture$source_dir
       copy <- withr::local_tempdir()
       stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
@@ -621,3 +704,19 @@ test_that("KIT-242 E17: proteomics quantile on a sample holding one value stops 
   expect_s3_class(err, "omics_normalisation_failed")
   expect_identical(err$reason, "normaliser_error")
 })
+
+# ---- (r1.6, the coordinator's ruling on item 4): the proteomics normalisation text is byte-identical when nothing is removed
+test_that("KIT-242 Part C: the protein normalisation text equals the earlier text when no sample is removed", {
+  earlier <- function(skipped, protein_count, samples, method) paste(
+    if (skipped) "Between-Sample Normalisation Skipped (none)\n" else "Between-Sample Normalisation Applied Successfully\n",
+    "================================================\n",
+    sprintf("Proteins remaining: %d\n", protein_count), sprintf("Samples: %d\n", samples),
+    sprintf("Method: %s\n", method),
+    if (skipped) "The quantified log2 matrix is carried unchanged (the limpa script's choice).\n" else "",
+    "State saved as: 'protein_normalised'\n")
+  expect_identical(diaProteinNormalisationText(FALSE, 60L, 12L, "cyclicloess"), earlier(FALSE, 60L, 12L, "cyclicloess"))
+  expect_identical(diaProteinNormalisationText(TRUE, 60L, 12L, "none"), earlier(TRUE, 60L, 12L, "none"))
+  expect_match(diaProteinNormalisationText(FALSE, 60L, 11L, "scale", "B_6"), "Warning: samples B_6 have no value and were removed from the design.",
+    fixed = TRUE)
+})
+

@@ -14,6 +14,14 @@ test_that("KIT-078: every omics compute declaration runs from a frozen request t
       omicsBetweenSampleNormalisationStep(binding, "cyclicloess"), omicsRuvStep(binding, fixtures[[omic]]$ruv))
     for (step in steps) {
       result <- omicsWorkerRun(fixture, step$operation, step$parameters)
+      # KIT-242 (VAL-242: a malformed assay stops; declared edit of this file, ticket r1.6): each step runs on the
+      # fixture's raw state, whose duplicate feature ids are not resolved, so between-sample normalisation refuses,
+      # naming the cause and the remedy; this line pinned the earlier skip (the assay left unnormalised, completed).
+      if (identical(step$operation, paste0(binding$prefix, "_between_sample_normalisation"))) {
+        expect_identical(result$status, "failed", info = paste(omic, step$operation))
+        expect_match(result$error %||% "", "duplicated feature identifiers.*Resolve Duplicates", info = omic)
+        next
+      }
       expect_identical(result$status, "complete", info = paste(omic, step$operation, result$error))
       expect_identical(result$result$operation, step$operation, info = omic)
       expect_true(isDIAComponentCheckpoint(result$result$checkpoint), info = step$operation)
