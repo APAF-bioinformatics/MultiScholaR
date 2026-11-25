@@ -1,0 +1,3 @@
+case	contrast	rows	between_001_005	below_001
+dia_qvalue_only	treated.vs.control=grouptreated-groupcontrol	64	3	0
+dia_qvalue_only	control.vs.treated=groupcontrol-grouptreated	64	3	0

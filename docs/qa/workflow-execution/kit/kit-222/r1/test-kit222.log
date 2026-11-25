@@ -1,0 +1,439 @@
+kit222-replicate-keys: ..KIT222-OBS E1: Ctrl_3={A_1,B_1,A_2,B_2}
+1...KIT222-OBS E2: Ctrl_1={A_1,A_2} Ctrl_2={B_1,B_2,C_1,C_2}
+2....................................................................................................KIT222-OBS E3 keys: 91
+KIT222-OBS E3 merged: RPMI_17=RPMI_18+RPMI_17 RPMI_24=RPMI_26+RPMI_25 RPMI_42=RPMI_43+RPMI_42 RPMI_43=RPMI_45+RPMI_44 RPMI_46=RPMI_48+RPMI_47 Sera_11=Sera_11+Sera_12 Sera_13=Sera_14+Sera_15 Sera_28=Sera_30+Sera_31 Sera_46=Sera_46+Sera_47
+34....................................................................................................::notice title=INFO::Technical replicates: the counts of 200 runs summed into 91 biological samples
+KIT222-OBS E3b units: 91
+KIT222-OBS E3b summed from two samples: Sera_28=Sera_30+Sera_31 (count 257 = 2+6+90+159) Sera_11=Sera_11+Sera_12 (count 386 = 3+45+140+198) RPMI_17=RPMI_18+RPMI_17 (count 257 = 9+28+85+135) RPMI_42=RPMI_43+RPMI_42 (count 360 = 12+37+126+185) RPMI_24=RPMI_26+RPMI_25 (count 476 = 32+89+158+197) RPMI_43=RPMI_45+RPMI_44 (count 497 = 41+143+148+165) Sera_46=Sera_46+Sera_47 (count 481 = 66+99+136+180) Sera_13=Sera_14+Sera_15 (count 443 = 80+105+109+149) RPMI_46=RPMI_48+RPMI_47 (count 588 = 116+131+145+196)
+567.......................................................................................................KIT222-OBS E3c keys: 12
+....KIT222-OBS E4: Ctrl_1={A_1,A_2,A_3} Ctrl_3={B_1,B_2,C_1,C_2}
+8.KIT222-OBS E7 lipidomics: Ctrl_1={S1} Ctrl_4={S2,S3,S4,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+9.KIT222-OBS E7 metabolomics: Ctrl_1={S1} Ctrl_4={S2,S3,S4,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+a.KIT222-OBS E7 transcriptomics: Ctrl_1={S1} Ctrl_4={S2,S3,S4,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+b.KIT222-OBS E7 proteomics: Ctrl_1={S1} Ctrl_4={S2,S3,S4,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+cKIT222-OBS E7 proteomics number held: message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers
+.de..KIT222-OBS E7 applet: Ctrl_1={S1} Ctrl_4={S2,S3,S4,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+fg..::notice title=INFO::Technical replicates: the counts of 8 runs summed into 5 biological samples
+KIT222-OBS trx sum: Ctrl_1={S1}=1 Ctrl_4={S2,S3,S4,S5}=14 Trt_1={S6}=6 Trt_2={S7}=7 Trt_3={S8}=8
+hi..::notice title=INFO::   design_m dims = 8 x 2
+::notice title=INFO::   data_subset dims = 30 x 8
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Technical replicates: 5 blocks for 8 samples, consensus correlation 0.2642
+KIT222-OBS DA block: S1=Ctrl_1 S2=Ctrl_4 S3=Ctrl_4 S4=Ctrl_4 S5=Ctrl_4 S6=Trt_1 S7=Trt_2 S8=Trt_3
+.j..KIT222-OBS RUV-III sets: S1=Ctrl_1 S2=Ctrl_4 S3=Ctrl_4 S4=Ctrl_4 S5=Ctrl_4 S6=Trt_1 S7=Trt_2 S8=Trt_3
+.k...KIT222-OBS integration averages: Ctrl_1=1 Ctrl_4=3.5 Trt_1=6 Trt_2=7 Trt_3=8
+lWKIT222-OBS integration pairs: Ctrl_1: C with C Trt_1: D with D Trt_2: E with E Trt_3: F with F
+mn.KIT222-OBS E5: TRUE Ctrl_1={A_1,A_2,B_1,B_2}
+opqr.KIT222-OBS E6: TRUE tech_reps 1 2 2
+stuvwx.KIT222-OBS E14: TRUE Ctrl_2={A_1,B_1,A_2,B_2} tech_reps 1 1 2 2
+yzA.....KIT222-OBS E15: Ctrl_2={A_1,B_1,A_2,B_2}
+B..KIT222-OBS E16 tech_reps: A_1=1 A_2=2 A_3=3 C_1=1 C_2=2
+CKIT222-OBS E16 save: Ctl_1={A_1,A_2} Trt_1={A_3,C_1,C_2}
+DEKIT222-OBS E16b: Ctl_1={S1,S2} Trt_1={S3,S4,S5} message: Assigned 3 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers message: Design saved successfully. You can close this builder.
+FGKIT222-OBS E8: list
+HIWKIT222-OBS E9 save D1: saved_entity_invalid invalid saved-entity "input"
+JWKIT222-OBS E9 save D2: saved_entity_invalid invalid saved-entity "input"
+KWKIT222-OBS E9 save OD-5: saved_entity_invalid invalid saved-entity "input"
+L::notice title=INFO::Created tech_rep_group column for proper technical replicate identification
+KIT222-OBS E9 checkpoint D1: saved_entity_invalid rlang_error error condition
+MN::notice title=INFO::Created tech_rep_group column for proper technical replicate identification
+KIT222-OBS E9 checkpoint D2: saved_entity_invalid rlang_error error condition
+OP::notice title=INFO::Loading config.ini from import directory.
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+::warning title=WARN::Could not initialize QC progress: attempt to apply non-function
+::notice title=INFO::Design import complete: 'lipid_raw_data_s4'
+KIT222-OBS E10 D1: list
+Q::notice title=INFO::Loading config.ini from import directory.
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+::warning title=WARN::Could not initialize QC progress: attempt to apply non-function
+::notice title=INFO::Design import complete: 'lipid_raw_data_s4'
+KIT222-OBS E10 D2: list
+R::notice title=INFO::   design_m dims = 6 x 2
+::notice title=INFO::   data_subset dims = 30 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Technical replicates: 3 blocks for 6 samples, consensus correlation 0.1511
+::notice title=INFO::   design_m dims = 6 x 2
+::notice title=INFO::   data_subset dims = 30 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Technical replicates: 3 blocks for 6 samples, consensus correlation 0.1511
+::notice title=INFO::Technical replicates: the counts of 6 runs summed into 3 biological samples
+KIT222-OBS E11 resolver: list
+SKIT222-OBS E11 ruv_iii: list
+TKIT222-OBS E11 lipid_fit: MArrayLM
+UKIT222-OBS E11 metab_fit: MArrayLM
+VKIT222-OBS E11 integration: character
+WKIT222-OBS E11 trx_sum: list
+XY.KIT222-OBS E11 peptide imputation: PeptideQuantitativeData
+ZKIT222-OBS G1 failures: 0
+.......W........E
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. KIT-222 consumers: the integration averages each sample's own runs and pairs each name with one sample ('test-kit222-replicate-keys.R:446:3') - only 4 biological samples are measured in every view (fewer than 16); factor models need more samples
+
+2. KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number ('test-kit222-replicate-keys.R:569:7') - Unknown or uninitialised column: `entity_id`.
+
+3. KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number ('test-kit222-replicate-keys.R:569:7') - Unknown or uninitialised column: `entity_id`.
+
+4. KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number ('test-kit222-replicate-keys.R:569:7') - Unknown or uninitialised column: `entity_id`.
+
+5. KIT-222 G4: duplicate-injection proteomics against single-run transcriptomics pairs six of six ('test-kit222-replicate-keys.R:715:3') - only 6 biological samples are measured in every view (fewer than 16); factor models need more samples
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit222-replicate-keys.R:118:3'): KIT-222 E1: 'Use first sel
+Expected `keys` to be identical to `list(Ctrl_1 = c("A_1", "A_2"), Ctrl_2 = c("B_1", "B_2"))`.
+Differences:
+`actual` is length 1
+`expected` is length 2
+
+`names(actual)`:   "Ctrl_3"         
+`names(expected)`: "Ctrl_1" "Ctrl_2"
+
+`actual$Ctrl_3` is a character vector ('A_1', 'B_1', 'A_2', 'B_2')
+`expected$Ctrl_3` is absent
+
+`actual$Ctrl_1` is absent
+`expected$Ctrl_1` is a character vector ('A_1', 'A_2')
+
+`actual$Ctrl_2` is absent
+`expected$Ctrl_2` is a character vector ('B_1', 'B_2')
+
+
+── 2. Failure ('test-kit222-replicate-keys.R:129:3'): KIT-222 E2: 'Specify repli
+Expected `keys` to be identical to `list(...)`.
+Differences:
+`actual` is length 2
+`expected` is length 3
+
+`names(actual)`:   "Ctrl_1" "Ctrl_2"         
+`names(expected)`: "Ctrl_1" "Ctrl_2" "Ctrl_3"
+
+`actual$Ctrl_2`:   "B_1" "B_2" "C_1" "C_2"
+`expected$Ctrl_2`: "B_1" "B_2"            
+
+`actual$Ctrl_3` is absent
+`expected$Ctrl_3` is a character vector ('C_1', 'C_2')
+
+
+── 3. Failure ('test-kit222-replicate-keys.R:178:3'): KIT-222 E3: the 100-sample
+Expected `length(keys)` to be identical to 100L.
+Differences:
+  `actual`:  91
+`expected`: 100
+
+
+── 4. Failure ('test-kit222-replicate-keys.R:179:3'): KIT-222 E3: the 100-sample
+Expected `lapply(keys, sort)` to be identical to `kit222CorpusExpected(marked$corpus)`.
+Differences:
+`actual` is length 91
+`expected` is length 100
+
+     names(actual) | names(expected)     
+[17] "RPMI_24"     | "RPMI_24"       [17]
+[18] "RPMI_25"     | "RPMI_25"       [18]
+[19] "RPMI_26"     | "RPMI_26"       [19]
+                   - "RPMI_27"       [20]
+[20] "RPMI_28"     | "RPMI_28"       [21]
+                   - "RPMI_29"       [22]
+[21] "RPMI_3"      | "RPMI_3"        [23]
+[22] "RPMI_30"     | "RPMI_30"       [24]
+[23] "RPMI_31"     | "RPMI_31"       [25]
+
+     names(actual) | names(expected)     
+[34] "RPMI_41"     | "RPMI_41"       [36]
+[35] "RPMI_42"     | "RPMI_42"       [37]
+[36] "RPMI_43"     | "RPMI_43"       [38]
+                   - "RPMI_44"       [39]
+[37] "RPMI_45"     | "RPMI_45"       [40]
+[38] "RPMI_46"     | "RPMI_46"       [41]
+                   - "RPMI_47"       [42]
+[39] "RPMI_48"     | "RPMI_48"       [43]
+                   - "RPMI_49"       [44]
+[40] "RPMI_5"      | "RPMI_5"        [45]
+[41] "RPMI_50"     | "RPMI_50"       [46]
+[42] "RPMI_6"      | "RPMI_6"        [47]
+
+     names(actual) | names(expected)     
+[70] "Sera_31"     | "Sera_31"       [75]
+[71] "Sera_32"     | "Sera_32"       [76]
+[72] "Sera_33"     | "Sera_33"       [77]
+                   - "Sera_34"       [78]
+[73] "Sera_35"     | "Sera_35"       [79]
+[74] "Sera_36"     | "Sera_36"       [80]
+[75] "Sera_37"     | "Sera_37"       [81]
+[76] "Sera_38"     | "Sera_38"       [82]
+[77] "Sera_39"     | "Sera_39"       [83]
+[78] "Sera_4"      | "Sera_4"        [84]
+                   - "Sera_40"       [85]
+[79] "Sera_41"     | "Sera_41"       [86]
+                   - "Sera_42"       [87]
+[80] "Sera_43"     | "Sera_43"       [88]
+[81] "Sera_44"     | "Sera_44"       [89]
+[82] "Sera_45"     | "Sera_45"       [90]
+[83] "Sera_46"     | "Sera_46"       [91]
+[84] "Sera_47"     | "Sera_47"       [92]
+[85] "Sera_48"     | "Sera_48"       [93]
+                   - "Sera_49"       [94]
+[86] "Sera_5"      | "Sera_5"        [95]
+[87] "Sera_50"     | "Sera_50"       [96]
+[88] "Sera_6"      | "Sera_6"        [97]
+
+`actual$RPMI_17`:   "RPMI_17_r1" "RPMI_17_r2" "RPMI_18_r1" "RPMI_18_r2"
+`expected$RPMI_17`: "RPMI_17_r1" "RPMI_17_r2"                          
+
+`actual$RPMI_18`:   "RPMI_19_r1" "RPMI_19_r2"
+`expected$RPMI_18`: "RPMI_18_r1" "RPMI_18_r2"
+
+`actual$RPMI_19`:   "RPMI_20_r1" "RPMI_20_r2"
+`expected$RPMI_19`: "RPMI_19_r1" "RPMI_19_r2"
+
+`actual$RPMI_20`:   "RPMI_21_r1" "RPMI_21_r2"
+`expected$RPMI_20`: "RPMI_20_r1" "RPMI_20_r2"
+
+`actual$RPMI_21`:   "RPMI_22_r1" "RPMI_22_r2"
+`expected$RPMI_21`: "RPMI_21_r1" "RPMI_21_r2"
+
+`actual$RPMI_22`:   "RPMI_23_r1" "RPMI_23_r2"
+`expected$RPMI_22`: "RPMI_22_r1" "RPMI_22_r2"
+
+`actual$RPMI_23`:   "RPMI_24_r1" "RPMI_24_r2"
+`expected$RPMI_23`: "RPMI_23_r1" "RPMI_23_r2"
+
+`actual$RPMI_24`:   "RPMI_25_r1" "RPMI_25_r2" "RPMI_26_r1" "RPMI_26_r2"
+`expected$RPMI_24`: "RPMI_24_r1" "RPMI_24_r2"                          
+
+`actual$RPMI_25`:   "RPMI_27_r1" "RPMI_27_r2"
+`expected$RPMI_25`: "RPMI_25_r1" "RPMI_25_r2"
+
+`actual$RPMI_26`:   "RPMI_28_r1" "RPMI_28_r2"
+`expected$RPMI_26`: "RPMI_26_r1" "RPMI_26_r2"
+
+`actual$RPMI_28`:   "RPMI_29_r1" "RPMI_29_r2"
+`expected$RPMI_28`: "RPMI_28_r1" "RPMI_28_r2"
+
+`actual$RPMI_42`:   "RPMI_42_r1" "RPMI_42_r2" "RPMI_43_r1" "RPMI_43_r2"
+`expected$RPMI_42`: "RPMI_42_r1" "RPMI_42_r2"                          
+
+`actual$RPMI_43`:   "RPMI_44_r1" "RPMI_44_r2" "RPMI_45_r1" "RPMI_45_r2"
+`expected$RPMI_43`: "RPMI_43_r1" "RPMI_43_r2"                          
+
+`actual$RPMI_45`:   "RPMI_46_r1" "RPMI_46_r2"
+`expected$RPMI_45`: "RPMI_45_r1" "RPMI_45_r2"
+
+`actual$RPMI_46`:   "RPMI_47_r1" "RPMI_47_r2" "RPMI_48_r1" "RPMI_48_r2"
+`expected$RPMI_46`: "RPMI_46_r1" "RPMI_46_r2"                          
+
+`actual$RPMI_48`:   "RPMI_49_r1" "RPMI_49_r2"
+`expected$RPMI_48`: "RPMI_48_r1" "RPMI_48_r2"
+
+`actual$Sera_11`:   "Sera_11_r1" "Sera_11_r2" "Sera_12_r1" "Sera_12_r2"
+`expected$Sera_11`: "Sera_11_r1" "Sera_11_r2"                          
+
+`actual$Sera_12`:   "Sera_13_r1" "Sera_13_r2"
+`expected$Sera_12`: "Sera_12_r1" "Sera_12_r2"
+
+`actual$Sera_13`:   "Sera_14_r1" "Sera_14_r2" "Sera_15_r1" "Sera_15_r2"
+`expected$Sera_13`: "Sera_13_r1" "Sera_13_r2"                          
+
+`actual$Sera_14`:   "Sera_16_r1" "Sera_16_r2"
+`expected$Sera_14`: "Sera_14_r1" "Sera_14_r2"
+
+`actual$Sera_15`:   "Sera_17_r1" "Sera_17_r2"
+`expected$Sera_15`: "Sera_15_r1" "Sera_15_r2"
+
+`actual$Sera_16`:   "Sera_18_r1" "Sera_18_r2"
+`expected$Sera_16`: "Sera_16_r1" "Sera_16_r2"
+
+`actual$Sera_17`:   "Sera_19_r1" "Sera_19_r2"
+`expected$Sera_17`: "Sera_17_r1" "Sera_17_r2"
+
+`actual$Sera_18`:   "Sera_20_r1" "Sera_20_r2"
+`expected$Sera_18`: "Sera_18_r1" "Sera_18_r2"
+
+`actual$Sera_19`:   "Sera_21_r1" "Sera_21_r2"
+`expected$Sera_19`: "Sera_19_r1" "Sera_19_r2"
+
+`actual$Sera_20`:   "Sera_22_r1" "Sera_22_r2"
+`expected$Sera_20`: "Sera_20_r1" "Sera_20_r2"
+
+`actual$Sera_21`:   "Sera_23_r1" "Sera_23_r2"
+`expected$Sera_21`: "Sera_21_r1" "Sera_21_r2"
+
+`actual$Sera_22`:   "Sera_24_r1" "Sera_24_r2"
+`expected$Sera_22`: "Sera_22_r1" "Sera_22_r2"
+
+`actual$Sera_23`:   "Sera_25_r1" "Sera_25_r2"
+`expected$Sera_23`: "Sera_23_r1" "Sera_23_r2"
+
+`actual$Sera_24`:   "Sera_26_r1" "Sera_26_r2"
+`expected$Sera_24`: "Sera_24_r1" "Sera_24_r2"
+
+`actual$Sera_25`:   "Sera_27_r1" "Sera_27_r2"
+`expected$Sera_25`: "Sera_25_r1" "Sera_25_r2"
+
+`actual$Sera_26`:   "Sera_28_r1" "Sera_28_r2"
+`expected$Sera_26`: "Sera_26_r1" "Sera_26_r2"
+
+`actual$Sera_27`:   "Sera_29_r1" "Sera_29_r2"
+`expected$Sera_27`: "Sera_27_r1" "Sera_27_r2"
+
+`actual$Sera_28`:   "Sera_30_r1" "Sera_30_r2" "Sera_31_r1" "Sera_31_r2"
+`expected$Sera_28`: "Sera_28_r1" "Sera_28_r2"                          
+
+`actual$Sera_29`:   "Sera_32_r1" "Sera_32_r2"
+`expected$Sera_29`: "Sera_29_r1" "Sera_29_r2"
+
+`actual$Sera_30`:   "Sera_33_r1" "Sera_33_r2"
+`expected$Sera_30`: "Sera_30_r1" "Sera_30_r2"
+
+`actual$Sera_31`:   "Sera_34_r1" "Sera_34_r2"
+`expected$Sera_31`: "Sera_31_r1" "Sera_31_r2"
+
+`actual$Sera_32`:   "Sera_35_r1" "Sera_35_r2"
+`expected$Sera_32`: "Sera_32_r1" "Sera_32_r2"
+
+`actual$Sera_33`:   "Sera_36_r1" "Sera_36_r2"
+`expected$Sera_33`: "Sera_33_r1" "Sera_33_r2"
+
+`actual$Sera_35`:   "Sera_37_r1" "Sera_37_r2"
+`expected$Sera_35`: "Sera_35_r1" "Sera_35_r2"
+
+`actual$Sera_36`:   "Sera_38_r1" "Sera_38_r2"
+`expected$Sera_36`: "Sera_36_r1" "Sera_36_r2"
+
+`actual$Sera_37`:   "Sera_39_r1" "Sera_39_r2"
+`expected$Sera_37`: "Sera_37_r1" "Sera_37_r2"
+
+`actual$Sera_38`:   "Sera_40_r1" "Sera_40_r2"
+`expected$Sera_38`: "Sera_38_r1" "Sera_38_r2"
+
+`actual$Sera_39`:   "Sera_41_r1" "Sera_41_r2"
+`expected$Sera_39`: "Sera_39_r1" "Sera_39_r2"
+
+`actual$Sera_41`:   "Sera_42_r1" "Sera_42_r2"
+`expected$Sera_41`: "Sera_41_r1" "Sera_41_r2"
+
+`actual$Sera_46`:   "Sera_46_r1" "Sera_46_r2" "Sera_47_r1" "Sera_47_r2"
+`expected$Sera_46`: "Sera_46_r1" "Sera_46_r2"                          
+
+`actual$Sera_47`:   "Sera_48_r1" "Sera_48_r2"
+`expected$Sera_47`: "Sera_47_r1" "Sera_47_r2"
+
+`actual$Sera_48`:   "Sera_49_r1" "Sera_49_r2"
+`expected$Sera_48`: "Sera_48_r1" "Sera_48_r2"
+
+`actual$RPMI_27` is absent
+`expected$RPMI_27` is a character vector ('RPMI_27_r1', 'RPMI_27_r2')
+
+`actual$RPMI_29` is absent
+`expected$RPMI_29` is a character vector ('RPMI_29_r1', 'RPMI_29_r2')
+
+`actual$RPMI_44` is absent
+`expected$RPMI_44` is a character vector ('RPMI_44_r1', 'RPMI_44_r2')
+
+`actual$RPMI_47` is absent
+`expected$RPMI_47` is a character vector ('RPMI_47_r1', 'RPMI_47_r2')
+
+`actual$RPMI_49` is absent
+`expected$RPMI_49` is a character vector ('RPMI_49_r1', 'RPMI_49_r2')
+
+`actual$Sera_34` is absent
+`expected$Sera_34` is a character vector ('Sera_34_r1', 'Sera_34_r2')
+
+`actual$Sera_40` is absent
+`expected$Sera_40` is a character vector ('Sera_40_r1', 'Sera_40_r2')
+
+`actual$Sera_42` is absent
+`expected$Sera_42` is a character vector ('Sera_42_r1', 'Sera_42_r2')
+
+`actual$Sera_49` is absent
+`expected$Sera_49` is a character vector ('Sera_49_r1', 'Sera_49_r2')
+
+
+── 5. Failure ('test-kit222-replicate-keys.R:199:3'): KIT-222 E3b: summing the c
+Expected `length(units)` to be identical to 100L.
+Differences:
+  `actual`:  91
+`expected`: 100
+
+
+── 6. Failure ('test-kit222-replicate-keys.R:200:3'): KIT-222 E3b: summing the c
+Expected `all(lengths(summed$summed) == 2L)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 7. Failure ('test-kit222-replicate-keys.R:201:3'): KIT-222 E3b: summing the c
+Expected `all(lengths(contributors) == 1L)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 8. Failure ('test-kit222-replicate-keys.R:220:3'): KIT-222 E4: 'Use lowest re
+Expected `keys` to be identical to `list(...)`.
+Differences:
+`actual` is length 2
+`expected` is length 3
+
+`names(actual)`:   "Ctrl_1" "Ctrl_3"         
+`names(expected)`: "Ctrl_1" "Ctrl_2" "Ctrl_3"
+
+`actual$Ctrl_3`:   "B_1" "B_2" "C_1" "C_2"
+`expected$Ctrl_3`:             "C_1" "C_2"
+
+`actual$Ctrl_2` is absent
+`expected$Ctrl_2` is a character vector ('B_1', 'B_2')
+
+
+── 9. Failure ('test-kit222-replicate-keys.R:277:5'): KIT-222 E7: the lipidomics
+Expected lipidomics saved partition to be identical to `kit222ConsumerPartition`.
+Differences:
+`actual` is length 5
+`expected` is length 6
+
+`actual[[2]]`:   "S2" "S3" "S4" "S5"
+`expected[[2]]`: "S2" "S4"          
+
+`actual[[3]]`:   "S6"     
+`expected[[3]]`: "S3" "S5"
+
+`actual[[4]]`:   "S7"
+`expected[[4]]`: "S6"
+
+`actual[[5]]`:   "S8"
+`expected[[5]]`: "S7"
+
+`actual[[6]]` is absent
+`expected[[6]]` is a character vector ('S8')
+
+
+── 10. Failure ('test-kit222-replicate-keys.R:277:5'): KIT-222 E7: the lipidomic
+Expected metabolomics saved partition to be identical to `kit222ConsumerPartition`.
+Differences:
+`actual` is length 5
+`expected` is length 6
+
+`actual[[2]]`:   "S2" "S3" "S4" "S5"
+`expected[[2]]`: "S2" "S4"          
+
+`actual[[3]]`:   "S6"     
+`expected[[3]]`: "S3" "S5"
+
+`actual[[4]]`:   "S7"
+`expected[[4]]`: "S6"
+
+`actual[[5]]`:   "S8"
+`expected[[5]]`: "S7"
+
+`actual[[6]]` is absent
+`expected[[6]]` is a character vector ('S8')
+
+  ... and 52 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit222-replicate-keys.R pass 356 fail 59 error 3 skip 0 warn 5

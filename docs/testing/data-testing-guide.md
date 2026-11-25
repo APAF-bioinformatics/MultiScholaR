@@ -58,8 +58,10 @@ steps without that limit. This is expected for the test build.
 - STRING needs a personal key (free from string-db.org). In the application, type it into **Integration, Enrichment,
   Your STRING key**. It is used for that one query, the field is emptied straight after, and it is never saved in the
   project, the record or the logs. Type it again for the next query.
-- If you use the R workbook (`integration_workflow_starter.rmd`) instead of the application, set the environment
-  variable `STRING_API_KEY` before you start R, or type the key when the workbook asks. It is not saved either.
+- If you run the integration from R with the package's `integration*` functions instead of the application, set the
+  environment variable `STRING_API_KEY` before you start R and pass it as
+  `integrationEnrichFactor(..., api_key = Sys.getenv("STRING_API_KEY"))`; never write the key in a script. It is not
+  saved either.
 - STRING, KEGG and Reactome are online services: enrichment needs an internet connection. The rest of the application
   works offline.
 
