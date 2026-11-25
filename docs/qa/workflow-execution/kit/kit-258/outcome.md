@@ -105,6 +105,12 @@ PREDICTED (written before the run was read):
   row 1 (4 measured against 3). Why: the zero rule changes counts only where a duplicated row holds a zero, and in
   these fixtures that is the code-built table, where both rules already agree.
 
+OBSERVED (run 45676413310, scripts job 10.2 job-minutes, script 149 s, exit 0; `s1f/`): **every prediction held; no
+stop rule.** (a) 18/18, (b) 18/18, groups 26/26 (non-vacuous); classes `e` exactly e1_lipid, e1_metab,
+lipid_msdial_dup_code, lipid_msdial_dup_import; (c) 44/44, 44/44, 22/22; (d1) 44/44; (d2) 44/44; (e) exactly
+lipid_msdial_dup_import / LCMS_Pos / P001, base row 2 'TG 52:3' (3 measured, mean 177.333333) to head row 1 'PC 34:1'
+(4 measured, mean 150.5), both variants. lipid_msdial_dup_code keeps row 1 on both sides.
+
 ## R2 (fix 77a719b8 line against tests-only base 5dfe2bc8; 3 shards per side, check; ceiling 600 job-minutes)
 
 Scope: the ticket's grep recounted at the branch point gives 27 files plus the new one (staging added
@@ -123,6 +129,34 @@ PREDICTED (written before the run was read):
 - Check: findings identical on both sides.
 - Stop rule 3 on any other verdict.
 
+OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in all with S1f and both checks, ceiling
+660; `r2/compare.tsv`, `r2/check-compare.txt`):
+- `test-kit258-duplicate-completeness.R` `fixed` (base 100 passed, 42 failed; head 142 passed, 0 failed).
+- `test-metab-01m-...` `fixed` (base 4 failed: the new pins; head 19/0); `test-metab-02u-...` `fixed` (base 1; head 17/0).
+- `test-workflow-omics-binding-steps.R` `message-changed`, counts unchanged (58/1 both sides; `r2/binding-steps.txt`:
+  the duplicate step's recorded parameters, as predicted).
+- **One verdict not as predicted, declared here (stop rule 3):** `test-workflow-omics-declarations.R` is `same`
+  (45/23 both sides), not `message-changed`. Its registry expectation (the KIT-073 frozen dump,
+  `fixtures/kit073-omics-declarations-frozen.rds`) fails on both sides with the identical text
+  "`actual$lipidomics$lipid_duplicate_resolution$declaration$fixed` is a list / `expected...` is NULL": the base
+  already has KIT-214's one-entry `fixed`, the head a two-entry one, and the diff printer names only the type, so the
+  message cannot show the added entry. The snapshot does differ, as predicted; the comparator cannot see it. Its other
+  22 failures (pre-existing last-digit and journey differences of the laptop snapshot) are identical. Counts are
+  unchanged. Nothing else is affected; no further run.
+- Every other file `same`, including `test-kit214-sample-columns.R` (176/0 both). Pre-existing failures identical on
+  both sides: `test-kit224-ruv-feature-levels.R` (1), `test-workflow-operation-registry.R` (2).
+- Check: 0 errors, 3 warnings, 3 notes on both sides; findings identical (6), none only on head.
+
+## Acceptance criteria
+
+| # | Verdict | Evidence |
+|---|---|---|
+| A1 | met | R1 (45617808183): every failing-first row at KIT-214's value, guards and `test-kit214-sample-columns.R` passing; E5, E6 fail on R2's base side (`r2/tests-base.tsv`, 42 failing expectations in the new file) |
+| A2 | met | R2 head: the new file 142/0; the declared edits (section 6 items 1 to 4) are the only edits of existing tests |
+| A3 | met, with one declared verdict | R2: `fixed` for the new file, 01m, 02u; binding-steps `message-changed` counts unchanged; declarations `same` (explained above); 27 others `same`; check identical |
+| A4 | met | S1 (45620444058, rule before VAL-284) and S1f (45676413310, final rule): every criterion equal, exactly the predicted change |
+| A5 | met | NEWS (Scientific changes, after KIT-214's entry); ledger row VAL-<merge> after VAL-294; `wording.md`; this section and "For the change report" |
+
 ## Wording, U1
 
 - `wording.md`: the user-facing texts as drafts for the owner (VAL-41).
@@ -133,5 +167,45 @@ PREDICTED (written before the run was read):
 ## Not checked
 
 - No R on the laptop; every result above comes from a runner.
-- R2, E5, E6, NEWS, ledger, user texts: wait for OD-1 and OD-2.
-- S1 under OD-1 (b) or OD-2 (b): not run (the rule as decided only).
+- Real data: how often duplicated identifiers occur, and how often their rows differ in completeness (VAL-254).
+- The Import Existing Design route end to end with zeros (U1, routed): only the duplicate step's handling is tested
+  (E5, built in code).
+- The user-facing help and log texts in the application: drafts only (`wording.md`).
+- `test-workflow-omics-declarations.R`'s registry difference is inferred from the code and the failure text, not shown
+  by the comparator.
+
+## For the change report
+
+**Main part (legacy, `main`).** On `main` (and before KIT-214), lipidomics and metabolomics duplicate resolution kept,
+for an identifier listed more than once in an assay, the row with the highest mean over every numeric column of the
+table, identifier and annotation columns included (`main:R/func_lipid_qc.R:188`, `:275`;
+`main:R/func_lipid_s4_objects.R:4314`, `:4634`, as the ticket read them). Who was affected: users whose table repeats
+an identifier (custom imports, Import Existing Design, objects built in code; MS-DIAL default exports have unique
+identifiers). What changed in results: such an identifier can now keep a different row, with its own name and
+annotation, and every later step (internal-standard normalisation, RUV, the moderated test, the BH family) sees that
+row.
+
+**Appendix (0.9 line).** KIT-214 (VAL-173 (1)) restricted the mean to the design's samples but kept the highest mean
+alone, which prefers a row seen in 2 of 6 samples averaging 210,000 over one seen in 6 of 6 averaging 150,000.
+KIT-258 (VAL-254, VAL-284) keeps the row with the most measured values first (a value is measured when neither missing
+nor exactly 0, for the count and for the mean, as at import), then the highest mean of its measured values, then the
+first row in the table. The ordering is strict: one more measured sample always wins, so a complete noise-level row
+(12 of 12 at 2,000) is kept over a real feature missing in one sample (11 of 12, mean 590,909); the owner accepted
+this consequence (VAL-284 (2); test E6). A duplicated internal standard is resolved by the same rule in the
+application, and its kept row feeds the ITSD normalisation; the scripted S4 methods keep and rename duplicated
+standards instead (unchanged).
+
+- Code: base `63143aa3` `R/func_omics_qc_shared.R:155`, `R/func_lipid_qc_support_helpers.R:59`,
+  `R/func_lipid_s4_duplicate_helpers.R:305`, `R/func_metab_s4_qc_methods.R:363` (`slice_max` of the mean); fix
+  `77a719b8` `R/func_omics_qc_shared.R:105-138` (`duplicateResolutionMeasured`, `duplicateResolutionMeasuredMean`,
+  `keepDuplicateResolutionRow`), called at `R/func_omics_qc_shared.R:205`, `R/func_lipid_qc_support_helpers.R:66`,
+  `R/func_lipid_s4_duplicate_helpers.R:311`, `R/func_metab_s4_qc_methods.R:369`; marker in
+  `R/utils_workflow_analysis_record.R` (`duplicate_resolution_rank`), fixed by the step at
+  `R/utils_workflow_omics_declarations.R:321`.
+- Replay: records made before KIT-214 (no marker) replay every numeric column and the mean; records made under KIT-214
+  (`duplicate_resolution_samples = design`) the design's samples and the mean; records made now add
+  `duplicate_resolution_rank = measured_then_mean`.
+- Evidence: R1 45617808183; S1 45620444058 and S1f 45676413310 (15 fixtures, both variants, base against head: exactly
+  one identifier changed, P001 in the MS-DIAL lipid fixture through the import, 'TG 52:3' (3 of 4, mean 177.33) to
+  'PC 34:1' (4 of 4, mean 150.5)); R2 45676413310 (32 files, check). Limits: constructed and fixture data only; no
+  real data; the frequency of such duplicates is unknown.
