@@ -418,3 +418,35 @@ files (skipped without a browser), `test-metab-03b`, `test-lipid-12` (quarantine
 (13 skipped). F12 (the DIA-with-limpa report's Results text) is not touched: open with the owner.
 
 **Budget.** 14.3 + 490.1 + 23.2 = 527.6 job-minutes = 35.17 core-hours; KIT-259 in all 96.48 of 131.33.
+
+### 9.1 Closure check 2 (2026-11-26) and the coordinator's rulings
+
+- **Stop (1), `test-prot-norm-core.R:187-189`.** The count at `test-prot-norm-core.R:188` (the skip run's calls of
+  `resolveProtNormCompositeFigureInputs`) moves by this ticket from 1 to 2: the replaced-panels list writer resolves the
+  same layout once more, with the same arguments in the same staging folder; no output changes (closure check 2, D.3).
+  It is left unedited (the coordinator's ruling, 2026-11-26): a stored value waiting for the end-of-project re-record,
+  as VAL-282 and VAL-301; the coordinator writes the ledger row at landing, and the train predicts exactly that one
+  changed message (306 to 307). The single-resolution code alternative is left for KIT-266.
+- **Stop (2), the cause.** C01-E2's redraw half failed on both sides because of the test's premise, not the product:
+  `protNormCoreOwner` installs the owner on its own fake session (`helper-prot-norm-core.R:20-28`), not on
+  testServer's, so during the 'Color by' redraw `getDIAActiveManager()` (`R/mod_prot_norm_qc_support_helpers.R:149`;
+  fallback `R/utils_workflow_dia_state.R:2093-2102`) found no owner; the redraw's own `tryCatch` caught the error before
+  any figure was drawn: no figure, no placeholder, no marker. The run step worked because it scopes the owner
+  explicitly. For the same reason C01-E1's "a redraw leaves the list" halves could not fail as built. Repair (test
+  only, ee4c97a0): the redraw is given the fixture's owner (`getDIAActiveManager` mocked, as C01-E5 does); no
+  expectation changed. **Instrument re-send 2 of 3 (run 45713725630, 30.6 job-minutes; `i2-45713725630/`): every
+  prediction held.** Head 90 passed, 0 failed: the marker appears after the failing redraw, and the list is unchanged
+  after a redraw that ran (C01-E1). Base (the tests on 7aedc751's code) 62/26: C01-E2 fails on its pre half only (its
+  redraw half passes: the second correction's writer leaves the marker), C01-E1 fails on both paths (no list). The
+  cause is confirmed; the repair stays test-only.
+- **R1's tables** are committed as `r1c-45698227390/` (D-R1).
+- **Known limits (D.2).** (a) When Copy cannot create its backup folder it logs "Original directory will not be cleared"
+  and copies over the old `QC_figures` (`R/func_general_filemgmt_results_summary_helpers.R:236-241`); a list left by an
+  earlier Copy can then stay beside a new combined figure, and the report would name panels the new figure draws.
+  (b) A re-run that fails after KIT-257's start-of-run removal leaves the earlier combined figure without its list (the
+  composite is not on the removal list); a new Copy then delivers that figure without the sentence: an omission, not a
+  false claim.
+- **For the owner's wording pass (D.6):** in the DIA-with-limpa step's correction mode the notice also names the figures
+  "RUV-III-adjusted (for quality control)", although there the corrected matrix enters the model (`wording.md` W11).
+
+**Budget.** Re-send 2: 30.6 job-minutes = 2.04 core-hours; KIT-259 in all 98.52 of 131.33.

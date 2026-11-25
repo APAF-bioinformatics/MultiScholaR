@@ -1,0 +1,225 @@
+file: test-kit259b-second-correction.R
+test: KIT-259 I04-E1 (in process): the DIA-with-limpa RUV covariates step names a figure it replaced
+kind: failure
+message:
+  Expected [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. | [warning NULL] The RUV-III covariates step finished, but the figure 'RUV-corrected Pearson correlation' could not be drawn: injected drawing failure. The normalised data are not affected. In this tab, the composite QC figure and the report the figure is replaced by a note giving the reason. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I04-E1 (managed): the DIA-with-limpa RUV covariates step names a figure it replaced
+kind: failure
+message:
+  Expected [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. | [warning NULL] The RUV-III covariates step finished, but the figure 'RUV-corrected Pearson correlation' could not be drawn: injected drawing failure. The normalised data are not affected. In this tab, the composite QC figure and the report the figure is replaced by a note giving the reason. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E1 (in process): the run writes the replaced panels beside the combined figure; a redraw leaves them
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `lists[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(lists[[1L]], "h\tpost_norm_correlation") at test-kit259b-second-correction.R:271:9
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E1 (managed): the run writes the replaced panels beside the combined figure; a redraw leaves them
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `lists[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(lists[[1L]], "h\tpost_norm_correlation") at test-kit259b-second-correction.R:271:9
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E2: a redraw that fails after a run whose figures drew writes no list; pre markers enter the list
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `lists[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. └─testthat::expect_null(lists[[1L]]) at test-kit259b-second-correction.R:288:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E3: a normalisation run removes the earlier list; the pre markers stay
+kind: failure
+message:
+  Expected `file.exists(file.path(dir, c(k259bList, "pre_norm_pca.png.placeholder")))` to be identical to `c(FALSE, TRUE)`.
+  Differences:
+  `actual`:   TRUE  TRUE
+  `expected`: FALSE TRUE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E4: Copy carries the list into QC_figures beside the combined figure
+kind: failure
+message:
+  Expected `file.exists(copied)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E5: a session exported after the run and imported again keeps the list
+kind: failure
+message:
+  Expected `length(archives) >= 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (LFQ): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (LFQ): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (LFQ): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E6 (LFQ): the tab's current markers are not read; a list without a combined figure prints nothing
+kind: failure
+message:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (TMT): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (TMT): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (TMT): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E6 (TMT): the tab's current markers are not read; a list without a combined figure prints nothing
+kind: failure
+message:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E6 (DIANN): the tab's current markers are not read; a list without a combined figure prints nothing
+kind: failure
+message:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-E6 (DIANN_limpa): the tab's current markers are not read; a list without a combined figure prints nothing
+kind: failure
+message:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+
