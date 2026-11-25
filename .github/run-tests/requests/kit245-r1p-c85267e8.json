@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-245 product (b) R1p: tests-only commit c85267e8; E1 must fail by assertion (push inputs present, no sentence), G1 passes; ceiling 45 job-minutes; decides whether the (b) fix is written",
+  "label": "KIT-245 product (b) R1p failing-first on kit-245 c85267e8",
+  "package_commit": "c85267e8400839f2cac927c7639fd6eeb92dfa30",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit245-github-panel.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
