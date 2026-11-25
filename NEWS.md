@@ -61,6 +61,28 @@
 
 ### Fixes
 
+ * Reports (lipidomics, metabolomics; the same corrections in the proteomics reports): the report no longer prints
+   conclusions it did not compute (KIT-236; the owner's decision VAL-245; wording drafts for the owner's pass). The
+   quality-control figure text describes the four views and the stages that were run, without panel letters, and draws
+   no conclusion; Comments and Opinions are fields for the analyst instead of fixed statements such as 'All samples
+   passed initial QC criteria', with, where the analysis record holds them, the features remaining after each step and
+   how many samples the sample-correlation filter kept. The Methods no longer describe an integration step or a
+   cross-assay check that do not exist, describe zeros as they were handled, name the comparisons of the contrast table
+   instead of 'each pair of experimental groups', state the Benjamini-Hochberg fallback of the q-values (per comparison
+   where the record names it), say when a fold-change threshold was tested with TREAT and include it in the definition of
+   a significant feature (a DA settings block written under the older name 'Differential Expression UI Parameters' is
+   read too), say when technical replicates were modelled as a block, and name the MultiScholaR version; 'SOP xxx' and
+   the sample-identification placeholders are fields for the analyst. The sample details count the analysed samples and
+   the technical replicates the design declares (before, 'no technical replicates' was printed whatever the design).
+   The report names the results table the application writes (`DA_results_<omic>.xlsx`), and the quality-control,
+   count and volcano figures only when they exist (no 'Warning: ... not found' line in the report); the count sentence
+   reads the table Copy writes (`da_<omic>_num_sig_de_molecules.tab`) and states the counts per comparison and assay.
+   Proteomics: the technical-replicate sentence, the Benjamini-Hochberg fallback, the TREAT sentence and the block clause
+   as above; the DIA-with-limpa report no longer says technical replicates were averaged (the application never averages
+   them). Not yet changed (they wait for KIT-242): the between-sample normalisation sentence and the internal-standard
+   sentence. A project keeps the copy of the report template made at its first report; projects that generated a
+   report before this version keep the earlier text unless that copy (`scripts/<omic>/<template>.rmd`) is removed.
+
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

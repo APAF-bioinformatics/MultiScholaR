@@ -248,7 +248,10 @@ ExtractStudyParametersTMT <- function(study_params) {
   s4_de <- s4_params$deAnalysisParameters %||% list()
   
   # Extract UI parameter sections
-  ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", list())
+  # KIT-236 (P03): the DA UI block under the name the writer gives it ("Differential Expression"), else the
+  # older name; files of every earlier version keep reading.
+  ui_de <- safe_extract(ui_params, "Differential Abundance UI Parameters", NULL) %||%
+    safe_extract(ui_params, "Differential Expression UI Parameters", list())
   ui_enrich <- safe_extract(ui_params, "Enrichment Analysis UI Parameters", list())
   
   # Create flat parameter list for TMT workflow
@@ -299,15 +302,15 @@ ExtractStudyParametersTMT <- function(study_params) {
     
     # DE Analysis S4 parameters (FIXED: explicit NULL checks)
     s4_de_q_val_thresh = if(is.null(s4_de$de_q_val_thresh) || is.na(s4_de$de_q_val_thresh)) 0.05 else as.numeric(s4_de$de_q_val_thresh),
-    s4_de_treat_lfc_cutoff = if(is.null(s4_de$treat_lfc_cutoff) || is.na(s4_de$treat_lfc_cutoff)) 0 else as.numeric(s4_de$treat_lfc_cutoff),
+    s4_de_treat_lfc_cutoff = suppressWarnings(as.numeric(s4_de$treat_lfc_cutoff %||% NA_real_)), # KIT-236: NA = not recorded
     s4_ebayes_trend = as.logical(s4_de$eBayes_trend %||% TRUE),
     s4_ebayes_robust = as.logical(s4_de$eBayes_robust %||% TRUE),
     s4_formula_string = s4_de$formula_string %||% "~ 0 + group",
     
     # UI Parameters (FIXED: explicit NULL checks)
     ui_de_q_value_threshold = if(is.null(ui_de$q_value_threshold) || is.na(ui_de$q_value_threshold)) 0.05 else as.numeric(ui_de$q_value_threshold),
-    ui_de_log_fold_change_cutoff = if(is.null(ui_de$log_fold_change_cutoff) || is.na(ui_de$log_fold_change_cutoff)) 0 else as.numeric(ui_de$log_fold_change_cutoff),
-    ui_de_treat_enabled = as.logical(ui_de$treat_enabled %||% FALSE),
+    ui_de_log_fold_change_cutoff = suppressWarnings(as.numeric(ui_de$log_fold_change_cutoff %||% NA_real_)), # KIT-236: NA = not recorded
+    ui_de_treat_enabled = suppressWarnings(as.logical(ui_de$treat_enabled %||% NA)), # KIT-236: NA = not recorded
     
     ui_enrichment_up_lfc = if(is.null(ui_enrich$up_log2fc_cutoff) || is.na(ui_enrich$up_log2fc_cutoff)) 0 else as.numeric(ui_enrich$up_log2fc_cutoff),
     ui_enrichment_down_lfc = if(is.null(ui_enrich$down_log2fc_cutoff) || is.na(ui_enrich$down_log2fc_cutoff)) 0 else as.numeric(ui_enrich$down_log2fc_cutoff),
@@ -360,28 +363,15 @@ ExtractStudyParametersTMT <- function(study_params) {
 ```{r Format Sample Details, echo=FALSE}
 # UPDATED: Enhanced sample details with new parameter access
 FormatSampleDetails <- function(numbers) {
-  # Robust checks for required fields
-  tech_reps_val <- numbers$technical_replicates %||% 0
-  bio_samples_val <- numbers$biological_samples %||% 0
-  total_samples_val <- numbers$total_samples %||% 0
-  avg_tech_reps_val <- numbers$avg_tech_reps_per_sample %||% 1
-
-  tech_rep_text <- if (tech_reps_val > 0) {
-    glue::glue(
-      "{bio_samples_val} biological samples with an average of ",
-      "{round(avg_tech_reps_val, 2)} technical replicates per sample, ",
-      "and {tech_reps_val} additional technical replicate measurements."
-    )
-  } else {
-    glue::glue("{bio_samples_val} biological samples with no technical replicates.")
-  }
+  # KIT-236 (D5, part B): the samples and technical replicates the analysed design declares (the record's design, else
+  # the design table).
+  design_text <- ReportDesignText(numbers$report_facts)
 
   glue::glue(
     "
 SAMPLE DETAILS  
 
-There are {total_samples_val} samples in total which consists of:  
-• {tech_rep_text}  
+{design_text}  
 • Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]  ",
     .trim = FALSE
   )
@@ -715,19 +705,18 @@ generated automatically.]  ",
 FormatDEDetails <- function(numbers) {
   # Get UI parameters with S4 fallbacks
   ui_q_val_thresh <- numbers$ui_de_q_value_threshold %||% numbers$s4_de_q_val_thresh %||% 0.05
-  ui_lfc_cutoff <- numbers$ui_de_log_fold_change_cutoff %||% numbers$s4_de_treat_lfc_cutoff %||% 0
-  ui_treat_enabled <- numbers$ui_de_treat_enabled %||% (ui_lfc_cutoff > 0)
   
   # S4 parameters
   ebayes_trend_val <- numbers$s4_ebayes_trend %||% TRUE
   ebayes_robust_val <- numbers$s4_ebayes_robust %||% TRUE
   formula_string_val <- numbers$s4_formula_string %||% "~ 0 + group"
 
-  treat_desc <- if (isTRUE(ui_treat_enabled) && ui_lfc_cutoff > 0) {
-    glue::glue("The TREAT method was used to test against a log-fold-change threshold of {ui_lfc_cutoff}.")
-  } else {
-    "The standard empirical Bayes method was used to test for any deviation from zero log-fold-change."
-  }
+  # KIT-236 (D20): the fold-change threshold as it was tested (the record's model, else the DA UI block, else the cutoff).
+  treat_desc <- ReportTreatSentence(ReportTreatState(numbers))
+  # KIT-236 (D11): the FDR method of each comparison where the record names it, else the rule.
+  fdr_text <- ReportFdrSentence(numbers)
+  # KIT-236 (D10): the technical-replicate block, when the record holds it.
+  block_text <- ReportBlockClause(numbers, per_assay = FALSE)
   
   trend_robust <- c()
   if(isTRUE(ebayes_trend_val)) trend_robust <- c(trend_robust, "trended")
@@ -745,9 +734,8 @@ DIFFERENTIAL ABUNDANCE ANALYSIS
 Differential abundance analysis of proteins was performed using the adjusted 
 abundance matrix for the comparisons defined in the contrast table. The 'limma' R 
 package (Ritchie et al., 2015) was used. A linear model was fitted using the formula '{formula_string_val}' with the 
-'lmFit' function, and p-values were calculated using the 'eBayes' function. 
-{trend_robust_text} The false discovery rate correction was applied to the 
-moderated p-values by calculating the q-values (Storey, 2002). 
+'lmFit' function, and p-values were calculated using the 'eBayes' function.{block_text} 
+{trend_robust_text} {fdr_text} 
 {treat_desc} Significant differentially expressed proteins were defined as those 
 with q-values less than {ui_q_val_thresh}.
 
@@ -950,6 +938,244 @@ folder.",
 ```
 
 ```{r Sample Analysis Functions, echo=FALSE}
+# KIT-236: the facts the report's computed sentences read. The analysis record beside study_parameters.txt is read
+# here directly (as KIT-227 reads its steps; the overlay maps none of these fields), then the design table, then the
+# file. A source that is absent leaves its field NULL or NA, and the sentence says it is not recorded or is left out.
+ReportKnown <- function(x) {
+  !is.null(x) && length(x) == 1L && !is.list(x) && !is.na(x) &&
+    !trimws(as.character(x)) %in% c("", "N/A", "NA", "not recorded")
+}
+
+#' A file's state: TRUE or FALSE when the report's directory is known, NA when it is not (a chunk run alone)
+ReportFileState <- function(dir_name, file) {
+  base <- get0(dir_name, ifnotfound = NULL)
+  if (is.null(base)) return(NA)
+  file.exists(file.path(base, file))
+}
+
+#' The image files in a report directory's subfolder (none when the directory is not known)
+ReportImages <- function(dir_name, folder) {
+  base <- get0(dir_name, ifnotfound = NULL)
+  if (is.null(base)) return(character())
+  list.files(file.path(base, folder), pattern = "[.](png|jpg|jpeg)$", ignore.case = TRUE)
+}
+
+ReportRecordFacts <- function(design_matrix, study_params) {
+  source_dir <- get0("report_source_dir", ifnotfound = NULL)
+  record_path <- if (is.null(source_dir)) "" else file.path(source_dir, "analysis_record.json")
+  record <- if (nzchar(record_path) && file.exists(record_path)) {
+    tryCatch(jsonlite::read_json(record_path, simplifyVector = FALSE), error = function(e) NULL)
+  } else NULL
+  decode <- function(value) tryCatch(MultiScholaR:::decodeWorkflowRecordValue(value), error = function(e) NULL)
+  facts <- list(record_present = !is.null(record))
+  # The design: the record's analysed rows, else the design table. A technical-replicate set is a value of the
+  # declared technical_replicate_id (tech_rep_group on the application's route) shared by two or more runs.
+  rows <- record$design$rows
+  if (length(rows)) {
+    column <- record$design$technical_replicate_id
+    ids <- if (ReportKnown(column)) vapply(rows, function(row) {
+      value <- row[[column]]
+      if (is.null(value)) NA_character_ else as.character(value)
+    }, "") else NULL
+    facts$design <- list(source = "record", runs = length(rows), ids = ids)
+  } else if (is.data.frame(design_matrix) && nrow(design_matrix) > 0L) {
+    ids <- if ("tech_rep_group" %in% names(design_matrix)) as.character(design_matrix$tech_rep_group) else NULL
+    facts$design <- list(source = "file", runs = nrow(design_matrix), ids = ids)
+  }
+  da <- record$analyses$differential_abundance
+  model <- da$model
+  facts$treat_applied <- if (is.logical(model$treat_applied) && length(model$treat_applied) == 1L) model$treat_applied else NA
+  facts$block_reason <- if (ReportKnown(model$block_reason)) as.character(model$block_reason) else NA_character_
+  # The comparisons: the record's, else contrast_strings.tab beside the file, else the summary's contrasts_tbl.tab.
+  raw <- character()
+  friendly <- character()
+  if (length(da$contrasts)) {
+    raw <- vapply(da$contrasts, function(x) as.character(x$contrasts %||% NA_character_), "")
+    friendly <- vapply(da$contrasts, function(x) as.character(x$friendly_names %||% x$contrasts %||% NA_character_), "")
+  } else {
+    strings_path <- if (is.null(source_dir)) "" else file.path(source_dir, "contrast_strings.tab")
+    summary_dir <- get0("report_results_summary_dir", ifnotfound = NULL)
+    table_path <- if (is.null(summary_dir)) "" else file.path(summary_dir, "Study_report", "contrasts_tbl.tab")
+    if (nzchar(strings_path) && file.exists(strings_path)) {
+      raw <- trimws(readLines(strings_path, warn = FALSE))
+      raw <- raw[nzchar(raw)]
+      friendly <- gsub(".", "_", gsub("-", "_vs_", gsub("-group", "-", gsub("^group", "", raw))), fixed = TRUE)
+    } else if (nzchar(table_path) && file.exists(table_path)) {
+      table <- tryCatch(utils::read.delim(table_path, stringsAsFactors = FALSE, check.names = FALSE),
+        error = function(e) NULL)
+      if (is.data.frame(table) && nrow(table) > 0L) {
+        raw <- as.character(table[[if ("contrasts" %in% names(table)) "contrasts" else 1L]])
+        friendly <- if ("friendly_names" %in% names(table)) as.character(table$friendly_names) else raw
+      }
+    }
+  }
+  facts$contrasts <- stats::setNames(friendly, raw)
+  # The FDR method of each comparison (and assay), where the record carries it.
+  results <- Filter(function(x) !is.null(x$fdr_method), da$results %||% list())
+  if (length(results)) {
+    facts$fdr <- data.frame(
+      contrast = vapply(results, function(x) as.character(x$contrast %||% NA_character_), ""),
+      assay = vapply(results, function(x) as.character(x$assay %||% NA_character_), ""),
+      fdr_method = vapply(results, function(x) as.character(x$fdr_method), ""), stringsAsFactors = FALSE)
+  }
+  # The features remaining after each step: the record's step dimensions (rows, summed over the assays).
+  steps <- record$steps %||% list()
+  labels <- c(design_builder = "import and design", intensity_filter = "intensity filter",
+    duplicate_resolution = "duplicate resolution", qc_finalize = "quality-control finalisation",
+    itsd_normalisation = "internal-standard normalisation", log2 = "log2 transformation",
+    between_sample_normalisation = "between-sample normalisation", ruv = "RUV-III correction",
+    pearson_selection = "sample-correlation filter")
+  counts <- character()
+  for (step in steps) {
+    feature_rows <- step$dimensions$rows
+    if (!is.numeric(feature_rows) || length(feature_rows) != 1L) next
+    operation <- as.character(step$operation %||% "")
+    key <- names(labels)[vapply(names(labels), function(k) identical(operation, k) || endsWith(operation, paste0("_", k)),
+      logical(1))]
+    counts <- c(counts, paste(if (length(key)) labels[[key[[1L]]]] else gsub("_", " ", operation), feature_rows))
+  }
+  if (length(counts)) facts$step_features <- paste(counts, collapse = "; ")
+  # The samples the sample-correlation filter kept, only when its step is in the record: n = the runs of the design
+  # table (written before any filter), k = the samples of the record's analysed design.
+  pearson <- Filter(function(step) endsWith(as.character(step$operation %||% ""), "pearson_selection"), steps)
+  if (length(pearson) && length(rows) && is.data.frame(design_matrix)) {
+    threshold <- Filter(function(p) identical(p$name, "min_pearson_correlation_threshold"),
+      pearson[[length(pearson)]]$parameters)
+    facts$samples_kept <- list(k = length(rows), n = nrow(design_matrix),
+      threshold = if (length(threshold)) decode(threshold[[1L]]$value) else NULL)
+  }
+  # Internal standards: the assays the file lists under 'ITSD Features Per Assay' (KIT-235's parser returns the block
+  # as a section of its own).
+  itsd_block <- study_params[["ITSD Features Per Assay"]] %||% study_params[["ITSD Normalization"]][["ITSD Features Per Assay"]]
+  facts$itsd_assays_found <- length(itsd_block)
+  # Whether a between-sample normalisation method is recorded (the file, the S4 parameters or a record step).
+  norm_steps <- Filter(function(step) endsWith(as.character(step$operation %||% ""), "between_sample_normalisation") ||
+    identical(step$operation, "normalization-ruv"), steps)
+  facts$normalisation_recorded <- ReportKnown(study_params[["Between-Sample Normalization"]][["Method"]]) ||
+    ReportKnown(study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]][["normaliseBetweenSamples"]][["method"]]) ||
+    length(norm_steps) > 0L
+  facts
+}
+
+#' The sample-details sentence (D5): the analysed design from the record, else the design table
+ReportDesignText <- function(facts) {
+  design <- facts$design
+  if (is.null(design)) return("The design is not available to this report.")
+  lead <- if (identical(design$source, "record")) "The analysis included" else "The design table lists"
+  runs <- design$runs
+  ids <- design$ids
+  if (is.null(ids) || all(is.na(ids))) {
+    return(paste0(lead, " ", runs, " samples. The design does not record which, if any, are technical replicates."))
+  }
+  sizes <- table(ids)
+  shared <- sum(sizes > 1L)
+  biological <- length(sizes)
+  if (shared == 0L) {
+    return(paste0(lead, " ", runs, " samples, each a separate biological sample (no technical replicates were declared ",
+      "in the design)."))
+  }
+  paste0(lead, " ", runs, " measured runs from ", biological, " biological samples; ", shared,
+    if (shared == 1L) " biological sample was" else " biological samples were",
+    " measured more than once (technical replicates), giving ", runs - biological, " additional runs.")
+}
+
+#' The between-sample normalisation as the Figure 1 caption names its column (D1, D2)
+ReportNormalisationWords <- function(method, recorded = TRUE) {
+  if (!isTRUE(recorded) || !ReportKnown(method)) return("between-sample normalisation (the method is not recorded)")
+  switch(as.character(method),
+    cyclicloess = "cyclic loess normalisation (normalizeCyclicLoess)",
+    quantile = "quantile normalisation (normalizeQuantiles)",
+    scale = "scaling of each sample to the same median absolute value (normalizeMedianAbsValues)",
+    none = "the normalisation step, at which no normalisation was applied",
+    paste0("between-sample normalisation with the '", method, "' method"))
+}
+
+#' Whether a fold-change threshold (TREAT) was tested (D20): the record's model, else the DA UI block, else the cutoff.
+#' `record_only`: the record's model alone (DIA with limpa, whose DPC model runs no TREAT whatever the cutoff).
+ReportTreatState <- function(numbers, record_only = FALSE) {
+  cutoff <- NA_real_
+  for (value in list(numbers$ui_de_log_fold_change_cutoff, numbers$s4_de_treat_lfc_cutoff)) {
+    if (ReportKnown(value)) {
+      cutoff <- suppressWarnings(as.numeric(value))
+      if (!is.na(cutoff)) break
+    }
+  }
+  applied <- numbers$report_facts$treat_applied
+  if (is.logical(applied) && length(applied) == 1L && !is.na(applied)) {
+    return(list(state = if (applied) "treat" else "zero", cutoff = cutoff))
+  }
+  if (isTRUE(record_only)) return(list(state = "unknown", cutoff = cutoff))
+  enabled <- numbers$ui_de_treat_enabled
+  if (is.logical(enabled) && length(enabled) == 1L && isFALSE(enabled)) return(list(state = "zero", cutoff = cutoff))
+  if (is.na(cutoff)) return(list(state = "unknown", cutoff = cutoff))
+  list(state = if (cutoff > 0) "treat" else "zero", cutoff = cutoff)
+}
+
+ReportTreatSentence <- function(treat) {
+  if (identical(treat$state, "treat")) {
+    if (is.na(treat$cutoff)) return(paste("Each comparison was tested against a log2 fold-change threshold with limma's",
+      "TREAT method (McCarthy and Smyth, 2009); the threshold is not recorded."))
+    return(paste0("Each comparison was tested against a log2 fold-change threshold of ", treat$cutoff,
+      " with limma's TREAT method (McCarthy and Smyth, 2009)."))
+  }
+  if (identical(treat$state, "zero")) return("Each comparison was tested for any difference from zero log2 fold change.")
+  "Whether a fold-change threshold (TREAT) was used is not recorded for this analysis."
+}
+
+#' The definition of a significant feature (D21)
+ReportSignificanceSentence <- function(treat, q_value, features) {
+  if (identical(treat$state, "treat") && !is.na(treat$cutoff)) {
+    return(paste0("Differentially abundant ", features, " were those with a q-value below ", q_value,
+      " and an absolute log2 fold change of at least ", treat$cutoff, "."))
+  }
+  if (identical(treat$state, "zero")) return(paste0("Differentially abundant ", features, " were those with a q-value below ",
+    q_value, "."))
+  paste0("Differentially abundant ", features, " were those with a q-value below ", q_value,
+    "; whether a fold-change threshold also applied is not recorded.")
+}
+
+#' The false discovery rate sentence (D11): per comparison where the record names the method, else the rule
+ReportFdrSentence <- function(numbers) {
+  facts <- numbers$report_facts
+  fdr <- facts$fdr
+  if (is.null(fdr) || !nrow(fdr)) {
+    return(paste("False discovery rates were estimated as q-values (Storey, 2002); where they cannot be computed,",
+      "Benjamini-Hochberg adjusted p-values are used."))
+  }
+  fallback <- fdr[fdr$fdr_method == "BH", , drop = FALSE]
+  if (!nrow(fallback)) return("False discovery rates were estimated as q-values (Storey, 2002).")
+  names_of <- function(x) {
+    hit <- unname(facts$contrasts[x])
+    ifelse(is.na(hit), x, hit)
+  }
+  groups <- split(fallback, ifelse(is.na(fallback$assay), "", fallback$assay))
+  parts <- vapply(groups, function(rows) {
+    comparisons <- paste(unique(names_of(rows$contrast)), collapse = ", ")
+    if (is.na(rows$assay[[1L]])) comparisons else paste0(comparisons, " in ", rows$assay[[1L]])
+  }, "")
+  paste0("False discovery rates were estimated as q-values (Storey, 2002), except for ", paste(parts, collapse = "; "),
+    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead.")
+}
+
+#' The comparisons named after "the contrast table" (D10): " (1 comparison: A_vs_B)", or nothing when unknown
+ReportContrastList <- function(numbers) {
+  friendly <- unname(numbers$report_facts$contrasts %||% character())
+  friendly <- friendly[!is.na(friendly) & nzchar(friendly)]
+  if (!length(friendly)) return("")
+  paste0(" (", length(friendly), if (length(friendly) == 1L) " comparison: " else " comparisons: ",
+    paste(friendly, collapse = ", "), ")")
+}
+
+#' The technical-replicate block (D10): when the record's block reason contains 'technical_replicates'
+ReportBlockClause <- function(numbers, per_assay = TRUE) {
+  reason <- numbers$report_facts$block_reason
+  if (!ReportKnown(reason)) reason <- numbers$da_block_reason
+  if (!ReportKnown(reason) || !grepl("technical_replicates", reason, fixed = TRUE)) return("")
+  if (isTRUE(per_assay)) {
+    " Technical replicates were modelled as a block through limma's duplicateCorrelation (consensus correlation estimated per assay)."
+  } else " Technical replicates were modelled as a block through limma's duplicateCorrelation."
+}
+
 # UPDATED: Sample analysis with enhanced error handling
 CalculateSampleCounts <- function(group_summary) {
   # Enhanced validation
@@ -1030,6 +1256,8 @@ AnalyzeSamples <- function(design_matrix, study_params) {
     
     # Replace any NULLs with NA to prevent errors downstream
     final_numbers[sapply(final_numbers, is.null)] <- NA
+    # KIT-236: the record and design facts of the computed sentences (ReportRecordFacts)
+    final_numbers$report_facts <- tryCatch(ReportRecordFacts(design_matrix, study_params), error = function(e) list())
     # KIT-129 sixth pass item 6: a new RUV design's methods sentence, from the study parameters' section
     # "Unwanted variation (RUV)" (absent for today's design, whose text is unchanged)
     ruv_design_methods <- safe_extract(study_params, c("Unwanted variation (RUV)", "Methods text"), NULL)

@@ -133,6 +133,16 @@ k235Run <- function(omic, lines, side = "head", record = NULL) {
 }
 
 k235Text <- function(x) paste(as.character(x), collapse = "")
+
+#' KIT-236: the lines after the line equal to `heading` up to the next blank line followed by a heading line
+k235Paragraph <- function(text, heading) {
+    lines <- strsplit(text, "\n", fixed = TRUE)[[1L]]
+    start <- which(lines == heading)
+    if (!length(start)) return(NA_character_)
+    end <- start[[1L]] + 1L
+    while (end < length(lines) && !(lines[[end]] == "" && nzchar(lines[[end + 1L]]))) end <- end + 1L
+    paste(lines[(start[[1L]] + 1L):(end - 1L)], collapse = "\n")
+}
 k235Has <- function(text, pattern) grepl(pattern, k235Text(text), fixed = TRUE)
 
 #' The assertions every case shares (P02): the extractor alone returns a non-empty list, so a stop seen in Main is the
@@ -223,7 +233,11 @@ test_that("KIT-235 T6: '\u2022' and '-' files print the base text, and the same 
             info <- paste(case, shape)
             k235ExpectExtractor(head, info)
             expect_true(k235Has(head$content$method_details, "METHOD DETAILS"), info = info)
-            expect_identical(k235Text(head$content$method_details), k235Text(base$content$method_details), info = info)
+            # KIT-236 (declared edit (b)): the Methods changed by design outside the RUV and quality-control paragraphs.
+            for (heading in c("Batch Effect Correction", "Quality Control")) {
+                expect_identical(k235Paragraph(k235Text(head$content$method_details), heading),
+                    k235Paragraph(k235Text(base$content$method_details), heading), info = paste(info, heading))
+            }
             expect_identical(k235Text(head$content$method_details), head_star, info = info)
         }
     }
