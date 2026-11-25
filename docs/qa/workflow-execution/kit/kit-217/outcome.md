@@ -177,3 +177,23 @@ Then R2 again (correction pass) and R3.
   GUI-entry files limited to the 16 steps per lane from `qc_intensity`; `test-workflow-omics-declarations.R` and
   `test-workflow-omics-binding-steps.R` `message-changed`; every other file `same`; check findings only on head: none.
   Decides A5; then the implementation audit.
+
+## R3 (45587576015, 6b9131dc vs 16112917): observed, stopped
+
+- Every declared verdict held: 476 files `same`; the new file `only-on-head` (344/0); `test-metab-qc-shared.R` and
+  `test-workflow-operation-registry.R` `count-changed` (registry 354 -> 358, 264 -> 268, failures identical);
+  `test-omic-qc-module.R` the four expectations of test (b); the lipid/metab GUI-entry files the 16 steps per lane from
+  `qc_intensity`; `test-workflow-omics-declarations.R` and `test-workflow-omics-binding-steps.R` `message-changed`;
+  check findings identical (0 only on head).
+- **Outside the prediction:**
+  1. `test-gui-entry-proteomics.R` `new-failure` (base 189 passed / 4 failed; head 92 / 101). In every proteomics lane
+     the per-step comparisons fail from the `design` step on; the first difference is the design state's digest
+     (`protein_s4_initial`). Inferred (not shown): the two metabolite keys added to `inst/config/config.ini` (5.3, decided)
+     enter the configuration every route reads at the design into its states, so every proteomics state digest moves.
+     Nothing in proteomics' filter or route code was changed. The lipid/metab lanes' failures already start at
+     `qc_intensity` because their oracles hold the same configuration at the design? Not established: their design steps
+     did not move, so the inference above is unproven; a probe comparing the proteomics design state's `@args`/config
+     on base and head would settle it.
+  2. `test-omic-enrich-module.R` `fixed`: one test fails on base only (a second enrichment Run shows a different text
+     digest than the first); proteomics enrichment, off this ticket's route; inferred instability, not shown.
+- Per the coordinator's rule no further correction; the ticket goes back with these two verdicts for a ruling.
