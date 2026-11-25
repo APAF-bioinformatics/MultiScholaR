@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-190 k bound failing-first: tests-only commit ef9cda11 (T9) after the staging merge; new file only",
+  "label": "KIT-190 k bound failing-first ef9cda11",
+  "package_commit": "ef9cda114859734f6dee041e6e1cf0e0c8863673",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
