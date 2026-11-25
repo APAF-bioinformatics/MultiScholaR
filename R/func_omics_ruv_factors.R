@@ -358,8 +358,10 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         correction_controls <- lapply(stats::setNames(to_correct, to_correct), function(assay_name) {
             if (supplied || first_pass) factors[[assay_name]]$control_ids else rownames(values[[assay_name]])
         })
-        result <- ruvIII_C_Varying(subset_object, ruv_grouping_variable = grouping, ruv_number_k = lapply(factors[to_correct], `[[`, "k"),
-            ctrl = correction_controls)
+        # KIT-224: the method runs under the earlier levels rule, so that the levels are restored once, below.
+        result <- withr::with_options(list(MultiScholaR.ruv_feature_levels = workflowReplayRuleMarkers$ruv_feature_levels$earlier),
+            ruvIII_C_Varying(subset_object, ruv_grouping_variable = grouping, ruv_number_k = lapply(factors[to_correct], `[[`, "k"),
+                ctrl = correction_controls))
         result_assays <- methods::slot(result, slots$data)
         for (assay_name in to_correct) {
             corrected_assay <- result_assays[[assay_name]]
