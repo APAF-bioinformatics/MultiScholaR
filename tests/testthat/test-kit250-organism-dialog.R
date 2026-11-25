@@ -88,8 +88,8 @@ k250Cancel <- function(workflowData, localData) {
   cancelProtImportOrganismSelection(
     workflowData = workflowData, localData = localData,
     removeModal = function() removed <<- removed + 1L,
-    showNotification = function(message, type = "default", duration = 5) {
-      notes[[length(notes) + 1L]] <<- list(message = message, type = type, duration = duration)
+    showNotification = function(message, type = "default", duration = 5, id = NULL) {
+      notes[[length(notes) + 1L]] <<- list(message = message, type = type, duration = duration, id = id)
     },
     logInfo = function(...) NULL
   )
@@ -138,12 +138,22 @@ test_that("E2: Confirm completes the import once, after the organism and the opt
 test_that("E3: the dialog's Cancel is the module's own button, not a dismiss button", {
   modal <- buildProtImportOrganismSelectionModal(ns = shiny::NS("import"),
     organismDistribution = k250LocalData()$organism_distribution)
-  footer <- htmltools::renderTags(modal)$html
-  footer <- sub("^.*<div class=\"modal-footer\">", "", footer)
+  whole <- htmltools::renderTags(modal)$html
+  footer <- sub("^.*<div class=\"modal-footer\">", "", whole)
   expect_match(footer, "id=\"import-cancel_organism\"", fixed = TRUE)
   expect_false(grepl("data-dismiss", footer, fixed = TRUE))
   expect_false(grepl("data-bs-dismiss", footer, fixed = TRUE))
   expect_match(footer, "id=\"import-confirm_organism\"", fixed = TRUE)
+  # AUDIT-KIT-250-impl I03: the window cannot be closed without server code (no Esc, no backdrop click, no close
+  # button), since while it is open the import's table is on the bus behind it.
+  expect_match(whole, "data-backdrop=\"static\"", fixed = TRUE)
+  expect_match(whole, "data-bs-backdrop=\"static\"", fixed = TRUE)
+  expect_match(whole, "data-keyboard=\"false\"", fixed = TRUE)
+  expect_match(whole, "data-bs-keyboard=\"false\"", fixed = TRUE)
+  header <- sub("<div class=\"modal-body\">.*$", "", whole)
+  expect_match(header, "Select Primary Organism", fixed = TRUE)
+  expect_false(grepl("class=\"[^\"]*\\bclose\\b", header, perl = TRUE))
+  expect_false(grepl("btn-close", header, fixed = TRUE))
 })
 
 test_that("E4: Cancel leaves the import unfinished, closes the dialog and says so until closed", {
@@ -159,6 +169,8 @@ test_that("E4: Cancel leaves the import unfinished, closes the dialog and says s
   expect_identical(run$notes[[1L]]$message, k250W1)
   expect_identical(run$notes[[1L]]$type, "warning")
   expect_null(run$notes[[1L]]$duration)
+  # AUDIT-KIT-250-impl I02: one fixed id, so a second Cancel replaces it and the next import removes it.
+  expect_identical(run$notes[[1L]]$id, "prot_import_organism_cancelled")
   expect_false(identical(workflowData$tab_status$setup_import, "complete"))
   expect_identical(workflowData$taxon_id, 10090L)
 })
@@ -166,11 +178,15 @@ test_that("E4: Cancel leaves the import unfinished, closes the dialog and says s
 test_that("E5: a stale waiting flag is reset when an import starts and when an import fails", {
   localData <- k250LocalData(waiting = TRUE)
   localData$organism_unconfirmed <- TRUE
-  startProtImportProcessing(searchResultsPath = "/tmp/report.tsv", fastaPath = "/tmp/proteins.fasta",
+  removedNotes <- character()
+  k250Call(startProtImportProcessing, list(searchResultsPath = "/tmp/report.tsv", fastaPath = "/tmp/proteins.fasta",
     format = "diann", localData = localData, ns = function(id) id, requireValue = function(value) value,
-    announceStart = function(...) NULL, buildProcessingModal = function(ns) NULL, showModal = function(...) NULL)
+    announceStart = function(...) NULL, buildProcessingModal = function(ns) NULL, showModal = function(...) NULL,
+    removeNotification = function(id, ...) removedNotes <<- c(removedNotes, id)))
   expect_false(isTRUE(localData$waiting_for_organism_selection))
   expect_false(isTRUE(localData$organism_unconfirmed))
+  # AUDIT-KIT-250-impl I02: the Cancel warning (W1) is removed when a new import starts.
+  expect_identical(removedNotes, "prot_import_organism_cancelled")
   run <- k250CompleteSuccess(k250WorkflowData(), localData)
   expect_identical(run$events,
     c("complete:notify=FALSE", "removeModal", "notification:Data import successful!:message"))
@@ -272,4 +288,123 @@ test_that("G3: FASTA headers without organisms: no dialog, the import completes 
   expect_identical(run$events,
     c("complete:notify=FALSE", "removeModal", "notification:Data import successful!:message"))
   expect_identical(workflowData$taxon_id, 10090L)
+})
+
+# AUDIT-KIT-250-impl I01 (a): the module's own Cancel observer (registerProtImportObservers, input$cancel_organism)
+# pressed in a Shiny test session with a real DIA session owner, then the way on that W1 advises: Cancel, re-import,
+# Confirm; and Cancel, untick, import. Pattern: test-workflow-gui-memory-lifetimes.R ("DIA import persists ...").
+test_that("E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window", {
+  root <- withr::local_tempdir()
+  imported <- list(data = data.frame(Run = c("A", "B", "A"), Protein.Group = c("P1", "P2", "P3"),
+      Stripped.Sequence = c("pep1", "pep2", "pep3"), Precursor.Normalised = c(1, 2, 3)),
+    data_type = "peptide", column_mapping = list(protein_col = "Protein.Group", peptide_col = "Stripped.Sequence",
+      run_col = "Run", quantity_col = "Precursor.Normalised", qvalue_col = "Q.Value", pg_qvalue_col = "PG.Q.Value"))
+  distribution <- data.frame(organism_name = c("Homo sapiens", "Mus musculus"), taxon_id = c(9606L, 10090L),
+    protein_count = c(2L, 1L), percentage = c(66.67, 33.33), stringsAsFactors = FALSE)
+  ev <- new.env(parent = emptyenv())
+  ev$log <- character()
+  ev$errors <- character()
+  note <- function(message, type = "default", duration = 5, id = NULL, ...) {
+    ev$log <- c(ev$log, paste0("note:", if (is.null(id)) "" else id, ":", message))
+  }
+  shiny::testServer(function(input, output, session) {
+    workflow <- shiny::reactiveValues(state_manager = newDIAStateAdapter(
+      newWorkflowEntityStore(root, "kit250-e8", "DIA"), WorkflowState$new(audit_enabled = FALSE)),
+      tab_status = list(setup_import = "pending", design_matrix = "disabled"), processing_log = list())
+    manager <- workflow$state_manager
+    attachDIAStateSession(manager, session, workflow)
+    local_data <- createProtImportLocalData()
+    registerProtImportObservers(input, output, session, workflow, local_data,
+      list(source_dir = root), FALSE, function() "fixture.tsv", function() "fixture.fasta", function() "diann",
+      startProcessingFn = function(...) k250Call(startProtImportProcessing, c(list(...), list(
+        announceStart = function(...) NULL,
+        showModal = function(modal) ev$log <- c(ev$log, "showModal:processing"),
+        removeNotification = function(id, ...) ev$log <- c(ev$log, paste0("removeNotification:", id))))),
+      runProcessingSafelyFn = function(runProcessing, workflowData, localData, logError) {
+        runProtImportProcessingSafely(runProcessing, workflowData, localData, logError = function(...) NULL,
+          resetWorkflowState = function(workflowData, localData, errorMessage, logError) {
+            ev$errors <- c(ev$errors, errorMessage)
+            resetProtImportWorkflowStateOnError(workflowData, localData, errorMessage, logError = function(...) NULL,
+              removeModal = function() NULL, showNotification = function(...) NULL, messageFn = function(...) NULL)
+          })
+      },
+      runFormatDetectionFn = function(...) NULL,
+      toggleMixedSpeciesInputsFn = function(...) NULL,
+      readDataWithStatusFn = function(...) imported,
+      loadConfigurationResourcesFn = function(workflowData, ...) workflowData$config_list <- list(fixture = TRUE),
+      processFastaDataFn = function(workflowData, ...) workflowData$aa_seq_tbl_final <- data.frame(x = 1),
+      extractOrganismsFn = function(...) data.frame(uniprot_acc = c("P1", "P2", "P3"), taxon_id = c(9606L, 9606L, 10090L),
+        organism_name = c("Homo sapiens", "Homo sapiens", "Mus musculus"), stringsAsFactors = FALSE),
+      analyzeDistributionFn = function(...) distribution,
+      showModalFn = function(modal) ev$log <- c(ev$log, "showModal:organism"),
+      updateStatusFn = function(...) NULL,
+      showNotificationFn = note,
+      completeSuccessStateFn = function(...) completeProtImportSuccessState(...,
+        removeModal = function() ev$log <- c(ev$log, "removeModal:import"), showNotification = note,
+        messageFn = function(...) NULL),
+      confirmOrganismSelectionFn = function(...) confirmProtImportOrganismSelection(...,
+        removeModal = function() ev$log <- c(ev$log, "removeModal:confirm"), showNotification = note,
+        logInfo = function(...) NULL),
+      cancelOrganismSelectionFn = function(...) k250Call(cancelProtImportOrganismSelection, c(list(...), list(
+        removeModal = function() ev$log <- c(ev$log, "removeModal:cancel"), showNotification = note,
+        logInfo = function(...) NULL))),
+      logInfo = function(...) NULL, logWarn = function(...) NULL, messageFn = function(...) NULL)
+  }, {
+    # 1. A ticked import: the window is shown and the import is not complete.
+    session$setInputs(sanitize_names = TRUE, organism_name = "Mus musculus", taxon_id = 10090,
+      mixed_species_fasta = TRUE, process_data = 1L)
+    expect_identical(ev$errors, character())
+    expect_true("showModal:organism" %in% ev$log)
+    expect_true(isTRUE(local_data$waiting_for_organism_selection))
+    expect_identical(workflow$tab_status$setup_import, "incomplete")
+    expect_false(is.null(workflow$data_tbl))
+
+    # 2. Cancel through the module's own observer: the import is cleared and W1 shown under its fixed id.
+    ev$log <- character()
+    session$setInputs(cancel_organism = 1L)
+    expect_null(workflow$data_tbl)
+    expect_null(workflow$config_list)
+    expect_identical(workflow$tab_status$setup_import, "incomplete")
+    expect_true(isTRUE(local_data$organism_unconfirmed))
+    expect_false(isTRUE(local_data$waiting_for_organism_selection))
+    expect_identical(ev$log, c("removeModal:cancel", paste0("note:prot_import_organism_cancelled:", k250W1)))
+
+    # 3. 'Process Imported Data' again, the option still ticked: W1 removed, the window shown again.
+    ev$log <- character()
+    session$setInputs(process_data = 2L)
+    expect_identical(ev$errors, character())
+    expect_true("removeNotification:prot_import_organism_cancelled" %in% ev$log)
+    expect_true("showModal:organism" %in% ev$log)
+    expect_true(isTRUE(local_data$waiting_for_organism_selection))
+    expect_false(isTRUE(local_data$organism_unconfirmed))
+    expect_identical(workflow$tab_status$setup_import, "incomplete")
+
+    # 4. Confirm: the import completes on the confirmed organism, with its table.
+    ev$log <- character()
+    session$setInputs(selected_organism = "9606", confirm_organism = 1L)
+    expect_identical(workflow$tab_status$setup_import, "complete")
+    expect_identical(workflow$tab_status$design_matrix, "pending")
+    expect_false(is.null(workflow$data_tbl))
+    expect_identical(workflow$taxon_id, 9606L)
+    expect_false(isTRUE(local_data$waiting_for_organism_selection))
+    expect_identical(ev$log, c("removeModal:confirm",
+      "note::Primary organism set to: Homo sapiens (Taxon: 9606)", "note::Data import successful!"))
+
+    # 5. A third ticked import, Cancel, then the option unticked and an import: it completes and the processing
+    # window is removed (P01), with the form's organism.
+    session$setInputs(process_data = 3L)
+    session$setInputs(cancel_organism = 2L)
+    expect_null(workflow$data_tbl)
+    ev$log <- character()
+    session$setInputs(mixed_species_fasta = FALSE, process_data = 4L)
+    expect_identical(ev$errors, character())
+    expect_false("showModal:organism" %in% ev$log)
+    expect_true("removeModal:import" %in% ev$log)
+    expect_true("note::Data import successful!" %in% ev$log)
+    expect_true("removeNotification:prot_import_organism_cancelled" %in% ev$log)
+    expect_identical(workflow$tab_status$setup_import, "complete")
+    expect_false(is.null(workflow$data_tbl))
+    expect_false(isTRUE(local_data$waiting_for_organism_selection))
+    expect_false(isTRUE(local_data$organism_unconfirmed))
+  })
 })
