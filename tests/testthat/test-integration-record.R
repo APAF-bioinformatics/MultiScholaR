@@ -415,3 +415,116 @@ test_that("KIT-142: the comparison tells a different model apart", {
     b$factors$biological_sample <- "y"
     expect_identical(integrationCompareModels(a, b)$largest_relative, Inf)
 })
+
+# KIT-239 (INT-28): the report's "Limitations" section, after the Methods draft, read from the record. Every sentence is
+# read from the wording tables at test time (a computed one built with sprintf() from its entry and the record's counts);
+# on a tree without the entries or the helpers these tests fail at their first assertion.
+test_that("KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers", {
+    testthat::skip_if_not(rmarkdown::pandoc_available(), "pandoc is not available")
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    rt <- integrationRecordTexts()
+    gt <- integrationGuiTexts()
+    keys <- c("limits_lead", "limits_samples", "limits_fixed_samples", "limits_fixed_missing", "limits_fixed_averaged",
+        "limits_fixed_model", "limits_fixed_check", "limits_services_none")
+    expect_true("section_limitations" %in% names(rt))
+    expect_true(all(keys %in% names(gt)), info = paste("absent:", paste(setdiff(keys, names(gt)), collapse = ", ")))
+    project <- intRecProject()
+    journey <- intRecJourney(project)
+    bundle <- integrationWriteRecordBundle(journey$manager, file.path(project$root, "html"), format = "html")
+    # pandoc wraps long lines and makes apostrophes typographic: compare with whitespace collapsed and both decoded.
+    norm <- function(x) gsub("\\s+", " ", gsub("&#39;|&#x27;|&rsquo;|&#8217;|\u2019", "'", paste(x, collapse = " ")))
+    page <- norm(readLines(bundle$files[[4L]], warn = FALSE, encoding = "UTF-8"))
+    escape <- function(x) gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", x)
+    heading_at <- function(text) regexpr(sprintf("<h1[^>]*>\\s*%s\\s*</h1>", escape(text)), page, perl = TRUE)
+    heading <- if ("section_limitations" %in% names(rt)) rt[["section_limitations"]] else "Limitations"
+    at <- heading_at(heading)
+    methods_at <- heading_at(rt[["section_methods"]])
+    inputs_at <- heading_at(rt[["section_inputs"]])
+    expect_gt(at, 0L)
+    expect_gt(at, methods_at)
+    expect_lt(at, inputs_at)
+    if (at > 0L && inputs_at > at && all(keys %in% names(gt))) {
+        section <- substr(page, at, inputs_at)
+        for (key in c("limits_lead", "limits_fixed_samples", "limits_fixed_missing", "limits_fixed_averaged",
+            "limits_fixed_model", "limits_fixed_check", "limits_services_none")) {
+            expect_true(grepl(norm(gt[[key]]), section, fixed = TRUE), info = key)
+        }
+        # The tab-only sentence on the services is not the report's.
+        expect_false(grepl(norm(gt[["limits_fixed_services"]]), section, fixed = TRUE))
+        # The record's counts.
+        record <- jsonlite::read_json(bundle$files[[1L]], simplifyVector = FALSE)
+        matching <- record$analyses$integration_mofa_model$integration$matching
+        samples <- nrow(integrationRecordFrame(matching$samples))
+        expect_true(grepl(norm(sprintf(gt[["limits_samples"]], samples, as.integer(matching$shared_samples))), section,
+            fixed = TRUE))
+        # AUDIT-KIT-239-impl I05: the missing-samples and runs-averaged counts, computed here from the record's tables.
+        frame <- integrationRecordFrame(matching$samples)
+        views <- as.character(integrationRecordFrame(matching$view_summary)$view)
+        missing <- sum(as.integer(frame$views_present) < length(views))
+        expect_gt(missing, 0L)
+        expect_true(grepl(norm(sprintf(gt[["limits_missing_samples"]], missing, samples)), section, fixed = TRUE))
+        for (view in views) {
+            runs <- as.character(frame[[paste0(view, "_runs")]])
+            runs[is.na(runs)] <- ""
+            runs <- lengths(strsplit(runs, ";", fixed = TRUE))
+            if (any(runs > 1L)) {
+                expect_true(grepl(norm(sprintf(gt[["limits_averaged_item"]], view, sum(runs > 1L), sum(runs > 0L),
+                    max(runs))), section, fixed = TRUE), info = view)
+            }
+        }
+        message(sprintf("KIT-239 L4: Limitations at %d, after Methods (draft) at %d, before %s at %d; %d samples, %d shared",
+            at, methods_at, rt[["section_inputs"]], inputs_at, samples, as.integer(matching$shared_samples)))
+    }
+})
+
+test_that("KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none", {
+    reader <- get0("integrationRecordLimitationFacts", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    expect_true(is.function(reader))
+    if (is.function(reader)) {
+        project <- intRecProject()
+        journey <- intRecJourney(project)
+        json <- file.path(project$root, "record.json")
+        writeWorkflowAnalysisRecord(journey$manager, json)
+        read <- jsonlite::read_json(json, simplifyVector = FALSE)
+        matching <- read$analyses$integration_mofa_model$integration$matching
+        # (i) The record's samples; no enrichment was run, so no service.
+        facts <- reader(read)
+        expect_identical(facts$samples, nrow(integrationRecordFrame(matching$samples)))
+        expect_identical(facts$shared, as.integer(matching$shared_samples))
+        expect_identical(facts$services, character())
+        # AUDIT-KIT-239-impl I05: the missing-samples and runs-averaged counts, computed here from the record's tables.
+        frame <- integrationRecordFrame(matching$samples)
+        views <- as.character(integrationRecordFrame(matching$view_summary)$view)
+        expect_identical(facts$missing, sum(as.integer(frame$views_present) < length(views)))
+        repeated <- vapply(views, function(view) {
+            runs <- as.character(frame[[paste0(view, "_runs")]])
+            runs[is.na(runs)] <- ""
+            sum(lengths(strsplit(runs, ";", fixed = TRUE)) > 1L)
+        }, integer(1), USE.NAMES = FALSE)
+        expect_identical(facts$averaged$view, views)
+        expect_identical(facts$averaged$repeated, repeated)
+        # (ii) One complete KEGG enrichment: its recorded release, in the record's own form.
+        planted <- read
+        planted$analyses$integration_mofa_model$integration$enrichment <- list(list(complete = TRUE, factor = "Factor1",
+            view = "metabolomics", database = "kegg", service = list(release = "KEGG Release 115.0"),
+            settings = list(correlation_method = "spearman", min_samples = 3L),
+            direction = list(feature_id = "M1", view = "metabolomics", sign = 1L),
+            ranking_counts = list(features = 10L, ranked = 10L), mapping_counts = list(mapped = 5L), tests = 3L,
+            family = "Factor1, metabolomics", stored_sha256 = strrep("e", 64L)))
+        expect_identical(reader(planted)$services, "KEGG Release 115.0")
+        # AUDIT-KIT-239-impl I06: an enrichment recorded but not readable (complete = FALSE) is not "none run": the
+        # services are not known, so the report prints the sentence true for every run.
+        unreadable <- planted
+        unreadable$analyses$integration_mofa_model$integration$enrichment[[1L]]$complete <- FALSE
+        expect_null(reader(unreadable)$services)
+        expect_true("services" %in% names(reader(unreadable)))
+        # (iii) An incomplete block: no facts, and the report's text for that case says the numbers could not be read,
+        # never "None recorded.".
+        incomplete <- read
+        incomplete$analyses$integration_mofa_model$integration$complete <- FALSE
+        expect_null(reader(incomplete))
+        none <- integrationLimitationsText(NULL)
+        expect_true(integrationGuiTexts()[["limits_not_computed"]] %in% none)
+        expect_false(integrationRecordTexts()[["none_recorded"]] %in% none)
+    }
+})

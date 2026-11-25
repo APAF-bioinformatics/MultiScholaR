@@ -56,7 +56,7 @@ integrationApiAssertProject <- function(project) {
 #' The integration module's settings tables
 #'
 #' @description The settings of the model, of the results and of the enrichment, each with its default and the
-#'   decision that settled it, as the Integration tab and the workbook show them. A setting is changed by naming it
+#'   decision that settled it, as the Integration tab shows them. A setting is changed by naming it
 #'   in the `overrides` of [integrationTrainModel()], [integrationGetResults()] or [integrationEnrichFactor()].
 #' @return A list: `model` and `results`, data frames with columns `parameter`, `default`, `choices` and
 #'   `settled_by`; `enrichment`, a data frame with columns `setting`, `default` and `settled_by`; and
@@ -81,7 +81,9 @@ integrationSettings <- function() {
 #'
 #' @description Lays out a project's integration folders and lists the tables each omic's workflow saved at its
 #'   Summary step under `<project>/integration/<omic>/`, saying for each omic whether it can be used and, if not, why.
-#'   The folder for the workbook's scratch files (`<project>/scripts/integration`) is created when absent.
+#'   The project's integration scripts folder (`<project>/scripts/integration`), where the Integration tab and these
+#'   functions keep their working files, is created when absent. Read the limitations in [integrationTrainModel()]
+#'   before drawing conclusions from a model.
 #' @param project_dir The project's folder.
 #' @return A list: `project_dir`, the project's folder (normalised); `paths`, the integration folders (a named list
 #'   of paths: `base_dir`, `integration_dir`, `source_dir`, `results_dir`, `multiomic_inputs_dir`, `mofa_tables_dir`,
@@ -224,6 +226,38 @@ integrationConfirmMatch <- function(project, match) {
 #'   [integrationSettings()]), changed by `input_matrix` and `overrides`. A model already trained on the same inputs
 #'   with the same settings and software is reused. How samples are matched (technical replicates, internal
 #'   standards, missing samples) is fixed by the confirmed match.
+#' @section Limitations:
+#' Read these before drawing conclusions from a model.
+#'
+#' - How small a pattern the model can find depends on the number of samples. In simulations made for this software
+#'   with 20 samples (two groups of 10), a pattern carried only by the two smallest of four data sets, in a tenth of
+#'   their features, each changed by about two-thirds of its measurement noise, was recovered closely (a correlation
+#'   of at least 0.9 with the true pattern) in at most 2 of 10 simulated data sets, whichever setting was tried; the
+#'   settings tried did not include this software's current default feature selection. With 60 samples and the slow
+#'   training this software uses, the same pattern was recovered in 7 to 10 of 10, and with this software's default
+#'   settings a pattern as large as the noise was recovered in 26 to 29 of 30 simulated data sets with 20 samples.
+#'   MOFA2's documentation says that factor models are useful only with large numbers of samples, at least more than
+#'   15. A pattern this model does not show may still be in the data: treat the factors as descriptive.
+#' - Where a value is missing, the model leaves it out (MOFA2 does not impute it), which assumes that whether a value
+#'   is missing does not depend on the value itself (missing at random). Values missing because they were too low to
+#'   measure are not modelled as such, so the model's estimates for low-abundance features can be biased. MOFA2 fills
+#'   missing values with each feature's mean only to compute where training starts.
+#' - Each average uses only the runs in which the value was measured. When a value is missing from some of a sample's
+#'   runs because it was too low to measure, the average of the other runs is too high; this affects low-abundance
+#'   features most.
+#' - The model treats all samples as one group (the groups are not given to it, and MOFA2's option for several groups
+#'   of samples is not used), assumes normally distributed (Gaussian) variation in every data set, and takes one
+#'   input per omic (one input can hold several data sets, such as positive and negative ion mode). The integration
+#'   fills in no missing value itself; values that an omic's own workflow estimated before saving are treated as
+#'   measured.
+#' - Given the settings of the analysis script it was adapted from, this software trains the identical model; this
+#'   was checked on simulated data only, because the script's own data were not available. The check is about the
+#'   software, not about any biological result, and this software's default settings differ from the script's. The
+#'   defaults for the input matrix, the feature selection, the scaling and the convergence rule were chosen from
+#'   simulations of one design, not from real data; the number of factors comes from the analysis script.
+#' - Enrichment, at the Enrichment tab, needs external services: STRING, queried over the internet (by default its
+#'   version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome for metabolites and lipids.
+#'   Its results depend on the release used, which is recorded with each result.
 #' @param project The value of [integrationOpenProject()].
 #' @param confirmed The value of [integrationConfirmMatch()].
 #' @param input_matrix `NULL` for the default, or which values each data set enters the model with (one of the

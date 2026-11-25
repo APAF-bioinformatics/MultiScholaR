@@ -36,6 +36,8 @@ mod_integration_results_ui <- function(id) {
         testid(shiny::div(integrationModelSettingsUi(ns, integrationResultsParameterSpec(), texts, exclude = character(),
             testid = "integration-results-param-", note = texts[["results_provisional"]])), "integration-results-settings"),
         testid(shiny::uiOutput(ns("advisories")), "integration-results-advisories"),
+        # KIT-239 (INT-28): the limitations of the model, with this model's own numbers.
+        testid(shiny::uiOutput(ns("limitations")), "integration-results-limitations"),
         shiny::h4(texts[["variance_heading"]]),
         shiny::p(texts[["variance_intro"]]),
         testid(shiny::plotOutput(ns("variance_plot"), height = "420px"), "integration-results-variance-plot"),
@@ -173,6 +175,12 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             if (length(value$notes)) notes <- c(notes, list(shiny::div(class = "alert alert-warning",
                 sprintf(texts[["few_samples"]], as.integer(value$shared_samples), INTEGRATION_FEW_SAMPLES))))
             shiny::tagList(shiny::h4(texts[["advisories_heading"]]), notes)
+        })
+        output$limitations <- shiny::renderUI({
+            value <- results()
+            shiny::req(usable(value))
+            shiny::div(class = "alert alert-secondary", shiny::h4(texts[["limits_heading"]]), shiny::p(texts[["limits_lead"]]),
+                do.call(shiny::tags$ul, lapply(value$limitations, shiny::tags$li)))
         })
         output$variance_plot <- shiny::renderPlot({
             value <- results()

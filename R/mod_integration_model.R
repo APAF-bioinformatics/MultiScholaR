@@ -176,6 +176,8 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
             shiny::tagList(shiny::h4(texts[["result_heading"]]),
                 shiny::p(class = if (summary$converged) NULL else "text-danger", summary$convergence),
                 shiny::p(summary$factors), shiny::p(summary$samples),
+                # KIT-239: where the limitations of the model are stated.
+                shiny::p(texts[["model_limits_pointer"]]),
                 if (length(result$value$notes)) shiny::div(class = "alert alert-warning",
                     sprintf(texts[["few_samples"]], as.integer(result$value$shared_samples), INTEGRATION_FEW_SAMPLES)),
                 if (!is.null(summary$saved)) shiny::p(summary$saved),

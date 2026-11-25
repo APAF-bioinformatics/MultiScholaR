@@ -275,4 +275,8 @@ Compatibility aliases retained from the pre-janitor package surface. New
 code should prefer the dedicated function and class reference topics where
 available.
 }
+\details{
+\code{plotNumSigDiffExpBarPlot} counts features at q < 0.05; use the DA results'
+\code{significant} column for another threshold (KIT-220).
+}
 \keyword{internal}

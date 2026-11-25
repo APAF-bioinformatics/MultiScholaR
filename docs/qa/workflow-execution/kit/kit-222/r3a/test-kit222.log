@@ -1,0 +1,80 @@
+kit222-replicate-keys: ..KIT222-OBS E1: Ctrl_1={A_1,A_2} Ctrl_2={B_1,B_2}
+....KIT222-OBS E2: Ctrl_1={A_1,A_2} Ctrl_2={B_1,B_2} Ctrl_3={C_1,C_2}
+.....................................................................................................KIT222-OBS E3 keys: 100
+KIT222-OBS E3 merged: 
+......................................................................................................::notice title=INFO::Technical replicates: the counts of 200 runs summed into 100 biological samples
+KIT222-OBS E3b units: 100
+KIT222-OBS E3b summed from two samples: 
+...................................................................................................................KIT222-OBS E3c keys: 12
+....KIT222-OBS E4: Ctrl_1={A_1,A_2,A_3} Ctrl_2={B_1,B_2} Ctrl_3={C_1,C_2}
+..KIT222-OBS E7 lipidomics: Ctrl_1={S1} Ctrl_2={S2,S4} Ctrl_3={S3,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+..KIT222-OBS E7 metabolomics: Ctrl_1={S1} Ctrl_2={S2,S4} Ctrl_3={S3,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+..KIT222-OBS E7 transcriptomics: Ctrl_1={S1} Ctrl_2={S2,S4} Ctrl_3={S3,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+..KIT222-OBS E7 proteomics: Ctrl_1={S1} Ctrl_2={S2,S4} Ctrl_3={S3,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+.KIT222-OBS E7 proteomics number held: message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers warning: Replicate number 1 already belongs to S1, S2 in group Ctrl, marked as another biological sample. Choose a number no other sample uses.
+.....KIT222-OBS E7 applet: Ctrl_1={S1} Ctrl_2={S2,S4} Ctrl_3={S3,S5} Trt_1={S6} Trt_2={S7} Trt_3={S8}
+....::notice title=INFO::Technical replicates: the counts of 8 runs summed into 6 biological samples
+KIT222-OBS trx sum: Ctrl_1={S1}=1 Ctrl_2={S2,S4}=6 Ctrl_3={S3,S5}=8 Trt_1={S6}=6 Trt_2={S7}=7 Trt_3={S8}=8
+....::notice title=INFO::   design_m dims = 8 x 2
+::notice title=INFO::   data_subset dims = 30 x 8
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Technical replicates: 6 blocks for 8 samples, consensus correlation 0.0956
+KIT222-OBS DA block: S1=Ctrl_1 S2=Ctrl_2 S3=Ctrl_3 S4=Ctrl_2 S5=Ctrl_3 S6=Trt_1 S7=Trt_2 S8=Trt_3
+....KIT222-OBS RUV-III sets: S1=Ctrl_1 S2=Ctrl_2 S3=Ctrl_3 S4=Ctrl_2 S5=Ctrl_3 S6=Trt_1 S7=Trt_2 S8=Trt_3
+.....KIT222-OBS integration averages: Ctrl_1=1 Ctrl_2=3 Ctrl_3=4 Trt_1=6 Trt_2=7 Trt_3=8
+.WKIT222-OBS integration pairs: Ctrl_1: C with C Ctrl_2: A with A Ctrl_3: B with B Trt_1: D with D Trt_2: E with E Trt_3: F with F
+...KIT222-OBS E5: FALSE Ctrl_1={A_1,A_2} Ctrl_2={B_1} Ctrl_3={B_2}
+.....KIT222-OBS E6: FALSE tech_reps 1 2 NA
+.......KIT222-OBS E14: FALSE Ctrl_1={A_1,B_1,A_2} Ctrl_2={B_2} tech_reps 1 NA 2 NA
+........KIT222-OBS E15: Ctrl_1={A_1,A_2} Ctrl_2={B_1,B_2}
+...KIT222-OBS E16 tech_reps: A_1=1 A_2=2 A_3=NA C_1=1 C_2=2
+.KIT222-OBS E16 save: Runs A_3, C_1, C_2 share a replicate number within their group but were not marked as technical replicates, so they would be analysed as one biological sample. Give each biological replicate its own number (the starting replicate number), or mark the runs of one biological sample with 'Assign Technical Replicates'.
+..KIT222-OBS E16b: no result message: Assigned 3 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers error: Runs S3, S4, S5 share a replicate number within their group but were not marked as technical replicates, so they would be analysed as one biological sample. Give each biological replicate its own number (the starting replicate number), or mark the runs of one biological sample with 'Assign Technical Replicates'.
+..KIT222-OBS E8: Runs A_1, B_1, A_2, B_2 share the biological sample 'Ctrl_3' but were marked as technical replicates in separate steps, so they would be analysed as one biological sample. Mark the runs of each biological sample together, each sample with its own number. If these runs are one sample, mark all of them in one action.
+...KIT222-OBS E9 save D1: Runs A_1, B_1, A_2, B_2 share the biological sample 'Ctrl_3' but were marked as technical replicates in separate steps, so they would be analysed as one biological sample. Mark the runs of each biological sample together, each sample with its own number. If these runs are one sample, mark all of them in one action.
+..KIT222-OBS E9 save D2: Runs A_1, A_2, C share a replicate number within their group but were not marked as technical replicates, so they would be analysed as one biological sample. Give each biological replicate its own number (the starting replicate number), or mark the runs of one biological sample with 'Assign Technical Replicates'.
+..KIT222-OBS E9 save OD-5: Runs A_1, A_2, A_3, A_4 share a replicate number within their group but were not marked as technical replicates, so they would be analysed as one biological sample. Give each biological replicate its own number (the starting replicate number), or mark the runs of one biological sample with 'Assign Technical Replicates'.
+..KIT222-OBS E9 checkpoint D1: omics_design_replicate_key_collision omics_design_refused rlang_error error condition
+..KIT222-OBS E9 checkpoint D2: omics_design_replicate_key_collision omics_design_refused rlang_error error condition
+..::notice title=INFO::Loading config.ini from import directory.
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+KIT222-OBS E10 D1: omics_design_refused rlang_error error condition
+..::notice title=INFO::Loading config.ini from import directory.
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+KIT222-OBS E10 D2: omics_design_refused rlang_error error condition
+..::notice title=INFO::   design_m dims = 6 x 2
+::notice title=INFO::   data_subset dims = 30 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   design_m dims = 6 x 2
+::notice title=INFO::   data_subset dims = 30 x 6
+::notice title=INFO::   Running lmFit...
+KIT222-OBS E11 resolver: omics_design_replicate_key_collision trx_error rlang_error error condition
+.KIT222-OBS E11 ruv_iii: omics_design_replicate_key_collision trx_error rlang_error error condition
+.KIT222-OBS E11 lipid_fit: omics_design_replicate_key_collision trx_error rlang_error error condition
+.KIT222-OBS E11 metab_fit: omics_design_replicate_key_collision trx_error rlang_error error condition
+.KIT222-OBS E11 integration: omics_design_replicate_key_collision trx_error rlang_error error condition
+.KIT222-OBS E11 trx_sum: omics_design_replicate_key_collision trx_error rlang_error error condition
+...KIT222-OBS E11 peptide imputation: omics_design_replicate_key_collision trx_error rlang_error error condition
+.KIT222-OBS G1 failures: 0
+.......W.........::warning title=WARN::This design gives one biological sample's name to runs of two samples ('A_1': S1, S2): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+KIT222-OBS E12b: logical This design gives one biological sample's name to runs of two samples ('A_1': S1, S2): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+...::warning title=WARN::This design gives one biological sample's name to runs of two samples ('Ctrl_3': A_1, B_1, A_2, B_2): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+KIT222-OBS E12 open check: data.frame This design gives one biological sample's name to runs of two samples ('Ctrl_3': A_1, B_1, A_2, B_2): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+....KIT222-OBS E13: list Ctrl_3
+......KIT222-OBS G6 first violation: none
+.::warning title=WARN::This design gives one biological sample's name to runs of two samples ('control_1': run_0001, run_0002): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+KIT222-OBS E12a: list This design gives one biological sample's name to runs of two samples ('control_1': run_0001, run_0002): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+...::warning title=WARN::This design gives one biological sample's name to runs of two samples ('control_1': run_0001, run_0002): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+KIT222-OBS E12d: character This design gives one biological sample's name to runs of two samples ('control_1': run_0001, run_0002): the runs were marked as technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological sample together, each sample with its own number, save and run the analysis again. If these runs are one sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group means two samples were analysed as one.
+....KIT222-OBS G7 A_1+A_2: double double
+.KIT222-OBS G7 B_1+B_2: integer integer
+.
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. KIT-222 consumers: the integration averages each sample's own runs and pairs each name with one sample ('test-kit222-replicate-keys.R:446:3') - only 6 biological samples are measured in every view (fewer than 16); factor models need more samples
+
+2. KIT-222 G4: duplicate-injection proteomics against single-run transcriptomics pairs six of six ('test-kit222-replicate-keys.R:720:3') - only 6 biological samples are measured in every view (fewer than 16); factor models need more samples
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit222-replicate-keys.R pass 456 fail 0 error 0 skip 0 warn 2

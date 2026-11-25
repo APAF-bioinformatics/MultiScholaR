@@ -1,0 +1,88 @@
+file: test-integration-record.R
+test: KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none
+kind: failure
+message:
+  Expected `reader(unreadable)$services` to be NULL.
+  Differences:
+  `actual` is a character vector ()
+  `expected` is NULL
+
+file: test-integration-results.R
+test: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds
+kind: failure
+message:
+  Expected `grepl("these external databases|these releases", one)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-results.R
+test: KIT-239 (L3): the limitations are computed from the sample table, each sentence only where it holds
+kind: failure
+message:
+  Expected `grepl("samples are missing", one, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-results.R
+test: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers
+kind: failure
+message:
+  Expected `texts[[key]]` to match string "No biological sample has more than one run in any data set".
+  Actual text:
+  x | Each biological sample has one run in every data set, so no runs were averaged.
+  limits_averaged_none
+trace (first lines):
+      ▆
+   1. └─has("limits_averaged_none", "No biological sample has more than one run in any data set") at test-integration-results.R:598:5
+   2.   └─testthat::expect_match(texts[[key]], term, fixed = TRUE, info = key) at test-integration-results.R:588:12
+
+file: test-integration-results.R
+test: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers
+kind: failure
+message:
+  Expected `texts[[key]]` to match string "could not be told from none".
+  Actual text:
+  x | Each selected feature is scaled to mean 0 and standard deviation 1, after the features are chosen (the choice uses the values as saved). In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing values the gain was too small to tell from none (29 rather than 26 of 30); with 60 samples there was none (30 of 30 either way).
+  help_scaling
+trace (first lines):
+      ▆
+   1. └─has("help_scaling", c("could not be told from none", "recovered closely in 30 of 30 either way")) at test-integration-results.R:600:5
+   2.   └─testthat::expect_match(texts[[key]], term, fixed = TRUE, info = key) at test-integration-results.R:588:12
+
+file: test-integration-results.R
+test: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers
+kind: failure
+message:
+  Expected `texts[[key]]` to match string "recovered closely in 30 of 30 either way".
+  Actual text:
+  x | Each selected feature is scaled to mean 0 and standard deviation 1, after the features are chosen (the choice uses the values as saved). In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing values the gain was too small to tell from none (29 rather than 26 of 30); with 60 samples there was none (30 of 30 either way).
+  help_scaling
+trace (first lines):
+      ▆
+   1. └─has("help_scaling", c("could not be told from none", "recovered closely in 30 of 30 either way")) at test-integration-results.R:600:5
+   2.   └─testthat::expect_match(texts[[key]], term, fixed = TRUE, info = key) at test-integration-results.R:588:12
+
+file: test-integration-results.R
+test: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers
+kind: failure
+message:
+  Expected `grepl(phrase, texts[["help_scaling"]], fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  too small to tell from none
+
+file: test-integration-results.R
+test: KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers
+kind: failure
+message:
+  Expected `grepl(phrase, texts[["help_scaling"]], fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  there was none
+

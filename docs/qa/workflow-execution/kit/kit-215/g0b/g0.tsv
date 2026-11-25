@@ -1,0 +1,9 @@
+family	comparison	direction	list_size	n	universe	m	m_prime	enricher_null	val170	run_on_base
+w1_module	groupB-groupA	up	3	3	6	0	0	TRUE	refused_c4	not run (captured runs use a fake enricher)
+w1_module	groupB-groupA	down	2	2	6	0	0	TRUE	refused_c4	not run (captured runs use a fake enricher)
+t7_complete	groupB-groupA	up	25	25	69	97	75	FALSE	tested	completed
+t7_complete	groupB-groupA	down	10	10	69	97	53	FALSE	tested	completed
+k175_incomplete	groupB-groupA	up	25	11	44	47	44	FALSE	tested	completed
+k175_incomplete	groupB-groupA	down	10	4	44	47	16	FALSE	tested	completed
+k208_lacks_up	groupB-groupA	up	25	0	44	55	0	TRUE	not_tested	completed
+k208_lacks_up	groupB-groupA	down	10	10	44	55	48	FALSE	tested	completed

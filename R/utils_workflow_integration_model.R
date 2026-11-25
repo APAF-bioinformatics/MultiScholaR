@@ -121,6 +121,8 @@ integrationReadInputs <- function(dirs) {
         if (!is.character(technical) || length(technical) != 1L) technical <- NA_character_
         biological <- manifest$biological_sample_column %||%
             integrationInputBiologicalSampleColumn(samples, technical, sample_column)
+        # KIT-222 (AUDIT-KIT-222-impl I07): an input written before the fix is read with the check too.
+        if (!identical(biological, sample_column)) refuseOmicsDesignReplicateKeyCollision(as.data.frame(samples), key = biological, run = sample_column)
         if (!is.character(biological) || length(biological) != 1L || !biological %in% names(samples)) {
             integrationRefuse(sprintf("the integration input of %s names no biological-sample column of its samples table",
                 omic), "integration_input_invalid")

@@ -1,0 +1,31 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit129-run-path.R	687	6	0	1	failed	687	6	0	1	failed	same		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	116	0	0	0	ok	same		
+test-kit207-summary-head-guard.R	292	0	0	0	ok	292	0	0	0	ok	same		
+test-kit225-prot-norm-reset-source.R	24	32	0	0	failed	56	0	0	0	ok	fixed	fixed: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before); fixed: KIT-225 E3: DIA with limpa at its normal ending, Reset returns the Peptide Count Filter's table (fails before); fixed: KIT-225 E4: DIA (iq) normalised before the replicate filter, Reset returns the protein table (fails before); fixed: KIT-225 E5: after a design saved again, Reset returns the second run's source by identity, not by name (fails before); fixed: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before); fixed: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before); counts: KIT-225 E1, E2, E8: label-free and TMT normalised without the replicate filter, Reset returns its source (fails before) (passed 4 -> 14, skipped 0 -> 0); counts: KIT-225 E3: DIA with limpa at its normal ending, Reset returns the Peptide Count Filter's table (fails before) (passed 3 -> 6, skipped 0 -> 0); counts: KIT-225 E4: DIA (iq) normalised before the replicate filter, Reset returns the protein table (fails before) (passed 0 -> 2, skipped 0 -> 0); counts: KIT-225 E5: after a design saved again, Reset returns the second run's source by identity, not by name (fails before) (passed 1 -> 3, skipped 0 -> 0); counts: KIT-225 E6, E6b, E6c: with no normalisation-tab state in the history Reset leaves Quality Control as it is (fails before) (passed 0 -> 10, skipped 0 -> 0); counts: KIT-225 E7: a recorded source in no state of the active history is refused and nothing changes (fails before) (passed 0 -> 5, skipped 0 -> 0)	
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	ok	58	0	0	2	ok	same		
+test-lipid-12a-norm-module-characterization.R	5	0	0	5	ok	5	0	0	5	ok	same		
+test-lipid-12-norm-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-03c-norm-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-03d-norm-module-characterization.R	13	0	0	3	ok	13	0	0	3	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-omic-qc-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omics-norm-state-guards.R	647	0	0	0	ok	647	0	0	0	ok	same		
+test-perf107-audit.R	191	0	0	1	ok	191	0	0	1	ok	same		
+test-prot-05b-norm-module-contracts.R	439	1	0	22	failed	440	0	0	22	ok	fixed	fixed: runProtNormResetWorkflow sequences reset helpers and notification; counts: runProtNormResetWorkflow sequences reset helpers and notification (passed 9 -> 10, skipped 0 -> 0)	
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-prot-norm-worker-figures.R	71	0	0	0	ok	71	0	0	0	ok	same		
+test-trx-norm-module.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-workflow-checkpoint-dia-state.R	174	0	0	4	ok	174	0	0	4	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-execution-adapters.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-neutral-names.R	39	0	0	0	ok	39	0	0	0	ok	same		
+test-workflow-rollup-qualification.R	0	0	0	7	ok	0	0	0	7	ok	same		

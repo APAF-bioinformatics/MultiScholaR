@@ -861,3 +861,23 @@ test_that("KIT-140: on the managed worker the Model tab trains the same model as
         expect_identical(bus$integration_model$reference$entity_id, managed$reference$entity_id)
     })
 })
+
+# KIT-239 (INT-28): after training, the Model tab points to the limitations on the Results tab (the pointer read from
+# the wording table; on a tree without it this test fails at its first assertion).
+test_that("KIT-239 (L6): after training, the Model tab points to the limitations on the Results tab", {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    texts <- integrationGuiTexts()
+    expect_true("model_limits_pointer" %in% names(texts))
+    project <- intGuiProject()
+    bus <- intGuiConfirmed(project$paths)
+    shiny::testServer(mod_integration_model_server, args = list(workflow_data = bus, paths = project$paths,
+        probe = intGuiAvailable, trainer = intGuiTrainer(), withProgressFn = intGuiNoProgress), {
+        session$flushReact()
+        session$setInputs(run = 1)
+        expect_identical(bus$integration_model$status, "computed")
+        result <- gsub("&#39;", "'", output$result$html, fixed = TRUE)
+        expect_match(result, texts[["result_heading"]], fixed = TRUE)
+        if ("model_limits_pointer" %in% names(texts)) expect_match(result, texts[["model_limits_pointer"]], fixed = TRUE)
+    })
+})

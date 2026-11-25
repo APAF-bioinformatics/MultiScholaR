@@ -1,0 +1,60 @@
+KIT-214 S1: head 8e0465e702d31ae8caa236f21bac9336c62094e1 base 49011d1fd865384637fa5c5e3fcbd2d51d1f4987 out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-214/s1 
+KIT-214 S1 base input lipid_canonical 
+KIT-214 S1 base input metab_lc 
+KIT-214 S1 base input metab_gc 
+KIT-214 S1 base input metab_combined 
+KIT-214 S1 base input module_ci_lipid 
+KIT-214 S1 base input module_ci_metab 
+KIT-214 S1 base input a2_lipid_canonical 
+KIT-214 S1 base input a2_metab_lc 
+KIT-214 S1 base input e1_lipid 
+KIT-214 S1 base input e1_metab 
+KIT-214 S1 base input e2_lipid 
+KIT-214 S1 base input e2_metab 
+KIT-214 S1 base input lipid_msdial_dup_code 
+KIT-214 S1 base input metab_msdial_dup 
+KIT-214 S1 base input lipid_msdial_dup_import 
+KIT-214 S1 base input e2_metab 
+KIT-214 S1 base input lipid_msdial_dup_code 
+KIT-214 S1 base input metab_msdial_dup 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpqi4Hzu/kit214-s1-input-4ba81bea76da/seed_lcms_pos_dup.csv
+::notice title=INFO::Read 9 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+KIT-214 S1 base input lipid_msdial_dup_import 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/Rtmpqi4Hzu/kit214-s1-input-4ba85631fdda/msdial_lipid_pos_dup.csv
+::notice title=INFO::Read 3 rows and 13 columns
+::notice title=INFO::Detected 4 sample columns and 9 annotation columns
+KIT-214 S1 head input lipid_canonical 
+KIT-214 S1 head input metab_lc 
+KIT-214 S1 head input metab_gc 
+KIT-214 S1 head input metab_combined 
+KIT-214 S1 head input module_ci_lipid 
+KIT-214 S1 head input module_ci_metab 
+KIT-214 S1 head input a2_lipid_canonical 
+KIT-214 S1 head input a2_metab_lc 
+KIT-214 S1 head input e1_lipid 
+KIT-214 S1 head input e1_metab 
+KIT-214 S1 head input e2_lipid 
+KIT-214 S1 head input e2_metab 
+KIT-214 S1 head input lipid_msdial_dup_code 
+KIT-214 S1 head input metab_msdial_dup 
+KIT-214 S1 head input lipid_msdial_dup_import 
+KIT-214 S1 head input e2_metab 
+KIT-214 S1 head input lipid_msdial_dup_code 
+KIT-214 S1 head input metab_msdial_dup 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/RtmpQFxSZv/kit214-s1-input-671a9e70ee7/seed_lcms_pos_dup.csv
+::notice title=INFO::Read 9 rows and 9 columns
+::notice title=INFO::Detected 4 sample columns and 5 annotation columns
+KIT-214 S1 head input lipid_msdial_dup_import 
+::notice title=INFO::Starting MS-DIAL import from: /tmp/RtmpQFxSZv/kit214-s1-input-671a25694c73/msdial_lipid_pos_dup.csv
+::notice title=INFO::Read 3 rows and 13 columns
+::notice title=INFO::Detected 4 sample columns and 9 annotation columns
+                              criterion equal
+1                    i_base_equals_head 32/32
+2                         i_non_vacuous   2/2
+3 ii_base_equals_oracle_numeric_columns 12/12
+4          ii_head_equals_oracle_design 12/12
+5     iii_head_whole_equals_partitioned 22/22
+6           iv_head_earlier_equals_base 12/12
+changed rows: 5 
+side status: base 0, head 0 
