@@ -82,6 +82,13 @@
 
 ### Fixes
 
+ * Transcriptomics report and analysis record: a RUVIII integration export made from an earlier normalisation (before the
+   normalisation was run again, with another k or without RUV) is no longer described as part of the analysis. Before,
+   the report still said RUVIII had been applied, gave the earlier k and showed its figure, next to a caption saying no
+   correction had been applied. The earlier export figure is now removed when you run the normalisation again, so the
+   results package no longer carries it. A report of an analysis saved with an earlier version keeps the earlier
+   statement until Save Workflow Arguments is pressed again. No result changes: with RUV applied the integration input
+   already refused such an export. This was in the first 0.9 release (v0.9.0). (KIT-264)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

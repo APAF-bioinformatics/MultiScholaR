@@ -1048,7 +1048,8 @@ omicNormApplyRunStart <- function(binding, manager, normData, addLog, remove = N
 }
 
 #' KIT-257 (VAL-250): the normalisation stage's files that a run writes only conditionally, by exact name in the omic's
-#' own folders: transcriptomics' CCA panels and grid workbook (legacy grid only), lipidomics' and metabolomics'
+#' own folders: transcriptomics' CCA panels and grid workbook (legacy grid only) and, KIT-264, the figure of an earlier RUVIII
+#' integration export (every run makes a new `trx_ruvs`, so an earlier export is stale), lipidomics' and metabolomics'
 #' RUV-corrected QC figures per assay (RUV only; the safe name of the figure writers).
 #' @param binding The omic's declaration binding.
 #' @param experimentPaths The omic's project paths.
@@ -1058,7 +1059,8 @@ omicNormApplyRunStart <- function(binding, manager, normData, addLog, remove = N
 omicNormOwnFiles <- function(binding, experimentPaths, assayNames = NULL) {
     if (omicNormIsTrx(binding)) {
         return(file.path(experimentPaths$publication_graphs_dir, c("canonical_correlation_panels.png",
-            "canonical_correlation_panels.pdf", "canonical_correlation_optimization_summary.xlsx")))
+            "canonical_correlation_panels.pdf", "canonical_correlation_optimization_summary.xlsx",
+            "ruviii_before_and_after.png", "ruviii_before_and_after.pdf")))
     }
     safe <- gsub("[^A-Za-z0-9]", "_", tolower(as.character(assayNames)))
     file.path(experimentPaths[[binding$qc_dir_role]],
