@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-254 correction pass R1c (AUDIT-KIT-254-impl I01, I08): tests 993c454b on the merged tree without statement code; predictions in kit-254/r1c-predictions.md; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-254 R1c failing-first 993c454b",
+  "package_commit": "993c454b9f44c6dee7536923021b19ec34a1c6f1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit254-omics-correlation-skip.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
