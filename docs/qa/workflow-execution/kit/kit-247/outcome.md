@@ -1,6 +1,6 @@
 # KIT-247 outcome: a design saved again after Quality Control or normalisation
 
-**State: R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the coordinator authorised the one correction pass (below).**
+**State: done and ready for the implementation audit.** R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction.
 
 - Ticket r1.4 (owner's decisions VAL-239: OD-1 (D) on the whole design table, OD-2 (a), OD-3 (a), OD-4 (a) including the
   top-level integration file). E-5 stays open for the coordinator.
@@ -58,13 +58,27 @@ the test calls `runProtDesignImportConfirmationFlow` with `session = NULL` on an
 "changed" and the gate tried to ask with no session. Stop rule 3: stopped and reported. The coordinator ruled it a
 result keeping ONE correction pass (R1', R2').
 
+### Correction pass (the one allowed; `correction-declaration.md`, predictions committed before sending)
+
+- Merged origin/v0.9-staging 42846c0e (b88752e8): NEWS and ledger appends kept both, staging's first; the ledger's
+  duplicated context rows VAL-230 to VAL-233 removed; no other conflict.
+- Tests first `e6871939` (`test-kit247-resave-no-session.R`, N1 to N3); fix `0ce87bc2`: no earlier design on the bus
+  is "first" (nothing to compare); a changed design over later results with no session is refused
+  (`omics_design_resave_unconfirmed`), nothing committed (departure 4, ticket r1.4 section 19). The KIT-026 test is not
+  edited.
+- R1' (45629316617, e6871939, 21 min): as predicted, N1 and N2 fail, N3 passes, KIT-026 errors as in R2.
+- R2' (45629323979, base staging 42846c0e, head d3a95721, 69 files, check, 545 min): as predicted, 66 files `same`
+  (`test-workflow-native-session.R` passes again), `test-kit247-design-resave.R` (117), `test-kit247-import-config.R`
+  (2), `test-kit247-resave-no-session.R` (7) only on head and passing; check findings identical (0 / 3 / 3), nothing only
+  on head.
+
 ## Acceptance criteria
 
 | # | Criterion | Evidence |
 |---|---|---|
 | A1 | G0 before code | `kit-247-g0` records (G0-4: application observation; stop rule 2 by reading, coordinator's ruling) |
 | A2 | tests-only commit fails at G0's values; passes on the fix | R1, R1b, R1c; R2 head |
-| A3 | R2: every file `same` except the new ones; check: nothing only on head | R2: not met (one new failure); R2' after the correction |
+| A3 | every file `same` except the new ones; check: nothing only on head | R2: not met (one new failure); **R2' met**: 66 files same, the three new files only on head and passing, check identical |
 | A4 | merge train's full suite | the coordinator's train |
 | A5 | NEWS, ledger, records; `man/`, `NAMESPACE` unchanged | diff: `NEWS.md`, `docs/methods-decision-ledger.md` (`VAL-<merge>`), this folder; no `man/`, `NAMESPACE`, `DESCRIPTION` change |
 
@@ -129,5 +143,5 @@ commit (same effect, fewer signatures changed). The refused Summary Save's remov
   be redone (the numbers are then the new design's, with its Quality Control); an unchanged or comparison-only re-save
   keeps everything. No stored reference moves (R2).
 - **Evidence.** G0 runs 45594073040, 45594077082, 45594081675, 45598375255, 45594085728, 45597423706, 45600644799,
-  45604291093 (base); R1 45604461406, R1b 45608591579, R1c 45612214974, R2 45612382879 (one regression; correction pass R1', R2'). Fixtures: the GUI-entry e2e lanes
+  45604291093 (base); R1 45604461406, R1b 45608591579, R1c 45612214974, R2 45612382879 (one regression); R1' 45629316617, R2' 45629323979. Fixtures: the GUI-entry e2e lanes
   (small synthetic data); no simulation; no real data.

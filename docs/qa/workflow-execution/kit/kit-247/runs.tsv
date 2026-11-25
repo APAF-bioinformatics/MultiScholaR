@@ -3,3 +3,5 @@ run_id	commit	purpose	minutes	result
 45608591579	1bbe5c40	R1b departure 3's tests-first pair	9	D3 fails (imported configuration kept); guard passes
 45612214974	5909d0e8	R1c E13 mechanics, VAL-54 instrument rerun 1 of 3	48	E13 fails at its base value (lipid_reset); other rows as R1
 45612382879	3ec7bcf8 vs 526ec2aa	R2 base against head, 66 files, check	533	new file fixed (117/0), import-config 2/2 only on head, 63 same, check identical; NEW FAILURE test-workflow-native-session.R (KIT-026 test): stop rule 3
+45629316617	e6871939	R1' correction pass, tests only (no-session rows, native-session)	21	as predicted: N1, N2 fail, N3 passes; KIT-026 errors as in R2
+45629323979	d3a95721 vs 42846c0e	R2' correction pass, 69 files, check	545	as predicted: 66 files same (test-workflow-native-session.R same again), 3 kit247 files only on head all pass (117, 2, 7), check identical

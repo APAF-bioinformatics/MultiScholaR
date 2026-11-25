@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit247-resave-no-session.R	2	2	1	0	0	7.3	failed
+test-workflow-native-session.R	714	0	1	2	6	616.3	failed
