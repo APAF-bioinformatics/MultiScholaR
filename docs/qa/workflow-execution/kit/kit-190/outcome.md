@@ -288,3 +288,28 @@ The descriptive B+B comparison (D1), fixed now and computed after `decide.R` by 
 entry): N-w, over the 250 seeds, the share of seeds with any call under X+B minus the share under B+B (X = F, D); E-w,
 over the 200 seeds, the mean over seeds of FDP(X+B) − FDP(B+B); "far worse" = both differences above 0.10 in that cell.
 Descriptive only; reported to the owner and KIT-188; decides nothing.
+
+## The decision (run 45574056931, `decide.R` 660ebf9a at 2b04b121; files in `bound-decide/`, unchanged)
+
+`decision.tsv`: all_cells_no_worse TRUE, ships **D+B**, owner_asked FALSE. Decision table row 1 applies: **rule (d) with
+the k bound ships** (VAL-182 (3)); the bound's value goes to the owner with the k and FDP-by-k rows (VAL-182 (1)).
+
+| Cell | n | Estimate (D+B − F+B) | Statistic | p | Berger–Boos p | Skewness g | Johnson | No worse |
+|---|---|---|---|---|---|---|---|---|
+| N-r | 100 | −0.010 (any call) | Tango Z −3.33 | | 0.0051 | | | TRUE |
+| N-s | 100 | −0.020 | Z −3.65 | | 0.0050 | | | TRUE |
+| N-w | 250 | +0.004 | Z −4.21 | | 0.0050 | | | TRUE |
+| E-r | 200 | −0.0159 (FDP) | t_J −13.88 | sign-flip 1.0e-5 | | −4.45 | yes | TRUE |
+| E-s | 200 | −0.0255 | t_J −17.40 | 1.0e-5 | | −3.77 | yes | TRUE |
+| E-p | 300 | −0.0929 | t_J −16.56 | 1.0e-5 | | −2.12 | yes | TRUE |
+| E-g | 200 | −0.0150 | t_J −13.02 | 1.0e-5 | | −2.70 | yes | TRUE |
+| E-w | 200 | −0.0004 | t −6.90 | 1.0e-5 | | −0.81 | no | TRUE |
+
+Tango and Berger–Boos agree in all three null cells. Reported (decides nothing): E1-T1b by seed, n = 20, mean −0.040,
+sign-flip p 2.0e-5; T11 concentration 1 false call under both bounded arms (k = 2), T11 F172 0 under both (k = 2); D+B
+minus F+B (paired t 95 %): k +0.08 to +0.48 in every cell; power +0.03 to +0.20 in the effect cells; fold-change error
+−0.03 to −0.17. The declared per-cell confidence bounds are not among `decide.R`'s outputs (only the statistics are).
+
+Descriptive B+B comparison (D1; `bb-compare.py`; `bound-decide/bb-compare.tsv`): N-w any-call share minus B+B: F+B
++0.112, D+B +0.116, **both above 0.10: "far worse"** (reported to the owner and KIT-188 as the measured form of
+K190-M11; changes nothing here). E-w mean FDP minus B+B: F+B +0.050, D+B +0.049 (not far worse).
