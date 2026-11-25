@@ -159,10 +159,12 @@ protein_deAnalysisWrapperFunction <- function(
   return_list$volplot_plot <- volplot_plot
 
   ## Count the number of up or down significant differentially expressed proteins.
+  # KIT-220 (VAL-191 (3)): the workbook's table counts at its own threshold, as its volcano does.
   num_sig_de_molecules_first_go <- printCountDaGenesTable(
     list_of_da_tables = list(contrasts_results_table),
     list_of_descriptions = list("RUV applied"),
-    formula_string = "analysis_type ~ comparison"
+    formula_string = "analysis_type ~ comparison",
+    q_val_thresh = as.double(de_q_val_thresh)
   )
 
   return_list$num_sig_de_molecules_first_go <- num_sig_de_molecules_first_go

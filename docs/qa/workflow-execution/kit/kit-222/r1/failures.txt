@@ -1,0 +1,944 @@
+file: test-kit222-replicate-keys.R
+test: KIT-222 E1: 'Use first selected sample's replicate' on A_1, B_1, A_2, B_2 keeps A and B apart
+kind: failure
+message:
+  Expected `keys` to be identical to `list(Ctrl_1 = c("A_1", "A_2"), Ctrl_2 = c("B_1", "B_2"))`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `names(actual)`:   "Ctrl_3"         
+  `names(expected)`: "Ctrl_1" "Ctrl_2"
+  
+  `actual$Ctrl_3` is a character vector ('A_1', 'B_1', 'A_2', 'B_2')
+  `expected$Ctrl_3` is absent
+  
+  `actual$Ctrl_1` is absent
+  `expected$Ctrl_1` is a character vector ('A_1', 'A_2')
+  
+  `actual$Ctrl_2` is absent
+  `expected$Ctrl_2` is a character vector ('B_1', 'B_2')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E2: 'Specify replicate number' B=2, C=3, A=1 on sorted rows keeps three samples
+kind: failure
+message:
+  Expected `keys` to be identical to `list(...)`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 3
+  
+  `names(actual)`:   "Ctrl_1" "Ctrl_2"         
+  `names(expected)`: "Ctrl_1" "Ctrl_2" "Ctrl_3"
+  
+  `actual$Ctrl_2`:   "B_1" "B_2" "C_1" "C_2"
+  `expected$Ctrl_2`: "B_1" "B_2"            
+  
+  `actual$Ctrl_3` is absent
+  `expected$Ctrl_3` is a character vector ('C_1', 'C_2')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E3: the 100-sample corpus marked with 'Specify replicate number' gives 100 samples
+kind: failure
+message:
+  Expected `length(keys)` to be identical to 100L.
+  Differences:
+    `actual`:  91
+  `expected`: 100
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E3: the 100-sample corpus marked with 'Specify replicate number' gives 100 samples
+kind: failure
+message:
+  Expected `lapply(keys, sort)` to be identical to `kit222CorpusExpected(marked$corpus)`.
+  Differences:
+  `actual` is length 91
+  `expected` is length 100
+  
+       names(actual) | names(expected)     
+  [17] "RPMI_24"     | "RPMI_24"       [17]
+  [18] "RPMI_25"     | "RPMI_25"       [18]
+  [19] "RPMI_26"     | "RPMI_26"       [19]
+                     - "RPMI_27"       [20]
+  [20] "RPMI_28"     | "RPMI_28"       [21]
+                     - "RPMI_29"       [22]
+  [21] "RPMI_3"      | "RPMI_3"        [23]
+  [22] "RPMI_30"     | "RPMI_30"       [24]
+  [23] "RPMI_31"     | "RPMI_31"       [25]
+  
+       names(actual) | names(expected)     
+  [34] "RPMI_41"     | "RPMI_41"       [36]
+  [35] "RPMI_42"     | "RPMI_42"       [37]
+  [36] "RPMI_43"     | "RPMI_43"       [38]
+                     - "RPMI_44"       [39]
+  [37] "RPMI_45"     | "RPMI_45"       [40]
+  [38] "RPMI_46"     | "RPMI_46"       [41]
+                     - "RPMI_47"       [42]
+  [39] "RPMI_48"     | "RPMI_48"       [43]
+                     - "RPMI_49"       [44]
+  [40] "RPMI_5"      | "RPMI_5"        [45]
+  [41] "RPMI_50"     | "RPMI_50"       [46]
+  [42] "RPMI_6"      | "RPMI_6"        [47]
+  
+       names(actual) | names(expected)     
+  [70] "Sera_31"     | "Sera_31"       [75]
+  [71] "Sera_32"     | "Sera_32"       [76]
+  [72] "Sera_33"     | "Sera_33"       [77]
+                     - "Sera_34"       [78]
+  [73] "Sera_35"     | "Sera_35"       [79]
+  [74] "Sera_36"     | "Sera_36"       [80]
+  [75] "Sera_37"     | "Sera_37"       [81]
+  [76] "Sera_38"     | "Sera_38"       [82]
+  [77] "Sera_39"     | "Sera_39"       [83]
+  [78] "Sera_4"      | "Sera_4"        [84]
+                     - "Sera_40"       [85]
+  [79] "Sera_41"     | "Sera_41"       [86]
+                     - "Sera_42"       [87]
+  [80] "Sera_43"     | "Sera_43"       [88]
+  [81] "Sera_44"     | "Sera_44"       [89]
+  [82] "Sera_45"     | "Sera_45"       [90]
+  [83] "Sera_46"     | "Sera_46"       [91]
+  [84] "Sera_47"     | "Sera_47"       [92]
+  [85] "Sera_48"     | "Sera_48"       [93]
+                     - "Sera_49"       [94]
+  [86] "Sera_5"      | "Sera_5"        [95]
+  [87] "Sera_50"     | "Sera_50"       [96]
+  [88] "Sera_6"      | "Sera_6"        [97]
+  
+  `actual$RPMI_17`:   "RPMI_17_r1" "RPMI_17_r2" "RPMI_18_r1" "RPMI_18_r2"
+  `expected$RPMI_17`: "RPMI_17_r1" "RPMI_17_r2"                          
+  
+  `actual$RPMI_18`:   "RPMI_19_r1" "RPMI_19_r2"
+  `expected$RPMI_18`: "RPMI_18_r1" "RPMI_18_r2"
+  
+  `actual$RPMI_19`:   "RPMI_20_r1" "RPMI_20_r2"
+  `expected$RPMI_19`: "RPMI_19_r1" "RPMI_19_r2"
+  
+  `actual$RPMI_20`:   "RPMI_21_r1" "RPMI_21_r2"
+  `expected$RPMI_20`: "RPMI_20_r1" "RPMI_20_r2"
+  
+  `actual$RPMI_21`:   "RPMI_22_r1" "RPMI_22_r2"
+  `expected$RPMI_21`: "RPMI_21_r1" "RPMI_21_r2"
+  
+  `actual$RPMI_22`:   "RPMI_23_r1" "RPMI_23_r2"
+  `expected$RPMI_22`: "RPMI_22_r1" "RPMI_22_r2"
+  
+  `actual$RPMI_23`:   "RPMI_24_r1" "RPMI_24_r2"
+  `expected$RPMI_23`: "RPMI_23_r1" "RPMI_23_r2"
+  
+  `actual$RPMI_24`:   "RPMI_25_r1" "RPMI_25_r2" "RPMI_26_r1" "RPMI_26_r2"
+  `expected$RPMI_24`: "RPMI_24_r1" "RPMI_24_r2"                          
+  
+  `actual$RPMI_25`:   "RPMI_27_r1" "RPMI_27_r2"
+  `expected$RPMI_25`: "RPMI_25_r1" "RPMI_25_r2"
+  
+  `actual$RPMI_26`:   "RPMI_28_r1" "RPMI_28_r2"
+  `expected$RPMI_26`: "RPMI_26_r1" "RPMI_26_r2"
+  
+  `actual$RPMI_28`:   "RPMI_29_r1" "RPMI_29_r2"
+  `expected$RPMI_28`: "RPMI_28_r1" "RPMI_28_r2"
+  
+  `actual$RPMI_42`:   "RPMI_42_r1" "RPMI_42_r2" "RPMI_43_r1" "RPMI_43_r2"
+  `expected$RPMI_42`: "RPMI_42_r1" "RPMI_42_r2"                          
+  
+  `actual$RPMI_43`:   "RPMI_44_r1" "RPMI_44_r2" "RPMI_45_r1" "RPMI_45_r2"
+  `expected$RPMI_43`: "RPMI_43_r1" "RPMI_43_r2"                          
+  
+  `actual$RPMI_45`:   "RPMI_46_r1" "RPMI_46_r2"
+  `expected$RPMI_45`: "RPMI_45_r1" "RPMI_45_r2"
+  
+  `actual$RPMI_46`:   "RPMI_47_r1" "RPMI_47_r2" "RPMI_48_r1" "RPMI_48_r2"
+  `expected$RPMI_46`: "RPMI_46_r1" "RPMI_46_r2"                          
+  
+  `actual$RPMI_48`:   "RPMI_49_r1" "RPMI_49_r2"
+  `expected$RPMI_48`: "RPMI_48_r1" "RPMI_48_r2"
+  
+  `actual$Sera_11`:   "Sera_11_r1" "Sera_11_r2" "Sera_12_r1" "Sera_12_r2"
+  `expected$Sera_11`: "Sera_11_r1" "Sera_11_r2"                          
+  
+  `actual$Sera_12`:   "Sera_13_r1" "Sera_13_r2"
+  `expected$Sera_12`: "Sera_12_r1" "Sera_12_r2"
+  
+  `actual$Sera_13`:   "Sera_14_r1" "Sera_14_r2" "Sera_15_r1" "Sera_15_r2"
+  `expected$Sera_13`: "Sera_13_r1" "Sera_13_r2"                          
+  
+  `actual$Sera_14`:   "Sera_16_r1" "Sera_16_r2"
+  `expected$Sera_14`: "Sera_14_r1" "Sera_14_r2"
+  
+  `actual$Sera_15`:   "Sera_17_r1" "Sera_17_r2"
+  `expected$Sera_15`: "Sera_15_r1" "Sera_15_r2"
+  
+  `actual$Sera_16`:   "Sera_18_r1" "Sera_18_r2"
+  `expected$Sera_16`: "Sera_16_r1" "Sera_16_r2"
+  
+  `actual$Sera_17`:   "Sera_19_r1" "Sera_19_r2"
+  `expected$Sera_17`: "Sera_17_r1" "Sera_17_r2"
+  
+  `actual$Sera_18`:   "Sera_20_r1" "Sera_20_r2"
+  `expected$Sera_18`: "Sera_18_r1" "Sera_18_r2"
+  
+  `actual$Sera_19`:   "Sera_21_r1" "Sera_21_r2"
+  `expected$Sera_19`: "Sera_19_r1" "Sera_19_r2"
+  
+  `actual$Sera_20`:   "Sera_22_r1" "Sera_22_r2"
+  `expected$Sera_20`: "Sera_20_r1" "Sera_20_r2"
+  
+  `actual$Sera_21`:   "Sera_23_r1" "Sera_23_r2"
+  `expected$Sera_21`: "Sera_21_r1" "Sera_21_r2"
+  
+  `actual$Sera_22`:   "Sera_24_r1" "Sera_24_r2"
+  `expected$Sera_22`: "Sera_22_r1" "Sera_22_r2"
+  
+  `actual$Sera_23`:   "Sera_25_r1" "Sera_25_r2"
+  `expected$Sera_23`: "Sera_23_r1" "Sera_23_r2"
+  
+  `actual$Sera_24`:   "Sera_26_r1" "Sera_26_r2"
+  `expected$Sera_24`: "Sera_24_r1" "Sera_24_r2"
+  
+  `actual$Sera_25`:   "Sera_27_r1" "Sera_27_r2"
+  `expected$Sera_25`: "Sera_25_r1" "Sera_25_r2"
+  
+  `actual$Sera_26`:   "Sera_28_r1" "Sera_28_r2"
+  `expected$Sera_26`: "Sera_26_r1" "Sera_26_r2"
+  
+  `actual$Sera_27`:   "Sera_29_r1" "Sera_29_r2"
+  `expected$Sera_27`: "Sera_27_r1" "Sera_27_r2"
+  
+  `actual$Sera_28`:   "Sera_30_r1" "Sera_30_r2" "Sera_31_r1" "Sera_31_r2"
+  `expected$Sera_28`: "Sera_28_r1" "Sera_28_r2"                          
+  
+  `actual$Sera_29`:   "Sera_32_r1" "Sera_32_r2"
+  `expected$Sera_29`: "Sera_29_r1" "Sera_29_r2"
+  
+  `actual$Sera_30`:   "Sera_33_r1" "Sera_33_r2"
+  `expected$Sera_30`: "Sera_30_r1" "Sera_30_r2"
+  
+  `actual$Sera_31`:   "Sera_34_r1" "Sera_34_r2"
+  `expected$Sera_31`: "Sera_31_r1" "Sera_31_r2"
+  
+  `actual$Sera_32`:   "Sera_35_r1" "Sera_35_r2"
+  `expected$Sera_32`: "Sera_32_r1" "Sera_32_r2"
+  
+  `actual$Sera_33`:   "Sera_36_r1" "Sera_36_r2"
+  `expected$Sera_33`: "Sera_33_r1" "Sera_33_r2"
+  
+  `actual$Sera_35`:   "Sera_37_r1" "Sera_37_r2"
+  `expected$Sera_35`: "Sera_35_r1" "Sera_35_r2"
+  
+  `actual$Sera_36`:   "Sera_38_r1" "Sera_38_r2"
+  `expected$Sera_36`: "Sera_36_r1" "Sera_36_r2"
+  
+  `actual$Sera_37`:   "Sera_39_r1" "Sera_39_r2"
+  `expected$Sera_37`: "Sera_37_r1" "Sera_37_r2"
+  
+  `actual$Sera_38`:   "Sera_40_r1" "Sera_40_r2"
+  `expected$Sera_38`: "Sera_38_r1" "Sera_38_r2"
+  
+  `actual$Sera_39`:   "Sera_41_r1" "Sera_41_r2"
+  `expected$Sera_39`: "Sera_39_r1" "Sera_39_r2"
+  
+  `actual$Sera_41`:   "Sera_42_r1" "Sera_42_r2"
+  `expected$Sera_41`: "Sera_41_r1" "Sera_41_r2"
+  
+  `actual$Sera_46`:   "Sera_46_r1" "Sera_46_r2" "Sera_47_r1" "Sera_47_r2"
+  `expected$Sera_46`: "Sera_46_r1" "Sera_46_r2"                          
+  
+  `actual$Sera_47`:   "Sera_48_r1" "Sera_48_r2"
+  `expected$Sera_47`: "Sera_47_r1" "Sera_47_r2"
+  
+  `actual$Sera_48`:   "Sera_49_r1" "Sera_49_r2"
+  `expected$Sera_48`: "Sera_48_r1" "Sera_48_r2"
+  
+  `actual$RPMI_27` is absent
+  `expected$RPMI_27` is a character vector ('RPMI_27_r1', 'RPMI_27_r2')
+  
+  `actual$RPMI_29` is absent
+  `expected$RPMI_29` is a character vector ('RPMI_29_r1', 'RPMI_29_r2')
+  
+  `actual$RPMI_44` is absent
+  `expected$RPMI_44` is a character vector ('RPMI_44_r1', 'RPMI_44_r2')
+  
+  `actual$RPMI_47` is absent
+  `expected$RPMI_47` is a character vector ('RPMI_47_r1', 'RPMI_47_r2')
+  
+  `actual$RPMI_49` is absent
+  `expected$RPMI_49` is a character vector ('RPMI_49_r1', 'RPMI_49_r2')
+  
+  `actual$Sera_34` is absent
+  `expected$Sera_34` is a character vector ('Sera_34_r1', 'Sera_34_r2')
+  
+  `actual$Sera_40` is absent
+  `expected$Sera_40` is a character vector ('Sera_40_r1', 'Sera_40_r2')
+  
+  `actual$Sera_42` is absent
+  `expected$Sera_42` is a character vector ('Sera_42_r1', 'Sera_42_r2')
+  
+  `actual$Sera_49` is absent
+  `expected$Sera_49` is a character vector ('Sera_49_r1', 'Sera_49_r2')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E3b: summing the corpus's technical replicates adds only each sample's own two runs
+kind: failure
+message:
+  Expected `length(units)` to be identical to 100L.
+  Differences:
+    `actual`:  91
+  `expected`: 100
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E3b: summing the corpus's technical replicates adds only each sample's own two runs
+kind: failure
+message:
+  Expected `all(lengths(summed$summed) == 2L)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E3b: summing the corpus's technical replicates adds only each sample's own two runs
+kind: failure
+message:
+  Expected `all(lengths(contributors) == 1L)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E4: 'Use lowest replicate number' with three interleaved runs keeps B and C apart
+kind: failure
+message:
+  Expected `keys` to be identical to `list(...)`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 3
+  
+  `names(actual)`:   "Ctrl_1" "Ctrl_3"         
+  `names(expected)`: "Ctrl_1" "Ctrl_2" "Ctrl_3"
+  
+  `actual$Ctrl_3`:   "B_1" "B_2" "C_1" "C_2"
+  `expected$Ctrl_3`:             "C_1" "C_2"
+  
+  `actual$Ctrl_2` is absent
+  `expected$Ctrl_2` is a character vector ('B_1', 'B_2')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the lipidomics, metabolomics and transcriptomics builders keep A and B apart
+kind: failure
+message:
+  Expected lipidomics saved partition to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the lipidomics, metabolomics and transcriptomics builders keep A and B apart
+kind: failure
+message:
+  Expected metabolomics saved partition to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the lipidomics, metabolomics and transcriptomics builders keep A and B apart
+kind: failure
+message:
+  Expected transcriptomics saved partition to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the proteomics builder keeps A and B apart
+kind: failure
+message:
+  Expected `kit222SavedPartition(result$saved)` to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the proteomics builder refuses a number another sample holds with the shared text
+kind: failure
+message:
+  Expected `result$notes[[2L]]` to match regexp "^warning: ".
+  Actual text:
+  x | message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the proteomics builder refuses a number another sample holds with the shared text
+kind: failure
+message:
+  Expected `result$notes[[2L]]` to match string "S1, S2".
+  Actual text:
+  x | message: Assigned 2 samples as technical replicates with biological replicate number 1 and adjusted subsequent replicate numbers
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the proteomics workbook applet keeps A and B apart
+kind: failure
+message:
+  Expected `kit222SavedPartition(returned)` to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E7: the proteomics workbook applet keeps A and B apart
+kind: failure
+message:
+  Expected `kit222Partition(split(written$Run, written$tech_rep_group))` to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: transcriptomics sums only each sample's own runs
+kind: failure
+message:
+  Expected `kit222Partition(summed$summed)` to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: transcriptomics sums only each sample's own runs
+kind: failure
+message:
+  Expected `unname(sums[lengths(summed$summed) == 2L])` to have the same values as `c(6, 8)`.
+  Actual: 
+  Expected: 6, 8
+  Absent: 6, 8
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: the DA model's unit (the lipid fit's block) keeps A and B apart
+kind: failure
+message:
+  Expected `kit222Partition(split(saved$Run, blocks$block))` to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: RUV-III's replicate sets keep A and B apart
+kind: failure
+message:
+  Expected `kit222Partition(split(sets$design$Run, sets$design$.ruv_replicate_block))` to be identical to `kit222ConsumerPartition`.
+  Differences:
+  `actual` is length 5
+  `expected` is length 6
+  
+  `actual[[2]]`:   "S2" "S3" "S4" "S5"
+  `expected[[2]]`: "S2" "S4"          
+  
+  `actual[[3]]`:   "S6"     
+  `expected[[3]]`: "S3" "S5"
+  
+  `actual[[4]]`:   "S7"
+  `expected[[4]]`: "S6"
+  
+  `actual[[5]]`:   "S8"
+  `expected[[5]]`: "S7"
+  
+  `actual[[6]]` is absent
+  `expected[[6]]` is a character vector ('S8')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: the integration averages each sample's own runs and pairs each name with one sample
+kind: failure
+message:
+  Expected `ncol(averaged)` to be identical to 6L.
+  Differences:
+    `actual`: 5
+  `expected`: 6
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: the integration averages each sample's own runs and pairs each name with one sample
+kind: failure
+message:
+  Expected `length(aligned$shared)` to be identical to 6L.
+  Differences:
+    `actual`: 4
+  `expected`: 6
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 consumers: the integration averages each sample's own runs and pairs each name with one sample
+kind: failure
+message:
+  Expected `unname(pairs)` to be identical to `c(...)`.
+  Differences:
+  `actual`:   "C with C"                       "D with D" "E with E" "F with F"
+  `expected`: "C with C" "A with A" "B with B" "D with D" "E with E" "F with F"
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E5: a typed number held by another marked sample is refused in 'Specify replicate number'
+kind: failure
+message:
+  Expected `isTRUE(second$ok)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E5: a typed number held by another marked sample is refused in 'Specify replicate number'
+kind: failure
+message:
+  Expected `second$code` to be identical to "number_held".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('number_held')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E5: a typed number held by another marked sample is refused in 'Specify replicate number'
+kind: failure
+message:
+  Expected `second$designMatrix` to be identical to `design`.
+  Differences:
+  actual vs expected
+                  replicates tech_reps
+    actual[1, ]            1         1
+    actual[2, ]            1         2
+  - actual[3, ]            1         1
+  + expected[3, ]          2        NA
+  - actual[4, ]            1         2
+  + expected[4, ]          3        NA
+  
+    `actual$replicates`: 1.0 1.0 1.0 1.0
+  `expected$replicates`: 1.0 1.0 2.0 3.0
+  
+    `actual$tech_reps`: 1 2  1  2
+  `expected$tech_reps`: 1 2 NA NA
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E5: a typed number held by another marked sample is refused in 'Specify replicate number'
+kind: failure
+message:
+  Expected `second$message` to match string "A_1, A_2".
+  Actual text:
+  x | Assigned 2 samples as technical replicates
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E6: re-marking only some of a sample's runs is refused
+kind: failure
+message:
+  Expected `isTRUE(second$ok)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E6: re-marking only some of a sample's runs is refused
+kind: failure
+message:
+  Expected `second$code` to be identical to "partial_sample".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('partial_sample')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E6: re-marking only some of a sample's runs is refused
+kind: failure
+message:
+  Expected `second$designMatrix` to be identical to `design`.
+  Differences:
+  actual vs expected
+                  replicates tech_reps
+    actual[1, ]            1         1
+    actual[2, ]            1         2
+  - actual[3, ]            1         2
+  + expected[3, ]          2        NA
+  
+    `actual$replicates`: 1.0 1.0 1.0
+  `expected$replicates`: 1.0 1.0 2.0
+  
+    `actual$tech_reps`: 1 2  2
+  `expected$tech_reps`: 1 2 NA
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E6: re-marking only some of a sample's runs is refused
+kind: failure
+message:
+  Expected `second$message` to match string "A_1".
+  Actual text:
+  x | Assigned 2 samples as technical replicates
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E6: re-marking only some of a sample's runs is refused
+kind: failure
+message:
+  Expected `second$message` to match string "A_2".
+  Actual text:
+  x | Assigned 2 samples as technical replicates
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E6: re-marking only some of a sample's runs is refused
+kind: failure
+message:
+  Expected `second$message` to match string "A_3".
+  Actual text:
+  x | Assigned 2 samples as technical replicates
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E14: 'Specify replicate number' A=2, then 'Use lowest replicate number' on B is refused
+kind: failure
+message:
+  Expected `isTRUE(second$ok)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E14: 'Specify replicate number' A=2, then 'Use lowest replicate number' on B is refused
+kind: failure
+message:
+  Expected `second$code` to be identical to "number_held".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('number_held')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E14: 'Specify replicate number' A=2, then 'Use lowest replicate number' on B is refused
+kind: failure
+message:
+  Expected `second$message` to match string "A_1, A_2".
+  Actual text:
+  x | Assigned 2 samples as technical replicates
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E15: 'Specify replicate number' A=2, then B=2: two samples, A shown as 1
+kind: failure
+message:
+  Expected `keys` to be identical to `list(Ctrl_1 = c("A_1", "A_2"), Ctrl_2 = c("B_1", "B_2"))`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `names(actual)`:   "Ctrl_2"         
+  `names(expected)`: "Ctrl_1" "Ctrl_2"
+  
+  `actual$Ctrl_2`:   "A_1" "B_1" "A_2" "B_2"
+  `expected$Ctrl_2`:       "B_1"       "B_2"
+  
+  `actual$Ctrl_1` is absent
+  `expected$Ctrl_1` is a character vector ('A_1', 'A_2')
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E16: re-assigning a marked run to another group clears its mark; the save refuses the shared number
+kind: failure
+message:
+  Expected `is.na(design$tech_reps[design$Run == "A_3"])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E16: re-assigning a marked run to another group clears its mark; the save refuses the shared number
+kind: failure
+message:
+  Expected `refused` to have type "character".
+  Actual type: "list"
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E16: re-assigning a marked run to another group clears its mark; the save refuses the shared number
+kind: error
+message:
+  Error in `expect_match(refused, "A_3, C_1, C_2", fixed = TRUE)`: `object` must be a character vector, not a list.
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(object = refused) at test-kit222-replicate-keys.R:518:3
+   2.   └─testthat:::check_character(object)
+   3.     └─testthat:::stop_input_type(...)
+   4.       └─rlang::abort(message, ..., call = call, arg = arg)
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E16b: the proteomics builder's re-assignment clears the mark; the proteomics save refuses
+kind: failure
+message:
+  Expected `result$saved` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E16b: the proteomics builder's re-assignment clears the mark; the proteomics save refuses
+kind: failure
+message:
+  Expected `any(grepl("^error: .*S3, S4, S5", result$notes))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E8: the shared save refuses a design whose key holds two marking actions
+kind: failure
+message:
+  Expected `refused` to have type "character".
+  Actual type: "list"
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E8: the shared save refuses a design whose key holds two marking actions
+kind: error
+message:
+  Error in `expect_match(refused, "Ctrl_3", fixed = TRUE)`: `object` must be a character vector, not a list.
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(object = refused) at test-kit222-replicate-keys.R:550:3
+   2.   └─testthat:::check_character(object)
+   3.     └─testthat:::stop_input_type(...)
+   4.       └─rlang::abort(message, ..., call = call, arg = arg)
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number
+kind: failure
+message:
+  Expected `outcome` to have type "character".
+  Actual type: "list"
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number
+kind: failure
+message:
+  Expected `outcome` to have type "character".
+  Actual type: "list"
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number
+kind: failure
+message:
+  Expected `outcome` to have type "character".
+  Actual type: "list"
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics checkpoint (builder commit and import) refuses D1 and D2
+kind: failure
+message:
+  Expected `outcome` to inherit from "omics_design_replicate_key_collision".
+  Actual class: "saved_entity_invalid"/"rlang_error"/"error"/"condition".
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics checkpoint (builder commit and import) refuses D1 and D2
+kind: failure
+message:
+  Expected `conditionMessage(outcome)` to match string "A_1".
+  Actual text:
+  x | invalid saved-entity handle
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics checkpoint (builder commit and import) refuses D1 and D2
+kind: failure
+message:
+  Expected `outcome` to inherit from "omics_design_replicate_key_collision".
+  Actual class: "saved_entity_invalid"/"rlang_error"/"error"/"condition".
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E9: the proteomics checkpoint (builder commit and import) refuses D1 and D2
+kind: failure
+message:
+  Expected `conditionMessage(outcome)` to match string "A_1".
+  Actual text:
+  x | invalid saved-entity handle
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E10: the lipid import refuses a design file carrying D1 or D2
+kind: failure
+message:
+  Expected `outcome` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E10: the lipid import refuses a design file carrying D1 or D2
+kind: failure
+message:
+  Expected `outcome` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks[[name]]` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks[[name]]` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks[[name]]` to be an S3 object.
+  Actual OO type: S4.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks[[name]]` to be an S3 object.
+  Actual OO type: S4.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks[[name]]` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks[[name]]` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: the consumers refuse a merged design; the display opts out
+kind: failure
+message:
+  Expected `checks$trx_sum` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 E11: peptide imputation refuses a merged design
+kind: failure
+message:
+  Expected `result` to be an S3 object.
+  Actual OO type: S4.
+
+file: test-kit222-replicate-keys.R
+test: KIT-222 G5: the peptide replicate filter's grouping is unchanged on a merge-free design
+kind: error
+message:
+  <evalError/missingArgError/error/condition>
+  Error in `removePeptidesWithOnlyOneReplicateHelper(peptides, design, Run, Run, replicates, Protein.Ids, Stripped.Sequence)`: argument "core_utilisation" is missing, with no default
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(filter(head), filter(base)) at test-kit222-replicate-keys.R:738:3
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─filter(head)
+   5.   └─MultiScholaR::removePeptidesWithOnlyOneReplicateHelper(...) at test-kit222-replicate-keys.R:736:13
+   6.     └─base::inherits(core_utilisation, "multidplyr_cluster") at pkg/R/func_prot_qc_peptide_technical_replicate_filters.R:141:3
+

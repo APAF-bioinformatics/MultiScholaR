@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit236-report-sentences.R	55	162	3	0	0	10.9	failed

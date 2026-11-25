@@ -1,0 +1,558 @@
+
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [1] 
+   [2] "60235a10c1ff424d" | "60235a10c1ff424d" [2] 
+   [3] "f1eb628a13bb1aeb" | "f1eb628a13bb1aeb" [3] 
+   [4] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [4] 
+   [5] "29a39c60c37c4f96" | "29a39c60c37c4f96" [5] 
+   [6] "b8040c7e4cf01a45" - "fd76b845ea943be4" [6] 
+   [7] "f5162d65b6daff8e" | "f5162d65b6daff8e" [7] 
+   [8] "1cc1786a46386211" | "1cc1786a46386211" [8] 
+   [9] "852cf1b272c6ca73" - "fe9a25ab4b6b7f83" [9] 
+  [10] "21dd4c7bf548536a" | "21dd4c7bf548536a" [10]
+  [11] "aae61198a018d0a7" - "0c78c0cd259e526a" [11]
+  [12] "3ea964fe2023dddb" | "3ea964fe2023dddb" [12]
+  [13] "1cc1786a46386211" | "1cc1786a46386211" [13]
+  [14] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [14]
+  [15] "28df520b992b4a4b" | "28df520b992b4a4b" [15]
+  [16] "21dd4c7bf548536a" | "21dd4c7bf548536a" [16]
+  [17] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [17]
+  [18] "ffc12bf635e5c112" | "ffc12bf635e5c112" [18]
+  [19] "c7841b609b82546d" | "c7841b609b82546d" [19]
+  
+  dia_correlation_reapply norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [1] 
+   [2] "60235a10c1ff424d" | "60235a10c1ff424d" [2] 
+   [3] "f1eb628a13bb1aeb" | "f1eb628a13bb1aeb" [3] 
+   [4] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [4] 
+   [5] "a991209291aaafd6" | "a991209291aaafd6" [5] 
+   [6] "b8040c7e4cf01a45" - "fd76b845ea943be4" [6] 
+   [7] "f5162d65b6daff8e" | "f5162d65b6daff8e" [7] 
+   [8] "1cc1786a46386211" | "1cc1786a46386211" [8] 
+   [9] "0b3380d8d340ae8a" - "b908290cbc6dd8ab" [9] 
+  [10] "21dd4c7bf548536a" | "21dd4c7bf548536a" [10]
+  [11] "aae61198a018d0a7" - "0c78c0cd259e526a" [11]
+  [12] "3ea964fe2023dddb" | "3ea964fe2023dddb" [12]
+  [13] "1cc1786a46386211" | "1cc1786a46386211" [13]
+  [14] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [14]
+  [15] "28df520b992b4a4b" | "28df520b992b4a4b" [15]
+  [16] "21dd4c7bf548536a" | "21dd4c7bf548536a" [16]
+  [17] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [17]
+  [18] "ffc12bf635e5c112" | "ffc12bf635e5c112" [18]
+  [19] "c7841b609b82546d" | "c7841b609b82546d" [19]
+  
+  dia_correlation_skip norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [1] 
+   [2] "60235a10c1ff424d" | "60235a10c1ff424d" [2] 
+   [3] "f1eb628a13bb1aeb" | "f1eb628a13bb1aeb" [3] 
+   [4] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [4] 
+   [5] "a991209291aaafd6" | "a991209291aaafd6" [5] 
+   [6] "b8040c7e4cf01a45" - "fd76b845ea943be4" [6] 
+   [7] "f5162d65b6daff8e" | "f5162d65b6daff8e" [7] 
+   [8] "1cc1786a46386211" | "1cc1786a46386211" [8] 
+   [9] "0b3380d8d340ae8a" - "b908290cbc6dd8ab" [9] 
+  [10] "21dd4c7bf548536a" | "21dd4c7bf548536a" [10]
+  [11] "aae61198a018d0a7" - "0c78c0cd259e526a" [11]
+  [12] "3ea964fe2023dddb" | "3ea964fe2023dddb" [12]
+  [13] "1cc1786a46386211" | "1cc1786a46386211" [13]
+  [14] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [14]
+  [15] "28df520b992b4a4b" | "28df520b992b4a4b" [15]
+  [16] "21dd4c7bf548536a" | "21dd4c7bf548536a" [16]
+  [17] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [17]
+  [18] "ffc12bf635e5c112" | "ffc12bf635e5c112" [18]
+  [19] "c7841b609b82546d" | "c7841b609b82546d" [19]
+  
+  dia_normalization_refused norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [1] 
+   [2] "60235a10c1ff424d" | "60235a10c1ff424d" [2] 
+   [3] "f1eb628a13bb1aeb" | "f1eb628a13bb1aeb" [3] 
+   [4] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [4] 
+   [5] "a991209291aaafd6" | "a991209291aaafd6" [5] 
+   [6] "b8040c7e4cf01a45" - "fd76b845ea943be4" [6] 
+   [7] "f5162d65b6daff8e" | "f5162d65b6daff8e" [7] 
+   [8] "1cc1786a46386211" | "1cc1786a46386211" [8] 
+   [9] "0b3380d8d340ae8a" - "b908290cbc6dd8ab" [9] 
+  [10] "21dd4c7bf548536a" | "21dd4c7bf548536a" [10]
+  [11] "aae61198a018d0a7" - "0c78c0cd259e526a" [11]
+  [12] "3ea964fe2023dddb" | "3ea964fe2023dddb" [12]
+  [13] "1cc1786a46386211" | "1cc1786a46386211" [13]
+  [14] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [14]
+  [15] "28df520b992b4a4b" | "28df520b992b4a4b" [15]
+  [16] "21dd4c7bf548536a" | "21dd4c7bf548536a" [16]
+  [17] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [17]
+  [18] "ffc12bf635e5c112" | "ffc12bf635e5c112" [18]
+  [19] "c7841b609b82546d" | "c7841b609b82546d" [19]
+  
+  dia_normalization_retry norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [1] 
+   [2] "60235a10c1ff424d" | "60235a10c1ff424d" [2] 
+   [3] "f1eb628a13bb1aeb" | "f1eb628a13bb1aeb" [3] 
+   [4] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [4] 
+   [5] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [5] 
+   [6] "b8040c7e4cf01a45" - "fd76b845ea943be4" [6] 
+   [7] "f5162d65b6daff8e" | "f5162d65b6daff8e" [7] 
+   [8] "1cc1786a46386211" | "1cc1786a46386211" [8] 
+   [9] "852cf1b272c6ca73" - "fe9a25ab4b6b7f83" [9] 
+  [10] "21dd4c7bf548536a" | "21dd4c7bf548536a" [10]
+  [11] "aae61198a018d0a7" - "0c78c0cd259e526a" [11]
+  [12] "3ea964fe2023dddb" | "3ea964fe2023dddb" [12]
+  [13] "1cc1786a46386211" | "1cc1786a46386211" [13]
+  [14] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [14]
+  [15] "28df520b992b4a4b" | "28df520b992b4a4b" [15]
+  [16] "21dd4c7bf548536a" | "21dd4c7bf548536a" [16]
+  [17] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [17]
+  [18] "ffc12bf635e5c112" | "ffc12bf635e5c112" [18]
+  [19] "c7841b609b82546d" | "c7841b609b82546d" [19]
+  
+  dia_correlation_apply norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [3] "f1eb628a13bb1aeb" | "f1eb628a13bb1aeb" [3] 
+   [4] "f5162d65b6daff8e" | "f5162d65b6daff8e" [4] 
+   [5] "21dd4c7bf548536a" | "21dd4c7bf548536a" [5] 
+   [6] "aae61198a018d0a7" - "0c78c0cd259e526a" [6] 
+   [7] "3ea964fe2023dddb" | "3ea964fe2023dddb" [7] 
+   [8] "1cc1786a46386211" | "1cc1786a46386211" [8] 
+   [9] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [9] 
+  [10] "28df520b992b4a4b" | "28df520b992b4a4b" [10]
+  [11] "21dd4c7bf548536a" | "21dd4c7bf548536a" [11]
+  [12] "50fae71deaf3f6e5" - "b52945f5e58d5f00" [12]
+  [13] "ffc12bf635e5c112" | "ffc12bf635e5c112" [13]
+  [14] "c7841b609b82546d" | "c7841b609b82546d" [14]
+  
+  dia_normalization_manual norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [3] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [3]
+  [4] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [4]
+  [5] "21dd4c7bf548536a" | "21dd4c7bf548536a" [5]
+  [6] "aae61198a018d0a7" - "0c78c0cd259e526a" [6]
+  [7] "3ea964fe2023dddb" | "3ea964fe2023dddb" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  [9] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [9]
+  
+  dia_normalization_skip norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [3] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [3]
+  [4] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [4]
+  [5] "21dd4c7bf548536a" | "21dd4c7bf548536a" [5]
+  [6] "aae61198a018d0a7" - "0c78c0cd259e526a" [6]
+  [7] "3ea964fe2023dddb" | "3ea964fe2023dddb" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  [9] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [9]
+  
+  dia_normalization_skip_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "05d7a35138c4518a876ce41a398fe7c4e98e416d1ab786ab379d6a82c5d6373b"
+  `expected`: "68f3678ffee19ddb999f986041ed409dca3a439f0ddb7c8bb2ea8e3bb415e7f0"
+  
+  dia_correlation_apply provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "1c97d12d209923a3d4155c5a23df5ae307a89e7830dc0ff6f47815e5c3c4f5d9"
+  `expected`: "df134a21406aa67bb9db7a625937f8248f3f9b8e52f9a30cec91f6f95363a7d8"
+  
+  dia_correlation_apply record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "233adde345597b272542c9e1b791d58b32c8af8d467691e1cf7dbdfaa1e49ffb"
+  `expected`: "4c68dd10bf802b0822f4a5fc48adcbbb2010e98162a4e9f018005174d820e834"
+  
+  dia_correlation_reapply record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "2d02b61c0dac7d3d101c23494387323960217e5407280889454e8f584461287c"
+  `expected`: "d19acc85da5ba7999f4af330499f1c93d518fa9cd94ce02091286207b8c9867e"
+  
+  dia_normalization_manual record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "415ecf82bcbbf52b226fb13a5cd9b28d111568a6a178fdc6a55e1b7aba0c1ada"
+  `expected`: "0809b8018bafde2e009b93e4b479b9716af885734a5e949f687648f1663d46db"
+  
+  dia_normalization_skip norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "415ecf82bcbbf52b226fb13a5cd9b28d111568a6a178fdc6a55e1b7aba0c1ada"
+  `expected`: "0809b8018bafde2e009b93e4b479b9716af885734a5e949f687648f1663d46db"
+  
+  dia_normalization_skip_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "4aac9383f4596a8d18fde525a2a48b1f5a1c5423c867f5b3f59bcbc35b6b5c2a"
+  `expected`: "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579"
+  
+  dia_correlation_reapply provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "4aac9383f4596a8d18fde525a2a48b1f5a1c5423c867f5b3f59bcbc35b6b5c2a"
+  `expected`: "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579"
+  
+  dia_correlation_skip provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "4aac9383f4596a8d18fde525a2a48b1f5a1c5423c867f5b3f59bcbc35b6b5c2a"
+  `expected`: "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579"
+  
+  dia_normalization_refused provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "4aac9383f4596a8d18fde525a2a48b1f5a1c5423c867f5b3f59bcbc35b6b5c2a"
+  `expected`: "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579"
+  
+  dia_normalization_retry provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "50fae71deaf3f6e5e3e4481493780331ddf48f48189978b9f0e12c3155608e6a"
+  `expected`: "b52945f5e58d5f0025b631d06af61b9952e308b72b5b08a82f57c0a46eb5fe99"
+  
+  dia_correlation_apply value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "50fae71deaf3f6e5e3e4481493780331ddf48f48189978b9f0e12c3155608e6a"
+  `expected`: "b52945f5e58d5f0025b631d06af61b9952e308b72b5b08a82f57c0a46eb5fe99"
+  
+  dia_correlation_reapply value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "50fae71deaf3f6e5e3e4481493780331ddf48f48189978b9f0e12c3155608e6a"
+  `expected`: "b52945f5e58d5f0025b631d06af61b9952e308b72b5b08a82f57c0a46eb5fe99"
+  
+  dia_correlation_skip value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "a14c1ee3cbef426219784c42a0ad5ecb12e72271d7e36b796a2ee2dab36884bd"
+  `expected`: "aad6d183e1fb0e4cded898b0b032d6725b09fab5d64ca72911faef202f0b63d3"
+  
+  dia_correlation_skip record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "a14c1ee3cbef426219784c42a0ad5ecb12e72271d7e36b796a2ee2dab36884bd"
+  `expected`: "aad6d183e1fb0e4cded898b0b032d6725b09fab5d64ca72911faef202f0b63d3"
+  
+  dia_normalization_refused record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "a14c1ee3cbef426219784c42a0ad5ecb12e72271d7e36b796a2ee2dab36884bd"
+  `expected`: "aad6d183e1fb0e4cded898b0b032d6725b09fab5d64ca72911faef202f0b63d3"
+  
+  dia_normalization_retry record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "a63d4840e81ca36fb3d5ac8fa1fc9a7e6663a40c8448c1e07222a0bd36a6839d"
+  `expected`: "4916dc4d938cd3913c9c10d9e01cac46959630236d768aa52eca9ff151d35826"
+  
+  dia_normalization_manual provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ac982eb2b7af641a4af80ee7495357c4e52d5210b3aa6b0900c4386c948d2bad"
+  `expected`: "dad690818a6ce5c56ab230e01c35799f994d0c8e63948665c94c38593a10acea"
+  
+  dia_normalization_skip record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ac982eb2b7af641a4af80ee7495357c4e52d5210b3aa6b0900c4386c948d2bad"
+  `expected`: "dad690818a6ce5c56ab230e01c35799f994d0c8e63948665c94c38593a10acea"
+  
+  dia_normalization_skip_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b5911589e270e86c9bc3506df3da53afc22ae26a0f9bc10f6e54a0f99512564f"
+  `expected`: "241946e9b6426a565a2d1574529eeece1ab4882f18afa37b820bc8562f25b6cb"
+  
+  dia_normalization_skip provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b5911589e270e86c9bc3506df3da53afc22ae26a0f9bc10f6e54a0f99512564f"
+  `expected`: "241946e9b6426a565a2d1574529eeece1ab4882f18afa37b820bc8562f25b6cb"
+  
+  dia_normalization_skip_repeat provenance
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bbfad929309bbc5086ae62e20ab20dcb88563168df1c189d47018122ddaff11a"
+  `expected`: "f7b72868e3591a301f4881fcdbda2e98ab8cb03fafb079ab0d6f86df956278d4"
+  
+  dia_correlation_apply files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bbfad929309bbc5086ae62e20ab20dcb88563168df1c189d47018122ddaff11a"
+  `expected`: "f7b72868e3591a301f4881fcdbda2e98ab8cb03fafb079ab0d6f86df956278d4"
+  
+  dia_correlation_reapply files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bbfad929309bbc5086ae62e20ab20dcb88563168df1c189d47018122ddaff11a"
+  `expected`: "f7b72868e3591a301f4881fcdbda2e98ab8cb03fafb079ab0d6f86df956278d4"
+  
+  dia_correlation_skip files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bbfad929309bbc5086ae62e20ab20dcb88563168df1c189d47018122ddaff11a"
+  `expected`: "f7b72868e3591a301f4881fcdbda2e98ab8cb03fafb079ab0d6f86df956278d4"
+  
+  dia_normalization_refused files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bbfad929309bbc5086ae62e20ab20dcb88563168df1c189d47018122ddaff11a"
+  `expected`: "f7b72868e3591a301f4881fcdbda2e98ab8cb03fafb079ab0d6f86df956278d4"
+  
+  dia_normalization_retry files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "c21faff953b2d164a4fce6838cb0a76a1450f485a83ffc49a0b661c474a05e8f"
+  `expected`: "ffd51fd2d8ec90cf44e4c3e6ac7d3245d1670ac06f7dcc9cf715f53e6fa32675"
+  
+  dia_correlation_apply norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "c21faff953b2d164a4fce6838cb0a76a1450f485a83ffc49a0b661c474a05e8f"
+  `expected`: "ffd51fd2d8ec90cf44e4c3e6ac7d3245d1670ac06f7dcc9cf715f53e6fa32675"
+  
+  dia_correlation_reapply norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "c21faff953b2d164a4fce6838cb0a76a1450f485a83ffc49a0b661c474a05e8f"
+  `expected`: "ffd51fd2d8ec90cf44e4c3e6ac7d3245d1670ac06f7dcc9cf715f53e6fa32675"
+  
+  dia_correlation_skip norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "c21faff953b2d164a4fce6838cb0a76a1450f485a83ffc49a0b661c474a05e8f"
+  `expected`: "ffd51fd2d8ec90cf44e4c3e6ac7d3245d1670ac06f7dcc9cf715f53e6fa32675"
+  
+  dia_normalization_refused norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "c2235ad15b5cc91d799862610daae5663c7888bbd177375136a61e7f0b50607a"
+  `expected`: "348dd5584afa59605f2293cd4f786e94e364e26b9c334879474306c0fae8d704"
+  
+  dia_normalization_retry norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cc7848651d01ab6fdf6c53e82718e68e4605ef6e4b0128d13a89d83fdf07461f"
+  `expected`: "95c187b844a0c92a533623d499d8a0bba3170361b329a25941919808a22379ad"
+  
+  dia_normalization_manual norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:32d9093cb75d" "ruv:cd07b9c7ac81"
+  `expected`: "post:32d9093cb75d" "ruv:7728005e4b82"
+  
+  dia_normalization_manual callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:32d9093cb75d" "ruv:cd07b9c7ac81"
+  `expected`: "post:32d9093cb75d" "ruv:7728005e4b82"
+  
+  dia_normalization_retry callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-normalization-ruv:e181b416a10d95b9"
+  + "dia-normalization-ruv:cd9f91a075823975"
+    "dia-normalization-ruv:fc952b8790c07658"
+    "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+  
+  dia_normalization_manual products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-normalization-ruv:e181b416a10d95b9"
+  + "dia-normalization-ruv:cd9f91a075823975"
+    "dia-normalization-ruv:fc952b8790c07658"
+  - "dia-pearson-pairs:b8040c7e4cf01a45"
+  + "dia-pearson-pairs:fd76b845ea943be4"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+    "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+  
+  dia_correlation_apply products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-normalization-ruv:e181b416a10d95b9"
+  + "dia-normalization-ruv:cd9f91a075823975"
+    "dia-normalization-ruv:fc952b8790c07658"
+  - "dia-pearson-pairs:b8040c7e4cf01a45"
+  + "dia-pearson-pairs:fd76b845ea943be4"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+    "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+  
+  dia_correlation_reapply products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-normalization-ruv:e181b416a10d95b9"
+  + "dia-normalization-ruv:cd9f91a075823975"
+    "dia-normalization-ruv:fc952b8790c07658"
+  - "dia-pearson-pairs:b8040c7e4cf01a45"
+  + "dia-pearson-pairs:fd76b845ea943be4"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+    "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+  
+  dia_correlation_skip products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-normalization-ruv:e181b416a10d95b9"
+  + "dia-normalization-ruv:cd9f91a075823975"
+    "dia-normalization-ruv:fc952b8790c07658"
+  - "dia-pearson-pairs:b8040c7e4cf01a45"
+  + "dia-pearson-pairs:fd76b845ea943be4"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+    "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+  
+  dia_normalization_refused products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-normalization-ruv:e181b416a10d95b9"
+  + "dia-normalization-ruv:cd9f91a075823975"
+    "dia-normalization-ruv:fc952b8790c07658"
+  - "dia-pearson-pairs:b8040c7e4cf01a45"
+  + "dia-pearson-pairs:fd76b845ea943be4"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia-pearson-selection:82252b79947fc3c3"
+  + "dia-pearson-selection:dad348a521c3f696"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+  - "dia_normalization_pca:00bf4a25da50a407"
+  + "dia_normalization_pca:4f973348b0e3f7d7"
+    "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+  
+  dia_normalization_retry products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  
+  dia_normalization_skip states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  
+  dia_normalization_skip_repeat states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  - ruv_corrected"023118de9837cf90cc250d642be7646606f73ddefa9b48eecd09c5a8a19c4828"
+  + ruv_corrected"f1754ea6181a120f914c2bcc7c41211d5fa6235bb462e4324691ea3cc910e1fd"
+  
+  dia_normalization_manual states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  - ruv_corrected"023118de9837cf90cc250d642be7646606f73ddefa9b48eecd09c5a8a19c4828"
+  + ruv_corrected"f1754ea6181a120f914c2bcc7c41211d5fa6235bb462e4324691ea3cc910e1fd"
+  - correlation_filtered"0815aeea00a602fe5695dd8397cbbdd74d2bb1b684a068693cf78f43de5b1b22"
+  + correlation_filtered"d0808060ef84dce32fb8b2c6901e782b4925f4e1f7e114ae9e4533aa8436f22a"
+  
+  dia_correlation_skip states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  - ruv_corrected"023118de9837cf90cc250d642be7646606f73ddefa9b48eecd09c5a8a19c4828"
+  + ruv_corrected"f1754ea6181a120f914c2bcc7c41211d5fa6235bb462e4324691ea3cc910e1fd"
+  - correlation_filtered"0815aeea00a602fe5695dd8397cbbdd74d2bb1b684a068693cf78f43de5b1b22"
+  + correlation_filtered"d0808060ef84dce32fb8b2c6901e782b4925f4e1f7e114ae9e4533aa8436f22a"
+  
+  dia_normalization_refused states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  - ruv_corrected"023118de9837cf90cc250d642be7646606f73ddefa9b48eecd09c5a8a19c4828"
+  + ruv_corrected"f1754ea6181a120f914c2bcc7c41211d5fa6235bb462e4324691ea3cc910e1fd"
+  - correlation_filtered"2c1d7d76a4960e31715be14537975508abce71d9f1c2574b6228ed30af4388c0"
+  + correlation_filtered"2fdc4f172ed209895122bfc99ff5f6400f37062f53d9ef062822826476637a29"
+  
+  dia_correlation_apply states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  - ruv_corrected"023118de9837cf90cc250d642be7646606f73ddefa9b48eecd09c5a8a19c4828"
+  + ruv_corrected"f1754ea6181a120f914c2bcc7c41211d5fa6235bb462e4324691ea3cc910e1fd"
+  - correlation_filtered"eb1d31b8e6e133513e623797dadf0550d0d081300947bf153ccc2a3c206435a8"
+  + correlation_filtered"006fb2a013dfbcbb61ccf73eb174df823f26c9c54d22fdeac58b6c6251c676c3"
+  
+  dia_correlation_reapply states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_replicate_filtered"75df02d3ae2fa8651d61b084b4c12e6a356597b13115541b941510bf00806d4e"
+  + protein_replicate_filtered"932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78"
+    normalized"87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+  - ruv_corrected"f05353597221da25dce1c3e475c9e70dc702a3e36fee03ca4bbb35422ab60a0f"
+  + ruv_corrected"64845d3f7fd40c1d362389a98b134eefe13e4dbd85795e3c41e19042ce451a2b"
+  - correlation_filtered"0815aeea00a602fe5695dd8397cbbdd74d2bb1b684a068693cf78f43de5b1b22"
+  + correlation_filtered"d0808060ef84dce32fb8b2c6901e782b4925f4e1f7e114ae9e4533aa8436f22a"
+  
+  dia_normalization_retry states

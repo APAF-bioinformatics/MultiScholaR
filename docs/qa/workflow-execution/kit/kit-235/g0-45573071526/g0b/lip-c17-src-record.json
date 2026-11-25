@@ -1,0 +1,1476 @@
+{
+  "schema": "multischolar.analysis_record.v1",
+  "generated_at": "2026-11-25T08:13:46.617+0000",
+  "workflow": "LIPIDOMICS",
+  "omic_type": "lipidomics",
+  "store_identity": {
+    "project_id": "LIPIDSEARCH-native",
+    "workflow_id": "LIPIDOMICS"
+  },
+  "software": {
+    "package": "MultiScholaR",
+    "version": "0.9.0",
+    "sha": null,
+    "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+    "lapack": null,
+    "omp_threads": null,
+    "blas_threads": null,
+    "duckdb_threads": {
+      "rollup": 8,
+      "codec_read": 2,
+      "codec_bulk": 8
+    },
+    "os_release": "6.8.0-1070-azure; Ubuntu 22.04.5 LTS",
+    "locale": "C.UTF-8",
+    "packages": [
+      {
+        "name": "arrow",
+        "version": "25.0.0"
+      },
+      {
+        "name": "assertthat",
+        "version": "0.2.1"
+      },
+      {
+        "name": "attempt",
+        "version": "0.3.1"
+      },
+      {
+        "name": "backports",
+        "version": "1.5.1"
+      },
+      {
+        "name": "base",
+        "version": "4.6.1"
+      },
+      {
+        "name": "BiocParallel",
+        "version": "1.46.0"
+      },
+      {
+        "name": "bit",
+        "version": "4.6.0"
+      },
+      {
+        "name": "bit64",
+        "version": "4.8.2"
+      },
+      {
+        "name": "brio",
+        "version": "1.1.5"
+      },
+      {
+        "name": "bslib",
+        "version": "0.11.0"
+      },
+      {
+        "name": "cachem",
+        "version": "1.1.0"
+      },
+      {
+        "name": "cellranger",
+        "version": "1.1.0"
+      },
+      {
+        "name": "checkmate",
+        "version": "2.3.4"
+      },
+      {
+        "name": "chromote",
+        "version": "0.5.1"
+      },
+      {
+        "name": "cli",
+        "version": "3.6.6"
+      },
+      {
+        "name": "codetools",
+        "version": "0.2.20"
+      },
+      {
+        "name": "compiler",
+        "version": "4.6.1"
+      },
+      {
+        "name": "config",
+        "version": "0.3.2"
+      },
+      {
+        "name": "configr",
+        "version": "0.3.5"
+      },
+      {
+        "name": "corpcor",
+        "version": "1.6.10"
+      },
+      {
+        "name": "crayon",
+        "version": "1.5.3"
+      },
+      {
+        "name": "crosstalk",
+        "version": "1.2.2"
+      },
+      {
+        "name": "data.table",
+        "version": "1.18.4"
+      },
+      {
+        "name": "datasets",
+        "version": "4.6.1"
+      },
+      {
+        "name": "DBI",
+        "version": "1.3.0"
+      },
+      {
+        "name": "desc",
+        "version": "1.4.3"
+      },
+      {
+        "name": "digest",
+        "version": "0.6.39"
+      },
+      {
+        "name": "dplyr",
+        "version": "1.2.1"
+      },
+      {
+        "name": "DT",
+        "version": "0.34.0"
+      },
+      {
+        "name": "duckdb",
+        "version": "1.5.5"
+      },
+      {
+        "name": "ellipse",
+        "version": "0.5.0"
+      },
+      {
+        "name": "evaluate",
+        "version": "1.0.5"
+      },
+      {
+        "name": "farver",
+        "version": "2.1.2"
+      },
+      {
+        "name": "fastduckdb",
+        "version": "0.2.0"
+      },
+      {
+        "name": "fastmap",
+        "version": "1.2.0"
+      },
+      {
+        "name": "filelock",
+        "version": "1.0.3"
+      },
+      {
+        "name": "fontawesome",
+        "version": "0.5.3"
+      },
+      {
+        "name": "forcats",
+        "version": "1.0.1"
+      },
+      {
+        "name": "fs",
+        "version": "2.1.0"
+      },
+      {
+        "name": "furrr",
+        "version": "0.4.0"
+      },
+      {
+        "name": "future",
+        "version": "1.75.0"
+      },
+      {
+        "name": "generics",
+        "version": "0.1.4"
+      },
+      {
+        "name": "ggnewscale",
+        "version": "0.5.2"
+      },
+      {
+        "name": "ggplot2",
+        "version": "4.0.3"
+      },
+      {
+        "name": "ggplotify",
+        "version": "0.1.3"
+      },
+      {
+        "name": "ggrepel",
+        "version": "0.9.8"
+      },
+      {
+        "name": "gh",
+        "version": "1.6.1"
+      },
+      {
+        "name": "globals",
+        "version": "0.19.1"
+      },
+      {
+        "name": "glue",
+        "version": "1.8.1"
+      },
+      {
+        "name": "golem",
+        "version": "1.0.1"
+      },
+      {
+        "name": "graphics",
+        "version": "4.6.1"
+      },
+      {
+        "name": "grDevices",
+        "version": "4.6.1"
+      },
+      {
+        "name": "grid",
+        "version": "4.6.1"
+      },
+      {
+        "name": "gridExtra",
+        "version": "2.3.1"
+      },
+      {
+        "name": "gridGraphics",
+        "version": "0.5.1"
+      },
+      {
+        "name": "gtable",
+        "version": "0.3.6"
+      },
+      {
+        "name": "gtools",
+        "version": "3.9.5"
+      },
+      {
+        "name": "here",
+        "version": "1.0.2"
+      },
+      {
+        "name": "hms",
+        "version": "1.1.4"
+      },
+      {
+        "name": "htmltools",
+        "version": "0.5.9"
+      },
+      {
+        "name": "htmlwidgets",
+        "version": "1.6.4"
+      },
+      {
+        "name": "httpuv",
+        "version": "1.6.17"
+      },
+      {
+        "name": "httr",
+        "version": "1.4.8"
+      },
+      {
+        "name": "httr2",
+        "version": "1.3.0"
+      },
+      {
+        "name": "igraph",
+        "version": "2.3.3"
+      },
+      {
+        "name": "ini",
+        "version": "0.3.1"
+      },
+      {
+        "name": "iq",
+        "version": "2.0.1"
+      },
+      {
+        "name": "janitor",
+        "version": "2.2.1"
+      },
+      {
+        "name": "jquerylib",
+        "version": "0.1.4"
+      },
+      {
+        "name": "jsonlite",
+        "version": "2.0.0"
+      },
+      {
+        "name": "knitr",
+        "version": "1.51"
+      },
+      {
+        "name": "labeling",
+        "version": "0.4.3"
+      },
+      {
+        "name": "later",
+        "version": "1.4.8"
+      },
+      {
+        "name": "lattice",
+        "version": "0.22.9"
+      },
+      {
+        "name": "lazyeval",
+        "version": "0.2.3"
+      },
+      {
+        "name": "lifecycle",
+        "version": "1.0.5"
+      },
+      {
+        "name": "limma",
+        "version": "3.68.4"
+      },
+      {
+        "name": "listenv",
+        "version": "1.0.0"
+      },
+      {
+        "name": "logger",
+        "version": "0.4.2"
+      },
+      {
+        "name": "logging",
+        "version": "0.10.111"
+      },
+      {
+        "name": "lubridate",
+        "version": "1.9.5"
+      },
+      {
+        "name": "magick",
+        "version": "2.9.1"
+      },
+      {
+        "name": "magrittr",
+        "version": "2.0.5"
+      },
+      {
+        "name": "MASS",
+        "version": "7.3.66"
+      },
+      {
+        "name": "Matrix",
+        "version": "1.7.6"
+      },
+      {
+        "name": "matrixStats",
+        "version": "1.5.0"
+      },
+      {
+        "name": "memoise",
+        "version": "2.0.1"
+      },
+      {
+        "name": "methods",
+        "version": "4.6.1"
+      },
+      {
+        "name": "mime",
+        "version": "0.13"
+      },
+      {
+        "name": "mixOmics",
+        "version": "6.36.0"
+      },
+      {
+        "name": "multidplyr",
+        "version": "0.1.4"
+      },
+      {
+        "name": "MultiScholaR",
+        "version": "0.9.0"
+      },
+      {
+        "name": "openxlsx",
+        "version": "4.2.8.1"
+      },
+      {
+        "name": "optparse",
+        "version": "1.8.2"
+      },
+      {
+        "name": "otel",
+        "version": "0.2.0"
+      },
+      {
+        "name": "pacman",
+        "version": "0.5.1"
+      },
+      {
+        "name": "parallel",
+        "version": "4.6.1"
+      },
+      {
+        "name": "parallelly",
+        "version": "1.48.0"
+      },
+      {
+        "name": "patchwork",
+        "version": "1.3.2"
+      },
+      {
+        "name": "pillar",
+        "version": "1.11.1"
+      },
+      {
+        "name": "pkgbuild",
+        "version": "1.4.8"
+      },
+      {
+        "name": "pkgconfig",
+        "version": "2.0.3"
+      },
+      {
+        "name": "pkgload",
+        "version": "1.5.3"
+      },
+      {
+        "name": "plotly",
+        "version": "4.12.1"
+      },
+      {
+        "name": "plyr",
+        "version": "1.8.9"
+      },
+      {
+        "name": "png",
+        "version": "0.1.9"
+      },
+      {
+        "name": "prettyunits",
+        "version": "1.2.0"
+      },
+      {
+        "name": "processx",
+        "version": "3.9.0"
+      },
+      {
+        "name": "progress",
+        "version": "1.2.3"
+      },
+      {
+        "name": "promises",
+        "version": "1.5.0"
+      },
+      {
+        "name": "ps",
+        "version": "1.9.3"
+      },
+      {
+        "name": "purrr",
+        "version": "1.2.2"
+      },
+      {
+        "name": "qs2",
+        "version": "0.2.2"
+      },
+      {
+        "name": "qvalue",
+        "version": "2.44.0"
+      },
+      {
+        "name": "R6",
+        "version": "2.6.1"
+      },
+      {
+        "name": "ragg",
+        "version": "1.5.2"
+      },
+      {
+        "name": "rappdirs",
+        "version": "0.3.4"
+      },
+      {
+        "name": "rARPACK",
+        "version": "0.11.0"
+      },
+      {
+        "name": "RColorBrewer",
+        "version": "1.1.3"
+      },
+      {
+        "name": "Rcpp",
+        "version": "1.1.2"
+      },
+      {
+        "name": "RcppParallel",
+        "version": "6.1.1"
+      },
+      {
+        "name": "RcppTOML",
+        "version": "0.2.3"
+      },
+      {
+        "name": "readr",
+        "version": "2.2.0"
+      },
+      {
+        "name": "readxl",
+        "version": "1.5.0"
+      },
+      {
+        "name": "reshape2",
+        "version": "1.4.5"
+      },
+      {
+        "name": "rlang",
+        "version": "1.3.0"
+      },
+      {
+        "name": "rmarkdown",
+        "version": "2.31"
+      },
+      {
+        "name": "rprojroot",
+        "version": "2.1.1"
+      },
+      {
+        "name": "RSpectra",
+        "version": "0.16.2"
+      },
+      {
+        "name": "rstudioapi",
+        "version": "0.19.0"
+      },
+      {
+        "name": "ruv",
+        "version": "0.9.7.1"
+      },
+      {
+        "name": "RUVIIIC",
+        "version": "1.0.19"
+      },
+      {
+        "name": "rvest",
+        "version": "1.0.5"
+      },
+      {
+        "name": "S7",
+        "version": "0.2.2"
+      },
+      {
+        "name": "sass",
+        "version": "0.4.10"
+      },
+      {
+        "name": "scales",
+        "version": "1.4.0"
+      },
+      {
+        "name": "shiny",
+        "version": "1.14.0"
+      },
+      {
+        "name": "shinydashboard",
+        "version": "0.7.3"
+      },
+      {
+        "name": "shinyFiles",
+        "version": "0.9.3"
+      },
+      {
+        "name": "shinyjqui",
+        "version": "0.4.1"
+      },
+      {
+        "name": "shinyjs",
+        "version": "2.1.1"
+      },
+      {
+        "name": "snakecase",
+        "version": "0.11.1"
+      },
+      {
+        "name": "splines",
+        "version": "4.6.1"
+      },
+      {
+        "name": "statmod",
+        "version": "1.5.2"
+      },
+      {
+        "name": "stats",
+        "version": "4.6.1"
+      },
+      {
+        "name": "stringfish",
+        "version": "0.19.0"
+      },
+      {
+        "name": "stringi",
+        "version": "1.8.7"
+      },
+      {
+        "name": "stringr",
+        "version": "1.6.0"
+      },
+      {
+        "name": "systemfonts",
+        "version": "1.3.2"
+      },
+      {
+        "name": "testthat",
+        "version": "3.3.2"
+      },
+      {
+        "name": "textshaping",
+        "version": "1.0.5"
+      },
+      {
+        "name": "tibble",
+        "version": "3.3.1"
+      },
+      {
+        "name": "tictoc",
+        "version": "1.2.1"
+      },
+      {
+        "name": "tidyr",
+        "version": "1.3.2"
+      },
+      {
+        "name": "tidyselect",
+        "version": "1.2.1"
+      },
+      {
+        "name": "timechange",
+        "version": "0.4.0"
+      },
+      {
+        "name": "tools",
+        "version": "4.6.1"
+      },
+      {
+        "name": "tzdb",
+        "version": "0.5.0"
+      },
+      {
+        "name": "utils",
+        "version": "4.6.1"
+      },
+      {
+        "name": "vctrs",
+        "version": "0.7.3"
+      },
+      {
+        "name": "viridis",
+        "version": "0.6.5"
+      },
+      {
+        "name": "viridisLite",
+        "version": "0.4.3"
+      },
+      {
+        "name": "vroom",
+        "version": "1.7.1"
+      },
+      {
+        "name": "websocket",
+        "version": "1.4.4"
+      },
+      {
+        "name": "withr",
+        "version": "3.0.3"
+      },
+      {
+        "name": "writexl",
+        "version": "1.5.4"
+      },
+      {
+        "name": "xfun",
+        "version": "0.60"
+      },
+      {
+        "name": "xml2",
+        "version": "1.6.0"
+      },
+      {
+        "name": "xtable",
+        "version": "1.8.8"
+      },
+      {
+        "name": "yaml",
+        "version": "2.3.12"
+      },
+      {
+        "name": "yulab.utils",
+        "version": "0.2.4"
+      },
+      {
+        "name": "zip",
+        "version": "3.0.1"
+      }
+    ]
+  },
+  "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+  "defaults_changed": false,
+  "inputs": [
+    {
+      "role": "lipid_assay_1",
+      "basename": "assay1_lipidsearch_lcms_pos.txt",
+      "bytes": 913,
+      "sha256": "c23154c95596cc055c5acfe9c14de4f9e2ca0d3b4821455f398595b957f8b0e4",
+      "entity_id": null
+    },
+    {
+      "role": "lipid_assay_2",
+      "basename": "assay2_lipidsearch_lcms_neg.txt",
+      "bytes": 884,
+      "sha256": "14b100d399ffe23d381de9e5da4953a8e13cc07bb2916ad00abf3722cbd4d15f",
+      "entity_id": null
+    },
+    {
+      "role": "design_file",
+      "basename": "design_matrix.tab",
+      "bytes": 244,
+      "sha256": "5d20673376b6eb0a3c6f716167b7fb47404eeed5a37d58a6b9cb20d3387fa9ff",
+      "entity_id": null
+    }
+  ],
+  "design": {
+    "entity_id": "b2284129b012a7acdd553a34f7b112d433d876146b85fc7865da5bfc056e2815",
+    "sample_id": "Run",
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "rows": [
+      {
+        "Run": "KO_1",
+        "group": "KO",
+        "factor1": "KO",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 1,
+        "tech_reps": null,
+        "tech_rep_group": "KO_1"
+      },
+      {
+        "Run": "KO_2",
+        "group": "KO",
+        "factor1": "KO",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 2,
+        "tech_reps": null,
+        "tech_rep_group": "KO_2"
+      },
+      {
+        "Run": "KO_3",
+        "group": "KO",
+        "factor1": "KO",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 3,
+        "tech_reps": null,
+        "tech_rep_group": "KO_3"
+      },
+      {
+        "Run": "WT_1",
+        "group": "WT",
+        "factor1": "WT",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 1,
+        "tech_reps": null,
+        "tech_rep_group": "WT_1"
+      },
+      {
+        "Run": "WT_2",
+        "group": "WT",
+        "factor1": "WT",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 2,
+        "tech_reps": null,
+        "tech_rep_group": "WT_2"
+      },
+      {
+        "Run": "WT_3",
+        "group": "WT",
+        "factor1": "WT",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 3,
+        "tech_reps": null,
+        "tech_rep_group": "WT_3"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "order": 1,
+      "state": "initial",
+      "operation": "import",
+      "variant": null,
+      "preceded_by": [],
+      "step_label": "initial",
+      "committed_at": "2026-11-25T08:12:47.768+0000",
+      "seed": null,
+      "result_entity_id": "418a0df5997559fe49d99a299d34c5880056cc7870b1049a6f8bbd1e7ae33547",
+      "input_entity_ids": [],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": null,
+        "columns": null
+      },
+      "outcomes": {
+        "rows": null,
+        "columns": null
+      },
+      "description": "Initial empty state",
+      "parameters": [],
+      "products": [],
+      "stored_as_object": false
+    },
+    {
+      "order": 2,
+      "state": "lipid_raw_data_s4",
+      "operation": "design_builder",
+      "variant": null,
+      "preceded_by": [],
+      "step_label": "lipid_raw_data_s4",
+      "committed_at": "2026-11-25T08:12:49.638+0000",
+      "seed": null,
+      "result_entity_id": "2df33454477fb0eb4a6e5310c19b4d6186815ec67bda6131fc3259da611c9312",
+      "input_entity_ids": [
+        "418a0df5997559fe49d99a299d34c5880056cc7870b1049a6f8bbd1e7ae33547"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 20,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 20,
+        "columns": 8
+      },
+      "description": "Initial LipidomicsAssayData S4 object created after design matrix",
+      "parameters": [
+        {
+          "name": "sample_id",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "Run",
+            "length": 1
+          },
+          "provenance": "unknown"
+        },
+        {
+          "name": "group_id",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "group",
+            "length": 1
+          },
+          "provenance": "unknown"
+        },
+        {
+          "name": "technical_replicate_id",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "tech_rep_group",
+            "length": 1
+          },
+          "provenance": "unknown"
+        }
+      ],
+      "products": [],
+      "stored_as_object": false
+    },
+    {
+      "order": 3,
+      "state": "lipid_intensity_filtered",
+      "operation": "lipid_intensity_filter",
+      "variant": "partitioned",
+      "preceded_by": [],
+      "step_label": "2_Intensity_Filtered",
+      "committed_at": "2026-11-25T08:12:51.364+0000",
+      "seed": null,
+      "result_entity_id": "89ef00a581044f969969d0f554b62036af16ca0279f86a83afd59d193e5d2612",
+      "input_entity_ids": [
+        "2df33454477fb0eb4a6e5310c19b4d6186815ec67bda6131fc3259da611c9312"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8
+      },
+      "description": "Applied lipid intensity filter (percentile: 10%, proportion: 0.50)",
+      "parameters": [
+        {
+          "name": "lipids_intensity_cutoff_percentile",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 10,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "lipids_proportion_of_samples_below_cutoff",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 0.5,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "intensity_filter_samples",
+          "source": "fixed",
+          "value": {
+            "type": "character",
+            "value": "design",
+            "length": 1
+          },
+          "provenance": "fixed"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 4,
+      "state": "lipid_duplicates_resolved",
+      "operation": "lipid_duplicate_resolution",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "3_Duplicates_Resolved",
+      "committed_at": "2026-11-25T08:12:57.746+0000",
+      "seed": null,
+      "result_entity_id": "7113fca8898b8e112fa2593aaa34959619201d8bd0560bb3a7c83633f7769eb8",
+      "input_entity_ids": [
+        "89ef00a581044f969969d0f554b62036af16ca0279f86a83afd59d193e5d2612"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8
+      },
+      "description": "Resolved duplicate lipid features by keeping highest intensity",
+      "parameters": [],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        },
+        {
+          "entity_id": "c861fa1a68d24f299f66de31b16e94b2526391904e5dce50f3d43283542df92a",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "1c511ee81eb5cf9d459c5f84348d722dac9bbfdfa2cc48602fb74067a31022ac"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 5,
+      "state": "lipid_qc_complete",
+      "operation": "lipid_qc_finalize",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "4_QC_Complete",
+      "committed_at": "2026-11-25T08:13:03.162+0000",
+      "seed": null,
+      "result_entity_id": "fd16fa537bf1812ca99071a1865d212060610d0d932a4131d5a27a3ebe97de9d",
+      "input_entity_ids": [
+        "7113fca8898b8e112fa2593aaa34959619201d8bd0560bb3a7c83633f7769eb8"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8
+      },
+      "description": "QC processing complete - ready for normalization",
+      "parameters": [],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        },
+        {
+          "entity_id": "c861fa1a68d24f299f66de31b16e94b2526391904e5dce50f3d43283542df92a",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "1c511ee81eb5cf9d459c5f84348d722dac9bbfdfa2cc48602fb74067a31022ac"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 6,
+      "state": "lipid_itsd_norm",
+      "operation": "lipid_itsd_normalisation",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "5_ITSD_Normalised",
+      "committed_at": "2026-11-25T08:13:14.472+0000",
+      "seed": null,
+      "result_entity_id": "9f2a45f1cec54cf2c76a7fcb99bdbf293a525d514887af078285806dee6e66c9",
+      "input_entity_ids": [
+        "fd16fa537bf1812ca99071a1865d212060610d0d932a4131d5a27a3ebe97de9d"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8,
+        "itsd_applied": true
+      },
+      "description": "ITSD normalization (aggregation: median )",
+      "parameters": [
+        {
+          "name": "itsd_aggregation",
+          "source": "args",
+          "value": {
+            "type": "character",
+            "value": "median",
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "itsd_feature_ids",
+          "source": "provenance",
+          "value": null,
+          "provenance": "input"
+        },
+        {
+          "name": "method",
+          "source": "fixed",
+          "value": {
+            "type": "character",
+            "value": "ITSD",
+            "length": 1
+          },
+          "provenance": "fixed"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        },
+        {
+          "entity_id": "c861fa1a68d24f299f66de31b16e94b2526391904e5dce50f3d43283542df92a",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "1c511ee81eb5cf9d459c5f84348d722dac9bbfdfa2cc48602fb74067a31022ac"
+        },
+        {
+          "entity_id": "e7d621fee2c8662d8706be7815f3a8c472e3b99ea57058abc100efaf4f450525",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "b7a56551df7c39078ab10e240a9a0d377b8a5397f369bac111a7a40280ac3558"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 7,
+      "state": "lipid_log2",
+      "operation": "lipid_log2",
+      "variant": "partitioned",
+      "preceded_by": [],
+      "step_label": "6_Log2",
+      "committed_at": "2026-11-25T08:13:15.147+0000",
+      "seed": null,
+      "result_entity_id": "0a198bbd9a1a9df6e15dabf6d9e379b76169cfc148fb9d06fa557ca68d8e4888",
+      "input_entity_ids": [
+        "9f2a45f1cec54cf2c76a7fcb99bdbf293a525d514887af078285806dee6e66c9"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8
+      },
+      "description": "Log2 transformation (offset: 0 )",
+      "parameters": [
+        {
+          "name": "offset",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        },
+        {
+          "entity_id": "c861fa1a68d24f299f66de31b16e94b2526391904e5dce50f3d43283542df92a",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "1c511ee81eb5cf9d459c5f84348d722dac9bbfdfa2cc48602fb74067a31022ac"
+        },
+        {
+          "entity_id": "e7d621fee2c8662d8706be7815f3a8c472e3b99ea57058abc100efaf4f450525",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "b7a56551df7c39078ab10e240a9a0d377b8a5397f369bac111a7a40280ac3558"
+        },
+        {
+          "entity_id": "7feebe90402a3e62949660e13c65585d8740f468e368ff587fdb680e29c2bdf4",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "c54220e638b52d3ef5cedcd440a5eb7162c0872094e650060e987afc88d64536"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 8,
+      "state": "lipid_normalized",
+      "operation": "lipid_between_sample_normalisation",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "7_Normalised",
+      "committed_at": "2026-11-25T08:13:16.134+0000",
+      "seed": null,
+      "result_entity_id": "7810fc43a15b0fcb442c3d4871413222d99fdb0ff5bdc189201d07eaa1df66d5",
+      "input_entity_ids": [
+        "0a198bbd9a1a9df6e15dabf6d9e379b76169cfc148fb9d06fa557ca68d8e4888"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8
+      },
+      "description": "Between-sample normalization (method: cyclicloess )",
+      "parameters": [
+        {
+          "name": "normalisation_method",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "cyclicloess",
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        },
+        {
+          "entity_id": "c861fa1a68d24f299f66de31b16e94b2526391904e5dce50f3d43283542df92a",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "1c511ee81eb5cf9d459c5f84348d722dac9bbfdfa2cc48602fb74067a31022ac"
+        },
+        {
+          "entity_id": "e7d621fee2c8662d8706be7815f3a8c472e3b99ea57058abc100efaf4f450525",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "b7a56551df7c39078ab10e240a9a0d377b8a5397f369bac111a7a40280ac3558"
+        },
+        {
+          "entity_id": "7feebe90402a3e62949660e13c65585d8740f468e368ff587fdb680e29c2bdf4",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "c54220e638b52d3ef5cedcd440a5eb7162c0872094e650060e987afc88d64536"
+        },
+        {
+          "entity_id": "446c07e810dece38d51c192425d0113df6d5b922f9975447fe70dfc93d2511d2",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "8a75954605125610ef9efb6300deebc45a2b160e46a9f348afc675371746bc88"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 9,
+      "state": "lipid_correlation_filtered",
+      "operation": "lipid_pearson_selection",
+      "variant": "whole",
+      "preceded_by": [
+        {
+          "operation": "lipid_pearson_pairs",
+          "variant": "whole",
+          "parameters": [
+            {
+              "name": "correlation_group",
+              "source": "provenance",
+              "value": {
+                "type": "character",
+                "value": "group",
+                "length": 1
+              },
+              "provenance": "no_shipped_default"
+            }
+          ]
+        }
+      ],
+      "step_label": "9_Correlation_Filtered",
+      "committed_at": "2026-11-25T08:13:30.811+0000",
+      "seed": null,
+      "result_entity_id": "56d49e81a116b8072b645914f6eb3dec0dbf3b30e2eea6e98b7008c740f086f9",
+      "input_entity_ids": [
+        "7810fc43a15b0fcb442c3d4871413222d99fdb0ff5bdc189201d07eaa1df66d5"
+      ],
+      "software": {
+        "version": "0.9.0",
+        "sha": null,
+        "build": "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 17,
+        "columns": 8
+      },
+      "outcomes": {
+        "rows": 17,
+        "columns": 8
+      },
+      "description": "Correlation filtering (threshold: 0.5 )",
+      "parameters": [
+        {
+          "name": "pairs",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "a9f468d63b158017661f4ab60bd6d9cbdfd76877a626a02baea5814a7c47cde9",
+            "length": 1
+          },
+          "provenance": "input"
+        },
+        {
+          "name": "min_pearson_correlation_threshold",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0.5,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "39d1cd7c501127d19d6dcb006cc9ca22b210277771f05ba0904efb801ab61623",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "af449a775a1afdf0807f6047041491210dccfc7a28348afcb27f1e60df28bd56"
+        },
+        {
+          "entity_id": "c861fa1a68d24f299f66de31b16e94b2526391904e5dce50f3d43283542df92a",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "1c511ee81eb5cf9d459c5f84348d722dac9bbfdfa2cc48602fb74067a31022ac"
+        },
+        {
+          "entity_id": "e7d621fee2c8662d8706be7815f3a8c472e3b99ea57058abc100efaf4f450525",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "b7a56551df7c39078ab10e240a9a0d377b8a5397f369bac111a7a40280ac3558"
+        },
+        {
+          "entity_id": "7feebe90402a3e62949660e13c65585d8740f468e368ff587fdb680e29c2bdf4",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "c54220e638b52d3ef5cedcd440a5eb7162c0872094e650060e987afc88d64536"
+        },
+        {
+          "entity_id": "446c07e810dece38d51c192425d0113df6d5b922f9975447fe70dfc93d2511d2",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "8a75954605125610ef9efb6300deebc45a2b160e46a9f348afc675371746bc88"
+        },
+        {
+          "entity_id": "8bbb0880395a718ccd54ca27423d1d516fdd0b7a1abffc29ce33e54ce74b36c6",
+          "kind": "scientific_product",
+          "product_type": "a95fd688feb254b10ec879f7bb1a1938f6c2c1a440756ecacc6625424617f40f",
+          "identity_sha256": "f30f622f65743229d23c5594ed0dd30c31f9d07509418cead2ddf906b34f5c0b"
+        }
+      ],
+      "stored_as_object": false
+    }
+  ],
+  "analyses": {
+    "differential_abundance": {
+      "operation": "lipid_da_contrast",
+      "source_state": "lipid_correlation_filtered",
+      "source_entity_id": "56d49e81a116b8072b645914f6eb3dec0dbf3b30e2eea6e98b7008c740f086f9",
+      "parameters": [
+        {
+          "name": "formula",
+          "source": "manifest",
+          "value": {
+            "type": "character",
+            "value": "~ 0 + group",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "qvalue",
+          "source": "manifest",
+          "value": {
+            "type": "double",
+            "value": 0.050000000000000003,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "lfc",
+          "source": "manifest",
+          "value": {
+            "type": "double",
+            "value": 0,
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "contrasts": [
+        {
+          "contrasts": "groupKO-groupWT",
+          "friendly_names": "KO_vs_WT",
+          "full_format": "KO_vs_WT=groupKO-groupWT"
+        }
+      ],
+      "model": {
+        "model": "limma",
+        "formula_used": "~ 0 + group",
+        "eBayes_trend": true,
+        "eBayes_robust": true,
+        "treat_applied": false,
+        "block_reason": "no_duplicates",
+        "uses_duplicate_correlation": false
+      },
+      "results": [
+        {
+          "contrast": "groupKO-groupWT",
+          "assay": "LCMS_Pos",
+          "entity_id": "5a414c469293d8b59d2b2a6b98ab025ba6af92cfb8c1491c1bfe1c381c0c0a1c",
+          "rows": 9
+        },
+        {
+          "contrast": "groupKO-groupWT",
+          "assay": "LCMS_Neg",
+          "entity_id": "c13c80cd80d8661fdee72e9681182e7139312862dbf266f8fa68814ac9d27ed1",
+          "rows": 8
+        }
+      ],
+      "failures": []
+    }
+  },
+  "external_resources": [],
+  "limits": {
+    "external_resources": "services queried inside a worker process are not recorded (KIT-026); the list covers queries made by the controlling process",
+    "legacy_steps": "a step committed before step provenance was recorded is `legacy` and lists its arguments without provenance"
+  }
+}

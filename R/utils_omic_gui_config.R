@@ -1754,12 +1754,13 @@ omicGuiRuvTableClassic <- function() {
             k_rule_figures = list(sweep_bounded = list(fdp = 0.079, fdp_where = cell[["c5"]], power = 0.91,
                 source = "KIT-124 S1 arm 40 (scored/confirm-gha): worst cell C5 0.079, at most 0.056 elsewhere, power C0 0.91")),
             source = "KIT-129 1a; KIT-124 S1 arm 39 (scored/confirm-gha): worst cell C5 0.079, at most 0.053 elsewhere, power C0 0.92"),
-        legacy = list(status = "measured", fdp = 0.385, fdp_where = cell[["c5"]], power = 0.92,
+        # KIT-201 (VAL-131, D2): the legacy test now gives TREAT the trend and robust settings; its figures are arm 28's.
+        legacy = list(status = "measured", fdp = 0.389, fdp_where = cell[["c5"]], power = 0.92,
             test_form = "corrected_then_tested",
-            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 3% to",
-                "39% across the scenarios tested, against a target of 5%; 9.8% in the reference scenario."),
-            source = paste("KIT-129 1a; KIT-124 S1 arm 3 (scored/confirm-gha; C6 and C8 depend on the runner machine):",
-                "worst cell C5 0.385, C0 0.098, power C0 0.92")),
+            note = paste("For comparison with the approach of earlier versions; analyses saved with earlier versions",
+                "replay unchanged. False discoveries ranged from 3% to 39% across the scenarios tested, against a target",
+                "of 5%; 10.1% in the reference scenario."),
+            source = "KIT-129 1a; KIT-124 S1 arm 28 (scored/exact-gha): worst cell C5 0.389, C0 0.101, power C0 0.92"),
         none = list(status = "measured", fdp = 0.052, fdp_where = cell[["c3"]], power = 0.49,
             note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
                 "target, but about half the power is lost when unwanted variation is present."),
@@ -2518,8 +2519,8 @@ omicGuiLipidNorm <- function() {
         export = list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design",
             progress = list(gather = "Gathering data and publishing outputs...", complete = "Export complete", steps = FALSE),
             summary_time = "session"),
-        itsd_table = function(assay_data, id_col, annotation_cols) {
-            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols)
+        itsd_table = function(assay_data, id_col, annotation_cols, ...) {
+            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols, ...)
         },
         skip_correlation_flags = "before_commit", final_pca = list(preparing_size = 5, error_size = 4),
         managed_correlation_notify = FALSE)
@@ -2539,9 +2540,9 @@ omicGuiLipidQc <- function() {
         # mod_lipid_qc_intensity_server_helpers.R:142; mod_lipid_qc_s4.R:450 (func_lipid_qc.R:134)
         filtering_figure = updateLipidFiltering,
         itsd = list(name_columns = c("Lipid name", "Name", "lipid"),
-            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col, ...) {
                 getLipidInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
-                    lipid_id_col = id_col, sample_id_col = sample_id_col)
+                    lipid_id_col = id_col, sample_id_col = sample_id_col, ...)
             },
             quant = getLipidQuantData,
             tip = "Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')"),
@@ -2744,8 +2745,8 @@ omicGuiMetabNorm <- function() {
     omicGuiFeatureNorm("metab", "Metabolites",
         export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "design",
             progress = list(gather = "Gathering data...", complete = character(0), steps = TRUE), summary_time = "written"),
-        itsd_table = function(assay_data, id_col, annotation_cols) {
-            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)
+        itsd_table = function(assay_data, id_col, annotation_cols, ...) {
+            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols, ...)
         },
         skip_correlation_flags = "after_commit", final_pca = list(preparing_size = 5, error_size = 5),
         managed_correlation_notify = TRUE)
@@ -2764,9 +2765,9 @@ omicGuiMetabQc <- function() {
         # mod_metab_qc_intensity.R:206; mod_metab_qc_s4_server_helpers.R:398 (func_metab_qc.R:268)
         filtering_figure = updateMetaboliteFiltering,
         itsd = list(name_columns = c("Metabolite name", "Name", "metabolite"),
-            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col, ...) {
                 getInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
-                    metabolite_id_col = id_col, sample_id_col = sample_id_col)
+                    metabolite_id_col = id_col, sample_id_col = sample_id_col, ...)
             },
             quant = getMetaboliteQuantData,
             tip = "Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')"),

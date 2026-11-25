@@ -1,0 +1,7 @@
+trace installed: TRUE
+lip lipid_canonical: ran (66 s)
+met metab_lc: ran (62 s)
+lfq prot_lfq: ran (120 s)
+tmt prot_tmt: ran (145 s)
+dia prot_dia: ran (298 s)
+dial prot_dia_limpa: ran (185 s)

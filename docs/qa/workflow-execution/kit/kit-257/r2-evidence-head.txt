@@ -1,0 +1,26 @@
+KIT-257 E1 after the declared run present: 
+KIT-257 E2 dispatched: 2 present at the first dispatch: FALSE,FALSE,FALSE
+KIT-257 G3 history moved: FALSE notes: [error] An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file1755839d6ce73/project/kit097/results/transcriptomics/publication_graphs/canonical_correlation_panels.png. Close any program that has it open, then run the normalisation again.
+KIT-257 E3 present: normalised_results_cln_with_replicates.tsv copy: COPY: Using normalized file names (RUV was skipped) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,normalised_results.tsv
+KIT-257 E4 present: FALSE,FALSE,FALSE,FALSE,FALSE
+KIT-257 E7 after the first correlation present: ruv_normalised_results_cln_with_replicates.tsv DA at normalized = ran
+KIT-257 E7 present:  copy: COPY: Warning - neither RUV nor normalized files found, attempting RUV paths tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx
+KIT-257 E9 present when the queued normalisation started: FALSE
+KIT-257 G5 normalisation in process head: normalized error: workflow_figure_unwritten An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file175582523d955/results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv. Close any program that has it open, then run the normalisation again. notes: 
+KIT-257 G5 normalisation managed head: normalized error: workflow_figure_unwritten An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file175582523d955/results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv. Close any program that has it open, then run the normalisation again. notes: 
+KIT-257 G5 correlation in process head: normalized error: workflow_figure_unwritten An earlier file of the normalisation could not be removed, so this correlation filter was not run: /tmp/Rtmp6ovEEO/file175582523d955/results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv. Close any program that has it open, then apply or skip the correlation filter again. notes: 
+KIT-257 G5 correlation managed head: normalized error: workflow_figure_unwritten An earlier file of the normalisation could not be removed, so this correlation filter was not run: /tmp/Rtmp6ovEEO/file175582523d955/results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv. Close any program that has it open, then apply or skip the correlation filter again. notes: 
+KIT-257 E8 the correlation wrote: ruv_normalised_results_cln_with_replicates.tsv after the second press present:  errors: 0
+KIT-257 G5 limpa in process error: An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file175586c03c076/results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv. Close any program that has it open, then run the normalisation again. dispatched: 0 designated: FALSE
+KIT-257 G5 limpa managed error: An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file175586c03c076/results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv. Close any program that has it open, then run the normalisation again. dispatched: 0 designated: FALSE
+KIT-257 E5 lipid present: FALSE,FALSE,FALSE,FALSE QC_figures: 
+KIT-257 E6 lipid dispatched: 4 present at the first dispatch: FALSE,FALSE,FALSE,FALSE
+KIT-257 G5 lipid history moved: FALSE notes: [error] An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file1755862879787/a/qc/lcms_pos_ruv_corrected_pca.png. Close any program that has it open, then run the normalisation again.
+KIT-257 E5 metab present: FALSE,FALSE,FALSE,FALSE QC_figures: 
+KIT-257 E6 metab dispatched: 4 present at the first dispatch: FALSE,FALSE,FALSE,FALSE
+KIT-257 G5 metab history moved: FALSE notes: [error] An earlier file of the normalisation could not be removed, so this normalisation was not run: /tmp/Rtmp6ovEEO/file175584565dfaa/a/qc/lcms_pos_ruv_corrected_pca.png. Close any program that has it open, then run the normalisation again.
+KIT-257 G2 own file present: FALSE untouched: TRUE,TRUE,TRUE,TRUE
+KIT-257 E8: DIA with limpa, the pass-through pressed again removes both result-table names (fails before) ('test-kit257-norm-own-files.R:477:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 E8: DIA with limpa, the pass-through pressed again removes both result-table names (fails before) ('test-kit257-norm-own-files.R:477:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before) ('test-kit257-norm-own-files.R:498:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-257 G5 (DIA with limpa): a file that cannot be removed refuses the pass-through, in process and managed (fails before) ('test-kit257-norm-own-files.R:498:5') - Unknown or uninitialised column: `core_utilisation`.

@@ -136,8 +136,10 @@ runTrxNormInProcess <- function(binding, manager, settings, normData, config, ad
 runTrxNormalisation <- function(run, binding, manager, settings, normData, config, experimentPaths, addLog, notify, setStatus) {
     force(manager)
     force(settings)
-    # KIT-194: the run rule (a refusal, or the previous run's start selected) before anything moves (7.3).
-    started <- omicNormApplyRunStart(binding, manager, normData, addLog)
+    # KIT-194: the run rule (a refusal, or the previous run's start selected) before anything moves (7.3). KIT-257: then
+    # the earlier CCA panels and grid workbook are removed (a declared design does not write them).
+    started <- omicNormApplyRunStart(binding, manager, normData, addLog,
+        remove = function() omicNormOwnFiles(binding, experimentPaths))
     if (inherits(started, "error")) {
         notify(conditionMessage(started), type = "error", duration = 15)
         return(invisible(FALSE))

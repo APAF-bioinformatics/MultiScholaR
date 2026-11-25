@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # KIT-140: the integration workflow's Model tab. The MOFA2 settings built from the model's parameter table
-# (`integrationMofaParameterSpec`: every default is the table's, the provisional ones marked), the software check
+# (`integrationMofaParameterSpec`: every default is the table's, each marked with its status), the software check
 # (`integrationMofaCapability`), the training on the confirmed sample table (KIT-139) through KIT-062's model step, and
 # what the trained model is in a few lines: whether training settled, the factors kept, the variance explained per data
 # set, the saved model's checksum. Under a managed application the training is a managed-worker action (the omics'
@@ -24,8 +24,8 @@
 # kept in the project's integration store; a run with other settings is a new model, one with the same settings reuses
 # the saved one. Anything richer about the model (plots, weights, factors against the design) is KIT-063's.
 
-#' The Model tab's UI. The settings are built here from the parameter table, so a default the workbook changes
-#' changes the screen with no edit to this file.
+#' The Model tab's UI. The settings are built here from the parameter table, so a default changed in the table changes
+#' the screen with no edit to this file.
 #' @param id Module id.
 #' @noRd
 mod_integration_model_ui <- function(id) {
@@ -141,7 +141,10 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
             value <- capability()
             if (is.null(value)) return(NULL)
             if (isTRUE(value$available)) return(shiny::div(class = "alert alert-success", texts[["readiness_ok"]]))
-            integrationRefusalUi(texts[["refusal_mofa_unavailable"]], value$reason, class = "alert alert-warning", texts = texts)
+            # KIT-240: the missing piece named, and how to get it; a check that does not name one gives the general sentence.
+            key <- paste0("readiness_missing_", tolower(value$missing %||% ""))
+            sentence <- if (key %in% names(texts)) texts[[key]] else texts[["refusal_mofa_unavailable"]]
+            integrationRefusalUi(sentence, value$reason, class = "alert alert-warning", texts = texts)
         })
         output$matching_settings <- shiny::renderUI({
             confirmed <- workflow_data$integration_alignment
@@ -173,6 +176,8 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
             shiny::tagList(shiny::h4(texts[["result_heading"]]),
                 shiny::p(class = if (summary$converged) NULL else "text-danger", summary$convergence),
                 shiny::p(summary$factors), shiny::p(summary$samples),
+                # KIT-239: where the limitations of the model are stated.
+                shiny::p(texts[["model_limits_pointer"]]),
                 if (length(result$value$notes)) shiny::div(class = "alert alert-warning",
                     sprintf(texts[["few_samples"]], as.integer(result$value$shared_samples), INTEGRATION_FEW_SAMPLES)),
                 if (!is.null(summary$saved)) shiny::p(summary$saved),

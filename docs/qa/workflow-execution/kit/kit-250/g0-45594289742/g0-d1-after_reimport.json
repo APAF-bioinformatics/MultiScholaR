@@ -1,0 +1,114 @@
+{
+  "tab_status": {
+    "setup_import": "complete",
+    "design_matrix": "pending",
+    "quality_control": "disabled",
+    "normalization": "disabled",
+    "differential_expression": "disabled",
+    "enrichment_analysis": "disabled",
+    "session_summary": "disabled"
+  },
+  "setup_import": {
+    "timestamp": "2026-11-25 10:35:49",
+    "search_file": "report.tsv",
+    "detected_format": "diann",
+    "data_type": "peptide",
+    "fasta_file": "proteins.fasta",
+    "taxon_id": 9606,
+    "organism": "Homo sapiens",
+    "n_rows": 8989,
+    "n_runs": 8,
+    "n_proteins": 400,
+    "n_peptides": 1037,
+    "mixed_species_selection": {
+      "selected_organism": "Homo sapiens",
+      "selected_taxon_id": 9606,
+      "filter_applied": false,
+      "organism_distribution": [
+        {
+          "organism_name": "Homo sapiens",
+          "taxon_id": 9606,
+          "protein_count": 400,
+          "percentage": 100,
+          "rank": 1
+        }
+      ]
+    }
+  },
+  "notes": [
+    {
+      "t": 1795602948079,
+      "text": "Sample names sanitized for R compatibility.",
+      "type": "message",
+      "id": "shiny-notification-9a8ac028897601a3"
+    },
+    {
+      "t": 1795602951079,
+      "text": "Primary organism set to: Homo sapiens (Taxon: 9606)",
+      "type": "message",
+      "id": "shiny-notification-836b8dc5a5397f83"
+    },
+    {
+      "t": 1795602951079,
+      "text": "Data import successful!",
+      "type": "message",
+      "id": "shiny-notification-b22248c3fc429221"
+    },
+    {
+      "t": 1795602951079,
+      "text": "Multi-species FASTA detected. Filtering to Homo sapiens enabled.",
+      "type": "message",
+      "id": "shiny-notification-5aa2f38a3acc4107"
+    }
+  ],
+  "modals": [
+    {
+      "start": 1795602934479,
+      "end": 1795602935279,
+      "title": "Experiment Setup",
+      "progress": false,
+      "text": "Experiment Setup Experiment Label: Project Output Directory Select where to create the project directories: Directory Path: Browse... A new folder will be created here with your experiment label Cancel Continue"
+    },
+    {
+      "start": 1795602941681,
+      "end": 1795602942879,
+      "title": "Processing Data",
+      "progress": true,
+      "text": "Processing Data Sanitizing sample names... Please wait while your data is being processed."
+    },
+    {
+      "start": 1795602943079,
+      "end": 1795602945279,
+      "title": "Select Primary Organism",
+      "progress": false,
+      "text": "Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection"
+    },
+    {
+      "start": 1795602948279,
+      "end": 1795602949079,
+      "title": "Processing Data",
+      "progress": true,
+      "text": "Processing Data Sanitizing sample names... Please wait while your data is being processed."
+    },
+    {
+      "start": 1795602949279,
+      "end": 1795602951279,
+      "title": "Select Primary Organism",
+      "progress": false,
+      "text": "Select Primary Organism Multiple organisms detected in your FASTA database. The distribution of matched proteins is shown below. Please select the primary organism for this analysis. Organism Distribution Organism Taxon ID Proteins % Select primary organism: Homo sapiens (Taxon: 9606) - 400 proteins (100%) Filter data to keep only proteins from selected organism If checked, proteins from other organisms will be removed from the analysis. Cancel Confirm Selection"
+    }
+  ],
+  "texts": {
+    "proteomics_workflow-setup_import-import_status": "[OK] Data imported successfully!\nFormat: diann | Type: peptide",
+    "proteomics_workflow-setup_import-data_summary": "Data Summary\nData format: DIANN\nData type: peptide\nTotal rows: 8,989\nNumber of runs: 8\nNumber of protein groups: 400\nNumber of peptides: 1,037\nOrganism: Homo sapiens (taxon: 9606 )"
+  },
+  "stepper": [
+    "stepper-step step-completed",
+    "stepper-step step-current",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending",
+    "stepper-step step-pending"
+  ]
+}

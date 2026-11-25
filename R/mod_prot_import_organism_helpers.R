@@ -37,8 +37,9 @@ buildProtImportOrganismSelectionModal <- function(
             "If checked, proteins from other organisms will be removed from the analysis."
           )
       )
+    # KIT-250: Cancel is the module's own button (a modalButton runs no server code); its observer clears the import.
     , footer = shiny::tagList(
-        shiny::modalButton("Cancel")
+        shiny::actionButton(ns("cancel_organism"), "Cancel")
         , shiny::actionButton(ns("confirm_organism"), "Confirm Selection", class = "btn-primary")
       )
   )
@@ -151,6 +152,8 @@ confirmProtImportOrganismSelection <- function(
     , logInfo = logger::log_info
     , normalizeUniprot = normalizeUniprotAccession
     , cleanAcc = clean_acc
+    , complete = function(notify) completeOmicImport(workflowData, omicGuiConfig("proteomics"),
+        omicImportSourcePanel("proteomics")$design_status, notify)
 ) {
   selected_org <- localData$organism_distribution |>
     dplyr::filter(taxon_id == selectedTaxon)
@@ -216,7 +219,11 @@ confirmProtImportOrganismSelection <- function(
     )
   }
 
+  # KIT-250: with 'Mixed species FASTA' the import completes here, on the confirmed organism, after the optional filter.
+  complete(notify = FALSE)
+
   localData$waiting_for_organism_selection <- FALSE
+  localData$organism_unconfirmed <- FALSE
   removeModal()
 
   showNotification(
@@ -227,4 +234,27 @@ confirmProtImportOrganismSelection <- function(
   showNotification("Data import successful!", type = "message")
 
   TRUE
+}
+
+#' KIT-250: Cancel in the organism dialog. The import is not finished: it is cleared as a failed import is
+#' (`clearProtImportWorkflowState`), so no design can be built or saved until an organism is confirmed or the option
+#' is unticked, and the user is told so in a notification that stays until closed.
+#' @return The new statuses, invisibly.
+#' @noRd
+cancelProtImportOrganismSelection <- function(
+    workflowData
+    , localData
+    , removeModal = shiny::removeModal
+    , showNotification = shiny::showNotification
+    , logInfo = logger::log_info
+) {
+  localData$waiting_for_organism_selection <- FALSE
+  localData$organism_unconfirmed <- TRUE
+  removeModal()
+  updated_status <- clearProtImportWorkflowState(workflowData)
+  logInfo("Organism selection cancelled: the import was cleared (no organism confirmed)")
+  showNotification(PROT_IMPORT_ORGANISM_CANCELLED_TEXT, type = "warning", duration = NULL,
+    id = PROT_IMPORT_ORGANISM_CANCELLED_ID)
+
+  invisible(updated_status)
 }

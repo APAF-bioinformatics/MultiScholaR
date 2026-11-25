@@ -9,7 +9,7 @@ HowTo/
 man/
 mem/
 inst/reports/
-inst/workbooks/
+archive/
 tools/refactor/staging/
 tests/testdata/
 aa_seq_tbl.tsv

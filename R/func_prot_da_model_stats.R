@@ -536,6 +536,8 @@ runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, form
 #' @export
 #' @param weights,treat_lfc_cutoff,eBayes_trend,eBayes_robust Runtime inputs used by this function; see the usage section for accepted values.
 #' @param group_id,technical_replicate_id Column names of the design's group and of the object's declared technical replicate column (KIT-035): the replicate block comes from the declared column, and a block spanned by the design runs standard lmFit with the reason recorded.
+#' @details TREAT uses the same trend and robust settings as the moderated test (`eBayes_trend`, `eBayes_robust`; KIT-201).
+#'   With both FALSE the TREAT statistics are those of one prior variance without the robust step, as before KIT-201.
 runTestsContrasts <- function(data,
                               contrast_strings,
                               design_matrix,
@@ -600,13 +602,18 @@ runTestsContrasts <- function(data,
     design_matrix, samples_in_model, formula_string, weights,
     group_id = group_id, technical_replicate_id = technical_replicate_id)
 
+  # KIT-201 (VAL-127, VAL-131): TREAT takes the moderated test's trend and robust settings, except while a DA made
+  # before that change replays (the earlier rule: treat()'s own defaults, one prior variance without the robust step).
+  treat_moderated <- workflowTreatModerationCurrent()
   saved_manager <- getDIAActiveManager()
   saved_identity <- NULL
   if (usesDIAReferenceStates(saved_manager) && isTRUE(saved_manager$.context$da_reference_execution)) {
+    # The result's identity names the current rule, so a replayed (earlier-rule) result and a new one never share it.
+    adjustment <- paste("full-population-qvalue-BH-v1", rlang::as_name(rlang::ensym(p_value_column)),
+      rlang::as_name(rlang::ensym(q_value_column)), rlang::as_name(rlang::ensym(fdr_value_column)), sep = ":")
+    if (treat_moderated) adjustment <- paste(adjustment, "treat-moderated-v2", sep = ":")
     saved_identity <- newWorkflowDiaResultIdentity(saved_manager$.context$da_base_fit_reference,
-      contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust,
-      paste("full-population-qvalue-BH-v1", rlang::as_name(rlang::ensym(p_value_column)),
-        rlang::as_name(rlang::ensym(q_value_column)), rlang::as_name(rlang::ensym(fdr_value_column)), sep = ":"),
+      contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust, adjustment,
       saved_manager$.context$software)
     saved_result <- resolveWorkflowDiaResult(saved_manager$.context$store, saved_identity)
     if (identical(saved_result$status, "hit")) return(saved_result$value$value$public_result)
@@ -615,7 +622,8 @@ runTestsContrasts <- function(data,
   contrast_artifact <- applyProtDaContrastModel(base_fit_artifact, contr.matrix,
     treat_lfc_cutoff = treat_lfc_cutoff, eBayes_trend = eBayes_trend,
     eBayes_robust = eBayes_robust, contrastsFitFn = contrasts.fit,
-    eBayesFn = eBayes, treatFn = treat)
+    eBayesFn = eBayes, treatFn = \(fit, lfc) limma::treat(fit, lfc = lfc, trend = treat_moderated && isTRUE(eBayes_trend),
+      robust = treat_moderated && isTRUE(eBayes_robust)))
   eb.fit <- contrast_artifact$moderated_fit
   without_values <- contrast_artifact$features_without_values # KIT-200: NULL when every protein has a value
 
@@ -671,20 +679,22 @@ runTestsContrasts <- function(data,
 
               q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
-                tryCatch(
+                # KIT-249: the handler's value is assigned in this frame (as adjustProtDaResultTable does); assigned
+                # inside the handler, the Benjamini-Hochberg fallback went to a local copy and fdr_qvalue stayed NA.
+                q_values_all[valid_p_idx] <- tryCatch(
                   {
                     q_values_valid <- qvalue(valid_p_values)$q
-                    q_values_all[valid_p_idx] <- q_values_valid
                     message("      qvalue() computation successful")
+                    q_values_valid
                   },
                   error = function(e) {
                     qvalue_failed <<- TRUE
                     message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                     message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                     message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
-                    # Fallback to p.adjust if qvalue fails
-                    q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                     message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
+                    # Fallback to p.adjust if qvalue fails
+                    p.adjust(valid_p_values, method = "BH")
                   }
                 )
               } else {
@@ -794,20 +804,22 @@ runTestsContrasts <- function(data,
 
               q_values_all <- rep(NA_real_, nrow(da_tbl))
               if (use_qvalue) {
-                tryCatch(
+                # KIT-249: the handler's value is assigned in this frame (as adjustProtDaResultTable does); assigned
+                # inside the handler, the Benjamini-Hochberg fallback went to a local copy and fdr_qvalue stayed NA.
+                q_values_all[valid_p_idx] <- tryCatch(
                   {
                     q_values_valid <- qvalue(valid_p_values)$q
-                    q_values_all[valid_p_idx] <- q_values_valid
                     message("      qvalue() computation successful")
+                    q_values_valid
                   },
                   error = function(e) {
                     qvalue_failed <<- TRUE
                     message(sprintf("      Warning: qvalue() failed during computation: %s", e$message))
                     message(sprintf("      Diagnostic: P-value distribution may be problematic for qvalue smoothing algorithm"))
                     message(sprintf("      Diagnostic: Falling back to p.adjust() method='BH' (Benjamini-Hochberg FDR)"))
-                    # Fallback to p.adjust if qvalue fails
-                    q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                     message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
+                    # Fallback to p.adjust if qvalue fails
+                    p.adjust(valid_p_values, method = "BH")
                   }
                 )
               } else {

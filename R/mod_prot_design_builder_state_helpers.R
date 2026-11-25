@@ -33,6 +33,10 @@ runProtDesignSaveResultsObserverShell <- function(
         )
         return(NULL)
     }
+    # KIT-222: a refused design returns its text; the builder shows it as an error.
+    if (is.character(finalResult)) {
+        return(finalResult)
+    }
 
     if (inherits(getDIAActiveManager(), "DIAStateAdapter")) {
         finalResult$data_reference <- saveDIAOwnedValue(finalResult$data_cln, "design-assigned")

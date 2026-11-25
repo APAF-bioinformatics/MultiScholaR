@@ -1,0 +1,15 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-prot-norm-core.R	1548	306	0	0	28	1492	failed
+test-prot-norm-input-current.R	321	0	0	0	10	861.3	ok
+test-omic-da-module.R	1316	53	0	0	0	573.1	failed
+test-workflow-omics-application-reads.R	230	0	0	0	0	638.9	ok
+test-kit252-managed-failure-text.R	72	0	0	0	0	49.6	ok
+test-workflow-execution-process.R	191	0	0	0	0	86.9	ok
+test-workflow-execution.R	114	0	0	10	0	28.2	ok
+test-perf-107.R	21	0	0	0	0	10	ok
+test-perf-003.R	137	0	0	1	0	8.6	ok
+test-perf107-audit.R	191	0	0	1	0	27.1	ok
+test-prot-07b-da-handlers-compat.R	35	0	0	2	0	5.9	ok
+test-workflow-core-harness.R	131	0	0	0	0	7.7	ok
+test-workflow-kit-harness.R	734	1	0	0	0	22.1	failed
+test-workflow-execution-adapters.R	0	0	0	6	0	5.7	ok
