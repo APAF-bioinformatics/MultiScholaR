@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-218 R2: fix 5c509642 vs tests-only 9c586b58 (staging dd769671 with KIT-200 merged); base must reproduce R1 and show W5-W7 failing; decides stop rules 1-4; ceiling 300 job-minutes",
+  "label": "KIT-218 R2 fix 5c509642 vs base 9c586b58",
+  "package_commit": "5c5096429748267dc5cbc5f2f99405aa20baa95b",
+  "base_commit": "9c586b58b1e8abc93a4bc231332f965588590cb5",
+  "tools_ref": "",
+  "tests": ["test-kit218-da-wrapper-tail.R", "test-kit200-prot-da-no-value-proteins.R", "test-kit196-da-no-value-features.R", "test-lipid-07-s4-da-plot-methods.R", "test-metab-02k-da-numsig-barplot-characterization.R", "test-prot-07c-da-results-characterization.R", "test-prot-07c-da-results-output-shared.R", "test-prot-07-da-analysis.R", "test-prot-07d-da-model-stats-shared.R", "test-prot-da-compat-shared.R", "test-prot-ruv-factors-in-model.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
