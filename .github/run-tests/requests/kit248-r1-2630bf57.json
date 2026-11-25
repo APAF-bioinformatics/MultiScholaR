@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-248 R1: tests-only commit on staging 828dd105 (KIT-244 merged); failing-first values of E1 to E13 against the committed predictions; G rows pass; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-248 R1 failing-first 2630bf57 (tests only, kit-248)",
+  "package_commit": "2630bf57e103753f86444193344be51c7013a9f9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit248-correlation-skip-record.R", "test-workflow-operation-registry.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
