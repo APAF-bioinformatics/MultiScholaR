@@ -10,7 +10,7 @@ unchanged); 447bdf29 (the fix, the Rd, NEWS). Records: `runs.tsv`, `predictions.
 
 | Run | Commit | Purpose | Result |
 |---|---|---|---|
-| 45676487966 (R1) | 8c83cf05 | tests only, new file | T1 failed at 3 foreign lines (predicted 6), T2 and T3 failed (predicted pass), T4 errored, T5 failed by value. Stop rule 2 (unpredicted verdict): stopped and reported. |
+| 45676487966 (R1) | 8c83cf05 | tests only, new file | T1 failed at 3 foreign lines (predicted 6), T2 and T3 failed (predicted pass), T4 errored, T5 failed by value. Stopped and reported (unpredicted R1 verdict; the brief's rule). |
 | 45679194881 (D1) | 19010df7 | declared diagnostic, printing only | the T1 fixture's file has the foreign block once (S4 block) and an EMPTY "Additional Configuration Parameters" block: `formatConfigList` errors on the shipped config (below). The module-ci proteomics bus gives the writer no S4 object. |
 | 45681727116 (D2) | 0abd5669 | declared diagnostic, the application's owner path | proteomics owner save (236 lines): the foreign block TWICE, 3 + 3 = 6 lines; lipidomics owner save (157 lines): no foreign line. Classification (ii), committed beforehand in `predictions.md`. |
 | 45684163296 (R1-2) | 7be5aa5a | tests only, fixture rebuilt on D2's owner construction, expectations unchanged (instrument rule, 1 of 3) | T1 failed at 6 (expected 0), T4 errored (constant absent), T5 failed (`NULL` against "transcriptomics"); T2 and T3 passed (8 passed, 2 failed, 1 error). As predicted. |
@@ -66,12 +66,12 @@ better than stated.
 ## Separate finding, recorded and not fixed here: the writer's "Additional Configuration Parameters" block is empty whenever `formatConfigList` fails
 
 - **What happens.** `formatConfigList(config_list)` stops with `In index: 17 ... purrr::map_chr(): Result must be length 1, not 2`
-  on the shipped `config.ini`. Index 17 is `[plotRle]`, whose value `yaxis_limit=-3,3` (inst/config/config.ini:93) the reader
+  on the shipped `config.ini`. Index 17 is `[plotRle]`, whose value `yaxis_limit=-3,3` (`inst/config/config.ini:135` on staging; `:93` is `main`'s line) the reader
   makes a numeric vector of length 2. The branch for a plain (non-list) value converts with `as.character(value)`, which
   keeps two elements; only character vectors are collapsed first. `purrr::map_chr` needs length one, so the call fails.
 - **Where.** `R/func_general_filemgmt_config_io_helpers.R:422` (`formatConfigList`), the `map_chr` at `:431`, the conversion at
   `:488`. The writer calls it inside a `tryCatch` (`R/func_general_filemgmt_study_parameter_writer.R:948`, the call at `:963`,
-  the handler at `:973-976`). The handler prints `WORKFLOW ARGS: formatConfigList failed: In index: 17.` to the console and
+  the handler at `:973-976`; base 12701142 lines). The handler prints `WORKFLOW ARGS: formatConfigList failed: In index: 17.` to the console and
   assigns `config_lines` inside the handler's own function, so the assignment is lost: the file keeps the header
   "Additional Configuration Parameters:" and its dashes and nothing after them. Nothing tells the user.
 - **Log line.** Run 45679194881, the log of `test-kit263-prot-study-parameters-sections.R`, "WORKFLOW ARGS: formatConfigList
@@ -101,16 +101,21 @@ better than stated.
 
 ## For the change report
 
-- **What was wrong, who was affected.** Every proteomics project copies the package's whole `config.ini`. The
-  study-parameters file (`study_parameters.txt`) therefore listed the metabolomics intensity-filter settings (percentile
-  1, proportion 0.5), twice, in "Parameters from Final S4 Object" and in "Additional Configuration Parameters",
-  although no proteomics step uses them. A reader of a methods record could take them for settings applied to the
-  proteins. Every proteomics user of 0.9.0 and earlier, and of staging until this fix. With KIT-217 merged the file would
-  list four metabolomics settings twice (10 lines).
+- **What was wrong, who was affected.** Every proteomics project copies the package's whole `config.ini`, so the
+  protein object's arguments and the project's configuration carry the metabolomics intensity-filter settings
+  (percentile 1, proportion 0.5), which no proteomics step uses. In the 0.9 builds (tag v0.9.0, and staging until
+  this fix) the application's `study_parameters.txt` printed them twice, in "Parameters from Final S4 Object" and in
+  "Additional Configuration Parameters" (observed, D2 run 45681727116: 6 lines; the second print is the analysis
+  record's formatter, KIT-033). With KIT-217 merged first, four settings twice (10 lines; by reading). In the
+  releases before 0.9 that carry the section (`main` 0.4.1.2; tags v0.3.6.3, v0.5.0-rc1; the section was added to
+  `config.ini` on 2025-11-19, `main` 9aa462cc8) they printed once, in the first block
+  (`main:R/func_general_filemgmt.R:5180`). The second block (`:5388`) was empty, because `formatConfigList` fails
+  on the shipped `plotRle` value and the writer swallows the error (the separate finding above; by reading, not run
+  on `main`). A reader of a methods record could take them for settings applied to the proteins.
 - **Code references.** Base (staging 12701142): `R/func_general_filemgmt_study_parameter_writer.R` printed `@args` at
   `:802-888` and the merged configuration at `:937-980`; the copy at `R/func_prot_import_detection.R:249-266` and
   `R/mod_prot_design_import_helpers.R:181-209`. Legacy on `main`: `main:R/mod_prot_import.R:908-917`,
-  `main:R/func_general_filemgmt.R:5180`, `:5379`. Fix (447bdf29): the constant `studyParameterForeignSections` above the
+  `main:R/func_general_filemgmt.R:5180` (printed); `:5379`, `:5388` (the second block, empty on `main`). Fix (447bdf29): the constant `studyParameterForeignSections` above the
   writer (`:1-6`), the argument `omic_type` and the filter after the `config_list` is resolved (`:101-107`, local copies
   only), the Summary save passing `omic_type = omicType` (`R/utils_workflow_summary.R:266-267`), the Rd.
 - **What changed in results.** None. Only the printed file: for proteomics the four sections of config.ini's
