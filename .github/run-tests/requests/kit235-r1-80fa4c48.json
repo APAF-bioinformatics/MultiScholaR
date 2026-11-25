@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-235 R1: tests-only commit; each of T1 to T5 fails at its stated base value, T6 passes (stop rule 1)",
+  "label": "KIT-235 R1 tests-only on kit-235 80fa4c48 (staging 67569959 + kit-227 5e7efe5f)",
+  "package_commit": "80fa4c482a2f4837e7f3087e76e52da216e7c76b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit235-lipid-metab-report-parser.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
