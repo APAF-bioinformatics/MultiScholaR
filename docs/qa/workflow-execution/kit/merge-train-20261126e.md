@@ -127,4 +127,56 @@ files read no template sentence it changes (its own run: all `same`). `test-work
 
 ## Result
 
-(filled after the run)
+Run 45667562462 (request `merge-train-20261126e-55413b59`, run-tests commit 955c0722, dispatched normally), head
+55413b59 against train 11's tip a50f9302, sent once; conclusion success; 565.9 job-minutes of the 1,560 ceiling (tests
+518.1, check 26.1, render job 20.8, plan and results 1.0). Tables in `merge-train-20261126e/` (`compare.tsv`,
+`tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`, `meta.txt`, `render-checks.tsv`).
+
+Observed, 103 files: 98 `same`, 5 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | prediction |
+|---|---|---|---|---|
+| test-kit249-prot-da-qvalue-fallback.R | absent | 144/0/0/0 | only-on-head | KIT-249, held |
+| test-workflow-saved-da.R | 776/175/0/0 | 755/196/0/0 | message-changed | KIT-249: counts held; newly failing held; changed messages 81, NOT the predicted 87 (below) |
+| test-kit236-report-sentences.R | absent | 289/0/0/0 | only-on-head | KIT-236, held |
+| test-kit227-report-ruv-sentences.R | 166/0/0/0 | 162/0/0/0 | count-changed | KIT-236, held |
+| test-kit235-lipid-metab-report-parser.R | 50/0/0/0 | 54/0/0/0 | count-changed | KIT-236, held |
+
+Every `same` file has the base counts in `merge-train-20261126e-predictions.tsv` where they were on record (0
+differences, script over `compare.tsv`), including the ten shared files (`test-gui-entry-proteomics.R` 168/25,
+`test-kit220-da-threshold-consumers.R` 79/0, `test-omic-summary-module.R` 1675/28, ...), `test-kit201-treat-moderation.R`
+89/0 and `test-kit243-summary-current-outputs.R` 246/0. Read from the run for the nine files not on record: see
+`compare.tsv` (all `same`).
+
+`test-workflow-saved-da.R`, parsed from `failures-base.txt` and `failures.txt` (each failure keyed by test and leaf; no
+key repeats on either side):
+- 21 newly failing on head, 0 only on base: the set equals R2's `saved-da-new.txt` exactly (held).
+- 175 failing on both sides: 94 identical, 81 with changed messages. Predicted 87 (I01's table). The 81 are
+  `products` 18, `dependencies` 18, `head_manifest` 12, `display` 11, `manifest` 11, `files` 11.
+- The 6 leaves of I01's 87 that did NOT change: the `files` leaf of the three qvalue cases (dia_changed_arguments,
+  dia_qvalue_only, dia_refused), in W1 (a) and in W2. Each fails on both sides with an identical message (for example
+  dia_qvalue_only: actual abadbba0…, expected f5079a9e…).
+- No `record`, `states`, `fits`, `fdr` or `limpa_one_contrast` leaf moved (held).
+- Inferred, not shown: I01 attributed the qvalue cases' `files` move to earlier clicks' files left in the shared
+  publication folder. On this base KIT-243 (staging since train 8) makes each DA remove its own earlier files, and
+  train 8 recorded these three cases' `files` messages as KIT-243's; so KIT-249's change to the fallback clicks' files
+  may no longer reach these three digests. The register's prediction was by reading on a base without KIT-243 in that
+  form; this is recorded as a deviation, not as held.
+
+Render job (KIT-236): exit 0; `checks.tsv` 140 rows, 140 "as predicted"; console "0 of 140 checks differ from the
+prediction" (held).
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdicts:
+- KIT-236: holds exactly (new file 289/0; KIT-227 166 -> 162, KIT-235 50 -> 54; the other 31 `same`; render 140/140).
+- KIT-249: holds except one count: `test-workflow-saved-da.R` changed messages 81 against the declared 87 (6 qvalue-case
+  `files` leaves unchanged). No move outside the declared set; the deviation is fewer moves, not more.
+- Check: identical.
+
+Train verdict: NOT GREEN as declared, on that one KIT-249 count; every other prediction held. The coordinator decides
+(the stop rule named "any other move"; this is a declared move that did not happen). The train is not rebuilt here. It
+lands, if at all, only after train 11 lands with its code unchanged.
+
+Not checked: train 11's own result; any file outside the 103; the digest values (read from the run, captured at the
+re-record under VAL-274); the full suite (each member's A4 at the next checkpoint).
