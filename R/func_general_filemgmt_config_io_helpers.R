@@ -480,10 +480,9 @@ formatConfigList <- function(config_list, indent = 0) {
                 # SAFE value display formatting
                 value_display <- tryCatch(
                     {
-                        if (is.character(value) && length(value) > 5) {
-                            paste(c(utils::head(value, 5), "..."), collapse = ", ")
-                        } else if (is.character(value) && length(value) > 1) {
-                            paste(value, collapse = ", ")
+                        if (length(value) > 1) {
+                            # KIT-269: every vector value comma-joined and in full (REC-072, REC-001).
+                            paste(as.character(value), collapse = ", ")
                         } else {
                             result <- as.character(value)
                             if (length(result) == 0) "[Empty/NULL]" else result
