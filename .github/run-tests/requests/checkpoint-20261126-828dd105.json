@@ -1,0 +1,42 @@
+{
+  "requested_by": "Full-suite checkpoint on staging 828dd105 after trains 8 and 9: every test file, base dd769671 (the reference full-suite tree) vs head, check, KIT-240 identity script; ceiling 1,553.0 job-minutes",
+  "label": "Checkpoint 20261126 full suite 828dd105 vs dd769671",
+  "package_commit": "828dd1051d2acab075d6d04f887b7c9e9ccaa48e",
+  "base_commit": "dd769671687aa8cdf5d7858ce3e6f804a3cd0fa6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-240/default-identity.R",
+      "args": [
+        "67aed57fda39663a78efd4b42bf0339785bf5f86",
+        "kit240-identity"
+      ],
+      "out": "kit240-identity",
+      "out_pattern": "\\.(tsv|txt|json|log|html)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
