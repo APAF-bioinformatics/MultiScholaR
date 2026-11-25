@@ -75,6 +75,7 @@ Result: no hit. Nothing is put to the owner (VAL-130 (4)).
 - **C5.** The two builders gain `sample_columns = NULL` (`@noRd`); the two `itsd_table` lambdas gain `...`;
   `omicNormItsdTables` passes D that hold numbers per page (`R/mod_omic_norm_panels.R:1258`).
 - **C6.** Unchanged (E-3): no caller.
+- Departures from the ticket's letter, no result changed on any tested input: without a duplicated id and with no design sample in the table, the whole-matrix caller hands the kernel every numeric column (no new warning; the kernel returns the table unchanged); when no design sample of an assay holds numbers, C4 and C5 keep today's columns (the kernels' and the builder's own rule). A third `@noRd` helper, `omicsDesignNumericColumnsOf`, gives D ∩ numeric. Two new `@noRd` helpers lacked some `@param` lines (R.md:277); added in the audit-repair records commit (roxygen comments only, `@noRd`, no `man/` page, no built file changed).
 - **Divergence recorded (N6).** The new code reads S4 slots with `methods::slot()` and `@`, as the surrounding package
   code does, against `R-bioinformatics.md`'s accessor rule (existing-code scope rule).
 
@@ -136,7 +137,8 @@ Observed (`r2/compare.tsv`, `r2/check-compare.txt`, `s1/`); 280.1 job-minutes (c
 - S1 (`s1/compare.tsv`, `s1/dup-identity.tsv`, `s1/changed-rows.tsv`; both sides exit 0):
   (i) base equal to head on 32 of 32 (A)/(A2) rows (both variants); non-vacuous for lipid and metabolite (module-CI
   objects with 2 duplicated ids per assay, the A2 tables with 1); (ii) head equal to the oracle over D on 12 of 12 (B)
-  rows, base equal to the oracle over every numeric column on 12 of 12; (iii) head `whole` equal to `partitioned` on 22
+  rows, base equal to the oracle over every numeric column on 12 of 12; (ii)'s rows list each input once per variant (whole, then partitioned); the variant is not printed (`setting` blank).
+  (iii) head `whole` equal to `partitioned` on 22
   of 22; (iv) head under the earlier option equal to base on 12 of 12. The run-time-classed input (module-CI
   `duplicate_feature = TRUE` through the import) was classed unaffected (its vendor columns are dropped, as G0 showed).
   Changed kept rows (`whole`, base against head): 5 ids: 2.2's two tables in both omics (base row 1, head row 2) and the
@@ -164,11 +166,11 @@ against 103.70 expected and 488.33 ceiling. No correction pass and no instrument
 - A3: met (S1 in R2).
 - A4: met (R2), with the two predicted `message-changed` files of r1.5.
 - A5: met (R3: no difference other than A4's).
-- A6: NEWS and ledger row (`VAL-<merge>`, S1's run and count filled) added; `git diff 74b1caee bb36097e -- man/
-  NAMESPACE DESCRIPTION` empty; the kernels' bodies unchanged; this file ends with "For the change report".
+- A6: NEWS and ledger row (`VAL-<merge>`, S1's run and count filled) added; `git diff 67569959 bb36097e -- man/ NAMESPACE DESCRIPTION` (the staging merged last) and `git diff 49011d1f 8e0465e7 -- man/ NAMESPACE DESCRIPTION` (the fix) are empty; the kernels' bodies unchanged; this file ends with "For the change report".
 
 ## Not checked
 
+- K242-P01 (the declarations and KIT-172 fixtures never apply ITSD normalisation) does not touch this ticket's evidence: S1 and the new tests run the duplicate step and the QC displays, never the ITSD normalisation, and E8, G1 and G7 assert that the QC tab found its standards. That a changed kept row of a standard changes its assay's ITSD normalisation stays inferred; the repository's declaration fixtures could not show it.
 - Real data; Windows (no platform code).
 - The downstream reach of a changed kept row (ITSD normalisation, RUV, limma): S1 measures the step only.
 - Whether any KIT-159 harness record holds QC display values on the metabolomics corpora (C2 to C4 move them: an id of
@@ -193,7 +195,7 @@ Quality Control summary's "Number of Samples", the per-assay `Samples` and `Miss
 missing cell), the ITSD means and CVs in QC, and the normalisation's ITSD selection table counted every numeric column
 (display only): an MS-DIAL import showed one sample too many.
 
-**Code.** Base 185ebf75 (after KIT-202): `R/utils_workflow_lipid_declarations.R:61`, `R/func_metab_s4_qc_methods.R:906`,
+**Code.** In the legacy pipeline (`main` 436cdbe8) the same choices sit in the QC modules: C1 `R/mod_lipid_qc_duplicates.R:261`, `R/mod_metab_qc_duplicates.R:261`; C2 `R/mod_lipid_qc_s4.R:175`, `R/mod_metab_qc_s4.R:175`; C3 `:251`, `:258-263` of both; C4 `R/mod_lipid_qc_itsd.R:156-160`, `:179`, `R/mod_metab_qc_itsd.R:156-160`, `:179`; C5 `R/func_lipid_norm.R:81-82`, `R/func_metab_norm.R:81-82`. There too the design builder kept only the id, annotation and assigned samples (`R/mod_lipid_design_builder.R:1070-1083`), and the S4 `resolveDuplicateFeatures` the workbooks used averaged the design's samples (`R/func_metab_s4_objects.R:4738-4740`). Base 185ebf75 (after KIT-202): `R/utils_workflow_lipid_declarations.R:61`, `R/func_metab_s4_qc_methods.R:906`,
 `R/utils_workflow_omics_declarations.R:259-266` (C1); `R/mod_omic_qc_tabs.R:619`, `:662-669`,
 `R/utils_workflow_omics_declarations.R:1246`, `:1284` (C2, C3); `R/func_omics_qc_shared.R:243-267`,
 `R/utils_omic_gui_config.R:2502-2526`, `:2728-2751` (C4, C5 lambdas); `R/func_lipid_norm_support_helpers.R:38-39`,
@@ -201,11 +203,15 @@ missing cell), the ITSD means and CVs in QC, and the normalisation's ITSD select
 
 **What changed in results.** Only the kept row of an identifier listed more than once, and only where a numeric
 non-sample column exists: on the synthetic fixtures 5 identifiers changed their kept row (S1, `s1/changed-rows.tsv`);
+on these fixtures the non-sample values (an id of 1000, an m/z of 100 or 875) are as large as the intensities or larger. On usual intensity scales the earlier average, which added each row's non-sample values once, lowered the average of a sparsely measured row more than that of a fully measured one. So on such tables, away from near-ties, the new rule changes the kept row only to a row measured in fewer samples whose measured values average higher. For example, with retention time and m/z as the extra columns, 2 of 6 samples at a mean of 210,000 now win against 6 of 6 at 150,000, where before the fully measured row was kept. The rule itself ('highest mean of the measured values') is the owner's open item N1 (plan section 13);
 all other inputs, including the GUI-entry lanes, the module-CI objects and real-shaped lane tables with a duplicated
 identifier, are byte-identical base against head. Display values: the seed MS-DIAL import shows 4 samples, not 5; its
 ITSD caffeine standard mean 48,400 and CV 0.38 %, not 38,721.4 and 55.89 %; the CV > 30 % count 0, not 2; with an
-identifier of 0 the missingness 0.0 %, not 2.5 %. Analyses recorded before this change replay with the earlier rule (the
-replay marker `duplicate_resolution_samples`).
+identifier of 0 the missingness 0.0 %, not 2.5 %. The kept row brings its own annotation columns with it: on the code-built MS-DIAL table the reported lipid of `P001`
+changes from TG 52:3 (base, row 2) to PC 34:1 (head, row 1) (AUDIT-KIT-214-impl-20261125 I01). Analyses recorded before
+this change replay with the earlier rule (the replay marker `duplicate_resolution_samples`). **Open (owner):** whether
+the rule itself (N1) should change, (a) keep it, (b) the row measured in most samples first, then the highest mean,
+(c) the highest mean with missing values counted in a stated way; any change is a new ticket with its own marker.
 
 **Evidence.** G0 and R1 run 45472096981; R1b 45518385430; R2 and S1 45520213660 (synthetic and repository fixtures
 only: 2.2's two tables, the module-CI and GUI-entry objects, the MS-DIAL seed, lane tables with copied rows); R3

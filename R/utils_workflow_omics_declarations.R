@@ -206,6 +206,9 @@ omicsDesignSampleColumnsOf <- function(table_columns, design_samples, id_column)
 #' The design's sample columns of one table that hold numbers (KIT-214, E-8): what the QC missingness and the
 #' internal-standard statistics count.
 #' @param table An assay table (or its zero-row prototype).
+#' @param design_samples The design's sample ids.
+#' @param id_column The table's identifier column.
+#' @return The column names.
 #' @noRd
 omicsDesignNumericColumnsOf <- function(table, design_samples, id_column) {
     columns <- omicsDesignSampleColumnsOf(names(table), design_samples, id_column)
@@ -246,6 +249,9 @@ omicsDuplicateResolutionSampleColumns <- function(table_columns, numeric_columns
 #' raised). Under the earlier rule every numeric column, unconverted, as before.
 #' @param assay The assay table.
 #' @param numeric_columns Its numeric columns (at least one).
+#' @param design_samples The design's sample ids.
+#' @param id_column The assay's identifier column.
+#' @param assay_name The assay's name (for the refusal).
 #' @return `list(table, columns)`.
 #' @noRd
 omicsDuplicateResolutionInput <- function(assay, numeric_columns, design_samples, id_column, assay_name) {
