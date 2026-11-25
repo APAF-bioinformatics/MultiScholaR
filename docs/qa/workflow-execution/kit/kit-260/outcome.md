@@ -220,6 +220,29 @@ line in `test-integration-gui.R` and confirmed the 20 captures of `test-omic-nor
   The comparison run lists them; none is re-pinned without the owner's word.
 - **Merge order:** KIT-260 merges with or after KIT-242 (the coordinator's instruction of 2026-11-26 with VAL-276).
 
+### Result of the comparison run (run 45665921270; stopped)
+
+- `test-kit260-itsd-default-pattern.R` (only on head): 156 passed, 0 failed. **I05 now passes** (the older record replays
+  with no mismatch and identical assays) and its mirror passes (a new record replays exactly; its replayed ITSD product
+  carries the rows used).
+- 122 files `same`; `test-omics-norm-core.R` `count-changed` (predicted); check findings identical (6 each side).
+- **Expectations outside VAL-275 that move (stop; none re-pinned):**
+
+  | File | Test | Expectation | Why |
+  |---|---|---|---|
+  | `test-omic-norm-module.R` | (b) lipid and metab, manual and automatic | 12 `provenance` digests of `omicNormFrozen` (manual: run, skip_correlation, reset; automatic: run, final_plot, final_plot_failing; both omics) | the ITSD step records the fixed marker `itsd_outcome` (predicted) |
+  | `test-workflow-lipid-declarations.R` | KIT-031: the lipidomics declarations are registered with the units, merges and statistics of the step map | `declarations$lipid_itsd_normalisation$fixed` identical to `list(method = "ITSD")` | the declaration fixes the marker |
+  | `test-workflow-metab-declarations.R` | KIT-032: the metabolomics declarations … | `declarations$metab_itsd_normalisation$fixed` identical to `list(method = "ITSD")` | the same |
+  | `test-integration-gui.R` | KIT-139: internal standards, features seen once and few samples are stated with their counts | `expect_match(facts[[6L]], "proteomics: 1 features measured in fewer than 3 of the 5 biological samples")`, added by KIT-240 on staging | the fact line VAL-275 allowed comes before it, so that fact is now `facts[[7L]]`; a merge interplay, no textual conflict |
+
+- `test-workflow-omics-binding-steps.R` (KIT-094) and `test-workflow-omics-declarations.R` (KIT-073) fail on both sides
+  (laptop fixtures) and their messages change: the ITSD and later steps record one more parameter (the marker) and the
+  inputs' digests differ. These are the fixtures VAL-241 (iii) defers to the end-of-project re-record (VAL-181, VAL-189).
+- When KIT-242 merges, its own marker makes the same `provenance`, `fixed` and KIT-073/KIT-094 movements; one by-file
+  answer can cover both tickets.
+- Budget: 484.4 job-minutes (32.3 core-hours, within this run's 73.33); the ticket's total is 1,753.5 job-minutes =
+  116.9 core-hours (ceiling 201.33).
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
