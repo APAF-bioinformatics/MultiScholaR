@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-266 gate G0 instrument re-send 1 (VAL-54: capture-frame lookup in a trace; no prediction or rule changed; run 45711141374 stopped at its positive controls); ceiling 45 job-minutes",
+  "label": "KIT-266 G0 instrument re-send 1 on kit-266-g0 6dc54955",
+  "package_commit": "6dc549551b49731c3384528fb47f5bf934b71721",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-266/g0/g0.R",
+      "args": [],
+      "out": "kit266-g0",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
