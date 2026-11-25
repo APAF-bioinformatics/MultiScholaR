@@ -431,3 +431,34 @@ start count); no WL criterion read the column.
  56 files changed, 1301 insertions(+), 244 deletions(-)
 ```
 
+## WL', run 45653739806 (2026-11-25 16:25 to 17:35 UTC; 69 job-minutes, 4.60 core-hours)
+
+Records: `wlp-45653739806/`. Binding as declared: `run` WLprime, commit under test 828dd105 (early and full checks
+passed; the planted wrong commit stopped), driver 76e4b519, routes b0936b26. Journey step 31.8 minutes (internal
+deadline 35 not reached). Withheld by the check: `workflow-diff.txt` (forbidden string).
+
+**Verdict (`verdict.txt`): instrument not proven (22 pass, 1 fail, 0 recorded); WL-5 passed.** The one fail is the
+outbound row. Every other row passed as predicted:
+- WL-0 (all but the outbound row), WL-2 (terminal screenshot at 0.5 s), WL-3 (port refused after 2 s), WL-4 (a), (b),
+  (c) (both copies of `post_norm_pca.png` deleted), WL-5 on the four routes (LFQ 9 agree, 4 page only; lipid and metab
+  8 and 5; trx 7 and 0).
+- WL-D: S2 `deadline`, S3 to S10 `not_reached (deadline)`, one kind-5 finding, the real deadline restored.
+- WL-M: the planted dialog recorded as progress for 75 s, the step `timeout` at 120.5 s, no other dialog.
+- WL-0u on the four routes (2, 2, 2 and 1 inputs chosen). The label-free user-mode session ran S1 to S8, every step
+  `complete` (recorded, not judged; the first lifecycle use of user mode beyond S2); its N1 and N2 equal (394 proteins,
+  10 samples, 17 significant).
+- Findings: only the declared ones (the plants; WP2 refused; WP3 crashed; WPd kind 5; WPm planted timeout; K12 and K14
+  on lipid and metab, each S6.1 re-pressed as WL did).
+- Product change since WL, seen (class 3, recorded): LFQ's DA significant count is 17 at 828dd105 (18 at 7327607f), the
+  tab and the saved table agreeing (N2 equal); trains 8 (KIT-201: TREAT's variance moderation) landed between.
+
+**The outbound row.** Observed: R's attempt "failed: 192.0.2.1:47011 cannot be opened"; a DROP for 47011 in the
+firewall log (found in the read at 15 s); no DROP for 47012; **no ALLOW for 47012**; the control's TcpClient did not
+connect (as expected for TEST-NET-1). Against the declaration's four cases: not case 1 (the ALLOW built under W03 (b)
+is absent), not case 2 (a line for 192.0.2.1 exists and R's message is a connection failure), not case 3, not case 4.
+The outcome is outside the declared classes. Under the brief ("if unsure whether instrument or result, it is a
+result: stop and report") WL' is not re-sent; the coordinator decides. Inferred, not shown: the R attempt was blocked
+by the program rules (a DROP for its port, none for the control's); the positive control did not show its attempt
+(either the shell's attempt was not logged as ALLOW, for example because the firewall logs allowed outbound
+connections differently or not at all for this profile, or the attempt did not leave).
+

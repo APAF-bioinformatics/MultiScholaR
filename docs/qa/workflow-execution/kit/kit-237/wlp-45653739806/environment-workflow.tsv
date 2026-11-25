@@ -1,0 +1,31 @@
+key	value
+planted_commit	d4e4270f413b74a8b3b53ed386b5ee042c0365e5
+planted_commit_check	pass
+commit_under_test	828dd1051d2acab075d6d04f887b7c9e9ccaa48e
+package_commit	828dd1051d2acab075d6d04f887b7c9e9ccaa48e
+commit_check	pass
+run_branch_head	1d89e066bdf5acad7eb8b38efeb0b1c0ab7f40b8
+workflow_diff_file	workflow-diff.txt
+workflow_diff_sha256	a235640a992815fa7cf74076d573d86bb1633e5281209ea267562ca3f14258bd
+source_k233	76e4b519ba32490fa44cc788683f86dd8c0ac787 docs/qa/workflow-execution/kit/kit-233
+source_k237	b0936b26bc5f75cf504d6705f51a2161fba7790c docs/qa/workflow-execution/kit/kit-237
+source_fixtures	828dd1051d2acab075d6d04f887b7c9e9ccaa48e tests/testdata/e2e
+journey_R_sha256	3b16610ae0649cf1eb65a2805b35ee73d3aa5eed5fb46b2179e5536ad51e5925
+journey_win_R_sha256	f88e58af1f60a0d04a8273bd6f3c5b9c55caef0e3fc00c25fef88769e9f633cb
+firewall_programs	40
+firewall_rules_added_here	0
+firewall_unruled	0
+outbound_r_said	failed: 192.0.2.1:47011 cannot be opened
+outbound_control_connected	False
+outbound_drop_r	yes
+outbound_drop_control	no
+outbound_allow_control	no
+outbound_log_polled_seconds	15
+outbound_method	Windows Firewall log of dropped and (for the test only) allowed connections (C:\Windows\System32\LogFiles\Firewall\pfirewall.log, present); R port 47011, control port 47012, address 192.0.2.1
+LongPathsEnabled_before	1
+LongPathsEnabled_set	0
+runner_image	win25-vs2026 20261116.315.1
+lifecycle_outcome	success
+gui_entry_lanes_outcome	skipped
+e2e_lanes_outcome	skipped
+request	docs/qa/workflow-execution/kit/kit-237/requests/wlp-20261126.json

@@ -1,0 +1,50 @@
+session	what	text	utc
+WP1	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:03:54Z
+WP1	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T17:04:00Z
+WP1	S5 rendered QC groups		2026-11-25T17:04:17Z
+WP1	S5 rendered sub-tabs	Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter (titles from live omicGuiConfig; expected Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter)	2026-11-25T17:04:21Z
+WP1	S5.4 KIT-251 check (one click)	outcome complete; head protein_replicate_filtered; 'already running' warnings 0; working notices 1	2026-11-25T17:05:23Z
+WP1	S6 rendered defaults	ruv_mode=automatic method=cyclicloess ruv_design_panel_present=FALSE	2026-11-25T17:05:23Z
+WP1	S6.2 rendered threshold	0.5	2026-11-25T17:07:16Z
+WP1	S8 rendered defaults	formula=~ 0 + group q=0.05 lfc=0	2026-11-25T17:08:00Z
+k237_wlp_lfq	N2 table for KO_vs_WT (RA-03, RA-05)	1 candidate(s) in the da folder by exact two-sided match; read: results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv	2026-11-25T17:08:36Z
+WP2	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:08:46Z
+WP3	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:09:56Z
+WP3	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T17:10:01Z
+WPd	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:10:14Z
+WPd	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T17:10:19Z
+WPm	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:10:30Z
+WP5-lipid_canonical	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:12:45Z
+WP5-lipid_canonical	S5 rendered QC sub-tabs	Intensity Filter > Duplicate Resolution > Internal Standards > Finalize QC	2026-11-25T17:13:00Z
+WP5-lipid_canonical	S5.4 internal standards (known K12, KIT-242)	Error analyzing internal standards: No internal standards found. Pattern: ^IS_|ISTD|Internal|_IS Columns searched: LipidName, LipidClass Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')	2026-11-25T17:14:35Z
+WP5-lipid_canonical	S6 rendered defaults	apply_itsd=TRUE norm_method=cyclicloess ruv_mode=automatic	2026-11-25T17:14:52Z
+WP5-lipid_canonical	S8.3 DA results table	significant 4; table rows shown: TRUE	2026-11-25T17:19:18Z
+WP5-metab_lc	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:19:28Z
+WP5-metab_lc	S5 rendered QC sub-tabs	Intensity Filter > Duplicate Resolution > Internal Standards > Finalize QC	2026-11-25T17:19:45Z
+WP5-metab_lc	S5.4 internal standards (known K12, KIT-242)	Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$ Columns searched: Feature.Name Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')	2026-11-25T17:21:19Z
+WP5-metab_lc	S6 rendered defaults	apply_itsd=TRUE norm_method=cyclicloess ruv_mode=automatic	2026-11-25T17:21:36Z
+WP5-metab_lc	S8.3 DA results table	significant 0; table rows shown: FALSE	2026-11-25T17:26:14Z
+WP5-metab_lc	N2 tables for KO_vs_WT (RA-03, RA-05)	2 file(s), one per assay required; read: results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv + results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv	2026-11-25T17:26:16Z
+WP5-trx_screen	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:26:27Z
+WP5-trx_screen	S3 technical-replicate assignments (builder summary)	Group: RPMI, Biological Replicate: 1 |   Samples: RPMI_01_r1, RPMI_01_r2 |   Technical Replicates: 1, 2 | Group: RPMI, Biological Replicate: 2 |   Samples: RPMI_02_r2, RPMI_02_r1 |   Technical Replicates: 2, 1 | Group: RPMI, Biological Replicate: 3 |   Samples: RPMI_03_r2, RPMI_03_r1 |   Technical Replicates: 2, 1 | Group: Sera, Biological Replicate: 1 |   Samples: Sera_01_r2, Sera_01_r1 |   Technical Replicates: 2, 1 | Group: Sera, Biological Replicate: 2 |   Samples: Sera_02_r2, Sera_02_r1 |   Technical Replicates: 2, 1 | Group: Sera, Biological Replicate: 3 |   Samples: Sera_03_r1, Sera_03_r2 |   Technical Replicates: 1, 2	2026-11-25T17:26:46Z
+WP5-trx_screen	S5 rendered QC sub-tabs	Expression Filter > Finalize QC	2026-11-25T17:26:50Z
+WP5-trx_screen	S6 rendered defaults	apply_itsd= norm_method= ruv_mode=automatic	2026-11-25T17:27:13Z
+WPu-lipid_canonical	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:29:14Z
+WPu-lipid_canonical	S2 chooser assay1_file_std	clicked through the chooser's folder list (folders and files)	2026-11-25T17:29:23Z
+WPu-lipid_canonical	S2 chooser assay2_file_std	clicked through the chooser's folder list (folders and files)	2026-11-25T17:29:26Z
+WPu-metab_lc	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:29:37Z
+WPu-metab_lc	S2 chooser assay1_file_std	clicked through the chooser's folder list (folders and files)	2026-11-25T17:29:45Z
+WPu-metab_lc	S2 chooser assay2_file_std	clicked through the chooser's folder list (folders and files)	2026-11-25T17:29:49Z
+WPu-trx_screen	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:30:01Z
+WPu-trx_screen	S2 chooser assay1_file_std	clicked through the chooser's folder list (folders and files)	2026-11-25T17:30:08Z
+WPu-prot_lfq	S1 rendered base directory	C:/Users/runneradmin/Documents (30 characters)	2026-11-25T17:30:19Z
+WPu-prot_lfq	S2 search results chooser	clicked through the chooser's folder list (folders and files)	2026-11-25T17:30:27Z
+WPu-prot_lfq	S2 detected format	Detected format: MaxQuant LFQ | Confidence: 63%	2026-11-25T17:30:27Z
+WPu-prot_lfq	S2 FASTA chooser	clicked through the chooser's folder list (folders and files)	2026-11-25T17:30:30Z
+WPu-prot_lfq	S5 rendered QC groups		2026-11-25T17:30:43Z
+WPu-prot_lfq	S5 rendered sub-tabs	Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter (titles from live omicGuiConfig; expected Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter)	2026-11-25T17:30:44Z
+WPu-prot_lfq	S5.4 KIT-251 check (one click)	outcome complete; head NA; 'already running' warnings 0; working notices 1	2026-11-25T17:31:43Z
+WPu-prot_lfq	S6 rendered defaults	ruv_mode=automatic method=cyclicloess ruv_design_panel_present=FALSE	2026-11-25T17:31:43Z
+WPu-prot_lfq	S6.2 rendered threshold	0.5	2026-11-25T17:33:33Z
+WPu-prot_lfq	S8 rendered defaults	formula=~ 0 + group q=0.05 lfc=0	2026-11-25T17:34:14Z
+k237_wlpu_prot_lfq	N2 table for KO_vs_WT (RA-03, RA-05)	1 candidate(s) in the da folder by exact two-sided match; read: results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv	2026-11-25T17:34:47Z

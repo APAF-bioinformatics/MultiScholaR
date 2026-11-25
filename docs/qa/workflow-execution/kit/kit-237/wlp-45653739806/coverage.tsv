@@ -1,0 +1,56 @@
+session	step	output	pane_height	image	covered
+WP1	S2	proteomics_workflow-setup_import-format_detection	1548	1165x1406	pane image
+WP1	S2	proteomics_workflow-setup_import-import_status	1548	1165x1406	pane image
+WP1	S2	proteomics_workflow-setup_import-data_summary	1548	1165x1406	own element image
+WP1	S3	proteomics_workflow-design_matrix-design_matrix_preview	2406	1150x2162	pane image
+WP1	S3	proteomics_workflow-design_matrix-contrasts_preview	2406	1150x2162	own element image
+WP1	S5.1	proteomics_workflow-quality_control-protein_qc-cleanup-accession_cleanup_results	1221	1150x1085	pane image
+WP1	S5.1	proteomics_workflow-quality_control-protein_qc-cleanup-accession_cleanup_plot	1221	1150x1085	own element image
+WP1	S5.2	proteomics_workflow-quality_control-protein_qc-intensity_filter-protein_intensity_filter_results	1277	1150x1106	pane image
+WP1	S5.2	proteomics_workflow-quality_control-protein_qc-intensity_filter-protein_intensity_filter_plot	1277	1150x1106	own element image
+WP1	S5.3	proteomics_workflow-quality_control-protein_qc-duplicate_removal-duplicate_removal_results	1203	1150x1203	pane image
+WP1	S5.3	proteomics_workflow-quality_control-protein_qc-duplicate_removal-duplicate_removal_plot	1203	1150x1203	pane image
+WP1	S5.4	proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_results	1258	1150x1258	pane image
+WP1	S5.4	proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_plot	1258	1150x1258	pane image
+WP1	S6.1	proteomics_workflow-normalization-ruv_optimization_summary	2734	1150x1065	pane image
+WP1	S6.2	proteomics_workflow-normalization-correlation_filter_summary	2734	1150x2734	pane image
+WP1	S6.2	proteomics_workflow-normalization-final_qc_plot	2734	1150x2734	pane image
+WP1	S8.1	proteomics_workflow-differential_expression-contrasts_display	1120	1150x1065	pane image
+WP1	S8.2	proteomics_workflow-differential_expression-da_status	1138	1150x1099	pane image
+WP1	S8.3	proteomics_workflow-differential_expression-da_summary_stats	1204	1150x1204	pane image
+WP1	S8.3	proteomics_workflow-differential_expression-da_results_table	1204	1150x1204	pane image
+WP3	S2	proteomics_workflow-setup_import-format_detection	1226	1165x1085	pane image
+WP3	S2	proteomics_workflow-setup_import-import_status	1226	1165x1085	zero size (nothing drawn)
+WP3	S2	proteomics_workflow-setup_import-data_summary	1226	1165x1085	zero size (nothing drawn)
+WPd	S2	proteomics_workflow-setup_import-format_detection	1226	1165x1085	pane image
+WPd	S2	proteomics_workflow-setup_import-import_status	1226	1165x1085	zero size (nothing drawn)
+WPd	S2	proteomics_workflow-setup_import-data_summary	1226	1165x1085	zero size (nothing drawn)
+WP5-lipid_canonical	S2	lipidomics_workflow-import-import_status	1277	1165x1177	own element image
+WP5-lipid_canonical	S8.2	lipidomics_workflow-de-da_status	1062	1165x1062	pane image
+WP5-lipid_canonical	S8.3	lipidomics_workflow-de-da_summary_stats	1062	1165x1062	pane image
+WP5-metab_lc	S2	metabolomics_workflow-import-import_status	1427	1165x1177	own element image
+WP5-metab_lc	S8.2	metabolomics_workflow-de-da_status	1062	1165x1062	pane image
+WP5-metab_lc	S8.3	metabolomics_workflow-de-da_summary_stats	1062	1165x1062	pane image
+WP5-trx_screen	S8	transcriptomics_workflow-de-da_status	1101	1165x1101	pane image
+WPu-lipid_canonical	S2	lipidomics_workflow-import-import_status	1277	1165x1177	own element image
+WPu-metab_lc	S2	metabolomics_workflow-import-import_status	1412	1165x1177	own element image
+WPu-prot_lfq	S2	proteomics_workflow-setup_import-format_detection	1517	1165x1407	pane image
+WPu-prot_lfq	S2	proteomics_workflow-setup_import-import_status	1517	1165x1407	pane image
+WPu-prot_lfq	S2	proteomics_workflow-setup_import-data_summary	1517	1165x1407	own element image
+WPu-prot_lfq	S3	proteomics_workflow-design_matrix-design_matrix_preview	1949	1150x1705	own element image
+WPu-prot_lfq	S3	proteomics_workflow-design_matrix-contrasts_preview	1949	1150x1705	own element image
+WPu-prot_lfq	S5.1	proteomics_workflow-quality_control-protein_qc-cleanup-accession_cleanup_results	1221	1150x1221	pane image
+WPu-prot_lfq	S5.1	proteomics_workflow-quality_control-protein_qc-cleanup-accession_cleanup_plot	1221	1150x1221	pane image
+WPu-prot_lfq	S5.2	proteomics_workflow-quality_control-protein_qc-intensity_filter-protein_intensity_filter_results	1277	1150x1106	pane image
+WPu-prot_lfq	S5.2	proteomics_workflow-quality_control-protein_qc-intensity_filter-protein_intensity_filter_plot	1277	1150x1106	own element image
+WPu-prot_lfq	S5.3	proteomics_workflow-quality_control-protein_qc-duplicate_removal-duplicate_removal_results	1203	1150x1203	pane image
+WPu-prot_lfq	S5.3	proteomics_workflow-quality_control-protein_qc-duplicate_removal-duplicate_removal_plot	1203	1150x1203	pane image
+WPu-prot_lfq	S5.4	proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_results	1258	1150x1258	pane image
+WPu-prot_lfq	S5.4	proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_plot	1258	1150x1258	pane image
+WPu-prot_lfq	S6.1	proteomics_workflow-normalization-ruv_optimization_summary	2734	1150x1065	pane image
+WPu-prot_lfq	S6.2	proteomics_workflow-normalization-correlation_filter_summary	2734	1150x2734	pane image
+WPu-prot_lfq	S6.2	proteomics_workflow-normalization-final_qc_plot	2734	1150x2734	pane image
+WPu-prot_lfq	S8.1	proteomics_workflow-differential_expression-contrasts_display	1055	1150x1055	pane image
+WPu-prot_lfq	S8.2	proteomics_workflow-differential_expression-da_status	1073	1150x1073	pane image
+WPu-prot_lfq	S8.3	proteomics_workflow-differential_expression-da_summary_stats	1204	1150x1204	pane image
+WPu-prot_lfq	S8.3	proteomics_workflow-differential_expression-da_results_table	1204	1150x1204	pane image

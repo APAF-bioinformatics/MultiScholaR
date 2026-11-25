@@ -1,0 +1,28 @@
+criterion	item	result	evidence
+WL-0	the bundle's commit accepted by 5.4's check (journey step)	pass	pass 828dd1051d2acab075d6d04f887b7c9e9ccaa48e 828dd1051d2acab075d6d04f887b7c9e9ccaa48e
+WL-0	a deliberately wrong commit under test stops at the same check: non-zero exit and val_product_tree_mismatch	pass	pass d4e4270f413b74a8b3b53ed386b5ee042c0365e5
+WL-0	the test tools load shinytest2 and chromote under the installed Rscript	pass	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R D:/a/_temp/test-tools | C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library
+WL-0	Chrome found on windows-2025	pass	C:\Program Files\Google\Chrome\Application\chrome.exe
+WL-0	entry.R starts with its three trailing arguments and answers HTTP 200	pass	answered=TRUE after 4.2 s; C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/bin/Rscript.exe --vanilla C:/Users/runneradmin/AppData/Local/Temp/RtmpMhiFtQ/k237-work/k237-entry-WP1.R 18237 C:/Users/runneradmin/AppData/Local/Temp/RtmpMhiFtQ/k237-work/run-WP1 4080
+WL-0	the MSR-LAUNCHER line names process	pass	MSR-LAUNCHER {"launcher":"process","reason":"win32: no systemd"}
+WL-0	AppDriver attaches by URL	pass	
+WL-0	firewall rules exist for the installed programs	pass	40 programs, 0 without a rule
+WL-0	LongPathsEnabled reads 0 (as read by the installed R)	pass	0
+WL-0	the application's .libPaths() is the installed bundle's library only (probe line in the run folder)	pass	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library
+WL-0	MULTISCHOLAR_TEST_FEATURES unset in the application's environment (no MSR-TEST-FEATURES line)	pass	MSR-LAUNCHER {"launcher":"process","reason":"win32: no systemd"}
+WL-0	outbound block: the installed application's R cannot reach a reserved address (a firewall DROP is logged for it, none for the same attempt from a program without a rule)	fail	R attempt: failed: 192.0.2.1:47011 cannot be opened; DROP for R: yes; DROP for control: no; ALLOW for control: no; Windows Firewall log of dropped and (for the test only) allowed connections (C:\Windows\System32\LogFiles\Firewall\pfirewall.log, present); R port 47011, control port 47012, address 192.0.2.1
+WL-4	(a) the emptied DA results table gives a kind-3 finding naming it	pass	tbody emptied: TRUE; empty outputs at the second check: proteomics_workflow-differential_expression-da_results_table
+WL-4	(b) a q moved across 0.05 gives a kind-4 finding	pass	shown 17, planted copy 16
+WL-4	(c) a named normalisation figure deleted after S6 gives a kind-3 finding naming it	pass	deleted: results/proteomics/protein_qc/post_norm_pca.png | scripts/proteomics/.workflow-export/a-c99469df24e7739e/f/protein_qc_dir/post_norm_pca.png
+WL-5	WP1: the digest and the DOM signals agree on completion at every step	pass	9 agree, 4 DOM only
+WL-2	S1 refused with 'Base directory does not exist: <path>' within 60 s	pass	S1 refused after 61.6 s: Base directory does not exist: C:/Users/runneradmin/AppData/Local/Temp/RtmpMhiFtQ/k237-work/no-such-folder; terminal screenshot: WP2-01-S1-terminal.png at 0.5 s
+WL-3	the tree ended while S2 waits: the port refuses within 10 s and S2 is crashed from the browser session	pass	S2 crashed: the browser session was disconnected from the application; port refused after 2 s
+WL-D	the internal deadline (planted at S2): S2 deadline, later steps not_reached (deadline), a kind-5 finding	pass	S2 deadline; later: not_reached (deadline),not_reached (deadline),not_reached (deadline),not_reached (deadline),not_reached (deadline),not_reached (deadline),not_reached (deadline); kind-5 findings 1; deadline restored: TRUE
+WL-M	a progress dialog open over 60 s is recorded as progress and does not end the step (timeout at 120 s, not refused)	pass	PM timeout after 120.5 s; progress dialogs: KIT-237 planted progress dialog (75 s); other dialogs: ; shown at 4.79221343994141e-05 s, removed at 75.1725618839264 s
+WL-5	WP5-lipid_canonical: the digest and the DOM signals agree on completion at every step	pass	8 agree, 5 DOM only
+WL-5	WP5-metab_lc: the digest and the DOM signals agree on completion at every step	pass	8 agree, 5 DOM only
+WL-5	WP5-trx_screen: the digest and the DOM signals agree on completion at every step	pass	7 agree, 0 DOM only
+WL-0u	the chooser selects every input file in user mode on lipid_canonical	pass	S2 complete; chooser selections 2 of 2
+WL-0u	the chooser selects every input file in user mode on metab_lc	pass	S2 complete; chooser selections 2 of 2
+WL-0u	the chooser selects every input file in user mode on trx_screen	pass	S2 complete; chooser selections 1 of 1
+WL-0u	the chooser selects every input file in user mode on prot_lfq	pass	S2 complete; chooser selections 2 of 2
