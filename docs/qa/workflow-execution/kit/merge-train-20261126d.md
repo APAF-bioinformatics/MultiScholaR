@@ -125,4 +125,55 @@ NOTE should list the same count on both sides.
 
 ## Result
 
-(filled after the run)
+Run 45654818744 bound head 1292afc4 against base 53e99554 (train 10's tip). The request was
+`merge-train-20261126d-1292afc4`, run-tests commit 215bba00. The run was sent once and concluded success. It used 707.1
+job-minutes of the 740 ceiling, 30.9 of them for the check. Tables are in `merge-train-20261126d/`: `compare.tsv`,
+`tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt` and `meta.txt`.
+
+Of the 81 files, 79 are `same` and 2 are not. Both were predicted:
+
+| File | Base p/f/e/s | Head p/f/e/s | Verdict | Prediction |
+|---|---|---|---|---|
+| test-kit257-norm-own-files.R | absent | 133/0/0/0 | only-on-head | 133/0/0: held |
+| test-prot-norm-core.R | 1548/306/0/0 | 1548/306/0/0 | message-changed | four labels only: held (below) |
+
+Every file's base and head counts equal the declared expectations in `merge-train-20261126d-predictions.tsv`, with no
+exception. The checkpoint's counts, and train 10's 85/0 for the KIT-259 file, held in this run without the extra
+packages. Selected rows:
+- `test-workflow-saved-da.R` 776/175 on both sides;
+- `test-kit243-summary-current-outputs.R` 246/0;
+- `test-kit244-limpa-pass-through.R` 204/0;
+- `test-kit252-managed-failure-text.R` 72/0;
+- `test-kit259-pearson-histogram-figure-failure.R` 85/0.
+
+**`test-prot-norm-core.R` at message level.** I compared the failure records base against head, with temporary paths
+and test-file line numbers masked. KIT-257's edits to the test file shift its line numbers; those shifts account for
+151 of the 155 raw record differences.
+- 302 of the 306 records are identical.
+- The other 4 are exactly the declared four labels, all against the stored f7b72868…:
+
+| Context | Label | Base `files` | Head `files` |
+|---|---|---|---|
+| W1 (a) | `dia_normalization_refused` | bbfad929… | 53f7545d… |
+| W1 (a) | `dia_normalization_retry` | bbfad929… | b51063f4… |
+| W2 | `worker dia_normalization_refused` | bbfad929… | 53f7545d… |
+| W2 | `worker dia_normalization_retry` | bbfad929… | b51063f4… |
+
+- Nothing else moved.
+
+**R CMD check.** 0 ERRORs, 3 WARNINGs and 3 NOTEs on both sides. All 6 findings are identical, and none is only on
+head. The portable-file-names NOTE lists 238 paths on each side.
+
+**Verdict.** Every prediction held. The train is GREEN.
+
+**Train 10.** It landed while this run was out, as 96e72da2 (KIT-259 = VAL-273). Staging is now 3a6794b0, which adds
+ledger rows VAL-274 to VAL-280. `git diff 53e99554 3a6794b0`, outside `docs/`, is empty, and 53e99554 is an ancestor of
+staging. So train 10 landed with its code unchanged, and the condition this train was built on holds.
+
+The train lands by a merge. Its ledger still carries train 10's row as `VAL-<train10-1>`, which staging now numbers
+VAL-273. That conflict, and the numbering of `VAL-<train11-1>` and `VAL-<train11-1b>`, are the coordinator's at landing.
+
+**Not checked:**
+- the trees after the run's head (docs only);
+- files outside the 81;
+- C1 and C2 (the notice wording), which belong to the owner.
