@@ -106,3 +106,28 @@ list.)
 - `NEWS.md`: KIT-267's line sits next to KIT-246's block; order at landing.
 - Audit I05 (partner edits for the retired `kit-240/default-identity.R`), I08 (optional status notes on the KIT-141
   rows) and the ticket closure (the R1 breach of its 25-minute row, calibration for later R1 rows): the coordinator's.
+
+## Result
+
+Run 45714416692 (request `merge-train-20261126n-67e151c9`, request commit 8e56684f), dispatched without error; green
+(infrastructure). Head 67e151c9 vs base 22c50184. Tables: `merge-train-20261126n-compare.tsv`,
+`merge-train-20261126n-check-compare.txt` (same directory). The first `gh run watch` ended on an API 403 (rate limit),
+not on a run result; the run was read after it completed.
+
+**Job-minutes 199.4 = 13.30 core-hours** against the ceiling of 210 job-minutes (14.0 core-hours): tests head
+30.1/27.0/16.9/14.3, tests base 30.2/22.5/16.5/18.1, check head 10.4, check base 12.8, plan 0.3, results 0.5.
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit267-enrichment-defaults.R | only-on-head, 3/0/0/0 | absent | 3/0/0/0 | only-on-head: HELD |
+| test-kit240-integration-default.R | count-changed, 92/0/0/1 to 96/0/0/1 | 92/0/0/1 | 96/0/0/1 | count-changed (T10's old title gone, 12 passed): HELD |
+| test-integration-record.R | same, 200/0/0/0 | 200/0/0/0 | 200/0/0/0 | same: HELD |
+| the other 19 files (counts as predicted) | same | as predicted | as predicted | same: HELD |
+| R CMD check | identical findings, none only on head | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings), none only on head or base: HELD |
+
+Totals: 22 files, 20 `same`, 1 `count-changed`, 1 `only-on-head`; no failure, error or `new-failure` on either side.
+
+**Decision.** Every prediction held. KIT-267 introduces no regression: its new file passes 3/0 on head, KIT-240's moved
+tests pass (96/0), every other file and R CMD check are identical between the train-20 tip and the merge head. TRAIN
+GREEN, landing only after trains 19 and 20 land with their code unchanged (their own runs 45707095842 and 45712155865
+were not finished when this train was built and are not judged here).
