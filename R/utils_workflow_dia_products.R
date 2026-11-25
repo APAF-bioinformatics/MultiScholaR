@@ -962,8 +962,10 @@ diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
     norm_data$normalization_input_reference <- source
     redraw_pre <- FALSE
     if (usesDIAReferenceStates(manager) && isSavedWorkflowReference(source)) {
+        # KIT-247 (VAL-239; coordinator's ruling on R1-01 (a)): not shown for a run from the design state, where no
+        # Quality Control was applied (the sentence would be false).
         if (isTRUE(norm_data$normalization_complete) && isSavedWorkflowReference(previous) &&
-            !identical(previous$entity_id, source$entity_id) &&
+            !identical(previous$entity_id, source$entity_id) && !identical(manager$current_state, "protein_s4_initial") &&
             identical(readDIALineageRecord(manager, source)$class, "ProteinQuantitativeData")) {
             message(structure(class = c("prot_norm_input_current", "message", "condition"), list(message = paste(
                 "This normalisation uses your current quality-control result. The previous normalisation used an",

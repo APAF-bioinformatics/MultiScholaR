@@ -241,6 +241,27 @@ runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigg
     if (identical(config$design$commit, "prot_hook")) {
         return(runProtDesignBuilderObserverShell(results, workflowData, experimentPaths, session, qcTrigger))
     }
+    # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
+    manager <- workflowData$state_manager
+    stateName <- config$design$state_name
+    verdict <- compareOmicsDesignResult(manager, list(design_matrix = results$design_matrix, data = results$data_cln),
+        stateName, list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln))
+    runOmicsDesignResaveGate(session, verdict, length(omicsDesignLaterStates(manager, stateName)) > 0L,
+        commit = function(cut) runOmicsDesignCommitNow(results, workflowData, experimentPaths, qcTrigger, config, cut),
+        unchanged = function() {
+            written <- results
+            written$data_cln <- resolveWorkflowOwnedValue(results$data_cln, manager)
+            tryCatch(writeOmicsDesignArtifacts(experimentPaths$source_dir, written, workflowData$column_mapping,
+                results$config_list), error = function(e) logger::log_warn(paste("Design files not written:", e$message)))
+            applyOmicsDesignUnchanged(workflowData, results, config$da$status_key %||% "differential_analysis")
+        })
+    invisible(NULL)
+}
+
+#' The commit itself (KIT-247: `runOmicsDesignCommit` decides first); `cut` sets the previous design's later states
+#' aside after the commit (`cutOmicsDesignHistory`, `completeOmicsDesignCut`).
+#' @noRd
+runOmicsDesignCommitNow <- function(results, workflowData, experimentPaths, qcTrigger, config, cut = FALSE) {
     shiny::showModal(omicsDesignProcessingModal())
     committed <- tryCatch(commitOmicsDesign(workflowData, results, experimentPaths$source_dir, config),
         omics_design_refused = function(e) {
@@ -252,12 +273,14 @@ runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigg
         omics_design_save_failed = function(e) omicsDesignSaveFailed(e$message))
     if (is.null(committed)) return(invisible(NULL))
     tryCatch({
+        didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, config$design$state_name)
         if (!is.null(qcTrigger)) qcTrigger(TRUE)
         status <- workflowData$tab_status
         status$design_matrix <- "complete"
         workflowData$tab_status <- status
         shiny::removeModal()
         shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")
+        if (didCut) completeOmicsDesignCut(workflowData, config$shell$omic_type, experimentPaths)
         # KIT-128: transcriptomics sums technical replicates per biological unit at this step (trxDesignObject).
         summed <- if (methods::.hasSlot(committed$object, "args")) committed$object@args$technical_replicates_summed
         if (length(summed)) {
@@ -354,7 +377,8 @@ registerOmicsDesignFeatureImport <- function(input, output, session, workflow_da
 #' @param importPath The exported design directory.
 #' @return NULL, invisibly.
 #' @noRd
-runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTrigger, config) {
+runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTrigger, config,
+                                 session = shiny::getDefaultReactiveDomain()) {
     importConfig <- config$design$design_import
     shiny::req(importConfig)
     checkFirst <- isTRUE(importConfig$check_files_first)
@@ -367,9 +391,15 @@ runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTr
     }
     if (checkFirst) shiny::removeModal()
     shiny::showNotification("Importing design files...", id = "importing_design", duration = NULL)
-    tryCatch({
-        imported <- importConfig$reader(importPath, config, experimentPaths$source_dir)
+    failed <- function(e) {
+        msg <- paste("Error during import:", e$message)
+        logger::log_error(msg)
+        shiny::showNotification(msg, type = "error", duration = 15)
+        shiny::removeNotification("importing_design")
+    }
+    commit <- function(cut) tryCatch({
         committed <- commitOmicsDesignImport(workflowData, imported, experimentPaths$source_dir, config)
+        didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, config$design$state_name)
         if (!is.null(qcTrigger)) qcTrigger(TRUE)
         status <- workflowData$tab_status
         status$design_matrix <- "complete"
@@ -377,6 +407,23 @@ runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTr
         shiny::removeNotification("importing_design")
         shiny::showNotification(sprintf("Design imported successfully! Loaded %d assays with %d samples.",
             committed$n_assays, committed$n_samples), type = "message")
+        if (didCut) completeOmicsDesignCut(workflowData, config$shell$omic_type, experimentPaths)
+    }, error = failed)
+    imported <- NULL
+    tryCatch({
+        imported <- importConfig$reader(importPath, config, experimentPaths$source_dir)
+        # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
+        manager <- workflowData$state_manager
+        stateName <- config$design$state_name
+        verdict <- compareOmicsDesignResult(manager, list(design_matrix = imported$design_matrix, data = imported$assay_list),
+            stateName, list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln))
+        runOmicsDesignResaveGate(session, verdict, length(omicsDesignLaterStates(manager, stateName)) > 0L,
+            commit = commit,
+            unchanged = function() {
+                shiny::removeNotification("importing_design")
+                applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = imported$contrasts_tbl,
+                    config_list = imported$config_list), config$da$status_key %||% "differential_analysis")
+            })
     }, error = function(e) {
         msg <- paste("Error during import:", e$message)
         logger::log_error(msg)

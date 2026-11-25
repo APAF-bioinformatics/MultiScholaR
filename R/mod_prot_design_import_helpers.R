@@ -350,6 +350,37 @@ runProtDesignImportConfirmationFlow <- function(
     buildStateCheckpointFn = buildProtDesignStateCheckpoint,
     completePostCheckpointFn = completeProtDesignPostCheckpoint
 ) {
+  # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
+  manager <- workflowData$state_manager
+  if (inherits(manager, "DIAStateAdapter")) {
+    stateName <- protDesignStateName(manager)
+    later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
+    verdict <- if (later) compareOmicsDesignResult(manager, list(design_matrix = importedArtifacts$importedDesign,
+      data = importedArtifacts$importedDataCln), stateName,
+      list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln)) else "first"
+    if (later && verdict %in% c("unchanged", "changed")) {
+      flow <- function(cut) runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
+        importedArtifacts, taxonId, organismName, session, qcTrigger, successMessage, successNotificationId,
+        hydrateFastaSidecar, hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn,
+        completePostCheckpointFn, cut = cut)
+      return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, unchanged = function() {
+        shiny::removeNotification(successNotificationId)
+        applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = importedArtifacts$importedContrasts,
+          config_list = workflowData$config_list), "differential_expression")
+      })))
+    }
+  }
+  runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts, importedArtifacts, taxonId,
+    organismName, session, qcTrigger, successMessage, successNotificationId, hydrateFastaSidecar,
+    hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn, completePostCheckpointFn)
+}
+
+#' The import's commit (KIT-247: `runProtDesignImportConfirmationFlow` decides first); `cut` sets the previous design's
+#' later states aside after the commit.
+#' @noRd
+runProtDesignImportConfirmationFlowNow <- function(workflowData, experimentPaths, importArtifacts, importedArtifacts,
+    taxonId, organismName, session, qcTrigger, successMessage, successNotificationId, hydrateFastaSidecar,
+    hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn, completePostCheckpointFn, cut = FALSE) {
   hydrateFastaSidecar(
     workflowData = workflowData,
     importPath = importArtifacts$importPath,
@@ -385,6 +416,7 @@ runProtDesignImportConfirmationFlow <- function(
     actionLabel = "Import",
     validateColumnMapping = TRUE
   )
+  didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
   # KIT-177: the values the design step set to missing, named and counted.
   notifyProtDesignLog2Counts(workflowData)
 
@@ -400,6 +432,7 @@ runProtDesignImportConfirmationFlow <- function(
     successMessage = successMessage,
     successNotificationId = successNotificationId
   )
+  if (didCut) completeOmicsDesignCut(workflowData, "proteomics", experimentPaths)
 
   invisible(list(
     workflowType = workflowType,

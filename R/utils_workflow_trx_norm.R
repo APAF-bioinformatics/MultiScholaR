@@ -168,7 +168,9 @@ runTrxNormalisation <- function(run, binding, manager, settings, normData, confi
 #' @noRd
 resetTrxNormalisation <- function(manager, normData, config, addLog, notify, setStatus) {
     tryCatch({
-        if (!is.null(normData$post_filter_obj)) {
+        # KIT-247 (VAL-239, OD-2 (a)): only while a state of the active history holds the recorded start.
+        held <- omicNormResetStartHeld(manager, normData$post_filter_obj)
+        if (!is.null(normData$post_filter_obj) && held) {
             commitWorkflowOmicsStoreStep(manager, "trx_reset", "trx_reset", config, "Reset to pre-normalization state",
                 source = normData$post_filter_obj)
         }
@@ -177,7 +179,12 @@ resetTrxNormalisation <- function(manager, normData, config, addLog, notify, set
         normData$ruv_corrected_obj <- NULL
         normData$ruv_optimization_results <- list()
         setStatus("normalization", "pending")
-        addLog("Reset to pre-normalization state")
-        notify("Reset to pre-normalization state", type = "message")
+        if (!is.null(normData$post_filter_obj) && !held) {
+            addLog("Reset: the starting table is no longer current; nothing was brought back")
+            notify(omicNormResetNothingText(), type = "warning", duration = NULL)
+        } else {
+            addLog("Reset to pre-normalization state")
+            notify("Reset to pre-normalization state", type = "message")
+        }
     }, error = function(error) notify(paste("Error:", trxConditionText(error)), type = "error"))
 }

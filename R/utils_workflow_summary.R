@@ -166,7 +166,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         # KIT-212 (VAL-172 (1)): the DA shown was run on another table; refused the same way, the earlier input removed.
         if (inherits(error, c("omic_norm_correlation_input_stale", "workflow_summary_da_stale"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
-            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+            # KIT-247 (VAL-239 (iv)): the omic's folder and the top-level file the Save writes beside it.
+            tryCatch(removeOmicIntegrationInput(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType),
                 error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
             failed(error)
             return(invisible(NULL))
@@ -181,7 +182,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         # KIT-206 audit I02 (K061-3; as KIT-207 SD-5 (b)): the proteomics archive refresh refused a table that is not the
         # normalisation tab's last result before the integration input was written; the omic's earlier input is removed.
         if (inherits(error, "prot_norm_correlation_input_stale")) {
-            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+            # KIT-247 (VAL-239 (iv)): the omic's folder and the top-level file the Save writes beside it.
+            tryCatch(removeOmicIntegrationInput(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType),
                 error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
         }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")

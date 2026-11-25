@@ -316,3 +316,239 @@ commitOmicsDesignImport <- function(workflowData, imported, sourceDir, config) {
     logger::log_info(sprintf("Design import complete: '%s'", design$state_name))
     invisible(list(object = object, n_assays = length(imported$assay_list), n_samples = nrow(imported$design_matrix)))
 }
+
+# ------------------------------------------------------------------------------------------------
+# KIT-247 (VAL-239, the owner's OD-1 (D)): a design saved again over later steps.
+# ------------------------------------------------------------------------------------------------
+
+#' KIT-247. A design table in a canonical form, so that two saves of one design compare equal: every column as text,
+#' the columns in name order, the rows in run order, and `tech_rep_group` recomputed from `group` and `replicates` as
+#' the save computes it (`buildProtDesignStateCheckpoint`, `commitOmicsDesignImport`). Every column is kept: RUV's
+#' grouping, the correlation filter and the DA formula can use any of them (factors, batch).
+#' @param design A design table, or NULL.
+#' @return A data frame, or NULL.
+#' @noRd
+omicsDesignCanonicalTable <- function(design) {
+    if (is.null(design)) return(NULL)
+    design <- as.data.frame(design, stringsAsFactors = FALSE)
+    if (all(c("group", "replicates") %in% names(design))) {
+        design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
+    }
+    design[] <- lapply(design, as.character)
+    design <- design[, sort(names(design)), drop = FALSE]
+    key <- if ("Run" %in% names(design)) "Run" else names(design)[[1L]]
+    design <- design[order(design[[key]]), , drop = FALSE]
+    rownames(design) <- NULL
+    design
+}
+
+#' KIT-247. Whether two of a design save's data inputs (a table, a list of tables, or saved references to them) hold
+#' the same tables: the same saved entity, or the same content once read.
+#' @noRd
+omicsDesignSameData <- function(a, b, manager) {
+    if (is.null(a) || is.null(b)) return(is.null(a) && is.null(b))
+    if (isSavedWorkflowReference(a) && isSavedWorkflowReference(b) && identical(a$entity_id, b$entity_id)) return(TRUE)
+    canonical <- function(value) {
+        value <- resolveWorkflowOwnedValue(value, manager)
+        tables <- if (is.data.frame(value)) list(value) else value
+        lapply(tables, function(table) {
+            if (!is.data.frame(table)) return(table)
+            table <- as.data.frame(table, stringsAsFactors = FALSE)
+            table[] <- lapply(table, function(column) if (is.factor(column)) as.character(column) else as.vector(column))
+            rownames(table) <- NULL
+            table
+        })
+    }
+    identical(digest::digest(canonical(a), algo = "sha256"), digest::digest(canonical(b), algo = "sha256"))
+}
+
+#' KIT-247 (OD-1 (D); Re-check 1 R1-02, the coordinator's ruling): a pure comparison, made by the GUI frames before the
+#' bus is hydrated, of a design save's result with the design the session holds. The state's side is read from the bus
+#' as the last design commit left it (its design table and data input): the transcriptomics design state holds its
+#' technical replicates summed into units (`trxDesignObject`), so its stored design is not comparable run by run.
+#' @param manager The session owner.
+#' @param results The save's result: `design_matrix` and `data` (the table, list or reference the commit reads).
+#' @param stateName The omic's design state.
+#' @param current The bus before hydration: `design_matrix` and `data`.
+#' @return `"first"` (no design state in the active history: the first save, or no session owner), `"unchanged"` (the
+#'   whole design table and the data equal: only the comparisons or the formula may differ) or `"changed"`.
+#' @noRd
+compareOmicsDesignResult <- function(manager, results, stateName, current) {
+    if (!inherits(manager, "DIAStateAdapter") || !isTRUE(stateName %in% diaStateHistory(manager))) return("first")
+    if (is.null(current$design_matrix)) return("changed")
+    if (!identical(omicsDesignCanonicalTable(results$design_matrix), omicsDesignCanonicalTable(current$design_matrix))) {
+        return("changed")
+    }
+    if (!isTRUE(omicsDesignSameData(results$data, current$data, manager))) return("changed")
+    "unchanged"
+}
+
+#' KIT-247. The states of the active history after the design state.
+#' @noRd
+omicsDesignLaterStates <- function(manager, stateName) {
+    if (!inherits(manager, "DIAStateAdapter")) return(character())
+    history <- diaStateHistory(manager)
+    at <- match(stateName, history)
+    if (is.na(at)) character() else history[-seq_len(at)]
+}
+
+#' KIT-247 (OD-1 (D)). After a changed design was committed: the active history is cut at the design state, as a
+#' Quality Control Revert to the design would (`selectWorkflowStateReference`; no state record is deleted).
+#' @return TRUE when states were set aside.
+#' @noRd
+cutOmicsDesignHistory <- function(manager, stateName) {
+    if (!length(omicsDesignLaterStates(manager, stateName))) return(FALSE)
+    selectWorkflowStateReference(manager, stateName)
+    TRUE
+}
+
+#' KIT-247 (OD-4 (a), VAL-239): the omic's earlier integration input: its folder (`removeIntegrationInput`, as a
+#' refused Summary Save removes it, VAL-148) and the top-level file the Summary's Save writes beside it
+#' (`<omic>_<label>_final_s4.RDS`; transcriptomics `transcriptomics_normalized_data.tsv`).
+#' @param integrationDir The project's integration directory.
+#' @param omicType The omic.
+#' @return The removed paths, invisibly.
+#' @noRd
+removeOmicIntegrationInput <- function(integrationDir, omicType) {
+    if (is.null(integrationDir) || !dir.exists(integrationDir)) return(invisible(character()))
+    folder <- file.path(integrationDir, omicType)
+    removed <- if (dir.exists(folder)) folder else character()
+    removeIntegrationInput(folder)
+    files <- list.files(integrationDir, pattern = paste0("^", omicType, "_"), full.names = TRUE)
+    files <- files[!dir.exists(files)]
+    if (length(files) && !all(file.remove(files))) {
+        abortIntegrationInput(sprintf("the earlier integration input %s could not be removed", paste(basename(files), collapse = ", ")))
+    }
+    invisible(c(removed, files))
+}
+
+#' KIT-247 (OD-1 (D), items 2 and 5). After the later states were set aside: Quality Control pending, every later tab
+#' disabled, the omic's earlier integration input removed, and one notice (DRAFT wording, VAL-41).
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @param experimentPaths The project paths (`integration_dir`, `base_dir`).
+#' @param notify `shiny::showNotification`'s contract.
+#' @noRd
+completeOmicsDesignCut <- function(workflowData, omicType, experimentPaths, notify = shiny::showNotification) {
+    status <- workflowData$tab_status
+    names_status <- names(status)
+    at <- match("quality_control", names_status)
+    if (!is.na(at)) {
+        status$quality_control <- "pending"
+        for (name in names_status[seq_along(names_status) > at]) status[[name]] <- "disabled"
+        workflowData$tab_status <- status
+    }
+    integrationDir <- experimentPaths$integration_dir %||%
+        if (!is.null(experimentPaths$base_dir)) file.path(experimentPaths$base_dir, "integration")
+    removed <- tryCatch(length(removeOmicIntegrationInput(integrationDir, omicType)) > 0L, error = function(e) {
+        notify(cli::ansi_strip(conditionMessage(e)), type = "warning", duration = NULL)
+        FALSE
+    })
+    notify(omicsDesignCutText(removed), type = "warning", duration = NULL)
+    invisible(TRUE)
+}
+
+#' KIT-247. The texts (DRAFT wording, VAL-41; `docs/qa/workflow-execution/kit/kit-247/wording.md`).
+#' @noRd
+omicsDesignCutText <- function(removed = FALSE) {
+    paste0("The design was saved again. The Quality Control, normalisation and later results made with the previous ",
+        "design are set aside: apply Quality Control again, then run the normalisation and the later steps.",
+        if (isTRUE(removed)) " The earlier integration input of this omic was removed." else "")
+}
+
+#' @noRd
+omicsDesignResaveConfirmText <- function() {
+    paste0("This design changes the samples, groups, technical replicates, factors or batch. Saving it sets aside the ",
+        "Quality Control, normalisation and later results made with the previous design; you will apply them again.")
+}
+
+#' @noRd
+omicsDesignUnchangedText <- function(contrastsChanged) {
+    if (isTRUE(contrastsChanged)) {
+        "Comparisons saved. Quality Control and normalisation are kept; run the differential analysis again for the new comparisons."
+    } else {
+        "Design saved; nothing changed."
+    }
+}
+
+#' KIT-247. Whether a save's comparisons differ from the bus's.
+#' @noRd
+omicsDesignContrastsChanged <- function(new, old) {
+    canonical <- function(x) if (is.null(x) || !nrow(as.data.frame(x))) NULL else {
+        x <- as.data.frame(x, stringsAsFactors = FALSE)
+        x[] <- lapply(x, as.character)
+        rownames(x) <- NULL
+        x
+    }
+    !identical(canonical(new), canonical(old))
+}
+
+#' KIT-247 (OD-1 (D)). A design save that changes nothing the steps after it read: the comparisons, the configuration
+#' and (by the caller) the design files are updated; nothing is committed; the DA tab goes back to pending when the
+#' comparisons changed (a prompt only: KIT-212's check compares tables, so the Summary still presents the earlier
+#' analysis until the DA is run again); the pending design provenance, if any, is cleared.
+#' @param daStatusKey The DA tab's status name (`differential_expression`, `differential_analysis`).
+#' @noRd
+applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify = shiny::showNotification) {
+    changed <- omicsDesignContrastsChanged(results$contrasts_tbl, workflowData$contrasts_tbl)
+    workflowData$contrasts_tbl <- results$contrasts_tbl
+    workflowData$config_list <- results$config_list
+    manager <- workflowData$state_manager
+    if (inherits(manager, "DIAStateAdapter")) manager$.context$pending_provenance <- NULL
+    status <- workflowData$tab_status
+    if (changed && !is.null(status[[daStatusKey]]) && !identical(status[[daStatusKey]], "disabled")) {
+        status[[daStatusKey]] <- "pending"
+        workflowData$tab_status <- status
+    }
+    notify(omicsDesignUnchangedText(changed), type = "message")
+    invisible(changed)
+}
+
+#' KIT-247 (OD-1 (D)). The GUI frames' gate before a design save hydrates the bus. With states after the design state:
+#' `"unchanged"` runs `unchanged()`; `"changed"` asks first (Save runs `commit(cut = TRUE)`; Cancel changes nothing).
+#' `"first"`, or nothing after the design state, runs `commit(cut = FALSE)` as before.
+#' @param session The design tab's session (the confirmation's button is `confirm_design_resave` in its namespace).
+#' @param verdict `compareOmicsDesignResult()`'s value.
+#' @param later Whether the active history holds states after the design state.
+#' @return The verdict, invisibly.
+#' @noRd
+runOmicsDesignResaveGate <- function(session, verdict, later, commit, unchanged,
+                                     showModal = shiny::showModal) {
+    # A first save, or a save with nothing after the design state, is committed as before (G1, G2).
+    if (!isTRUE(later) || !verdict %in% c("unchanged", "changed")) {
+        commit(cut = FALSE)
+        return(invisible(verdict))
+    }
+    if (identical(verdict, "unchanged")) {
+        unchanged()
+        return(invisible(verdict))
+    }
+    registerOmicsDesignResaveConfirmation(session)
+    assign(omicsDesignResaveKey(session), function() commit(cut = TRUE), envir = session$userData)
+    showModal(shiny::modalDialog(title = "Save the changed design?",
+        shiny::p(omicsDesignResaveConfirmText()),
+        footer = shiny::tagList(shiny::modalButton("Cancel"),
+            shiny::actionButton(session$ns("confirm_design_resave"), "Save", class = "btn-warning")),
+        easyClose = FALSE))
+    invisible(verdict)
+}
+
+#' KIT-247. The pending save's key in the session's user data (the design tab's namespace: one per omic).
+#' @noRd
+omicsDesignResaveKey <- function(session) paste0("kit247_design_resave_", session$ns(""))
+
+#' KIT-247. The confirmation's observer, registered once per design tab session.
+#' @noRd
+registerOmicsDesignResaveConfirmation <- function(session) {
+    key <- omicsDesignResaveKey(session)
+    flag <- paste0(key, "_observer")
+    if (isTRUE(get0(flag, envir = session$userData, inherits = FALSE))) return(invisible(NULL))
+    assign(flag, TRUE, envir = session$userData)
+    shiny::observeEvent(session$input$confirm_design_resave, {
+        pending <- get0(key, envir = session$userData, inherits = FALSE)
+        assign(key, NULL, envir = session$userData)
+        shiny::removeModal()
+        if (is.function(pending)) pending()
+    }, ignoreInit = TRUE)
+    invisible(NULL)
+}
