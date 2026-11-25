@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-236 R1 instrument rerun 1 (VAL-54; run 45606119057: test-script name clash and G1 construction): tests-only da192fd4 on the base templates, every failing-first row fails, G1 and W1-W4 pass",
+  "label": "KIT-236 R1-2 tests-only da192fd4 (failing-first, instrument rerun 1)",
+  "package_commit": "da192fd4e4dcb4ae7d233c5036a212e671c93dfd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit236-report-sentences.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
