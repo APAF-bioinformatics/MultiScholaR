@@ -1,0 +1,20 @@
+{
+  "requested_by": "Merge train 4 correction (coordinator's ruling): R CMD check only after renaming KIT-235's 8 record files over 100 bytes; head e84c5571 vs stacked base 5174a798; ceiling 60 job-minutes",
+  "label": "Merge train 20261125d check only e84c5571 vs 5174a798",
+  "package_commit": "e84c5571c0752af9519975b59ab994e8d5562128",
+  "base_commit": "5174a798627cbe425cfc620b273625ff3dcfe11f",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
