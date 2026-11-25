@@ -1,6 +1,20 @@
-# KIT-250 gate G0: outcome (base observation only)
+# KIT-250: outcome
 
-Ticket r1.2. G0 only: no package code, no tests commit. The tests-only commit (R1) and the fix wait for the owner's OD-1 and OD-2 (both OPEN; O3 OPEN).
+Ticket r1.3. The owner's decisions of 2026-11-25 (item 7, "take all recommendations"; methods ledger VAL-240): OD-1 = (A) as corrected by Re-check 1, OD-2 = before the release commit, O3 = the single-organism limit stated to the user (draft in `wording.md`).
+
+Branch `kit-250` from `v0.9-staging` e0747fc1. The import, design and test files the ticket cites are byte-identical between 16112917 (where G0 ran) and e0747fc1.
+
+| Commit | What |
+|---|---|
+| c101eeb9 | G0 records brought over from `kit-250-g0` (scripts and observations only) |
+| d6bbcafb | tests only: `tests/testthat/test-kit250-organism-dialog.R` (E1a to E7, G1 to G3) and the declared edit `test-prot-01c-import-module-contracts.R:2099-2108`; nothing under `R/` |
+| 7b674539 | the fix (5 files under `R/`) |
+| da0593f7 | NEWS, ledger row `VAL-<merge>`, `wording.md` |
+| (records) | R1 and R2 tables, this file, `runs.tsv` |
+
+Core-hours: 112.7 job-minutes = 7.51 core-hours (G0 0.99, R1 0.57, R2 5.95, refused request 0.01), against the ticket's expected 24.0 and ceiling 102.0. No correction pass and no instrument rerun were used.
+
+# Gate G0 (base observation, run 45594289742)
 
 - **Commit under test:** `v0.9-staging` 16112917329a63ab062655f04db5bf1dd7df9729 (its head on 2026-11-25).
 - **Records commit:** `kit-250-g0` 804a69bd. It differs from 16112917 only in this folder (`environment.tsv`: `diff_only_records_folder TRUE`).
@@ -39,20 +53,127 @@ Every tab status in every case is in `tab_status_all`. In all (d) states the tab
 - **Stop rule 2** (a person can press a button behind the dialog): **not fired.** Limitation: at the point used, the dialog box itself covered the link, so this shows the link is unreachable there. It does not separately test a point covered only by the backdrop. Before scrolling, the link was also out of view.
 - **Stop rule 4** (a second import refused or failing): **not fired.** Both re-imports complete. (d2) leaves "Processing Data" open, which is P01 as predicted, not a refusal. W1's advice is therefore usable.
 - **A1:** met for G0. (a) to (d) are recorded with values and screenshots (`g0-45594289742/g0-*.png`, `g0-*.json`, `g0-base-values.tsv`).
-- A2 to A4 are not started: they wait for OD-1 and OD-2.
+- G0 replaces "by reading" in section 10's base column: every base value was observed as stated. Re-check 1's premise is confirmed on base: after Cancel a design can be saved with the form's organism (a2).
 
-## For the next step (when the owner has answered)
+# Implementation
 
-- G0 replaces "by reading" in section 10's base column: every base value was observed as stated.
-- Re-check 1's premise is confirmed on base: after Cancel a design can be saved with the form's organism (a2).
-- The (a) and (a2) rows give R1's failing-first values.
+## The fix (7b674539)
+
+| Ticket outcome | Where (fix commit) |
+|---|---|
+| 1. While the dialog is open the import is not complete: `complete()` is not called, `setup_import` is written `incomplete`, no status is written for the design tab | `R/mod_prot_import_processing_helpers.R:207-214` (`completeProtImportSuccessState`) |
+| 1. The status panel shows W2 while the dialog is open and W1 after Cancel, never "[OK] Data imported successfully!"; the Data Summary's organism line reads "Organism: not confirmed" while either flag is set | `R/mod_prot_import_ui_helpers.R:1-24`, `:59-63`; wiring `R/mod_prot_import_server_helpers.R:166-179` |
+| 2. Confirm completes the import (`complete = ...completeOmicImport(...)`, the default form of `completeProtImportSuccessState`), after the optional filter and before its two notices; clears `organism_unconfirmed` | `R/mod_prot_import_organism_helpers.R:155-156`, `:222-226` |
+| 3. Cancel is the module's own `actionButton(ns("cancel_organism"), "Cancel")`; `cancelProtImportOrganismSelection` clears the waiting flag, sets `organism_unconfirmed`, removes the dialog, clears the import as the error path does and shows W1 as a warning that stays until closed (`duration = NULL`) | `R/mod_prot_import_organism_helpers.R:41-43`, `:244-259`; observer `R/mod_prot_import_server_helpers.R:447-452` |
+| The error path's clearing, shared (no change in what it clears) | `clearProtImportWorkflowState`, `R/mod_prot_import_processing_helpers.R:266-282`, called by `resetProtImportWorkflowStateOnError` and by Cancel |
+| 5. The flags are reset when an import starts and when an import fails | `R/mod_prot_import_orchestration_helpers.R:104-106`; `R/mod_prot_import_processing_helpers.R:255-257` |
+| The new flag's initial value | `R/mod_prot_import_server_helpers.R:17` |
+
+Unchanged (outcome 4): the form, the option's default, the radio's preselection, the values Confirm writes, and the "could not extract organism information" path (G3). `man/` and `NAMESPACE` are unchanged, because the new functions are internal (`@noRd`).
+
+## R1: failing first (run 45602311219, tests-only commit d6bbcafb)
+
+Declared before sending: E1a to E7 and the declared edit fail by assertion, G1 to G3 pass; ceiling 45 job-minutes.
+
+Observed (`r1-45602311219/tests.tsv`, `failures.txt`):
+- The new file: 31 passed, 32 failed, 0 errors. Every failure is in E1a to E7 and none in G1 to G3.
+- `test-prot-01c`: 434 passed, 3 failures, all in "KIT-102 W6: completeProtImportSuccessState writes the statuses…" (the declared edit).
+
+Each E test failed at the base value the ticket states:
+
+| Test | Failed at |
+|---|---|
+| E1a | `complete` called ("complete:notify=FALSE"); setup_import "complete"; design "pending" |
+| E1b | setup_import "complete"; complete called |
+| E2 | complete not called (0) |
+| E3 | no `import-cancel_organism`; `data-dismiss` and `data-bs-dismiss` present |
+| E4 | `cancelProtImportOrganismSelection` absent |
+| E5 | flags TRUE after the start and after the error path; events "complete:notify=FALSE" only (no removeModal, no notice) |
+| E6 | "[OK] Data imported successfully!" in both states; "Mus musculus" and "10090" in the summary |
+| E7 | function absent |
+
+## R2: base against head (run 45603816096)
+
+Base d6bbcafb, head da0593f7, three shards per side, plus R CMD check on both sides. Declared before sending: every file `same` except the new file and the declared edit; ceiling 600 job-minutes.
+
+Observed (`r2-45603816096/compare.tsv`, `check-compare.txt`):
+
+| File | Base | Head | Verdict |
+|---|---|---|---|
+| `test-kit250-organism-dialog.R` | 31 passed / 32 failed | 77 / 0 | fixed |
+| `test-prot-01c-import-module-contracts.R` | 434 / 3 | 437 / 0 | fixed (the declared edit) |
+| `test-prot-01d-import-module-characterization.R` | 79 / 0 | 79 / 0 | same |
+| `test-module-ci-prot-import.R` | 107 / 0 | 107 / 0 | same |
+| `test-module-ci-trx-app.R` | 50 / 0 | 50 / 0 | same |
+| `test-workflow-gui-memory-lifetimes.R` | 81 / 0 (11 skipped) | 81 / 0 (11 skipped) | same |
+| `test-workflow-server-shared.R` | 226 / 0 | 226 / 0 | same |
+
+R CMD check: 0 errors, 3 warnings and 3 notes on both sides; the findings are identical on both sides (none only on head, none only on base). No kit-250 path appears in the portable-file-names note.
+
+The confirm guards (`test-prot-01c` :1792-1895 and :1905-1934; `test-prot-01d` :626-645) pass on head, as predicted by reading.
+
+## Acceptance criteria
+
+| # | Verdict | Evidence |
+|---|---|---|
+| A1 | met | G0 above; `g0-45594289742/` |
+| A2 | met | R1: E1a to E7 and the declared edit fail by assertion, G1 to G3 pass. R2: all of them pass on head |
+| A3 | met | R2: every file `same` except the new file and the declared edit (both `fixed`); check findings identical |
+| A4 | met | NEWS under `### Fixes`; ledger row `VAL-<merge>` after VAL-233; this file with "For the change report" |
+
+Stop rule 3 (a G row failing on head, or an unpredicted R2 verdict): not fired.
 
 ## Not checked
 
-- workflowData$taxon_id outside (a2), and mixed_species_analysis (proxies only, see above).
-- The UniProt cache (P04): the network was closed, so nothing was cached.
+- The fix in a browser. G0 ran on base only, and the ticket declares no head browser run. The head is judged by the unit tests E1a to E7 and G1 to G3.
+- `workflowData$taxon_id` outside (a2), and `mixed_species_analysis` on base: proxies only (see above).
+- The UniProt cache (P04). It is not in this ticket and has its own ticket; in G0 the network was closed, so nothing was cached.
 - Enrichment with a partially annotated mixed data set.
-- A point covered only by the backdrop in (b).
+- A point covered only by the backdrop in G0 (b).
 - User mode (G0 ran in test mode with uploads, not the file chooser).
 - A FASTA with more than one organism (the fixture has one).
 - Routes other than DIA-NN.
+- Interaction with the DIA session owner after a Cancel: the owner keeps the first import's store, as after a failed import today. G0 (d1) showed a re-import works on base with the data still in place; on head the state after Cancel is the error path's state.
+- The full suite: none of its own; the merge train's.
+
+## For the change report
+
+**What was wrong, and who was affected.** This affected proteomics users on every route (DIA-NN, MaxQuant, FragPipe, Spectronaut, TMT) who ticked "Mixed species FASTA" and closed the "Select Primary Organism" window with Cancel. The option is off by default.
+
+The import counted as finished before the window was answered. Cancel was a plain dismiss button that ran no code. As a result:
+- The analysis kept the organism of the disabled form: Homo sapiens (9606) unless the user had typed another before ticking.
+- The page said "[OK] Data imported successfully!" and showed that organism, with no message.
+- A design could be saved under it, so the UniProt annotation queried that organism. In a mixed data set, where some accessions match, the user's own organism's proteins got no gene names and nothing said so.
+- Enrichment's organism and the study parameters' Taxon ID were the form's.
+- A second import in the same session with the option unticked left the "Processing Data" window open, so the user had to reload.
+
+Quality control, normalisation and differential-analysis numbers were not affected.
+
+**Code references.**
+- Legacy, `main` 436cdbe8, `R/mod_prot_import.R`:
+  - `:114`: the default 9606.
+  - `:824`: the waiting flag.
+  - `:868`: `modalButton("Cancel")`.
+  - `:1059-1073`: completion before the answer.
+- Before the fix, `v0.9-staging` e0747fc1 (identical to 16112917 for these files):
+  - `R/mod_prot_import_organism_helpers.R:41`: `modalButton`.
+  - `R/mod_prot_import_processing_helpers.R:206`: `complete()` before the answer.
+  - `:218-223`: the waiting branch.
+  - `R/mod_prot_import_organism_helpers.R:219`: the only place the waiting flag was reset.
+- After the fix, `kit-250` 7b674539: see the table under "The fix".
+
+**What changed in results.**
+- With the option ticked, nothing downstream can run until an organism is confirmed. After Cancel the import is cleared and the page says "Import not finished: no organism was chosen. …" (draft wording).
+- After Confirm, the organism, the annotation, the enrichment organism and the study parameters are the confirmed one, exactly as before.
+- Imports with the option unticked are unchanged.
+- A re-import after Cancel no longer leaves a window open.
+- No numeric result changes for any import that was confirmed.
+- Not repaired by this change:
+  - A project that already annotated under a wrong organism keeps that annotation, because the UniProt cache is keyed by neither organism nor proteins (P04, its own ticket).
+  - With a mixed-species FASTA, one organism is annotated and enriched (O3, a stated limit; `wording.md`).
+
+**Evidence.**
+- G0, run 45594289742: base behaviour in a headless browser on a runner, with a real mouse Cancel. The fixture was prot_dia (Homo sapiens, 400 proteins); the form was set to Mus musculus / 10090; test mode; network closed. All 72 predictions held. After Cancel the design saved with "Target organism taxon ID: 10090".
+- R1, run 45602311219: the defect shown at function level on the tests-only commit.
+- R2, run 45603816096: the fix, base against head, with R CMD check.
+- Limits: the fixture holds one organism; DIA-NN route only; test mode; no browser run on head.
