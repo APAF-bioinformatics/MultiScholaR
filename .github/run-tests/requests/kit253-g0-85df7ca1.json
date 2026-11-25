@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-253 G0: Reset (proteomics, lipidomics) and Save Design pressed inside the normalisation's figures action, with two no-press controls, at staging 16112917 (branch kit-253-g0, script only); 1 job, ceiling 90 job-minutes; decides stop rules 1 to 3",
+  "label": "KIT-253 G0 85df7ca1 (staging 16112917 + docs/qa/workflow-execution/kit/kit-253/g0.R)",
+  "package_commit": "85df7ca14b4233ab68c2c4c167e955bfdcd0df01",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-253/g0.R",
+      "args": [
+        "outer",
+        "16112917329a63ab062655f04db5bf1dd7df9729"
+      ],
+      "env": {},
+      "out": "k253-out",
+      "out_pattern": "\\.(png|json|tsv|txt|log)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [
+    "kit-233-journey"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
