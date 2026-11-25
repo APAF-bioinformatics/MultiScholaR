@@ -1,0 +1,4 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omics-norm-state-guards.R	651	0	0	0	ok	651	0	0	0	ok	same		
+test-kit254-omics-correlation-skip.R	377	2	0	0	failed	379	0	0	0	ok	fixed	fixed: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in; fixed: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in; counts: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in (passed 7 -> 8, skipped 0 -> 0); counts: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in (passed 7 -> 8, skipped 0 -> 0)	
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		

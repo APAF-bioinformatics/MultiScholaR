@@ -177,6 +177,15 @@ only on head. Stop rule 3 not triggered. 385 job-minutes (25.67 core-hours).
   correction pass already used belonged to the main implementation's audit, and the statement keeps its own one
   correction: the one-place fix and R2d below. No further correction after it.
 
+- **R2d (45658805131, base db727407, head 267c9507; 3 files, no check, 57 job-minutes; dispatched by hand once after
+  the dispatcher run 45649854076 failed on a GitHub HTTP 500 and started none), OBSERVED, every prediction held
+  (`r2d-predictions.md`):** the new file base 377 passed / 2 failed (exactly E17 "pos", lipid and metab: "below the
+  threshold in LCMS_Pos, LCMS_Neg") to head 379 / 0 (`fixed`; "pos" names LCMS_Pos only, "both" names both); E7's
+  restored sample assertions pass on both sides, so Apply(0.960024) on lipid with RUV removed A_1 only, as predicted;
+  `test-omics-norm-state-guards.R` 651/0 and `test-workflow-analysis-record.R` 351/0 `same`. The statement's one
+  correction is closed; the merge train repeats the full scope and R CMD check.
+- **Budget:** 1,108 job-minutes in all = 73.87 core-hours against the ticket's 115.00 ceiling.
+
 ## Acceptance criteria
 
 | # | Criterion | Evidence | State |
@@ -195,8 +204,8 @@ recorded divergence under R.md's existing-code scope rule (I13).
 
 ## Not checked
 
-- E7's sample difference after KIT-224 (stop rule 2; G0b): state and record assertions only on the merged tree.
-- The follow-up statement's assay detail on multi-assay records: wrong at 904a5514 (R2c, E17); not repaired.
+- E7 on the merged tree runs at a constructed threshold (0.960024, the coordinator's ruling after G0b's stop rule 2), not at a listed one.
+- The follow-up statement's assay detail on multi-assay records: wrong at 904a5514 (R2c, E17); repaired in 267c9507 (R2d).
 
 - E7 managed (lipid with RUV through the worker): the harness ran no RUV action for these inputs (G0); why was not traced.
 - The managed route's correlation summary and PCA reference (base and fix): read only.
