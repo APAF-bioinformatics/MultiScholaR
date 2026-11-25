@@ -1,0 +1,3 @@
+run_id	commit	purpose	minutes	result
+45618988736	1e1b0cee	R1 failing-first, tests-only commit, 1 job	15.8	as predicted: E1-E9, G3, G5 fail at base values; G1, G2 pass; 51 passed 36 failed 0 errors
+45622679825	base 1e1b0cee head 5ad937e4	R2 base against head, 55 files (ticket 37 + new + 17 dependents), 4+4 shards, check	486.8	53 same, new file fixed (101 passed), test-prot-norm-core.R message-changed (KIT-111 W1 (a) files digests of dia_normalization_refused and dia_normalization_retry; stop rule 3); check identical
