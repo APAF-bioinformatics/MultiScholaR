@@ -1,0 +1,34 @@
+id	key	value
+E1	pos:max_abs_level_change	10.2320975
+E1	pos:median_abs_level_change	2.199913436
+E1	pos:features	60
+E1	neg:max_abs_level_change	11.58936665
+E1	neg:median_abs_level_change	2.673436583
+E1	neg:features	60
+E1m	pos:max_abs_level_change	7.558886916
+E1m	pos:median_abs_level_change	2.407643492
+E1m	pos:features	60
+E1m	neg:max_abs_level_change	5.983363223
+E1m	neg:median_abs_level_change	1.667818827
+E1m	neg:features	60
+E2	pos:max_abs_level_change	10.2320975
+E2	pos:median_abs_level_change	2.199913436
+E2	pos:features	60
+E2	neg:max_abs_level_change	11.58936665
+E2	neg:median_abs_level_change	2.673436583
+E2	neg:features	60
+DA	cutoff_0:significant	22
+DA	cutoff_0.5:significant	6
+CF	kept_samples	S01,S02,S03,S04,S05,S06,S07,S08,S09,S10,S11,S12
+E3	max_abs_level_change	22.36800579
+E4_iii	record_lists_ruv_feature_levels	FALSE
+E5	error	error: Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+Differences:
+`actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+`expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+
+E6	rows	516
+E6	call_changes	22
+E6	max_abs_dt	0.4204862977
+E6	max_abs_dlogfc	6.394884622e-13
+E6	calls_x1	160
