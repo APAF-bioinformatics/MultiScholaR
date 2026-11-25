@@ -1,0 +1,80 @@
+{
+  "requested_by": "KIT-217 R2: fix ba962c19 against staging 185ebf75, ticket 5.10 scope (44 files), 3+3 shards, check, control S; verdicts judged against 5.11 and r1.6's G7 list; ceiling 675 job-minutes",
+  "label": "KIT-217 R2 regressions and control S on kit-217 ba962c19",
+  "package_commit": "ba962c19d2717b3b5bb4792772d27a1dc9cb3f24",
+  "base_commit": "185ebf75cc179fdf88df397c38473cdf9592bb6f",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-prot-missing-value-counts.R",
+    "test-kit129-run-path.R",
+    "test-omics-norm-state-guards.R",
+    "test-workflow-omics-worker.R",
+    "test-kit207-summary-head-guard.R",
+    "test-workflow-partitions.R",
+    "test-kit172-unit-equivariance.R",
+    "test-workflow-analysis-record.R",
+    "test-gui-entry-metabolomics.R",
+    "test-kit217-intensity-filter-missing.R",
+    "test-integration-input-lipid-metab.R",
+    "test-gui-entry-lipidomics.R",
+    "test-kit196-da-no-value-features.R",
+    "test-kit172-downstream.R",
+    "test-workflow-omics-declarations.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-omics-qc-core.R",
+    "test-omic-qc-module.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-lipid-declarations.R",
+    "test-module-ci-metab-qc.R",
+    "test-kit172-log2-rule.R",
+    "test-kit202-intensity-filter-samples.R",
+    "test-omic-gui-config.R",
+    "test-module-ci-lipid-qc.R",
+    "test-kit172-reopen.R",
+    "test-workflow-kit-harness.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-omics-owner.R",
+    "test-lipid-01k-qc-intensity-shared.R",
+    "test-metab-01q-qc-intensity-module-characterization.R",
+    "test-prot-02-qc-peptide-groupaware.R",
+    "test-prot-qc-peptide-methods-direct-shared.R",
+    "test-lipid-01-qc-filtering-helpers.R",
+    "test-metab-02t-metabolite-intensity-filtering-characterization.R",
+    "test-metab-qc-shared.R",
+    "test-metab-s4-qc-shared.R",
+    "test-lipid-09-s4-normalization-methods.R",
+    "test-prot-qc-peptide-intensity-group-batches.R",
+    "test-lipid-01c-qc-duplicate-module-seams.R",
+    "test-metab-01b-qc-filtering-helpers-characterization.R",
+    "test-prot-qc-peptide-intensity-legacy-counts.R",
+    "test-lipid-01d-qc-intensity-module-seams.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-217/filter-missing-control.R",
+      "args": [
+        "185ebf75cc179fdf88df397c38473cdf9592bb6f",
+        "docs/qa/workflow-execution/kit/kit-217/s"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-217/s",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [
+    "kit-217-measure"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
