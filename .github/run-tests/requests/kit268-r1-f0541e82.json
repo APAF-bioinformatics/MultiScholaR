@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-268 R1 tests-only: 3 files failing at the predicted values, base 03a2a66b vs head f0541e82; expected 55 job-minutes, ceiling 70",
+  "label": "KIT-268 R1 tests-only f0541e82 vs 03a2a66b",
+  "package_commit": "f0541e82a5ca671c4877b6fda7a4b1502a5e4c4e",
+  "base_commit": "03a2a66b8f78125437b2dbfbf8444db486b25bbe",
+  "tools_ref": "",
+  "tests": [
+    "test-kit268-bh-fallback-notice.R",
+    "test-kit236-report-sentences.R",
+    "test-omic-da-module.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
