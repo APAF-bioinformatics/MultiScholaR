@@ -30,6 +30,11 @@ name: KIT-134 distributable
 # steps of stage full up to the install and the test tools, then the harness's parity step
 # (val-parity.R), the check of its folder (parity-check) and its one admitted upload
 # (parity-results, val-out/parity/ only); no lifecycle, hosts, lanes or figures.
+# Stage probe (KIT-241 section 8; dispatch only, on run-k241-* branches only, never merged): the steps of stage full
+# up to the install, then one probe step per platform (kit-241/g0-probe.R under the installed bundle's R; Linux:
+# the runner and one bare ubuntu:22.04 container, network none, read-only mounts; Windows: the shell's environment,
+# then Expand-Archive and Explorer's engine on each archive). Nothing uploaded; log lines only. No lifecycle, hosts,
+# test tools (Linux), lanes, e2e or figures.
 # [dist-linux] or [dist-windows] limits the run to one platform.
 
 on:
@@ -39,7 +44,7 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container, parity, kit167-engine]
+        options: [snapshot, library, full, container, parity, kit167-engine, probe]
       platform:
         description: "Platform"
         type: choice
@@ -47,6 +52,14 @@ on:
         options: [both, linux, windows]
       parity_request:
         description: "Stage parity: docs/qa/workflow-execution/kit/kit-159/parity/requests/<name>.json"
+        type: string
+        default: ""
+      probe_commit:
+        description: "Stage probe (KIT-241): the commit under test (full hash)"
+        type: string
+        default: ""
+      probe_gate:
+        description: "Stage probe (KIT-241): G0 or W1"
         type: string
         default: ""
   push:
@@ -88,6 +101,7 @@ jobs:
       kit167_engine: ${{ steps.plan.outputs.kit167_engine }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
       parity: ${{ steps.plan.outputs.parity }}
+      probe: ${{ steps.plan.outputs.probe }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -127,6 +141,8 @@ jobs:
           INPUT_STAGE: ${{ inputs.stage }}
           INPUT_PLATFORM: ${{ inputs.platform }}
           INPUT_PARITY_REQUEST: ${{ inputs.parity_request }}
+          INPUT_PROBE_COMMIT: ${{ inputs.probe_commit }}
+          INPUT_PROBE_GATE: ${{ inputs.probe_gate }}
         run: |
           if [ "$EVENT" = workflow_dispatch ]; then
             stage="$INPUT_STAGE"; platform="$INPUT_PLATFORM"
@@ -136,15 +152,23 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine|probe) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
           build=false; full=false; container=false; parity=false; kit167_engine=false; linux_runners='["ubuntu-22.04"]'
+          probe=false
           case "$stage" in
             kit167-engine) kit167_engine=true; platform=windows ;;
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
             container) build=true; container=true; platform=windows ;;
             parity) build=true; full=true; parity=true ;;
+            probe) build=true; full=true; probe=true ;;
           esac
+          if [ "$probe" = true ]; then
+            # KIT-241: dispatch only, on a run-k241-* branch, with the commit under test and the gate
+            [ "$EVENT" = workflow_dispatch ] && case "$GITHUB_REF" in refs/heads/run-k241-*) true ;; *) false ;; esac || { echo "::error::stage probe runs only by dispatch on a run-k241-* branch"; exit 1; }
+            printf '%s' "$INPUT_PROBE_COMMIT" | grep -qE '^[0-9a-f]{40}$' && git cat-file -e "$INPUT_PROBE_COMMIT^{commit}" || { echo "::error::probe_commit must be a full commit hash in this history"; exit 1; }
+            case "$INPUT_PROBE_GATE" in G0|W1) ;; *) echo "::error::probe_gate must be G0 or W1"; exit 1 ;; esac
+          fi
           if [ "$parity" = true ]; then
             # KIT-159 7.9: dispatch only, on run-val-parity, one new request file per run
             req="docs/qa/workflow-execution/kit/kit-159/parity/requests/$INPUT_PARITY_REQUEST.json"
@@ -157,7 +181,7 @@ jobs:
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "full=$full"; echo "container=$container"; echo "kit167_engine=$kit167_engine"
-            echo "linux_runners=$linux_runners"; echo "parity=$parity"
+            echo "linux_runners=$linux_runners"; echo "parity=$parity"; echo "probe=$probe"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -505,9 +529,46 @@ jobs:
           echo "DEST=$dest" >> "$GITHUB_ENV"
           echo "XDG_DATA_HOME=$XDG_DATA_HOME" >> "$GITHUB_ENV"
 
+      # KIT-241 G0/W1 (stage probe only): the commit check (P06), the closure count (P10), then kit-241/g0-probe.R
+      # with the installed application's R on this runner and in one bare ubuntu:22.04 container (no zip; network
+      # none; the installed folder and the probe folder read-only). Log lines only; nothing uploaded.
+      - name: "KIT-241 probe: the enrichment download writer under the installed R (this runner; bare ubuntu:22.04, network none)"
+        id: probe
+        if: ${{ !cancelled() && needs.plan.outputs.probe == 'true' && steps.install.outcome == 'success' }}
+        timeout-minutes: 30
+        env:
+          PROBE_COMMIT: ${{ inputs.probe_commit }}
+          PROBE_GATE: ${{ inputs.probe_gate }}
+        run: |
+          source packaging/package-commit.sh
+          echo "KIT241 run branch head $(git rev-parse HEAD); commit under test $PROBE_COMMIT; gate $PROBE_GATE"
+          git diff --stat "$PROBE_COMMIT" HEAD
+          # shellcheck disable=SC2086
+          if git diff --quiet "$PROBE_COMMIT" HEAD -- $PKG_PATHS packaging; then echo "val_product_tree_ok"; else echo "val_product_tree_mismatch"; exit 1; fi
+          echo "KIT241 package commit of the build: ${MSR_PACKAGE_COMMIT:-unset}"
+          if [ -f "$OUT/plan-packages.tsv" ]; then
+            echo "KIT241 closure: $(( $(wc -l < "$OUT/plan-packages.tsv") - 1 )) packages (plan-packages.tsv); zip in the plan: $(cut -f1 "$OUT/plan-packages.tsv" | grep -cx zip || true)"
+          else
+            echo "KIT241 closure: plan-packages.tsv absent"
+          fi
+          probe_dir="$GITHUB_WORKSPACE/docs/qa/workflow-execution/kit/kit-241"
+          status=0
+          "$DEST/app/resources/runtime/bin/Rscript" --vanilla "$probe_dir/g0-probe.R" "$RUNNER_TEMP/probe-runner" "linux-runner-${{ matrix.runner }}" "$PROBE_GATE" > "$RUNNER_TEMP/probe-runner.log" 2>&1 || status=1
+          cat "$RUNNER_TEMP/probe-runner.log"
+          docker pull -q ubuntu:22.04
+          docker run --rm --network none --user "$(id -u):$(id -g)" --env HOME=/tmp \
+            --volume "$DEST:/opt/msr installed:ro" --volume "$probe_dir:/probe:ro" ubuntu:22.04 \
+            sh -c '. /etc/os-release; echo "KIT241 container $PRETTY_NAME; /usr/bin/zip: $(ls -l /usr/bin/zip 2>&1); /usr/bin/which: $(ls -l /usr/bin/which 2>&1)"; exec "/opt/msr installed/app/resources/runtime/bin/Rscript" --vanilla /probe/g0-probe.R /tmp/probe-out linux-bare-ubuntu-22.04 "$1"' sh "$PROBE_GATE" \
+            > "$RUNNER_TEMP/probe-container.log" 2>&1 || status=1
+          cat "$RUNNER_TEMP/probe-container.log"
+          for host in runner container; do
+            if ! grep -q "^$PROBE_GATE END " "$RUNNER_TEMP/probe-$host.log"; then echo "::error::instrument fault (VAL-54): no '$PROBE_GATE END' line from the $host probe"; status=1; fi
+          done
+          exit "$status"
+
       - name: "P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)"
         id: lifecycle
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         run: |
           # ubuntu-22.04: the kernel is older than 6.12. ubuntu-24.04: every host requirement holds except a user
           # D-Bus, which a desktop session has and the hosted runner lacks (runs 44055833237, 44059705566,
@@ -545,7 +606,7 @@ jobs:
       # putting R's original file back for the "before" rows, then the build's (the only difference between the two).
       - name: "Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)"
         id: hosts
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         timeout-minutes: 60
         run: |
           status=0
@@ -578,7 +639,7 @@ jobs:
 
       - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)"
         id: testtools
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.probe != 'true' }}
         run: |
           echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
           "$DEST/app/resources/runtime/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
@@ -999,9 +1060,96 @@ jobs:
           "APP=$($application.FullName)" >> $env:GITHUB_ENV
           "APP_FOLDER=$folder" >> $env:GITHUB_ENV
 
+      # KIT-241 G0/W1 (stage probe only): the commit check (P06), the closure count (P10), kit-241/g0-probe.R under the
+      # installed bundle's R in the shell's environment (windows-clean-run.ps1), then each archive the probe kept
+      # extracted with Expand-Archive and with Windows Explorer's engine (Shell.Application CopyHere), each member's
+      # SHA-256 compared with the file the writer wrote (P01). Log lines only; nothing uploaded.
+      - name: "KIT-241 probe: the enrichment download writer under the installed R (shell's environment); Windows' own extractors"
+        id: probe
+        if: ${{ !cancelled() && needs.plan.outputs.probe == 'true' && steps.install.outcome == 'success' }}
+        timeout-minutes: 30
+        env:
+          PROBE_COMMIT: ${{ inputs.probe_commit }}
+          PROBE_GATE: ${{ inputs.probe_gate }}
+        run: |
+          $gate = $env:PROBE_GATE
+          "KIT241 run branch head $(git rev-parse HEAD); commit under test $env:PROBE_COMMIT; gate $gate"
+          git diff --stat $env:PROBE_COMMIT HEAD
+          $line = Select-String -Path packaging/package-commit.sh -Pattern '^PKG_PATHS="(.*)"$' | Select-Object -First 1
+          $paths = @($line.Matches[0].Groups[1].Value -split ' ') + 'packaging'
+          git diff --quiet $env:PROBE_COMMIT HEAD -- @paths
+          if ($LASTEXITCODE -ne 0) { "val_product_tree_mismatch"; throw "val_product_tree_mismatch" }
+          "val_product_tree_ok"
+          "KIT241 package commit of the build: $env:MSR_PACKAGE_COMMIT"
+          $plan = Join-Path $env:OUT 'plan-packages.tsv'
+          if (Test-Path $plan) {
+            $rows = @(Get-Content $plan | Select-Object -Skip 1)
+            "KIT241 closure: $($rows.Count) packages (plan-packages.tsv); zip in the plan: $(@($rows | Where-Object { ($_ -split "`t")[0] -eq 'zip' }).Count)"
+          } else { "KIT241 closure: plan-packages.tsv absent" }
+          $out = Join-Path $env:RUNNER_TEMP 'probe'
+          $log = Join-Path $env:RUNNER_TEMP 'probe.log'
+          $savedPath = $env:PATH
+          [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script docs\qa\workflow-execution\kit\kit-241\g0-probe.R -NoBundleArgument -Arguments $out, windows-installed, $gate *> $log
+          $probeStatus = $LASTEXITCODE
+          $env:PATH = $savedPath
+          Get-Content -Encoding utf8 $log
+          $fault = $false
+          if (-not (Select-String -Path $log -Pattern "^$gate END " -Quiet)) { "::error::instrument fault (VAL-54): no '$gate END' line (probe exit $probeStatus)"; $fault = $true }
+          $cases = Join-Path $out 'cases.tsv'
+          if (Test-Path $cases) {
+            foreach ($row in @(Get-Content -Encoding utf8 $cases | Select-Object -Skip 1)) {
+              $f = $row -split "`t"
+              $case = $f[0]; $archive = $f[1]; $written = $f[2]; $members = @($f[3] -split ';')
+              foreach ($tool in 'expand-archive', 'explorer') {
+                $dest = Join-Path $out "$case-$tool"
+                Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
+                New-Item -ItemType Directory -Force $dest | Out-Null
+                $said = ''
+                try {
+                  if ($tool -eq 'expand-archive') {
+                    Expand-Archive -LiteralPath $archive -DestinationPath $dest -ErrorAction Stop
+                  } else {
+                    $job = Start-Job -ArgumentList $archive, $dest, $members -ScriptBlock {
+                      param($archive, $dest, $members)
+                      $shell = New-Object -ComObject Shell.Application
+                      $shell.NameSpace($dest).CopyHere($shell.NameSpace($archive).Items(), 1556)
+                      $clock = [Diagnostics.Stopwatch]::StartNew()
+                      while ($clock.Elapsed.TotalSeconds -lt 120) {
+                        if (@($members | Where-Object { -not (Test-Path -LiteralPath (Join-Path $dest $_)) }).Count -eq 0) { Start-Sleep -Seconds 2; return 'done' }
+                        Start-Sleep -Milliseconds 500
+                      }
+                      'timeout'
+                    }
+                    $finished = Wait-Job $job -Timeout 150
+                    $state = if ($finished) { (Receive-Job $job -ErrorAction Continue 2>&1 | Out-String).Trim() } else { 'job timeout' }
+                    Remove-Job $job -Force
+                    if ($state -notmatch 'done') { $said = "instrument fault (VAL-54): Explorer's engine did not finish: $state"; $fault = $true }
+                  }
+                  if (-not $said) {
+                    $got = @(Get-ChildItem -LiteralPath $dest -Recurse -File | ForEach-Object { $_.Name } | Sort-Object)
+                    $differ = @()
+                    foreach ($m in $members) {
+                      $a = Join-Path $dest $m; $b = Join-Path $written $m
+                      if (-not (Test-Path -LiteralPath $a)) { $differ += "$m missing" }
+                      elseif ((Get-FileHash -Algorithm SHA256 -LiteralPath $a).Hash -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $b).Hash) { $differ += "$m differs" }
+                    }
+                    $extra = @($got | Where-Object { $members -notcontains $_ })
+                    if ($extra.Count) { $differ += "extra: $($extra -join ', ')" }
+                    $said = if ($differ.Count) { "extracted, NOT equal: $($differ -join '; ')" } else { "extracted, members equal ($($got -join ', '))" }
+                  }
+                } catch {
+                  $said = "error: $($_.Exception.Message)"
+                }
+                "KIT241`t$gate`twindows-installed`t$case.$tool`t$said"
+              }
+            }
+          } else { "KIT241`t$gate`twindows-installed`tcases.tsv`tabsent" }
+          if ($fault) { throw "instrument fault (VAL-54)" }
+
       - name: "P3 lifecycle: the installed application (network cut for its programs)"
         id: lifecycle
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         run: |
           Set-NetFirewallProfile -All -Enabled True
           $programs = Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe
@@ -1094,7 +1242,7 @@ jobs:
       # figures with its message (RAISED lines).
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' }}
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' && needs.plan.outputs.parity != 'true' && needs.plan.outputs.probe != 'true' }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
