@@ -23,7 +23,7 @@ An updated LipidomicsAssayData object.
 \description{
 Filters lipids in \emph{all} assays of a LipidomicsAssayData object.
 It removes lipids that have intensities below a certain percentile threshold
-in a proportion of samples exceeding a defined cutoff. The threshold is calculated
+in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
 independently for each assay.
 }
 \section{Functions}{

@@ -1,0 +1,26 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-integration-removed-factors.R	368	77	2	3	failed	489	4	0	3	failed	new-failure	fixed: KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input; fixed: KIT-184 K14: covariates change no count; run_complete and the factor's share by hand; fixed: KIT-184 K15: the test of record is asked with the samples left after one per removed factor; fixed: KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap; fixed: KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key; fixed: KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check; fixed: KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case; fixed: KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors; fixed: KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none; fixed: KIT-184: no placeholder of the simulation's numbers is left in a shipped text; new-failure: KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference; counts: KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference (passed 7 -> 3, skipped 0 -> 0); counts: KIT-184 K10: the record and its Methods name each entry's form; the inputs sheet names the removed factors (passed 22 -> 40, skipped 0 -> 0); counts: KIT-184 K11: a result's sentences: the form's label, the note for the model's input, counts, share, overlap (passed 41 -> 58, skipped 0 -> 0); counts: KIT-184 K11: the tab: the control is off on either model; switched on, the adjusted form has its own key (passed 23 -> 26, skipped 0 -> 0); counts: KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none (passed 14 -> 21, skipped 0 -> 0); counts: KIT-184 K14: covariates change no count; run_complete and the factor's share by hand (passed 15 -> 17, skipped 0 -> 0); counts: KIT-184 K15: the test of record is asked with the samples left after one per removed factor (passed 6 -> 10, skipped 0 -> 0); counts: KIT-184 K7 (ii), K16: the four combinations of the setting; camera_floor; the permutation; the corpus check (passed 80 -> 96, skipped 0 -> 0); counts: KIT-184 K8 (a), (b), (g): an input without usable factors is refused in the words for its case (passed 20 -> 50, skipped 0 -> 0); counts: KIT-184 K8: too few samples for the design, a factor that is a combination of the removed factors, an approximate input (passed 5 -> 31, skipped 0 -> 0); counts: KIT-184: no placeholder of the simulation's numbers is left in a shipped text (passed 6 -> 8, skipped 0 -> 0)	
+test-workflow-integration-input.R	241	0	0	0	ok	241	0	0	0	ok	same		
+test-integration-input-lipid-metab.R	207	0	0	0	ok	207	0	0	0	ok	same		
+test-integration-input-transcriptomics.R	66	3	0	0	failed	66	3	0	0	failed	same		
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-enrichment-tests.R	181	0	0	2	ok	181	0	0	2	ok	same		
+test-integration-enrichment-options.R	271	0	0	0	ok	271	0	0	0	ok	same		
+test-integration-record.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-integration-gui.R	397	0	0	0	ok	397	0	0	0	ok	same		
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-integration-workbook.R	53	0	0	0	ok	53	0	0	0	ok	same		
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-enrichment-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-integration-corpus.R	111	0	0	0	ok	111	0	0	0	ok	same		
+test-integration-feature-selection.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-integration-model.R	263	0	0	0	ok	263	0	0	0	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		
+test-integration-outputs-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-partitioned-alignment.R	253	0	0	0	ok	253	0	0	0	ok	same		
+test-integration-record-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-results-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-sample-match.R	76	0	0	0	ok	76	0	0	0	ok	same		
+test-kit129-run-path.R	687	6	0	1	failed	687	6	0	1	failed	same		
+test-kit172-downstream.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-workflow-analysis-record.R	307	0	0	0	ok	307	0	0	0	ok	same		

@@ -1,0 +1,10 @@
+placeholder	value	from
+R3	5.4 %	cell A, proteomics, F_ind, C5, composition declared
+I3	4.5 to 6.4 %	cell A, proteomics, F_ind, C5, composition declared
+R5	29.6 %	cell B, transcriptomics, F_main, C5
+I5	27.8 to 31.3 %	cell B, transcriptomics, F_main, C5
+R6	11.2 %	cell B, proteomics, F_main, C5, composition declared
+I6	9.8 to 12.6 %	cell B, proteomics, F_main, C5, composition declared
+R5m	13.3 %	cell B, proteomics, F_main, C5, composition declared
+PF	13 to 32 %	arm 3, camera_floor, sets of 10, main factor, transcriptomics and proteomics, cells A and B
+PC	30 to 48 %	arm 3, camera, sets of 10, main factor, transcriptomics and proteomics, cells A and B
