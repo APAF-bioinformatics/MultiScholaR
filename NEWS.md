@@ -82,6 +82,10 @@
 
 ### Fixes
 
+ * Differential abundance (all omics that compute q-values): when Storey's q-values cannot be computed for a comparison and
+   Benjamini-Hochberg values are used, the notice on the tab (now also for lipidomics and metabolomics, which showed none)
+   names the comparison, and the report and the analysis record say these values are more conservative than Storey's
+   q-values and not on the same scale as the other comparisons (KIT-268). No q-value, p-value or significance call changes.
  * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
    greyed out and says a step is still running while another step of the same analysis runs, for example the
    quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those
