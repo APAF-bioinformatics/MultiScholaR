@@ -1,7 +1,6 @@
 # KIT-247 outcome: gate G0 (observation of the base)
 
-**State: stopped at G0-4 (the browser lane): after the first run and two VAL-54 instrument reruns the lane never reached the design tab, and the cause is not established as an instrument defect, so by the brief it is treated as a result and reported.** G0-1, G0-2 and G0-3 are judged. R1 and all package code wait for the owner's OD-1, OD-2 and
-OD-4 (stop rule 6). E-5 (should the Summary's Save refuse when the DA's contrasts differ from the bus's?) stays open
+**State: G0 judged.** G0-1 to G0-3 as below; G0-4 ended in an application observation (the browser normalisation fails at a QC figure), stop rule 2 recorded as not decided by observation (coordinator's ruling). R1 and the fix follow (the fix was drafted before R1's verdict). The owner decided OD-1 to OD-4 on 2026-11-25 (VAL-239). E-5 (should the Summary's Save refuse when the DA's contrasts differ from the bus's?) stays open
 for the coordinator. No package code was changed: `git diff --name-only 16112917 <each commit below>` lists only this
 folder.
 
@@ -51,6 +50,7 @@ folder.
 | G0-3 trx probe rerun (VAL-54, 1 of 1) | 45598375255 | no error; the four trx group keys still `<absent>`: not observed (rerun budget spent) |
 | G0-4 browser | 45594085728 | instrument defect, nothing observed |
 | G0-4 browser rerun 1 (VAL-54) | 45597423706 | no observation: after Run the head was `normalized` (status pending); Skip then had no effect for 300 s (head stayed `normalized`, no notification) |
+| G0-4 browser rerun 3 (VAL-54, last; KIT-233's capture and signal, logs saved) | 45604291093 | **application observation**: the normalisation fails in the browser with an error notification (below) |
 | G0-4 browser rerun 2 (VAL-54) | 45600644799 | no observation: the head reached `normalized`, but the run's completion notice ('Normalization completed') never appeared within 300 s |
 
 ### What the base does (OBSERVED, every route run)
@@ -129,7 +129,24 @@ folder.
   status stays pending. In process (G0-1, testServer) the same lane completes and shows "Normalization completed (RUV
   skipped)!". The browser's application log was not captured, so whether the normalisation never finishes in the
   managed browser session (an application observation, as KIT-233 A5 saw the state committed about 80 s before the
-  step ended) or the driver misses its end (an instrument defect) is not established. Not sent: rerun 3.
+  step ended) or the driver misses its end (an instrument defect) was not established by rerun 2.
+- **Rerun 3 of 3 (eedb59d0; coordinator's ruling) settles it: an APPLICATION OBSERVATION, not an instrument defect.**
+  The driver kept every notification shown (as KIT-233's journey driver does, `journey.R:671-687`) and saved the
+  application's log (`g04d-45604291093/applog-excerpt.txt`, `g0-g04-notes.tsv`). On entering Normalisation the
+  pre-normalisation QC fails ("Error generating pre-normalization QC: Problem while converting geom to grob."), and
+  'Run Normalization' then fails at the post-normalisation Pearson correlation plot with the error notification
+  "Error in normalization: Problem while converting geom to grob." (log: "Error in normalization workflow: Problem
+  while converting geom to grob.", after "[pearsonCorForSamplePairs] Final pair count: 20" on 400 proteins x 10
+  samples). `normalized` is committed before the figures, so the head moves while the step fails; no completion notice
+  follows, so Skip and the stepper never advance. OBSERVED on v0.9-staging 16112917, MaxQuant label-free e2e fixture,
+  in the application launched by shinytest2 (`run_app(test_mode = TRUE)`, in process). The same lane under testServer
+  (G0-1) completes, its figures not being drawn there. KIT-233's run L (45577106977, packaged entry, plain process
+  launcher, DIA-NN 8-run fixture) completed this step (S6.1, 111 s, "Normalisation ... completed"): a different route,
+  fixture and launch, so it neither confirms nor contradicts this. Not traced: which geom fails and why only here.
+  For the coordinator to file (not this ticket's).
+- Driver comparison (ruling): KIT-233 waits for the step's notification from a kept list with a long hard wait and
+  launches the packaged entry with the plain process launcher; this driver kept AppDriver's `run_app` launch and took
+  KIT-233's notification capture and completion signal.
 
 ## Stop rules
 
@@ -137,7 +154,7 @@ folder.
   route that runs it (label-free, lipid, metab, trx; limpa refuses); path 2 returned the previous design's table on
   every route, and the next run's source carried the old group where observed (label-free, limpa, lipid, metab;
   trx: the groups were not observed; Reset returned `trx_reset`, the run read it, path 1 read the new `trx_raw_data_s4`).
-- **2** (the browser cannot reach Save Design after a normalisation): NOT DECIDED. The browser lane never completed a normalisation, so it never reached the design tab; this neither shows nor rules out that Save Design is reachable. By reading (2.1) nothing disables the tab or the button.
+- **2**: not decided by observation; by reading nothing disables the tab or the button (coordinator's ruling). The browser lane could not complete a normalisation (the observation above); the lanes have shown the re-save path programmatically on every omic.
 - **5** (an unchanged re-save gives different table identities): not triggered on any omic; item 1 compares the
   store's identities as written.
 

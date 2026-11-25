@@ -1,0 +1,8 @@
+key	value
+not_cran	true
+browser_dependencies	TRUE
+chrome	/usr/bin/google-chrome
+evidence_saved_at	failure
+error	Timed out waiting for JavaScript script to return `true` ℹ `timeout`: 600000 ℹ `script`: (window.__k247 ? window.__k247.notes : []).some(function(n){return new RegExp("Normali[sz]ation (and RUV correction )?completed",'i').test(n.text);})
+outcome	error
+seconds	697.4

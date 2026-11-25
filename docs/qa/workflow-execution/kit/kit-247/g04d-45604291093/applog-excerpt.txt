@@ -1,0 +1,19 @@
+info	Setting inputs: 'proteomics_workflow-normalization-ruv_mode'
+stderr	=== NORMALIZATION TAB CLICKED ===
+stderr	*** AUTO-TRIGGERING PRE-NORMALIZATION QC (chunk 24) ***
+stderr	=== GENERATING PRE-NORMALIZATION QC PLOTS ===
+stderr	*** PRE-NORM QC: Generating Pearson correlation plot (Step 4/4) ***
+stderr	   [pearsonCorForSamplePairs] Matrix dimensions: 400 proteins x 10 samples
+stderr	   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+stderr	*** PEARSON: No Pool/QC groups detected to exclude ***
+stderr	   [pearsonCorForSamplePairs] Final pair count: 20
+stderr	*** ERROR generating pre-normalization QC: Problem while converting geom to grob.
+stderr	=== GENERATING POST-NORMALIZATION QC PLOTS ===
+stderr	*** POST-NORM QC: Generating Pearson correlation plot ***
+stderr	   [pearsonCorForSamplePairs] Matrix dimensions: 400 proteins x 10 samples
+stderr	   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+stderr	*** PEARSON: No Pool/QC groups detected to exclude ***
+stderr	   [pearsonCorForSamplePairs] Final pair count: 20
+stderr	Error in normalization workflow: Problem while converting geom to grob.
+stdout	[1] "Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = Run, Precursor.Id, Protein.Ids, Stripped.Sequence, Modified.Sequence, Precursor.Charge, Precursor.Quantity, Precursor.Normalised"
+stdout	[1] "normalisation_method = cyclicloess"

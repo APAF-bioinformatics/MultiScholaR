@@ -6,3 +6,4 @@ run_id	commit	purpose	minutes	result
 45597423706	19caa137	G0-4 VAL-54 rerun 1 of 3 (waits by head state, export notice)	18.2	no observation: Skip had no effect for 300 s, head stayed normalized
 45598375255	dbef1d85	G0-3 trx probe VAL-54 rerun 1 of 1 (design read as its component)	11.7	no error; trx moved-sample groups still absent: not observed
 45600644799	633feb90	G0-4 VAL-54 rerun 2 of 3 (Skip waits for the completion notice)	18.7	no observation: completion notice never shown in 300 s; stopped (cause not established)
+45604291093	eedb59d0	G0-4 VAL-54 rerun 3 of 3 (KIT-233 capture and signal, logs saved)	24.0	application observation: normalisation fails at the Pearson QC figure ('Problem while converting geom to grob')

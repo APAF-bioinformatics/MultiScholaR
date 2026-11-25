@@ -1,0 +1,19 @@
+t	text	cls
+1795606704828	×Sample names sanitized for R compatibility.	shiny-notification shiny-notification-message
+1795606705828	×Downloaded default config.ini to scripts directory.	shiny-notification shiny-notification-message
+1795606705828	×Data import successful!	shiny-notification shiny-notification-message
+1795606713429	×Design saved successfully. You can close this builder.	shiny-notification shiny-notification-message
+1795606715028	×UniProt annotations retrieved successfully.	shiny-notification shiny-notification-message
+1795606715028	×Design matrix and contrasts saved successfully!	shiny-notification shiny-notification-message
+1795606717628	×Applying protein accession cleanup...	shiny-notification
+1795606727439	×Protein accession cleanup completed	shiny-notification shiny-notification-message
+1795606729828	×Applying protein intensity filter...	shiny-notification
+1795606741228	×Protein intensity filter applied successfully	shiny-notification shiny-notification-message
+1795606742428	×Removing duplicate proteins...	shiny-notification
+1795606750228	×Duplicate protein removal completed successfully	shiny-notification shiny-notification-message
+1795606751628	×Applying protein replicate filter...	shiny-notification
+1795606760437	×Protein replicate filter applied successfully. Pipeline complete!	shiny-notification shiny-notification-message
+1795606766229	×Generating Pearson correlation plot... Calculating pairwise correlations...	shiny-notification
+1795606766431	×Error generating pre-normalization QC: Problem while converting geom to grob.	shiny-notification shiny-notification-error
+1795606774229	×Generating Pearson correlation plot... Calculating pairwise correlations...	shiny-notification
+1795606774428	×Error in normalization: Problem while converting geom to grob.	shiny-notification shiny-notification-error
