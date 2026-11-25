@@ -165,7 +165,7 @@ kit254Tab <- function(fx, code) {
 
 #' The owner's record (as Save writes it) replayed on a copy of the store cut to the design state; the replay's error
 #' or value, and the replayed head with its design's samples (read from the replay store after the replay closed it).
-kit254Replay <- function(fx, root, assays = "LCMS_Pos") {
+kit254Replay <- function(fx, root) {
     owner <- kit254Owner(fx)
     dir.create(root, recursive = TRUE, showWarnings = FALSE)
     json <- file.path(root, "analysis_record.json")
@@ -180,8 +180,12 @@ kit254Replay <- function(fx, root, assays = "LCMS_Pos") {
     store_root <- dirname(dirname(list.files(fx$source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
     copy_root <- file.path(copy, substring(store_root, nchar(fx$source_dir) + 2L))
     prepared <- harness$kitPrepareReplayProject(copy_root, c("initial", paste0(fx$prefix, "_raw_data_s4")), api)
-    inputs <- stats::setNames(c(file.path(fx$source_dir, "import_sources", paste0(assays, "_export.txt")),
-        file.path(fx$source_dir, "design_matrix.tab")), c(paste0(fx$binding$design_input_prefix, seq_along(assays)), "design_file"))
+    # Each assay input matched to the record's role by its SHA-256 (the roles' order is the record's, not the assays').
+    sources <- list.files(file.path(fx$source_dir, "import_sources"), full.names = TRUE)
+    digests <- vapply(sources, function(path) digest::digest(file = path, algo = "sha256"), character(1))
+    roles <- Filter(function(input) startsWith(input$role, fx$binding$design_input_prefix), record$inputs)
+    inputs <- c(stats::setNames(unname(sources[match(vapply(roles, function(input) input$sha256, ""), digests)]),
+        vapply(roles, function(input) input$role, "")), design_file = file.path(fx$source_dir, "design_matrix.tab"))
     scratch <- file.path(root, "scratch")
     dir.create(scratch)
     value <- NULL
@@ -363,10 +367,14 @@ kit254Configs <- list(
     metab = list(class = "metab", ruv = NULL),
     lipid_ruv = list(class = "lipid", ruv = kit172LegacyRuv("manual")))
 
-kit254T <- list(lipid = c(hi = 0.95, lo = 0.9), metab = c(hi = 0.95, lo = 0.9), lipid_ruv = c(hi = 0.99, lo = 0.95))
+# Lipid with RUV (AUDIT-KIT-254-impl I01): after KIT-224 (staging c4505c7f) G0's rule finds no listed threshold that
+# removes some samples and keeps two per group (G0b, run 45628705535: none up to 0.95, ten at 0.99), so stop rule 2
+# applies: t_hi 0.5, t_lo 0.3, nothing removed; E7 keeps its state and record assertions, its sample difference is not
+# shown on this fixture (was 0.99 / 0.95 at e0747fc1, G0 45599722106: B_4).
+kit254T <- list(lipid = c(hi = 0.95, lo = 0.9), metab = c(hi = 0.95, lo = 0.9), lipid_ruv = c(hi = 0.5, lo = 0.3))
 # G0's design samples (OBSERVED, both omics in process; C3 and II0): Apply(t_hi) alone removes A_5 (B_4 with RUV);
 # Apply(t_lo) alone removes none.
-kit254HiRuns <- list(lipid = setdiff(kit254All, "A_5"), metab = setdiff(kit254All, "A_5"), lipid_ruv = setdiff(kit254All, "B_4"))
+kit254HiRuns <- list(lipid = setdiff(kit254All, "A_5"), metab = setdiff(kit254All, "A_5"), lipid_ruv = kit254All)
 kit254LoRuns <- list(lipid = kit254All, metab = kit254All, lipid_ruv = kit254All)
 
 # ------------------------------------------------------------------------------------------------
@@ -882,7 +890,7 @@ for (class in c("lipid", "metab")) {
         }, .package = "MultiScholaR")
         kit254Scripted(fx, list(0.5, "skip"))
         expect_identical(kit254Removed(kit254Runs(fx)), "A_1", info = paste("E17 precondition", class))
-        out <- kit254Replay(fx, file.path(root, "replay"), assays = c("LCMS_Pos", "LCMS_Neg"))
+        out <- kit254Replay(fx, file.path(root, "replay"))
         statement <- out$value$correlation_statement
         kit254Line("E17", class, paste("statement", format(statement %||% "<none>")))
         expect_null(out$error, info = paste("E17 replay precondition", class))
