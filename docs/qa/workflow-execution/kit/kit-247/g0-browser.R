@@ -111,6 +111,11 @@ k247Main <- function() {
     e2e_set_input_and_idle(driver, e2e_input_id("proteomics", "norm", "ruv_mode"), "skip", timeout = 60000L)
     e2e_click_testid(driver, "prot-norm-run", timeout = 60000L)
     k247WaitHead(c("normalized", "ruv_corrected"), "norm_run")
+    # VAL-54 instrument fix 2 (rerun 45597423706: the head was 'normalized' while Skip, pressed then, did nothing for
+    # 300 s; the state is committed before the step ends, KIT-233 A5): Skip waits for the run's own completion notice.
+    e2e_wait_for_js(driver, paste0("Array.from(document.querySelectorAll('.shiny-notification')).some(function(n){",
+        "return (n.textContent||'').indexOf('Normalization completed')!==-1;})"), timeout = 300000L)
+    e2e_wait_for_idle(driver, timeout = 120000L)
     digest <- e2e_state_digest(driver, timeout = 60000L)
     k247Put("norm_run.status", k247Status(digest))
     e2e_set_input_and_idle(driver, e2e_input_id("proteomics", "norm", "norm_qc_tabs"), "Correlation Filtering", timeout = 60000L)

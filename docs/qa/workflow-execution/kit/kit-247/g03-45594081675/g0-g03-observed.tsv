@@ -1,0 +1,811 @@
+lane	case	key	value
+lipid_canonical	main	before.head	lipid_correlation_filtered
+lipid_canonical	main	before.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	main	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	before.integration_files	<none>
+lipid_canonical	main	before.design_group_moved	KO
+lipid_canonical	main	moved_runs	KO_3
+lipid_canonical	main	prefix_seconds	51.8
+lipid_canonical	main	resave.head	lipid_raw_data_s4
+lipid_canonical	main	resave.head_label	resave:lipid_raw_data_s4
+lipid_canonical	main	resave.head_group_moved	WT
+lipid_canonical	main	resave.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	main	resave.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	main	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+lipid_canonical	main	resave.modals	2
+lipid_canonical	main	resave.head_is_design_state	TRUE
+lipid_canonical	main	resave.history_unchanged	TRUE
+lipid_canonical	main	resave.later_entities_unchanged	TRUE
+lipid_canonical	main	resave.design_entity_changed	TRUE
+lipid_canonical	main	resave.status_unchanged_except_design	TRUE
+lipid_canonical	main	resave.components_identical	lipid_data=TRUE | design_matrix=FALSE
+lipid_canonical	main	resave.components_all_identical	FALSE
+lipid_canonical	main	resave.design_group_moved	WT
+lipid_canonical	main	resave.contrast_count	1
+lipid_canonical	main	resave.contrasts	groupKO-groupWT
+lipid_canonical	main	reset.head	lipid_reset
+lipid_canonical	main	reset.head_label	reset:lipid_reset
+lipid_canonical	main	reset.head_group_moved	KO
+lipid_canonical	main	reset.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	reset.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	reset.notes	[message] Reset to pre-normalization state
+lipid_canonical	main	reset.modals	2
+lipid_canonical	main	reset.recorded_start_label	qc_finalize:lipid_qc_complete
+lipid_canonical	main	run.head	lipid_normalized
+lipid_canonical	main	run.head_label	run:lipid_normalized
+lipid_canonical	main	run.head_group_moved	KO
+lipid_canonical	main	run.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	run.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > correlation:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	run.notes	[message] Normalization pipeline complete!
+lipid_canonical	main	run.modals	2
+lipid_canonical	main	run.source_from	omic_run
+lipid_canonical	main	run.source_label	reset:lipid_reset
+lipid_canonical	main	run.source_group_moved	KO
+lipid_canonical	main	run.notice_kit182	FALSE
+lipid_canonical	main	run.recorded_start_label	qc_finalize:lipid_qc_complete
+lipid_canonical	main	run.prereq_warning	FALSE
+lipid_canonical	main	run.states_between_design_and_run	3
+lipid_canonical	main	corr.head	lipid_correlation_filtered
+lipid_canonical	main	corr.head_label	corr:lipid_correlation_filtered
+lipid_canonical	main	corr.head_group_moved	KO
+lipid_canonical	main	corr.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	corr.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > corr:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	corr.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	corr.notes	[default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+lipid_canonical	main	corr.modals	2
+lipid_canonical	main	export.head	lipid_correlation_filtered
+lipid_canonical	main	export.head_label	corr:lipid_correlation_filtered
+lipid_canonical	main	export.head_group_moved	KO
+lipid_canonical	main	export.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	export.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > corr:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	export.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	export.notes	[message] Session data exported successfully! Saved as: lipid_filtered_session_data_<TIME>.rds See summary file for details.
+lipid_canonical	main	export.modals	2
+lipid_canonical	main	daload.head	lipid_correlation_filtered
+lipid_canonical	main	daload.head_label	corr:lipid_correlation_filtered
+lipid_canonical	main	daload.head_group_moved	KO
+lipid_canonical	main	daload.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	daload.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > corr:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	daload.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	main	daload.notes	[default] Loading filtered session... | [message] Session loaded successfully!
+lipid_canonical	main	daload.modals	2
+lipid_canonical	main	da.head	lipid_correlation_filtered
+lipid_canonical	main	da.head_label	corr:lipid_correlation_filtered
+lipid_canonical	main	da.head_group_moved	KO
+lipid_canonical	main	da.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	da.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > corr:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+lipid_canonical	main	da.notes	[default] Running differential expression analysis... | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+lipid_canonical	main	da.modals	2
+lipid_canonical	main	da.result_changed	TRUE
+lipid_canonical	main	da.source_label	corr:lipid_correlation_filtered
+lipid_canonical	main	da.group_moved	KO
+lipid_canonical	main	record.head	lipid_correlation_filtered
+lipid_canonical	main	record.head_label	corr:lipid_correlation_filtered
+lipid_canonical	main	record.head_group_moved	KO
+lipid_canonical	main	record.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered > lipid_reset
+lipid_canonical	main	record.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > corr:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+lipid_canonical	main	record.notes	<none>
+lipid_canonical	main	record.modals	2
+lipid_canonical	main	record.steps	initial=import > lipid_raw_data_s4=design_builder > lipid_intensity_filtered=lipid_intensity_filter > lipid_duplicates_resolved=lipid_duplicate_resolution > lipid_qc_complete=lipid_qc_finalize > lipid_itsd_norm=lipid_itsd_normalisation > lipid_log2=lipid_log2 > lipid_normalized=lipid_between_sample_normalisation > lipid_correlation_filtered=lipid_pearson_selection > lipid_reset=lipid_reset
+lipid_canonical	main	record.step_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > corr:lipid_correlation_filtered > reset:lipid_reset
+lipid_canonical	main	record.qc_steps_before_run	3
+lipid_canonical	main	record.design_group_moved	KO
+lipid_canonical	main	record.design_builder_label	resave:lipid_raw_data_s4
+lipid_canonical	main	seconds	75.7
+lipid_canonical	e	before.head	lipid_correlation_filtered
+lipid_canonical	e	before.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	e	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	e	before.integration_files	<none>
+lipid_canonical	e	before.design_group_moved	KO
+lipid_canonical	e	moved_runs	KO_3
+lipid_canonical	e	prefix_seconds	48.4
+lipid_canonical	e	resave.head	lipid_raw_data_s4
+lipid_canonical	e	resave.head_label	resave:lipid_raw_data_s4
+lipid_canonical	e	resave.head_group_moved	WT
+lipid_canonical	e	resave.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	e	resave.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	e	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	e	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+lipid_canonical	e	resave.modals	2
+lipid_canonical	e	resave.head_is_design_state	TRUE
+lipid_canonical	e	resave.history_unchanged	TRUE
+lipid_canonical	e	resave.later_entities_unchanged	TRUE
+lipid_canonical	e	resave.design_entity_changed	TRUE
+lipid_canonical	e	resave.status_unchanged_except_design	TRUE
+lipid_canonical	e	resave.components_identical	lipid_data=TRUE | design_matrix=FALSE
+lipid_canonical	e	resave.components_all_identical	FALSE
+lipid_canonical	e	resave.design_group_moved	WT
+lipid_canonical	e	resave.contrast_count	1
+lipid_canonical	e	resave.contrasts	groupKO-groupWT
+lipid_canonical	e	run.head	lipid_normalized
+lipid_canonical	e	run.head_label	run:lipid_normalized
+lipid_canonical	e	run.head_group_moved	WT
+lipid_canonical	e	run.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	e	run.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	e	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	e	run.notes	[message] Normalization pipeline complete!
+lipid_canonical	e	run.modals	2
+lipid_canonical	e	run.source_from	omic_run
+lipid_canonical	e	run.source_label	resave:lipid_raw_data_s4
+lipid_canonical	e	run.source_group_moved	WT
+lipid_canonical	e	run.notice_kit182	FALSE
+lipid_canonical	e	run.recorded_start_label	qc_finalize:lipid_qc_complete
+lipid_canonical	e	run.prereq_warning	FALSE
+lipid_canonical	e	run.states_between_design_and_run	3
+lipid_canonical	e	record.head	lipid_normalized
+lipid_canonical	e	record.head_label	run:lipid_normalized
+lipid_canonical	e	record.head_group_moved	WT
+lipid_canonical	e	record.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	e	record.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	e	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	e	record.notes	<none>
+lipid_canonical	e	record.modals	2
+lipid_canonical	e	record.steps	initial=import > lipid_raw_data_s4=design_builder > lipid_intensity_filtered=lipid_intensity_filter > lipid_duplicates_resolved=lipid_duplicate_resolution > lipid_qc_complete=lipid_qc_finalize > lipid_itsd_norm=lipid_itsd_normalisation > lipid_log2=lipid_log2 > lipid_normalized=lipid_between_sample_normalisation > lipid_correlation_filtered=lipid_pearson_selection
+lipid_canonical	e	record.step_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > run:lipid_itsd_norm > run:lipid_log2 > run:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	e	record.qc_steps_before_run	3
+lipid_canonical	e	record.design_group_moved	KO
+lipid_canonical	e	record.design_builder_label	resave:lipid_raw_data_s4
+lipid_canonical	e	seconds	74.7
+lipid_canonical	f0	before.head	lipid_correlation_filtered
+lipid_canonical	f0	before.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	f0	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	f0	before.integration_files	<none>
+lipid_canonical	f0	before.design_group_moved	KO
+lipid_canonical	f0	moved_runs	KO_3
+lipid_canonical	f0	prefix_seconds	48.2
+lipid_canonical	f0	resave.head	lipid_raw_data_s4
+lipid_canonical	f0	resave.head_label	resave:lipid_raw_data_s4
+lipid_canonical	f0	resave.head_group_moved	WT
+lipid_canonical	f0	resave.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	f0	resave.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	f0	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	f0	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+lipid_canonical	f0	resave.modals	2
+lipid_canonical	f0	resave.head_is_design_state	TRUE
+lipid_canonical	f0	resave.history_unchanged	TRUE
+lipid_canonical	f0	resave.later_entities_unchanged	TRUE
+lipid_canonical	f0	resave.design_entity_changed	TRUE
+lipid_canonical	f0	resave.status_unchanged_except_design	TRUE
+lipid_canonical	f0	resave.components_identical	lipid_data=TRUE | design_matrix=FALSE
+lipid_canonical	f0	resave.components_all_identical	FALSE
+lipid_canonical	f0	resave.design_group_moved	WT
+lipid_canonical	f0	resave.contrast_count	1
+lipid_canonical	f0	resave.contrasts	groupKO-groupWT
+lipid_canonical	f0	summary.head	lipid_raw_data_s4
+lipid_canonical	f0	summary.head_label	resave:lipid_raw_data_s4
+lipid_canonical	f0	summary.head_group_moved	WT
+lipid_canonical	f0	summary.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	f0	summary.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	f0	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	f0	summary.notes	[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again.
+lipid_canonical	f0	summary.modals	2
+lipid_canonical	f0	summary.refused	TRUE
+lipid_canonical	f0	summary.state_used	<no integration export started>
+lipid_canonical	f0	summary.integration_files	<none>
+lipid_canonical	f0	seconds	50.6
+lipid_canonical	f1	before.head	lipid_correlation_filtered
+lipid_canonical	f1	before.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	f1	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+lipid_canonical	f1	before.integration_files	lipidomics_lipid_canonical_final_s4.RDS, lipidomics/features_lipidomics_LCMS_Neg.parquet, lipidomics/features_lipidomics_LCMS_Pos.parquet, lipidomics/integration_input.json, lipidomics/matrix_lipidomics_LCMS_Neg.parquet, lipidomics/matrix_lipidomics_LCMS_Pos.parquet, lipidomics/samples.parquet
+lipid_canonical	f1	before.design_group_moved	KO
+lipid_canonical	f1	moved_runs	KO_3
+lipid_canonical	f1	prefix_seconds	57.8
+lipid_canonical	f1	resave.head	lipid_raw_data_s4
+lipid_canonical	f1	resave.head_label	resave:lipid_raw_data_s4
+lipid_canonical	f1	resave.head_group_moved	WT
+lipid_canonical	f1	resave.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	f1	resave.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	f1	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=pending
+lipid_canonical	f1	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+lipid_canonical	f1	resave.modals	2
+lipid_canonical	f1	resave.head_is_design_state	TRUE
+lipid_canonical	f1	resave.history_unchanged	TRUE
+lipid_canonical	f1	resave.later_entities_unchanged	TRUE
+lipid_canonical	f1	resave.design_entity_changed	TRUE
+lipid_canonical	f1	resave.status_unchanged_except_design	FALSE
+lipid_canonical	f1	resave.components_identical	lipid_data=TRUE | design_matrix=FALSE
+lipid_canonical	f1	resave.components_all_identical	FALSE
+lipid_canonical	f1	resave.design_group_moved	WT
+lipid_canonical	f1	resave.contrast_count	1
+lipid_canonical	f1	resave.contrasts	groupKO-groupWT
+lipid_canonical	f1	summary.head	lipid_raw_data_s4
+lipid_canonical	f1	summary.head_label	resave:lipid_raw_data_s4
+lipid_canonical	f1	summary.head_group_moved	WT
+lipid_canonical	f1	summary.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	f1	summary.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	f1	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=pending
+lipid_canonical	f1	summary.notes	[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again.
+lipid_canonical	f1	summary.modals	2
+lipid_canonical	f1	summary.refused	TRUE
+lipid_canonical	f1	summary.state_used	<no integration export started>
+lipid_canonical	f1	summary.integration_files	lipidomics_lipid_canonical_final_s4.RDS
+lipid_canonical	f1	seconds	60.4
+lipid_canonical	g	before.head	lipid_correlation_filtered
+lipid_canonical	g	before.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	g	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	g	before.integration_files	<none>
+lipid_canonical	g	before.design_group_moved	KO
+lipid_canonical	g	moved_runs	KO_3
+lipid_canonical	g	prefix_seconds	47.8
+lipid_canonical	g	resave.head	lipid_raw_data_s4
+lipid_canonical	g	resave.head_label	resave:lipid_raw_data_s4
+lipid_canonical	g	resave.head_group_moved	KO
+lipid_canonical	g	resave.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	g	resave.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	g	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	g	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+lipid_canonical	g	resave.modals	2
+lipid_canonical	g	resave.head_is_design_state	TRUE
+lipid_canonical	g	resave.history_unchanged	TRUE
+lipid_canonical	g	resave.later_entities_unchanged	TRUE
+lipid_canonical	g	resave.design_entity_changed	TRUE
+lipid_canonical	g	resave.status_unchanged_except_design	TRUE
+lipid_canonical	g	resave.components_identical	lipid_data=TRUE | design_matrix=TRUE
+lipid_canonical	g	resave.components_all_identical	TRUE
+lipid_canonical	g	resave.design_group_moved	KO
+lipid_canonical	g	resave.contrast_count	2
+lipid_canonical	g	resave.contrasts	groupKO-groupWT | groupWT-groupKO
+lipid_canonical	g	seconds	49.6
+lipid_canonical	h	before.head	lipid_correlation_filtered
+lipid_canonical	h	before.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	h	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	h	before.integration_files	<none>
+lipid_canonical	h	before.design_group_moved	KO
+lipid_canonical	h	moved_runs	KO_3
+lipid_canonical	h	prefix_seconds	48.8
+lipid_canonical	h	resave.head	lipid_raw_data_s4
+lipid_canonical	h	resave.head_label	resave:lipid_raw_data_s4
+lipid_canonical	h	resave.head_group_moved	KO
+lipid_canonical	h	resave.history	initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_correlation_filtered
+lipid_canonical	h	resave.history_labels	import:initial > resave:lipid_raw_data_s4 > qc_intensity:lipid_intensity_filtered > qc_duplicates:lipid_duplicates_resolved > qc_finalize:lipid_qc_complete > norm:lipid_itsd_norm > norm:lipid_log2 > norm:lipid_normalized > correlation:lipid_correlation_filtered
+lipid_canonical	h	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+lipid_canonical	h	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+lipid_canonical	h	resave.modals	2
+lipid_canonical	h	resave.head_is_design_state	TRUE
+lipid_canonical	h	resave.history_unchanged	TRUE
+lipid_canonical	h	resave.later_entities_unchanged	TRUE
+lipid_canonical	h	resave.design_entity_changed	TRUE
+lipid_canonical	h	resave.status_unchanged_except_design	TRUE
+lipid_canonical	h	resave.components_identical	lipid_data=TRUE | design_matrix=TRUE
+lipid_canonical	h	resave.components_all_identical	TRUE
+lipid_canonical	h	resave.design_group_moved	KO
+lipid_canonical	h	resave.contrast_count	1
+lipid_canonical	h	resave.contrasts	groupKO-groupWT
+lipid_canonical	h	seconds	50.5
+metab_lc	main	before.head	metab_correlation_filtered
+metab_lc	main	before.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	main	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	before.integration_files	<none>
+metab_lc	main	before.design_group_moved	KO
+metab_lc	main	moved_runs	KO_3
+metab_lc	main	prefix_seconds	49
+metab_lc	main	resave.head	metab_raw_data_s4
+metab_lc	main	resave.head_label	resave:metab_raw_data_s4
+metab_lc	main	resave.head_group_moved	WT
+metab_lc	main	resave.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	main	resave.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	main	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+metab_lc	main	resave.modals	2
+metab_lc	main	resave.head_is_design_state	TRUE
+metab_lc	main	resave.history_unchanged	TRUE
+metab_lc	main	resave.later_entities_unchanged	TRUE
+metab_lc	main	resave.design_entity_changed	TRUE
+metab_lc	main	resave.status_unchanged_except_design	TRUE
+metab_lc	main	resave.components_identical	metabolite_data=TRUE | design_matrix=FALSE
+metab_lc	main	resave.components_all_identical	FALSE
+metab_lc	main	resave.design_group_moved	WT
+metab_lc	main	resave.contrast_count	1
+metab_lc	main	resave.contrasts	groupKO-groupWT
+metab_lc	main	reset.head	metab_reset
+metab_lc	main	reset.head_label	reset:metab_reset
+metab_lc	main	reset.head_group_moved	KO
+metab_lc	main	reset.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	reset.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	reset.notes	[message] Reset to pre-normalization state
+metab_lc	main	reset.modals	2
+metab_lc	main	reset.recorded_start_label	qc_finalize:metab_qc_complete
+metab_lc	main	run.head	metab_normalized
+metab_lc	main	run.head_label	run:metab_normalized
+metab_lc	main	run.head_group_moved	KO
+metab_lc	main	run.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	run.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > correlation:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	run.notes	[message] Normalization pipeline complete!
+metab_lc	main	run.modals	2
+metab_lc	main	run.source_from	omic_run
+metab_lc	main	run.source_label	reset:metab_reset
+metab_lc	main	run.source_group_moved	KO
+metab_lc	main	run.notice_kit182	FALSE
+metab_lc	main	run.recorded_start_label	qc_finalize:metab_qc_complete
+metab_lc	main	run.prereq_warning	FALSE
+metab_lc	main	run.states_between_design_and_run	3
+metab_lc	main	corr.head	metab_correlation_filtered
+metab_lc	main	corr.head_label	corr:metab_correlation_filtered
+metab_lc	main	corr.head_group_moved	KO
+metab_lc	main	corr.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	corr.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > corr:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	corr.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	corr.notes	[default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+metab_lc	main	corr.modals	2
+metab_lc	main	export.head	metab_correlation_filtered
+metab_lc	main	export.head_label	corr:metab_correlation_filtered
+metab_lc	main	export.head_group_moved	KO
+metab_lc	main	export.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	export.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > corr:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	export.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	export.notes	[message] Session data exported successfully! Saved as: metab_filtered_session_data_<TIME>.rds See summary file for details.
+metab_lc	main	export.modals	2
+metab_lc	main	daload.head	metab_correlation_filtered
+metab_lc	main	daload.head_label	corr:metab_correlation_filtered
+metab_lc	main	daload.head_group_moved	KO
+metab_lc	main	daload.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	daload.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > corr:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	daload.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	main	daload.notes	[default] Loading filtered session... | [message] Session loaded successfully!
+metab_lc	main	daload.modals	2
+metab_lc	main	da.head	metab_correlation_filtered
+metab_lc	main	da.head_label	corr:metab_correlation_filtered
+metab_lc	main	da.head_group_moved	KO
+metab_lc	main	da.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	da.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > corr:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+metab_lc	main	da.notes	[default] Running differential expression analysis... | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+metab_lc	main	da.modals	2
+metab_lc	main	da.result_changed	TRUE
+metab_lc	main	da.source_label	corr:metab_correlation_filtered
+metab_lc	main	da.group_moved	KO
+metab_lc	main	record.head	metab_correlation_filtered
+metab_lc	main	record.head_label	corr:metab_correlation_filtered
+metab_lc	main	record.head_group_moved	KO
+metab_lc	main	record.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered > metab_reset
+metab_lc	main	record.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > corr:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+metab_lc	main	record.notes	<none>
+metab_lc	main	record.modals	2
+metab_lc	main	record.steps	initial=import > metab_raw_data_s4=design_builder > metab_intensity_filtered=metab_intensity_filter > metab_duplicates_resolved=metab_duplicate_resolution > metab_qc_complete=metab_qc_finalize > metab_itsd_norm=metab_itsd_normalisation > metab_log2=metab_log2 > metab_normalized=metab_between_sample_normalisation > metab_correlation_filtered=metab_pearson_selection > metab_reset=metab_reset
+metab_lc	main	record.step_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > corr:metab_correlation_filtered > reset:metab_reset
+metab_lc	main	record.qc_steps_before_run	3
+metab_lc	main	record.design_group_moved	KO
+metab_lc	main	record.design_builder_label	resave:metab_raw_data_s4
+metab_lc	main	seconds	67.9
+metab_lc	e	before.head	metab_correlation_filtered
+metab_lc	e	before.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	e	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	e	before.integration_files	<none>
+metab_lc	e	before.design_group_moved	KO
+metab_lc	e	moved_runs	KO_3
+metab_lc	e	prefix_seconds	48.3
+metab_lc	e	resave.head	metab_raw_data_s4
+metab_lc	e	resave.head_label	resave:metab_raw_data_s4
+metab_lc	e	resave.head_group_moved	WT
+metab_lc	e	resave.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	e	resave.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	e	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	e	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+metab_lc	e	resave.modals	2
+metab_lc	e	resave.head_is_design_state	TRUE
+metab_lc	e	resave.history_unchanged	TRUE
+metab_lc	e	resave.later_entities_unchanged	TRUE
+metab_lc	e	resave.design_entity_changed	TRUE
+metab_lc	e	resave.status_unchanged_except_design	TRUE
+metab_lc	e	resave.components_identical	metabolite_data=TRUE | design_matrix=FALSE
+metab_lc	e	resave.components_all_identical	FALSE
+metab_lc	e	resave.design_group_moved	WT
+metab_lc	e	resave.contrast_count	1
+metab_lc	e	resave.contrasts	groupKO-groupWT
+metab_lc	e	run.head	metab_normalized
+metab_lc	e	run.head_label	run:metab_normalized
+metab_lc	e	run.head_group_moved	WT
+metab_lc	e	run.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	e	run.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	e	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	e	run.notes	[message] Normalization pipeline complete!
+metab_lc	e	run.modals	2
+metab_lc	e	run.source_from	omic_run
+metab_lc	e	run.source_label	resave:metab_raw_data_s4
+metab_lc	e	run.source_group_moved	WT
+metab_lc	e	run.notice_kit182	FALSE
+metab_lc	e	run.recorded_start_label	qc_finalize:metab_qc_complete
+metab_lc	e	run.prereq_warning	FALSE
+metab_lc	e	run.states_between_design_and_run	3
+metab_lc	e	record.head	metab_normalized
+metab_lc	e	record.head_label	run:metab_normalized
+metab_lc	e	record.head_group_moved	WT
+metab_lc	e	record.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	e	record.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	e	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	e	record.notes	<none>
+metab_lc	e	record.modals	2
+metab_lc	e	record.steps	initial=import > metab_raw_data_s4=design_builder > metab_intensity_filtered=metab_intensity_filter > metab_duplicates_resolved=metab_duplicate_resolution > metab_qc_complete=metab_qc_finalize > metab_itsd_norm=metab_itsd_normalisation > metab_log2=metab_log2 > metab_normalized=metab_between_sample_normalisation > metab_correlation_filtered=metab_pearson_selection
+metab_lc	e	record.step_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > run:metab_itsd_norm > run:metab_log2 > run:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	e	record.qc_steps_before_run	3
+metab_lc	e	record.design_group_moved	KO
+metab_lc	e	record.design_builder_label	resave:metab_raw_data_s4
+metab_lc	e	seconds	73.4
+metab_lc	f0	before.head	metab_correlation_filtered
+metab_lc	f0	before.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	f0	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	f0	before.integration_files	<none>
+metab_lc	f0	before.design_group_moved	KO
+metab_lc	f0	moved_runs	KO_3
+metab_lc	f0	prefix_seconds	47.5
+metab_lc	f0	resave.head	metab_raw_data_s4
+metab_lc	f0	resave.head_label	resave:metab_raw_data_s4
+metab_lc	f0	resave.head_group_moved	WT
+metab_lc	f0	resave.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	f0	resave.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	f0	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	f0	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+metab_lc	f0	resave.modals	2
+metab_lc	f0	resave.head_is_design_state	TRUE
+metab_lc	f0	resave.history_unchanged	TRUE
+metab_lc	f0	resave.later_entities_unchanged	TRUE
+metab_lc	f0	resave.design_entity_changed	TRUE
+metab_lc	f0	resave.status_unchanged_except_design	TRUE
+metab_lc	f0	resave.components_identical	metabolite_data=TRUE | design_matrix=FALSE
+metab_lc	f0	resave.components_all_identical	FALSE
+metab_lc	f0	resave.design_group_moved	WT
+metab_lc	f0	resave.contrast_count	1
+metab_lc	f0	resave.contrasts	groupKO-groupWT
+metab_lc	f0	summary.head	metab_raw_data_s4
+metab_lc	f0	summary.head_label	resave:metab_raw_data_s4
+metab_lc	f0	summary.head_group_moved	WT
+metab_lc	f0	summary.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	f0	summary.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	f0	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	f0	summary.notes	[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again.
+metab_lc	f0	summary.modals	2
+metab_lc	f0	summary.refused	TRUE
+metab_lc	f0	summary.state_used	<no integration export started>
+metab_lc	f0	summary.integration_files	<none>
+metab_lc	f0	seconds	49.9
+metab_lc	f1	before.head	metab_correlation_filtered
+metab_lc	f1	before.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	f1	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+metab_lc	f1	before.integration_files	metabolomics_metab_lc_final_s4.RDS, metabolomics/features_metabolomics_LCMS_Neg.parquet, metabolomics/features_metabolomics_LCMS_Pos.parquet, metabolomics/integration_input.json, metabolomics/matrix_metabolomics_LCMS_Neg.parquet, metabolomics/matrix_metabolomics_LCMS_Pos.parquet, metabolomics/samples.parquet
+metab_lc	f1	before.design_group_moved	KO
+metab_lc	f1	moved_runs	KO_3
+metab_lc	f1	prefix_seconds	58.6
+metab_lc	f1	resave.head	metab_raw_data_s4
+metab_lc	f1	resave.head_label	resave:metab_raw_data_s4
+metab_lc	f1	resave.head_group_moved	WT
+metab_lc	f1	resave.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	f1	resave.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	f1	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=pending
+metab_lc	f1	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+metab_lc	f1	resave.modals	2
+metab_lc	f1	resave.head_is_design_state	TRUE
+metab_lc	f1	resave.history_unchanged	TRUE
+metab_lc	f1	resave.later_entities_unchanged	TRUE
+metab_lc	f1	resave.design_entity_changed	TRUE
+metab_lc	f1	resave.status_unchanged_except_design	FALSE
+metab_lc	f1	resave.components_identical	metabolite_data=TRUE | design_matrix=FALSE
+metab_lc	f1	resave.components_all_identical	FALSE
+metab_lc	f1	resave.design_group_moved	WT
+metab_lc	f1	resave.contrast_count	1
+metab_lc	f1	resave.contrasts	groupKO-groupWT
+metab_lc	f1	summary.head	metab_raw_data_s4
+metab_lc	f1	summary.head_label	resave:metab_raw_data_s4
+metab_lc	f1	summary.head_group_moved	WT
+metab_lc	f1	summary.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	f1	summary.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	f1	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=pending
+metab_lc	f1	summary.notes	[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again.
+metab_lc	f1	summary.modals	2
+metab_lc	f1	summary.refused	TRUE
+metab_lc	f1	summary.state_used	<no integration export started>
+metab_lc	f1	summary.integration_files	metabolomics_metab_lc_final_s4.RDS
+metab_lc	f1	seconds	61
+metab_lc	g	before.head	metab_correlation_filtered
+metab_lc	g	before.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	g	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	g	before.integration_files	<none>
+metab_lc	g	before.design_group_moved	KO
+metab_lc	g	moved_runs	KO_3
+metab_lc	g	prefix_seconds	47.5
+metab_lc	g	resave.head	metab_raw_data_s4
+metab_lc	g	resave.head_label	resave:metab_raw_data_s4
+metab_lc	g	resave.head_group_moved	KO
+metab_lc	g	resave.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	g	resave.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	g	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	g	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+metab_lc	g	resave.modals	2
+metab_lc	g	resave.head_is_design_state	TRUE
+metab_lc	g	resave.history_unchanged	TRUE
+metab_lc	g	resave.later_entities_unchanged	TRUE
+metab_lc	g	resave.design_entity_changed	TRUE
+metab_lc	g	resave.status_unchanged_except_design	TRUE
+metab_lc	g	resave.components_identical	metabolite_data=TRUE | design_matrix=TRUE
+metab_lc	g	resave.components_all_identical	TRUE
+metab_lc	g	resave.design_group_moved	KO
+metab_lc	g	resave.contrast_count	2
+metab_lc	g	resave.contrasts	groupKO-groupWT | groupWT-groupKO
+metab_lc	g	seconds	49.2
+metab_lc	h	before.head	metab_correlation_filtered
+metab_lc	h	before.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	h	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	h	before.integration_files	<none>
+metab_lc	h	before.design_group_moved	KO
+metab_lc	h	moved_runs	KO_3
+metab_lc	h	prefix_seconds	48
+metab_lc	h	resave.head	metab_raw_data_s4
+metab_lc	h	resave.head_label	resave:metab_raw_data_s4
+metab_lc	h	resave.head_group_moved	KO
+metab_lc	h	resave.history	initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_correlation_filtered
+metab_lc	h	resave.history_labels	import:initial > resave:metab_raw_data_s4 > qc_intensity:metab_intensity_filtered > qc_duplicates:metab_duplicates_resolved > qc_finalize:metab_qc_complete > norm:metab_itsd_norm > norm:metab_log2 > norm:metab_normalized > correlation:metab_correlation_filtered
+metab_lc	h	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+metab_lc	h	resave.notes	[message] Design saved successfully! | [message] Design matrix and contrasts saved successfully!
+metab_lc	h	resave.modals	2
+metab_lc	h	resave.head_is_design_state	TRUE
+metab_lc	h	resave.history_unchanged	TRUE
+metab_lc	h	resave.later_entities_unchanged	TRUE
+metab_lc	h	resave.design_entity_changed	TRUE
+metab_lc	h	resave.status_unchanged_except_design	TRUE
+metab_lc	h	resave.components_identical	metabolite_data=TRUE | design_matrix=TRUE
+metab_lc	h	resave.components_all_identical	TRUE
+metab_lc	h	resave.design_group_moved	KO
+metab_lc	h	resave.contrast_count	1
+metab_lc	h	resave.contrasts	groupKO-groupWT
+metab_lc	h	seconds	49.7
+trx_screen	main	before.head	trx_ruvs
+trx_screen	main	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	main	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	main	before.integration_files	<none>
+trx_screen	main	before.design_group_moved	<error> counts must be numeric
+trx_screen	main	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	main	prefix_seconds	21.9
+trx_screen	main	resave.head	trx_raw_data_s4
+trx_screen	main	resave.head_label	resave:trx_raw_data_s4
+trx_screen	main	resave.head_group_moved	<error> counts must be numeric
+trx_screen	main	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	main	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	main	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	main	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	main	resave.modals	2
+trx_screen	main	resave.head_is_design_state	TRUE
+trx_screen	main	resave.history_unchanged	TRUE
+trx_screen	main	resave.later_entities_unchanged	TRUE
+trx_screen	main	resave.design_entity_changed	TRUE
+trx_screen	main	resave.status_unchanged_except_design	TRUE
+trx_screen	main	resave.components_identical	count_data=FALSE | design_matrix=FALSE
+trx_screen	main	resave.components_all_identical	FALSE
+trx_screen	main	resave.design_group_moved	<error> counts must be numeric
+trx_screen	main	resave.contrast_count	1
+trx_screen	main	resave.contrasts	groupSera-groupRPMI
+trx_screen	main	reset.head	trx_reset
+trx_screen	main	reset.head_label	reset:trx_reset
+trx_screen	main	reset.head_group_moved	<error> counts must be numeric
+trx_screen	main	reset.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	reset.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs > reset:trx_reset
+trx_screen	main	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_analysis=pending; session_summary=disabled
+trx_screen	main	reset.notes	[message] Reset to pre-normalization state
+trx_screen	main	reset.modals	2
+trx_screen	main	reset.recorded_start_label	qc_finalize:trx_qc_complete
+trx_screen	main	run.head	trx_ruvs
+trx_screen	main	run.head_label	run:trx_ruvs
+trx_screen	main	run.head_group_moved	<error> counts must be numeric
+trx_screen	main	run.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	run.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	main	run.notes	[message] Normalization complete! Proceeding to DE analysis.
+trx_screen	main	run.modals	2
+trx_screen	main	run.source_from	omic_run
+trx_screen	main	run.source_label	reset:trx_reset
+trx_screen	main	run.source_group_moved	<error> counts must be numeric
+trx_screen	main	run.notice_kit182	FALSE
+trx_screen	main	run.recorded_start_label	qc_finalize:trx_qc_complete
+trx_screen	main	run.prereq_warning	FALSE
+trx_screen	main	run.states_between_design_and_run	2
+trx_screen	main	da.head	trx_ruvs
+trx_screen	main	da.head_label	run:trx_ruvs
+trx_screen	main	da.head_group_moved	<error> counts must be numeric
+trx_screen	main	da.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	da.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+trx_screen	main	da.notes	[default] Running differential expression analysis... | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+trx_screen	main	da.modals	2
+trx_screen	main	da.result_changed	TRUE
+trx_screen	main	da.source_label	run:trx_ruvs
+trx_screen	main	da.group_moved	<error> counts must be numeric
+trx_screen	main	record.head	trx_ruvs
+trx_screen	main	record.head_label	run:trx_ruvs
+trx_screen	main	record.head_group_moved	<error> counts must be numeric
+trx_screen	main	record.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	record.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+trx_screen	main	record.notes	<none>
+trx_screen	main	record.modals	2
+trx_screen	main	record.steps	initial=import > trx_raw_data_s4=design_builder > trx_expression_filtered=trx_expression_filter > trx_qc_complete=trx_qc_finalize > trx_ruvs=trx_ruvs > trx_reset=trx_reset
+trx_screen	main	record.step_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	record.qc_steps_before_run	2
+trx_screen	main	record.design_group_moved	<absent>
+trx_screen	main	record.design_builder_label	resave:trx_raw_data_s4
+trx_screen	main	seconds	36.3
+trx_screen	e	before.head	trx_ruvs
+trx_screen	e	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	before.integration_files	<none>
+trx_screen	e	before.design_group_moved	<error> counts must be numeric
+trx_screen	e	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	e	prefix_seconds	16.4
+trx_screen	e	resave.head	trx_raw_data_s4
+trx_screen	e	resave.head_label	resave:trx_raw_data_s4
+trx_screen	e	resave.head_group_moved	<error> counts must be numeric
+trx_screen	e	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	e	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	e	resave.modals	2
+trx_screen	e	resave.head_is_design_state	TRUE
+trx_screen	e	resave.history_unchanged	TRUE
+trx_screen	e	resave.later_entities_unchanged	TRUE
+trx_screen	e	resave.design_entity_changed	TRUE
+trx_screen	e	resave.status_unchanged_except_design	TRUE
+trx_screen	e	resave.components_identical	count_data=FALSE | design_matrix=FALSE
+trx_screen	e	resave.components_all_identical	FALSE
+trx_screen	e	resave.design_group_moved	<error> counts must be numeric
+trx_screen	e	resave.contrast_count	1
+trx_screen	e	resave.contrasts	groupSera-groupRPMI
+trx_screen	e	run.head	trx_ruvs
+trx_screen	e	run.head_label	run:trx_ruvs
+trx_screen	e	run.head_group_moved	<error> counts must be numeric
+trx_screen	e	run.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	run.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs
+trx_screen	e	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	run.notes	[message] Normalization complete! Proceeding to DE analysis.
+trx_screen	e	run.modals	2
+trx_screen	e	run.source_from	omic_run
+trx_screen	e	run.source_label	resave:trx_raw_data_s4
+trx_screen	e	run.source_group_moved	<error> counts must be numeric
+trx_screen	e	run.notice_kit182	FALSE
+trx_screen	e	run.recorded_start_label	qc_finalize:trx_qc_complete
+trx_screen	e	run.prereq_warning	FALSE
+trx_screen	e	run.states_between_design_and_run	2
+trx_screen	e	record.head	trx_ruvs
+trx_screen	e	record.head_label	run:trx_ruvs
+trx_screen	e	record.head_group_moved	<error> counts must be numeric
+trx_screen	e	record.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	record.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs
+trx_screen	e	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	record.notes	<none>
+trx_screen	e	record.modals	2
+trx_screen	e	record.steps	initial=import > trx_raw_data_s4=design_builder > trx_expression_filtered=trx_expression_filter > trx_qc_complete=trx_qc_finalize > trx_ruvs=trx_ruvs
+trx_screen	e	record.step_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs
+trx_screen	e	record.qc_steps_before_run	2
+trx_screen	e	record.design_group_moved	<absent>
+trx_screen	e	record.design_builder_label	resave:trx_raw_data_s4
+trx_screen	e	seconds	29
+trx_screen	f0	before.head	trx_ruvs
+trx_screen	f0	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	f0	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	f0	before.integration_files	<none>
+trx_screen	f0	before.design_group_moved	<error> counts must be numeric
+trx_screen	f0	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	f0	prefix_seconds	16.9
+trx_screen	f0	resave.head	trx_raw_data_s4
+trx_screen	f0	resave.head_label	resave:trx_raw_data_s4
+trx_screen	f0	resave.head_group_moved	<error> counts must be numeric
+trx_screen	f0	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	f0	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	f0	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	f0	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	f0	resave.modals	2
+trx_screen	f0	resave.head_is_design_state	TRUE
+trx_screen	f0	resave.history_unchanged	TRUE
+trx_screen	f0	resave.later_entities_unchanged	TRUE
+trx_screen	f0	resave.design_entity_changed	TRUE
+trx_screen	f0	resave.status_unchanged_except_design	TRUE
+trx_screen	f0	resave.components_identical	count_data=FALSE | design_matrix=FALSE
+trx_screen	f0	resave.components_all_identical	FALSE
+trx_screen	f0	resave.design_group_moved	<error> counts must be numeric
+trx_screen	f0	resave.contrast_count	1
+trx_screen	f0	resave.contrasts	groupSera-groupRPMI
+trx_screen	f0	summary.head	trx_raw_data_s4
+trx_screen	f0	summary.head_label	resave:trx_raw_data_s4
+trx_screen	f0	summary.head_group_moved	<error> counts must be numeric
+trx_screen	f0	summary.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	f0	summary.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	f0	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	f0	summary.notes	[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation again, then press this button again.
+trx_screen	f0	summary.modals	2
+trx_screen	f0	summary.refused	TRUE
+trx_screen	f0	summary.state_used	<no integration export started>
+trx_screen	f0	summary.integration_files	<none>
+trx_screen	f0	seconds	19
+trx_screen	f1	before.head	trx_ruvs
+trx_screen	f1	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	f1	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+trx_screen	f1	before.integration_files	transcriptomics_normalized_data.tsv, transcriptomics/corrected_transcriptomics.parquet, transcriptomics/features_transcriptomics.parquet, transcriptomics/integration_input.json, transcriptomics/matrix_transcriptomics.parquet, transcriptomics/removed_transcriptomics.parquet, transcriptomics/samples.parquet
+trx_screen	f1	before.design_group_moved	<error> counts must be numeric
+trx_screen	f1	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	f1	prefix_seconds	26.3
+trx_screen	f1	resave.head	trx_raw_data_s4
+trx_screen	f1	resave.head_label	resave:trx_raw_data_s4
+trx_screen	f1	resave.head_group_moved	<error> counts must be numeric
+trx_screen	f1	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	f1	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	f1	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=pending
+trx_screen	f1	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	f1	resave.modals	2
+trx_screen	f1	resave.head_is_design_state	TRUE
+trx_screen	f1	resave.history_unchanged	TRUE
+trx_screen	f1	resave.later_entities_unchanged	TRUE
+trx_screen	f1	resave.design_entity_changed	TRUE
+trx_screen	f1	resave.status_unchanged_except_design	FALSE
+trx_screen	f1	resave.components_identical	count_data=FALSE | design_matrix=FALSE
+trx_screen	f1	resave.components_all_identical	FALSE
+trx_screen	f1	resave.design_group_moved	<error> counts must be numeric
+trx_screen	f1	resave.contrast_count	1
+trx_screen	f1	resave.contrasts	groupSera-groupRPMI
+trx_screen	f1	summary.head	trx_raw_data_s4
+trx_screen	f1	summary.head_label	resave:trx_raw_data_s4
+trx_screen	f1	summary.head_group_moved	<error> counts must be numeric
+trx_screen	f1	summary.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	f1	summary.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	f1	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=pending
+trx_screen	f1	summary.notes	[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation again, then press this button again.
+trx_screen	f1	summary.modals	2
+trx_screen	f1	summary.refused	TRUE
+trx_screen	f1	summary.state_used	<no integration export started>
+trx_screen	f1	summary.integration_files	transcriptomics_normalized_data.tsv
+trx_screen	f1	seconds	28.5
+trx_screen	g	before.head	trx_ruvs
+trx_screen	g	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	g	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	g	before.integration_files	<none>
+trx_screen	g	before.design_group_moved	<error> counts must be numeric
+trx_screen	g	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	g	prefix_seconds	16.1
+trx_screen	g	resave.head	trx_raw_data_s4
+trx_screen	g	resave.head_label	resave:trx_raw_data_s4
+trx_screen	g	resave.head_group_moved	<error> counts must be numeric
+trx_screen	g	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	g	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	g	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	g	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	g	resave.modals	2
+trx_screen	g	resave.head_is_design_state	TRUE
+trx_screen	g	resave.history_unchanged	TRUE
+trx_screen	g	resave.later_entities_unchanged	TRUE
+trx_screen	g	resave.design_entity_changed	TRUE
+trx_screen	g	resave.status_unchanged_except_design	TRUE
+trx_screen	g	resave.components_identical	count_data=TRUE | design_matrix=TRUE
+trx_screen	g	resave.components_all_identical	TRUE
+trx_screen	g	resave.design_group_moved	<error> counts must be numeric
+trx_screen	g	resave.contrast_count	2
+trx_screen	g	resave.contrasts	groupSera-groupRPMI | groupRPMI-groupSera
+trx_screen	g	seconds	17.9
+trx_screen	h	before.head	trx_ruvs
+trx_screen	h	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	h	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	h	before.integration_files	<none>
+trx_screen	h	before.design_group_moved	<error> counts must be numeric
+trx_screen	h	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	h	prefix_seconds	16.5
+trx_screen	h	resave.head	trx_raw_data_s4
+trx_screen	h	resave.head_label	resave:trx_raw_data_s4
+trx_screen	h	resave.head_group_moved	<error> counts must be numeric
+trx_screen	h	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	h	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	h	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	h	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	h	resave.modals	2
+trx_screen	h	resave.head_is_design_state	TRUE
+trx_screen	h	resave.history_unchanged	TRUE
+trx_screen	h	resave.later_entities_unchanged	TRUE
+trx_screen	h	resave.design_entity_changed	TRUE
+trx_screen	h	resave.status_unchanged_except_design	TRUE
+trx_screen	h	resave.components_identical	count_data=TRUE | design_matrix=TRUE
+trx_screen	h	resave.components_all_identical	TRUE
+trx_screen	h	resave.design_group_moved	<error> counts must be numeric
+trx_screen	h	resave.contrast_count	1
+trx_screen	h	resave.contrasts	groupSera-groupRPMI
+trx_screen	h	seconds	20.1

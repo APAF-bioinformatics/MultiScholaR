@@ -1,0 +1,79 @@
+lane	case	key	predicted	pattern
+prot_lfq	main	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	main	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	main	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	main	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	main	resave.notes	the success text only	saved successfully
+prot_lfq	main	resave.design_entity_changed	the design state is a new entity	^TRUE$
+prot_lfq	main	reset.head	Reset (KIT-225) returns the previous design's Protein Replicate Filter table P4	^protein_replicate_filtered$
+prot_lfq	main	reset.head_label	P4 is the prefix's entity (previous design)	^qc_protein_[^:]*:protein_replicate_filtered$
+prot_lfq	main	reset.head_group_moved	the moved sample is in its OLD group in that table	^KO$
+prot_lfq	main	run.source_label	the run reads P4	^qc_protein_[^:]*:protein_replicate_filtered$
+prot_lfq	main	run.source_group_moved	old group	^KO$
+prot_lfq	main	run.notice_kit182	no KIT-182 notice (normalization_complete FALSE after Reset)	^FALSE$
+prot_lfq	main	corr.head	the correlation filter applies	^correlation_filtered$
+prot_lfq	main	da.result_changed	the DA runs, with no message	^TRUE$
+prot_lfq	main	da.group_moved	the DA model's design has the moved sample in its OLD group	^KO$
+prot_lfq	main	record.design_group_moved	the record's design rows are the previous design's (INFERRED, P08)	^KO$
+prot_lfq	b	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	b	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	b	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	b	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	b	resave.notes	the success text only	saved successfully
+prot_lfq	b	corr.head	normalisation and the correlation filter run first	^correlation_filtered$
+prot_lfq	b	da.result_changed	the DA refuses (a renamed group is not in the table's design)	^FALSE$
+prot_lfq	c	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	c	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	c	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	c	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	c	resave.notes	the success text only	saved successfully
+prot_lfq	c	da.result_changed	DA pressed directly after the re-save does not run	^FALSE$
+prot_lfq	c	da.notes	refused: no filtered protein data is loaded	no filtered protein data is loaded
+prot_lfq	d	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	d	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	d	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	d	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	d	resave.notes	the success text only	saved successfully
+prot_lfq	d	qcre.head	Accession Cleanup re-applied: its state, at its old position	accession
+prot_lfq	d	run.source_label	the run reads the re-applied Accession Cleanup table	^qcre:
+prot_lfq	d	record.steps	the record lists the previous design's later QC steps between the re-applied step and the new normalisation	accession.* > .*replicate_filtered.* > .*normalized
+prot_lfq	e	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	e	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	e	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	e	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	e	resave.notes	the success text only	saved successfully
+prot_lfq	e	run.source_label	path 1: the run reads the NEW design state, before any Quality Control	^resave:protein_s4_initial$
+prot_lfq	e	run.source_group_moved	the new design's group	^WT$
+prot_lfq	e	run.notice_kit182	the KIT-182 notice fires ('uses your current quality-control result', false here)	^TRUE$
+prot_lfq	e	run.prereq_warning	the tab-entry warning stays silent (QC still complete)	^FALSE$
+prot_lfq	e	run.status	Quality Control still shown complete	quality_control=complete
+prot_lfq	e	run.states_between_design_and_run	the previous design's QC states sit between the design state and the run's states	^[1-9]
+prot_lfq	e	record.qc_steps_before_run	the record lists the previous design's QC steps before the new normalisation	^[1-9]
+prot_lfq	f0	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	f0	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	f0	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	f0	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	f0	resave.notes	the success text only	saved successfully
+prot_lfq	f0	summary.refused	no DA: Save goes ahead (status 'none'; proteomics has no head guard)	^FALSE$
+prot_lfq	f0	summary.state_used	on the previous design's correlation_filtered	^correlation_filtered$
+prot_lfq	f0	summary.object_group_moved	whose design has the moved sample in its old group	^KO$
+prot_lfq	f1	before.integration_files	the Save before the re-save wrote the integration input	\S
+prot_lfq	f1	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	f1	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	f1	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	f1	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	f1	resave.notes	the success text only	saved successfully
+prot_lfq	f1	summary.refused	a DA before the re-save: Save refused as stale (workflow_summary_da_stale; R1-08)	^TRUE$
+prot_lfq	f1	summary.integration_files	and the omic's integration input removed (R1-08)	^<none>$
+prot_lfq	g	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	g	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	g	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	g	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	g	resave.notes	the success text only	saved successfully
+prot_lfq	g	resave.contrast_count	the bus holds both comparisons	^2$
+prot_lfq	h	resave.head	the head is the re-committed design state	^protein_s4_initial$
+prot_lfq	h	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+prot_lfq	h	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+prot_lfq	h	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+prot_lfq	h	resave.notes	the success text only	saved successfully
+prot_lfq	h	resave.components_all_identical	an unchanged re-save yields identical table identities (stop rule 5 if not)	^TRUE$

@@ -1,0 +1,141 @@
+lane	case	key	predicted	pattern
+lipid_canonical	main	resave.head	the head is the re-committed design state	^lipid_raw_data_s4$
+lipid_canonical	main	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+lipid_canonical	main	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+lipid_canonical	main	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+lipid_canonical	main	resave.notes	the success text only	saved successfully
+lipid_canonical	main	reset.head	Reset re-commits the recorded start whatever the history holds (2.4)	^lipid_reset$
+lipid_canonical	main	reset.head_group_moved	that table is the previous design's	^KO$
+lipid_canonical	main	run.source_group_moved	the run reads it: old group	^KO$
+lipid_canonical	main	corr.head	the correlation filter applies	^lipid_correlation_filtered$
+lipid_canonical	main	da.result_changed	the DA runs, with no message	^TRUE$
+lipid_canonical	main	da.group_moved	on the previous design's groups	^KO$
+lipid_canonical	e	resave.head	the head is the re-committed design state	^lipid_raw_data_s4$
+lipid_canonical	e	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+lipid_canonical	e	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+lipid_canonical	e	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+lipid_canonical	e	resave.notes	the success text only	saved successfully
+lipid_canonical	e	run.source_label	path 1: the run reads the NEW design state, before any Quality Control	^resave:lipid_raw_data_s4$
+lipid_canonical	e	run.source_group_moved	the new design's group	^WT$
+lipid_canonical	e	run.status	Quality Control still shown complete	quality_control=complete
+lipid_canonical	e	run.states_between_design_and_run	the previous design's QC states sit between the design state and the run's states	^[1-9]
+lipid_canonical	e	record.qc_steps_before_run	the record lists them before the new normalisation	^[1-9]
+lipid_canonical	f0	resave.head	the head is the re-committed design state	^lipid_raw_data_s4$
+lipid_canonical	f0	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+lipid_canonical	f0	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+lipid_canonical	f0	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+lipid_canonical	f0	resave.notes	the success text only	saved successfully
+lipid_canonical	f0	summary.refused	Save refused at a design head (assertWorkflowSummaryHeadFinal)	^TRUE$
+lipid_canonical	f1	before.integration_files	the Save before the re-save wrote the integration input	\S
+lipid_canonical	f1	resave.head	the head is the re-committed design state	^lipid_raw_data_s4$
+lipid_canonical	f1	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+lipid_canonical	f1	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+lipid_canonical	f1	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+lipid_canonical	f1	resave.notes	the success text only	saved successfully
+lipid_canonical	f1	summary.refused	Save refused at a design head	^TRUE$
+lipid_canonical	f1	summary.integration_files	and the omic's integration input removed	^<none>$
+lipid_canonical	g	resave.head	the head is the re-committed design state	^lipid_raw_data_s4$
+lipid_canonical	g	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+lipid_canonical	g	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+lipid_canonical	g	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+lipid_canonical	g	resave.notes	the success text only	saved successfully
+lipid_canonical	g	resave.contrast_count	the bus holds both comparisons	^2$
+lipid_canonical	h	resave.head	the head is the re-committed design state	^lipid_raw_data_s4$
+lipid_canonical	h	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+lipid_canonical	h	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+lipid_canonical	h	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+lipid_canonical	h	resave.notes	the success text only	saved successfully
+lipid_canonical	h	resave.components_all_identical	an unchanged re-save yields identical table identities (stop rule 5 if not)	^TRUE$
+metab_lc	main	resave.head	the head is the re-committed design state	^metab_raw_data_s4$
+metab_lc	main	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+metab_lc	main	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+metab_lc	main	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+metab_lc	main	resave.notes	the success text only	saved successfully
+metab_lc	main	reset.head	Reset re-commits the recorded start whatever the history holds (2.4)	^metab_reset$
+metab_lc	main	reset.head_group_moved	that table is the previous design's	^KO$
+metab_lc	main	run.source_group_moved	the run reads it: old group	^KO$
+metab_lc	main	corr.head	the correlation filter applies	^metab_correlation_filtered$
+metab_lc	main	da.result_changed	the DA runs, with no message	^TRUE$
+metab_lc	main	da.group_moved	on the previous design's groups	^KO$
+metab_lc	e	resave.head	the head is the re-committed design state	^metab_raw_data_s4$
+metab_lc	e	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+metab_lc	e	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+metab_lc	e	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+metab_lc	e	resave.notes	the success text only	saved successfully
+metab_lc	e	run.source_label	path 1: the run reads the NEW design state, before any Quality Control	^resave:metab_raw_data_s4$
+metab_lc	e	run.source_group_moved	the new design's group	^WT$
+metab_lc	e	run.status	Quality Control still shown complete	quality_control=complete
+metab_lc	e	run.states_between_design_and_run	the previous design's QC states sit between the design state and the run's states	^[1-9]
+metab_lc	e	record.qc_steps_before_run	the record lists them before the new normalisation	^[1-9]
+metab_lc	f0	resave.head	the head is the re-committed design state	^metab_raw_data_s4$
+metab_lc	f0	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+metab_lc	f0	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+metab_lc	f0	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+metab_lc	f0	resave.notes	the success text only	saved successfully
+metab_lc	f0	summary.refused	Save refused at a design head (assertWorkflowSummaryHeadFinal)	^TRUE$
+metab_lc	f1	before.integration_files	the Save before the re-save wrote the integration input	\S
+metab_lc	f1	resave.head	the head is the re-committed design state	^metab_raw_data_s4$
+metab_lc	f1	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+metab_lc	f1	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+metab_lc	f1	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+metab_lc	f1	resave.notes	the success text only	saved successfully
+metab_lc	f1	summary.refused	Save refused at a design head	^TRUE$
+metab_lc	f1	summary.integration_files	and the omic's integration input removed	^<none>$
+metab_lc	g	resave.head	the head is the re-committed design state	^metab_raw_data_s4$
+metab_lc	g	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+metab_lc	g	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+metab_lc	g	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+metab_lc	g	resave.notes	the success text only	saved successfully
+metab_lc	g	resave.contrast_count	the bus holds both comparisons	^2$
+metab_lc	h	resave.head	the head is the re-committed design state	^metab_raw_data_s4$
+metab_lc	h	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+metab_lc	h	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+metab_lc	h	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+metab_lc	h	resave.notes	the success text only	saved successfully
+metab_lc	h	resave.components_all_identical	an unchanged re-save yields identical table identities (stop rule 5 if not)	^TRUE$
+trx_screen	main	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	main	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	main	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	main	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	main	resave.notes	the success text only	saved successfully
+trx_screen	main	reset.head	Reset re-commits the recorded start whatever the history holds (2.4)	^trx_reset$
+trx_screen	main	reset.head_group_moved	that table is the previous design's	^Sera$
+trx_screen	main	run.source_group_moved	the run reads it: old group	^Sera$
+trx_screen	main	da.result_changed	the DA runs, with no message	^TRUE$
+trx_screen	main	da.group_moved	on the previous design's groups	^Sera$
+trx_screen	e	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	e	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	e	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	e	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	e	resave.notes	the success text only	saved successfully
+trx_screen	e	run.source_label	path 1: the run reads the NEW design state, before any Quality Control	^resave:trx_raw_data_s4$
+trx_screen	e	run.source_group_moved	the new design's group	^RPMI$
+trx_screen	e	run.status	Quality Control still shown complete	quality_control=complete
+trx_screen	e	run.states_between_design_and_run	the previous design's QC states sit between the design state and the run's states	^[1-9]
+trx_screen	e	record.qc_steps_before_run	the record lists them before the new normalisation	^[1-9]
+trx_screen	f0	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	f0	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	f0	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	f0	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	f0	resave.notes	the success text only	saved successfully
+trx_screen	f0	summary.refused	Save refused at a design head (assertWorkflowSummaryHeadFinal)	^TRUE$
+trx_screen	f1	before.integration_files	the Save before the re-save wrote the integration input	\S
+trx_screen	f1	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	f1	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	f1	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	f1	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	f1	resave.notes	the success text only	saved successfully
+trx_screen	f1	summary.refused	Save refused at a design head	^TRUE$
+trx_screen	f1	summary.integration_files	and the omic's integration input removed	^<none>$
+trx_screen	g	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	g	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	g	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	g	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	g	resave.notes	the success text only	saved successfully
+trx_screen	g	resave.contrast_count	the bus holds both comparisons	^2$
+trx_screen	h	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	h	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	h	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	h	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	h	resave.notes	the success text only	saved successfully
+trx_screen	h	resave.components_all_identical	an unchanged re-save yields identical table identities (stop rule 5 if not)	^TRUE$

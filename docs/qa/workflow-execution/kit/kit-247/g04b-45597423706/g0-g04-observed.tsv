@@ -1,0 +1,10 @@
+key	value
+not_cran	true
+browser_dependencies	TRUE
+chrome	/usr/bin/google-chrome
+norm_run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+corr_skip.timeout_head	normalized
+corr_skip.timeout_notes	<none>
+error	Timed out waiting for the head to be one of correlation_filtered after corr_skip; last head normalized
+outcome	error
+seconds	392.2

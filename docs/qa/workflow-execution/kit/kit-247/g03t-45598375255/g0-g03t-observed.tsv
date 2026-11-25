@@ -1,0 +1,129 @@
+lane	case	key	value
+trx_screen	main	before.head	trx_ruvs
+trx_screen	main	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	main	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	main	before.integration_files	<none>
+trx_screen	main	before.design_group_moved	<absent>
+trx_screen	main	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	main	prefix_seconds	30
+trx_screen	main	resave.head	trx_raw_data_s4
+trx_screen	main	resave.head_label	resave:trx_raw_data_s4
+trx_screen	main	resave.head_group_moved	<absent>
+trx_screen	main	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	main	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	main	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	main	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	main	resave.modals	2
+trx_screen	main	resave.head_is_design_state	TRUE
+trx_screen	main	resave.history_unchanged	TRUE
+trx_screen	main	resave.later_entities_unchanged	TRUE
+trx_screen	main	resave.design_entity_changed	TRUE
+trx_screen	main	resave.status_unchanged_except_design	TRUE
+trx_screen	main	resave.components_identical	count_data=FALSE | design_matrix=FALSE
+trx_screen	main	resave.components_all_identical	FALSE
+trx_screen	main	resave.design_group_moved	<absent>
+trx_screen	main	resave.contrast_count	1
+trx_screen	main	resave.contrasts	groupSera-groupRPMI
+trx_screen	main	reset.head	trx_reset
+trx_screen	main	reset.head_label	reset:trx_reset
+trx_screen	main	reset.head_group_moved	<absent>
+trx_screen	main	reset.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	reset.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs > reset:trx_reset
+trx_screen	main	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_analysis=pending; session_summary=disabled
+trx_screen	main	reset.notes	[message] Reset to pre-normalization state
+trx_screen	main	reset.modals	2
+trx_screen	main	reset.recorded_start_label	qc_finalize:trx_qc_complete
+trx_screen	main	run.head	trx_ruvs
+trx_screen	main	run.head_label	run:trx_ruvs
+trx_screen	main	run.head_group_moved	<absent>
+trx_screen	main	run.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	run.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	main	run.notes	[message] Normalization complete! Proceeding to DE analysis.
+trx_screen	main	run.modals	2
+trx_screen	main	run.source_from	omic_run
+trx_screen	main	run.source_label	reset:trx_reset
+trx_screen	main	run.source_group_moved	<absent>
+trx_screen	main	run.notice_kit182	FALSE
+trx_screen	main	run.recorded_start_label	qc_finalize:trx_qc_complete
+trx_screen	main	run.prereq_warning	FALSE
+trx_screen	main	run.states_between_design_and_run	2
+trx_screen	main	da.head	trx_ruvs
+trx_screen	main	da.head_label	run:trx_ruvs
+trx_screen	main	da.head_group_moved	<absent>
+trx_screen	main	da.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	da.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+trx_screen	main	da.notes	[default] Running differential expression analysis... | [message] Differential expression analysis complete! | [message] DA results saved to disk (tables, volcano plots, heatmaps)
+trx_screen	main	da.modals	2
+trx_screen	main	da.result_changed	TRUE
+trx_screen	main	da.source_label	run:trx_ruvs
+trx_screen	main	da.group_moved	<absent>
+trx_screen	main	record.head	trx_ruvs
+trx_screen	main	record.head_label	run:trx_ruvs
+trx_screen	main	record.head_group_moved	<absent>
+trx_screen	main	record.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs > trx_reset
+trx_screen	main	record.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=complete; session_summary=pending
+trx_screen	main	record.notes	<none>
+trx_screen	main	record.modals	2
+trx_screen	main	record.steps	initial=import > trx_raw_data_s4=design_builder > trx_expression_filtered=trx_expression_filter > trx_qc_complete=trx_qc_finalize > trx_ruvs=trx_ruvs > trx_reset=trx_reset
+trx_screen	main	record.step_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs > reset:trx_reset
+trx_screen	main	record.qc_steps_before_run	2
+trx_screen	main	record.design_group_moved	<absent>
+trx_screen	main	record.design_builder_label	resave:trx_raw_data_s4
+trx_screen	main	seconds	44.5
+trx_screen	e	before.head	trx_ruvs
+trx_screen	e	before.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	before.integration_files	<none>
+trx_screen	e	before.design_group_moved	<absent>
+trx_screen	e	moved_runs	Sera_03_r1 | Sera_03_r2
+trx_screen	e	prefix_seconds	20.5
+trx_screen	e	resave.head	trx_raw_data_s4
+trx_screen	e	resave.head_label	resave:trx_raw_data_s4
+trx_screen	e	resave.head_group_moved	<absent>
+trx_screen	e	resave.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	resave.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > norm:trx_ruvs
+trx_screen	e	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	resave.notes	[message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Assigned 2 samples as technical replicates | [message] Design saved successfully! | [message] Design matrix and contrasts saved successfully! | [message] Technical replicates: 12 runs summed into 6 samples.
+trx_screen	e	resave.modals	2
+trx_screen	e	resave.head_is_design_state	TRUE
+trx_screen	e	resave.history_unchanged	TRUE
+trx_screen	e	resave.later_entities_unchanged	TRUE
+trx_screen	e	resave.design_entity_changed	TRUE
+trx_screen	e	resave.status_unchanged_except_design	TRUE
+trx_screen	e	resave.components_identical	count_data=FALSE | design_matrix=FALSE
+trx_screen	e	resave.components_all_identical	FALSE
+trx_screen	e	resave.design_group_moved	<absent>
+trx_screen	e	resave.contrast_count	1
+trx_screen	e	resave.contrasts	groupSera-groupRPMI
+trx_screen	e	run.head	trx_ruvs
+trx_screen	e	run.head_label	run:trx_ruvs
+trx_screen	e	run.head_group_moved	<absent>
+trx_screen	e	run.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	run.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs
+trx_screen	e	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	run.notes	[message] Normalization complete! Proceeding to DE analysis.
+trx_screen	e	run.modals	2
+trx_screen	e	run.source_from	omic_run
+trx_screen	e	run.source_label	resave:trx_raw_data_s4
+trx_screen	e	run.source_group_moved	<absent>
+trx_screen	e	run.notice_kit182	FALSE
+trx_screen	e	run.recorded_start_label	qc_finalize:trx_qc_complete
+trx_screen	e	run.prereq_warning	FALSE
+trx_screen	e	run.states_between_design_and_run	2
+trx_screen	e	record.head	trx_ruvs
+trx_screen	e	record.head_label	run:trx_ruvs
+trx_screen	e	record.head_group_moved	<absent>
+trx_screen	e	record.history	initial > trx_raw_data_s4 > trx_expression_filtered > trx_qc_complete > trx_ruvs
+trx_screen	e	record.history_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs
+trx_screen	e	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_analysis=pending; session_summary=disabled
+trx_screen	e	record.notes	<none>
+trx_screen	e	record.modals	2
+trx_screen	e	record.steps	initial=import > trx_raw_data_s4=design_builder > trx_expression_filtered=trx_expression_filter > trx_qc_complete=trx_qc_finalize > trx_ruvs=trx_ruvs
+trx_screen	e	record.step_labels	import:initial > resave:trx_raw_data_s4 > qc_filter:trx_expression_filtered > qc_finalize:trx_qc_complete > run:trx_ruvs
+trx_screen	e	record.qc_steps_before_run	2
+trx_screen	e	record.design_group_moved	<absent>
+trx_screen	e	record.design_builder_label	resave:trx_raw_data_s4
+trx_screen	e	seconds	35

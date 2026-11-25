@@ -1,0 +1,7 @@
+key	value
+not_cran	true
+browser_dependencies	TRUE
+chrome	/usr/bin/google-chrome
+error	Timed out waiting for proteomics/normalization to become complete; last status was pending
+outcome	error
+seconds	335.7

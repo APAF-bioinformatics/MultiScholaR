@@ -1,0 +1,159 @@
+lane	case	key	value
+prot_dia_limpa	main	before.head	ruv_covariates
+prot_dia_limpa	main	before.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	before.integration_files	<none>
+prot_dia_limpa	main	before.design_group_moved	KO
+prot_dia_limpa	main	moved_runs	ko_4
+prot_dia_limpa	main	prefix_seconds	103.7
+prot_dia_limpa	main	resave.head	raw_data_s4
+prot_dia_limpa	main	resave.head_label	resave:raw_data_s4
+prot_dia_limpa	main	resave.head_group_moved	WT
+prot_dia_limpa	main	resave.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	resave.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > correlation:correlation_filtered > ruv_covariates:ruv_covariates
+prot_dia_limpa	main	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_dia_limpa	main	resave.modals	5
+prot_dia_limpa	main	resave.head_is_design_state	TRUE
+prot_dia_limpa	main	resave.history_unchanged	TRUE
+prot_dia_limpa	main	resave.later_entities_unchanged	TRUE
+prot_dia_limpa	main	resave.design_entity_changed	TRUE
+prot_dia_limpa	main	resave.status_unchanged_except_design	TRUE
+prot_dia_limpa	main	resave.components_identical	peptide_data=TRUE | design_matrix=FALSE
+prot_dia_limpa	main	resave.components_all_identical	FALSE
+prot_dia_limpa	main	resave.design_group_moved	WT
+prot_dia_limpa	main	resave.contrast_count	1
+prot_dia_limpa	main	resave.contrasts	groupKO-groupWT
+prot_dia_limpa	main	reset.head	peptide_count_filtered
+prot_dia_limpa	main	reset.head_label	qc_protein_peptide_count:peptide_count_filtered
+prot_dia_limpa	main	reset.head_group_moved	KO
+prot_dia_limpa	main	reset.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered
+prot_dia_limpa	main	reset.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered
+prot_dia_limpa	main	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	reset.notes	[warning] Normalisation reset: the current table is again the one the normalisation started from (Peptide Count Filter).
+prot_dia_limpa	main	reset.modals	5
+prot_dia_limpa	main	reset.recorded_start_label	qc_protein_peptide_count:peptide_count_filtered
+prot_dia_limpa	main	run.head	peptide_count_filtered
+prot_dia_limpa	main	run.head_label	qc_protein_peptide_count:peptide_count_filtered
+prot_dia_limpa	main	run.head_group_moved	KO
+prot_dia_limpa	main	run.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered
+prot_dia_limpa	main	run.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered
+prot_dia_limpa	main	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	run.notes	[message] Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.
+prot_dia_limpa	main	run.modals	5
+prot_dia_limpa	main	run.source_from	head_before_press
+prot_dia_limpa	main	run.source_label	qc_protein_peptide_count:peptide_count_filtered
+prot_dia_limpa	main	run.source_group_moved	KO
+prot_dia_limpa	main	run.notice_kit182	FALSE
+prot_dia_limpa	main	run.prereq_warning	FALSE
+prot_dia_limpa	main	run.states_between_design_and_run	<no run state>
+prot_dia_limpa	main	corr.head	correlation_filtered
+prot_dia_limpa	main	corr.head_label	corr:correlation_filtered
+prot_dia_limpa	main	corr.head_group_moved	KO
+prot_dia_limpa	main	corr.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered
+prot_dia_limpa	main	corr.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered
+prot_dia_limpa	main	corr.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	corr.notes	[message] Correlation filtering completed! Ready for differential expression analysis.
+prot_dia_limpa	main	corr.modals	5
+prot_dia_limpa	main	ruvcov.head	ruv_covariates
+prot_dia_limpa	main	ruvcov.head_label	ruvcov:ruv_covariates
+prot_dia_limpa	main	ruvcov.head_group_moved	KO
+prot_dia_limpa	main	ruvcov.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	ruvcov.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered > ruvcov:ruv_covariates
+prot_dia_limpa	main	ruvcov.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	ruvcov.notes	[message] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis.
+prot_dia_limpa	main	ruvcov.modals	5
+prot_dia_limpa	main	export.head	ruv_covariates
+prot_dia_limpa	main	export.head_label	ruvcov:ruv_covariates
+prot_dia_limpa	main	export.head_group_moved	KO
+prot_dia_limpa	main	export.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	export.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered > ruvcov:ruv_covariates
+prot_dia_limpa	main	export.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	export.notes	[message] Filtered session data exported successfully! Saved as: filtered_session_<TIME>_native-export-<HEX>.msdia.tar See summary file for details.
+prot_dia_limpa	main	export.modals	5
+prot_dia_limpa	main	daload.head	ruv_covariates
+prot_dia_limpa	main	daload.head_label	ruvcov:ruv_covariates
+prot_dia_limpa	main	daload.head_group_moved	KO
+prot_dia_limpa	main	daload.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	daload.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered > ruvcov:ruv_covariates
+prot_dia_limpa	main	daload.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	main	daload.notes	[message] Session loaded successfully! Data Summary: - Proteins: 393 - Samples: 8 - Contrasts: 1 - State: ruv_covariates - Export time: <TIME> Ready for differential abundance analysis.
+prot_dia_limpa	main	daload.modals	5
+prot_dia_limpa	main	da.head	ruv_covariates
+prot_dia_limpa	main	da.head_label	da:ruv_covariates
+prot_dia_limpa	main	da.head_group_moved	KO
+prot_dia_limpa	main	da.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	da.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered > da:ruv_covariates
+prot_dia_limpa	main	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_dia_limpa	main	da.notes	[default] Running differential abundance analysis... | [message] Differential abundance analysis completed successfully!
+prot_dia_limpa	main	da.modals	5
+prot_dia_limpa	main	da.result_changed	TRUE
+prot_dia_limpa	main	da.source_label	da:ruv_covariates
+prot_dia_limpa	main	da.group_moved	KO
+prot_dia_limpa	main	record.head	ruv_covariates
+prot_dia_limpa	main	record.head_label	da:ruv_covariates
+prot_dia_limpa	main	record.head_group_moved	KO
+prot_dia_limpa	main	record.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	main	record.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered > da:ruv_covariates
+prot_dia_limpa	main	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_dia_limpa	main	record.notes	<none>
+prot_dia_limpa	main	record.modals	5
+prot_dia_limpa	main	record.steps	initial=import > raw_data_s4=design_builder > qvalue_filtered=peptide_qvalue_filter > precursor_rollup=precursor_rollup > log2_matrix=peptide_log2_matrix > peptide_accession_cleaned=peptide_accession_cleanup > protein_dpc_quant=protein_dpc_quant > protein_normalised=protein_between_sample_normalisation > peptide_count_filtered=protein_peptide_count_filter > correlation_filtered=pearson-selection > ruv_covariates=protein_ruv_covariates
+prot_dia_limpa	main	record.step_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > corr:correlation_filtered > da:ruv_covariates
+prot_dia_limpa	main	record.qc_steps_before_run	<no run step>
+prot_dia_limpa	main	record.design_group_moved	KO
+prot_dia_limpa	main	record.design_builder_label	resave:raw_data_s4
+prot_dia_limpa	main	seconds	140.7
+prot_dia_limpa	e	before.head	ruv_covariates
+prot_dia_limpa	e	before.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	e	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	e	before.integration_files	<none>
+prot_dia_limpa	e	before.design_group_moved	KO
+prot_dia_limpa	e	moved_runs	ko_4
+prot_dia_limpa	e	prefix_seconds	114
+prot_dia_limpa	e	resave.head	raw_data_s4
+prot_dia_limpa	e	resave.head_label	resave:raw_data_s4
+prot_dia_limpa	e	resave.head_group_moved	WT
+prot_dia_limpa	e	resave.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	e	resave.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > correlation:correlation_filtered > ruv_covariates:ruv_covariates
+prot_dia_limpa	e	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	e	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_dia_limpa	e	resave.modals	5
+prot_dia_limpa	e	resave.head_is_design_state	TRUE
+prot_dia_limpa	e	resave.history_unchanged	TRUE
+prot_dia_limpa	e	resave.later_entities_unchanged	TRUE
+prot_dia_limpa	e	resave.design_entity_changed	TRUE
+prot_dia_limpa	e	resave.status_unchanged_except_design	TRUE
+prot_dia_limpa	e	resave.components_identical	peptide_data=TRUE | design_matrix=FALSE
+prot_dia_limpa	e	resave.components_all_identical	FALSE
+prot_dia_limpa	e	resave.design_group_moved	WT
+prot_dia_limpa	e	resave.contrast_count	1
+prot_dia_limpa	e	resave.contrasts	groupKO-groupWT
+prot_dia_limpa	e	run.head	raw_data_s4
+prot_dia_limpa	e	run.head_label	resave:raw_data_s4
+prot_dia_limpa	e	run.head_group_moved	WT
+prot_dia_limpa	e	run.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	e	run.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > correlation:correlation_filtered > ruv_covariates:ruv_covariates
+prot_dia_limpa	e	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	e	run.notes	[error] Error in normalization: invalid protein normalization QC product request
+prot_dia_limpa	e	run.modals	5
+prot_dia_limpa	e	run.source_from	head_before_press
+prot_dia_limpa	e	run.source_label	resave:raw_data_s4
+prot_dia_limpa	e	run.source_group_moved	WT
+prot_dia_limpa	e	run.notice_kit182	FALSE
+prot_dia_limpa	e	run.prereq_warning	FALSE
+prot_dia_limpa	e	run.states_between_design_and_run	<no run state>
+prot_dia_limpa	e	record.head	raw_data_s4
+prot_dia_limpa	e	record.head_label	resave:raw_data_s4
+prot_dia_limpa	e	record.head_group_moved	WT
+prot_dia_limpa	e	record.history	initial > raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix > peptide_accession_cleaned > protein_dpc_quant > protein_normalised > peptide_count_filtered > correlation_filtered > ruv_covariates
+prot_dia_limpa	e	record.history_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > correlation:correlation_filtered > ruv_covariates:ruv_covariates
+prot_dia_limpa	e	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_dia_limpa	e	record.notes	<none>
+prot_dia_limpa	e	record.modals	5
+prot_dia_limpa	e	record.steps	initial=import > raw_data_s4=design_builder > qvalue_filtered=peptide_qvalue_filter > precursor_rollup=precursor_rollup > log2_matrix=peptide_log2_matrix > peptide_accession_cleaned=peptide_accession_cleanup > protein_dpc_quant=protein_dpc_quant > protein_normalised=protein_between_sample_normalisation > peptide_count_filtered=protein_peptide_count_filter > correlation_filtered=pearson-selection > ruv_covariates=protein_ruv_covariates
+prot_dia_limpa	e	record.step_labels	import:initial > resave:raw_data_s4 > qc_peptide_qvalue_filter:qvalue_filtered > qc_peptide_rollup:precursor_rollup > qc_peptide_log2_matrix:log2_matrix > qc_peptide_accession_cleanup:peptide_accession_cleaned > qc_protein_dpc_quant:protein_dpc_quant > qc_protein_normalisation:protein_normalised > qc_protein_peptide_count:peptide_count_filtered > correlation:correlation_filtered > ruv_covariates:ruv_covariates
+prot_dia_limpa	e	record.qc_steps_before_run	<no run step>
+prot_dia_limpa	e	record.design_group_moved	KO
+prot_dia_limpa	e	record.design_builder_label	resave:raw_data_s4
+prot_dia_limpa	e	seconds	129.1

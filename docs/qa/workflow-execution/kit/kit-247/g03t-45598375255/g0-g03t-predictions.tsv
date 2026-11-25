@@ -1,0 +1,21 @@
+lane	case	key	predicted	pattern
+trx_screen	main	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	main	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	main	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	main	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	main	resave.notes	the success text only	saved successfully
+trx_screen	main	reset.head	Reset re-commits the recorded start whatever the history holds (2.4)	^trx_reset$
+trx_screen	main	reset.head_group_moved	that table is the previous design's	^Sera$
+trx_screen	main	run.source_group_moved	the run reads it: old group	^Sera$
+trx_screen	main	da.result_changed	the DA runs, with no message	^TRUE$
+trx_screen	main	da.group_moved	on the previous design's groups	^Sera$
+trx_screen	e	resave.head	the head is the re-committed design state	^trx_raw_data_s4$
+trx_screen	e	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$
+trx_screen	e	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$
+trx_screen	e	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$
+trx_screen	e	resave.notes	the success text only	saved successfully
+trx_screen	e	run.source_label	path 1: the run reads the NEW design state, before any Quality Control	^resave:trx_raw_data_s4$
+trx_screen	e	run.source_group_moved	the new design's group	^RPMI$
+trx_screen	e	run.status	Quality Control still shown complete	quality_control=complete
+trx_screen	e	run.states_between_design_and_run	the previous design's QC states sit between the design state and the run's states	^[1-9]
+trx_screen	e	record.qc_steps_before_run	the record lists them before the new normalisation	^[1-9]

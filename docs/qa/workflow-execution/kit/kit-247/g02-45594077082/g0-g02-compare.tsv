@@ -1,0 +1,19 @@
+lane	case	key	predicted	pattern	observed	held
+prot_dia_limpa	main	resave.head	the head is the re-committed design state	^raw_data_s4$	raw_data_s4	TRUE
+prot_dia_limpa	main	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$	TRUE	TRUE
+prot_dia_limpa	main	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$	TRUE	TRUE
+prot_dia_limpa	main	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$	TRUE	TRUE
+prot_dia_limpa	main	resave.notes	the success text only	saved successfully	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!	TRUE
+prot_dia_limpa	main	reset.head	Reset (KIT-225) returns the previous design's Peptide Count Filter table L7	^peptide_count_filtered$	peptide_count_filtered	TRUE
+prot_dia_limpa	main	reset.head_group_moved	old group	^KO$	KO	TRUE
+prot_dia_limpa	main	run.source_label	the pass-through designates L7 (previous design)	:peptide_count_filtered$	qc_protein_peptide_count:peptide_count_filtered	TRUE
+prot_dia_limpa	main	run.source_group_moved	old group	^KO$	KO	TRUE
+prot_dia_limpa	main	da.result_changed	numbers: the DA runs (newly reachable through KIT-225, INFERRED)	^TRUE$	TRUE	TRUE
+prot_dia_limpa	main	da.group_moved	on the previous design's samples and groups	^KO$	KO	TRUE
+prot_dia_limpa	e	resave.head	the head is the re-committed design state	^raw_data_s4$	raw_data_s4	TRUE
+prot_dia_limpa	e	resave.history_unchanged	the active history is unchanged: every later state of the previous design stays in place (2.2)	^TRUE$	TRUE	TRUE
+prot_dia_limpa	e	resave.later_entities_unchanged	every later state keeps its entity	^TRUE$	TRUE	TRUE
+prot_dia_limpa	e	resave.status_unchanged_except_design	no tab status changes (design_matrix stays complete)	^TRUE$	TRUE	TRUE
+prot_dia_limpa	e	resave.notes	the success text only	saved successfully	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!	TRUE
+prot_dia_limpa	e	run.source_label	path 1: the run starts at the new design's peptide state raw_data_s4	^resave:raw_data_s4$	resave:raw_data_s4	TRUE
+prot_dia_limpa	e	run.notice_kit182	no KIT-182 notice (a peptide table)	^FALSE$	FALSE	TRUE

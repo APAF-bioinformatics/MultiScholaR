@@ -1,0 +1,468 @@
+lane	case	key	value
+prot_lfq	main	before.head	correlation_filtered
+prot_lfq	main	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	before.integration_files	<none>
+prot_lfq	main	before.design_group_moved	KO
+prot_lfq	main	moved_runs	ko_5
+prot_lfq	main	prefix_seconds	105.9
+prot_lfq	main	resave.head	protein_s4_initial
+prot_lfq	main	resave.head_label	resave:protein_s4_initial
+prot_lfq	main	resave.head_group_moved	WT
+prot_lfq	main	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	main	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	main	resave.modals	5
+prot_lfq	main	resave.head_is_design_state	TRUE
+prot_lfq	main	resave.history_unchanged	TRUE
+prot_lfq	main	resave.later_entities_unchanged	TRUE
+prot_lfq	main	resave.design_entity_changed	TRUE
+prot_lfq	main	resave.status_unchanged_except_design	TRUE
+prot_lfq	main	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	main	resave.components_all_identical	FALSE
+prot_lfq	main	resave.design_group_moved	WT
+prot_lfq	main	resave.contrast_count	1
+prot_lfq	main	resave.contrasts	groupKO-groupWT
+prot_lfq	main	reset.head	protein_replicate_filtered
+prot_lfq	main	reset.head_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	main	reset.head_group_moved	KO
+prot_lfq	main	reset.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered
+prot_lfq	main	reset.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	main	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	reset.notes	[warning] Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).
+prot_lfq	main	reset.modals	5
+prot_lfq	main	reset.recorded_start_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	main	run.head	normalized
+prot_lfq	main	run.head_label	run:normalized
+prot_lfq	main	run.head_group_moved	KO
+prot_lfq	main	run.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized
+prot_lfq	main	run.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized
+prot_lfq	main	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	run.notes	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+prot_lfq	main	run.modals	5
+prot_lfq	main	run.source_from	prot_run
+prot_lfq	main	run.source_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	main	run.source_group_moved	KO
+prot_lfq	main	run.prev_input_label	<null>
+prot_lfq	main	run.normalization_complete_before	FALSE
+prot_lfq	main	run.notice_kit182	FALSE
+prot_lfq	main	run.prereq_warning	FALSE
+prot_lfq	main	run.states_between_design_and_run	4
+prot_lfq	main	corr.head	correlation_filtered
+prot_lfq	main	corr.head_label	corr:correlation_filtered
+prot_lfq	main	corr.head_group_moved	KO
+prot_lfq	main	corr.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	corr.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	main	corr.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	corr.notes	[message] Correlation filtering completed! Ready for differential expression analysis.
+prot_lfq	main	corr.modals	5
+prot_lfq	main	export.head	correlation_filtered
+prot_lfq	main	export.head_label	corr:correlation_filtered
+prot_lfq	main	export.head_group_moved	KO
+prot_lfq	main	export.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	export.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	main	export.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	export.notes	[message] Filtered session data exported successfully! Saved as: filtered_session_<TIME>_native-export-<HEX>.msdia.tar See summary file for details.
+prot_lfq	main	export.modals	5
+prot_lfq	main	daload.head	correlation_filtered
+prot_lfq	main	daload.head_label	corr:correlation_filtered
+prot_lfq	main	daload.head_group_moved	KO
+prot_lfq	main	daload.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	daload.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	main	daload.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	main	daload.notes	[message] Session loaded successfully! Data Summary: - Proteins: 400 - Samples: 10 - Contrasts: 1 - State: correlation_filtered - Export time: <TIME> Ready for differential abundance analysis.
+prot_lfq	main	daload.modals	5
+prot_lfq	main	da.head	correlation_filtered
+prot_lfq	main	da.head_label	da:correlation_filtered
+prot_lfq	main	da.head_group_moved	KO
+prot_lfq	main	da.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	da.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > da:correlation_filtered
+prot_lfq	main	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	main	da.notes	[default] Running differential abundance analysis... | [message] Differential abundance analysis completed successfully!
+prot_lfq	main	da.modals	5
+prot_lfq	main	da.result_changed	TRUE
+prot_lfq	main	da.source_label	da:correlation_filtered
+prot_lfq	main	da.group_moved	KO
+prot_lfq	main	record.head	correlation_filtered
+prot_lfq	main	record.head_label	da:correlation_filtered
+prot_lfq	main	record.head_group_moved	KO
+prot_lfq	main	record.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	main	record.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > da:correlation_filtered
+prot_lfq	main	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	main	record.notes	<none>
+prot_lfq	main	record.modals	5
+prot_lfq	main	record.steps	initial=import > protein_s4_initial=design_builder > protein_accession_cleaned=protein_accession_cleanup > protein_intensity_filtered=protein_intensity_filter > duplicates_removed=protein_duplicate_removal > protein_replicate_filtered=protein_replicate_filter > normalized=normalization-ruv > correlation_filtered=pearson-selection
+prot_lfq	main	record.step_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > da:correlation_filtered
+prot_lfq	main	record.qc_steps_before_run	4
+prot_lfq	main	record.design_group_moved	KO
+prot_lfq	main	record.design_builder_label	resave:protein_s4_initial
+prot_lfq	main	seconds	161.3
+prot_lfq	b	before.head	correlation_filtered
+prot_lfq	b	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	b	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	before.integration_files	<none>
+prot_lfq	b	before.design_group_moved	KO
+prot_lfq	b	moved_runs	ko_5
+prot_lfq	b	prefix_seconds	116.1
+prot_lfq	b	resave.head	protein_s4_initial
+prot_lfq	b	resave.head_label	resave:protein_s4_initial
+prot_lfq	b	resave.head_group_moved	KO
+prot_lfq	b	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	b	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	b	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	resave.notes	[message] Reset of all completed. | [message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	b	resave.modals	6
+prot_lfq	b	resave.head_is_design_state	TRUE
+prot_lfq	b	resave.history_unchanged	TRUE
+prot_lfq	b	resave.later_entities_unchanged	TRUE
+prot_lfq	b	resave.design_entity_changed	TRUE
+prot_lfq	b	resave.status_unchanged_except_design	TRUE
+prot_lfq	b	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	b	resave.components_all_identical	FALSE
+prot_lfq	b	resave.design_group_moved	KO
+prot_lfq	b	resave.contrast_count	1
+prot_lfq	b	resave.contrasts	groupKO-groupCtrl
+prot_lfq	b	reset.head	protein_replicate_filtered
+prot_lfq	b	reset.head_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	b	reset.head_group_moved	KO
+prot_lfq	b	reset.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered
+prot_lfq	b	reset.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	b	reset.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	reset.notes	[warning] Normalisation reset: the current table is again the one the normalisation started from (Protein Replicate Filter).
+prot_lfq	b	reset.modals	6
+prot_lfq	b	reset.recorded_start_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	b	run.head	normalized
+prot_lfq	b	run.head_label	run:normalized
+prot_lfq	b	run.head_group_moved	KO
+prot_lfq	b	run.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized
+prot_lfq	b	run.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized
+prot_lfq	b	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=pending; differential_expression=disabled; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	run.notes	[message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+prot_lfq	b	run.modals	6
+prot_lfq	b	run.source_from	prot_run
+prot_lfq	b	run.source_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	b	run.source_group_moved	KO
+prot_lfq	b	run.prev_input_label	<null>
+prot_lfq	b	run.normalization_complete_before	FALSE
+prot_lfq	b	run.notice_kit182	FALSE
+prot_lfq	b	run.prereq_warning	FALSE
+prot_lfq	b	run.states_between_design_and_run	4
+prot_lfq	b	corr.head	correlation_filtered
+prot_lfq	b	corr.head_label	corr:correlation_filtered
+prot_lfq	b	corr.head_group_moved	KO
+prot_lfq	b	corr.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	b	corr.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	b	corr.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	corr.notes	[message] Correlation filtering completed! Ready for differential expression analysis.
+prot_lfq	b	corr.modals	6
+prot_lfq	b	export.head	correlation_filtered
+prot_lfq	b	export.head_label	corr:correlation_filtered
+prot_lfq	b	export.head_group_moved	KO
+prot_lfq	b	export.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	b	export.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	b	export.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	export.notes	[message] Filtered session data exported successfully! Saved as: filtered_session_<TIME>_native-export-<HEX>.msdia.tar See summary file for details.
+prot_lfq	b	export.modals	6
+prot_lfq	b	daload.head	correlation_filtered
+prot_lfq	b	daload.head_label	corr:correlation_filtered
+prot_lfq	b	daload.head_group_moved	KO
+prot_lfq	b	daload.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	b	daload.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	b	daload.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	daload.notes	[message] Session loaded successfully! Data Summary: - Proteins: 400 - Samples: 10 - Contrasts: 1 - State: correlation_filtered - Export time: <TIME> Ready for differential abundance analysis.
+prot_lfq	b	daload.modals	6
+prot_lfq	b	da.head	correlation_filtered
+prot_lfq	b	da.head_label	corr:correlation_filtered
+prot_lfq	b	da.head_group_moved	KO
+prot_lfq	b	da.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	b	da.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > corr:correlation_filtered
+prot_lfq	b	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	b	da.notes	[default] Running differential abundance analysis... | [error] Error in DA analysis: DA contrast 'groupKO-groupCtrl' references terms absent from the model matrix: groupCtrl
+prot_lfq	b	da.modals	6
+prot_lfq	b	da.result_changed	FALSE
+prot_lfq	b	da.source_label	<null>
+prot_lfq	b	da.group_moved	<null>
+prot_lfq	b	seconds	171.2
+prot_lfq	c	before.head	correlation_filtered
+prot_lfq	c	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	c	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	c	before.integration_files	<none>
+prot_lfq	c	before.design_group_moved	KO
+prot_lfq	c	moved_runs	ko_5
+prot_lfq	c	prefix_seconds	125.7
+prot_lfq	c	resave.head	protein_s4_initial
+prot_lfq	c	resave.head_label	resave:protein_s4_initial
+prot_lfq	c	resave.head_group_moved	WT
+prot_lfq	c	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	c	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > da:correlation_filtered
+prot_lfq	c	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	c	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	c	resave.modals	5
+prot_lfq	c	resave.head_is_design_state	TRUE
+prot_lfq	c	resave.history_unchanged	TRUE
+prot_lfq	c	resave.later_entities_unchanged	TRUE
+prot_lfq	c	resave.design_entity_changed	TRUE
+prot_lfq	c	resave.status_unchanged_except_design	TRUE
+prot_lfq	c	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	c	resave.components_all_identical	FALSE
+prot_lfq	c	resave.design_group_moved	WT
+prot_lfq	c	resave.contrast_count	1
+prot_lfq	c	resave.contrasts	groupKO-groupWT
+prot_lfq	c	da.head	protein_s4_initial
+prot_lfq	c	da.head_label	resave:protein_s4_initial
+prot_lfq	c	da.head_group_moved	WT
+prot_lfq	c	da.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	c	da.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > da:correlation_filtered
+prot_lfq	c	da.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	c	da.notes	[warning] Please complete the normalization (with or without RUV) and correlation filtering steps before accessing differential abundance analysis. | [error] Error in DA analysis: no filtered protein data is loaded.
+prot_lfq	c	da.modals	5
+prot_lfq	c	da.result_changed	FALSE
+prot_lfq	c	da.source_label	da:correlation_filtered
+prot_lfq	c	da.group_moved	KO
+prot_lfq	c	seconds	146.3
+prot_lfq	d	before.head	correlation_filtered
+prot_lfq	d	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	d	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	d	before.integration_files	<none>
+prot_lfq	d	before.design_group_moved	KO
+prot_lfq	d	moved_runs	ko_5
+prot_lfq	d	prefix_seconds	112.7
+prot_lfq	d	resave.head	protein_s4_initial
+prot_lfq	d	resave.head_label	resave:protein_s4_initial
+prot_lfq	d	resave.head_group_moved	WT
+prot_lfq	d	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	d	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	d	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	d	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	d	resave.modals	5
+prot_lfq	d	resave.head_is_design_state	TRUE
+prot_lfq	d	resave.history_unchanged	TRUE
+prot_lfq	d	resave.later_entities_unchanged	TRUE
+prot_lfq	d	resave.design_entity_changed	TRUE
+prot_lfq	d	resave.status_unchanged_except_design	TRUE
+prot_lfq	d	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	d	resave.components_all_identical	FALSE
+prot_lfq	d	resave.design_group_moved	WT
+prot_lfq	d	resave.contrast_count	1
+prot_lfq	d	resave.contrasts	groupKO-groupWT
+prot_lfq	d	qcre.head	protein_accession_cleaned
+prot_lfq	d	qcre.head_label	qcre:protein_accession_cleaned
+prot_lfq	d	qcre.head_group_moved	WT
+prot_lfq	d	qcre.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	d	qcre.history_labels	import:initial > resave:protein_s4_initial > qcre:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	d	qcre.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	d	qcre.notes	[default] Applying protein accession cleanup... | [message] Protein accession cleanup completed
+prot_lfq	d	qcre.modals	5
+prot_lfq	d	run.head	normalized
+prot_lfq	d	run.head_label	run:normalized
+prot_lfq	d	run.head_group_moved	WT
+prot_lfq	d	run.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	d	run.history_labels	import:initial > resave:protein_s4_initial > qcre:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > correlation:correlation_filtered
+prot_lfq	d	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	d	run.notes	[message] This normalisation uses your current quality-control result. The previous normalisation used an earlier table, from before your latest quality-control changes. | [message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+prot_lfq	d	run.modals	5
+prot_lfq	d	run.source_from	prot_run
+prot_lfq	d	run.source_label	qcre:protein_accession_cleaned
+prot_lfq	d	run.source_group_moved	WT
+prot_lfq	d	run.prev_input_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	d	run.normalization_complete_before	TRUE
+prot_lfq	d	run.notice_kit182	TRUE
+prot_lfq	d	run.prereq_warning	FALSE
+prot_lfq	d	run.states_between_design_and_run	4
+prot_lfq	d	record.head	normalized
+prot_lfq	d	record.head_label	run:normalized
+prot_lfq	d	record.head_group_moved	WT
+prot_lfq	d	record.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	d	record.history_labels	import:initial > resave:protein_s4_initial > qcre:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > correlation:correlation_filtered
+prot_lfq	d	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	d	record.notes	<none>
+prot_lfq	d	record.modals	5
+prot_lfq	d	record.steps	initial=import > protein_s4_initial=design_builder > protein_accession_cleaned=protein_accession_cleanup > protein_intensity_filtered=protein_intensity_filter > duplicates_removed=protein_duplicate_removal > protein_replicate_filtered=protein_replicate_filter > normalized=normalization-ruv > correlation_filtered=pearson-selection
+prot_lfq	d	record.step_labels	import:initial > resave:protein_s4_initial > qcre:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > correlation:correlation_filtered
+prot_lfq	d	record.qc_steps_before_run	4
+prot_lfq	d	record.design_group_moved	KO
+prot_lfq	d	record.design_builder_label	resave:protein_s4_initial
+prot_lfq	d	seconds	183.6
+prot_lfq	e	before.head	correlation_filtered
+prot_lfq	e	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	e	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	e	before.integration_files	<none>
+prot_lfq	e	before.design_group_moved	KO
+prot_lfq	e	moved_runs	ko_5
+prot_lfq	e	prefix_seconds	113.5
+prot_lfq	e	resave.head	protein_s4_initial
+prot_lfq	e	resave.head_label	resave:protein_s4_initial
+prot_lfq	e	resave.head_group_moved	WT
+prot_lfq	e	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	e	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	e	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	e	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	e	resave.modals	5
+prot_lfq	e	resave.head_is_design_state	TRUE
+prot_lfq	e	resave.history_unchanged	TRUE
+prot_lfq	e	resave.later_entities_unchanged	TRUE
+prot_lfq	e	resave.design_entity_changed	TRUE
+prot_lfq	e	resave.status_unchanged_except_design	TRUE
+prot_lfq	e	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	e	resave.components_all_identical	FALSE
+prot_lfq	e	resave.design_group_moved	WT
+prot_lfq	e	resave.contrast_count	1
+prot_lfq	e	resave.contrasts	groupKO-groupWT
+prot_lfq	e	run.head	normalized
+prot_lfq	e	run.head_label	run:normalized
+prot_lfq	e	run.head_group_moved	WT
+prot_lfq	e	run.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	e	run.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > correlation:correlation_filtered
+prot_lfq	e	run.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	e	run.notes	[message] This normalisation uses your current quality-control result. The previous normalisation used an earlier table, from before your latest quality-control changes. | [message] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+prot_lfq	e	run.modals	5
+prot_lfq	e	run.source_from	prot_run
+prot_lfq	e	run.source_label	resave:protein_s4_initial
+prot_lfq	e	run.source_group_moved	WT
+prot_lfq	e	run.prev_input_label	qc_protein_replicate_filter:protein_replicate_filtered
+prot_lfq	e	run.normalization_complete_before	TRUE
+prot_lfq	e	run.notice_kit182	TRUE
+prot_lfq	e	run.prereq_warning	FALSE
+prot_lfq	e	run.states_between_design_and_run	4
+prot_lfq	e	record.head	normalized
+prot_lfq	e	record.head_label	run:normalized
+prot_lfq	e	record.head_group_moved	WT
+prot_lfq	e	record.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	e	record.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > correlation:correlation_filtered
+prot_lfq	e	record.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	e	record.notes	<none>
+prot_lfq	e	record.modals	5
+prot_lfq	e	record.steps	initial=import > protein_s4_initial=design_builder > protein_accession_cleaned=protein_accession_cleanup > protein_intensity_filtered=protein_intensity_filter > duplicates_removed=protein_duplicate_removal > protein_replicate_filtered=protein_replicate_filter > normalized=normalization-ruv > correlation_filtered=pearson-selection
+prot_lfq	e	record.step_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > run:normalized > correlation:correlation_filtered
+prot_lfq	e	record.qc_steps_before_run	4
+prot_lfq	e	record.design_group_moved	KO
+prot_lfq	e	record.design_builder_label	resave:protein_s4_initial
+prot_lfq	e	seconds	172
+prot_lfq	f0	before.head	correlation_filtered
+prot_lfq	f0	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	f0	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	f0	before.integration_files	<none>
+prot_lfq	f0	before.design_group_moved	KO
+prot_lfq	f0	moved_runs	ko_5
+prot_lfq	f0	prefix_seconds	113.9
+prot_lfq	f0	resave.head	protein_s4_initial
+prot_lfq	f0	resave.head_label	resave:protein_s4_initial
+prot_lfq	f0	resave.head_group_moved	WT
+prot_lfq	f0	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	f0	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	f0	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	f0	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	f0	resave.modals	5
+prot_lfq	f0	resave.head_is_design_state	TRUE
+prot_lfq	f0	resave.history_unchanged	TRUE
+prot_lfq	f0	resave.later_entities_unchanged	TRUE
+prot_lfq	f0	resave.design_entity_changed	TRUE
+prot_lfq	f0	resave.status_unchanged_except_design	TRUE
+prot_lfq	f0	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	f0	resave.components_all_identical	FALSE
+prot_lfq	f0	resave.design_group_moved	WT
+prot_lfq	f0	resave.contrast_count	1
+prot_lfq	f0	resave.contrasts	groupKO-groupWT
+prot_lfq	f0	summary.head	protein_s4_initial
+prot_lfq	f0	summary.head_label	resave:protein_s4_initial
+prot_lfq	f0	summary.head_group_moved	WT
+prot_lfq	f0	summary.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	f0	summary.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	f0	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	f0	summary.notes	[warning] Study parameters saved with warnings
+prot_lfq	f0	summary.modals	5
+prot_lfq	f0	summary.refused	FALSE
+prot_lfq	f0	summary.state_used	correlation_filtered
+prot_lfq	f0	summary.object_group_moved	KO
+prot_lfq	f0	summary.integration_files	<none>
+prot_lfq	f0	seconds	134.8
+prot_lfq	f1	before.head	correlation_filtered
+prot_lfq	f1	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	f1	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	f1	before.integration_files	proteomics/features_proteomics.parquet, proteomics/integration_input.json, proteomics/matrix_proteomics.parquet, proteomics/samples.parquet
+prot_lfq	f1	before.design_group_moved	KO
+prot_lfq	f1	moved_runs	ko_5
+prot_lfq	f1	prefix_seconds	126
+prot_lfq	f1	resave.head	protein_s4_initial
+prot_lfq	f1	resave.head_label	resave:protein_s4_initial
+prot_lfq	f1	resave.head_group_moved	WT
+prot_lfq	f1	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	f1	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > da:correlation_filtered
+prot_lfq	f1	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	f1	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	f1	resave.modals	5
+prot_lfq	f1	resave.head_is_design_state	TRUE
+prot_lfq	f1	resave.history_unchanged	TRUE
+prot_lfq	f1	resave.later_entities_unchanged	TRUE
+prot_lfq	f1	resave.design_entity_changed	TRUE
+prot_lfq	f1	resave.status_unchanged_except_design	TRUE
+prot_lfq	f1	resave.components_identical	protein_quant_table=TRUE | design_matrix=FALSE | protein_id_table=TRUE
+prot_lfq	f1	resave.components_all_identical	FALSE
+prot_lfq	f1	resave.design_group_moved	WT
+prot_lfq	f1	resave.contrast_count	1
+prot_lfq	f1	resave.contrasts	groupKO-groupWT
+prot_lfq	f1	summary.head	protein_s4_initial
+prot_lfq	f1	summary.head_label	resave:protein_s4_initial
+prot_lfq	f1	summary.head_group_moved	WT
+prot_lfq	f1	summary.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	f1	summary.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > da:correlation_filtered
+prot_lfq	f1	summary.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=complete; enrichment_analysis=pending; session_summary=disabled; differential_abundance=complete
+prot_lfq	f1	summary.notes	[error] The session could not be saved: The differential analysis was run on an earlier table, not the current one: the table changed after the analysis ran (a new normalisation run, a Revert, or the correlation filter applied again). Run the differential analysis again, then press 'Save Workflow Arguments' before copying or generating the report.
+prot_lfq	f1	summary.modals	5
+prot_lfq	f1	summary.refused	TRUE
+prot_lfq	f1	summary.state_used	<no integration export started>
+prot_lfq	f1	summary.integration_files	<none>
+prot_lfq	f1	seconds	146.8
+prot_lfq	g	before.head	correlation_filtered
+prot_lfq	g	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	g	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	g	before.integration_files	<none>
+prot_lfq	g	before.design_group_moved	KO
+prot_lfq	g	moved_runs	ko_5
+prot_lfq	g	prefix_seconds	114.4
+prot_lfq	g	resave.head	protein_s4_initial
+prot_lfq	g	resave.head_label	resave:protein_s4_initial
+prot_lfq	g	resave.head_group_moved	KO
+prot_lfq	g	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	g	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	g	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	g	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	g	resave.modals	5
+prot_lfq	g	resave.head_is_design_state	TRUE
+prot_lfq	g	resave.history_unchanged	TRUE
+prot_lfq	g	resave.later_entities_unchanged	TRUE
+prot_lfq	g	resave.design_entity_changed	TRUE
+prot_lfq	g	resave.status_unchanged_except_design	TRUE
+prot_lfq	g	resave.components_identical	protein_quant_table=TRUE | design_matrix=TRUE | protein_id_table=TRUE
+prot_lfq	g	resave.components_all_identical	TRUE
+prot_lfq	g	resave.design_group_moved	KO
+prot_lfq	g	resave.contrast_count	2
+prot_lfq	g	resave.contrasts	groupKO-groupWT | groupWT-groupKO
+prot_lfq	g	seconds	117.8
+prot_lfq	h	before.head	correlation_filtered
+prot_lfq	h	before.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	h	before.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	h	before.integration_files	<none>
+prot_lfq	h	before.design_group_moved	KO
+prot_lfq	h	moved_runs	ko_5
+prot_lfq	h	prefix_seconds	114.4
+prot_lfq	h	resave.head	protein_s4_initial
+prot_lfq	h	resave.head_label	resave:protein_s4_initial
+prot_lfq	h	resave.head_group_moved	KO
+prot_lfq	h	resave.history	initial > protein_s4_initial > protein_accession_cleaned > protein_intensity_filtered > duplicates_removed > protein_replicate_filtered > normalized > correlation_filtered
+prot_lfq	h	resave.history_labels	import:initial > resave:protein_s4_initial > qc_protein_cleanup:protein_accession_cleaned > qc_protein_intensity_filter:protein_intensity_filtered > qc_protein_duplicate_removal:duplicates_removed > qc_protein_replicate_filter:protein_replicate_filtered > norm:normalized > correlation:correlation_filtered
+prot_lfq	h	resave.status	setup_import=complete; design_matrix=complete; quality_control=complete; normalization=complete; differential_expression=pending; enrichment_analysis=disabled; session_summary=disabled
+prot_lfq	h	resave.notes	[message] Design saved successfully. You can close this builder. | [message] UniProt annotations retrieved successfully. | [message] Design matrix and contrasts saved successfully!
+prot_lfq	h	resave.modals	5
+prot_lfq	h	resave.head_is_design_state	TRUE
+prot_lfq	h	resave.history_unchanged	TRUE
+prot_lfq	h	resave.later_entities_unchanged	TRUE
+prot_lfq	h	resave.design_entity_changed	TRUE
+prot_lfq	h	resave.status_unchanged_except_design	TRUE
+prot_lfq	h	resave.components_identical	protein_quant_table=TRUE | design_matrix=TRUE | protein_id_table=TRUE
+prot_lfq	h	resave.components_all_identical	TRUE
+prot_lfq	h	resave.design_group_moved	KO
+prot_lfq	h	resave.contrast_count	1
+prot_lfq	h	resave.contrasts	groupKO-groupWT
+prot_lfq	h	seconds	117.7
