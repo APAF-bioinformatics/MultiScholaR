@@ -609,9 +609,14 @@ test_that("KIT-260 I05: a record from a build before KIT-260 whose ITSD used sta
   skip_if_not(workflowOwnerCapable())
   root <- withr::local_tempdir()
   binding <- kit172Binding("metab")
-  fixture <- kit260OlderItsd(root, "metab", kit260Object("metab", 8L, pattern = KIT260_BASE))
+  # The ITSD step as a build before KIT-260 made it (VAL-276): under the earlier token of the replay marker KIT-242 and
+  # KIT-260 share (`MultiScholaR.itsd_outcome` = "applied_flag"), so the step records no marker and its product carries
+  # none of the rows-used fields.
+  fixture <- kit260Owner(root, kit260Object("metab", 8L, pattern = KIT260_BASE), "metab")
   owner <- fixture$owner
   config <- fixture$workflow$config_list
+  withr::with_options(list(MultiScholaR.itsd_outcome = "applied_flag"),
+    kit172Quiet(runWorkflowOmicsReferenceItsdNormalisation(binding, owner, "median", NULL, config)))
   kit172Quiet({
     runWorkflowOmicsReferenceLog2(binding, owner, 0, config)
     runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, "cyclicloess", config)
@@ -689,4 +694,48 @@ test_that("KIT-260 I10: E6's managed arm through the worker's own delivery (the 
   }
   text <- "Internal-standard normalisation used 5 (A1) and 5 (A2) rows as internal standards and removed them; the log names them."
   expect_identical(sum(vapply(notes$notes, function(note) identical(note$message, text), logical(1))), 1L)
+})
+
+test_that("KIT-260 VAL-276 (mirror of I05): a record made at this version replays exactly and its ITSD product carries the rows used", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  binding <- kit172Binding("metab")
+  fixture <- kit260Owner(root, kit260Object("metab", 8L), "metab")
+  owner <- fixture$owner
+  config <- fixture$workflow$config_list
+  kit172Quiet({
+    runWorkflowOmicsReferenceItsdNormalisation(binding, owner, "median", NULL, config)
+    runWorkflowOmicsReferenceLog2(binding, owner, 0, config)
+    runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, "cyclicloess", config)
+  })
+  json <- file.path(root, "record.json")
+  kit172Quiet(writeWorkflowAnalysisRecord(owner, json))
+  history <- unlist(owner$getHistory())
+  closeDIAStateAdapter(owner)
+  record <- jsonlite::read_json(json, simplifyVector = FALSE)
+  itsd_step <- Filter(function(step) identical(step$state, "metab_itsd_norm"), record$steps)[[1L]]
+  marker <- Filter(function(p) identical(p$name, "itsd_outcome"), itsd_step$parameters)
+  expect_length(marker, 1L)
+  expect_identical(length(unlist(itsd_step$outcomes$itsd_features_per_assay$A1)), 5L)
+  source_dir <- fixture$source_dir
+  copy <- withr::local_tempdir()
+  stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
+  store_root <- dirname(dirname(list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
+  copy_root <- file.path(copy, substring(store_root, nchar(source_dir) + 2L))
+  harness <- new.env(parent = globalenv())
+  sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), harness)
+  api <- function(name) get(name, asNamespace("MultiScholaR"))
+  prepared <- harness$kitPrepareReplayProject(copy_root, c("initial", "metab_raw_data_s4"), api)
+  inputs <- c(stats::setNames(file.path(source_dir, "import_sources", c("A1_export.txt", "A2_export.txt")), c("metab_assay_1", "metab_assay_2")),
+    design_file = file.path(source_dir, "design_matrix.tab"))
+  replay <- kit172Quiet(harness$kitReplayJourney(record, prepared, store_root, inputs, fixture$paths, withr::local_tempdir(), api))
+  expect_identical(replay$states, history)
+  expect_identical(as.character(replay$mismatches), character())
+  # The replayed ITSD product carries the rows used, as the origin's does.
+  identity <- readSavedStoreIdentity(file.path(prepared, ".workflow-entities", "store.json"))
+  again <- newDIAStateAdapter(newWorkflowEntityStore(prepared, identity$project_id, identity$workflow_id), reopen = TRUE)
+  withr::defer(closeDIAStateAdapter(again))
+  spec <- readWorkflowStateMetadata(again, again$.context$snapshot$states$metab_itsd_norm)$data
+  product <- hydrateSavedWorkflowEntity(again$.context$store, spec$products$metab_itsd_normalisation_science)$value
+  expect_identical(product$itsd_used$A1$annotation, KIT260_STANDARDS_HEAD)
 })
