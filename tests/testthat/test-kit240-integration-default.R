@@ -230,6 +230,10 @@ test_that("KIT-240 T7: each seed's final ELBO is kept and the reported model's r
     expect_identical(seeds$seeds, 20261119L + 0:4)
     expect_equal(seeds$models$elbo_last, c(-100, -99, -101, -100.5, -102))
     expect_equal(seeds$elbo_rank, list(rank = 2L, of = 5L, below_best = 1, range = 3, relative_spread = 3 / 99))
+    # r1.4 (AUDIT-KIT-240-impl I01): a distance below 0.005 never prints as "0.00" (rank 2 or lower); zero (rank 1) does.
+    expect_identical(integrationElboText(0.004), "less than 0.01")
+    expect_identical(integrationElboText(0), "0.00")
+    expect_identical(integrationElboText(1), "1.00")
     # The reported model is the one trained without the further seeds' ELBOs.
     plain <- k240Run(k240Trainer(declared_elbo = c(-130, -100, NaN), others_elbo = NULL))
     for (field in c("factors", "variance_explained", "variance_total", "elbo")) {
@@ -276,7 +280,11 @@ test_that("KIT-240 T8: seeds trained without an ELBO give no rank and no sentenc
     expect_false(grepl("ELBO", intro, fixed = TRUE))
     record <- buildWorkflowAnalysisRecord(fixture$manager)
     expect_null(record$analyses$integration_mofa_model$integration$model$elbo_rank)
-    expect_false(grepl("ELBO", integrationMethodsText(record), fixed = TRUE))
+    methods <- integrationMethodsText(record)
+    expect_false(grepl("ELBO", methods, fixed = TRUE))
+    # r1.4 (I09): the stability figures' limitation is stated whenever several seeds were trained, with or without a rank.
+    limit <- k240Text(integrationRecordTexts(), "methods_seeds_limit")
+    expect_true(!is.na(limit) && grepl(limit, methods, fixed = TRUE))
 })
 
 test_that("KIT-240 T9 (MOFA2 lane): every seed's final ELBO is finite and the reported model's rank is in 1 to 5", {
@@ -324,4 +332,24 @@ test_that("KIT-240 T10: the Enrichment tab marks its eight defaults not yet conf
     expect_identical(lengths(regmatches(ui, gregexpr(mark, ui, fixed = TRUE))), 8L)
     expect_match(texts[["mark_provisional"]], "not yet confirmed", fixed = TRUE)
     expect_false(grepl("owner", texts[["mark_provisional"]], fixed = TRUE))
+})
+
+# r1.4 (AUDIT-KIT-240-impl-20261125 I03, I05, I10): the alignment note is scoped to the three rules it cites; the report's
+# status legend uses a user's words; the Methods paragraph defines the ELBO and names its units. Base (fac10b51): the note
+# covers "These rules", the legend says "the owner", the Methods sentence starts "By its final ELBO".
+test_that("KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true", {
+    gui <- integrationGuiTexts()
+    record <- integrationRecordTexts()
+    # I03: the note names the three rules it covers.
+    for (rule in c("averaging of runs", "internal standards", "missing samples")) {
+        expect_match(gui[["align_provisional"]], rule, fixed = TRUE, info = rule)
+    }
+    # I05: the legend and the status word, as on the Enrichment tab; no "owner".
+    expect_false(grepl("owner", record[["legend_provisional_default"]], fixed = TRUE))
+    expect_identical(record[["status_provisional_default"]], gui[["mark_provisional"]])
+    # I10: the ELBO defined and its units named in the Methods sentence.
+    expect_match(record[["methods_seeds_elbo"]], "evidence lower bound (ELBO", fixed = TRUE)
+    expect_match(record[["methods_seeds_elbo"]], "units", fixed = TRUE)
+    # I09: the rank sentence no longer carries the limitation; it is a sentence of its own.
+    expect_false(grepl("stability figures", record[["methods_seeds_elbo"]], fixed = TRUE))
 })
