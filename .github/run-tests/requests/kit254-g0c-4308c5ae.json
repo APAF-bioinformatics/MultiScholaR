@@ -1,0 +1,29 @@
+{
+  "requested_by": "Train 15 focused audit, resolution (a) step 1: KIT-254 G0b script unchanged on head 4308c5ae, lipid_ruv thresholds; 1 job, ceiling 30 job-minutes",
+  "label": "Train 15 G0c lipid_ruv thresholds 4308c5ae",
+  "package_commit": "4308c5aeed00b5551e88be9983032f0c7bacbaf5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-254/g0b/g0b-ruv-thresholds.R",
+      "args": [
+        "kit254-g0c"
+      ],
+      "env": {},
+      "out": "kit254-g0c",
+      "out_pattern": "\\.(txt|tsv)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
