@@ -1100,7 +1100,7 @@ jobs:
           if (Test-Path $cases) {
             foreach ($row in @(Get-Content -Encoding utf8 $cases | Select-Object -Skip 1)) {
               $f = $row -split "`t"
-              $case = $f[0]; $archive = $f[1]; $written = $f[2]; $members = @($f[3] -split ';')
+              $case = $f[0]; $archive = [IO.Path]::GetFullPath($f[1]); $written = [IO.Path]::GetFullPath($f[2]); $members = @($f[3] -split ';')
               foreach ($tool in 'expand-archive', 'explorer') {
                 $dest = Join-Path $out "$case-$tool"
                 Remove-Item -LiteralPath $dest -Recurse -Force -ErrorAction SilentlyContinue
@@ -1110,20 +1110,29 @@ jobs:
                   if ($tool -eq 'expand-archive') {
                     Expand-Archive -LiteralPath $archive -DestinationPath $dest -ErrorAction Stop
                   } else {
-                    $job = Start-Job -ArgumentList $archive, $dest, $members -ScriptBlock {
-                      param($archive, $dest, $members)
-                      $shell = New-Object -ComObject Shell.Application
-                      $shell.NameSpace($dest).CopyHere($shell.NameSpace($archive).Items(), 1556)
-                      $clock = [Diagnostics.Stopwatch]::StartNew()
-                      while ($clock.Elapsed.TotalSeconds -lt 120) {
-                        if (@($members | Where-Object { -not (Test-Path -LiteralPath (Join-Path $dest $_)) }).Count -eq 0) { Start-Sleep -Seconds 2; return 'done' }
-                        Start-Sleep -Milliseconds 500
-                      }
-                      'timeout'
-                    }
-                    $finished = Wait-Job $job -Timeout 150
-                    $state = if ($finished) { (Receive-Job $job -ErrorAction Continue 2>&1 | Out-String).Trim() } else { 'job timeout' }
-                    Remove-Job $job -Force
+                    # Explorer's engine in its own single-threaded (STA) Windows PowerShell process, the paths
+                    # in Windows' own form (G0, run 45577719573: Shell.NameSpace returned null for the
+                    # archive path R wrote with '/' separators; instrument fault, VAL-54).
+                    $engine = Join-Path $env:RUNNER_TEMP 'kit241-explorer.ps1'
+                    @'
+          param([string]$Archive, [string]$Dest, [string]$Members)
+          $shell = New-Object -ComObject Shell.Application
+          $source = $shell.NameSpace($Archive)
+          $target = $shell.NameSpace($Dest)
+          if ($null -eq $source -or $null -eq $target) { "namespace null (archive: $($null -eq $source); destination: $($null -eq $target))"; exit 2 }
+          $target.CopyHere($source.Items(), 1556)
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          while ($clock.Elapsed.TotalSeconds -lt 120) {
+            if (@($Members -split ';' | Where-Object { -not (Test-Path -LiteralPath (Join-Path $Dest $_)) }).Count -eq 0) { Start-Sleep -Seconds 2; 'done'; exit 0 }
+            Start-Sleep -Milliseconds 500
+          }
+          'timeout'; exit 3
+          '@ | Set-Content -Encoding utf8 $engine
+                    $engineOut = Join-Path $env:RUNNER_TEMP "kit241-explorer-$case.txt"
+                    $p = Start-Process -FilePath "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -ArgumentList @('-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-File', $engine, $archive, $dest, ($members -join ';')) -PassThru -NoNewWindow -RedirectStandardOutput $engineOut
+                    $finished = $p.WaitForExit(150000)
+                    $state = if ($finished) { (Get-Content -Raw $engineOut -ErrorAction SilentlyContinue) } else { $p.Kill(); 'process timeout' }
+                    $state = "$state".Trim()
                     if ($state -notmatch 'done') { $said = "instrument fault (VAL-54): Explorer's engine did not finish: $state"; $fault = $true }
                   }
                   if (-not $said) {
