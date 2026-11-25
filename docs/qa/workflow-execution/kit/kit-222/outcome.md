@@ -1,7 +1,7 @@
 # KIT-222 outcome (ticket r1.2; owner's OD-1 to OD-8 of 2026-11-25)
 
 State: stopped after R2 and its one correction pass, for the implementation audit (coordinator's instruction: no full
-suite before the audit; KIT-214 edits the same design code). One acceptance item is not met: G1's byte identity
+suite before the audit). One acceptance item is not met: G1's byte identity
 holds on labels but not on the replicate column's type in 1,896 'manual' sequences (below).
 
 ## Commits (branch kit-222, from origin/v0.9-staging cf8af245)
@@ -64,27 +64,29 @@ recorded; G6 first violation at depth 2: lowest(r1, r2) then lowest(r1, r3).
 - R CMD check: identical findings on both sides, 0 only on head.
 - New file on head: 445 passed, 2 failed: G1 and G5, both because the replicate column was integer on head where
   base left it double (labels identical).
-- C1: 54,024 G1 sequences; labels differ from base only in the 1,640 sequences where base merged (all 'manual' at four
-  samples); G6 depth 3 on head: no violation in 140,910 edits; base violates at depth 2.
+- C1: 54,024 G1 sequences; labels differ from base only in the 1,640 sequences where base merged (1,440 at four samples, 200 at fifty;
+  all 'manual'); G6 depth 3 on head: no violation in 140,910 edits; base violates at depth 2.
 
 ### Correction pass (run 45519323914, f58cd9e2 against 3893b19a)
 
 - The edit now keeps the column double when other runs' numbers move. 19 files that drive the edit, and check: all
   `same`, check identical. G5 passes. C1 G6 head: none.
-- New file: 446 passed, 1 failed: G1. 1,896 'manual' sequences (typed numbers in increasing order, out-of-row-order
+- New file: 446 passed, 1 failed: G1, in 603 sequences of the test file (AUDIT-KIT-222-impl I01): 536 type-only
+  (8 at two samples, 528 at three) and 67 random 50-sample 'manual' orders in which base merged, outside G1's declared
+  population (the file's G1 had no base merge-free filter, unlike C1). In C1, 1,896 'manual' sequences (typed numbers in increasing order, out-of-row-order
   rows, e.g. rows A_1, B_1, A_2, B_2, B typed 1 then A typed 2) give identical labels but the column is integer on base
   and double on head: base moved no run there (nothing above the selection's highest number), while the head's ranks
   moved one. Type only; keys, partitions and every consumer's input values are identical.
 - The exact repair is one condition: make the column double only when base would have shifted a run (any other run of
-  the group numbered above the selection's highest number before the edit). Not applied: the correction budget is
-  spent (VAL-54).
+  the group numbered above the selection's highest number before the edit). The proteomics wrapper's integer coercion
+  also moved the type against base, untested. Both were applied after the implementation audit (below).
 
 ## Acceptance criteria
 
 | # | Status | Evidence |
 |---|---|---|
 | A1 | met: every E row failed on base by assertion at its base value; G rows passed (G5 errored on an instrument defect, repaired) | R1, R2 base side |
-| A2 | met: every E row passes on the fix (E9, E10, E11, E12b, E13, E14 to E16b included) | R2, R2c |
+| A2 | at R2c: every written E row passed on the fix, but E12a and E12d were not written, so A2 was not met (it was recorded as met; AUDIT-KIT-222-impl I02); E13 is tested at the mechanism only. See the audit-repair run below | R2, R2c |
 | A3 | partly: no head merge (G6 head none at depth 3; C1 head merged 0); every base merge absent on head; G1 labels identical, type differs in 1,896 sequences | r2c/c1 |
 | A4 | met: every regression file `same`; check identical | R2, R2c |
 | A5 | not run (full suite after the audit, by the coordinator's order) | — |
@@ -94,15 +96,21 @@ recorded; G6 first violation at depth 2: lowest(r1, r2) then lowest(r1, r3).
 
 - Tests were committed in three tests-only commits (e9309b9d, bcdd8bc1, 3893b19a) before the fix; R1 ran on the first,
   the late rows' base values come from R2's base side (3893b19a).
-- E12a, E12c, E12d are not written: E12a and E12d need a native archive built in code (no builder at the branch point
-  gives one without a package change; ticket E12a says stop and report). E12c's premise does not hold:
-  `ingestWorkflowOmicsLegacySession` serves only lipidomics and metabolomics (`workflowOmicsSessionClass`,
-  `R/utils_workflow_dia_sessions.R:1426`), so the transcriptomics open path the ticket names does not exist there. The
-  open check at `adoptDIANativeSession` and `openDIAPeptideCheckpoint` is tested through its helper only.
-- E13 is tested at the mechanism (the replay option records instead of refusing; the statement text), not by a full
-  record replay.
-- The audit's model said 'manual' typed 1..k in increasing order is merge-free in any row order; R shows base merges in
-  1,640 of 40,320 four-sample row orders (e.g. rows D, A, B, C, typed A=1, B=2, C=3, D=4: B and C share 2).
+- E12a and E12d were not written at R2 on the stated reason that no builder at the branch point gives a native archive
+  without a package change; that reason was wrong (AUDIT-KIT-222-impl I02): test fixtures at
+  `test-workflow-native-session.R:5-22`, `:842-880`, `:965-1010` build both archives in code. They are written after
+  the audit (92208fe5). E12c's premise is false (I10): no transcriptomics project can be reopened (`session_load` is
+  configured for lipid and metab only, `R/utils_omic_gui_config.R:2477`, `:2695`; `workflowOmicsSessionClass` is
+  lipid/metab, `R/utils_workflow_dia_sessions.R:1426`; no transcriptomics `owned_generation`), so OD-3's open message
+  has no transcriptomics entry and nothing users have is left unproven there.
+- E13 is tested at the mechanism only (the replay option records instead of refusing; the statement text), not by a
+  full record replay (I03). The smallest full test, for later: one lipid record replay from an existing replay fixture
+  with D1 rows in the design and `tech_rep_group` declared, expecting completion, `design_statement` naming the key and
+  the warning class.
+- The ticket's prose (sections 6, 7, 14 and G1's `manual` clause) said every in-order `manual` design is unchanged; R
+  shows base merging in 1,440 of 40,320 four-sample row orders and 200 of 200 random 50-sample orders, as the plan
+  audit's model had computed (Re-check 1, R1-03: 38,880 of 40,320 base merge-free). Example: rows D, A, B, C, typed
+  A=1, B=2, C=3, D=4: B and C share 2. Corrected in ticket r1.3.
 - The proteomics checkpoint refuses after the builder commit wrote its files (the builder's save refuses earlier); on
   the proteomics import path the refusal comes after the import's sidecars are read (INFERRED from the code).
 - G6 in the test file is depth 2; depth 3 is in C1.
@@ -141,7 +149,7 @@ R1 0.7, R2 28.6, correction 12.2: 41.5 of the expected 107.7 (ceiling 501.33); R
   designs: identical labels and partition to base on every G1 sequence (C1); the replicate column's type differs in
   1,896 manual sequences (open item). IMP-036's stated limit (2026-11-17) understated the defect and is superseded.
 - **Evidence.** R1 45507613511; R2 45509856651; correction 45519323914; C1 in `r2/c1`, `r2c/c1`. The ticket's and the
-  audit's Python models predicted every base value R showed except the 'manual in increasing order' claim above.
+  audit's Python models predicted every base value R showed, including the 1,440 of 40,320 four-sample `manual` orders.
 
 ## Past results
 
