@@ -14,7 +14,7 @@
    now shows where the reported model ranks among the training seeds by the final value of MOFA2's training objective
    (the ELBO), how far it is below the highest and the range over the seeds. The test setting
    `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
-   hides the tabs. The Enrichment tab marks its eight defaults not yet confirmed (KIT-240).
+   hides the tabs. The Enrichment tab's defaults are confirmed decisions; the three organism settings say they default to human and can be changed for other species (KIT-240, KIT-267).
 
  * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
    analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
