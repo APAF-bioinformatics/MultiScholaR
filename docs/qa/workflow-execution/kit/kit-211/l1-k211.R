@@ -168,18 +168,24 @@ for (i in seq_len(nrow(expect))) {
     }
     if (status != 0L && expect$exit[[i]] == 0L) failureNote(paste("E4 scenario", name), file.path(work, paste0("score-e4-", name, ".log")), "none")
 }
-pooled <- utils::read.delim(file.path(scored$base$dir, "pooled.tsv"), colClasses = c(scope = "character", cell = "character",
-    mask = "character", stat = "character"))
-settings <- utils::read.delim(file.path(scored$base$dir, "settings.tsv"), colClasses = c(scope = "character", cell = "character",
-    mask = "character", stat = "character"))
-mine <- vapply(seq_len(nrow(hand)), \(i) {
-    t <- if (hand$scope[[i]] == "pool") pooled[pooled$scope == "pool" & pooled$cell == hand$cell[[i]] & pooled$mask == hand$mask[[i]], ] else
-        settings[settings$scope == hand$scope[[i]] & settings$cell == hand$cell[[i]] & settings$mask == hand$mask[[i]], ]
-    v <- t[[if (hand$field[[i]] == "estimate") "estimate" else "jack_se"]][t$stat == hand$stat[[i]]]
-    if (length(v) == 1L) as.numeric(v) else NA_real_
-}, numeric(1L))
-e4Note("hand_estimates", close_enough(mine[hand$field == "estimate"], hand$value[hand$field == "estimate"]))
-e4Note("hand_jackknife", close_enough(mine[hand$field == "jack_se"], hand$value[hand$field == "jack_se"]))
+base_files <- file.path(scored$base$dir, c("pooled.tsv", "settings.tsv"))
+if (all(file.exists(base_files))) {
+    pooled <- utils::read.delim(base_files[[1L]], colClasses = c(scope = "character", cell = "character",
+        mask = "character", stat = "character"))
+    settings <- utils::read.delim(base_files[[2L]], colClasses = c(scope = "character", cell = "character",
+        mask = "character", stat = "character"))
+    mine <- vapply(seq_len(nrow(hand)), \(i) {
+        t <- if (hand$scope[[i]] == "pool") pooled[pooled$scope == "pool" & pooled$cell == hand$cell[[i]] & pooled$mask == hand$mask[[i]], ] else
+            settings[settings$scope == hand$scope[[i]] & settings$cell == hand$cell[[i]] & settings$mask == hand$mask[[i]], ]
+        v <- t[[if (hand$field[[i]] == "estimate") "estimate" else "jack_se"]][t$stat == hand$stat[[i]]]
+        if (length(v) == 1L) as.numeric(v) else NA_real_
+    }, numeric(1L))
+    e4Note("hand_estimates", close_enough(mine[hand$field == "estimate"], hand$value[hand$field == "estimate"]))
+    e4Note("hand_jackknife", close_enough(mine[hand$field == "jack_se"], hand$value[hand$field == "jack_se"]))
+} else {
+    e4Note("hand_estimates", FALSE)
+    e4Note("hand_jackknife", FALSE)
+}
 join_dir <- scored$join$dir
 if (file.exists(file.path(join_dir, "replicates.tsv"))) {
     reps <- utils::read.delim(file.path(join_dir, "replicates.tsv"), colClasses = c(cell = "character"))

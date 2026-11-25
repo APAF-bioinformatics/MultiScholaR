@@ -22,7 +22,7 @@ job-minutes x 4 / 60) -> stop for the coordinator's go before any counted job.
 | KIT-197's scripts (extended, reused) | `sim-k197.R` SHA-256 71001de9b7b1c547e1e27fd92fb1b57a067121e336fa09e134f3317f1fa7c599; `score-k197.R` f546947985617c5a6c0e79edd2d2f4a062db2ed0bea922b9927af6a1a9e9e426; `l1-k197.R` 50d55e99c5eb99a4534a4ea93c39aca9fbe4738ca6a783e086b69cd78294da5e (merged ef63c918) |
 | `sim-k211.R` SHA-256 | 51c2d4672fc7e758b565c4e74e886eac5f805751871e0a47feaa382c518011b4 |
 | `score-k211.R` SHA-256 | aefc66baa7dc42a86f5f69247911e51b8701200b1e7d95851bec676ae1110d54 |
-| `l1-k211.R` SHA-256 | 6079031f48a3c465b576c6d625d67fe93f1ddefcaffabd9c1d4ef796a0634562 |
+| `l1-k211.R` SHA-256 | a387ac1e74d44a054106b235a25848af71f941b3b2da903bed24e1123baba374 |
 | `e0-k211.py` / `e4hand-k211.py` SHA-256 | a1c20199b2111bf3626ed1db7cca34291958ef5d94c508fd9ed16eeccf3a830e / b82ff3112f1a19198758bb59a596ea9dc33adb91515ad1a88169bafb7bb2e734 |
 | `e4/hand.tsv`, `e4/expect.tsv` SHA-256 | e1942e9efffd328228601889ed48af5ae68474092af81434fa02b598dd978f70 / 1f888116e00e867269e318bc5032500c3f82c482ac367eadbeffc4b1529e50cd; SHA-256 of `sha256sum` over the 73 files of `e4/` in sorted path order: 8154cf67bcb15223bcb5c518da8da8c62336a67cd81e8a574c361fc205b80012 |
 | E0 (local text check, `e0-k211.py`, `l1/e0.txt`) | pass: `sim-k211.R`'s verbatim region equals `sim-k197.R` lines 26 to 279 plus exactly two inserted lines (`if (identical(cellname, "Av")) s2 <- s2 * 2^((20 - mu) / 2)` after the variance draw; `if (identical(cellname, "Ag")) beta <- 3 * beta` directly after `beta[where] <- signs`); the three verbatim blocks of `score-k211.R` and the two of `l1-k211.R` equal their KIT-197 lines |
