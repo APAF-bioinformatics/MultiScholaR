@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-255 instrument rerun 1 of 3 (VAL-54): the new test file alone on head 8eb69ca6 (E15 and E20 test mechanics repaired); no base, no check; expected 1.1 core-hours, ceiling 3.0",
+  "label": "KIT-255 R3b new test file alone, head 8eb69ca6 (merged staging 0ebce762)",
+  "package_commit": "8eb69ca6dbc758798f36cb1c516a3f85eed7501a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit255-omics-correlation-assays.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
