@@ -1,0 +1,10 @@
+order	state	operation	dimensions	outcomes	parameters
+1	initial	import	{"rows":null,"columns":null}	{"rows":null,"columns":null}	{}
+2	metab_raw_data_s4	design_builder	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{"sample_id":"Run","group_id":"group","technical_replicate_id":"tech_rep_group"}
+3	metab_intensity_filtered	metab_intensity_filter	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{"metabolites_intensity_cutoff_percentile":10,"metabolites_proportion_of_samples_below_cutoff":0.5,"intensity_filter_samples":"design"}
+4	metab_duplicates_resolved	metab_duplicate_resolution	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{}
+5	metab_qc_complete	metab_qc_finalize	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{}
+6	metab_itsd_norm	metab_itsd_normalisation	{"rows":6,"columns":7}	{"rows":6,"columns":7,"itsd_applied":true}	{"itsd_aggregation":"median","itsd_feature_ids":null,"method":"ITSD"}
+7	metab_log2	metab_log2	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{"offset":0}
+8	metab_normalized	metab_between_sample_normalisation	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{"normalisation_method":"cyclicloess"}
+9	metab_correlation_filtered	metab_pearson_selection	{"rows":6,"columns":7}	{"rows":6,"columns":7}	{"pairs":"7ab4358e546c48372f20f1384a24300007611eedf2252d8f1686c318784f91bd","min_pearson_correlation_threshold":0.5}

@@ -1,0 +1,5 @@
+run_id	commit	purpose	minutes	result
+45577606908	10198a0dc05f56542fc0f81154f4818015ad1d98	G0 (a, b, c) on kit-236-g0 (KIT-235 dc2c638f + tools/kit236/g0.R)	10.8	every section 4 prediction as predicted
+45606119057	1b829e042bb9f725b7461b6cc028082bc257116b	R1 tests-only, failing-first	10.5	instrument defect (VAL-54): k236Prot name clash (B1, B3, W4 errors) and G1 log2 check encoding the change; fixed in da192fd4
+45608054910	da192fd4e4dcb4ae7d233c5036a212e671c93dfd	R1 instrument rerun 1, failing-first	11.2	valid: 63 passed, 174 failed, 0 errors; every non-guard test fails on base; G1, W1-W4 pass
+45609991452	6a45d288df79fafc9b794e5ad0548c5c95650d9b vs da192fd4e4dcb4ae7d233c5036a212e671c93dfd	R2 fix against tests-only, 34 files, 3 shards per side, check	179.6	new file fixed (237/0); 31 files same; kit227 and kit235 count-changed by the declared edits only (0 failed both sides); check identical

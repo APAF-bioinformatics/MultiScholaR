@@ -1,0 +1,1788 @@
+file: test-kit236-report-sentences.R
+test: KIT-236 T1: Comments are a field for the analyst, not fixed findings
+kind: failure
+message:
+  Expected `k236Has(got$norm$comments, "All samples passed initial QC criteria")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1: Comments are a field for the analyst, not fixed findings
+kind: failure
+message:
+  Expected `k236Has(got$norm$comments, "[To be completed by the analyst")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1: Comments are a field for the analyst, not fixed findings
+kind: failure
+message:
+  Expected `k236Has(got$norm$comments, "All samples passed initial QC criteria")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1: Comments are a field for the analyst, not fixed findings
+kind: failure
+message:
+  Expected `k236Has(got$norm$comments, "[To be completed by the analyst")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1c: the computed counts print with a record only (features per step; samples kept by the filter)
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1c: the computed counts print with a record only (features per step; samples kept by the filter)
+kind: failure
+message:
+  Expected `k236Has(with_record$norm$comments, "6 of 6 samples were kept by the sample-correlation filter (threshold 0.5).")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1c: the computed counts print with a record only (features per step; samples kept by the filter)
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T1c: the computed counts print with a record only (features per step; samples kept by the filter)
+kind: failure
+message:
+  Expected `k236Has(with_record$norm$comments, "6 of 6 samples were kept by the sample-correlation filter (threshold 0.5).")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T2: Opinions are a field for the analyst
+kind: failure
+message:
+  Expected `k236Has(lipid$norm$opinions, "data quality is sufficient for differential analysis")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T2: Opinions are a field for the analyst
+kind: failure
+message:
+  Expected `k236Has(lipid$norm$opinions, "[To be completed by the analyst")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T2: Opinions are a field for the analyst
+kind: failure
+message:
+  Expected `k236Has(metab$norm$opinions, "Technical reproducibility meets industry standards")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T2: Opinions are a field for the analyst
+kind: failure
+message:
+  Expected `k236Has(metab$norm$opinions, "[To be completed by the analyst")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid demonstrate the effectiveness of batch effect removal
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid Initial log2 data showed notable batch effects
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid batches merged effectively
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid show progressive improvement in data quality
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid high and consistent across all normalization methods
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid Cyclic loess normalization (centre column
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, "this report draws no conclusion from them")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, "after RUVIII-C correction")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, "one row per assay and view")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab demonstrate the effectiveness of batch effect removal
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab Initial log2 data showed notable batch effects
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab batches merged effectively
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab show progressive improvement in data quality
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab high and consistent across all normalization methods
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, phrase)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab Cyclic loess normalization (centre column
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, "this report draws no conclusion from them")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, "after RUVIII-C correction")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3: with RUV applied the caption describes the panels and draws no conclusion
+kind: failure
+message:
+  Expected `k236Has(text, "one row per assay and view")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3i: the left column names internal-standard normalisation only when a standard was found
+kind: failure
+message:
+  Expected `k236Has(none, "this report draws no conclusion from them")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3i: the left column names internal-standard normalisation only when a standard was found
+kind: failure
+message:
+  Expected `k236Has(found, "on the intensities before internal-standard normalisation and log2 transformation (left)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3i: the left column names internal-standard normalisation only when a standard was found
+kind: failure
+message:
+  Expected `k236Has(none, "this report draws no conclusion from them")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T3i: the left column names internal-standard normalisation only when a standard was found
+kind: failure
+message:
+  Expected `k236Has(found, "on the intensities before internal-standard normalisation and log2 transformation (left)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "After cyclic loess normalization, technical variation was reduced")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "Normalized data shows more consistent median values near zero")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "RUV-III correction was not applied to this dataset.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "after cyclic loess normalisation (normalizeCyclicLoess) (right)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "After cyclic loess normalization, technical variation was reduced")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "Normalized data shows more consistent median values near zero")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "RUV-III correction was not applied to this dataset.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T4: with RUV not applied the caption describes the panels and says RUV was not applied
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "after cyclic loess normalisation (normalizeCyclicLoess) (right)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(quantile$norm$results, "Cyclic loess normalization")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(quantile$norm$results, "quantile normalisation (normalizeQuantiles)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(none$norm$results, "after the normalisation step, at which no normalisation was applied")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(unrecorded$norm$results, "after between-sample normalisation (the method is not recorded)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(quantile$norm$results, "Cyclic loess normalization")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(quantile$norm$results, "quantile normalisation (normalizeQuantiles)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(none$norm$results, "after the normalisation step, at which no normalisation was applied")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T5, T6n, T6r: the caption names the normalisation that ran, none, or that it is not recorded
+kind: failure
+message:
+  Expected `k236Has(unrecorded$norm$results, "after between-sample normalisation (the method is not recorded)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(record$norm$sample_details, "with no technical replicates")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(file$norm$sample_details, "The design table lists 6 measured runs from 5 biological samples")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(none$norm$sample_details, "The analysis included 6 samples, each a separate biological sample (no technical replicates were declared in the design).")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(record$norm$sample_details, "with no technical replicates")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(file$norm$sample_details, "The design table lists 6 measured runs from 5 biological samples")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T11, T11b, T11g: the sample details count the analysed design's technical replicates
+kind: failure
+message:
+  Expected `k236Has(none$norm$sample_details, "The analysis included 6 samples, each a separate biological sample (no technical replicates were declared in the design).")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T7, T7b: zeros are described as they were handled
+kind: failure
+message:
+  Expected `k236Has(offset$norm$method_details, "were coded as NA")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T7, T7b: zeros are described as they were handled
+kind: failure
+message:
+  Expected `k236Has(offset$norm$method_details, "zeros were transformed with the offset")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T7, T7b: zeros are described as they were handled
+kind: failure
+message:
+  Expected `k236Has(plain$norm$method_details, "were coded as NA")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T7, T7b: zeros are described as they were handled
+kind: failure
+message:
+  Expected `k236Has(offset$norm$method_details, "were coded as NA")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T7, T7b: zeros are described as they were handled
+kind: failure
+message:
+  Expected `k236Has(offset$norm$method_details, "zeros were transformed with the offset")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T7, T7b: zeros are described as they were handled
+kind: failure
+message:
+  Expected `k236Has(plain$norm$method_details, "were coded as NA")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "before integration")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "cross-assay consistency verified")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "tested separately within each assay")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "removed from every assay")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "The assays were required to contain the same samples.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "before integration")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "cross-assay consistency verified")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "tested separately within each assay")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "removed from every assay")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T8: no integration step and no cross-assay check are described
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "The assays were required to contain the same samples.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T9, T9b: the comparisons are those of the contrast table
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "comparing each pair of experimental groups")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T9, T9b: the comparisons are those of the contrast table
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "the comparisons defined in the contrast table (1 comparison: A_vs_B)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T9, T9b: the comparisons are those of the contrast table
+kind: failure
+message:
+  Expected `k236Has(file$norm$de_details, "(1 comparison: KO_vs_WT)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T9, T9b: the comparisons are those of the contrast table
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "comparing each pair of experimental groups")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T9, T9b: the comparisons are those of the contrast table
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "the comparisons defined in the contrast table (1 comparison: A_vs_B)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T9, T9b: the comparisons are those of the contrast table
+kind: failure
+message:
+  Expected `k236Has(file$norm$de_details, "(1 comparison: KO_vs_WT)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T10, T10b: the FDR sentence states the Benjamini-Hochberg fallback (rule, or per comparison)
+kind: failure
+message:
+  Expected `k236Has(rule$norm$de_details, "False discovery rates were estimated as q-values (Storey, 2002); where they cannot be computed, Benjamini-Hochberg adjusted p-values are used.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T10, T10b: the FDR sentence states the Benjamini-Hochberg fallback (rule, or per comparison)
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T10, T10b: the FDR sentence states the Benjamini-Hochberg fallback (rule, or per comparison)
+kind: failure
+message:
+  Expected `k236Has(rule$norm$de_details, "False discovery rates were estimated as q-values (Storey, 2002); where they cannot be computed, Benjamini-Hochberg adjusted p-values are used.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T10, T10b: the FDR sentence states the Benjamini-Hochberg fallback (rule, or per comparison)
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(all_text, "SOP xxx")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(all_text, "Salesforce")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(all_text, "Comments on test specific conditions")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "Data analyses were performed with MultiScholaR 0.9.0 (build b1); SOP reference: [to be completed by the analyst].")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "[to be completed by the analyst]")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(all_text, "SOP xxx")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(all_text, "Salesforce")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(all_text, "Comments on test specific conditions")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "Data analyses were performed with MultiScholaR 0.9.0 (build b1); SOP reference: [to be completed by the analyst].")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T15: no SOP, Salesforce or test-condition placeholder prints as content; the version does
+kind: failure
+message:
+  Expected `k236Has(got$norm$method_details, "[to be completed by the analyst]")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(treat$norm$de_details, "test for any deviation from zero log-fold-change")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(treat$norm$de_details, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(treat$norm$de_details, "absolute log2 fold change of at least 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(older$norm$de_details, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(zero$norm$de_details, "for any difference from zero log2 fold change")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(unrecorded$norm$de_details, "Whether a fold-change threshold (TREAT) was used is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(treat$norm$de_details, "test for any deviation from zero log-fold-change")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(treat$norm$de_details, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(treat$norm$de_details, "absolute log2 fold change of at least 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(older$norm$de_details, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(zero$norm$de_details, "for any difference from zero log2 fold change")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the significance rule as tested
+kind: failure
+message:
+  Expected `k236Has(unrecorded$norm$de_details, "Whether a fold-change threshold (TREAT) was used is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T18, T18g: the technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "modelled as a block through limma's duplicateCorrelation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid technical_replicates
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T18, T18g: the technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "modelled as a block through limma's duplicateCorrelation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid no_duplicates; technical_replicates
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T18, T18g: the technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "modelled as a block through limma's duplicateCorrelation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab technical_replicates
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T18, T18g: the technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$norm$de_details, "modelled as a block through limma's duplicateCorrelation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab no_duplicates; technical_replicates
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `k236Has(absent$norm$de_details, "are shown in Figure 3")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid grid_layout
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `any(grepl("Warning:", chunk$code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid grid_layout
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid Volcano Plot Caption
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `k236Has(absent$norm$de_details, "are shown in Figure 3")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab grid_layout
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `any(grepl("Warning:", chunk$code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab grid_layout
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T12, T12g: the volcano figure is referred to only when it is there; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab Volcano Plot Caption
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T13: the results table is named as the application writes it, only when it exists
+kind: failure
+message:
+  Expected `k236Has(present$norm$de_details, "DE_lipids_results.xlsx")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T13: the results table is named as the application writes it, only when it exists
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T13: the results table is named as the application writes it, only when it exists
+kind: failure
+message:
+  Expected `k236Has(absent$norm$de_details, "results table")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T13: the results table is named as the application writes it, only when it exists
+kind: failure
+message:
+  Expected `k236Has(present$norm$de_details, "DE_metabolites_results.xlsx")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T13: the results table is named as the application writes it, only when it exists
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T13: the results table is named as the application writes it, only when it exists
+kind: failure
+message:
+  Expected `k236Has(absent$norm$de_details, "results table")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid QC_metrics
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `any(grepl("Warning:", chunk$code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid QC_metrics
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid NumSigDE_Plot
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `any(grepl("Warning:", chunk$code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid NumSigDE_Plot
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid NumSigDE Caption
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "The quality-control figure was not produced for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab QC_metrics
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `any(grepl("Warning:", chunk$code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab QC_metrics
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab NumSigDE_Plot
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `any(grepl("Warning:", chunk$code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab NumSigDE_Plot
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `grepl("eval=", chunk$header, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab NumSigDE Caption
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T14: Figure 1 and Figure 2 print only when their files exist; no warning line
+kind: failure
+message:
+  Expected `k236Has(got$norm$results, "The quality-control figure was not produced for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T19, T19g: the count sentence reads the table Copy writes (da_<omic>_...), per comparison and assay
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T19, T19g: the count sentence reads the table Copy writes (da_<omic>_...), per comparison and assay
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T19, T19g: the count sentence reads the table Copy writes (da_<omic>_...), per comparison and assay
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 T19, T19g: the count sentence reads the table Copy writes (da_<omic>_...), per comparison and assay
+kind: failure
+message:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit236-report-sentences.R
+test: KIT-236 G1: the Methods paragraphs outside section 1 print the base text, with and without a record
+kind: failure
+message:
+  Expected `head_log` to be identical to `k236Norm(...)`.
+  Differences:
+  actual vs expected
+  - "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group. Missing values (zeros or non-detects) were coded as NA to distinguish true absence from missing measurements."
+  + "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group."
+  
+  lipid file only
+
+file: test-kit236-report-sentences.R
+test: KIT-236 G1: the Methods paragraphs outside section 1 print the base text, with and without a record
+kind: failure
+message:
+  Expected `head_log` to be identical to `k236Norm(...)`.
+  Differences:
+  actual vs expected
+  - "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group. Missing values (zeros or non-detects) were coded as NA to distinguish true absence from missing measurements."
+  + "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group."
+  
+  lipid record
+
+file: test-kit236-report-sentences.R
+test: KIT-236 G1: the Methods paragraphs outside section 1 print the base text, with and without a record
+kind: failure
+message:
+  Expected `head_log` to be identical to `k236Norm(...)`.
+  Differences:
+  actual vs expected
+  - "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group. Missing values (zeros or non-detects) were coded as NA to distinguish true absence from missing measurements."
+  + "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group."
+  
+  metab file only
+
+file: test-kit236-report-sentences.R
+test: KIT-236 G1: the Methods paragraphs outside section 1 print the base text, with and without a record
+kind: failure
+message:
+  Expected `head_log` to be identical to `k236Norm(...)`.
+  Differences:
+  actual vs expected
+  - "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group. Missing values (zeros or non-detects) were coded as NA to distinguish true absence from missing measurements."
+  + "Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a feature was tested only where it was measured, and a fold change can be underestimated when values fall below the detection limit in one group."
+  
+  metab record
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B1: the proteomics sample details count the declared technical replicates
+kind: error
+message:
+  Error in `for (name in k236Prot) {     got <- k236Prot(name, design = k236Design(tech = shared))     expect_false(k236Has(got$sample, "with no technical replicates"), info = name)     expect_true(k236Has(got$sample, paste("The design table lists 6 measured runs from 4 biological samples; 2 biological", "samples were measured more than once (technical replicates)")), info = name) }`: invalid for() loop sequence
+trace (first lines):
+  ▆
+
+file: test-kit236-report-sentences.R
+test: KIT-236 W4: the proteomics 'none' normalisation sentence waits for KIT-242 and prints today's text
+kind: error
+message:
+  Error in `for (name in k236Prot) {     got <- k236Prot(name, record = k236Record(NULL, steps = steps, contrasts = k236ProtContrasts))     expect_true(k236Has(got$method, "'none' method from the 'limma' R package"), info = name) }`: invalid for() loop sequence
+trace (first lines):
+  ▆
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B3: the proteomics FDR sentence names a Benjamini-Hochberg comparison from the record
+kind: error
+message:
+  Error in `for (name in k236Prot) {     planted <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts, fdr = "BH"))     expect_true(k236Has(planted$de, paste("except for KO_vs_WT, where q-values could not be computed and", "Benjamini-Hochberg adjusted p-values were used instead.")), info = name)     rule <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts))     expect_true(k236Has(rule$de, "where they cannot be computed, Benjamini-Hochberg adjusted p-values are used."), info = name) }`: invalid for() loop sequence
+trace (first lines):
+  ▆
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(got$de, "test for any deviation from zero log-fold-change")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(got$de, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(got$de, "test for any deviation from zero log-fold-change")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(got$de, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(got$de, "test for any deviation from zero log-fold-change")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(got$de, "log2 fold-change threshold of 0.5")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(limpa$de, "Whether a fold-change threshold (TREAT) was used is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(limpa_zero$de, "for any difference from zero log2 fold change")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B4: the proteomics TREAT sentence as tested; DIA with limpa from the record's model only
+kind: failure
+message:
+  Expected `k236Has(file_only$de, "Whether a fold-change threshold (TREAT) was used is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B5: the proteomics technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$de, "Technical replicates were modelled as a block through limma's duplicateCorrelation.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B5: the proteomics technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$de, "Technical replicates were modelled as a block through limma's duplicateCorrelation.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B5: the proteomics technical-replicate block is stated when the record holds it
+kind: failure
+message:
+  Expected `k236Has(got$de, "Technical replicates were modelled as a block through limma's duplicateCorrelation.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B6: DIA with limpa no longer says technical replicates were averaged
+kind: failure
+message:
+  Expected `k236Has(plain$method, "Technical replicate averaging")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B6: DIA with limpa no longer says technical replicates were averaged
+kind: failure
+message:
+  Expected `k236Has(plain$method, "were averaged across replicates")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B6: DIA with limpa no longer says technical replicates were averaged
+kind: failure
+message:
+  Expected `k236Has(block$method, "Technical replicate averaging")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit236-report-sentences.R
+test: KIT-236 B6: DIA with limpa no longer says technical replicates were averaged
+kind: failure
+message:
+  Expected `k236Has(block$method, "Technical replicates were modelled as a block through limma's duplicateCorrelation.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

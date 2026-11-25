@@ -1,0 +1,10 @@
+order	state	operation	dimensions	outcomes	parameters
+1	initial	import	{"rows":null,"columns":null}	{"rows":null,"columns":null}	{}
+2	lipid_raw_data_s4	design_builder	{"rows":20,"columns":8}	{"rows":20,"columns":8}	{"sample_id":"Run","group_id":"group","technical_replicate_id":"tech_rep_group"}
+3	lipid_intensity_filtered	lipid_intensity_filter	{"rows":17,"columns":8}	{"rows":17,"columns":8}	{"lipids_intensity_cutoff_percentile":10,"lipids_proportion_of_samples_below_cutoff":0.5,"intensity_filter_samples":"design"}
+4	lipid_duplicates_resolved	lipid_duplicate_resolution	{"rows":17,"columns":8}	{"rows":17,"columns":8}	{}
+5	lipid_qc_complete	lipid_qc_finalize	{"rows":17,"columns":8}	{"rows":17,"columns":8}	{}
+6	lipid_itsd_norm	lipid_itsd_normalisation	{"rows":17,"columns":8}	{"rows":17,"columns":8,"itsd_applied":true}	{"itsd_aggregation":"median","itsd_feature_ids":null,"method":"ITSD"}
+7	lipid_log2	lipid_log2	{"rows":17,"columns":8}	{"rows":17,"columns":8}	{"offset":0}
+8	lipid_normalized	lipid_between_sample_normalisation	{"rows":17,"columns":8}	{"rows":17,"columns":8}	{"normalisation_method":"cyclicloess"}
+9	lipid_correlation_filtered	lipid_pearson_selection	{"rows":17,"columns":8}	{"rows":17,"columns":8}	{"pairs":"dd4b18756007180272ae8afc9a1fc78de0445c19e38d5f77912110e7b64ee235","min_pearson_correlation_threshold":0.5}
