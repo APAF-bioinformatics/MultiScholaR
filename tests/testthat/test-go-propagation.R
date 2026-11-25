@@ -305,7 +305,7 @@ test_that("KIT-173 T7(b): a record made on the base commit replays with the same
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "false")
     utils::capture.output(replayed <- suppressMessages(suppressWarnings(goPropReplay(project, record,
         file.path(scratch, "replay")))))
-    expect_identical(replayed$states, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(replayed$states, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
     step <- goPropStep(record)
     expect_identical(vapply(step$parameters, `[[`, "", "name"), utils::head(diaEnrichmentOperation()$parameters, 9L))
     expect_identical(names(replayed$provenance$values), base_product$provenance_names)

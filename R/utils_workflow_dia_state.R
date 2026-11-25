@@ -844,7 +844,8 @@ recordDIAStepProvenance <- function(context, snapshot, state_name, timestamp = S
 
 #' @noRd
 truncateDIAStepProvenance <- function(snapshot) {
-    keep <- unlist(snapshot$state_history)
+    # KIT-216 (VAL-175): the entry of a kept enrichment product (outside the history) is kept with it.
+    keep <- c(unlist(snapshot$state_history), snapshot$enrichment_results$state)
     if (!is.null(snapshot$step_provenance)) snapshot$step_provenance <- snapshot$step_provenance[intersect(names(snapshot$step_provenance), keep)]
     snapshot
 }
@@ -889,6 +890,8 @@ commitWorkflowReferenceState <- function(manager, state_name, checkpoint, config
     if (!is.null(checkpoint$metadata)) snapshot$state_metadata[[state_name]] <- checkpoint$metadata
     snapshot$current_state <- state_name
     snapshot$state_history <- native$state_history
+    # KIT-216 (VAL-175): a new table ends the enrichment product of the earlier one.
+    if (!identical(snapshot$enrichment_results$source$entity_id, reference$entity_id)) snapshot$enrichment_results <- NULL
     snapshot$sizes[[state_name]] <- list(rows = checkpoint$dimensions$rows,
         columns = length(checkpoint$dimensions$columns),
         note = "component dimensions; no assay hydration or R heap-size estimate")
@@ -897,6 +900,77 @@ commitWorkflowReferenceState <- function(manager, state_name, checkpoint, config
     if (is.function(context$store$progress)) context$store$progress(
         paste0("commit:", state_name), 1, 1, reference$entity_id, "checkpoint")
     reference
+}
+
+#' KIT-216 (VAL-175, E-1 (ii)): commit an enrichment result as a product of the table it was made from. The record is
+#' built and saved exactly as `commitWorkflowReferenceState` builds a state's (its `previous_state` the head's name) and
+#' is recorded under `state_name` in the states map with its dependency set, sizes and step-provenance entry, outside
+#' the history; the head and the history do not change. The marker `snapshot$enrichment_results` names the record, the
+#' table (`source`, the DA manifest's source) and the DA it was run on (`da_results`, only when the head's DA manifest
+#' has that source). One head publication; a later run replaces the record, its entries and the marker.
+#' @param manager A reference-state session owner, inside its state scope.
+#' @param state_name The enrichment state name (`enrichment_completed`).
+#' @param checkpoint The result's component checkpoint (`checkpointDIAExecutionResult`).
+#' @param config,description The record's config and description.
+#' @param source The DA manifest's source reference.
+#' @return The record's reference.
+#' @noRd
+commitWorkflowEnrichmentProduct <- function(manager, state_name, checkpoint, config, description, source,
+    timestamp = Sys.time()) {
+    assertWorkflowController()
+    checkSavedEntityString(state_name, "state_name")
+    if (!usesDIAReferenceStates(manager) || !isDIAComponentCheckpoint(checkpoint)) {
+        cli::cli_abort("invalid component checkpoint", class = "saved_entity_scope")
+    }
+    context <- manager$.context
+    dependencies <- expandWorkflowTableReferences(context$store, collectDIANativeReferences(list(
+        checkpoint$components, checkpoint$support, checkpoint$products, checkpoint$dependencies)))
+    for (reference in dependencies) validateSavedWorkflowReference(context$store, reference, payload = FALSE)
+    native <- context$native
+    native$current_state <- context$snapshot$current_state
+    native$state_history <- context$snapshot$state_history
+    on.exit({ native$states <- native$audit_records <- list() }, add = TRUE)
+    native$saveState(state_name, NULL, config, description)
+    record <- native$states[[state_name]]
+    record$timestamp <- timestamp
+    record$data <- checkpoint
+    record$s4_class <- checkpoint$class
+    if (as.numeric(object.size(record)) > 8388608) {
+        cli::cli_abort("component checkpoint metadata exceeds limits", class = "saved_entity_limit")
+    }
+    reference <- saveDIAStateValue(context, record, state_name, codec = "rds")
+    snapshot <- context$snapshot
+    snapshot$states[[state_name]] <- reference
+    snapshot$component_dependencies[[state_name]] <- dependencies
+    snapshot$sizes[[state_name]] <- list(rows = checkpoint$dimensions$rows,
+        columns = length(checkpoint$dimensions$columns),
+        note = "component dimensions; no assay hydration or R heap-size estimate")
+    written <- diaStepProvenanceEntry(snapshot, takeDIAStepProvenance(context), timestamp)
+    snapshot <- written$snapshot
+    snapshot$step_provenance[[state_name]] <- written$entry
+    da <- snapshot$da_results
+    same_da <- isSavedWorkflowReference(da) && identical(resolveDIAStateValue(context, da)$source, source)
+    snapshot$enrichment_results <- list(state = state_name, source = source, da_results = if (same_da) da)
+    publishDIAStateHead(context, snapshot)
+    reference
+}
+
+#' KIT-216 (VAL-175): the store's enrichment product when it is current, else NULL. Current while the marker's table
+#' is the head state's (`getDIACurrentReference`, not `context$head`, which changes on every publication) and its DA
+#' is the head's DA manifest; so an enrichment of an earlier table or an earlier DA is never presented, saved or
+#' exported.
+#' @param manager The session's owner.
+#' @return `list(state, source, da_results)` or NULL.
+#' @noRd
+diaEnrichmentProduct <- function(manager) {
+    if (!usesDIAReferenceStates(manager)) return(NULL)
+    snapshot <- manager$.context$snapshot
+    marker <- snapshot$enrichment_results
+    if (is.null(marker) || is.null(marker$da_results) || is.null(snapshot$states[[marker$state]])) return(NULL)
+    if (!identical(marker$da_results, snapshot$da_results)) return(NULL)
+    head <- getDIACurrentReference(manager)
+    if (is.null(head) || !identical(marker$source$entity_id, head$entity_id)) return(NULL)
+    marker
 }
 
 #' DIA name of `commitWorkflowReferenceState` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
@@ -1619,6 +1693,8 @@ selectWorkflowStateReference <- function(manager, state_name) {
     if (is.na(index)) cli::cli_abort("state is outside selected history", class = "saved_entity_scope")
     snapshot$state_history <- snapshot$state_history[seq_len(index)]
     snapshot$current_state <- state_name
+    # KIT-216 (VAL-175): the enrichment product is kept only with its own table; decided before the provenance is cut.
+    if (!identical(snapshot$enrichment_results$source$entity_id, reference$entity_id)) snapshot$enrichment_results <- NULL
     snapshot <- truncateDIAStepProvenance(snapshot)
     publishDIAStateHead(manager$.context, snapshot)
     reference
@@ -1842,6 +1918,8 @@ newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
         index <- which(snapshot$state_history == state_name)
         snapshot$state_history <- snapshot$state_history[1:index]
         snapshot$current_state <- state_name
+        # KIT-216 (VAL-175): as `selectWorkflowStateReference`.
+        if (!identical(snapshot$enrichment_results$source$entity_id, reference$entity_id)) snapshot$enrichment_results <- NULL
         snapshot <- truncateDIAStepProvenance(snapshot)
         publishDIAStateHead(context, snapshot)
         record$data

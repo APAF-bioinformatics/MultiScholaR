@@ -61,6 +61,25 @@
 
 ### Fixes
 
+ * Proteomics: a project's session file can be opened again after the enrichment analysis. Before, 'Export Filtered
+   Data Session' refused after enrichment with an untrue message, the session file the Summary wrote after enrichment
+   could not be opened by 'Load Filtered Session', and no session file from a session that had run enrichment could be
+   opened. The enrichment no longer becomes the project's current step: the project stays at the table the analysis
+   ran on, and the enrichment result is kept with it and in the session file (results are unchanged); the differential
+   analysis tab keeps its results after an enrichment run. A session file saved by an earlier version after enrichment
+   opens at that table with a notice. The Summary's save now writes the integration input even when no session was
+   exported since the project was opened, or the last export does not hold the current table (including after a
+   Revert to an earlier normalised table, which was refused before), and says how to save a session file; after a
+   second enrichment run the integration input is written (before, it was removed). The session file states the
+   normalisation method that was run (before, the method selected when exporting; on DIA with limpa, the method of the
+   protein normalisation step) and, on DIA with limpa, the RUV mode of the last RUV covariates run. 'Save Workflow
+   Arguments', 'Generate Report' and 'Export Session State' refuse, as in the other omics, when the current table is
+   not a normalisation result, and the saved parameters name the current normalised table. The enrichment's Run is
+   refused when the differential analysis it would use is no longer current. 'Copy to Publication Directory' still
+   proceeds after a refused save, as in the other omics. To check an earlier session file: the 'Normalization' line of
+   filtered_session_summary.txt was the method selected at export; the normalisation step of analysis_record.json gives
+   the method run (KIT-216).
+
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

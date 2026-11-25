@@ -46,13 +46,16 @@ protSummaryIntegrationFilename <- function(workflowData, omicType, label) {
 #' @param object,saveRDSFn Unused: the route writer's arguments in the core's call.
 #' @param sourceDir The project's source directory (the native archive's and the UniProt annotation's).
 #' @return The notice the save shows, or FALSE when the owner holds no final matrix (K061-3: an earlier save's input
-#'   is then removed).
+#'   is then removed). KIT-216 (SD-2, SD-4; VAL-179): when the session file was not refreshed (no normalisation export
+#'   in this application session, or the last one does not hold the current table) the notice carries the reason as
+#'   its attribute `notice_after`, shown after the success notice; the integration input is written all the same.
 #' @noRd
 protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourceDir = NULL, saveRDSFn = saveRDS) {
   manager <- workflowData$state_manager
   written <- FALSE
+  skipped <- NULL
   if (inherits(manager, "DIAStateAdapter")) {
-    if (isDIANativeSession(manager)) refreshDIANativeSummaryArchive(workflowData, sourceDir)
+    if (isDIANativeSession(manager)) skipped <- protSummaryRefreshArchive(workflowData, sourceDir)
     annotation <- workflowData$uniprot_dat_cln
     annotationFile <- if (!is.null(sourceDir)) file.path(sourceDir, "uniprot_dat_cln.RDS") else ""
     if (is.null(annotation) && file.exists(annotationFile)) annotation <- readRDS(annotationFile)
@@ -67,9 +70,28 @@ protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourc
       TRUE
     })
   }
-  if (isTRUE(written)) return("Saved Integration input")
+  if (isTRUE(written)) return(structure("Saved Integration input", notice_after = skipped))
   removeIntegrationInput(dirname(path))
   FALSE
+}
+
+#' KIT-216 (D1 (b), (d); SD-2, SD-4; VAL-179): the Summary's refresh of the session file, only from a normalisation
+#' export of this application session (its metadata carries `output_policy = "native_first_v1"`; a peptide checkpoint's
+#' does not). With none, or when KIT-206's guard finds that the export does not hold the current table (the Summary's
+#' guard has already accepted the head as a normalisation state), nothing is refreshed and the reason is returned.
+#' @return NULL after a refresh; otherwise the text the Save shows (T2, T2b).
+#' @noRd
+protSummaryRefreshArchive <- function(workflowData, sourceDir) {
+  context <- workflowData$state_manager$.context
+  owned <- context$owned_export
+  texts <- protSessionAfterEnrichmentTexts()
+  policy <- if (!is.null(owned$metadata_reference)) tryCatch(resolveDIAStateValue(context, owned$metadata_reference)$output_policy,
+    error = function(e) NULL)
+  if (!identical(policy, "native_first_v1")) return(texts$export_missing)
+  tryCatch({
+    refreshDIANativeSummaryArchive(workflowData, sourceDir)
+    NULL
+  }, prot_norm_correlation_input_stale = function(e) texts$export_stale)
 }
 
 #' The head's lineage (K061-1): the current state, then each record's `previous_state`, until a state without a
@@ -304,6 +326,10 @@ protSummarySessionState <- function(inputValues, projectDirs, omicType, values, 
 # Moved unchanged (D3's map): mod_prot_summary_report_helpers.R:1-248 and mod_prot_summary_session_helpers.R:144-215.
 # ------------------------------------------------------------------------------------------------
 
+#' KIT-216 (I10): the proteomics DA's states (`R/mod_prot_da_handlers_init.R`, `invalidateDIAVisibleResults`).
+#' @noRd
+protSummaryDaStates <- c("ruv_covariates", "normalized", "ruv_corrected", "correlation_filtered")
+
 resolveProtSummaryFinalS4State <- function(workflowData,
                                            logPrefix = "SESSION SUMMARY",
                                            catFn = cat) {
@@ -325,6 +351,10 @@ resolveProtSummaryFinalS4State <- function(workflowData,
   )
   availableStates <- diaStateHistory(stateManager)
   dataStateUsed <- purrr::detect(dataStates, ~ .x %in% availableStates)
+  # KIT-216 (E-8, P06): on a reference-state owner the final table is the head when it is one of the proteomics DA's
+  # states (the Summary's guard refuses another head first), as the other omics take the head (KIT-071).
+  head <- tryCatch(stateManager$current_state, error = function(e) NULL)
+  if (usesDIAReferenceStates(stateManager) && isTRUE(head %in% protSummaryDaStates)) dataStateUsed <- head
 
   if (!is.null(dataStateUsed)) return(list(
     finalS4Object = getDIAStateReference(stateManager, dataStateUsed), dataStateUsed = dataStateUsed))

@@ -262,7 +262,8 @@ test_that("(F-16, D6 test 4) the enrichment state records its provenance, and a 
         out
     }
     failed <- (function() {
-        testthat::local_mocked_bindings(saveDIAOwnerState = function(manager, ...) stop("disk full"))
+        # KIT-216 (VAL-175): a reference-state owner commits the enrichment as a product of its table.
+        testthat::local_mocked_bindings(commitWorkflowEnrichmentProduct = function(manager, ...) stop("disk full"))
         save()
     })()
     expect_identical(failed, list(attempted = TRUE, saved = FALSE, warning = "disk full"))
@@ -273,7 +274,9 @@ test_that("(F-16, D6 test 4) the enrichment state records its provenance, and a 
     saved <- save()
     expect_identical(saved, list(attempted = TRUE, saved = TRUE, warning = NULL))
     expect_null(manager$.context$pending_provenance)
-    expect_identical(manager$current_state, "enrichment_completed")
+    # KIT-216 (VAL-175): the head and the history stay the table; the record is in the states map.
+    expect_identical(manager$current_state, "next_state")
+    expect_false("enrichment_completed" %in% diaStateHistory(manager))
     entry <- manager$.context$snapshot$step_provenance$enrichment_completed
     expect_identical(entry$operation, "enrichment")
     expect_identical(entry$variant, "whole")

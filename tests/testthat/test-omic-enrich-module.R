@@ -3783,7 +3783,8 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
                 bus <- ctx$bus()
                 manager <- shiny::isolate(bus$state_manager)
                 held <- shiny::isolate(ctx$returned()$enrichment_results_full)
-                committed <- "enrichment_completed" %in% unlist(diaStateHistory(manager))
+                # KIT-216 (VAL-175): the enrichment is the current product of the table, outside the history.
+                committed <- !is.null(diaEnrichmentProduct(manager))
                 state <- if (committed) withWorkflowStateScope(manager, function() manager$getState("enrichment_completed"))
                 ctx$keep("commit", list(committed = committed, class = class(state)[[1L]],
                     data = identical(state@enrichment_data, held@enrichment_data),
@@ -3800,7 +3801,7 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
             expect_true(commit$summaries)
             expect_true(commit$contrasts)
             expect_true(commit$plots)
-            expect_identical(seen$run$history, c("initial", "correlation_filtered", "enrichment_completed"))
+            expect_identical(seen$run$history, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
         })
     })
 }
@@ -4251,7 +4252,7 @@ test_that("(R3, P-07) a Run with the organism filter applied completes on the ta
     expect_identical(seen$run$errors, character())
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
-    expect_identical(seen$run$history, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(seen$run$history, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
     expect_identical(omicEnrichR3Filter(seen$run), c(enabled = "TRUE", filter_applied = "TRUE", target_taxon_id = "9606",
         proteins_before = "6", proteins_after = "3", proteins_removed = "3"))
 })
@@ -4394,7 +4395,7 @@ test_that("(R3, A107-04) a service that answers with no significant terms comple
         run = omicEnrichR3RunWithGost(function(...) NULL, 1L))), live = TRUE)
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
-    expect_identical(seen$run$history, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(seen$run$history, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
     # `gost` reports its database version with a result only, so a run of no terms names no service version.
     expect_identical(seen$run$product[["service"]], "unavailable")
     expect_identical(seen$run$resources, "<unchanged>")

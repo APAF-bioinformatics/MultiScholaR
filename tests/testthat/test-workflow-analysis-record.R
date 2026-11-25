@@ -1015,7 +1015,7 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
                 up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE),
             paths))))
     })
-    expect_identical(manager$current_state, "enrichment_completed")
+    expect_identical(manager$current_state, "correlation_filtered") # KIT-216 (VAL-175): the head stays the table
     json <- file.path(root, "analysis_record.json")
     writeWorkflowAnalysisRecord(manager, json)
     record <- jsonlite::read_json(json, simplifyVector = FALSE)
@@ -1069,7 +1069,7 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
             replay_warnings <<- c(replay_warnings, class(warning)[[1L]])
             invokeRestart("muffleWarning")
         })))
-    expect_identical(replay$states, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(replay$states, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
     # KIT-115 item 3 (A107-07): the replay queried the service release the record names, so it says nothing of it.
     recorded_services <- vapply(record$external_resources, function(resource) resource$service, "")
     expect_true("gprofiler2" %in% recorded_services)

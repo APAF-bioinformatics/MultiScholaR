@@ -388,6 +388,10 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     context <- manager$.context
     snapshot <- context$snapshot
     history <- unlist(snapshot$state_history)
+    # KIT-216 (VAL-175): the current enrichment product, kept outside the history, is the last step, as when it was the
+    # last history step; its input is the table it was made from. Its build joins the software block's builds.
+    product <- diaEnrichmentProduct(manager)
+    if (!is.null(product) && !product$state %in% history) history <- c(history, product$state)
     shipped <- readWorkflowShippedDefaults()
     defaults_path <- system.file("config", "config.ini", package = "MultiScholaR")
     installed_defaults <- if (nzchar(defaults_path)) digest::digest(file = defaults_path, algo = "sha256") else NA_character_
@@ -437,6 +441,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         }
         previous <- record$previous_state
         input <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) snapshot$states[[previous]]$entity_id else NULL
+        if (!is.null(product) && identical(state, product$state)) input <- product$source$entity_id
         products <- lapply(unname(record$data$products %||% list()), function(product) {
             if (!isSavedWorkflowReference(product)) return(NULL)
             list(entity_id = product$entity_id, kind = product$kind,
@@ -953,8 +958,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             withr::with_options(workflowReplayRuleOptions(step, workflowOperationEntry("enrichment")$declaration),
                 withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters,
                     da_manifest, contrasts, paths, scratch, recorded_resources = record$external_resources)))
-            if (!identical(manager$current_state, step$state))
-                cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
+            # KIT-216 (VAL-175, P01): the enrichment is a product of the DA's table; the head stays that table. A record
+            # saved before (the enrichment its last history step) and one saved after replay through this same check.
+            if (!identical(getDIACurrentReference(manager)$entity_id, da_manifest$source$entity_id) ||
+                is.null(diaEnrichmentProduct(manager)))
+                cli::cli_abort("replayed step {.val {step$state}} left no current enrichment of the DA's table (head {.val {manager$current_state}})",
+                    class = "workflow_replay_invalid")
             if (is.function(on_step)) on_step(step, manager)
         }
     }
