@@ -1,4 +1,4 @@
-# KIT-224 outcome (r1.2; R2 stop rule 2 ruled by the coordinator 2026-11-25: three files to the owner, merge waits)
+# KIT-224 outcome (r1.2; R2's three unlisted files accepted by the owner by file, 2026-11-25)
 
 Branch `kit-224` from `origin/v0.9-staging` cf8af245. Commits: cea72da6 (tests first, nothing under `R/`), 12205bd4 (the
 fix, NEWS, ledger), 5f261d89 (stored references accepted by file, OD-4), the provenance re-dump of
@@ -67,7 +67,7 @@ missing in one assay only (see the unrelated finding below).
 - A1: met (G0 plus R1 for E5).
 - A2: met. R1 failed at the stated values; R2 head passes.
 - A3: met (R2: (vi); R2c: (i) to (v), with (a) and (b) reported).
-- A4: met for every file except three: `test-prot-norm-core.R`, `test-omics-summary-core.R` and `test-omic-summary-module.R` are with the owner (coordinator ruling, 2026-11-25), and the merge waits for that answer. The edited tests pass (R2c).
+- A4: met for every file except three: `test-prot-norm-core.R`, `test-omics-summary-core.R` and `test-omic-summary-module.R` were accepted by the owner by file on 2026-11-25 (deferred to the end-of-project re-record). The edited tests pass (R2c).
 - A5: not run.
 - A6: NEWS, ledger row and M8's status are done; `man/`, `NAMESPACE` and `DESCRIPTION` are unchanged.
 
@@ -81,7 +81,7 @@ missing in one assay only (see the unrelated finding below).
 | `test-omics-summary-core.R` | tests "(W3, core side) trx_main ..." and "(W3, core side) trx_managed ...": the `save` step's `files` capture, leaf `integration/transcriptomics_normalized_data.tsv` (digest e0e8d896... on base, 7b9d35db... expected; head's value differs from both) (2 leaves) | the file is the transcriptomics RUVIII export, which under OD-2 T-a' keeps each gene's TMM logCPM level, so its bytes change | already fails on base (25 failing on both) |
 | `test-omic-summary-module.R` | tests "(b) trx_main ..." and "(b) trx_managed ...": the `save` step's `files` capture, the same leaf (2 leaves) | as above (T-a') | already fails on base (28 failing on both) |
 
-If the owner accepts, these join the end-of-project re-record list, beside the KIT-073 and KIT-094 fixtures.
+**Owner's decision, 2026-11-25 ("yes to all", item 3 of the coordinator's list): accepted by file.** Nothing is edited for them now; they join the end-of-project re-record list beside the KIT-073 and KIT-094 fixtures. The merge no longer waits on them.
 Correction to E-3a (the KIT-225 shared-file list): `test-prot-norm-core.R` **does** change under KIT-224 (the two
 leaves above). KIT-224's declared differences in the shared files are therefore `test-omic-norm-module.R` (12
 `provenance` fields) and `test-prot-norm-core.R` (`lipid_ruv`, `metab_ruv` result digests); `test-kit129-run-path.R`
@@ -178,7 +178,7 @@ a sample from the design while one assay keeps its column. The object then fails
 
 ## Not checked
 
-Windows; real data; R3 until it is recorded below.
+Windows; real data; R3 (run 45573139074, sent against staging 67569959 before staging moved to dd769671; kept as sent) until it is recorded.
 
 ## For the change report
 
