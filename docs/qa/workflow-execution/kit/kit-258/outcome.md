@@ -1,9 +1,10 @@
-# KIT-258 outcome (in progress: tests-only commit, R1, fix as far as the owner's rule, S1)
+# KIT-258 outcome
 
 Ticket `tickets/kit/KIT-258.md` r1.2 (Re-check 1 R1-01 to R1-04 applied). Branch `kit-258` from `v0.9-staging` at
 **63143aa3** (KIT-214 merged, VAL-256). The owner's questions OD-1 (does an intensity of exactly 0 count as measured)
-and OD-2 (the strict ordering) are OPEN: nothing here assumes an answer. E5, E6, the final fix commit, NEWS, the
-ledger row, the user-facing texts and R2 wait for them.
+and OD-2 (the strict ordering) were OPEN during R1 and the first S1. **Answered by the owner 2026-11-26 (VAL-284):
+OD-1 (b), a zero is NOT measured, for the count and for the mean, as at import; OD-2 (a), the strict ordering as
+written.** The rest of this file (E5, E6, the final fix, the second control S1f, R2) follows those answers.
 
 Labels: OBSERVED = read from a run's returned tables; PREDICTED = written before the run was read.
 
@@ -12,6 +13,11 @@ Labels: OBSERVED = read from a run's returned tables; PREDICTED = written before
 | Commit | What |
 |---|---|
 | ddbedc3f | tests only: new `test-kit258-duplicate-completeness.R`; declared edits of `test-kit214-sample-columns.R` (`k214Earlier`, `k214OracleKept`), `test-metab-01m-...` and `test-metab-02u-...` source pins. Nothing under `R/` |
+| 81fdcf7c | fix as far as VAL-254 ("measured" = not NA), pending OD-1 and OD-2; S1 ran on it |
+| ec849390 | merge of `v0.9-staging` 12701142: one conflict, the replay-marker list (every staging row in staging's order, then `duplicate_resolution_rank`); NEWS and the ledger merged without conflict |
+| e2842edd | tests for VAL-284: E5 (zeros), E6 (the 12-sample example); declared edits of `k214OracleKept` (a zero is not measured) and the 01m pins. Nothing under `R/` |
+| 77a719b8 | final fix: `duplicateResolutionMeasured` / `duplicateResolutionMeasuredMean` (neither NA nor 0) and `keepDuplicateResolutionRow` at the four sites; the exported kernels' help; NEWS; ledger row VAL-<merge> |
+| (R2 base) 5dfe2bc8, branch `kit-258-r2-base` | staging 12701142 with the four final test files of e2842edd; nothing under `R/` |
 
 ## R1 (tests-only commit ddbedc3f, base none; 1 job, ceiling 45 job-minutes)
 
@@ -79,6 +85,50 @@ OBSERVED (run 45620444058, head 81fdcf7c, base 63143aa3; 16.9 job-minutes, scrip
   mean 177.333333) to head row 1 'PC 34:1' (4 measured, mean 150.5).
 
 Verdict: A4 met for the rule as decided (measured = not NA). It is re-judged if OD-1 (b) or OD-2 (b) changes the rule.
+
+## S1f (control on the final fix, VAL-284; combined with R2, scripts job; ceiling 60 job-minutes)
+
+The rule changed from what S1 measured (zeros), so the control runs again on the final fix (base 63143aa3 as before;
+out `s1f/`). Script changes: "measured" = neither NA nor 0 for the classes, the groups and the KIT-258 oracle; the
+KIT-214 oracle keeps the mean of the non-missing values (zeros averaged); the groups table adds that mean.
+
+PREDICTED (written before the run was read):
+- (a), (b), (c), (d1), (d2): every row equal; (a), (b) and the group check non-vacuous.
+- Classes `e`: e1_lipid, e1_metab, lipid_msdial_dup_import, **and now lipid_msdial_dup_code** (built in code, its
+  row 2 holds WT_1 = 0, so it is measured in 3 of 4 against row 1's 4 of 4). Every other input is `a` or `b`: no other
+  duplicated row of any input holds a zero (module-CI duplicates complete and non-zero,
+  `helper-module-ci-lipid-qc.R:41-53`, `helper-module-ci-metab-qc.R:39-50`; imported tables have their zeros turned to
+  missing by the import).
+- (e) exactly one id changes its kept row, in both variants, the same as S1: lipid_msdial_dup_import / LCMS_Pos /
+  P001, base row 2 'TG 52:3' (3 measured, mean 177.333333) to head row 1 'PC 34:1' (4 measured, mean 150.5).
+  lipid_msdial_dup_code does NOT change: base (KIT-214) keeps row 1 (150.5 against 133, the zero averaged), head keeps
+  row 1 (4 measured against 3). Why: the zero rule changes counts only where a duplicated row holds a zero, and in
+  these fixtures that is the code-built table, where both rules already agree.
+
+## R2 (fix 77a719b8 line against tests-only base 5dfe2bc8; 3 shards per side, check; ceiling 600 job-minutes)
+
+Scope: the ticket's grep recounted at the branch point gives 27 files plus the new one (staging added
+`test-kit201-treat-moderation.R`, `test-kit224-ruv-feature-levels.R`, `test-kit252-managed-failure-text.R`, which
+name `workflowReplayRuleMarkers`), plus the four declared: `test-workflow-omics-binding-steps.R`,
+`test-workflow-omics-residency.R`, `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R`: **32 files**.
+
+PREDICTED (written before the run was read):
+- `test-kit258-duplicate-completeness.R`: `fixed` (base fails E1 to E3, E5, E6 on the step (20 tests), the scripted
+  E4, E5, E6 (3 kernel tests, 6 S4 tests), T1 (b) (2), T2 (1); head passes every test).
+- `test-metab-01m-...` and `test-metab-02u-...`: `fixed` (base fails the new pins only: 4 and 1).
+- `test-workflow-omics-binding-steps.R` and `test-workflow-omics-declarations.R`: `message-changed`, counts unchanged
+  (the laptop snapshots, already failing on base: the duplicate step records one more fixed parameter, the registry's
+  `fixed` one more entry).
+- Every other file `same`, including `test-kit214-sample-columns.R` (passes on both).
+- Check: findings identical on both sides.
+- Stop rule 3 on any other verdict.
+
+## Wording, U1
+
+- `wording.md`: the user-facing texts as drafts for the owner (VAL-41).
+- U1 (Import Existing Design does not apply the import's zero-to-missing rule, for every later step: intensity filter,
+  log2, missingness, duplicates) is **routed, not fixed here**: plan section 13 candidate row (coordinator's ruling
+  2026-11-25), parked row 38 (3). This ticket makes only the duplicate step treat a zero as not measured.
 
 ## Not checked
 

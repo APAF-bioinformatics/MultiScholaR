@@ -3,7 +3,8 @@
 #
 # Usage, from the package root of the head commit on a run-tests runner (full git history):
 #   Rscript docs/qa/workflow-execution/kit/kit-258/dup-rank-control.R <base commit> [<out dir>]
-#   <out dir>  default docs/qa/workflow-execution/kit/kit-258/s1 (made absolute)
+#   <out dir>  default docs/qa/workflow-execution/kit/kit-258/s1f (made absolute; s1 held the first run, before the
+#              owner's VAL-284, at 81fdcf7c with "measured" = not NA)
 #
 # KIT-214's `dup-samples-control.R` (docs/qa/workflow-execution/kit/kit-214/), its inputs and variants kept; its classes
 # and criteria (i) to (iv) replaced by A4's (a) to (e). Mechanism as there: `git worktree add <tmp> <base>`, then per
@@ -20,11 +21,12 @@
 # (MultiScholaR.duplicate_resolution_samples = "numeric_columns"); head `shipped` (KIT-258), `earlier_rank`
 # (MultiScholaR.duplicate_resolution_rank = "mean") and `earlier_both` (both earlier options).
 # Classes, on the base side, per input and assay, over D = setdiff(intersect(columns, design samples), id), a value
-# "measured" when not NA (today's definition, OD-1 open): `a` no duplicated id; `b` every duplicated id's rows equally
-# measured; `e` the rest. Groups: every row of a duplicated id with its measured count, mean of measured values and
-# annotation (<out>/base-groups.tsv).
-# Oracles (head side; base R only): `oracle_kit214` the highest mean over D, first in input order on a tie (base's
-# rule); `oracle_kit258` the most measured over D, then the highest mean, then the first (head's rule).
+# "measured" when neither NA nor 0 (VAL-284 (1)): `a` no duplicated id; `b` every duplicated id's rows equally
+# measured; `e` the rest. Groups: every row of a duplicated id with its measured count, the mean of its measured values,
+# the mean of its non-missing values (KIT-214's) and its annotation (<out>/base-groups.tsv).
+# Oracles (head side; base R only): `oracle_kit214` the highest mean of the non-missing values over D (zeros averaged),
+# first in input order on a tie (base's rule); `oracle_kit258` the most measured values over D (neither NA nor 0), then
+# the highest mean of the measured values, then the first (head's rule, VAL-254 and VAL-284).
 # Criteria (<out>/compare.tsv; criterion, input, assay, setting, equal):
 #   (a)  class `a`: base shipped equal to head shipped (kept-pairs digest, table digest, n kept), each variant;
 #   (b)  class `b`: the same; and `b_group`: every equally measured duplicated id of any assay keeps the same row on
@@ -185,14 +187,14 @@ childMain <- function(side, out) {
         methods::slot(object, binding_of(object)$data_slot, check = FALSE) <- assays
         object
     }
-    # Per row over `columns`: the measured (not NA) count and the mean of the measured values (-Inf when none).
+    # Per row over `columns`: the measured count and the mean of the measured values (-Inf when none), a value measured
+    # when neither NA nor 0 (VAL-284 (1)); and the mean of the non-missing values, zeros averaged (KIT-214's rule).
     row_stats <- function(table, columns) {
         values <- do.call(cbind, lapply(columns, function(column) as.numeric(table[[column]])))
-        list(counts = apply(values, 1L, function(x) sum(!is.na(x))),
-            means = apply(values, 1L, function(x) {
-                x <- x[!is.na(x)]
-                if (length(x)) mean(x) else -Inf
-            }))
+        mean_of <- function(x) if (length(x)) mean(x) else -Inf
+        list(counts = apply(values, 1L, function(x) sum(!is.na(x) & x != 0)),
+            means = apply(values, 1L, function(x) mean_of(x[!is.na(x) & x != 0])),
+            nonmissing_means = apply(values, 1L, function(x) mean_of(x[!is.na(x)])))
     }
     # The kept row per id: `by_count` FALSE is KIT-214's rule, TRUE KIT-258's.
     oracle_kept <- function(table, id, columns, by_count) {
@@ -200,7 +202,8 @@ childMain <- function(side, out) {
         keys <- as.character(table[[id]])
         kept <- vapply(unique(keys), function(key) {
             rows <- which(keys == key)
-            if (by_count) rows <- rows[stats$counts[rows] == max(stats$counts[rows])]
+            if (!by_count) return(rows[[which.max(stats$nonmissing_means[rows])]])
+            rows <- rows[stats$counts[rows] == max(stats$counts[rows])]
             rows[[which.max(stats$means[rows])]]
         }, integer(1))
         data.frame(id = keys[kept], row = table$.row[kept], stringsAsFactors = FALSE)
@@ -278,7 +281,9 @@ childMain <- function(side, out) {
                         } else rep("", length(in_group))
                         groups[[length(groups) + 1L]] <- data.frame(input = input, assay = assay, id = keys[in_group],
                             row = table$.row[in_group], n_measured = stats$counts[in_group],
-                            mean_measured = as.character(round(stats$means[in_group], 6)), annotation = names_of,
+                            mean_measured = as.character(round(stats$means[in_group], 6)),
+                            mean_nonmissing = as.character(round(stats$nonmissing_means[in_group], 6)),
+                            annotation = names_of,
                             equally_measured = equal[match(keys[in_group], duplicated_ids)], stringsAsFactors = FALSE)
                     }
                 } else {
@@ -318,7 +323,7 @@ if (length(args) >= 1L && identical(args[[1L]], "--side")) {
 # ---- Parent: both sides, then the comparison ---------------------------------------------------------------------------
 stopifnot(length(args) >= 1L, grepl("^[0-9a-f]{40}$", args[[1L]]))
 base_commit <- args[[1L]]
-out <- if (length(args) >= 2L) args[[2L]] else "docs/qa/workflow-execution/kit/kit-258/s1"
+out <- if (length(args) >= 2L) args[[2L]] else "docs/qa/workflow-execution/kit/kit-258/s1f"
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 out <- normalizePath(out)
 head_root <- normalizePath(".")
@@ -427,17 +432,20 @@ result[[length(result) + 1L]] <- compare("d2_head_earlier_both_equals_base_earli
 changed <- both[!(both$row_base == both$row_head) %in% TRUE, , drop = FALSE]
 describe <- function(input, assay, id, row) {
     g <- groups[groups$input == input & groups$assay == assay & groups$id == id & groups$row == row, , drop = FALSE]
-    if (nrow(g) != 1L) return(c(n_measured = NA, mean_measured = NA, annotation = NA))
-    c(n_measured = g$n_measured, mean_measured = g$mean_measured, annotation = g$annotation)
+    if (nrow(g) != 1L) return(c(n_measured = NA, mean_measured = NA, mean_nonmissing = NA, annotation = NA))
+    c(n_measured = g$n_measured, mean_measured = g$mean_measured, mean_nonmissing = g$mean_nonmissing,
+        annotation = g$annotation)
 }
 base_info <- if (nrow(changed)) t(mapply(describe, changed$input, changed$assay, changed$id, changed$row_base)) else NULL
 head_info <- if (nrow(changed)) t(mapply(describe, changed$input, changed$assay, changed$id, changed$row_head)) else NULL
 changed_out <- data.frame(input = changed$input, assay = changed$assay, variant = changed$variant, id = changed$id,
     base_row = changed$row_base, base_n_measured = if (nrow(changed)) base_info[, "n_measured"] else character(),
     base_mean = if (nrow(changed)) base_info[, "mean_measured"] else character(),
+    base_mean_nonmissing = if (nrow(changed)) base_info[, "mean_nonmissing"] else character(),
     base_annotation = if (nrow(changed)) base_info[, "annotation"] else character(),
     head_row = changed$row_head, head_n_measured = if (nrow(changed)) head_info[, "n_measured"] else character(),
     head_mean = if (nrow(changed)) head_info[, "mean_measured"] else character(),
+    head_mean_nonmissing = if (nrow(changed)) head_info[, "mean_nonmissing"] else character(),
     head_annotation = if (nrow(changed)) head_info[, "annotation"] else character(), stringsAsFactors = FALSE)
 rownames(changed_out) <- NULL
 utils::write.table(changed_out, file.path(out, "changed-rows.tsv"), sep = "\t", row.names = FALSE, quote = FALSE)
