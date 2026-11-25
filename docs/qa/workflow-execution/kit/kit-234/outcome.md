@@ -83,3 +83,20 @@ HTML render of the integration workbook. Kept: the twelve functions end to end w
 wrappers on the corpus with a stand-in trainer (`test-integration-workbook-api.R`).
 
 **Evidence.** R1 45522636588, R2 45524570691, L 45524568014 (tables in `r1/`, `r2/`, `l/`); synthetic corpus only.
+
+## R3, declared before it is sent (2026-11-25)
+
+- **Purpose:** after the owner's answers (r1.3) and the merge of staging dd769671, show on a runner what R2 and L did
+  not see: a8f0d846's and 1a40623c's texts (W9 with the final limitation text, R CMD check's parse of the new Rd
+  section) and the archiving of `project_setup.R`.
+- **Binding:** head = `kit-234` at the declaration's commit (the merge b54e87ca plus this declaration); base = staging
+  dd769671. Files: the 14 of R2's scope; 1 shard per side; `check: true`; W6 in the scripts job.
+- **Ceiling:** 345 job-minutes (as R2: 2 x 60 tests, 2 x 90 check, 45 scripts). One run; no re-send for text.
+- **Expected (base staging against head):** `test-enrichment-significance.R` passed -10, one test fewer;
+  `test-go-propagation.R` passed -10 (T10 renamed); `test-integration-removed-factors.R` passed -6;
+  `test-integration-workbook.R` 53 -> 43; `test-integration-workbook-mofa.R` 3 skipped on both;
+  `test-integration-workbook-api.R` identical; `test-kit234-workbooks-withdrawn.R` only on head, all passing (W9
+  included); every other file identical (`test-workflow-saved-da.R` failing identically on both); R CMD check
+  findings identical (0 only on head); W6 exit 0.
+- **Decides:** A7 and A12 on the final text, and stop rules 2 to 4 on the merged head. Anything else, or a check item
+  or test changed by moving `project_setup.R`: stop and report.
