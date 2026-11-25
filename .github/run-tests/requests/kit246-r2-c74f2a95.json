@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-246 R2: fix c74f2a95 against tests-only a86922c0 (kit-246b on staging 12701142), 11 readers of the Methods paragraph and the text tables, R CMD check both; decides A2, stop rules 3 and 4",
+  "label": "KIT-246 R2 fix c74f2a95 vs tests-only a86922c0",
+  "package_commit": "c74f2a95024aa649f43d12f39d732a70f15db87f",
+  "base_commit": "a86922c09e4aea450bbde14ee9c4a5fe3b7cb014",
+  "tools_ref": "",
+  "tests": ["test-integration-record.R", "test-integration-enrichment.R", "test-integration-outputs.R", "test-integration-input-matrix.R", "test-integration-workbook-api.R", "test-integration-removed-factors.R", "test-integration-model.R", "test-integration-enrichment-mofa.R", "test-integration-results.R", "test-integration-gui.R", "test-kit240-integration-default.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
