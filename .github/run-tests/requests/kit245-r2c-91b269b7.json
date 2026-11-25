@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-245 correction R2c: fix with staging 42846c0e merged (91b269b7) against tests-only with staging merged (abe0705d); KIT-245 files pass on head, 11 files same, check nothing only on head; ceiling 300 job-minutes",
+  "label": "KIT-245 correction R2c base abe0705d head 91b269b7 with check",
+  "package_commit": "91b269b7cbca9e4de9eb5c3972abea8150c02a36",
+  "base_commit": "abe0705d9702981f13139483a330864cdf3bc6d8",
+  "tools_ref": "",
+  "tests": [
+    "test-kit245-github-push-safety.R",
+    "test-kit245-github-panel.R",
+    "test-omic-summary-module.R",
+    "test-github-management-direct-shared.R",
+    "test-kit234-workbooks-withdrawn.R",
+    "test-lipid-14a-summary-module-characterization.R",
+    "test-lipid-15-summary-module-seams.R",
+    "test-metab-05-summary-module-characterization.R",
+    "test-module-ci-trx-summary.R",
+    "test-module-ui-wrapper-direct-shared.R",
+    "test-omic-gui-config.R",
+    "test-optional-packages.R",
+    "test-prot-12-summary-module-contracts.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
