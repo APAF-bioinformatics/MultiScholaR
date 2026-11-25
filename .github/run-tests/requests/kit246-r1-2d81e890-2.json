@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-246 R1: tests-only commit, test-integration-record.R alone; failing-first E1 (old scaling sentence), guard G1 passes; decides stop rule 2",
+  "label": "KIT-246 R1 failing-first on kit-246 2d81e890 (resend: request 1 was committed blank)",
+  "package_commit": "2d81e8904518c11ffd2801105e9a037a630bb9f3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-integration-record.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
