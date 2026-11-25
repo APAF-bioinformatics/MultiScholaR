@@ -453,6 +453,7 @@ workflowOperationDefaults <- local({
             ruv_k = key("ruvIII_C_Varying", "ruv_number_k"), grouping = key("ruvIII_C_Varying", "ruv_grouping_variable")),
         `pearson-pairs` = list(group = "no_shipped_default", tech_rep_remove_regex = key("pearsonCorForSamplePairs", "tech_rep_remove_regex")),
         `pearson-selection` = list(pairs = "input", threshold = "no_shipped_default"),
+        `pearson-skip` = list(), # KIT-248: no parameters (the fixed constant skipped = TRUE)
         `DA-contrast-output` = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
             weights = "no_shipped_default", contrast = "input", annotations = "input"),
@@ -466,7 +467,9 @@ workflowOperationDefaults <- local({
         # KIT-031: the lipidomics declarations. `config.ini` ships no lipid filter section (the module's defaults
         # apply); the between-sample method, the RUV grouping/k and the DA settings share the proteomics keys.
         lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "no_shipped_default",
-            lipids_proportion_of_samples_below_cutoff = "no_shipped_default"),
+            lipids_proportion_of_samples_below_cutoff = "no_shipped_default",
+            # KIT-217: the per-group count's settings (the module's and the method's defaults 2 and 1 apply).
+            lipids_min_values_per_group = "no_shipped_default", lipids_min_groups = "no_shipped_default"),
         lipid_duplicate_resolution = list(),
         lipid_qc_finalize = list(), lipid_norm_complete = list(), lipid_reset = list(),
         lipid_itsd_normalisation = list(itsd_aggregation = "no_shipped_default", itsd_feature_ids = "input"),
@@ -487,7 +490,10 @@ workflowOperationDefaults <- local({
         # KIT-032: the metabolomics declarations; `config.ini` ships the intensity filter's section.
         metab_intensity_filter = list(
             metabolites_intensity_cutoff_percentile = key("metaboliteIntensityFiltering", "metabolites_intensity_cutoff_percentile"),
-            metabolites_proportion_of_samples_below_cutoff = key("metaboliteIntensityFiltering", "metabolites_proportion_of_samples_below_cutoff")),
+            metabolites_proportion_of_samples_below_cutoff = key("metaboliteIntensityFiltering", "metabolites_proportion_of_samples_below_cutoff"),
+            # KIT-217: the per-group count's settings, shipped in the same section (2 and 1).
+            metabolites_min_values_per_group = key("metaboliteIntensityFiltering", "metabolites_min_values_per_group"),
+            metabolites_min_groups = key("metaboliteIntensityFiltering", "metabolites_min_groups")),
         metab_duplicate_resolution = list(),
         metab_qc_finalize = list(), metab_norm_complete = list(), metab_reset = list(),
         metab_itsd_normalisation = list(itsd_aggregation = "no_shipped_default", itsd_feature_ids = "input"),
@@ -516,8 +522,8 @@ workflowOperationDefaults <- local({
         trx_da_contrast = list(formula = "input", qvalue = "no_shipped_default", lfc = "no_shipped_default", contrast = "input",
             friendly_name = "input"),
         trx_ruviii_export = list(logcpm = "input", grid = "input", ruviii_m_source = "no_shipped_default"),
-        # KIT-062: the integration model. The inputs come from the import; every method parameter's provisional default
-        # is the model's own (`integrationMofaParameterSpec`, settled by the user's workbook), not config.ini's.
+        # KIT-062: the integration model. The inputs come from the import; every method parameter's default is the
+        # model's own (`integrationMofaParameterSpec`, with the decision behind each), not config.ini's.
         integration_mofa_model = list(input_manifests = "input", views = "input",
             # KIT-153 (INT-23): the decided default of `integrationMofaParameterSpec`, not config.ini's.
             input_matrix = "no_shipped_default", technical_replicates = "no_shipped_default",
@@ -591,7 +597,9 @@ workflowParameterLabels <- local({
             significance_rule = "Significance rule for Gene Ontology terms (clusterProfiler route)"), # KIT-203
         # KIT-031: the lipidomics declarations.
         lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
-            lipids_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),
+            lipids_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff",
+            lipids_min_values_per_group = "Values required per group (missing values)",
+            lipids_min_groups = "Groups required (missing values)"),
         lipid_duplicate_resolution = list(),
         lipid_qc_finalize = list(), lipid_norm_complete = list(), lipid_reset = list(),
         lipid_itsd_normalisation = list(itsd_aggregation = "Internal-standard aggregation (sum, mean or median)",
@@ -612,7 +620,9 @@ workflowParameterLabels <- local({
             lfc = "Log fold-change cutoff (treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"),
         # KIT-032: the metabolomics declarations.
         metab_intensity_filter = list(metabolites_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
-            metabolites_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),
+            metabolites_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff",
+            metabolites_min_values_per_group = "Values required per group (missing values)",
+            metabolites_min_groups = "Groups required (missing values)"),
         metab_duplicate_resolution = list(),
         metab_qc_finalize = list(), metab_norm_complete = list(), metab_reset = list(),
         metab_itsd_normalisation = list(itsd_aggregation = "Internal-standard aggregation (sum, mean or median)",
@@ -851,7 +861,8 @@ registerBuiltinWorkflowOperations <- function() {
     # KIT-024: the whole-matrix declarations that run in process only (KIT-004, KIT-016) are registered too, so the
     # registry is the one place an operation is named (KIT-007); a dispatch of one to the worker is refused.
     # KIT-112 D3: the DA contrast left this loop for the omics one below; the enrichment stays in process (KIT-113).
-    for (declaration in list(diaEnrichmentOperation())) {
+    # KIT-248 (VAL-238): the correlation filter's Skip, a controller step with no parameters and one fixed constant.
+    for (declaration in list(diaEnrichmentOperation(), diaPearsonSkipOperation())) {
         registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
             compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),

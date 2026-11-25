@@ -1,0 +1,143 @@
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `err` to inherit from "multischolar_github_push_failed".
+  Actual class: "simpleError"/"error"/"condition".
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `k245Text(err)` to match string "kit245-test-org/k245-s1 was created on GitHub".
+  Actual text:
+  x | Failed to push to repository. Error during push step: system('git push') failed with exit code: 128
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `dir.exists(file.path(tempdir(), id))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `isTRUE(seen$config_holds_dummy)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `seen$count` to be identical to "2".
+  Differences:
+  `actual`:   NA 
+  `expected`: "2"
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `is.na(seen$helper)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S1: a push GitHub refuses leaves no token on disk and names the repository
+kind: failure
+message:
+  Expected `k245FilesHoldingDummy(tempdir())` to be identical to `character()`.
+  Differences:
+  `actual`:   "/tmp/Rtmpy6KmPS/k245-s1/.git/config"
+  `expected`:                                      
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S2: without the git program nothing is created on GitHub and nothing is staged
+kind: failure
+message:
+  Expected `err` to inherit from "multischolar_github_git_missing".
+  Actual class: "simpleError"/"error"/"condition".
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S2: without the git program nothing is created on GitHub and nothing is staged
+kind: failure
+message:
+  Expected `rec$calls` to have length 0.
+  Actual length: 1.
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S2: without the git program nothing is created on GitHub and nothing is staged
+kind: failure
+message:
+  Expected `dir.exists(file.path(tempdir(), id))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S3: a file over GitHub's 100 MiB limit is refused before anything is created, by its project path
+kind: failure
+message:
+  Expected `err` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S3: a file over GitHub's 100 MiB limit is refused before anything is created, by its project path
+kind: failure
+message:
+  Expected `k245Text(err)` to match string "scripts/lipidomics/kit245-big.bin".
+  Actual text:
+  x | no condition; the call returned TRUE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S3: a file over GitHub's 100 MiB limit is refused before anything is created, by its project path
+kind: failure
+message:
+  Expected `rec$calls` to have length 0.
+  Actual length: 1.
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S4: a Project ID that leaves tempdir() is refused and deletes nothing
+kind: failure
+message:
+  Expected `err` to inherit from "multischolar_github_project_id_invalid".
+  Actual class: "simpleError"/"error"/"condition".
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S4: a Project ID that leaves tempdir() is refused and deletes nothing
+kind: failure
+message:
+  Expected `file.exists(file.path(sentinel, "keep.txt"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S5: git older than 2.31 is refused before anything is created
+kind: failure
+message:
+  Expected `err` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S5: git older than 2.31 is refused before anything is created
+kind: failure
+message:
+  Expected `k245Text(err)` to match string "2.30.0".
+  Actual text:
+  x | no condition; the call returned TRUE
+
+file: test-kit245-github-push-safety.R
+test: KIT-245 S5: git older than 2.31 is refused before anything is created
+kind: failure
+message:
+  Expected `rec$calls` to have length 0.
+  Actual length: 1.
+

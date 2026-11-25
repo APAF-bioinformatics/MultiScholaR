@@ -41,8 +41,9 @@ protNormCoreBodyDigests <- c(
     buildProtNormLabelPlot = "3f45f763cb05b83ed873e523c33d019800e5719c06c1cbf6b771b98d8fa9bf69",
     loadProtNormImageAsPlot = "6b9882f8594382fdabaf741c05fad43452517a5a37fdd07cad65b2a87e02e7ff",
     # Re-pinned by the GUI audit (P-35, 2026-11-11): pressed again on the tab's own RUV state, the pass-through keeps the
-    # input it designated before (was 63aea4d3...); the only change to this definition.
-    runDIAReferenceLimpaNormalisationPassThrough = "fe852d7a3086ab62b9bb8fadf6214da74668265e0d7bccf60d001d1eae01fbbf"
+    # input it designated before (was 63aea4d3...); the only change to this definition. Re-pinned by KIT-244 (VAL-246;
+    # VAL-220 (1)): pressed again at the correlation result too (was fe852d7a...); value from run 45591340671's dump.
+    runDIAReferenceLimpaNormalisationPassThrough = "e991f0d2aa83d45b4ee1df5484793a1ea60118e7ae59123401f5548d79293f79"
 )
 
 # Recorded at aa79fe3f (before W3) through the core callers on the fixtures below.
@@ -1125,6 +1126,8 @@ protNormW2Normalization <- function(fixture, dispatch, norm, settings, post_qc, 
         assertDIAExportReady(manager, allow_action = "normalization")
         diaNormalizationRequest(manager, settings, norm, "group")
     })
+    # KIT-257 (AUDIT-KIT-257-impl I03): as dispatchProtNormNormalization's actions start (where the function exists).
+    if (exists("removeProtNormOwnFiles", mode = "function")) removeProtNormOwnFiles(fixture$paths, "normalization")
     state <- if (identical(settings$ruv_mode, "skip")) "normalized" else "ruv_corrected"
     result <- dispatch("normalization-ruv", request$parameters, request$source, state)
     withDIAStateScope(manager, function() publishDIAReferenceNormalization(manager, settings, result[c("value", "reference")],
@@ -1137,6 +1140,8 @@ protNormW2Correlation <- function(fixture, dispatch, norm, threshold, aesthetics
     source <- withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "correlation")
         source <- diaCorrelationSource(manager, norm)
+        # KIT-257 (AUDIT-KIT-257-impl I03): as dispatchProtNormCorrelation's first action (where the function exists).
+        if (exists("removeProtNormOwnFiles", mode = "function")) removeProtNormOwnFiles(fixture$paths, "correlation")
         readDIAStateMetadata(manager, source)
         source
     })
@@ -1850,10 +1855,13 @@ test_that("GUI audit A111-03: a managed worker failure shows the worker's reason
         click(1, list(status = "worker_failed", error = "No valid percentage found"))
         expect_identical(log$notes, c(working, "[error 15] Error applying proteomics step: No valid percentage found",
             "[error 10] Error in normalization: No valid percentage found"))
-        # A failure that is not the worker's own error keeps the controller's wording.
+        # KIT-252: a failure that is not the worker's own error is told in plain words (draft WP-1, the memory limit).
         click(2, list(status = "memory_guard", error = NULL))
-        expect_identical(log$notes, c(working, "[error 15] Error applying proteomics step: managed action ended: memory_guard",
-            "[error 10] Error in normalization: managed action ended: memory_guard"))
+        memory_limit <- paste("the step needed more memory than the application allows for one step (at most 16 GB, less",
+            "when the computer has less free memory), so it was stopped before it finished. Its result was not saved.",
+            "Closing other programs may help; if it stops again, this data set is too large for this step on this computer.")
+        expect_identical(log$notes, c(working, paste("[error 15] Error applying proteomics step:", memory_limit),
+            paste("[error 10] Error in normalization:", memory_limit)))
         expect_identical(fixture$manager$current_state, "protein_replicate_filtered")
     })
 })

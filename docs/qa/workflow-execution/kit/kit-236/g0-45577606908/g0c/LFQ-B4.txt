@@ -1,0 +1,21 @@
+template: inst/reports/proteomics/LFQ_report.rmd
+check: test for any deviation from zero log-fold-change
+observed: present
+== text
+ui_de_log_fold_change_cutoff: 0.5 ; s4_de_treat_lfc_cutoff: 0.5 ; ui_de_treat_enabled: false
+
+DIFFERENTIAL ABUNDANCE ANALYSIS
+
+Differential abundance analysis of proteins was performed using the adjusted 
+abundance matrix for the comparisons defined in the contrast table. The 'limma' R 
+package (Ritchie et al., 2015) was used. A linear model was fitted using the formula '~ 0 + group' with the 
+'lmFit' function, and p-values were calculated using the 'eBayes' function. 
+A trended and robust empirical Bayes analysis was performed. The false discovery rate correction was applied to the 
+moderated p-values by calculating the q-values (Storey, 2002). 
+The standard empirical Bayes method was used to test for any deviation from zero log-fold-change. Significant differentially expressed proteins were defined as those 
+with q-values less than 0.05.
+
+Volcano plots of differentially expressed proteins across all groups are shown 
+in Figure 3, with a threshold of q-value < 0.05 and no log fold-change 
+threshold. Full details of all proteins are provided in the supplementary results
+table DA_results_proteomics.xlsx within the Publication_tables folder.

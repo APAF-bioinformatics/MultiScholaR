@@ -36,6 +36,9 @@
 #' @param lipids_proportion_of_samples_below_cutoff The maximum allowed proportion (0 to 1) of samples where a lipid can be below the threshold. If a lipid exceeds this proportion, it's removed.
 #' @param lipid_id_column A string specifying the name of the column containing the unique lipid identifiers.
 #' @param sample_columns Optional. The sample columns to count. Without it, every numeric column other than the identifier column is taken as a sample: pass the design's samples when the table holds other numeric columns (retention time, m/z, scores).
+#' @param group_labels Optional. The group of each sample column, in the same order as `sample_columns`. A lipid is kept only if at least `min_groups` groups each have a value (not missing) in at least `min_values_per_group` of their samples (in every sample, if the group is smaller). Groups named like "pool" and samples without a group are not counted as groups. Without it, only lipids with no value in any sample are removed, with a warning.
+#' @param min_values_per_group Values required per group (a whole number of at least 1; default 2). Used with `group_labels`.
+#' @param min_groups Groups required (a whole number from 1 to the number of groups; default 1). Used with `group_labels`.
 #' @return A filtered wide data frame containing only the lipids that pass the filter.
 #' @export
 lipidIntensityFilteringHelper <- function(
@@ -43,7 +46,10 @@ lipidIntensityFilteringHelper <- function(
   min_lipid_intensity_threshold,
   lipids_proportion_of_samples_below_cutoff,
   lipid_id_column,
-  sample_columns = NULL
+  sample_columns = NULL,
+  group_labels = NULL,
+  min_values_per_group = NULL,
+  min_groups = NULL
 ) {
     # KIT-202 (VAL-118 (1), VAL-130): the columns counted as samples are the ones given; without them, every numeric
     # column except the identifier, with a classed warning naming them (the package always passes them).
@@ -60,6 +66,11 @@ lipidIntensityFilteringHelper <- function(
         stop("Lipid assay contains non-finite sample intensity values.")
     }
 
+    # KIT-217 (VAL-173 (2)): the per-group count of present values, then today's share (omicsIntensityFilterKeep).
+    settings <- omicsIntensityFilterHelperSettings(sample_cols, group_labels, min_values_per_group, min_groups, "lipids")
+    keep_rows <- omicsIntensityFilterKeep(sample_values, settings$groups, min_lipid_intensity_threshold,
+        lipids_proportion_of_samples_below_cutoff, settings$min_values_per_group, settings$min_groups)
+
     # Calculate the number of samples below threshold for each lipid
     lipids_below_threshold <- assay_table |>
         # Ensure id column is character for safe rowwise operations if needed
@@ -71,9 +82,9 @@ lipidIntensityFilteringHelper <- function(
         ) |>
         ungroup()
 
-    # Filter lipids based on the proportion cutoff
+    # Filter lipids by the rule's decision (the share below the cutoff, and the per-group count)
     filtered_assay_table <- lipids_below_threshold |>
-        dplyr::filter(proportion_below_threshold < lipids_proportion_of_samples_below_cutoff) |>
+        dplyr::filter(keep_rows) |>
         # Remove the temporary calculation columns
         dplyr::select(-num_below_threshold, -proportion_below_threshold)
 

@@ -1,0 +1,29 @@
+file: test-kit263-prot-study-parameters-sections.R
+test: (KIT-263 T1) a proteomics study_parameters.txt lists no metabolomics or transcriptomics setting
+kind: failure
+message:
+  Expected `length(foreign)` to be identical to 0L.
+  Differences:
+    `actual`: 6
+  `expected`: 0
+
+file: test-kit263-prot-study-parameters-sections.R
+test: (KIT-263 T4) the deny-list names the sections under config.ini's Metabolomics and Transcriptomics banners
+kind: error
+message:
+  Error in `eval(code, test_env)`: object 'studyParameterForeignSections' not found
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(...) at test-kit263-prot-study-parameters-sections.R:89:5
+   2.   └─testthat::quasi_label(enquo(expected), expected.label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit263-prot-study-parameters-sections.R
+test: (KIT-263 T5) saveWorkflowSummaryParameters passes the omic type to the writer
+kind: failure
+message:
+  Expected `seen$omic_type` to be identical to "transcriptomics".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('transcriptomics')
+

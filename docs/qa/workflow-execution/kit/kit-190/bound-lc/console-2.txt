@@ -1,0 +1,8 @@
+KIT-190 bound lc: 8 rows; falsifiers k_readback 2, pct_readback 0, oracle 0, instrument 0
+check i_reproduce: ok 4 of 4
+check ii_k_pct_readback: ok 2 of 4
+check iii_oracle: ok 4 of 4
+check iv_instrumentation: ok 4 of 4
+check vii_projected_core_hours_option_c: value 50.28 ceiling 100
+Error: fault run: k read-back falsifier triggered (as planted)
+Execution halted

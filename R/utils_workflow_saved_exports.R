@@ -238,8 +238,8 @@ saveWorkflowOmicsNormSessionArtifacts <- function(binding, sessionData, sourceDi
     for (assay_name in names(sessionData$ruv_optimization_results)) {
         result <- sessionData$ruv_optimization_results[[assay_name]]
         if (!is.null(result) && isTRUE(result$success)) {
-            ruv_summary_lines <- paste0(ruv_summary_lines, sprintf("\n  %s: k=%d, %%=%.1f, controls=%d", assay_name, result$best_k,
-                result$best_percentage, sum(result$control_genes_index, na.rm = TRUE)))
+            # KIT-190 I01: the k removed, with the k found where the cap reduced it.
+            ruv_summary_lines <- paste0(ruv_summary_lines, omicsRuvExportSummaryLine(assay_name, result))
         }
     }
     if (ruv_summary_lines == "") ruv_summary_lines <- "\n  (RUV skipped or not applied)"
@@ -690,6 +690,25 @@ checkWorkflowFigureFiles <- function(files, message = "required figures were not
         "i" = "in {.path {unique(dirname(unwritten))}}",
         if (windows && any(lengths > 259L)) c("x" = hint)),
         class = c("workflow_figure_unwritten", class))
+}
+
+#' KIT-257 (VAL-250): remove a run's own earlier files before the run, by exact path. The present files that are not
+#' directories are removed with `unlink(expand = FALSE)`, so a bracket or star in the project's path is never read as a
+#' pattern (KIT-243 I02); a path that is a directory is never deleted and counts as not removed. One logger line names
+#' the files removed. A leading `~` is expanded first (AUDIT-KIT-257-impl I02): `unlink(expand = FALSE)` does not.
+#' @param files The paths to remove; absent ones are skipped.
+#' @param message The refusal's text, `%s` the paths still present.
+#' @return The removed paths, invisibly; a condition of class `workflow_figure_unwritten` when any is still present.
+#' @noRd
+removeWorkflowOwnFiles <- function(files, message) {
+    files <- path.expand(files) # a leading `~` only; wildcards stay literal (`expand = FALSE` below)
+    present <- files[file.exists(files)]
+    removable <- present[!dir.exists(present)]
+    unlink(removable, expand = FALSE)
+    left <- present[file.exists(present)]
+    if (length(left)) rlang::abort(sprintf(message, paste(left, collapse = ", ")), class = "workflow_figure_unwritten")
+    if (length(removable)) logger::log_info(paste("Removed the earlier run's files:", paste(removable, collapse = ", ")))
+    invisible(removable)
 }
 
 #' Copy every file under one folder into another, keeping the relative layout and the folders, and check that each

@@ -232,6 +232,67 @@ workflowDaFilesUnmade <- function(manager, paths, omicType) {
     setdiff(candidates, made)
 }
 
+#' KIT-243 (part D): the marker that the newest DA's publication has not completed, at the root of the publication folder,
+#' which neither Copy (named subfolders), KIT-212's candidates, the proteomics session archive nor Push reads.
+#' @param paths The omic's project paths.
+#' @return The marker's path, or NULL when the publication folder is unset.
+#' @noRd
+workflowDaPublicationMarker <- function(paths) {
+    folder <- paths$publication_graphs_dir
+    if (!is.character(folder) || length(folder) != 1L || is.na(folder) || !nzchar(folder)) return(NULL)
+    file.path(folder, ".multischolar_da_publication_pending")
+}
+
+#' KIT-243 (VAL-212 (1)): before a DA publication writes into the project, remove the files the newest DA's publication
+#' writes by name (`workflowDaMadeFiles`, the accepted manifest's) that an earlier DA left in the publication folder or a
+#' folder directly under it, Save Heatmap's `Heatmap/` excepted (told apart by folder: the publications write
+#' `Heatmaps/`). Part D's marker is written first, so a failure here or in the publication leaves Copy and the Report
+#' refused until a publication completes (`clearWorkflowDaPublicationPending`). A path that is a directory is never
+#' deleted: it counts as not removed. A no-op for a manager that is not a reference-state session owner, and when the
+#' publication folder is unset.
+#' @param manager The session owner, the newest DA's manifest accepted on its head.
+#' @param paths The omic's project paths (`publication_graphs_dir`, `da_output_dir`).
+#' @param omicType The omic.
+#' @return The removed files, invisibly. A condition of class `workflow_figure_unwritten` when the marker cannot be written
+#'   (nothing is then removed) or a file is still present.
+#' @noRd
+removeWorkflowDaOwnFigures <- function(manager, paths, omicType) {
+    marker <- workflowDaPublicationMarker(paths)
+    if (!usesWorkflowReferenceStates(manager) || is.null(marker)) return(invisible(character()))
+    graphs <- paths$publication_graphs_dir
+    dir.create(graphs, recursive = TRUE, showWarnings = FALSE)
+    written <- suppressWarnings(file.create(marker))
+    checkWorkflowFigureFiles(marker, copied = isTRUE(written))
+    made <- withWorkflowStateScope(manager, function() {
+        if (isSavedWorkflowReference(manager$.context$snapshot$da_results)) workflowDaMadeFiles(manager, paths, omicType) else
+            character()
+    })
+    # dirname() returns "/" separators on Windows (and keeps a network share's "\\"): compare in that form.
+    root <- dirname(file.path(graphs, "."))
+    folders <- dirname(made)
+    own <- made[(folders == root | dirname(folders) == root) & folders != dirname(file.path(graphs, "Heatmap", "."))]
+    # KIT-257 (AUDIT-KIT-257-impl M1): the shared core (`removeWorkflowOwnFiles`: a leading `~` expanded, no pattern read).
+    removeWorkflowOwnFiles(own, paste0("An earlier file of the differential analysis could not be removed before this ",
+        "analysis's files were written: %s. Close any program that has it open, then run the differential analysis again."))
+}
+
+#' KIT-243 (part D): delete the marker once the DA's publication has completed. The deletion is checked; a marker still
+#' present is a warning naming it (logged, and shown on a Shiny session), and Copy and the Report keep refusing.
+#' @param paths The omic's project paths.
+#' @return TRUE when no marker is left, invisibly; FALSE otherwise.
+#' @noRd
+clearWorkflowDaPublicationPending <- function(paths) {
+    marker <- workflowDaPublicationMarker(paths)
+    if (is.null(marker) || !file.exists(marker)) return(invisible(TRUE))
+    unlink(marker)
+    if (!file.exists(marker)) return(invisible(TRUE))
+    text <- paste0("The differential analysis completed, but ", marker, " could not be removed, so Copy and the Report still ",
+        "refuse. Remove that file, or run the differential analysis again.")
+    logger::log_warn(logger::skip_formatter(text))
+    if (!is.null(shiny::getDefaultReactiveDomain())) shiny::showNotification(text, type = "warning", duration = NULL)
+    invisible(FALSE)
+}
+
 #' Reuse the exact uncontrasted native limma fit inside an explicit DA action.
 #' @param data,design_m,design,samples Existing runTestsContrasts execution inputs.
 #' @param formula,weights Existing model identity, including the scalar NA policy.
@@ -545,12 +606,18 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         # (`da_publication`); in process the publication runs here as before.
         # KIT-052 (KIT-134 run 44275615462): drawn in a short folder and copied into the action staging folder, as the
         # worker does; drawn in place, ggsave's PNG device on Windows wrote nothing, and said nothing, from 260 characters.
-        if (publish) publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
-            paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
-                withWorkflowShortStaging(staged, function(short)
-                    produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, short),
-                    "the DA publication's files could not be copied into the project's staging folder"),
-            identity = diaDaPublicationIdentity(manifest, diaAnnotationDigest(request$annotations)))
+        # KIT-243 (S1): the earlier files under this DA's names removed first, on every publication (a retry or an identical
+        # repeated request, whose `produce` is skipped, included); the marker is cleared once the publication returns.
+        if (publish) {
+            removeWorkflowDaOwnFigures(manager, paths, "proteomics")
+            publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
+                paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
+                    withWorkflowShortStaging(staged, function(short)
+                        produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, short),
+                        "the DA publication's files could not be copied into the project's staging folder"),
+                identity = diaDaPublicationIdentity(manifest, diaAnnotationDigest(request$annotations)))
+            clearWorkflowDaPublicationPending(paths)
+        }
         if (publish) completeDIADaDisplay(da_data, workflow, manifest)
         manifest
     })
@@ -1514,16 +1581,20 @@ selectWorkflowDiaExpression <- function(matrix, feature_id) {
 }
 
 #' Reuse a narrow DA display-selection index without repeating fit or FDR work.
+#' KIT-204 (VAL-129 (1)): the counts include `not_tested`, the rows without a p-value. The identity token is `v2`: under
+#' a source load the software component stays the same while the version does, so a `v1` product (without the count)
+#' would otherwise be served.
 #' @param manager Current saved-result owner.
 #' @param reference One immutable complete contrast-result table.
 #' @param qvalue,lfc Existing display cutoffs, included in selection identity.
-#' @return Selected ordinals/flags and full-population counts, never result collections.
+#' @return Selected ordinals/flags and full-population counts (total, significant, up, down, not_tested), never result
+#'   collections.
 #' @noRd
 resolveDIAResultSelection <- function(manager, reference, qvalue, lfc) {
     if (length(qvalue) != 1L || !is.finite(qvalue) || qvalue < 0 || qvalue > 1 ||
         length(lfc) != 1L || !is.finite(lfc) || lfc < 0) cli::cli_abort("invalid result cutoffs")
     identity <- newSavedWorkflowScientificIdentity(reference$entity_id, "full-testing-population",
-        digest::digest(list(qvalue, lfc), algo = "sha256"), "DA-display-selection-v1", manager$.context$software)
+        digest::digest(list(qvalue, lfc), algo = "sha256"), "DA-display-selection-v2", manager$.context$software)
     store <- manager$.context$store
     hit <- resolveSavedWorkflowEntity(store, "scientific_product", identity)
     if (identical(hit$status, "hit")) return(hit$value$value)
@@ -1532,12 +1603,12 @@ resolveDIAResultSelection <- function(manager, reference, qvalue, lfc) {
     metadata <- workflowSavedTableMetadata(data.frame(source_order = integer(), up = logical(), down = logical()),
         "source_order", 3L)
     metadata$rows <- NULL
-    counts <- data.frame(total = as.double(scope$metadata$rows), significant = 0, up = 0, down = 0)
+    counts <- data.frame(total = as.double(scope$metadata$rows), significant = 0, up = 0, down = 0, not_tested = 0)
     rows <- saveWorkflowTable(store, NULL, basename(tempfile("da-selection-")), identity, "source_order",
         metadata = metadata, write_fn = function(path, restoration) {
             writer <- openWorkflowTableWriter(path, restoration, store$progress)
             on.exit(abortWorkflowTableWriter(writer), add = TRUE)
-            streamSavedWorkflowTable(scope, c("fdr_qvalue", "log2FC"), function(data, offset, row_names) {
+            streamSavedWorkflowTable(scope, c("fdr_qvalue", "log2FC", "raw_pvalue"), function(data, offset, row_names) {
                 significant <- !is.na(data$fdr_qvalue) & data$fdr_qvalue < qvalue
                 # Preserve the existing DuckDB display comparison for NaN effects.
                 up <- significant & ((!is.na(data$log2FC) & data$log2FC > lfc) | is.nan(data$log2FC))
@@ -1545,6 +1616,7 @@ resolveDIAResultSelection <- function(manager, reference, qvalue, lfc) {
                 counts$significant <<- counts$significant + sum(significant)
                 counts$up <<- counts$up + sum(up)
                 counts$down <<- counts$down + sum(down)
+                counts$not_tested <<- counts$not_tested + sum(is.na(data$raw_pvalue))
                 selected <- which(significant)
                 appendWorkflowTableWriter(writer, data.frame(source_order = as.integer(offset + selected),
                     up = up[selected], down = down[selected]))

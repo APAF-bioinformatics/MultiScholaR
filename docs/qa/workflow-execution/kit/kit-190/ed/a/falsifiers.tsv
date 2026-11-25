@@ -1,0 +1,157 @@
+falsifier	cell	class	count	evaluated	stated
+F1	N-r	lipid	0	50	0
+F2	N-r	lipid	0	50	0
+F3	N-r	lipid	0	50	0
+F1	N-r	metab	0	50	0
+F2	N-r	metab	0	50	0
+F3	N-r	metab	0	50	0
+F1	N-s	lipid	0	50	0
+F2	N-s	lipid	0	50	0
+F3	N-s	lipid	0	50	0
+F1	N-s	metab	0	50	0
+F2	N-s	metab	0	50	0
+F3	N-s	metab	0	50	0
+F1	E-r	lipid	0	50	0
+F2	E-r	lipid	0	50	0
+F3	E-r	lipid	0	50	0
+F1	E-r	metab	0	50	0
+F2	E-r	metab	0	50	0
+F3	E-r	metab	0	50	0
+F1	E1	t11_concentration lipid	0	1	0
+F2	E1	t11_concentration lipid	0	1	0
+F3	E1	t11_concentration lipid	0	1	0
+F1	E1	t11_concentration metab	0	1	0
+F2	E1	t11_concentration metab	0	1	0
+F3	E1	t11_concentration metab	0	1	0
+F1	E1	t11_f172 lipid	0	1	0
+F2	E1	t11_f172 lipid	0	1	0
+F3	E1	t11_f172 lipid	0	1	0
+F1	E1	t11_f172 metab	0	1	0
+F2	E1	t11_f172 metab	0	1	0
+F3	E1	t11_f172 metab	0	1	0
+F1	E1	t1b_172101_missing lipid	0	1	0
+F2	E1	t1b_172101_missing lipid	0	1	0
+F3	E1	t1b_172101_missing lipid	0	1	0
+F1	E1	t1b_172101_complete lipid	0	1	0
+F2	E1	t1b_172101_complete lipid	0	1	0
+F3	E1	t1b_172101_complete lipid	0	1	0
+F1	E1	t1b_172102_missing lipid	0	1	0
+F2	E1	t1b_172102_missing lipid	0	1	0
+F3	E1	t1b_172102_missing lipid	0	1	0
+F1	E1	t1b_172102_complete lipid	0	1	0
+F2	E1	t1b_172102_complete lipid	0	1	0
+F3	E1	t1b_172102_complete lipid	0	1	0
+F1	E1	t1b_172103_missing lipid	0	1	0
+F2	E1	t1b_172103_missing lipid	0	1	0
+F3	E1	t1b_172103_missing lipid	0	1	0
+F1	E1	t1b_172103_complete lipid	0	1	0
+F2	E1	t1b_172103_complete lipid	0	1	0
+F3	E1	t1b_172103_complete lipid	0	1	0
+F1	E1	t1b_172104_missing lipid	0	1	0
+F2	E1	t1b_172104_missing lipid	0	1	0
+F3	E1	t1b_172104_missing lipid	0	1	0
+F1	E1	t1b_172104_complete lipid	0	1	0
+F2	E1	t1b_172104_complete lipid	0	1	0
+F3	E1	t1b_172104_complete lipid	0	1	0
+F1	E1	t1b_172105_missing lipid	0	1	0
+F2	E1	t1b_172105_missing lipid	0	1	0
+F3	E1	t1b_172105_missing lipid	0	1	0
+F1	E1	t1b_172105_complete lipid	0	1	0
+F2	E1	t1b_172105_complete lipid	0	1	0
+F3	E1	t1b_172105_complete lipid	0	1	0
+F1	E1	t1b_172106_missing lipid	0	1	0
+F2	E1	t1b_172106_missing lipid	0	1	0
+F3	E1	t1b_172106_missing lipid	0	1	0
+F1	E1	t1b_172106_complete lipid	0	1	0
+F2	E1	t1b_172106_complete lipid	0	1	0
+F3	E1	t1b_172106_complete lipid	0	1	0
+F1	E1	t1b_172107_missing lipid	0	1	0
+F2	E1	t1b_172107_missing lipid	0	1	0
+F3	E1	t1b_172107_missing lipid	0	1	0
+F1	E1	t1b_172107_complete lipid	0	1	0
+F2	E1	t1b_172107_complete lipid	0	1	0
+F3	E1	t1b_172107_complete lipid	0	1	0
+F1	E1	t1b_172108_missing lipid	0	1	0
+F2	E1	t1b_172108_missing lipid	0	1	0
+F3	E1	t1b_172108_missing lipid	0	1	0
+F1	E1	t1b_172108_complete lipid	0	1	0
+F2	E1	t1b_172108_complete lipid	0	1	0
+F3	E1	t1b_172108_complete lipid	0	1	0
+F1	E1	t1b_172109_missing lipid	0	1	0
+F2	E1	t1b_172109_missing lipid	0	1	0
+F3	E1	t1b_172109_missing lipid	0	1	0
+F1	E1	t1b_172109_complete lipid	0	1	0
+F2	E1	t1b_172109_complete lipid	0	1	0
+F3	E1	t1b_172109_complete lipid	0	1	0
+F1	E1	t1b_172110_missing lipid	0	1	0
+F2	E1	t1b_172110_missing lipid	0	1	0
+F3	E1	t1b_172110_missing lipid	0	1	0
+F1	E1	t1b_172110_complete lipid	0	1	0
+F2	E1	t1b_172110_complete lipid	0	1	0
+F3	E1	t1b_172110_complete lipid	0	1	0
+F1	E1	t1b_172111_missing lipid	0	1	0
+F2	E1	t1b_172111_missing lipid	0	1	0
+F3	E1	t1b_172111_missing lipid	0	1	0
+F1	E1	t1b_172111_complete lipid	0	1	0
+F2	E1	t1b_172111_complete lipid	0	1	0
+F3	E1	t1b_172111_complete lipid	0	1	0
+F1	E1	t1b_172112_missing lipid	0	1	0
+F2	E1	t1b_172112_missing lipid	0	1	0
+F3	E1	t1b_172112_missing lipid	0	1	0
+F1	E1	t1b_172112_complete lipid	0	1	0
+F2	E1	t1b_172112_complete lipid	0	1	0
+F3	E1	t1b_172112_complete lipid	0	1	0
+F1	E1	t1b_172113_missing lipid	0	1	0
+F2	E1	t1b_172113_missing lipid	0	1	0
+F3	E1	t1b_172113_missing lipid	0	1	0
+F1	E1	t1b_172113_complete lipid	0	1	0
+F2	E1	t1b_172113_complete lipid	0	1	0
+F3	E1	t1b_172113_complete lipid	0	1	0
+F1	E1	t1b_172114_missing lipid	0	1	0
+F2	E1	t1b_172114_missing lipid	0	1	0
+F3	E1	t1b_172114_missing lipid	0	1	0
+F1	E1	t1b_172114_complete lipid	0	1	0
+F2	E1	t1b_172114_complete lipid	0	1	0
+F3	E1	t1b_172114_complete lipid	0	1	0
+F1	E1	t1b_172115_missing lipid	0	1	0
+F2	E1	t1b_172115_missing lipid	0	1	0
+F3	E1	t1b_172115_missing lipid	0	1	0
+F1	E1	t1b_172115_complete lipid	0	1	0
+F2	E1	t1b_172115_complete lipid	0	1	0
+F3	E1	t1b_172115_complete lipid	0	1	0
+F1	E1	t1b_172116_missing lipid	0	1	0
+F2	E1	t1b_172116_missing lipid	0	1	0
+F3	E1	t1b_172116_missing lipid	0	1	0
+F1	E1	t1b_172116_complete lipid	0	1	0
+F2	E1	t1b_172116_complete lipid	0	1	0
+F3	E1	t1b_172116_complete lipid	0	1	0
+F1	E1	t1b_172117_missing lipid	0	1	0
+F2	E1	t1b_172117_missing lipid	0	1	0
+F3	E1	t1b_172117_missing lipid	0	1	0
+F1	E1	t1b_172117_complete lipid	0	1	0
+F2	E1	t1b_172117_complete lipid	0	1	0
+F3	E1	t1b_172117_complete lipid	0	1	0
+F1	E1	t1b_172118_missing lipid	0	1	0
+F2	E1	t1b_172118_missing lipid	0	1	0
+F3	E1	t1b_172118_missing lipid	0	1	0
+F1	E1	t1b_172118_complete lipid	0	1	0
+F2	E1	t1b_172118_complete lipid	0	1	0
+F3	E1	t1b_172118_complete lipid	0	1	0
+F1	E1	t1b_172119_missing lipid	0	1	0
+F2	E1	t1b_172119_missing lipid	0	1	0
+F3	E1	t1b_172119_missing lipid	0	1	0
+F1	E1	t1b_172119_complete lipid	0	1	0
+F2	E1	t1b_172119_complete lipid	0	1	0
+F3	E1	t1b_172119_complete lipid	0	1	0
+F1	E1	t1b_172120_missing lipid	0	1	0
+F2	E1	t1b_172120_missing lipid	0	1	0
+F3	E1	t1b_172120_missing lipid	0	1	0
+F1	E1	t1b_172120_complete lipid	0	1	0
+F2	E1	t1b_172120_complete lipid	0	1	0
+F3	E1	t1b_172120_complete lipid	0	1	0
+F1	E1	t1b_172101_missing metab	0	1	0
+F2	E1	t1b_172101_missing metab	0	1	0
+F3	E1	t1b_172101_missing metab	0	1	0
+F1	E1	t1b_172101_complete metab	0	1	0
+F2	E1	t1b_172101_complete metab	0	1	0
+F3	E1	t1b_172101_complete metab	0	1	0

@@ -62,10 +62,15 @@ setMethod(
       exclude_pool_samples = exclude_pool_samples
     )
 
+    # KIT-259 (A2): no within-group pair with a correlation gives a labelled figure, not an error.
+    if (!any(is.finite(correlation_vec$pearson_correlation))) {
+      return(buildProtPearsonUnavailablePlot(correlation_vec, correlation_group_to_use))
+    }
+
     pearson_plot <- correlation_vec |>
       ggplot(aes(pearson_correlation)) +
       geom_histogram(breaks = seq(min(round(correlation_vec$pearson_correlation - 0.5, 2), na.rm = TRUE), 1, 0.001)) +
-      scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4)) +
+      protPearsonCountScale() +
       xlab("Pearson Correlation") +
       ylab("Counts") +
       theme(
@@ -77,6 +82,45 @@ setMethod(
     return(pearson_plot)
   }
 )
+
+#' The count axis of the proteomics within-group Pearson histogram (KIT-259, A1): from 0 to the tallest bar, at least
+#' 4, with whole-number ticks. The axis was fixed at 0 to 4, which removed every bar holding more than 4 pairs. A panel
+#' whose bars hold at most 4 is drawn as before (ticks 0 to 4). The breaks function receives the expanded range, hence
+#' the floor of its upper end. Shared by `plotPearson` and `rebuildWorkflowDiaQcPlot`, which must stay identical.
+#' @return A ggplot2 continuous y scale.
+#' @noRd
+protPearsonCountScale <- function() {
+  ggplot2::scale_y_continuous(
+    limits = function(range) c(0, max(4, range[[2L]])),
+    breaks = function(range) {
+      top <- floor(range[[2L]])
+      seq(0, top, by = max(1, ceiling(top / 4)))
+    }
+  )
+}
+
+#' The proteomics within-group Pearson histogram when no within-group pair has a correlation to draw (KIT-259, A2):
+#' a labelled figure in place of the error at `seq(Inf, ...)`. It keeps the pairs as its data, so that the figure
+#' rebuilt from the saved product says the same.
+#' @param data The within-group pairs (column `pearson_correlation`), possibly none.
+#' @param group The variable the pairs are grouped by ('Color by').
+#' @return A ggplot with a text label and no axes.
+#' @noRd
+buildProtPearsonUnavailablePlot <- function(data, group) {
+  if (!is.data.frame(data)) data <- data.frame()
+  pairs <- if ("pearson_correlation" %in% names(data)) nrow(data) else 0L
+  label <- if (pairs == 0L) {
+    paste0("No two samples share a value of '", group, "' (Pool and QC groups are left out), so there are no ",
+      "within-group pairs to correlate. Choose a 'Color by' with at least two samples per value.")
+  } else {
+    paste0("None of the ", pairs, " within-group sample pairs has a correlation (too few shared values, or a ",
+      "sample with no variation), so there is nothing to draw.")
+  }
+  ggplot2::ggplot(data) +
+    ggplot2::annotate("text", x = 0.5, y = 0.5, label = paste(strwrap(label, 70L), collapse = "\n"), size = 5) +
+    ggplot2::xlim(0, 1) + ggplot2::ylim(0, 1) +
+    ggplot2::theme_void()
+}
 
 #' @title Pearson Correlation for Sample Pairs
 #' @param theObject is an object of the type ProteinQuantitativeData

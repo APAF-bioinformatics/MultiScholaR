@@ -1,0 +1,35 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-e2e-manifest.R	237	0	0	0	ok	237	0	0	0	ok	same		
+test-e2e-proteomics-dia-limpa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-proteomics-tmt-lfq.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-enrichment-significance.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-go-propagation.R	321	0	0	1	ok	321	0	0	1	ok	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-kit205-enrichment-background.R	228	0	0	0	ok	228	0	0	0	ok	same		
+test-kit215-not-tested-lists.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-kit220-da-threshold-consumers.R	71	2	0	0	failed	71	2	0	0	failed	same		
+test-kit227-report-ruv-sentences.R	162	0	0	0	ok	162	0	0	0	ok	same		
+test-kit234-workbooks-withdrawn.R	29	0	0	0	ok	29	0	0	0	ok	same		
+test-kit235-lipid-metab-report-parser.R	54	0	0	0	ok	54	0	0	0	ok	same		
+test-kit236-report-sentences.R	229	60	0	0	failed	289	0	0	0	ok	fixed	fixed: KIT-236 T8: no integration step and no cross-assay check are described; fixed: KIT-236 T19, T19g: the count sentence reads the table Copy writes (da_<omic>_...), per comparison and assay; fixed: KIT-236 B2 (I12): the proteomics 'none' normalisation says none was applied; fixed: KIT-236 T6, T6b (I12): the Methods say no normalisation was applied, or that the method is not recorded; fixed: KIT-236 T1d (I02): the samples kept are counted from the filter's own step; fixed: KIT-236 T1e (I05): the step list never prints an internal operation name; fixed: KIT-236 T20 (I01): under the declared RUV design the DA paragraph names the uncorrected matrix and the factors; fixed: KIT-236 T21, B7 (I06): at a fold-change threshold the p-values are named as TREAT's; fixed: KIT-236 T19c (I07): at a fold-change threshold the count and volcano sentences state both criteria; fixed: KIT-236 T22 (I09): an assay whose test failed is named, and the Methods do not say every assay was tested; counts: KIT-236 B2 (I12): the proteomics 'none' normalisation says none was applied (passed 0 -> 8, skipped 0 -> 0); counts: KIT-236 T19, T19g: the count sentence reads the table Copy writes (da_<omic>_...), per comparison and assay (passed 2 -> 8, skipped 0 -> 0); counts: KIT-236 T19c (I07): at a fold-change threshold the count and volcano sentences state both criteria (passed 0 -> 4, skipped 0 -> 0); counts: KIT-236 T1d (I02): the samples kept are counted from the filter's own step (passed 2 -> 4, skipped 0 -> 0); counts: KIT-236 T1e (I05): the step list never prints an internal operation name (passed 0 -> 8, skipped 0 -> 0); counts: KIT-236 T20 (I01): under the declared RUV design the DA paragraph names the uncorrected matrix and the factors (passed 2 -> 6, skipped 0 -> 0); counts: KIT-236 T21, B7 (I06): at a fold-change threshold the p-values are named as TREAT's (passed 2 -> 12, skipped 0 -> 0); counts: KIT-236 T22 (I09): an assay whose test failed is named, and the Methods do not say every assay was tested (passed 0 -> 6, skipped 0 -> 0); counts: KIT-236 T6, T6b (I12): the Methods say no normalisation was applied, or that the method is not recorded (passed 0 -> 8, skipped 0 -> 0); counts: KIT-236 T8: no integration step and no cross-assay check are described (passed 6 -> 10, skipped 0 -> 0)	
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-15-summary-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-lipid-summary.R	14	0	0	6	ok	14	0	0	6	ok	same		
+test-module-ci-metab-summary.R	12	0	0	6	ok	12	0	0	6	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-module-ci-sentinels.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-prot-05b-norm-module-contracts.R	440	0	0	22	ok	440	0	0	22	ok	same		
+test-prot-12a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-summary-report-templates.R	123	0	0	0	ok	123	0	0	0	ok	same		

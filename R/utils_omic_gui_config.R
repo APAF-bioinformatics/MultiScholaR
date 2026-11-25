@@ -1231,6 +1231,29 @@ omicGuiFeatureQcTexts <- function(noun, class) {
             "across many samples will be removed."), plural, capitalised),
         intensity_proportion_help = sprintf(paste("Remove %s where this proportion of samples are below the",
             "intensity threshold (default: 0.5)"), plural),
+        # KIT-217 (drafts W-1 to W-7 of the ticket's 5.4, for the owner's wording pass, VAL-41): the per-group count of
+        # missing values; the figures in the second help are the simulation's (KIT-217 measurement M, 4.5).
+        intensity_missing_heading = "Missing values",
+        intensity_min_values_label = "Values required per group",
+        intensity_min_values_help = sprintf(paste("A %s meets this in a group when it has a value in at least this many of",
+            "that group's samples (in every sample, if the group has fewer). A missing value, including a zero read as",
+            "missing at import, is not a value. Groups named like \"pool\" are not counted. This rule assumes that, for a",
+            "%s that does not change, values go missing for the same reasons in every group (for example, one detection",
+            "limit for all samples)."), noun, noun),
+        intensity_min_groups_label = "Groups required",
+        intensity_min_groups_help = sprintf(paste("A %s is kept only if at least this many groups meet the requirement",
+            "above. With the default 1, a %s measured in one group and missing from most or all samples of another is",
+            "kept: it is tested if the other group has at least one value, and otherwise listed as not tested, so a drop",
+            "to below detection stays visible. Choosing 2 removes such %s. In simulations with 2 groups of 6 samples and",
+            "25 %% of values missing, requiring 2 groups removed 29 %% of the %s that truly changed 8-fold, most of them",
+            "strongly decreased, and found 71 %% of those changes instead of 82 %%. For 2-fold changes, over all the",
+            "simulated designs (2 or 4 groups of 3 to 45 samples, 5 to 25 %% of values missing), both settings found",
+            "68 %%. A %s with no value in any sample is always removed. An assay with no value at all is left unchanged,",
+            "and its differential analysis is refused."), noun, noun, plural, plural, noun),
+        intensity_low_heading = "Low intensity",
+        intensity_share_help = paste("This share counts values below the threshold among all samples, pools included. A",
+            "missing value is not counted as below the threshold here, but its sample still counts in the total; the",
+            "settings above deal with missing values."),
         intensity_original_label = sprintf("Original %s:", plural),
         intensity_working = sprintf("Applying %s intensity filter...", noun),
         intensity_result_heading = paste(capitalised, "Intensity Filter Applied Successfully"),
@@ -1754,12 +1777,13 @@ omicGuiRuvTableClassic <- function() {
             k_rule_figures = list(sweep_bounded = list(fdp = 0.079, fdp_where = cell[["c5"]], power = 0.91,
                 source = "KIT-124 S1 arm 40 (scored/confirm-gha): worst cell C5 0.079, at most 0.056 elsewhere, power C0 0.91")),
             source = "KIT-129 1a; KIT-124 S1 arm 39 (scored/confirm-gha): worst cell C5 0.079, at most 0.053 elsewhere, power C0 0.92"),
-        legacy = list(status = "measured", fdp = 0.385, fdp_where = cell[["c5"]], power = 0.92,
+        # KIT-201 (VAL-131, D2): the legacy test now gives TREAT the trend and robust settings; its figures are arm 28's.
+        legacy = list(status = "measured", fdp = 0.389, fdp_where = cell[["c5"]], power = 0.92,
             test_form = "corrected_then_tested",
-            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 3% to",
-                "39% across the scenarios tested, against a target of 5%; 9.8% in the reference scenario."),
-            source = paste("KIT-129 1a; KIT-124 S1 arm 3 (scored/confirm-gha; C6 and C8 depend on the runner machine):",
-                "worst cell C5 0.385, C0 0.098, power C0 0.92")),
+            note = paste("For comparison with the approach of earlier versions; analyses saved with earlier versions",
+                "replay unchanged. False discoveries ranged from 3% to 39% across the scenarios tested, against a target",
+                "of 5%; 10.1% in the reference scenario."),
+            source = "KIT-129 1a; KIT-124 S1 arm 28 (scored/exact-gha): worst cell C5 0.389, C0 0.101, power C0 0.92"),
         none = list(status = "measured", fdp = 0.052, fdp_where = cell[["c3"]], power = 0.49,
             note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
                 "target, but about half the power is lost when unwanted variation is present."),
@@ -1924,9 +1948,13 @@ omicGuiRuvTableFeature <- function(features) {
                 "C7 0.084 (rules 2, 3 fail), C0 0.063, C1 0.052, C2 0.073, C3 0.058, power C0 0.48")),
         legacy = list(status = "measured", fdp = 0.557, fdp_where = cell[["c2"]], power = 0.42,
             test_form = "corrected_then_tested",
-            note = paste("More than 90% of simulated data sets had more than 10% false discoveries; 47.0% false",
-                "discoveries in the reference scenario."),
-            source = "KIT-129 1d; KIT-124 S4 arm 3 (scored/confirm-gha): worst cell C2 0.557, C0 0.470, power C0 0.42"),
+            note = paste("Measured in earlier versions, when this design took its control features from the top of",
+                "the table instead of choosing them by comparing the groups; in the simulations the rows were in random",
+                "order, so the controls were a random set of features, some with real differences. More than 90% of",
+                "those simulated data sets had more than 10% false discoveries (47.0% in the reference scenario). These",
+                "figures do not describe the current selection, which has not yet been measured."),
+            source = paste("KIT-129 1d; KIT-124 S4 arm 3 (scored/confirm-gha): worst cell C2 0.557, C0 0.470, power C0",
+                "0.42; controls positional (random rows) before KIT-190")),
         none = list(status = "measured", fdp = 0.059, fdp_where = cell[["c7"]], power = 0.003,
             note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
                 "target, but almost no real differences are found when the signal drifts during the run."),
@@ -2518,8 +2546,8 @@ omicGuiLipidNorm <- function() {
         export = list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design",
             progress = list(gather = "Gathering data and publishing outputs...", complete = "Export complete", steps = FALSE),
             summary_time = "session"),
-        itsd_table = function(assay_data, id_col, annotation_cols) {
-            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols)
+        itsd_table = function(assay_data, id_col, annotation_cols, ...) {
+            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols, ...)
         },
         skip_correlation_flags = "before_commit", final_pca = list(preparing_size = 5, error_size = 4),
         managed_correlation_notify = FALSE)
@@ -2539,9 +2567,9 @@ omicGuiLipidQc <- function() {
         # mod_lipid_qc_intensity_server_helpers.R:142; mod_lipid_qc_s4.R:450 (func_lipid_qc.R:134)
         filtering_figure = updateLipidFiltering,
         itsd = list(name_columns = c("Lipid name", "Name", "lipid"),
-            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col, ...) {
                 getLipidInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
-                    lipid_id_col = id_col, sample_id_col = sample_id_col)
+                    lipid_id_col = id_col, sample_id_col = sample_id_col, ...)
             },
             quant = getLipidQuantData,
             tip = "Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')"),
@@ -2744,8 +2772,8 @@ omicGuiMetabNorm <- function() {
     omicGuiFeatureNorm("metab", "Metabolites",
         export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "design",
             progress = list(gather = "Gathering data...", complete = character(0), steps = TRUE), summary_time = "written"),
-        itsd_table = function(assay_data, id_col, annotation_cols) {
-            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)
+        itsd_table = function(assay_data, id_col, annotation_cols, ...) {
+            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols, ...)
         },
         skip_correlation_flags = "after_commit", final_pca = list(preparing_size = 5, error_size = 5),
         managed_correlation_notify = TRUE)
@@ -2764,9 +2792,9 @@ omicGuiMetabQc <- function() {
         # mod_metab_qc_intensity.R:206; mod_metab_qc_s4_server_helpers.R:398 (func_metab_qc.R:268)
         filtering_figure = updateMetaboliteFiltering,
         itsd = list(name_columns = c("Metabolite name", "Name", "metabolite"),
-            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col, ...) {
                 getInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
-                    metabolite_id_col = id_col, sample_id_col = sample_id_col)
+                    metabolite_id_col = id_col, sample_id_col = sample_id_col, ...)
             },
             quant = getMetaboliteQuantData,
             tip = "Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')"),

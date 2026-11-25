@@ -1,0 +1,13 @@
+MOFA2 1.22.0 pins: mofapy2==0.7.3, numpy==1.26.4, scipy==1.12.0, pandas==2.2.1, h5py==3.10.0, scikit-learn==1.4.0, dtw-python==1.3.1
+KIT-134 CHECK PASSED: version table complete; no hard-closure package missing; duckdb 1.5.5 
+KIT-134 CHECK PASSED: the bundle's R and library from the moved folder
+KIT-134 CHECK PASSED: the internal packages in the bundle
+ok   the test setting is off as R reports it: null
+ok   the Integration tile on the served page is the placeholder: <div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">
+KIT-134 CHECK PASSED: Windows, installed per user in the job that built it, windows-2025, test setting off
+ok   the test setting is on as R reports it: {"time":"2026-11-24T12:18:18.282Z","event":"test-features","variable":"MULTISCHOLAR_TEST_FEATURES","ruv_design_panel":true,"integration_gui":true}
+ok   the Integration tile on the served page is live: <div id="integration_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;integration&#39;)" data-testid="tile-integration">
+KIT-134 CHECK PASSED: Windows, installed per user in the job that built it, windows-2025, test setting on
+ok   the test setting is off as R reports it: null
+ok   the Integration tile on the served page is the placeholder: <div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">
+KIT-134 CHECK PASSED: Windows, installed per user in the job that built it, windows-2025, test setting off, ELECTRON_RUN_AS_NODE=1

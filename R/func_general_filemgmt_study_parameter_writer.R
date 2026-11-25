@@ -1,3 +1,9 @@
+# KIT-263: the configuration sections of the other omics that every proteomics project copies in from the package's
+# config.ini (its Metabolomics and Transcriptomics blocks); a proteomics study_parameters.txt does not print them.
+#' @noRd
+studyParameterForeignSections <- list(proteomics = c("metaboliteIntensityFiltering",
+    "removeMetabolitesWithOnlyOneReplicate", "transcriptIntensityFiltering", "removeTranscriptsWithOnlyOneReplicate"))
+
 # Updated function to extract parameters from S4 @args slot
 #' @title Create workflow arguments from config
 #' @param workflow_name Character string, name of the workflow
@@ -8,13 +14,15 @@
 #' @param final_s4_object S4 object containing workflow parameters in @args slot (optional)
 #' @param contrasts_tbl Data frame, contrasts table (optional)
 #' @param workflow_data List containing workflow state and optimization results (optional)
+#' @param omic_type The omic whose study parameters are written; for `"proteomics"` the configuration sections of the other omics are not printed. `NULL` (the default, as for scripted calls) prints every section, as before.
 #' @export
 createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                                          organism_name = NULL, taxon_id = NULL,
                                          source_dir_path = NULL,
                                          final_s4_object = NULL,
                                          contrasts_tbl = NULL,
-                                         workflow_data = NULL) {
+                                         workflow_data = NULL,
+                                         omic_type = NULL) {
     # Validate required inputs
     if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
         stop("workflow_name must be a single character string")
@@ -89,6 +97,14 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     }
 
     cat(sprintf("WORKFLOW ARGS: Fallback config_list has %d sections\n", length(config_list)))
+
+    # KIT-263: the other omics' sections are left out of the two printed blocks; local copies only, the object's
+    # @args and the bus's config_list are not changed.
+    if (identical(omic_type, "proteomics")) {
+        foreign <- studyParameterForeignSections$proteomics
+        s4_params <- s4_params[!seq_along(s4_params) %in% which(names(s4_params) %in% foreign)]
+        config_list <- config_list[!seq_along(config_list) %in% which(names(config_list) %in% foreign)]
+    }
 
     # Extract RUV optimization results from workflow_data if available
     ruv_optimization_result <- NULL

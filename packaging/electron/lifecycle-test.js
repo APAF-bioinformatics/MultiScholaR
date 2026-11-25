@@ -35,7 +35,8 @@ const [label, executable, folder] = argv;
 const expectLauncher = option('--expect-launcher');
 const expectReason = option('--expect-reason');
 // KIT-156: --expect-test-features on|off: whether the test setting (MULTISCHOLAR_TEST_FEATURES=1) is expected, as R
-// reports it and as the served page shows it (the home page's Integration tile live, or the placeholder).
+// reports it (on: the RUV design panel only). KIT-240: the served page's Integration tile is live either way (the
+// package's default).
 const expectTestFeatures = option('--expect-test-features');
 const expectPackageCommit = option('--expect-package-commit');
 const expectRunAsNode = option('--expect-run-as-node-variable');
@@ -199,11 +200,11 @@ async function main() {
     const on = expectTestFeatures === 'on';
     const reported = log1.find('test-features');
     check(`the test setting is ${expectTestFeatures} as R reports it`, on
-      ? Boolean(reported && reported.ruv_design_panel === true && reported.integration_gui === true) : !reported,
+      ? Boolean(reported && reported.ruv_design_panel === true && !('integration_gui' in reported)) : !reported,
     JSON.stringify(reported || null));
     const tile = ((page.body || '').match(/<div[^>]*id="integration_box"[^>]*>/) || [''])[0];
-    check(`the Integration tile on the served page is ${on ? 'live' : 'the placeholder'}`,
-      Boolean(tile) && (on ? !/disabled/.test(tile) : /disabled/.test(tile)), tile || 'no integration_box');
+    check('the Integration tile on the served page is live',
+      Boolean(tile) && !/disabled/.test(tile), tile || 'no integration_box');
   }
   const r1 = rProcesses();
   check('R from the bundle is running', r1.length > 0, r1.map((p) => `${p.pid} ${p.exe}`).join('; '));

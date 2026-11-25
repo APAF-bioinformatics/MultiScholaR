@@ -190,7 +190,8 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     expect_identical(unname(status[c("input_manifests", "views")]), c("input", "input"))
     expect_identical(status[["precision"]], "decided")
     expect_identical(status[["input_matrix"]], "decided")
-    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates")]), rep("provisional_default", 3L))
+    # KIT-240 (VAL-221 (4)): the defaults that were provisional are decided.
+    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates")]), rep("decided", 3L))
     # KIT-151: decided by the user (INT-12, INT-15, INT-24).
     expect_identical(unname(status[c("feature_selection", "convergence_mode", "scaling", "scale_views")]), rep("decided", 4L))
     # The model: versions, checksum, training.
@@ -206,7 +207,7 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     results <- block$results
     expect_identical(results$label, "integration-results")
     expect_identical(vapply(results$parameters, `[[`, "", "name"), names(integrationResultsParameterSpec()))
-    expect_identical(unique(vapply(results$parameters, `[[`, "", "status")), "provisional_default")
+    expect_identical(unique(vapply(results$parameters, `[[`, "", "status")), "decided")
     saved <- shiny::isolate(bus$integration_results)
     expect_identical(results$tables$file, saved$tables)
     expect_identical(results$tables$sha256, unname(vapply(file.path(saved$tables_dir, saved$tables), intRecSha, "")))
@@ -253,10 +254,11 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         sprintf(t[["methods_seeds"]], 5L, 20261119L, 20261123L, 20261119L,
             paste(sprintf("Factor%d 1.000", 1:5), collapse = ", ")),
         sprintf(t[["methods_association"]], "Benjamini-Hochberg"),
-        t[["methods_claim_none"]], t[["methods_claim_uncorrected"]],
-        "Settings that were provisional defaults at the time of the analysis: ", "Number of factors (5)")) {
+        t[["methods_claim_none"]], t[["methods_claim_uncorrected"]])) {
         expect_true(grepl(fragment, methods, fixed = TRUE), info = fragment)
     }
+    # KIT-240 (VAL-221 (4)): no default awaits the owner's decision, so no setting is listed as one.
+    expect_false(grepl(sub("%s.*$", "", t[["methods_provisional"]]), methods, fixed = TRUE))
     # Nothing hard-coded: the versions are the record's, and precision is decided, so not listed as provisional.
     expect_false(grepl("1.22.0", methods, fixed = TRUE))
     expect_false(grepl("Numeric precision (", methods, fixed = TRUE))
@@ -307,8 +309,9 @@ test_that("KIT-142: the record, workbook, study parameters and report are saved 
     expect_identical(readLines(saved$files[[4L]])[[2L]], saved$methods)
     expect_true(all(INTEGRATION_RECORD_SHEETS %in% openxlsx::getSheetNames(saved$files[[2L]])))
     settings <- openxlsx::read.xlsx(saved$files[[2L]], sheet = "integration_settings", check.names = FALSE)
-    expect_true(all(c("provisional default", "decided", "set by the user", "from the data") %in%
-        settings[[integrationRecordTexts()[["col_status"]]]]))
+    # KIT-240 (VAL-221 (4)): no default awaits the owner's decision.
+    expect_true(all(c("decided", "set by the user", "from the data") %in% settings[[integrationRecordTexts()[["col_status"]]]]))
+    expect_false("provisional default" %in% settings[[integrationRecordTexts()[["col_status"]]]])
     # A report the renderer did not write stops the save by name; nothing is lost silently.
     nothing <- function(record_path, output_dir, format) invisible(NULL)
     directory <- file.path(project$root, "again")
@@ -411,4 +414,175 @@ test_that("KIT-142: the comparison tells a different model apart", {
     b <- a
     b$factors$biological_sample <- "y"
     expect_identical(integrationCompareModels(a, b)$largest_relative, Inf)
+})
+
+# KIT-239 (INT-28): the report's "Limitations" section, after the Methods draft, read from the record. Every sentence is
+# read from the wording tables at test time (a computed one built with sprintf() from its entry and the record's counts);
+# on a tree without the entries or the helpers these tests fail at their first assertion.
+test_that("KIT-239 (L4): the report has a Limitations section after the Methods draft, with the record's numbers", {
+    testthat::skip_if_not(rmarkdown::pandoc_available(), "pandoc is not available")
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    rt <- integrationRecordTexts()
+    gt <- integrationGuiTexts()
+    keys <- c("limits_lead", "limits_samples", "limits_fixed_samples", "limits_fixed_missing", "limits_fixed_averaged",
+        "limits_fixed_model", "limits_fixed_check", "limits_services_none")
+    expect_true("section_limitations" %in% names(rt))
+    expect_true(all(keys %in% names(gt)), info = paste("absent:", paste(setdiff(keys, names(gt)), collapse = ", ")))
+    project <- intRecProject()
+    journey <- intRecJourney(project)
+    bundle <- integrationWriteRecordBundle(journey$manager, file.path(project$root, "html"), format = "html")
+    # pandoc wraps long lines and makes apostrophes typographic: compare with whitespace collapsed and both decoded.
+    norm <- function(x) gsub("\\s+", " ", gsub("&#39;|&#x27;|&rsquo;|&#8217;|\u2019", "'", paste(x, collapse = " ")))
+    page <- norm(readLines(bundle$files[[4L]], warn = FALSE, encoding = "UTF-8"))
+    escape <- function(x) gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", x)
+    heading_at <- function(text) regexpr(sprintf("<h1[^>]*>\\s*%s\\s*</h1>", escape(text)), page, perl = TRUE)
+    heading <- if ("section_limitations" %in% names(rt)) rt[["section_limitations"]] else "Limitations"
+    at <- heading_at(heading)
+    methods_at <- heading_at(rt[["section_methods"]])
+    inputs_at <- heading_at(rt[["section_inputs"]])
+    expect_gt(at, 0L)
+    expect_gt(at, methods_at)
+    expect_lt(at, inputs_at)
+    if (at > 0L && inputs_at > at && all(keys %in% names(gt))) {
+        section <- substr(page, at, inputs_at)
+        for (key in c("limits_lead", "limits_fixed_samples", "limits_fixed_missing", "limits_fixed_averaged",
+            "limits_fixed_model", "limits_fixed_check", "limits_services_none")) {
+            expect_true(grepl(norm(gt[[key]]), section, fixed = TRUE), info = key)
+        }
+        # The tab-only sentence on the services is not the report's.
+        expect_false(grepl(norm(gt[["limits_fixed_services"]]), section, fixed = TRUE))
+        # The record's counts.
+        record <- jsonlite::read_json(bundle$files[[1L]], simplifyVector = FALSE)
+        matching <- record$analyses$integration_mofa_model$integration$matching
+        samples <- nrow(integrationRecordFrame(matching$samples))
+        expect_true(grepl(norm(sprintf(gt[["limits_samples"]], samples, as.integer(matching$shared_samples))), section,
+            fixed = TRUE))
+        # AUDIT-KIT-239-impl I05: the missing-samples and runs-averaged counts, computed here from the record's tables.
+        frame <- integrationRecordFrame(matching$samples)
+        views <- as.character(integrationRecordFrame(matching$view_summary)$view)
+        missing <- sum(as.integer(frame$views_present) < length(views))
+        expect_gt(missing, 0L)
+        expect_true(grepl(norm(sprintf(gt[["limits_missing_samples"]], missing, samples)), section, fixed = TRUE))
+        for (view in views) {
+            runs <- as.character(frame[[paste0(view, "_runs")]])
+            runs[is.na(runs)] <- ""
+            runs <- lengths(strsplit(runs, ";", fixed = TRUE))
+            if (any(runs > 1L)) {
+                expect_true(grepl(norm(sprintf(gt[["limits_averaged_item"]], view, sum(runs > 1L), sum(runs > 0L),
+                    max(runs))), section, fixed = TRUE), info = view)
+            }
+        }
+        message(sprintf("KIT-239 L4: Limitations at %d, after Methods (draft) at %d, before %s at %d; %d samples, %d shared",
+            at, methods_at, rt[["section_inputs"]], inputs_at, samples, as.integer(matching$shared_samples)))
+    }
+})
+
+test_that("KIT-239 (L5): the report's limitations read the record: its samples, the enrichment releases, or none", {
+    reader <- get0("integrationRecordLimitationFacts", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    expect_true(is.function(reader))
+    if (is.function(reader)) {
+        project <- intRecProject()
+        journey <- intRecJourney(project)
+        json <- file.path(project$root, "record.json")
+        writeWorkflowAnalysisRecord(journey$manager, json)
+        read <- jsonlite::read_json(json, simplifyVector = FALSE)
+        matching <- read$analyses$integration_mofa_model$integration$matching
+        # (i) The record's samples; no enrichment was run, so no service.
+        facts <- reader(read)
+        expect_identical(facts$samples, nrow(integrationRecordFrame(matching$samples)))
+        expect_identical(facts$shared, as.integer(matching$shared_samples))
+        expect_identical(facts$services, character())
+        # AUDIT-KIT-239-impl I05: the missing-samples and runs-averaged counts, computed here from the record's tables.
+        frame <- integrationRecordFrame(matching$samples)
+        views <- as.character(integrationRecordFrame(matching$view_summary)$view)
+        expect_identical(facts$missing, sum(as.integer(frame$views_present) < length(views)))
+        repeated <- vapply(views, function(view) {
+            runs <- as.character(frame[[paste0(view, "_runs")]])
+            runs[is.na(runs)] <- ""
+            sum(lengths(strsplit(runs, ";", fixed = TRUE)) > 1L)
+        }, integer(1), USE.NAMES = FALSE)
+        expect_identical(facts$averaged$view, views)
+        expect_identical(facts$averaged$repeated, repeated)
+        # (ii) One complete KEGG enrichment: its recorded release, in the record's own form.
+        planted <- read
+        planted$analyses$integration_mofa_model$integration$enrichment <- list(list(complete = TRUE, factor = "Factor1",
+            view = "metabolomics", database = "kegg", service = list(release = "KEGG Release 115.0"),
+            settings = list(correlation_method = "spearman", min_samples = 3L),
+            direction = list(feature_id = "M1", view = "metabolomics", sign = 1L),
+            ranking_counts = list(features = 10L, ranked = 10L), mapping_counts = list(mapped = 5L), tests = 3L,
+            family = "Factor1, metabolomics", stored_sha256 = strrep("e", 64L)))
+        expect_identical(reader(planted)$services, "KEGG Release 115.0")
+        # AUDIT-KIT-239-impl I06: an enrichment recorded but not readable (complete = FALSE) is not "none run": the
+        # services are not known, so the report prints the sentence true for every run.
+        unreadable <- planted
+        unreadable$analyses$integration_mofa_model$integration$enrichment[[1L]]$complete <- FALSE
+        expect_null(reader(unreadable)$services)
+        expect_true("services" %in% names(reader(unreadable)))
+        # (iii) An incomplete block: no facts, and the report's text for that case says the numbers could not be read,
+        # never "None recorded.".
+        incomplete <- read
+        incomplete$analyses$integration_mofa_model$integration$complete <- FALSE
+        expect_null(reader(incomplete))
+        none <- integrationLimitationsText(NULL)
+        expect_true(integrationGuiTexts()[["limits_not_computed"]] %in% none)
+        expect_false(integrationRecordTexts()[["none_recorded"]] %in% none)
+    }
+})
+
+test_that("KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers", {
+    # INT-31 corrects INT-24's evidence sentence: the z-score's sentence said "weak factors" (undefined) and "otherwise
+    # made no practical difference" (KIT-151 d: inconclusive at 20 samples without missing values). One journey with
+    # the default scaling; the paragraph as built and as read back from JSON. E2 and E5 (the owner's words and the
+    # agreement with the Model tab's help) were added with the fix.
+    old <- paste("each scaled to mean 0 and standard deviation 1 after the selection (which used the unscaled values);",
+        "in simulation, with few samples and missing values this scaling improved the recovery of weak factors, and",
+        "otherwise made no practical difference.")
+    project <- intRecProject()
+    journey <- intRecJourney(project)
+    record <- buildWorkflowAnalysisRecord(journey$manager)
+    json <- file.path(project$root, "record.json")
+    writeWorkflowAnalysisRecord(journey$manager, json)
+    read <- jsonlite::read_json(json, simplifyVector = FALSE)
+    t <- integrationRecordTexts()
+    # E1: every record prints the table's sentence, and not the old one.
+    for (methods in list(built = integrationMethodsText(record), json = integrationMethodsText(read))) {
+        expect_true(grepl(t[["methods_scaling_feature_zscore"]], methods, fixed = TRUE))
+        expect_false(grepl("weak factors", methods, fixed = TRUE))
+        expect_false(grepl("no practical difference", methods, fixed = TRUE))
+        expect_false(grepl(old, methods, fixed = TRUE))
+    }
+    # G1: a record whose scaling is "none" keeps its own sentence (the value replaced in the record's encoded form).
+    parameters <- read$analyses$integration_mofa_model$parameters
+    hit <- vapply(parameters, \(parameter) identical(integrationRecordScalar(parameter$name), "scaling"), logical(1))
+    expect_identical(sum(hit), 1L)
+    parameters[[which(hit)]]$value <- encodeWorkflowRecordValue("none")
+    read$analyses$integration_mofa_model$parameters <- parameters
+    unscaled <- integrationMethodsText(read)
+    expect_true(grepl(t[["methods_scaling_none"]], unscaled, fixed = TRUE))
+    expect_true(grepl("without per-feature scaling.", unscaled, fixed = TRUE))
+    expect_false(grepl(t[["methods_scaling_feature_zscore"]], unscaled, fixed = TRUE))
+    # E2: the owner's words (VAL-293, option (a), without the effect size): the numbers, the criterion and the
+    # condition; the two other results neither called small nor none.
+    sentence <- t[["methods_scaling_feature_zscore"]]
+    for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
+        "a correlation of at least 0.9", "missing", "could not be told from none")) {
+        expect_true(grepl(term, sentence, fixed = TRUE), info = term)
+    }
+    expect_false(grepl("weak", sentence, ignore.case = TRUE))
+    for (phrase in c("no practical difference", "too small", "there was none", "rose by")) {
+        expect_false(grepl(phrase, sentence, fixed = TRUE), info = phrase)
+    }
+    # E5: the Methods sentence and the Model tab's help end with one shared passage, so they cannot differ.
+    help <- integrationGuiTexts()[["help_scaling"]]
+    evidence <- integrationScalingEvidenceText()
+    expect_true(endsWith(sentence, evidence))
+    expect_true(endsWith(help, evidence))
+    for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
+        "could not be told from none", "a correlation of at least 0.9 with the true pattern",
+        "a tenth of the features of the two smallest")) {
+        expect_true(grepl(term, sentence, fixed = TRUE) && grepl(term, help, fixed = TRUE), info = term)
+    }
+    for (phrase in c("too small", "there was none")) {
+        expect_false(grepl(phrase, help, fixed = TRUE) || grepl(phrase, sentence, fixed = TRUE), info = phrase)
+    }
 })

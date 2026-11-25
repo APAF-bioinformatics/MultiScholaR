@@ -1,0 +1,10 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit240-integration-default.R	78	10	0	1	failed	88	0	0	1	ok	fixed	fixed: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged; fixed: KIT-240 T8: seeds trained without an ELBO give no rank and no sentence, and nothing fails; fixed: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true; counts: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true (passed 0 -> 8, skipped 0 -> 0); counts: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged (passed 16 -> 17, skipped 0 -> 0); counts: KIT-240 T8: seeds trained without an ELBO give no rank and no sentence, and nothing fails (passed 7 -> 8, skipped 0 -> 0)	
+test-integration-gui.R	399	2	0	0	failed	401	0	0	0	ok	fixed	fixed: KIT-139: internal standards, features seen once and few samples are stated with their counts; counts: KIT-139: internal standards, features seen once and few samples are stated with their counts (passed 8 -> 10, skipped 0 -> 0)	
+test-integration-partitioned-alignment.R	253	0	0	0	ok	253	0	0	0	ok	same		
+test-integration-sample-match.R	76	0	0	0	ok	76	0	0	0	ok	same		
+test-integration-record.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-enrichment-options.R	271	0	0	0	ok	271	0	0	0	ok	same		
+test-integration-enrichment-tests.R	181	0	0	2	ok	181	0	0	2	ok	same		
+test-integration-removed-factors.R	526	0	0	3	ok	526	0	0	3	ok	same		

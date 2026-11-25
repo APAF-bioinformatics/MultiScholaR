@@ -1,0 +1,30 @@
+expected RLE values, raw scale: -1750,-1250,-300,-200,-100,-100,-70,-40,40,100,100,280,500,500,1250,6250
+expected RLE values, log2 scale: -1.5,-1.2925,-1.1781,-0.97968,-0.70752,-0.5,-0.5,-0.24271,0.24271,0.5,0.5,0.70752,0.89479,1.5,1.8219,1.8774
+lipid plotPca: 120 source lines; helpers called: plotPcaHelper; lines naming log: none
+  helper plotPcaHelper: 215 lines; lines naming log: none
+lipid plotRle: 116 source lines; helpers called: plotRleHelper; lines naming log: none
+  helper plotRleHelper: 35 lines; lines naming log: none
+lipid plotDensity: 136 source lines; helpers called: ; lines naming log: none
+lipid plotPearson: 58 source lines; helpers called: ; lines naming log: none
+lipid plotRle data column min: range -1532.5 to 313; matches neither
+lipid plotRle data column lower: range -662.5 to 445; matches neither
+lipid plotRle data column middle: range -250 to 500; matches neither
+lipid plotRle data column upper: range -167.5 to 1937.5; matches neither
+lipid plotRle data column max: range -89.5 to 5387.5; matches neither
+lipid plotRle built layer 1 middle: -250,-100,100,500
+lipid plotPca data column PC1: -2875,-2375,125,5125; |PC1| matches neither
+lipid plotPca data column PC2: 0,0,0,0; |PC1| matches neither
+metab plotPca: 121 source lines; helpers called: plotPcaHelper; lines naming log: none
+  helper plotPcaHelper: 215 lines; lines naming log: none
+metab plotRle: 117 source lines; helpers called: plotRleHelper; lines naming log: none
+  helper plotRleHelper: 35 lines; lines naming log: none
+metab plotDensity: 136 source lines; helpers called: ; lines naming log: none
+metab plotPearson: 58 source lines; helpers called: ; lines naming log: none
+metab plotRle data column min: range -1532.5 to 313; matches neither
+metab plotRle data column lower: range -662.5 to 445; matches neither
+metab plotRle data column middle: range -250 to 500; matches neither
+metab plotRle data column upper: range -167.5 to 1937.5; matches neither
+metab plotRle data column max: range -89.5 to 5387.5; matches neither
+metab plotRle built layer 1 middle: -250,-100,100,500
+metab plotPca data column PC1: -2875,-2375,125,5125; |PC1| matches neither
+metab plotPca data column PC2: 0,0,0,0; |PC1| matches neither

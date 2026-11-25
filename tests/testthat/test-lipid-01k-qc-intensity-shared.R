@@ -140,9 +140,12 @@ withSharedLipidIntensityPackageMocks <- function(server_env,
   localSharedLipidIntensityNamespaceBinding(
     server_env,
     "lipidIntensityFiltering",
+    # KIT-217 (r1.7, test mechanics): the mock's signature follows the generic, which gained two formals.
     function(theObject,
              lipids_intensity_cutoff_percentile,
-             lipids_proportion_of_samples_below_cutoff) {
+             lipids_proportion_of_samples_below_cutoff,
+             lipids_min_values_per_group = NULL,
+             lipids_min_groups = NULL) {
       captured$filter_args <- list(
         theObject = theObject,
         percentile = lipids_intensity_cutoff_percentile,
