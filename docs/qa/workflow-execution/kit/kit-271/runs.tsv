@@ -1,0 +1,6 @@
+run	commit	purpose	job_minutes	result
+45650328815	4baea49f (train 20261126c)	step 0: existing run fetched once (A0 classification); not a new run, no core-hours of this ticket	0	the six W1 limpa files, limpa_one_contrast files already fail on runners; the gui-entry limpa lane passes
+45709521655	52f09f10 (tests only)	R1 failing-first, 1 job	12.2 tests + 0.8 plan/results	56 expectations: 31 passed, 25 failed, 2 skipped; 19 failed as predicted, 6 export rows (T5b x4, T8 export x2) failed in the fixture mechanics: instrument defect (saved_entity_corrupt: saved table changed during read)
+45711760556	4a80353c	R1 re-run 1 of 3 after the instrument repair	0.1	refused at plan: requested_by text over 300 characters; no test ran (request mistake, not a test result)
+45712056817	4a80353c	R1 re-run after the instrument repair (request kit271-r1-3), 1 job	13.9 tests + 0.6 plan/results	56 expectations: 37 passed, 19 failed, 2 skipped; the 19 failures are exactly the predicted rows; export rows pass; A1 met
+45714327005	23d0d158 vs base 4a80353c	R2: 32 files, 3 shards per side, check on both; env dumps	397.4	as predicted per file: new file fixed; prot-norm-core and saved-da message-changed (limpa files only); gui-entry new-failure (ten limpa steps, 168/25 to 158/35); 28 others same; check identical (0/3/3)
