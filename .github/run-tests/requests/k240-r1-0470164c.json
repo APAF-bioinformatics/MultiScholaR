@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-240 R1: failing-first run of the tests-only commit (nothing under R/ changed); decides stop rule 1",
+  "label": "KIT-240 R1 tests-only 0470164c",
+  "package_commit": "0470164cbe9ebbdb2c690b4327f4336a44403e70",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit240-integration-default.R",
+    "test-integration-gui.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
