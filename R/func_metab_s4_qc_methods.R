@@ -887,13 +887,15 @@ findMetabDuplicateFeatureIDs <- function(theObject) {
 
 # KIT-104 W2 (back-reference #9): the duplicate resolution per assay that `metabolomicsDeclarationBinding$resolve_duplicates`
 # runs, moved unchanged with its name from R/mod_metab_qc_duplicates_server_helpers.R (:1-51 at b423b764; the file was
-# deleted by KIT-104 W6).
+# deleted by KIT-104 W6). KIT-214 (VAL-173 (1)): with `designSamples` (the design's sample ids) a row's mean is over the
+# design's samples less the id column (`omicsDuplicateResolutionInput`); NULL keeps every numeric column, as before.
 resolveMetabDuplicateAssayData <- function(
     assayList
     , metaboliteIdCol
     , assayNames = names(assayList)
     , resolveDuplicateFeaturesByIntensityFn = resolveDuplicateFeaturesByIntensity
     , logWarnFn = logger::log_warn
+    , designSamples = NULL
 ) {
     statsList <- list()
 
@@ -913,6 +915,12 @@ resolveMetabDuplicateAssayData <- function(
                 , removed = 0
             )
             return(assayData)
+        }
+
+        if (!is.null(designSamples)) {
+            input <- omicsDuplicateResolutionInput(assayData, sampleCols, designSamples, metaboliteIdCol, assayName)
+            assayData <- input$table
+            sampleCols <- input$columns
         }
 
         resolvedAssay <- resolveDuplicateFeaturesByIntensityFn(
