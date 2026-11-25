@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-224 R3 (own, not shared with KIT-225): full suite on 2871125b (staging 67569959 merged, fix, accepted test edits) against staging 67569959; decides A5; ceiling 2,800 job-minutes",
+  "label": "KIT-224 R3 full suite 2871125b vs 67569959",
+  "package_commit": "2871125bc2039707442aee55cb1300d270515f54",
+  "base_commit": "6756995954684128d617ab92dab983bdcaa05394",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
