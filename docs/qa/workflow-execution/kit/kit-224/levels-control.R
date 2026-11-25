@@ -145,20 +145,35 @@ childMain <- function(tree, side, part, chunk, chunks, out) {
                 ruv <- runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)
                 normalized <- stateMats(owner, "lipid_normalized")
                 corrected <- stateMats(owner, "lipid_ruv_corrected")
-                runWorkflowOmicsReferenceCorrelation(binding, owner, "group", 0.5, config)
-                filtered <- stateMats(owner, owner$current_state)
-                da <- lapply(c(cutoff_0 = 0, cutoff_0.5 = 0.5), function(cutoff) {
-                    daTable(runWorkflowOmicsReferenceDaAnalysis(binding, owner, getWorkflowStateReference(owner),
-                        list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = cutoff), S1_CONTRASTS))
-                })
                 one <- function(x) if (is.null(x)) NA_character_ else paste(names(x), unlist(x), sep = "=", collapse = ";")
-                list(normalized = normalized, corrected = corrected, kept = lapply(filtered, colnames), da = da,
-                    priors = priors(filtered), k = one(ruv$value$best_k), share = one(ruv$value$percentage))
+                # Instrument rerun 1: a failure after the RUV step is recorded (`downstream_error`) and the RUV state kept.
+                tryCatch({
+                    runWorkflowOmicsReferenceCorrelation(binding, owner, "group", 0.5, config)
+                    filtered <- stateMats(owner, owner$current_state)
+                    da <- lapply(c(cutoff_0 = 0, cutoff_0.5 = 0.5), function(cutoff) {
+                        daTable(runWorkflowOmicsReferenceDaAnalysis(binding, owner, getWorkflowStateReference(owner),
+                            list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = cutoff), S1_CONTRASTS))
+                    })
+                    list(normalized = normalized, corrected = corrected, kept = lapply(filtered, colnames), da = da,
+                        priors = priors(filtered), k = one(ruv$value$best_k), share = one(ruv$value$percentage))
+                }, error = function(e) list(normalized = normalized, corrected = corrected, k = one(ruv$value$best_k),
+                    share = one(ruv$value$percentage), downstream_error = conditionMessage(e),
+                    kept = stats::setNames(lapply(corrected, colnames), names(corrected))))
             })
             run
         }
+        # Instrument rerun 1 (VAL-54): the declared path's object is built as test-kit224's G2 builds it (the ids in
+        # `database_identifier`, design `Sample_ID` and `group`, no technical-replicate column), because the KIT-172 object
+        # raised omics_ruv_correction_failed on both sides in R2 (run 45510911807); and it runs in its own error trap.
         declared <- function(input) {
-            object <- kit172Object(input, "lipid")
+            tables <- lapply(input, function(m) {
+                table <- tibble::as_tibble(as.data.frame(m, check.names = FALSE))
+                table <- tibble::add_column(table, database_identifier = rownames(m), .before = 1L)
+                tibble::add_column(table, name = rownames(m), .after = 1L)
+            })
+            object <- methods::new("LipidomicsAssayData", lipid_data = tables, lipid_id_column = "database_identifier",
+                annotation_id_column = "name", design_matrix = data.frame(Sample_ID = S1_RUNS, group = rep(c("A", "B"), each = 6L),
+                    stringsAsFactors = FALSE), sample_id = "Sample_ID", group_id = "group", args = list())
             supplied <- lapply(input, function(m) rownames(m)[1:100])
             one <- function(design) {
                 run <- if (identical(design, "supplied_controls")) {
@@ -186,7 +201,11 @@ childMain <- function(tree, side, part, chunk, chunks, out) {
                         x$r <- r
                         x$law <- law
                         x$side <- variant
-                        if (identical(law, "k185") && !identical(variant, "head_shifted")) x$declared <- declared(v$log2)
+                        if (identical(law, "k185") && !identical(variant, "head_shifted")) {
+                            x$declared <- tryCatch(declared(v$log2), error = function(e) {
+                                list(error = c(corrected = paste("error:", conditionMessage(e)), da = ""))
+                            })
+                        }
                         x
                     }, error = function(e) list(r = r, law = law, side = variant, error = conditionMessage(e)))
                     cat(sprintf("KIT-224 S1 child %s: object %d law %s %s\n", side, r, law,
@@ -323,6 +342,8 @@ if (identical(part, "units")) {
     changed <- list()
     per_object <- list()
     prior_rows <- list()
+    downstream <- list()
+    `%||%` <- function(a, b) if (is.null(a)) b else a
     for (r in seq_len(50L)) for (law in c("k185", "level")) {
         b <- getResult(r, law, "base")
         h <- getResult(r, law, "head")
@@ -345,13 +366,18 @@ if (identical(part, "units")) {
             compare[[length(compare) + 1L]] <- row("iii_head_levels_kept", r, law, assay, sprintf("%.3g", level), level < 1e-9)
             bp <- b$priors[[assay]]
             hp <- h$priors[[assay]]
-            prior_rows[[length(prior_rows) + 1L]] <- data.frame(object = r, law = law, assay = assay, d0_base = bp$df_prior,
+            if (!is.null(bp) && !is.null(hp)) prior_rows[[length(prior_rows) + 1L]] <- data.frame(object = r, law = law, assay = assay, d0_base = bp$df_prior,
                 d0_head = hp$df_prior, median_s2prior_ratio = if (identical(names(hp$s2_prior), names(bp$s2_prior)))
                     stats::median(hp$s2_prior / bp$s2_prior) else NA_real_, stringsAsFactors = FALSE)
         }
         same_samples <- identical(b$kept, h$kept)
         removed <- function(x) paste(setdiff(S1_RUNS, unique(unlist(x$kept))), collapse = ",")
-        for (cutoff in names(h$da)) {
+        # Instrument rerun 1: a side that failed after the RUV step is reported (not judged); its DA rows are skipped.
+        if (!is.null(b$downstream_error) || !is.null(h$downstream_error)) {
+            downstream[[length(downstream) + 1L]] <- data.frame(object = r, law = law,
+                base = b$downstream_error %||% "", head = h$downstream_error %||% "", stringsAsFactors = FALSE)
+        }
+        for (cutoff in if (is.null(b$downstream_error) && is.null(h$downstream_error)) names(h$da) else character()) {
             hd <- h$da[[cutoff]]
             bd <- b$da[[cutoff]]
             at <- match(key(hd), key(bd))
@@ -388,12 +414,14 @@ if (identical(part, "units")) {
                 if (is.null(hs) || !is.null(hs$error)) "no result" else ok, ok)
             for (design in names(h$declared)) {
                 compare[[length(compare) + 1L]] <- row("v_declared_identical", r, law, design,
-                    paste(h$declared[[design]], collapse = ","), identical(h$declared[[design]], b$declared[[design]]))
+                    paste(h$declared[[design]], collapse = ","), identical(h$declared[[design]], b$declared[[design]]) &&
+                        !any(startsWith(h$declared[[design]], "error:")))
             }
         }
     }
     write_tsv(do.call(rbind, changed), "changed-calls.tsv")
     write_tsv(do.call(rbind, prior_rows), "priors.tsv")
+    if (length(downstream)) write_tsv(do.call(rbind, downstream), "downstream-errors.tsv")
     objects <- do.call(rbind, per_object)
     write_tsv(objects, "per-object-rates.tsv")
     interval <- function(x) {
