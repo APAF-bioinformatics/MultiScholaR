@@ -201,3 +201,9 @@ process, NA3, E11c, the row of ruling (7), G4, G5, G8, G9; seeds 242000 + k with
   and E20: the step stops; E22 records A2 `dropped`; E15: no classed warning.
 - G4, G5, G8, G9 and every row written before Part B pass (370 passed). Stop rule 1 not triggered. Tables in
   `r1b-b-45714743051/`.
+
+### Fix 5c856dff; prediction for R1d (the new file on the fix, before P0), written before the run
+
+The smallest falsifying test of the fix before P0's 186 files: `test-kit242-normalisation-fallback.R` on 5c856dff (the
+tests-only commit plus the fix), 1 job, ceiling 60 job-minutes. Prediction: every test passes (Part A's rows, the
+correction pass's rows, Part B's 42 tests including G4, G5, G8, G9).
