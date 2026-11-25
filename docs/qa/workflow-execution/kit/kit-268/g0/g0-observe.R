@@ -5,9 +5,9 @@
 # row per (assay, key) of results$qvalue_warnings to <mode>-keys.tsv, with the test name, the lane and step (the GUI-entry
 # harness's frame variables) and the contrasts table's `contrasts` and `friendly_names`.
 mode <- commandArgs(trailingOnly = TRUE)[[1L]]
-out <- "kit268-g0"
-dir.create(out, showWarnings = FALSE)
 pkg <- normalizePath(".")
+out <- file.path(pkg, "kit268-g0") # absolute: testthat::test_file changes the working directory
+dir.create(out, showWarnings = FALSE)
 tsv <- function(name) file.path(out, paste0(mode, "-", name, ".tsv"))
 if (!identical(mode, "control")) {
   control <- file.path(out, "control-keys.tsv")
