@@ -94,8 +94,8 @@
    have no correlation and are not shown (KIT-259).
  * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
    unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
-   replaced by a note giving the reason in the tab, the composite QC figure and the report. The report's text names
-   the Figure 1 panels that were replaced. The DIA-with-limpa RUV covariates step and, on the installed application, a
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. The report names the
+   Figure 1 panels that the normalisation run replaced. The DIA-with-limpa RUV covariates step and, on the installed application, a
    pre-normalisation figure redrawn because the input changed show the same warning, and the covariates step's
    canonical-correlation figure is covered too; only tab entry and a 'Color by' or 'Shape by' change show the note
    without a warning. This came in with the 0.9 development builds. In earlier

@@ -315,7 +315,7 @@ merged (train 10, VAL-273). Branch `kit-259b` from origin/v0.9-staging 127011429
 | 417b6d7e | tests only: R1's two instrument fixes; declared edit of B-E1 (`test-kit259-pearson-histogram-figure-failure.R`: the file list gains the placeholder's marker) |
 | eaab6e57 | the fix (R/ and the four proteomics templates) |
 | 2f2352e6 | R1 records and R2 predictions |
-| (records commit) | R2 records, NEWS, ledger row, `wording.md` W10, W11, this section |
+| 7aedc751 | R2 records, NEWS, ledger row, `wording.md` W10, W11, this section |
 
 **What changed.**
 - I02: the lipid/metab x breaks are `round(seq(lower, 1, 0.1), 1)` when `lower < 0` (non-negative data keep today's
@@ -329,8 +329,8 @@ merged (train 10, VAL-273). Branch `kit-259b` from origin/v0.9-staging 127011429
   error ("cannot allocate vector|memory"). With `qcDir` NULL a failing figure is logged only: no placeholder, no
   warning, NULL returned (documented; I05-G1).
 - (ii), the source chosen: a marker the placeholder writer leaves, `<figure>.png.placeholder` (one line, the reason),
-  beside the placeholder. It is the smallest sound source: the composite is assembled from those images, so a marker
-  beside each says exactly which panels are notes; the record holds no figure outcome. A drawn figure removes its
+  beside the placeholder (superseded as the report's source by the third pass, section 9: the per-figure markers follow
+  the tab's current figure files, not Figure 1). A drawn figure removes its
   marker; a normalisation run removes the post-normalisation and RUV-corrected markers at its start, with the earlier
   run's own files (KIT-257's `removeProtNormOwnFiles`). The four proteomics templates read the markers in the QC folder
   the composite is copied from (`current_project_paths$feature_qc_dir`), in a new chunk `QC_metrics_placeholders`
@@ -361,3 +361,60 @@ section knits to the same text). Multi-assay lipid/metab labels; Windows; real d
 
 **Budget.** 13.5 + 489.5 = 503.0 job-minutes = 33.5 core-hours; KIT-259 in all 61.3 of 131.33.
 
+
+## 9. The third pass (VAL-307), branch `kit-259b`: STOPPED on two unpredicted comparison verdicts
+
+Authority: VAL-307 (one further bounded pass: closure check C01, W11; C03/C04 records; C05/C06 limits). Staging
+82a5df02 merged first (ca534f61, clean). Predictions: `third-pass-predictions.md`, committed before each run.
+
+| Commit | What |
+|---|---|
+| bd197791 | tests only: C01 rows (publication in process and managed, redraw, pre markers, KIT-257 removal, Copy, session round trip, templates read the list), C01-G1 (DIA with limpa), W11 (I04-E1's notice text), (ii)-E3 rewritten (declared) |
+| 669c85b9 | R1 predictions and the expected budget (about 40 core-hours; KIT-259 about 101 of 131.33) |
+| 9331bbd2 | tests only: R1's instrument fixes (expectations unchanged) |
+| 40a7ae4b | the fix: `writeProtNormCompositePlaceholders` (R/utils_workflow_dia_norm.R), called after the composite in `publishDIAReferenceNormalization`; pre markers copied into staging; the list on KIT-257's removal list, in Copy's QC_figures list and the archive's allow-list; the templates read `<omic>_composite_QC_figure.placeholders` beside the composite in `report_qc_figures_dir`; covariates notices "RUV-III-adjusted (for quality control)" |
+| c6e8814d | R1 records, comparison and render predictions, `render3.R` |
+
+**Observed.**
+- R1 (run 45698227390, 14.3 job-minutes): E rows failed as predicted; three rows had instrument defects (NULL dropped by
+  `[[<-` in the list capture; the tab's export refused under testServer), fixed in 9331bbd2 with expectations
+  unchanged and re-sent once as the comparison's base side.
+- Render job (run 45701187446, 23.2 job-minutes; `render3-45701187446/checks.tsv`): **all 27 checks as predicted.** V0:
+  the head's templates and staging 82a5df02's give identical report text on prot_lfq, prot_tmt, prot_dia and
+  prot_dia_limpa, drawings 3, 3, 3, 1, no placeholder sentence. V1 (the list written by the head's writer from markers
+  on pre_norm_pca and post_norm_correlation, carried into QC_figures): exactly one added sentence on LFQ, TMT and DIA
+  ("In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after
+  between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of
+  the plot."), the rest of the text equal to V0; none on DIA with limpa (no combined figure, no list). V2 (a list with
+  no combined figure): no sentence.
+- Comparison run (run 45701181156, base 9331bbd2, head c6e8814d; 83 files, check; 490.1 job-minutes;
+  `r2c3-45701181156/`): 81 files `same`, R CMD check identical (6 findings both sides). **Two unpredicted verdicts:**
+  1. `test-prot-norm-core.R` `message-changed` (306 to 307 failures): "the normalisation action and the correlation
+     action give the recorded output through the moved functions" counts calls of seven moved functions in the skip run;
+     `resolveProtNormCompositeFigureInputs` is called 2 times on head, pinned 1 (`test-prot-norm-core.R:187-189`). The
+     new list writer calls it after the composite (it reads the composite's panel letters from it). The other failures
+     (the three pinned output digests) are identical on both sides.
+  2. `test-kit259b-second-correction.R` C01-E2: the expectation that a failed redraw after a run whose figures drew
+     writes `post_norm_correlation.png.placeholder` in the project folder fails on head **and on base** (predicted to
+     pass on base). The test's premise does not hold under testServer: the 'Color by' change did not produce that
+     marker in `protein_qc` (cause not established). Every other new row passes on head (89 passed, 1 failed).
+- Under the coordinator's rule (a prediction failing for a reason that is a result: stop), the pass stops here. Neither
+  is re-run or repaired.
+
+**What a repair would need (for the coordinator; not applied).** (1) Either the writer reads the panel letters without
+calling the counted `resolveProtNormCompositeFigureInputs` (its own copy of the two layouts, or a check for any marker
+first so that runs without placeholders keep the pinned count), or the pinned count is declared changed (test code in a
+pinned block: the coordinator's ruling). (2) C01-E2's redraw half needs a premise that holds (for example the redraw
+through `generateProtNormPostNormalizationQcArtifacts` directly), or a reading of why the aesthetics regeneration under
+testServer wrote no marker; the list half of that row (no list after the redraw) and its pre-marker half passed on
+head.
+
+**C03, C04 applied** (NEWS "The report names the Figure 1 panels that the normalisation run replaced."; ledger row (4)
+the C01 design; section 8's sentence on markers superseded; section 8's commit table "7aedc751"; the ledger row moved
+after VAL-307). **Known limits (C05, C06):** I05's allocation test matches R's English message ("cannot allocate
+vector|memory"): under a translated R message an allocation error is still turned into a placeholder. The R2 scope has
+files with no evidence on either side: `test-prot-05c` (4 skipped), `test-prot-12`, `test-prot-12a`, the `test-e2e-*`
+files (skipped without a browser), `test-metab-03b`, `test-lipid-12` (quarantined), `test-workflow-memory-mechanism-member`
+(13 skipped). F12 (the DIA-with-limpa report's Results text) is not touched: open with the owner.
+
+**Budget.** 14.3 + 490.1 + 23.2 = 527.6 job-minutes = 35.17 core-hours; KIT-259 in all 96.48 of 131.33.
