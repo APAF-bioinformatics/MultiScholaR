@@ -34,6 +34,8 @@
 #          (`<omic>_workflow-workflow_progress`, R/mod_omic_workflow.R:40, :119), read by journey.R's state script
 #          rebound per session in journey-win.R (k237SetOmic); the trx filter's is its exact text
 #          ("Expression filter applied:", R/mod_trx_qc_filter.R:57); the others keep their exact texts.
+#   Ruling (coordinator, 2026-11-25): trx_screen's design assigns its technical-replicate sets as the default-user
+#          script does, and a named check records the builder's sample keys (known KIT-222, known.tsv K13).
 #   SC-05  screen outputs named (import status; the DA status, summary statistics and results table); N2 computed on
 #          metab_lc; WL-4 (a) planted once on metab_lc (journey-win.R).
 
@@ -85,7 +87,18 @@ k237OmicRun <- function(id, omic, dataset, contrast, import, exports, trx = FALS
             members = lapply(stats::setNames(groups, groups), function(g) design$sample[design$group == g]),
             contrasts = list(contrast), label = label, description = sprintf("KIT-237 %s journey on %s", omic, dataset),
             permissive = TRUE, project_dir = NULL, import = import(dir), files = k237OmicFiles(omic, exports, trx),
-            last_step = "S10.5", summary_step = "S10", fixture_dir = dir)
+            last_step = "S10.5", summary_step = "S10", fixture_dir = dir,
+            # Coordinator's ruling (2026-11-25): where the design carries technical-replicate sets (trx_screen's
+            # tech_rep_group), the design step assigns them as the default-user script does (kit-159/action-scripts.md,
+            # Design; tests/testthat/helper-gui-entry.R:452-462): each set of two or more runs, mode "manual", the
+            # replicate number of the set's first run in design.tsv.
+            tech_reps = if (!is.null(design$tech_rep_group)) Filter(function(x) length(x$samples) >= 2L,
+                lapply(unique(design$tech_rep_group), function(set) {
+                    samples <- design$sample[design$tech_rep_group == set]
+                    list(set = set, samples = samples, replicate = as.integer(design$replicates[match(samples[[1L]],
+                        design$sample)]))
+                })),
+            biological = if (!is.null(design$tech_rep_group)) stats::setNames(design$tech_rep_group, design$sample))
     }
 }
 
@@ -207,6 +220,10 @@ k237StepDesignOmic <- function(S, R, step, route) {
             if (!isTRUE(p$ok)) return(list(refuse = paste("not reachable as a user:", p$reason)))
             k233Idle(S, 10)
         }
+        if (length(R$tech_reps)) {
+            done <- k237AssignTechReps(S, R, builder, tabs)
+            if (!is.null(done)) return(done)
+        }
         k233ActivateTab(S, tabs, "Contrasts")
         for (pair in R$contrasts) {
             choices <- k233Options(S, builder("contrast_group1"))
@@ -222,7 +239,78 @@ k237StepDesignOmic <- function(S, R, step, route) {
     k233Action(S, list(step = "S3", name = step$name, target = builder("save_results"),
         tabs = list(k237Tab(route, "design")), prepare = prepare,
         digest = function(st) identical(k237Status(st, route$omic, "design_matrix"), "complete"),
-        dom = function(st) k233Stepper(st, 2L)))
+        dom = function(st) k233Stepper(st, 2L),
+        after = if (length(R$tech_reps)) function(S, res, cap) k237SampleKeyCheck(S, R, route)))
+}
+
+#' The Technical Replicates tab of the builder (R/mod_omic_design_builder.R:127-142): per set, the runs selected in
+#' `builder-tech_rep_samples`, `builder-tech_rep_assignment_mode` = "manual", `builder-manual_replicate_number` = the
+#' set's replicate number, then `builder-assign_tech_reps`. Completion of each assignment: the builder's
+#' `builder-tech_rep_summary` text names the set's first run within 30 s (its message "Assigned N samples as technical
+#' replicates", R/func_omics_design_shared.R:652-653, is recorded with the step's notifications). Returns NULL, or a
+#' refusal for the step.
+k237AssignTechReps <- function(S, R, builder, tabs) {
+    k233ActivateTab(S, tabs, "Technical Replicates")
+    options <- k233Options(S, builder("tech_rep_samples"))
+    summary_text <- function() as.character(k233Js(S, sprintf("(document.getElementById(%s)||{textContent:''}).textContent",
+        k233Json(builder("tech_rep_summary")))) %||% "")
+    for (set in R$tech_reps) {
+        runs <- options[k233Norm(options) %in% k233Norm(set$samples)]
+        if (length(runs) != length(set$samples)) {
+            return(list(refuse = sprintf("driver: %d of %d runs of technical-replicate set %s found among the builder's %d",
+                length(runs), length(set$samples), set$set, length(options))))
+        }
+        k233Selectize(S, "S3", builder("tech_rep_samples"), runs)
+        k233Set(S, "S3", builder("tech_rep_assignment_mode"), "manual")
+        k233Set(S, "S3", builder("manual_replicate_number"), set$replicate)
+        p <- k233Press(S, "S3", builder("assign_tech_reps"))
+        if (!isTRUE(p$ok)) return(list(refuse = paste("not reachable as a user:", p$reason)))
+        if (!k233WaitFor(S, sprintf("(document.getElementById(%s)||{textContent:''}).textContent.indexOf(%s) >= 0",
+            k233Json(builder("tech_rep_summary")), k233Json(runs[[1L]])), 30)) {
+            return(list(refuse = sprintf("the technical-replicate set %s was not shown as assigned within 30 s: %s",
+                set$set, summary_text())))
+        }
+        k233Idle(S, 10)
+    }
+    k233Observation(S$G, S$label, "S3 technical-replicate assignments (builder summary)", summary_text())
+    NULL
+}
+
+#' The named check after S3 (coordinator's ruling; KIT-222): the saved design's sample keys
+#' (scripts/<omic>/design_matrix.tab, `tech_rep_group` = group_replicates, R/func_omics_design_shared.R:680-687) against
+#' the biological samples of design.tsv (its tech_rep_group). Written to `<label>-S3-sample-keys.tsv` (run, biological
+#' sample, builder key); one row in numbers.tsv (K222: distinct keys against distinct biological samples); a key shared
+#' by two biological samples is a kind-2 finding, known as KIT-222 (known.tsv K13).
+k237SampleKeyCheck <- function(S, R, route) {
+    file <- file.path(k233ProjectPaths(R)$source, "design_matrix.tab")
+    if (!file.exists(file)) {
+        k233Finding(S, "S3", 3L, paste("the saved design is missing:", file))
+        return(invisible(NULL))
+    }
+    saved <- utils::read.delim(file, stringsAsFactors = FALSE, check.names = FALSE)
+    file.copy(file, file.path(S$G$out, paste0(S$label, "-design_matrix.tab.txt")), overwrite = TRUE)
+    run_col <- intersect(c("Run", "run", "sample"), names(saved))[1L]
+    if (is.na(run_col) || !"tech_rep_group" %in% names(saved)) {
+        k233Observation(S$G, S$label, "S3 sample keys", paste("the saved design has no Run or tech_rep_group column:",
+            paste(names(saved), collapse = ", ")))
+        return(invisible(NULL))
+    }
+    bio <- R$biological[match(k233Norm(saved[[run_col]]), k233Norm(names(R$biological)))]
+    keys <- as.character(saved$tech_rep_group)
+    k233WriteTsv(data.frame(run = saved[[run_col]], biological_sample = bio, builder_key = keys,
+        stringsAsFactors = FALSE), file.path(S$G$out, paste0(S$label, "-S3-sample-keys.tsv")))
+    shared <- Filter(function(k) length(unique(stats::na.omit(bio[keys == k]))) > 1L, unique(keys))
+    n_keys <- length(unique(keys))
+    n_bio <- length(unique(stats::na.omit(bio)))
+    S$G$numbers[[length(S$G$numbers) + 1L]] <- list(session = S$label, id = "K222", contrast = "sample keys",
+        shown = n_keys, saved = n_bio, rule = "no key shared by two biological samples",
+        result = if (length(shared)) "differ" else if (anyNA(bio)) "not_computed" else "equal",
+        where = sprintf("%s tech_rep_group vs design.tsv tech_rep_group", basename(file)), planted = FALSE)
+    for (k in shared) {
+        k233Finding(S, "S3", 2L, sprintf("builder key %s holds two different biological samples (%s): KIT-222", k,
+            paste(unique(stats::na.omit(bio[keys == k])), collapse = ", ")))
+    }
+    invisible(shared)
 }
 
 #' QC (SC-01): the rendered sub-tabs recorded; on trx the expression filter's Apply, then Finalize QC; on lipid and
