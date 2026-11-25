@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-265 correction pass (impl audit I01): fix d42443b6 against tests-only 6eb7dd23, 10 files, 1 shard per side, check both; expected about 60 job-minutes (4.0 core-hours), ceiling 120",
+  "label": "KIT-265 correction R2 base 6eb7dd23 head d42443b6",
+  "package_commit": "d42443b6f5f49c9c422842178ab4d0bf2acf1fff",
+  "base_commit": "6eb7dd239b002a285a07fd7752c10cb55a49e849",
+  "tools_ref": "",
+  "tests": [
+    "test-kit265-organism-routes.R",
+    "test-e2e-test-mode-integration.R",
+    "test-kit250-organism-dialog.R",
+    "test-module-ci-prot-import.R",
+    "test-prot-01c-import-module-contracts.R",
+    "test-prot-01d-import-module-characterization.R",
+    "test-prot-import-core.R",
+    "test-workflow-gui-memory-lifetimes.R",
+    "test-workflow-server-shared.R",
+    "test-workflow-ui-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
