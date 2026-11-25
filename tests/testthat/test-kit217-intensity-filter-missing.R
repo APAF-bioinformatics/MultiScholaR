@@ -186,8 +186,8 @@ test_that("KIT-217 T3: four groups of 3, g from 1 to 4 (metabolite helper)", {
   for (g in 1:4) {
     out <- k217Try(k217Helper("metab", table, 100, 0.5, sample_columns = samples, group_labels = groups,
       min_values_per_group = 2L, min_groups = g))
-    expect_false(is.null(out), info = g)
-    if (!is.null(out)) expect_identical(out$feature, expected[[as.character(g)]], info = g)
+    expect_false(is.null(out), info = paste("g =", g))
+    if (!is.null(out)) expect_identical(out$feature, expected[[as.character(g)]], info = paste("g =", g))
   }
 })
 
@@ -201,8 +201,8 @@ for (omic in c("lipid", "metab")) {
     for (case in list(list(g = 2L, kept = "U1"), list(g = 1L, kept = c("U1", "U2")))) {
       out <- k217Try(k217Helper(omic, table, 100, 0.5, sample_columns = samples, group_labels = groups,
         min_values_per_group = 4L, min_groups = case$g))
-      expect_false(is.null(out), info = case$g)
-      if (!is.null(out)) expect_identical(out$feature, case$kept, info = case$g)
+      expect_false(is.null(out), info = paste("g =", case$g))
+      if (!is.null(out)) expect_identical(out$feature, case$kept, info = paste("g =", case$g))
     }
   })
 }
@@ -235,14 +235,21 @@ for (omic in c("lipid", "metab")) {
 
 k217Invalid <- list(list(m = 0L), list(m = 1.5), list(g = 0L), list(g = 3L))
 
+# The S4 method's and the declared step's refusals are separate tests: before the fix the method raises an error of
+# another class (no such argument), which ends its test, and the declared step raises none.
 for (omic in c("lipid", "metab")) {
-  test_that(sprintf("KIT-217 T6 (%s): values per group and groups required out of range are refused", omic), {
+  test_that(sprintf("KIT-217 T6 (%s, S4 method): values per group and groups required out of range are refused", omic), {
     object <- k217TenObject(omic)
     for (case in k217Invalid) {
       info <- paste(names(case), unlist(case))
       expect_error(k217Method(object, 28.5, 0.5, m = case$m, g = case$g),
         class = "omics_intensity_filter_counts_invalid", info = info)
     }
+  })
+
+  test_that(sprintf("KIT-217 T6 (%s, declared step): values per group and groups required out of range are refused",
+    omic), {
+    object <- k217TenObject(omic)
     skip_if_not(workflowOwnerCapable())
     for (case in k217Invalid) {
       info <- paste(names(case), unlist(case))
@@ -506,7 +513,7 @@ for (omic in c("lipid", "metab")) {
       "metaboliteIntensityFiltering", args)), "no assays")
   })
 
-  test_that(sprintf("KIT-217 T10 (iv) (%s): a design with one counted group is filtered at g = 1, refused at g = 2", omic), {
+  test_that(sprintf("KIT-217 T10 (iv) (%s, S4 method): one counted group filtered at g = 1, refused at g = 2", omic), {
     designs <- list(
       one = list(samples = paste0("A", 1:3), groups = rep("A", 3L),
         patterns = c(Q1 = "+++", Q2 = "+..", Q3 = "...")),
@@ -516,8 +523,20 @@ for (omic in c("lipid", "metab")) {
       d <- designs[[name]]
       object <- k217Object(omic, k217Table(d$patterns, d$samples), k217Design(d$samples, d$groups))
       expect_identical(k217Kept(k217Method(object, 10, 0.5)), "Q1", info = name)
+    }
+    for (name in names(designs)) {
+      d <- designs[[name]]
+      object <- k217Object(omic, k217Table(d$patterns, d$samples), k217Design(d$samples, d$groups))
       expect_error(k217Method(object, 10, 0.5, g = 2L), class = "omics_intensity_filter_counts_invalid", info = name)
     }
+  })
+
+  test_that(sprintf("KIT-217 T10 (iv) (%s, declared step): one counted group filtered at g = 1, refused at g = 2", omic), {
+    designs <- list(
+      one = list(samples = paste0("A", 1:3), groups = rep("A", 3L),
+        patterns = c(Q1 = "+++", Q2 = "+..", Q3 = "...")),
+      with_pool = list(samples = c(paste0("A", 1:3), paste0("P", 1:3)), groups = rep(c("A", "Pool"), each = 3L),
+        patterns = c(Q1 = "+++|...", Q2 = "+..|+++", Q3 = "...|+++")))
     skip_if_not(workflowOwnerCapable())
     for (name in names(designs)) {
       d <- designs[[name]]
