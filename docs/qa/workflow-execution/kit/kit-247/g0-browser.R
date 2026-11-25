@@ -74,6 +74,37 @@ k247Main <- function() {
     driver <- e2e_new_app_driver(case_id = case_id, launch_surface = "run_app", timeout = 60000L, load_timeout = 180000L)
     on.exit(e2e_stop_driver(driver), add = TRUE)
     k247Log("app started")
+    # VAL-54 instrument rerun 3 of 3 (coordinator's ruling): every notification ever shown is kept in the page (as
+    # KIT-233's journey driver keeps them, journey.R:671-687), and on any failure the application's and the browser's
+    # logs, the kept notifications and the project's files are saved (k247Evidence).
+    k247Hook <- paste0("(function(){if(window.__k247){return true;}var K=window.__k247={notes:[]};",
+        "setInterval(function(){var ns=document.querySelectorAll('.shiny-notification');for(var i=0;i<ns.length;i++){",
+        "var n=ns[i];var t=(n.textContent||'').trim();if(!t||n.__k247===t){continue;}n.__k247=t;",
+        "K.notes.push({t:Date.now(),text:t.slice(0,2000),cls:n.className||''});}},200);return true;})()")
+    k247InstallHook <- function() tryCatch(driver$get_js(k247Hook), error = function(e) NULL)
+    k247InstallHook()
+    k247Evidence <- function(what) {
+        logs <- tryCatch(as.data.frame(driver$get_logs()), error = function(e) data.frame(error = conditionMessage(e)))
+        logs[] <- lapply(logs, function(x) gsub("[\t\r\n]+", " ", as.character(x)))
+        utils::write.table(logs, file.path(k247Out, "g0-g04-applog.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+        notes <- tryCatch(driver$get_js("(window.__k247 ? window.__k247.notes : [])"), error = function(e) list())
+        notes <- if (length(notes)) do.call(rbind, lapply(notes, function(n) data.frame(t = as.character(n$t),
+            text = gsub("[\t\r\n]+", " ", as.character(n$text)), cls = as.character(n$cls)))) else data.frame(text = "<none>")
+        utils::write.table(notes, file.path(k247Out, "g0-g04-notes.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+        files <- list.files(project_root, recursive = TRUE, all.files = TRUE, full.names = TRUE)
+        info <- file.info(files)
+        utils::write.table(data.frame(path = sub(paste0("^", project_root, "/?"), "", files), size = info$size,
+            mtime = format(info$mtime, "%H:%M:%OS3")), file.path(k247Out, "g0-g04-files.tsv"), sep = "\t", quote = FALSE,
+            row.names = FALSE)
+        k247Put("evidence_saved_at", what)
+    }
+    k247NoteSeen <- function(pattern, timeout) {
+        script <- sprintf("(window.__k247 ? window.__k247.notes : []).some(function(n){return new RegExp(%s,'i').test(n.text);})",
+            jsonlite::toJSON(pattern, auto_unbox = TRUE))
+        e2e_wait_for_js(driver, script, timeout = timeout)
+    }
+    on.exit(if (!identical(k247Done, TRUE)) tryCatch(k247Evidence("failure"), error = function(e) NULL), add = TRUE, after = FALSE)
+    k247Done <- FALSE
 
     # The lane, as test-e2e-proteomics-tmt-lfq.R runs it, up to the normalisation and its export.
     e2e_wait_for_selector(driver, "tile-proteomics", timeout = 60000L)
@@ -91,7 +122,7 @@ k247Main <- function() {
     # VAL-54 instrument fix 1 (run 45594085728 timed out waiting for the normalisation STATUS after
     # e2e_run_prot_normalization_export, which presses Skip right after Run with no wait for the run to finish): the same
     # presses, each waited for by the head state (digest) and the export by its notice. The status is recorded, not waited on.
-    k247WaitHead <- function(states, what, timeout = 300000L) {
+    k247WaitHead <- function(states, what, timeout = 600000L) {
         deadline <- Sys.time() + timeout / 1000
         repeat {
             digest <- tryCatch(e2e_state_digest(driver, timeout = 60000L), error = function(e) NULL)
@@ -113,8 +144,9 @@ k247Main <- function() {
     k247WaitHead(c("normalized", "ruv_corrected"), "norm_run")
     # VAL-54 instrument fix 2 (rerun 45597423706: the head was 'normalized' while Skip, pressed then, did nothing for
     # 300 s; the state is committed before the step ends, KIT-233 A5): Skip waits for the run's own completion notice.
-    e2e_wait_for_js(driver, paste0("Array.from(document.querySelectorAll('.shiny-notification')).some(function(n){",
-        "return (n.textContent||'').indexOf('Normalization completed')!==-1;})"), timeout = 300000L)
+    # Rerun 3: KIT-233's completion signal for this step (journey.R:1555-1558), from the kept notifications, 600 s.
+    k247InstallHook()
+    k247NoteSeen("Normali[sz]ation (and RUV correction )?completed", 600000L)
     e2e_wait_for_idle(driver, timeout = 120000L)
     digest <- e2e_state_digest(driver, timeout = 60000L)
     k247Put("norm_run.status", k247Status(digest))
@@ -189,6 +221,8 @@ k247Main <- function() {
     after_commits <- k247Commits(project_root)
     k247Put("after.commits", after_commits)
     k247Put("after.commits_increased", after_commits > before_commits)
+    k247Done <- TRUE
+    k247Evidence("success")
     "ok"
 }
 result <- tryCatch(k247Main(), error = function(e) {
