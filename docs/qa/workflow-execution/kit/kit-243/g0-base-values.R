@@ -78,6 +78,14 @@ g0$k243ProtSave <- function(fixture, dirs) {
     seen
 }
 
+# Instrument repair (run 45588535137, VAL-54): the functions above were closures of the global environment, so
+# `k243Compare` could not find `k243Trip`; each is re-enclosed in the helpers' environment.
+for (name in c("k243Identity", "k243Trip", "k243FirstDiff", "k243Compare", "k243Files", "k243ProtSave")) {
+    f <- get(name, envir = g0)
+    environment(f) <- g0
+    assign(name, f, envir = g0)
+}
+
 #' One probe: its outcome ("ok", the error, or the skip) recorded; a probe's failure does not stop the others.
 probe <- function(name, code) {
     outcome <- tryCatch({
