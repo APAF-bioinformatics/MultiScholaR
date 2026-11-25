@@ -17,6 +17,8 @@
 #   K16 the four combinations of the setting, camera_floor, the permutation, the corpus check of 6.6.
 # K3's base parts, K7 (i) (b), (c) and (iii) and K9 (a) read a store made by the base commit's code: they run only inside
 # docs/qa/workflow-execution/kit/kit-184/base-store-job.R's runner job (VAL-64 (2)), which names it in K184_BASE_STORE.
+# KIT-234: the placeholder test no longer reads the integration workbook (archived); its four phrases are in the
+# archived file and in this ticket's README inventory.
 
 # --- Fixtures ---
 
@@ -1605,20 +1607,6 @@ test_that("KIT-184: no placeholder of the simulation's numbers is left in a ship
     expect_gt(length(shipped), 100L)
     expect_identical(names(shipped)[grepl(placeholder, shipped)], character())
     expect_identical(names(shipped)[grepl("has not been measured yet", shipped, fixed = TRUE)], character())
-    starter <- system.file("workbooks", "integration", "integration_workflow_starter.rmd", package = "MultiScholaR")
-    expect_true(nzchar(starter))
-    expect_identical(grep(placeholder, readLines(starter, warn = FALSE), value = TRUE), character())
-    # The starter's paragraph on the adjustment: what was checked, no wider; the limit as a finding of that check.
-    paragraph <- gsub("[[:space:]]+", " ", paste(readLines(starter, warn = FALSE), collapse = " "))
-    for (phrase in c(paste("kept false calls within the checked limit (at most 5.4 %) for the kinds of sets with no link to",
-        "what was tested that the check decided on; sets made only of the most variable features were called more often",
-        "(up to 9.4 %, 6.8 % without it)"),
-        paste("and so were sets in which half the features truly followed the main factor, tested against an unrelated",
-            "covariate (up to 8.6 %, up to 7.0 % without it)"),
-        "(with as many factors removed as were planted; with four removed where two were planted it found fewer)",
-        "In that check it did not protect pathways whose features share unwanted variation that follows the groups")) {
-        expect_true(grepl(phrase, paragraph, fixed = TRUE), info = phrase)
-    }
 })
 
 # --- The cross-platform record (ticket 7.5): the removed factors of K1's fixture and the terms of K6's ---

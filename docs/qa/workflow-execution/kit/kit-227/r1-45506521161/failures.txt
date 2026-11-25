@@ -1,0 +1,1076 @@
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "no automatic optimisation was run")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "no automatic optimisation was run")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "no automatic optimisation was run")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1: a manual RUV from the file is not described as an automatic optimisation (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "NA%")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "no automatic optimisation was run")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "5%")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "the analyst chose to use 5% of features as empirical negative controls (50 proteins)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "NA%")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "no automatic optimisation was run")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "5%")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "the analyst chose to use 5% of features as empirical negative controls (50 proteins)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "NA%")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "no automatic optimisation was run")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "5%")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E1b: a manual RUV whose plot failed (record only) prints the analyst's percentage, never NA%
+kind: failure
+message:
+  Expected `k227Has(text, "the analyst chose to use 5% of features as empirical negative controls (50 proteins)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(text, "due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E2: a skipped RUV is not attributed to dataset constraints (LFQ, TMT, DIA-NN, lipid, metab)
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E6: after a skipped RUV the count sentence does not follow RUV-III (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "Following RUV-III batch correction")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E6: after a skipped RUV the count sentence does not follow RUV-III (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "Following RUV-III batch correction")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E6: after a skipped RUV the count sentence does not follow RUV-III (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(text, "Following RUV-III batch correction")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "not applied due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "Whether RUV-III batch correction was applied is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "Figure 1 shows four quality-control views at each stage of processing drawn for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "not applied due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "Whether RUV-III batch correction was applied is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "Figure 1 shows four quality-control views at each stage of processing drawn for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "not applied due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "Whether RUV-III batch correction was applied is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "Figure 1 shows four quality-control views at each stage of processing drawn for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "not applied due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "Whether RUV-III batch correction was applied is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "Figure 1 shows four quality-control views at each stage of processing drawn for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "not applied due to dataset constraints")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$method, "Whether RUV-III batch correction was applied is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3: with nothing recorded the report says so, in the method and the Results caption
+kind: failure
+message:
+  Expected `k227Has(got$results, "Figure 1 shows four quality-control views at each stage of processing drawn for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$method, "auto-determined")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$method, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$method, "auto-determined")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$method, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$method, "auto-determined")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$method, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E3b: when AnalyzeSamples returned nothing the report says RUV is not recorded (LFQ, TMT, DIA-NN)
+kind: failure
+message:
+  Expected `k227Has(got$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E4: DIA with limpa without a DPC engine: Skip says not applied, nothing recorded says so
+kind: failure
+message:
+  Expected `k227Has(skip_case$method, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E4: DIA with limpa without a DPC engine: Skip says not applied, nothing recorded says so
+kind: failure
+message:
+  Expected `k227Has(skip_case$method, "was not applied")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E4: DIA with limpa without a DPC engine: Skip says not applied, nothing recorded says so
+kind: failure
+message:
+  Expected `k227Has(none$method, "an automatic optimisation process was run")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E4: DIA with limpa without a DPC engine: Skip says not applied, nothing recorded says so
+kind: failure
+message:
+  Expected `k227Has(none$method, "Whether RUV-III batch correction was applied is not recorded for this analysis.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E4: DIA with limpa without a DPC engine: Skip says not applied, nothing recorded says so
+kind: failure
+message:
+  Expected `k227Has(none$results, "is not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E4: DIA with limpa without a DPC engine: Skip says not applied, nothing recorded says so
+kind: failure
+message:
+  Expected `k227Has(none$results, "after RUVIII-C correction")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E7: the limpa route's Results caption claims covariates only when they were the model's
+kind: failure
+message:
+  Expected `k227Has(correction$results, "carried the RUV-III factors as covariates")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E7: the limpa route's Results caption claims covariates only when they were the model's
+kind: failure
+message:
+  Expected `k227Has(correction$results, "after RUV-III correction (the corrected matrix entered the differential abundance model)")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E7: the limpa route's Results caption claims covariates only when they were the model's
+kind: failure
+message:
+  Expected `k227Has(skipped$results, "carried the RUV-III factors as covariates")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E7: the limpa route's Results caption claims covariates only when they were the model's
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(text, "'NA' variable")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(text, "not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(writer, "'NA' variable")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(writer, "using the 'group' variable to preserve biological signal.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(text, "'NA' variable")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(text, "not recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(writer, "'NA' variable")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E5: lipid/metab with the grouping not recorded print 'not recorded', not 'NA'
+kind: failure
+message:
+  Expected `k227Has(writer, "using the 'group' variable to preserve biological signal.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E9: lipid/metab grouped by a column other than group describe how it was used
+kind: failure
+message:
+  Expected `k227Has(text, "'batch' variable to preserve biological signal")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E9: lipid/metab grouped by a column other than group describe how it was used
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E9: lipid/metab grouped by a column other than group describe how it was used
+kind: failure
+message:
+  Expected `k227Has(text, "'batch' variable to preserve biological signal")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E9: lipid/metab grouped by a column other than group describe how it was used
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E10: a manual lipid/metab RUV says the analyst set k and the controls
+kind: failure
+message:
+  Expected `k227Has(text, "set by the analyst")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E10: a manual lipid/metab RUV says the analyst set k and the controls
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E10: a manual lipid/metab RUV says the analyst set k and the controls
+kind: failure
+message:
+  Expected `k227Has(text, "set by the analyst")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E10: a manual lipid/metab RUV says the analyst set k and the controls
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E8: a manual transcriptomics RUVs is not described as a grid search
+kind: failure
+message:
+  Expected `k227Has(text, "choosing the maximum composite score")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E8: a manual transcriptomics RUVs is not described as a grid search
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

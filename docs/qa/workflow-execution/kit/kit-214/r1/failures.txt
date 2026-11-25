@@ -1,0 +1,440 @@
+file: test-kit214-sample-columns.R
+test: KIT-214 E1 (e1_lipid, whole): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 50.0
+  `expected`: 60.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E1 (e1_lipid, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 50.0
+  `expected`: 60.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E1 (e1_metab, whole): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 50.0
+  `expected`: 60.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E1 (e1_metab, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 50.0
+  `expected`: 60.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E2 (e2_lipid, whole): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 10.0
+  `expected`: 12.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E2 (e2_lipid, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 10.0
+  `expected`: 12.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E2 (e2_metab, whole): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 10.0
+  `expected`: 12.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E2 (e2_metab, partitioned): duplicate resolution keeps the row with the highest mean over the design's samples
+kind: failure
+message:
+  Expected `k214KeptS1(run$object, expected$id)` to be identical to `expected$head`.
+  Differences:
+    `actual`: 10.0
+  `expected`: 12.0
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E3: resolveMetabDuplicateAssayData averages the design's samples it is given
+kind: failure
+message:
+  Expected `is.null(result)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E4: the QC summary's sample count is the design's samples (metabolite MS-DIAL seed)
+kind: failure
+message:
+  Expected `k214SummarySamples(k214Object("metab_msdial"))` to be identical to "4".
+  Differences:
+  `actual`:   "5"
+  `expected`: "4"
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E5 (metab_msdial): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.integer(stats[[path]]$Samples)` to be identical to `expected$samples`.
+  Differences:
+    `actual`: 5
+  `expected`: 4
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E5 (metab_msdial): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.integer(stats[[path]]$Samples)` to be identical to `expected$samples`.
+  Differences:
+    `actual`: 5
+  `expected`: 4
+  
+  shell
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E6 (metab_msdial_id0): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.integer(stats[[path]]$Samples)` to be identical to `expected$samples`.
+  Differences:
+    `actual`: 5
+  `expected`: 4
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E6 (metab_msdial_id0): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.numeric(stats[[path]]$Missingness)` to equal `expected$missing`.
+  Differences:
+    `actual`: 2.5
+  `expected`: 0.0
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E6 (metab_msdial_id0): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.integer(stats[[path]]$Samples)` to be identical to `expected$samples`.
+  Differences:
+    `actual`: 5
+  `expected`: 4
+  
+  shell
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E6 (metab_msdial_id0): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.numeric(stats[[path]]$Missingness)` to equal `expected$missing`.
+  Differences:
+    `actual`: 2.5
+  `expected`: 0.0
+  
+  shell
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E7 (lipid_msdial): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.integer(stats[[path]]$Samples)` to be identical to `expected$samples`.
+  Differences:
+    `actual`: 5
+  `expected`: 4
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E7 (lipid_msdial): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.numeric(stats[[path]]$Missingness)` to equal `expected$missing`.
+  Differences:
+    `actual`: 13.3
+  `expected`: 16.7
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E7 (lipid_msdial): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.integer(stats[[path]]$Samples)` to be identical to `expected$samples`.
+  Differences:
+    `actual`: 5
+  `expected`: 4
+  
+  shell
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E7 (lipid_msdial): the per-assay Samples and Missingness count the design's samples
+kind: failure
+message:
+  Expected `as.numeric(stats[[path]]$Missingness)` to equal `expected$missing`.
+  Differences:
+    `actual`: 13.3
+  `expected`: 16.7
+  
+  shell
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples
+kind: failure
+message:
+  Expected `found$mean_intensity` to equal `mean(values)`.
+  Differences:
+    `actual`: 38721.4
+  `expected`: 48400.0
+  
+  ITSD_Caffeine_d9
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples
+kind: failure
+message:
+  Expected `found$cv` to equal `stats::sd(values)/mean(values) * 100`.
+  Differences:
+    `actual`: 55.9
+  `expected`:  0.4
+  
+  ITSD_Caffeine_d9
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples
+kind: failure
+message:
+  Expected `found$mean_intensity` to equal `mean(values)`.
+  Differences:
+    `actual`: 25641.6
+  `expected`: 32050.0
+  
+  ITSD_Leucine_d10
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples
+kind: failure
+message:
+  Expected `found$cv` to equal `stats::sd(values)/mean(values) * 100`.
+  Differences:
+    `actual`: 55.9
+  `expected`:  0.4
+  
+  ITSD_Leucine_d10
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples
+kind: failure
+message:
+  Expected `analysis$result_text` to match string "IS with CV > 30%: 0".
+  Actual text:
+  x | Internal Standard Analysis Complete
+    | ====================================
+    | Pattern used: ITSD
+    | Total IS detected: 2
+    | 
+    | CV Statistics:
+    |   Median CV: 55.9%
+    |   Max CV: 55.9%
+    |   IS with CV > 30%: 2
+    | 
+    | Per-Assay IS Counts:
+    |   LCMS_Pos: 2 internal standards
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E8: the ITSD metrics, the CV > 30 % count and the long table count the design's samples
+kind: failure
+message:
+  Expected `all(unique(analysis$long_data$Sample) %in% samples)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E9: the ITSD selection table averages the sample columns it is given (numeric annotation column)
+kind: failure
+message:
+  Expected `is.null(result)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E10 (module_ci_lipid): a text design sample is refused before any row is chosen
+kind: failure
+message:
+  Expected `kit172Quiet(binding$resolve_duplicates(object))` to throw a error with class <omics_duplicate_resolution_samples_invalid>.
+
+file: test-kit214-sample-columns.R
+test: KIT-214 E10 (module_ci_metab): a text design sample is refused before any row is chosen
+kind: failure
+message:
+  Expected `kit172Quiet(binding$resolve_duplicates(object))` to throw a error with class <omics_duplicate_resolution_samples_invalid>.
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (i): the replay rule of duplicate resolution follows the step's marker
+kind: failure
+message:
+  Expected `!is.null(markers[["duplicate_resolution_samples"]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iii) (e1_lipid): a duplicate step made now records the marker
+kind: failure
+message:
+  Expected `k214Marker(run$record, run$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iii) (e1_metab): a duplicate step made now records the marker
+kind: failure
+message:
+  Expected `k214Marker(run$record, run$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iv) (e1_lipid): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `identical(a$kept, b$kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iv) (e1_lipid): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k214Marker(b$record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iv) (e1_lipid): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k214Marker(b$replayed_record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iv) (e1_metab): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `identical(a$kept, b$kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iv) (e1_metab): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k214Marker(b$record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (iv) (e1_metab): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k214Marker(b$replayed_record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (v): a managed duplicate step records the marker
+kind: failure
+message:
+  Expected `k214Marker(buildWorkflowAnalysisRecord(fixture$owner), step$state_name)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  
+  lipid
+
+file: test-kit214-sample-columns.R
+test: KIT-214 T6 (v): a managed duplicate step records the marker
+kind: failure
+message:
+  Expected `k214Marker(buildWorkflowAnalysisRecord(fixture$owner), step$state_name)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  
+  metab
+
+file: test-kit214-sample-columns.R
+test: KIT-214 G7 (a) (module_ci_lipid): the per-assay Samples counts a text design sample
+kind: failure
+message:
+  Expected `as.integer(row$Samples)` to be identical to `length(k214Samples(object))`.
+  Differences:
+    `actual`: 3
+  `expected`: 4
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 G7 (a) (module_ci_lipid): the per-assay Samples counts a text design sample
+kind: failure
+message:
+  Expected `as.integer(row$Samples)` to be identical to `length(k214Samples(object))`.
+  Differences:
+    `actual`: 3
+  `expected`: 4
+  
+  shell
+
+file: test-kit214-sample-columns.R
+test: KIT-214 G7 (a) (module_ci_metab): the per-assay Samples counts a text design sample
+kind: failure
+message:
+  Expected `as.integer(row$Samples)` to be identical to `length(k214Samples(object))`.
+  Differences:
+    `actual`: 3
+  `expected`: 4
+  
+  frame
+
+file: test-kit214-sample-columns.R
+test: KIT-214 G7 (a) (module_ci_metab): the per-assay Samples counts a text design sample
+kind: failure
+message:
+  Expected `as.integer(row$Samples)` to be identical to `length(k214Samples(object))`.
+  Differences:
+    `actual`: 3
+  `expected`: 4
+  
+  shell
+

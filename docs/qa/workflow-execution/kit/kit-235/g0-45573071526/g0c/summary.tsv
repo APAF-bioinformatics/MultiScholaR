@@ -1,0 +1,9 @@
+case	version	shape	main_error	sample_details_head	method_details_chars	method_has_METHOD_DETAILS	extractor_length	analyze_numbers_length	swallowed_error	chunk_errors	num_assays	ruv_applied	ruv_assay_list_names
+lip	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	84	none	0	"NA"	false	* Status
+lip	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	84	none	0	"NA"	false	* Status
+lip	staging	bullet	FALSE	 SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • S	2228	TRUE	41	84	none	0	"2"	false	
+lip	kit227	bullet	FALSE	 SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • S	2201	TRUE	41	84	none	0	"2"	false	
+met	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	84	none	0	"NA"	false	* Status
+met	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	84	none	0	"NA"	false	* Status
+met	staging	bullet	FALSE	 SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • S	2228	TRUE	41	84	none	0	"2"	false	
+met	kit227	bullet	FALSE	 SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • S	2201	TRUE	41	84	none	0	"2"	false	

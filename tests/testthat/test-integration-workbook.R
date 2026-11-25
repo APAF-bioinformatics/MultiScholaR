@@ -1,69 +1,25 @@
-# KIT-143: the integration workbook rewritten over the module (plan item H), checked without MOFA2. Declared before the
-# run:
-#   - the shipped workbook is the thin one: its code parses, every function it takes from the package exists there, it
-#     reads the model's, the results' and the enrichment's settings from their tables, it holds no credential and reads
-#     the STRING key from STRING_API_KEY (never a parameter); the stub
-#     MultiOmics_workflow_starter.rmd is gone (fails on the old workbook: it names functions the package does not have
-#     and carries a key);
-#   - KIT-154: the workbook calls only the package's exported integration functions (no `:::`, no internal field),
-#     each of them exported in NAMESPACE, documented in man/ and called (fails on the KIT-143 workbook, which called
-#     51 internal functions through `:::`, and on a tree without the exports);
+# KIT-143: the integration workbook rewritten over the module (plan item H), checked without MOFA2 (the shipped
+# workbook's static tests were removed by KIT-234: the workbooks are archived). Declared before the run:
+#   - KIT-154 (kept by KIT-234): each of the twelve exported integration functions is exported in NAMESPACE, documented
+#     in man/ and present (under `load_all(export_all = TRUE)` a dropped `export()` passes every other test; NAMESPACE
+#     is edited by hand).
 #   - the reference workbook's sort-order sample matching (`x[, sort(colnames(x))]` per omic, paired by position)
 #     misaligns proteomics and transcriptomics when the transcriptomics runs carry acquisition-order names (run_01, ...),
 #     while the module's matching
 #     by the saved biological sample puts every run with its own sample (a characterisation of the reference
 #     workbook's step, not of new code: it passes on the old code too).
-# The workbook rendered end to end and the equivalence with the reference workbook's MOFA2 call are
+# The equivalence with the reference workbook's MOFA2 call, and the twelve functions run end to end with MOFA2, are
 # test-integration-workbook-mofa.R, on the MOFA2 lane.
 
-intWbPath <- function(name = "integration_workflow_starter.rmd") {
-    normalizePath(testthat::test_path("..", "..", "inst", "workbooks", "integration", name), mustWork = FALSE)
-}
 intWbCorpus <- function() normalizePath(testthat::test_path("..", "testdata", "integration", "corpus"), mustWork = FALSE)
 
-# The workbook's R code, chunk by chunk, as knitr would run it.
-intWbCode <- function() {
-    lines <- readLines(intWbPath(), warn = FALSE)
-    opens <- grep("^```\\{r", lines)
-    closes <- grep("^```\\s*$", lines)
-    unlist(lapply(opens, function(start) {
-        end <- closes[closes > start][[1L]]
-        if (end > start + 1L) lines[(start + 1L):(end - 1L)] else character()
-    }))
-}
-
-test_that("KIT-143: the shipped integration workbook is the thin one over the module, and the stub is gone", {
-    testthat::skip_if_not(file.exists(intWbPath()), "the package source tree is not present")
-    expect_false(file.exists(intWbPath("MultiOmics_workflow_starter.rmd")))
-    code <- intWbCode()
-    expect_gt(length(code), 0L)
-    expect_silent(parse(text = code, keep.source = FALSE))
-    # KIT-154: the module's entry points are reached through the exported workbook functions (the test below).
-    # No credential: no long literal string of letters and digits (a key), and no key assigned from a literal.
-    text <- readLines(intWbPath(), warn = FALSE)
-    expect_false(any(grepl("[\"'][A-Za-z0-9]{20,}[\"']", text)))
-    expect_false(any(grepl("(api_?key|caller_identity|token)\\s*(=|<-)\\s*[\"']", text, ignore.case = TRUE)))
-    # KIT-141, INT-21: the STRING key is read from STRING_API_KEY (or asked for), never a parameter of the workbook.
-    expect_true(any(grepl("Sys.getenv(\"STRING_API_KEY\"", code, fixed = TRUE)))
-    expect_false(any(grepl("key", sub(":.*$", "", text[seq_len(match("---", text[-1L]) + 1L)]), ignore.case = TRUE)))
-})
-
-test_that("KIT-154: the workbook calls only the exported integration functions, each exported, documented and called", {
-    testthat::skip_if_not(file.exists(intWbPath()), "the package source tree is not present")
+test_that("KIT-154 (KIT-234): the twelve integration functions are exported, documented and present", {
     root <- normalizePath(testthat::test_path("..", ".."), mustWork = FALSE)
     testthat::skip_if_not(file.exists(file.path(root, "NAMESPACE")), "the package source tree is not present")
-    code <- intWbCode()
-    expect_false(any(grepl(":::", code, fixed = TRUE)))
-    expect_false(any(grepl(".context", code, fixed = TRUE)))
     api <- c("integrationSettings", "integrationFindInputs", "integrationOpenProject", "integrationMatchSamples",
         "integrationConfirmMatch", "integrationTrainModel", "integrationGetResults", "integrationExportResults",
         "integrationEnrichFactor", "integrationWriteRecord", "integrationCloseProject", "integrationReplayProject")
     exports <- sub("^export\\((.*)\\)$", "\\1", grep("^export\\(", readLines(file.path(root, "NAMESPACE")), value = TRUE))
-    # Every function of the package the workbook calls (other packages' calls, `pkg::f(`, set aside).
-    plain <- gsub("[A-Za-z][A-Za-z0-9.]*::[A-Za-z_.][A-Za-z0-9_.]*", "", code)
-    called <- unique(unlist(regmatches(plain, gregexpr("[A-Za-z_.][A-Za-z0-9_.]*(?=\\()", plain, perl = TRUE))))
-    from_package <- intersect(called, ls(asNamespace("MultiScholaR"), all.names = TRUE))
-    expect_setequal(from_package, api)
     for (name in api) {
         expect_true(name %in% exports, info = name)
         expect_true(file.exists(file.path(root, "man", paste0(name, ".Rd"))), info = name)

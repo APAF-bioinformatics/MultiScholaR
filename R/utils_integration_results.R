@@ -343,7 +343,10 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
         claim = list(group_corrected = names(corrected)[corrected], corrections = corrections,
             uncorrected = identical(input_matrix, "uncorrected")),
         feature_values = feature_values, value_scales = integrationFeatureValueScales(object, views, model_parameters$scaling),
-        maps = maps, seeds = value$seeds$seeds, stability = stability)
+        maps = maps, seeds = value$seeds$seeds, stability = stability,
+        # KIT-239 (INT-28): the limitations of the model, with this model's own numbers.
+        limitations = integrationLimitationsText(integrationLimitationFacts(value$samples, value$shared_samples, views,
+            model_parameters$missing_samples), texts))
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -803,6 +806,68 @@ integrationClaimLimitText <- function(results, texts = integrationGuiTexts()) {
     }
     if (isTRUE(as.logical(integrationGuiScalar(claim$uncorrected)))) sentences <- c(sentences, texts[["claim_uncorrected"]])
     c(sentences, sprintf(texts[["claim_correction"]], tools::toTitleCase(names(claim$corrections)), unname(claim$corrections)))
+}
+
+#' The facts the limitations of the model are computed from (KIT-239, INT-28): the biological samples in the model and
+#' those measured in every data set, the samples missing from at least one data set, and per data set the runs that
+#' were averaged (`integrationAverageRuns`), read from the aligned sample table (`views_present`, `<view>_runs` with
+#' the runs joined by ";").
+#' @param samples The aligned sample table: the model product's `samples`, or the record's `matching$samples` (a data
+#'   frame or a list of rows).
+#' @param shared_samples The number of biological samples measured in every data set.
+#' @param views The data sets in the model.
+#' @param missing_samples The rule for a sample missing from a data set (`keep_missing` or `drop_incomplete`).
+#' @param services NULL when not known here (the Results tab); else the databases and releases the analysis's
+#'   enrichment used, `character()` for none (the report).
+#' @return `list(samples, shared, missing, averaged = data.frame(view, samples, repeated, most_runs), services)`.
+#' @noRd
+integrationLimitationFacts <- function(samples, shared_samples, views, missing_samples, services = NULL) {
+    samples <- integrationRecordFrame(samples)
+    keep <- identical(as.character(integrationRecordScalar(missing_samples)), "keep_missing")
+    missing <- if (keep) sum(as.integer(samples$views_present) < length(views), na.rm = TRUE) else 0L
+    averaged <- do.call(rbind, lapply(views, function(view) {
+        runs <- as.character(samples[[paste0(view, "_runs")]])
+        runs[is.na(runs)] <- ""
+        counts <- lengths(strsplit(runs, ";", fixed = TRUE))
+        data.frame(view = view, samples = sum(counts > 0L), repeated = sum(counts > 1L), most_runs = max(c(0L, counts)),
+            stringsAsFactors = FALSE)
+    }))
+    list(samples = nrow(samples), shared = as.integer(integrationRecordScalar(shared_samples)), missing = as.integer(missing),
+        averaged = averaged, services = services)
+}
+
+#' The limitations of the model in words (KIT-239, INT-28), one element per point in INT-28's order: (1) the samples,
+#' then what the simulations could find; (2) the samples missing from a data set when there are any, then how missing
+#' values are treated; (3) per data set whose runs were averaged its counts, then why such averages can be too high, or
+#' that no runs were averaged; (4) the model's form; (5) what the check against the analysis script covered; (6) the
+#' enrichment services (the Results tab's general sentence when `services` is NULL, else those the analysis used, or
+#' none). Without facts (a record that cannot be read), the sentences true for every run (points 1, 2, 4 and 5), then
+#' `limits_not_computed`.
+#' @param facts `integrationLimitationFacts()`, or NULL.
+#' @return A character vector.
+#' @noRd
+integrationLimitationsText <- function(facts, texts = integrationGuiTexts()) {
+    if (is.null(facts)) {
+        return(unname(texts[c("limits_fixed_samples", "limits_fixed_missing", "limits_fixed_model", "limits_fixed_check",
+            "limits_not_computed")]))
+    }
+    joined <- function(...) paste(c(...), collapse = " ")
+    averaged <- facts$averaged[facts$averaged$repeated > 0L, , drop = FALSE]
+    runs <- if (nrow(averaged)) {
+        joined(sprintf(texts[["limits_averaged_item"]], averaged$view, averaged$repeated, averaged$samples, averaged$most_runs),
+            texts[["limits_fixed_averaged"]])
+    } else {
+        texts[["limits_averaged_none"]]
+    }
+    services <- if (is.null(facts$services)) texts[["limits_fixed_services"]] else if (length(facts$services)) {
+        sprintf(texts[["limits_services_report"]], paste(facts$services, collapse = "; "))
+    } else {
+        texts[["limits_services_none"]]
+    }
+    c(joined(sprintf(texts[["limits_samples"]], facts$samples, facts$shared), texts[["limits_fixed_samples"]]),
+        joined(if (facts$missing > 0L) sprintf(texts[["limits_missing_samples"]], facts$missing, facts$samples),
+            texts[["limits_fixed_missing"]]),
+        runs, texts[["limits_fixed_model"]], texts[["limits_fixed_check"]], services)
 }
 
 # ------------------------------------------------------------------------------------------------
