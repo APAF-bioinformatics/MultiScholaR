@@ -1,0 +1,419 @@
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N1: countStatDaGenes counts rows without a p-value as Not tested
+kind: failure
+message:
+  Expected `k204Count(counts, "Not significant")` to be identical to 1.
+  Differences:
+    `actual`: 3.0
+  `expected`: 1.0
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N1: countStatDaGenes counts rows without a p-value as Not tested
+kind: failure
+message:
+  Expected `k204Count(counts, "Not tested")` to be identical to 2.
+  Differences:
+    `actual`:  NA
+  `expected`: 2.0
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N1: countStatDaGenes counts rows without a p-value as Not tested
+kind: failure
+message:
+  Expected `as.character(counts$status)` to be identical to `c(k204Statuses, "Not tested")`.
+  Differences:
+      actual                 | expected                  
+  [1] "Not significant"      | "Not significant"      [1]
+  [2] "Significant and Up"   | "Significant and Up"   [2]
+  [3] "Significant and Down" | "Significant and Down" [3]
+                             - "Not tested"           [4]
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N1: countStatDaGenes counts rows without a p-value as Not tested
+kind: failure
+message:
+  Expected `counts$counts` to be identical to `c(1L, 2L, 1L, 2L)`.
+  Differences:
+  `actual[2:3]`:     2 1
+     `expected`: 1 2 1 2
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2: the method's count tables count P5 as Not tested in C-A only
+kind: failure
+message:
+  Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+  Differences:
+    `actual`: 60.0
+  `expected`: 59.0
+  
+  C-A num_sig_da_molecules_first_go
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2: the method's count tables count P5 as Not tested in C-A only
+kind: failure
+message:
+  Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+  Differences:
+    `actual`:  NA
+  `expected`: 1.0
+  
+  C-A num_sig_da_molecules_first_go
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2: the method's count tables count P5 as Not tested in C-A only
+kind: failure
+message:
+  Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+  Differences:
+    `actual`: 60.0
+  `expected`: 59.0
+  
+  C-A num_sig_da_molecules
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2: the method's count tables count P5 as Not tested in C-A only
+kind: failure
+message:
+  Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+  Differences:
+    `actual`:  NA
+  `expected`: 1.0
+  
+  C-A num_sig_da_molecules
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+  Differences:
+    `actual`: 61.0
+  `expected`: 60.0
+  
+  B-A num_sig_da_molecules_first_go
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "B.vs.A=groupB-groupA"), 1, "B-A") at test-kit204-prot-da-not-tested.R:200:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+  Differences:
+    `actual`:  NA
+  `expected`: 1.0
+  
+  B-A num_sig_da_molecules_first_go
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "B.vs.A=groupB-groupA"), 1, "B-A") at test-kit204-prot-da-not-tested.R:200:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+  Differences:
+    `actual`: 61.0
+  `expected`: 60.0
+  
+  B-A num_sig_da_molecules
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "B.vs.A=groupB-groupA"), 1, "B-A") at test-kit204-prot-da-not-tested.R:200:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+  Differences:
+    `actual`:  NA
+  `expected`: 1.0
+  
+  B-A num_sig_da_molecules
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "B.vs.A=groupB-groupA"), 1, "B-A") at test-kit204-prot-da-not-tested.R:200:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+  Differences:
+    `actual`: 61.0
+  `expected`: 59.0
+  
+  C-A num_sig_da_molecules_first_go
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 2, "C-A") at test-kit204-prot-da-not-tested.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+  Differences:
+    `actual`:  NA
+  `expected`: 2.0
+  
+  C-A num_sig_da_molecules_first_go
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 2, "C-A") at test-kit204-prot-da-not-tested.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+  Differences:
+    `actual`: 61.0
+  `expected`: 59.0
+  
+  C-A num_sig_da_molecules
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 2, "C-A") at test-kit204-prot-da-not-tested.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+  Differences:
+    `actual`:  NA
+  `expected`: 2.0
+  
+  C-A num_sig_da_molecules
+trace (first lines):
+      ▆
+   1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 2, "C-A") at test-kit204-prot-da-not-tested.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `lines[5L]` to be identical to `sprintf(k204NotTestedLine, as.integer(n))`.
+  Differences:
+  `actual`:   "Fold-change cutoff: 0.00"                    
+  `expected`: "Not tested (no value in a compared group): 1"
+  
+  N2b summary B-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:205:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:136:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `isTRUE(startsWith(lines[6L], "Fold-change cutoff: "))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  N2b summary B-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:205:5
+   2.   └─testthat::expect_true(...) at test-kit204-prot-da-not-tested.R:137:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `lines[5L]` to be identical to `sprintf(k204NotTestedLine, as.integer(n))`.
+  Differences:
+  `actual`:   "Fold-change cutoff: 0.00"                    
+  `expected`: "Not tested (no value in a compared group): 2"
+  
+  N2b summary C-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:206:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:136:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N2b: KIT-200's protein without any value is counted as Not tested
+kind: failure
+message:
+  Expected `isTRUE(startsWith(lines[6L], "Fold-change cutoff: "))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  N2b summary C-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:206:5
+   2.   └─testthat::expect_true(...) at test-kit204-prot-da-not-tested.R:137:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N3 (i): C-B's every-status barplot draws Not tested; its significant-only plots do not
+kind: failure
+message:
+  Expected `"Not tested" %in% k204Drawn(result$num_sig_da_genes_barplot_with_not_significant)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N5: the tab's summary always shows the Not tested line, from the store and from a list
+kind: failure
+message:
+  Expected `lines[5L]` to be identical to `sprintf(k204NotTestedLine, as.integer(n))`.
+  Differences:
+  `actual`:   "Fold-change cutoff: 0.00"                    
+  `expected`: "Not tested (no value in a compared group): 1"
+  
+  manifest C-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:281:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:136:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N5: the tab's summary always shows the Not tested line, from the store and from a list
+kind: failure
+message:
+  Expected `isTRUE(startsWith(lines[6L], "Fold-change cutoff: "))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  manifest C-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:281:5
+   2.   └─testthat::expect_true(...) at test-kit204-prot-da-not-tested.R:137:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N5: the tab's summary always shows the Not tested line, from the store and from a list
+kind: failure
+message:
+  Expected `lines[5L]` to be identical to `sprintf(k204NotTestedLine, as.integer(n))`.
+  Differences:
+  `actual`:   "Fold-change cutoff: 0.00"                    
+  `expected`: "Not tested (no value in a compared group): 0"
+  
+  manifest B-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:282:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:136:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N5: the tab's summary always shows the Not tested line, from the store and from a list
+kind: failure
+message:
+  Expected `isTRUE(startsWith(lines[6L], "Fold-change cutoff: "))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  manifest B-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:282:5
+   2.   └─testthat::expect_true(...) at test-kit204-prot-da-not-tested.R:137:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N5: the tab's summary always shows the Not tested line, from the store and from a list
+kind: failure
+message:
+  Expected `lines[5L]` to be identical to `sprintf(k204NotTestedLine, as.integer(n))`.
+  Differences:
+  `actual`:   "Fold-change cutoff: 0.00"                    
+  `expected`: "Not tested (no value in a compared group): 1"
+  
+  list C-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:285:5
+   2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:136:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N5: the tab's summary always shows the Not tested line, from the store and from a list
+kind: failure
+message:
+  Expected `isTRUE(startsWith(lines[6L], "Fold-change cutoff: "))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  list C-A
+trace (first lines):
+      ▆
+   1. └─k204ExpectSummaryLine(...) at test-kit204-prot-da-not-tested.R:285:5
+   2.   └─testthat::expect_true(...) at test-kit204-prot-da-not-tested.R:137:9
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N9 and N3 (iii): the published table has a Not tested row; the figure and report do not change
+kind: failure
+message:
+  Expected `k204Count(at("C.vs.A"), "Not tested")` to be identical to 1.
+  Differences:
+    `actual`:  NA
+  `expected`: 1.0
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N6: on complete values the summary is today's five lines with the line at 0
+kind: failure
+message:
+  Expected `k204Summary(fixture, manifest, "B.vs.A")` to be identical to `expected`.
+  Differences:
+  lines(actual)[2:5] vs lines(expected)[2:6]
+    "Significant (q < 0.050): 0"
+    "Up-regulated: 0"
+    "Down-regulated: 0"
+  - "Fold-change cutoff: 0.00"
+  + "Not tested (no value in a compared group): 0"
+  + "Fold-change cutoff: 0.00"
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N7: a display selection saved under the v1 identity is not served
+kind: failure
+message:
+  Expected `counts$total` to be identical to `as.double(nrow(long))`.
+  Differences:
+    `actual`: -1.0
+  `expected`: 60.0
+
+file: test-kit204-prot-da-not-tested.R
+test: KIT-204 N7: a display selection saved under the v1 identity is not served
+kind: failure
+message:
+  Expected `as.numeric(counts$not_tested)` to be identical to 1.
+  Differences:
+    `actual`:  
+  `expected`: 1
+

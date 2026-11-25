@@ -4,13 +4,18 @@
 #' Filters metabolites in *all* assays of a MetaboliteAssayData object.
 #' It removes metabolites that have intensities below a certain percentile threshold
 #' in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
-#' independently for each assay.
+#' independently for each assay. A metabolite is also removed unless at least `metabolites_min_groups` groups
+#' of the design each have a value (not missing) in at least `metabolites_min_values_per_group` of their
+#' samples (in every sample, if the group is smaller); groups named like "pool" are not counted, and
+#' a design without a group column is refused.
 #'
 #' @describeIn metaboliteIntensityFiltering Method for MetaboliteAssayData
 #'
 #' @param theObject A MetaboliteAssayData object.
 #' @param metabolites_intensity_cutoff_percentile See generic definition.
 #' @param metabolites_proportion_of_samples_below_cutoff See generic definition.
+#' @param metabolites_min_values_per_group See generic definition.
+#' @param metabolites_min_groups See generic definition.
 #'
 #' @importFrom dplyr pull select all_of across
 #' @importFrom rlang sym
@@ -21,7 +26,8 @@
 setMethod(
     f = "metaboliteIntensityFiltering",
     signature = "MetaboliteAssayData",
-    definition = function(theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL) {
+    definition = function(theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL,
+                          metabolites_min_values_per_group = NULL, metabolites_min_groups = NULL) {
         # --- Parameter Resolution (Done once) ---
         config_intensity_percentile <- "metabolites_intensity_cutoff_percentile"
         raw_intensity_percentile <- checkParamsObjectFunctionSimplify(
@@ -65,6 +71,26 @@ setMethod(
         }
 
         design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+        # KIT-217 (VAL-173 (2)): the per-group count of present values: values required per group (default 2) and groups
+        # required (default 1), resolved after today's two, then checked against the design's groups (pool groups and
+        # samples without a group not counted; no group column, or only pool groups, refused) before any assay. Both are
+        # written to the object's arguments. A record made before replays with the earlier rule, which reads neither.
+        group_labels_of <- function(sample_cols) NULL
+        count_settings <- list(min_values_per_group = NULL, min_groups = NULL)
+        if (omicsIntensityFilterCountsInForce()) {
+            config_min_values <- "metabolites_min_values_per_group"
+            config_min_groups <- "metabolites_min_groups"
+            raw_min_values <- checkParamsObjectFunctionSimplify(theObject, config_min_values, 2L)
+            raw_min_groups <- checkParamsObjectFunctionSimplify(theObject, config_min_groups, 1L)
+            design_matrix <- theObject@design_matrix
+            group_id <- theObject@group_id
+            has_group_column <- group_id %in% names(design_matrix)
+            count_settings <- omicsIntensityFilterCountSettings(if (has_group_column) design_matrix[[group_id]],
+                raw_min_values, raw_min_groups, group_id, has_group_column)
+            theObject <- updateParamInObject(theObject, config_min_values)
+            theObject <- updateParamInObject(theObject, config_min_groups)
+            group_labels_of <- function(sample_cols) as.character(design_matrix[[group_id]])[match(sample_cols, design_samples)]
+        }
         # Iterate using indices
         filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
             assay_table <- original_assay_list[[i]]
@@ -116,7 +142,10 @@ setMethod(
                 min_metabolite_intensity_threshold = min_metabolite_intensity_threshold,
                 metabolites_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final,
                 metabolite_id_column = metabolite_id_col,
-                sample_columns = sample_cols
+                sample_columns = sample_cols,
+                group_labels = group_labels_of(sample_cols),
+                min_values_per_group = count_settings$min_values_per_group,
+                min_groups = count_settings$min_groups
             )
 
             message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
@@ -356,13 +385,19 @@ setMethod("resolveDuplicateFeatures",
                         dplyr::mutate(
                             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
                         ) %>%
+                        # KIT-258 (VAL-284): the count and the mean of the measured values, neither missing nor zero
+                        dplyr::mutate(
+                            n_measured = length(duplicateResolutionMeasured(dplyr::c_across(dplyr::any_of(sample_cols)))),
+                            avg_measured = duplicateResolutionMeasuredMean(dplyr::c_across(dplyr::any_of(sample_cols)))
+                        ) %>%
                         dplyr::ungroup() %>%
                         dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>%
                         # *** Group by the correct ID column ***
                         dplyr::group_by(!!rlang::sym(id_col)) %>%
-                        dplyr::slice_max(order_by = .data$avg_intensity, n = 1, with_ties = FALSE) %>%
+                        # KIT-258: the most measured row, then the highest mean, then the first
+                        keepDuplicateResolutionRow() %>%
                         dplyr::ungroup() %>%
-                        dplyr::select(-.data$avg_intensity)
+                        dplyr::select(-.data$avg_intensity, -"n_measured", -"avg_measured")
 
                     rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                     if (rows_removed_non_itsd > 0) {

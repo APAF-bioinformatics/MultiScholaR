@@ -1,0 +1,19 @@
+item	n	estimate	p_value	note
+N-r k D+B minus F+B	2	0.5	NA	95% t interval [-5.8531, 6.8531], descriptive
+N-s k D+B minus F+B	2	0.5	NA	95% t interval [-5.8531, 6.8531], descriptive
+N-w k D+B minus F+B	2	0.5	NA	95% t interval [-5.8531, 6.8531], descriptive
+E-r k D+B minus F+B	2	0.5	NA	95% t interval [-5.8531, 6.8531], descriptive
+E-r power D+B minus F+B	2	0.567307692307693	NA	95% t interval [-0.7766, 1.9112], descriptive
+E-r abs_lfc_error D+B minus F+B	2	-0.0763770922432615	NA	95% t interval [-0.3377, 0.1849], descriptive
+E-s k D+B minus F+B	2	0	NA	95% t interval [0.0000, 0.0000], descriptive
+E-s power D+B minus F+B	2	0.0288461538461545	NA	95% t interval [-0.0933, 0.1510], descriptive
+E-s abs_lfc_error D+B minus F+B	2	-0.0181106999285195	NA	95% t interval [-0.1583, 0.1221], descriptive
+E-p k D+B minus F+B	2	1	NA	95% t interval [1.0000, 1.0000], descriptive
+E-p power D+B minus F+B	2	0.413461538461538	NA	95% t interval [-1.6635, 2.4904], descriptive
+E-p abs_lfc_error D+B minus F+B	2	-0.032545455029018	NA	95% t interval [-0.3852, 0.3201], descriptive
+E-g k D+B minus F+B	2	0.5	NA	95% t interval [-5.8531, 6.8531], descriptive
+E-g power D+B minus F+B	2	0.259615384615385	NA	95% t interval [-0.8400, 1.3592], descriptive
+E-g abs_lfc_error D+B minus F+B	2	-0.0999173346314505	NA	95% t interval [-0.5864, 0.3866], descriptive
+E-w k D+B minus F+B	2	0.5	NA	95% t interval [-5.8531, 6.8531], descriptive
+E-w power D+B minus F+B	2	0.105769230769231	NA	95% t interval [-1.2382, 1.4497], descriptive
+E-w abs_lfc_error D+B minus F+B	2	-0.0338479940248665	NA	95% t interval [-0.5212, 0.4535], descriptive

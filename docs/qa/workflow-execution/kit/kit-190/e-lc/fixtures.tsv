@@ -1,0 +1,9 @@
+kind	cell	class	r	grouping	dataset	side	error	n_v	percentage	n_controls	k	share_first	share_planted	share_complete	share_tie_decided	share_one_group	eg_survived	calls	fdp	power	abs_lfc_error	seconds	dropped	refused	any_call	matches_first	matches_oracle	max_abs_dlogfc	jaccard
+e1	E1	lipid	1	group	t11_concentration	base		514	1	5	2	1	0	0.4	1	0	NA	16	1	NA	0.895361837568895	16.825	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	lipid	1	group	t11_concentration	head		514	1	5	2	1	0	0.4	1	0	NA	16	1	NA	0.895361837568895	16.715	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	metab	2	group	t11_concentration	base		514	1	5	2	1	0	0.4	1	0	NA	16	1	NA	0.895361837568895	16.579	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	metab	2	group	t11_concentration	head		514	1	5	2	1	0	0.4	1	0	NA	16	1	NA	0.895361837568895	16.726	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	lipid	3	group	t11_f172	base		514	1	5	2	1	0	0.4	1	0	NA	37	1	NA	2.73266168203997	17.015	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	lipid	3	group	t11_f172	head		514	1	5	2	1	0	0.4	1	0	NA	37	1	NA	2.73266168203997	16.907	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	metab	4	group	t11_f172	base		514	1	5	2	1	0	0.4	1	0	NA	37	1	NA	2.73266168203997	16.774	FALSE	FALSE	TRUE	TRUE	FALSE	0	1
+e1	E1	metab	4	group	t11_f172	head		514	1	5	2	1	0	0.4	1	0	NA	37	1	NA	2.73266168203997	17.024	FALSE	FALSE	TRUE	TRUE	FALSE	0	1

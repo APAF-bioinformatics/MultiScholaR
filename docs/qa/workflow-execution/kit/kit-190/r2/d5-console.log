@@ -1,0 +1,3 @@
+Error in read("base") : object 'omicNormFrozen' not found
+Calls: flatten -> read -> sys.source -> eval -> eval
+Execution halted

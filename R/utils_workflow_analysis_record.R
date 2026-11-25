@@ -340,6 +340,16 @@ readWorkflowShippedDefaults <- function(path = system.file("config", "config.ini
     out
 }
 
+#' Whether an export's source is a state of the head's history (KIT-264): compared by the state's entity, never by its name,
+#' because a later run keeps the name `trx_ruvs` for a new entity. An export without a source entity is not current.
+#' @noRd
+workflowRecordExportIsCurrent <- function(snapshot, export) {
+    entity <- export$source$entity_id
+    if (is.null(entity)) return(FALSE)
+    history <- as.character(unlist(snapshot$state_history))
+    any(vapply(history, function(state) identical(snapshot$states[[state]]$entity_id, entity), logical(1)))
+}
+
 #' One accepted export of the head as a record analysis (KIT-095): its operation, source, parameters with their provenance,
 #' product and the outcomes its omic binding records.
 #' @noRd
@@ -435,6 +445,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             for (name in names(args)) parameters[[length(parameters) + 1L]] <- list(name = name, source = "args",
                 value = encodeWorkflowRecordValue(args[[name]]), provenance = "unknown")
         }
+        parameters <- workflowRecordIntensityFilterEarlier(operation, parameters)
         previous <- record$previous_state
         input <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) snapshot$states[[previous]]$entity_id else NULL
         products <- lapply(unname(record$data$products %||% list()), function(product) {
@@ -529,7 +540,13 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     }
     # KIT-095: a product-only export accepted on the head after the DA (the transcriptomics RUVIII matrix) is listed as an
     # analysis with its parameters and the outcomes its binding records.
-    for (name in names(snapshot$exports)) analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    # KIT-264 (VAL-286): an omic's export stays in the state head after a later normalisation, so it is listed only while its
+    # source state is a state of the head's history (the test `workflowDaResultStatus` applies to the DA). The integration
+    # model's export has its own inputs state and is listed as before.
+    for (name in names(snapshot$exports)) {
+        if (!identical(name, INTEGRATION_MODEL_OPERATION) && !workflowRecordExportIsCurrent(snapshot, snapshot$exports[[name]])) next
+        analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    }
     # KIT-142: an integration store's model analysis carries what the integration adds (inputs, the confirmed match, each
     # setting's status, the model's identity, the saved results, the claim limit); an omic's record is as before.
     if (identical(context$omic_type, "integration") && !is.null(analyses[[INTEGRATION_MODEL_OPERATION]])) {
@@ -640,10 +657,10 @@ validateWorkflowAnalysisRecord <- function(record) {
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
 }
 
-#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
+#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds two rows, `ruv_control_grouping` and `ruv_k_bound`; KIT-205,
+#' VAL-129 (2), adds `enrichment_background`; KIT-202 adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
 #' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
-#' replay, `workflowDaReplayRuleOptions`): for
+#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`; KIT-258 adds `duplicate_resolution_rank`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -670,7 +687,23 @@ workflowReplayRuleMarkers <- list(
     # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
     # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
     # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
-    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"))
+    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"),
+    # KIT-190 (VAL-82): lipidomics and metabolomics legacy RUV choose controls by the ANOVA on the grouping column
+    # ("kept"); records made before chose the first rows ("dropped").
+    ruv_control_grouping = list(option = "MultiScholaR.ruv_control_grouping", current = "kept", earlier = "dropped"),
+    # KIT-190 (VAL-182, VAL-235): the legacy lipidomics and metabolomics Automatic k is bounded by the sample-size cap
+    # ("sample_size"); records made before used the sweep's k unbounded ("none").
+    ruv_k_bound = list(option = "MultiScholaR.ruv_k_bound", current = "sample_size", earlier = "none"),
+    # KIT-217 (VAL-173 (2); owner 2026-11-25): the lipid and metabolite intensity filter counts present values per
+    # group (default: 2 values in at least 1 group; pool groups not counted) and so removes a feature with no value
+    # ("group_counts"); records made before did not count missing values ("not_counted").
+    intensity_filter_missing = list(option = "MultiScholaR.intensity_filter_missing", current = "group_counts",
+        earlier = "not_counted"),
+    # KIT-258 (VAL-254, VAL-284): among the rows of one duplicated id, the most measured row (a value neither missing nor
+    # zero), then the highest mean of its measured values ("measured_then_mean"); records made before ranked by the mean
+    # of the non-missing values alone ("mean").
+    duplicate_resolution_rank = list(option = "MultiScholaR.duplicate_resolution_rank", current = "measured_then_mean",
+        earlier = "mean"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
@@ -698,6 +731,27 @@ workflowDaReplayRuleOptions <- function(model) {
     recorded <- unlist(model$treat_moderation)
     rule <- if (identical(as.character(recorded), marker$current)) marker$current else marker$earlier
     stats::setNames(list(rule), marker$option)
+}
+
+#' The settings the lipid and metabolite intensity filter declares for its per-group count (KIT-217, SD-17): a step
+#' made under the earlier rule (no marker `intensity_filter_missing`) lists them with the value "not applicable:
+#' earlier rule" and a note, in place of any value (the earlier rule read neither), so they are neither missing nor
+#' replayed.
+#' @param operation The step's operation.
+#' @param parameters The step's record parameters.
+#' @return The parameters.
+#' @noRd
+workflowRecordIntensityFilterEarlier <- function(operation, parameters) {
+    names <- switch(operation, lipid_intensity_filter = c("lipids_min_values_per_group", "lipids_min_groups"),
+        metab_intensity_filter = c("metabolites_min_values_per_group", "metabolites_min_groups"), NULL)
+    if (is.null(names) || identical(workflowReplayRule(list(parameters = parameters), "intensity_filter_missing"),
+        workflowReplayRuleMarkers$intensity_filter_missing$current)) return(parameters)
+    parameters <- Filter(function(parameter) identical(parameter$source, "fixed") || !isTRUE(parameter$name %in% names),
+        parameters)
+    c(parameters, lapply(names, function(name) list(name = name, source = "not_applicable",
+        value = encodeWorkflowRecordValue("not applicable: earlier rule"), provenance = "unknown",
+        note = paste("This step was run before the filter counted missing values per group. It is replayed with the rule",
+            "it was run under, which had neither setting."))))
 }
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
@@ -747,7 +801,9 @@ workflowFixedInForce <- function(fixed) {
 workflowReplayParameters <- function(parameters, declared) {
     out <- list()
     for (parameter in parameters) {
-        if (identical(parameter$source, "fixed") || !parameter$name %in% declared) next
+        # KIT-217: a setting shown as not applicable to a step made before (`workflowRecordIntensityFilterEarlier`).
+        if (identical(parameter$source, "fixed") || identical(parameter$source, "not_applicable") ||
+            !parameter$name %in% declared) next
         out[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
     }
     out
@@ -1268,6 +1324,11 @@ workflowRecordReportSources <- list(
     proportion_samples_below_cutoff = list(record = list(c("lipid_intensity_filter", "lipids_proportion_of_samples_below_cutoff"),
         c("metab_intensity_filter", "metabolites_proportion_of_samples_below_cutoff")),
         file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
+    # KIT-217: the lipid and metabolite intensity filter's per-group count (values required per group, groups required).
+    intensity_min_values_per_group = list(record = list(c("lipid_intensity_filter", "lipids_min_values_per_group"),
+        c("metab_intensity_filter", "metabolites_min_values_per_group"))),
+    intensity_min_groups = list(record = list(c("lipid_intensity_filter", "lipids_min_groups"),
+        c("metab_intensity_filter", "metabolites_min_groups"))),
     missing_values_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
     max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
     min_peptidoforms_per_protein = list(record = c("peptide_protein_evidence_filter", "num_peptidoforms_per_protein_thresh"), file = c("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),

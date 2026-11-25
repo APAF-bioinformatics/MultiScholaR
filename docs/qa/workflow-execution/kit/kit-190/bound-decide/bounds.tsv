@@ -1,0 +1,10 @@
+# computed after the decision; descriptive; non-simultaneous one-sided 95 % bounds; decides nothing
+cell	endpoint	n	estimate	upper_bound_95	margin	form
+N-r	any_call difference	100	-0.01	0.0260051309362689	0.1	inverted Tango score test
+N-s	any_call difference	100	-0.02	0.00686957519883799	0.1	inverted Tango score test
+N-w	any_call difference	250	0.004	0.0345045766121007	0.1	inverted Tango score test
+E-r	mean FDP difference	200	-0.0158838210483108	-0.00171640924411511	0.05	paired t
+E-s	mean FDP difference	200	-0.0255092199363631	-0.0123219402882558	0.05	paired t
+E-p	mean FDP difference	300	-0.0929084423802185	-0.0720936677493398	0.05	paired t
+E-g	mean FDP difference	200	-0.0149613956990618	-0.00227609346878618	0.05	paired t
+E-w	mean FDP difference	200	-0.000431048844459008	0.0116487030534858	0.05	paired t

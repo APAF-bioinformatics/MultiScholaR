@@ -1,0 +1,191 @@
+case	moment	field	predicted	observed	verdict	session	utc
+h1a	import	how	(recorded)	the import's completion line logged	recorded	A	2026-11-25T21:49:05Z
+h1a	after_import	modal_open	none	none	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	setup_import	complete	complete	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	design_matrix	pending	pending	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	setup_log_taxon_id	10090	10090	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	setup_log_organism	Mus musculus	Mus musculus	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	notices	~\[warning\] No organism with a taxonomy ID could be matched to the proteins in the search results .* This analysis will use the organism entered in the form: Mus musculus \(taxon 10090\)\. To use another organism, untick 'Mixed species FASTA'	[message] Sample names sanitized for R compatibility. || [warning] No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again. || [message] Copied default config.ini to scripts directory. || [message] Data import successful!	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	notice_success	(recorded)	present	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	notice_primary	(recorded)	absent	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	notice_error	none	none	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	notice_naming_organism	(recorded)	[warning] No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again.	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	setup_log_timestamp	(recorded)	2026-11-25 21:49:05	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	screenshot	(recorded)	g0-h1a-after_import.png	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	w1_count	1	1	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	import_completed	TRUE	TRUE	as predicted	A	2026-11-25T21:49:07Z
+h1a	after_import	import_how	(recorded)	the import's completion line logged	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	error_toast_in_dom	(recorded)	FALSE	recorded	A	2026-11-25T21:49:07Z
+h1a	after_import	import_status_success	(recorded)	TRUE	recorded	A	2026-11-25T21:49:07Z
+h1a	after_wait	modal_open	(recorded)	none	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	setup_import	(recorded)	complete	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	design_matrix	(recorded)	pending	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	setup_log_taxon_id	(recorded)	10090	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	import_status	(recorded)	[OK] Data imported successfully! | Format: diann | Type: peptide	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [warning] No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again. || [message] Copied default config.ini to scripts directory. || [message] Data import successful!	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	notice_success	(recorded)	present	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	notice_primary	(recorded)	absent	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	notice_error	(recorded)	none	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	notice_naming_organism	(recorded)	[warning] No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again.	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	setup_log_timestamp	(recorded)	2026-11-25 21:49:05	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	screenshot	(recorded)	g0-h1a-after_wait.png	recorded	A	2026-11-25T21:49:21Z
+h1a	after_wait	w1_count	1	1	as predicted	A	2026-11-25T21:49:21Z
+h1a	after_wait	import_status_success	(recorded)	TRUE	recorded	A	2026-11-25T21:49:21Z
+h1a	design	modal_open	(recorded)	none	recorded	A	2026-11-25T21:49:26Z
+h1a	design	setup_import	(recorded)	complete	recorded	A	2026-11-25T21:49:26Z
+h1a	design	design_matrix	(recorded)	pending	recorded	A	2026-11-25T21:49:26Z
+h1a	design	later_tabs	(recorded)	all disabled	recorded	A	2026-11-25T21:49:26Z
+h1a	design	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	A	2026-11-25T21:49:26Z
+h1a	design	setup_log_taxon_id	(recorded)	10090	recorded	A	2026-11-25T21:49:26Z
+h1a	design	setup_log_organism	(recorded)	Mus musculus	recorded	A	2026-11-25T21:49:26Z
+h1a	design	mixed_species_selection	(recorded)	absent	recorded	A	2026-11-25T21:49:26Z
+h1a	design	mixed_filter_applied	(recorded)	absent	recorded	A	2026-11-25T21:49:26Z
+h1a	design	import_status	(recorded)	[OK] Data imported successfully! |    |   Format: diann | Type: peptide	recorded	A	2026-11-25T21:49:26Z
+h1a	design	data_summary	(recorded)	Data Summary |    |     Data format: DIANN |     Data type: peptide |     Total rows: 8,989 |     Number of runs: 8 |     Number of protein groups: 400 |     Number of peptides: 1,037 |     Organism: Mus musculus (taxon: 10090 )	recorded	A	2026-11-25T21:49:26Z
+h1a	design	form_taxon_id	(recorded)	10090	recorded	A	2026-11-25T21:49:26Z
+h1a	design	form_organism_name	(recorded)	Mus musculus	recorded	A	2026-11-25T21:49:26Z
+h1a	design	form_mixed_species	(recorded)	TRUE	recorded	A	2026-11-25T21:49:26Z
+h1a	design	form_taxon_disabled	(recorded)	TRUE	recorded	A	2026-11-25T21:49:26Z
+h1a	design	notices	(recorded)	none	recorded	A	2026-11-25T21:49:26Z
+h1a	design	notice_success	(recorded)	absent	recorded	A	2026-11-25T21:49:26Z
+h1a	design	notice_primary	(recorded)	absent	recorded	A	2026-11-25T21:49:26Z
+h1a	design	notice_error	(recorded)	none	recorded	A	2026-11-25T21:49:26Z
+h1a	design	notice_naming_organism	(recorded)	none	recorded	A	2026-11-25T21:49:26Z
+h1a	design	setup_log_timestamp	(recorded)	2026-11-25 21:49:05	recorded	A	2026-11-25T21:49:26Z
+h1a	design	screenshot	(recorded)	g0-h1a-design.png	recorded	A	2026-11-25T21:49:26Z
+h1a	design	w1_count	(recorded)	1	recorded	A	2026-11-25T21:49:26Z
+h1a	design	design_tab_active	TRUE	TRUE	as predicted	A	2026-11-25T21:49:26Z
+h1a	design	data_available	TRUE	TRUE	as predicted	A	2026-11-25T21:49:26Z
+h1a	design	import_status_success	(recorded)	TRUE	recorded	A	2026-11-25T21:49:26Z
+h1b	import	how	(recorded)	an error toast shown	recorded	B	2026-11-25T21:49:39Z
+h1b	after_refusal	modal_open	none	none	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	setup_import	incomplete	incomplete	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	design_matrix	disabled	disabled	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	later_tabs	all disabled	all disabled	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	setup_log_taxon_id	(absent)	(absent)	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	setup_log_organism	(recorded)	(absent)	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	mixed_species_selection	(recorded)	absent	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	mixed_filter_applied	(recorded)	absent	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	import_status	(recorded)		recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	data_summary	(recorded)		recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	form_taxon_id	(recorded)	10090	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	form_organism_name	(recorded)	Mus musculus	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	form_mixed_species	(recorded)	TRUE	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	form_taxon_disabled	(recorded)	TRUE	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [error] Error: The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again.	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	notice_success	absent	absent	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	notice_primary	(recorded)	absent	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	notice_error	~\[error\] Error: The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted\. Nothing was imported\.	[error] Error: The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again.	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	notice_naming_organism	(recorded)	[error] Error: The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again.	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	setup_log_timestamp	(recorded)	(absent)	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	screenshot	(recorded)	g0-h1b-after_refusal.png	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	w1_count	(recorded)	0	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	import_completed	(recorded)	FALSE	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	import_how	(recorded)	an error toast shown	recorded	B	2026-11-25T21:49:42Z
+h1b	after_refusal	error_toast_in_dom	TRUE	TRUE	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_refusal	import_status_success	FALSE	FALSE	as predicted	B	2026-11-25T21:49:42Z
+h1b	after_untick	modal_open	none	none	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	setup_import	complete	complete	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	design_matrix	pending	pending	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	later_tabs	(recorded)	all disabled	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	setup_log_taxon_id	(recorded)	10090	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	setup_log_organism	(recorded)	Mus musculus	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	mixed_species_selection	(recorded)	absent	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	mixed_filter_applied	(recorded)	absent	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	import_status	(recorded)	[OK] Data imported successfully! | Format: diann | Type: peptide	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	form_taxon_id	(recorded)	10090	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	form_organism_name	(recorded)	Mus musculus	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	form_mixed_species	FALSE	FALSE	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	form_taxon_disabled	(recorded)	FALSE	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Copied default config.ini to scripts directory. || [message] Data import successful!	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	notice_success	(recorded)	present	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	notice_primary	(recorded)	absent	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	notice_error	none	none	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	notice_naming_organism	(recorded)	none	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	setup_log_timestamp	(recorded)	2026-11-25 21:49:43	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	screenshot	(recorded)	g0-h1b-after_untick.png	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	w1_count	(recorded)	0	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	import_completed	TRUE	TRUE	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	import_how	(recorded)	the import's completion line logged	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	error_toast_in_dom	(recorded)	FALSE	recorded	B	2026-11-25T21:49:52Z
+h1b	after_untick	design_data_available	TRUE	TRUE	as predicted	B	2026-11-25T21:49:52Z
+h1b	after_untick	import_status_success	(recorded)	TRUE	recorded	B	2026-11-25T21:49:52Z
+h1c	import	how	(recorded)	the import's completion line logged	recorded	C	2026-11-25T21:50:05Z
+h1c	after_import	modal_open	(recorded)	none	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	setup_import	complete	complete	as predicted	C	2026-11-25T21:50:10Z
+h1c	after_import	design_matrix	pending	pending	as predicted	C	2026-11-25T21:50:10Z
+h1c	after_import	later_tabs	(recorded)	all disabled	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	tab_status_all	(recorded)	setup_import=complete design_matrix=pending quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	setup_log_taxon_id	(recorded)	10090	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	setup_log_organism	(recorded)	Mus musculus	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	mixed_species_selection	(recorded)	absent	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	mixed_filter_applied	(recorded)	absent	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	import_status	~^\[OK\] Data imported successfully!	[OK] Data imported successfully! | Format: diann | Type: peptide	as predicted	C	2026-11-25T21:50:10Z
+h1c	after_import	data_summary	(recorded)	Data Summary | Data format: DIANN | Data type: peptide | Total rows: 8,989 | Number of runs: 8 | Number of protein groups: 400 | Number of peptides: 1,037 | Organism: Mus musculus (taxon: 10090 )	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	form_taxon_id	(recorded)	10090	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	form_organism_name	(recorded)	Mus musculus	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	form_mixed_species	(recorded)	FALSE	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	form_taxon_disabled	(recorded)	FALSE	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [message] Copied default config.ini to scripts directory. || [message] Data import successful!	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	notice_success	(recorded)	present	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	notice_primary	(recorded)	absent	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	notice_error	none	none	as predicted	C	2026-11-25T21:50:10Z
+h1c	after_import	notice_naming_organism	(recorded)	none	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	setup_log_timestamp	(recorded)	2026-11-25 21:50:05	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	screenshot	(recorded)	g0-h1c-after_import.png	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	w1_count	(recorded)	0	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	import_completed	TRUE	TRUE	as predicted	C	2026-11-25T21:50:10Z
+h1c	after_import	import_how	(recorded)	the import's completion line logged	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	error_toast_in_dom	(recorded)	FALSE	recorded	C	2026-11-25T21:50:10Z
+h1c	after_import	import_status_success	(recorded)	TRUE	recorded	C	2026-11-25T21:50:10Z
+h1d	import	how	(recorded)	an error toast shown	recorded	D	2026-11-25T21:50:24Z
+h1d	after_refusal	modal_open	none	none	as predicted	D	2026-11-25T21:50:26Z
+h1d	after_refusal	setup_import	incomplete	incomplete	as predicted	D	2026-11-25T21:50:26Z
+h1d	after_refusal	design_matrix	disabled	disabled	as predicted	D	2026-11-25T21:50:26Z
+h1d	after_refusal	later_tabs	(recorded)	all disabled	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	tab_status_all	(recorded)	setup_import=incomplete design_matrix=disabled quality_control=disabled normalization=disabled differential_expression=disabled enrichment_analysis=disabled session_summary=disabled	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	setup_log_taxon_id	(recorded)	(absent)	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	setup_log_organism	(recorded)	(absent)	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	mixed_species_selection	(recorded)	absent	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	mixed_filter_applied	(recorded)	absent	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	import_status	(recorded)		recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	data_summary	(recorded)		recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	form_taxon_id	(recorded)	10090	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	form_organism_name	(recorded)	Mus musculus	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	form_mixed_species	(recorded)	TRUE	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	form_taxon_disabled	(recorded)	TRUE	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	notices	(recorded)	[message] Sample names sanitized for R compatibility. || [error] Error: The import was stopped: none of the proteins in the search results could be found in the FASTA file, so their organisms cannot be counted. Nothing was imported. Check that this is the FASTA file the search used, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again.	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	notice_success	absent	absent	as predicted	D	2026-11-25T21:50:26Z
+h1d	after_refusal	notice_primary	(recorded)	absent	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	notice_error	~\[error\] Error: The import was stopped: none of the proteins in the search results could be found in the FASTA file, so their organisms cannot be counted\. Nothing was imported\. Check that this is the FASTA file the search used	[error] Error: The import was stopped: none of the proteins in the search results could be found in the FASTA file, so their organisms cannot be counted. Nothing was imported. Check that this is the FASTA file the search used, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again.	as predicted	D	2026-11-25T21:50:26Z
+h1d	after_refusal	notice_naming_organism	(recorded)	[error] Error: The import was stopped: none of the proteins in the search results could be found in the FASTA file, so their organisms cannot be counted. Nothing was imported. Check that this is the FASTA file the search used, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again.	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	setup_log_timestamp	(recorded)	(absent)	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	screenshot	(recorded)	g0-h1d-after_refusal.png	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	w1_count	(recorded)	0	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	import_completed	(recorded)	FALSE	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	import_how	(recorded)	an error toast shown	recorded	D	2026-11-25T21:50:26Z
+h1d	after_refusal	error_toast_in_dom	TRUE	TRUE	as predicted	D	2026-11-25T21:50:26Z
+h1d	after_refusal	import_status_success	FALSE	FALSE	as predicted	D	2026-11-25T21:50:26Z

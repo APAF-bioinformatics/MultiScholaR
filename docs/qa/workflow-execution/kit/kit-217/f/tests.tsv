@@ -1,0 +1,13 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-workflow-partitions.R	439	0	0	2	14	299.4	ok
+test-kit217-intensity-filter-missing.R	344	0	0	0	0	78.8	ok
+test-kit172-reopen.R	14	0	0	0	0	25.7	ok
+test-workflow-lipid-declarations.R	259	0	0	0	0	58.6	ok
+test-workflow-metab-declarations.R	259	0	0	0	0	46.7	ok
+test-kit202-intensity-filter-samples.R	163	0	0	0	4	47.3	ok
+test-omics-qc-core.R	115	0	0	0	0	54.6	ok
+test-module-ci-lipid-qc.R	68	0	0	0	9	40	ok
+test-module-ci-metab-qc.R	63	0	0	1	8	35.8	ok
+test-metab-qc-shared.R	23	0	0	0	0	7.5	ok
+test-metab-02t-metabolite-intensity-filtering-characterization.R	14	0	0	0	0	6.7	ok
+test-metab-s4-qc-shared.R	32	0	0	0	2	7.4	ok

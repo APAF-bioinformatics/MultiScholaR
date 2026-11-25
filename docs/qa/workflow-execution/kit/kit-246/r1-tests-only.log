@@ -1,0 +1,56 @@
+integration-record: Loading required package: shiny
+
+Attaching package: 'shiny'
+
+The following objects are masked from 'package:MultiScholaR':
+
+    dataTableOutput, renderDataTable, runTests
+
+......................................................................................................................................123.456....
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-integration-record.R:434:9'): KIT-246: the Methods paragrap
+Expected `grepl("weak factors", methods, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 2. Failure ('test-integration-record.R:435:9'): KIT-246: the Methods paragrap
+Expected `grepl("no practical difference", methods, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 3. Failure ('test-integration-record.R:436:9'): KIT-246: the Methods paragrap
+Expected `grepl(old, methods, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 4. Failure ('test-integration-record.R:434:9'): KIT-246: the Methods paragrap
+Expected `grepl("weak factors", methods, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 5. Failure ('test-integration-record.R:435:9'): KIT-246: the Methods paragrap
+Expected `grepl("no practical difference", methods, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 6. Failure ('test-integration-record.R:436:9'): KIT-246: the Methods paragrap
+Expected `grepl(old, methods, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-integration-record.R pass 139 fail 6 error 0 skip 0 warn 0

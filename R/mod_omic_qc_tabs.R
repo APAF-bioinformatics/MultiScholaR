@@ -98,12 +98,22 @@ mod_omic_qc_intensity_ui <- function(id, config) {
             shiny::h4(texts[["intensity_heading"]]),
             shiny::p(texts[["intensity_help"]]),
             shiny::hr(),
+            # KIT-217 (VAL-173 (2)): the per-group count of missing values (drafts W-1 to W-5), above the two sliders.
+            shiny::h5(texts[["intensity_missing_heading"]]),
+            shiny::numericInput(ns("min_values_per_group"), texts[["intensity_min_values_label"]], value = 2, min = 1,
+                max = 10, step = 1),
+            shiny::helpText(texts[["intensity_min_values_help"]]),
+            shiny::numericInput(ns("min_groups"), texts[["intensity_min_groups_label"]], value = 1, min = 1, max = 10,
+                step = 1),
+            shiny::helpText(texts[["intensity_min_groups_help"]]),
+            shiny::h5(texts[["intensity_low_heading"]]),
             shiny::sliderInput(ns("intensity_cutoff_percentile"), "Intensity Cutoff Percentile (%)", min = 1, max = 50,
                 value = 10, step = 1),
             shiny::helpText("Intensities below this percentile are considered 'low' (default: 10%)"),
             shiny::sliderInput(ns("proportion_below_cutoff"), "Max Proportion of Samples Below Threshold", min = 0.1,
                 max = 1.0, value = 0.5, step = 0.05),
             shiny::helpText(texts[["intensity_proportion_help"]]),
+            shiny::helpText(texts[["intensity_share_help"]]),
             shiny::hr(),
             shiny::div(
                 shiny::actionButton(ns("apply_filter"), "Apply Filter", class = "btn-primary", width = "48%"),
@@ -183,8 +193,12 @@ registerOmicQcIntensity <- function(input, output, session, workflow_data, omic_
             assertOmicQcHeadNotNormalised(binding, workflow_data$state_manager)
             percentile <- input$intensity_cutoff_percentile
             proportion <- input$proportion_below_cutoff
+            # KIT-217: the per-group count's two settings (the inputs always hold a value in the app; 2 and 1 otherwise).
+            min_values_per_group <- input$min_values_per_group %||% 2L
+            min_groups_required <- input$min_groups %||% 1L
             logger::log_info(paste("Applying", binding$feature_noun, "intensity filter: percentile =", percentile,
-                ", proportion =", proportion))
+                ", proportion =", proportion, ", values required per group =", min_values_per_group,
+                ", groups required =", min_groups_required))
             deliver <- function(result, figure) {
                 table <- omicsQcCountsTable(result$value$counts)
                 stats(table)
@@ -197,7 +211,8 @@ registerOmicQcIntensity <- function(input, output, session, workflow_data, omic_
                 shiny::removeNotification(working)
                 shiny::showNotification(sprintf(texts[["intensity_success"]], sum(table$Filtered)), type = "message")
             }
-            runWorkflowOmicsQcAction(binding, workflow_data, omicsIntensityFilterStep(binding, percentile, proportion),
+            runWorkflowOmicsQcAction(binding, workflow_data, omicsIntensityFilterStep(binding, percentile, proportion,
+                min_values_per_group = min_values_per_group, min_groups = min_groups_required),
                 deliver, omicQcDraw(config, omic_type, "2_Intensity_Filtered"),
                 failed = function(error) omicQcManagedFailed(error, working, texts[["intensity_error"]]))
         }, error = function(e) {

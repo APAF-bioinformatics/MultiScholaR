@@ -1,0 +1,37 @@
+input	assay	id	row	n_measured	mean_measured	annotation	equally_measured
+module_ci_lipid	LCMS_Pos	L_DUP	5	4	17.5	Duplicate	TRUE
+module_ci_lipid	LCMS_Pos	L_DUP	6	4	97.5	Duplicate	TRUE
+module_ci_lipid	LCMS_Pos	L_TIE	7	4	50	Tie	TRUE
+module_ci_lipid	LCMS_Pos	L_TIE	8	4	50	Tie	TRUE
+module_ci_lipid	LCMS_Neg	L_DUP	5	4	22.5	Duplicate	TRUE
+module_ci_lipid	LCMS_Neg	L_DUP	6	4	102.5	Duplicate	TRUE
+module_ci_lipid	LCMS_Neg	L_TIE	7	4	55	Tie	TRUE
+module_ci_lipid	LCMS_Neg	L_TIE	8	4	55	Tie	TRUE
+module_ci_metab	LCMS_Pos	M_DUP	5	4	17.5	Duplicate	TRUE
+module_ci_metab	LCMS_Pos	M_DUP	6	4	97.5	Duplicate	TRUE
+module_ci_metab	LCMS_Pos	M_TIE	7	4	50	Tie	TRUE
+module_ci_metab	LCMS_Pos	M_TIE	8	4	50	Tie	TRUE
+module_ci_metab	LCMS_Neg	M_DUP	5	4	22.5	Duplicate	TRUE
+module_ci_metab	LCMS_Neg	M_DUP	6	4	102.5	Duplicate	TRUE
+module_ci_metab	LCMS_Neg	M_TIE	7	4	55	Tie	TRUE
+module_ci_metab	LCMS_Neg	M_TIE	8	4	55	Tie	TRUE
+a2_lipid_canonical	LCMS_Pos	PC 34:1	1	6	70609.833333	PC	TRUE
+a2_lipid_canonical	LCMS_Pos	PC 34:1	11	6	35304.916667	PC	TRUE
+a2_lipid_canonical	LCMS_Pos	PC 34:1	12	6	141219.666667	PC	TRUE
+a2_metab_lc	LCMS_Pos	LC_Pos_Feature_001	1	6	7377.45		TRUE
+a2_metab_lc	LCMS_Pos	LC_Pos_Feature_001	4	6	3688.725		TRUE
+a2_metab_lc	LCMS_Pos	LC_Pos_Feature_001	5	6	14754.9		TRUE
+e1_lipid	LCMS_Pos	1000	1	1	50	A	FALSE
+e1_lipid	LCMS_Pos	1000	2	4	60	B	FALSE
+e1_metab	LCMS_Pos	1000	1	1	50	A	FALSE
+e1_metab	LCMS_Pos	1000	2	4	60	B	FALSE
+e2_lipid	LCMS_Pos	M1	1	4	10	100	TRUE
+e2_lipid	LCMS_Pos	M1	2	4	12	10	TRUE
+e2_metab	LCMS_Pos	M1	1	4	10	100	TRUE
+e2_metab	LCMS_Pos	M1	2	4	12	10	TRUE
+lipid_msdial_dup_code	LCMS_Pos	P001	1	4	150.5	PC 34:1	TRUE
+lipid_msdial_dup_code	LCMS_Pos	P001	2	4	133	TG 52:3	TRUE
+metab_msdial_dup	LCMS_Pos	1	1	4	40500	Glucose	TRUE
+metab_msdial_dup	LCMS_Pos	1	9	4	20250	Glucose	TRUE
+lipid_msdial_dup_import	LCMS_Pos	P001	1	4	150.5	PC 34:1	FALSE
+lipid_msdial_dup_import	LCMS_Pos	P001	2	3	177.333333	TG 52:3	FALSE

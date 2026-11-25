@@ -407,8 +407,10 @@ setGeneric(name="log2TransformPeptideMatrix"
 
 # --- From metabolite_qc.R ---
 
+# KIT-217: the per-group count's two settings, after the existing two (named, optional, NULL by default).
 setGeneric(name="metaboliteIntensityFiltering"
-           , def=function( theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL) {
+           , def=function( theObject, metabolites_intensity_cutoff_percentile = NULL, metabolites_proportion_of_samples_below_cutoff = NULL
+                          , metabolites_min_values_per_group = NULL, metabolites_min_groups = NULL) {
              standardGeneric("metaboliteIntensityFiltering")
            }
            , signature=c("theObject")) # Dispatch only on the object
@@ -523,8 +525,10 @@ setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold"
 
 # --- Lipidomics Generics ---
 
+# KIT-217: the per-group count's two settings, after the existing two (named, optional, NULL by default).
 setGeneric(name="lipidIntensityFiltering"
-           , def=function( theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+           , def=function( theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL
+                          , lipids_min_values_per_group = NULL, lipids_min_groups = NULL) {
              standardGeneric("lipidIntensityFiltering")
            }
            , signature=c("theObject"))

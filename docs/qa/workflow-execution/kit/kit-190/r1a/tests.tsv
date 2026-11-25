@@ -1,0 +1,7 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-ruv-control-anova-grouping.R	32	24	1	0	0	6.5	failed
+test-lipid-12c-ruv-s4-characterization.R	59	0	0	0	0	5.1	ok
+test-metab-02y-get-neg-ctrl-metab-anova-characterization.R	26	0	0	0	0	4.6	ok
+test-workflow-lipid-declarations.R	259	0	0	0	0	29.6	ok
+test-workflow-metab-declarations.R	259	0	0	0	0	29.3	ok
+test-workflow-omics-ruv-complete-controls.R	28	0	0	0	0	7.4	ok
