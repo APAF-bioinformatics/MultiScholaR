@@ -70,6 +70,9 @@
 
 ### Fixes
 
+ * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
+   protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
+   shown twice (KIT-251).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
