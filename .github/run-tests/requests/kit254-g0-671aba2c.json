@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-254 G0: base observation of the lipid/metab correlation Skip after Apply and re-Apply (thresholds, phase 0 managed lifecycle, I, II, E9-E14, controls); staging e0747fc1 + script only, branch kit-254-g0; 1 job, ceiling 90 job-minutes",
+  "label": "KIT-254 G0 base observation 671aba2c (staging e0747fc1 + g0-base-values.R)",
+  "package_commit": "671aba2c910a99868c03aadb032ab202ac1305a8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-254/g0-base-values.R",
+      "args": ["kit254-g0"],
+      "env": {},
+      "out": "kit254-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
