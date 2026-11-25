@@ -1,2 +1,3 @@
 run	commit	purpose	minutes	result
 45617875300	88f60b00	G0: browser-selection.R on base (R/ as staging 63143aa3), stop rule 1	12 (1 job)	phase 0 passed; step 3 box ["S1","S2"]; step 6 one key A_1={S1,S2,S3,S4}; stop rule 1 not met; 23 of 24 predictions held, step5.acted text empty (recorder read the notification before Shiny filled it: instrument, no acceptance value depends on it; recorder fixed for GB)
+45620278822	b45c8779	R1: tests-only commit on base, failing-first	12 (1 job)	E1 (lipid, trx), E2, E3 (lipid, trx) and G3 fail by assertion at the base values (c("S1","S2"); one key S1 to S4); G1, G2, G4 pass (14 passed, 6 failed, 0 errors)
