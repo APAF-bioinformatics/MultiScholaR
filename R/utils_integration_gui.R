@@ -31,6 +31,19 @@ integrationGuiEnabled <- function() {
     isTRUE(getOption("MultiScholaR.integration_gui", TRUE))
 }
 
+#' What KIT-151 d's simulations showed for per-feature scaling, in one passage: the Model tab's help (`help_scaling`)
+#' and the integration record's Methods sentence (`methods_scaling_feature_zscore`) both end with it, so the two cannot
+#' differ (KIT-246; the owner's words, VAL-251 and VAL-293). Numbers recounted from KIT-151 d's z-rows.tsv.
+#' @return A character string.
+#' @noRd
+integrationScalingEvidenceText <- function() {
+    paste("In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this",
+        "recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the",
+        "features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather",
+        "than 12 of 30 simulated data sets. Without missing values the difference could not be told from none (29",
+        "rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")
+}
+
 #' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
 #' wording of (docs/qa/workflow-execution/kit/kit-138/wording.md). The RUV approaches' names are the RUV panel's
 #' (`omicGuiRuvRecordTexts`), so that one approach reads the same everywhere. `%s`/`%d` are filled in the order the
@@ -277,14 +290,10 @@ integrationGuiTexts <- function() {
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
         # KIT-151 (INT-24). KIT-239: the simulated pattern's size and the condition in numbers (KIT-151 d, z-summary.tsv:
         # F2 |r| >= 0.9 in 26 against 12 of 30 with missing values, 29 against 26 without, 30 of 30 at 60 samples). The
-        # last sentence is AUDIT-KIT-239-impl I02's (KIT-246 option (a)): a draft pending the owner's answer.
+        # last sentence decided by the owner (VAL-251). KIT-246 (VAL-293): the evidence passage is shared with the
+        # Methods paragraph (`integrationScalingEvidenceText`).
         help_scaling = paste("Each selected feature is scaled to mean 0 and standard deviation 1, after the features are",
-            "chosen (the choice uses the values as saved). In simulations with 20 samples in which about a fifth of the",
-            "values were missing, mostly low ones, this recovered closely (a correlation of at least 0.9 with the true",
-            "pattern) a pattern carried by a tenth of the features of the two smallest data sets, each changed by about as",
-            "much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing values the",
-            "difference could not be told from none (29 rather than 26 of 30); with 60 samples the pattern was recovered",
-            "closely in 30 of 30 either way."),
+            "chosen (the choice uses the values as saved).", integrationScalingEvidenceText()),
         # KIT-151 (audit SCI-12): what scale_views does.
         param_scale_views = "Divide each data set by its overall standard deviation",
         help_scale_views = paste("Each data set is divided by one number, the standard deviation of all its values, so that",
