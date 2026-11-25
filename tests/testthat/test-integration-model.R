@@ -151,17 +151,22 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     apart <- integrationViewsFromInputs(c(intModelProteomics(disjoint, biological = c("C_1", "C_2", "C_3", "D_1", "D_2")),
         intModelLipidomics(disjoint)))$object
     expect_error(integrationAlignViews(apart, integrationResolveMofaParameters(apart)), class = "integration_no_shared_samples")
-    # The provisional parameters are one table, each row naming what settles it.
+    # The method parameters are one table, each row naming the decision that settled it.
     table <- integrationMofaParameterTable()
     expect_identical(table$parameter, setdiff(integrationMofaParameterNames(), c("input_manifests", "views")))
     expect_true(all(nzchar(table$settled_by)))
-    # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6), the
-    # feature selection (INT-12), the convergence (INT-15; KIT-151) and the input matrix (INT-23; KIT-153).
+    # Decided by the user: the precision (INT-6), the feature selection (INT-12), the convergence (INT-15; KIT-151) and
+    # the input matrix (INT-23; KIT-153); KIT-240 (VAL-221 (4)): the others kept by VAL-221 or the matching rules' rows.
     decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter",
         "scaling", "scale_views")
-    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% c(decided, "training_seeds", "input_matrix")])))
-    # INT-14: several seeds decided; their number is provisional.
-    expect_match(table$settled_by[table$parameter == "training_seeds"], "^INT-14 .*provisional")
+    expect_true(all(grepl("^VAL-221 \\(decided 2026-11-25",
+        table$settled_by[table$parameter %in% c("center_groups", "num_factors", "seed")])))
+    expect_identical(table$settled_by[table$parameter %in% c("technical_replicates", "internal_standards", "missing_samples")],
+        c("INT-2 (decided 2026-11-19: averaged per biological sample)", "INT-3 (decided 2026-11-19: dropped)",
+            "INT-010 (KIT-060 D4, decided 2026-11-17: kept as missing in that data set)"))
+    expect_false(any(grepl("workbook|provisional|may override|awaiting", table$settled_by)))
+    # INT-14: several seeds decided; their number (5) by VAL-221.
+    expect_match(table$settled_by[table$parameter == "training_seeds"], "^INT-14 .*VAL-221 \\(decided 2026-11-25: 5 seeds")
     expect_true(all(grepl("^INT-12 \\(decided", table$settled_by[table$parameter %in% decided[1:3]])))
     expect_identical(table$default[table$parameter %in% decided[1:3]], c("variance_above_trend", "1000", "0.5"))
     expect_true(all(grepl("^INT-15 \\(decided", table$settled_by[table$parameter %in% decided[5:6]])))

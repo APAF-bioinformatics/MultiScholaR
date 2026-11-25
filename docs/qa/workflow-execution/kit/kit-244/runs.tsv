@@ -1,0 +1,11 @@
+run_id	commit	purpose	job_minutes	result
+45583972146	1a9ffe4caa889413bb478ed44d8694e0b04c9f23	G0 base values: (A) at 0.5 and t_hi, B1, B2; origin/kit-225 600dcc6e plus the script (branch kit-244-g0)	17.1	ok; no instrument error; t_hi 0.96361269349912604; stop rules 1, 5, 6 not triggered
+45588177269	ffb90f3a4002aeaf9aef602012092b74879a3fce	R1 failing-first, new file, head only	18.6	ok; 124 passed, 80 failed, all in the E rows at G0 values; every G row passes
+45591340671	ffb90f3a (base) / e4a37f2e95398008e87545444f3241a697f88329 (head)	R2 59 files, 4 shards a side, check; env DUMP and TRX_MANIFEST_NOTE both sides	506.5	ok; 57 same, new file fixed (204/0), test-prot-norm-core.R one new failure = body-digest block, one element (runDIAReferenceLimpaNormalisationPassThrough fe852d7a... -> e991f0d2...); check identical (0/3/3 both)
+45605539062	7327607f (base, staging) / 7daada7511ffcf1a358106875e86e40b9b876e45 (head, merge incl. re-pin 8fa690d0)	R3 re-pin proof (VAL-246) and post-merge check: 8 files, 2 shards a side, check; env as R2 both sides	208.7	ok; 7 same (test-prot-norm-core.R 1548/306 both, body-digest block passes on both, dump: 20 of 20 equal the pinned values), new file only-on-head 204/0; check identical (0/3/3 both)
+45583883455	1a9ffe4c	Module CI started by the push of kit-244-g0 (not requested; audit I11)	168.0	failure: staging transcriptomics list only (MCI-030.1, -031.1, -032.1)
+45586870712	1cbbd9db	Module CI, push of kit-244-g0 (records)	9.8	success
+45588086719	ffb90f3a	Module CI, push of kit-244 (tests only)	158.1	failure: staging transcriptomics list only
+45591240654	e4a37f2e	Module CI, push of kit-244 (fix)	133.5	failure: staging transcriptomics list only
+45605439697	7daada75	Module CI, push of kit-244 (merge of staging 7327607f)	247.8	failure: staging transcriptomics list only; e2e impacted (proteomics-dia-limpa) lane passed
+45615948293	7c73162f	Module CI, push of kit-244 (records)	10.4	success

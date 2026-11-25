@@ -1,0 +1,6 @@
+input	assay	id	base_row	head_row
+e1_lipid	LCMS_Pos	1000	1	2
+e1_metab	LCMS_Pos	1000	1	2
+e2_lipid	LCMS_Pos	M1	1	2
+e2_metab	LCMS_Pos	M1	1	2
+lipid_msdial_dup_code	LCMS_Pos	P001	2	1

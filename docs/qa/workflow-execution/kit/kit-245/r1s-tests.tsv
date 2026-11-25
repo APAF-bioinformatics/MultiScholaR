@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit245-github-push-safety.R	13	18	0	0	0	7.8	failed
+test-github-management-direct-shared.R	21	0	0	0	3	7.1	ok
