@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-216 control (head; ticket 6, VAL-174's form) at staging 75acd421: dumps of W1, W113, W108 and the prot_dia lane, 2 repeat(s) in separate processes; ceiling 180 job-minutes",
+  "label": "KIT-216 control head 0b6544fe",
+  "package_commit": "0b6544febf063d2fb82f6dab43ef544bf561f0ea",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-216/control-dumps.R",
+      "args": [
+        "head",
+        "2"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-216/control",
+      "out_pattern": "\\.(R|json|log)$",
+      "timeout_minutes": 170
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
