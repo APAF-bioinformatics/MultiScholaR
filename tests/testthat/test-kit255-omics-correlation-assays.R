@@ -286,7 +286,7 @@ for (class in c("lipid", "metab")) {
 # ---- G rows ----
 
 for (class in c("lipid", "metab")) {
-    test_that(paste("KIT-255 G1, G2, G3, G5, G6:", class, "failing everywhere, nowhere, one assay, twice, no cascade"), {
+    test_that(paste("KIT-255 G1, G2, G3, G5:", class, "failing everywhere, nowhere, one assay, twice, no cascade"), {
         input <- kit172Object(kit255Values(), class)
         # G1: a sample failing in every assay leaves the design and every assay; no args entry
         out <- kit255Filter(input, class, kit255Pairs(failing = list(LCMS_Pos = kit255S, LCMS_Neg = kit255S)))
@@ -304,7 +304,11 @@ for (class in c("lipid", "metab")) {
         # G5: applied twice, the second state is the first
         first <- kit255Filter(input, class, kit255Pairs())
         expect_identical(kit255Filter(first, class, kit255Pairs()), first)
-        # G6: A_1 fails in LCMS_Pos only; A_2 passes in LCMS_Neg only through A_1: no cascade, one press or two
+    })
+
+    test_that(paste("KIT-255 G6:", class, "A_1 failing in LCMS_Pos only leaves the design as it was, one press or two (no cascade)"), {
+        input <- kit172Object(kit255Values(), class)
+        # A_1 fails in LCMS_Pos only; A_2 passes in LCMS_Neg only through A_1: no cascade, one press or two
         cascade <- kit255Pairs(failing = list(LCMS_Pos = "A_1"))
         neg <- cascade$LCMS_Neg
         in_a <- startsWith(neg$Run.x, "A_")
@@ -321,7 +325,7 @@ for (class in c("lipid", "metab")) {
         set.seed(255004L)
         for (round in 1:12) {
             assays <- c("LCMS_Pos", "LCMS_Neg", "GCMS")[seq_len(sample(2:3, 1L))]
-            values <- stats::setNames(lapply(assays, function(a) kit172Values(255100L + round, missing = FALSE, n = 40L, n_itsd = 0L)$values), assays)
+            values <- stats::setNames(lapply(assays, function(a) kit172Values(255100L + round, missing = FALSE, n = 45L, n_itsd = 5L)$values), assays)
             input <- kit172Object(values, class)
             t <- sample(c(0.3, 0.5, 0.7), 1L)
             pairs <- stats::setNames(lapply(assays, function(a) {
@@ -371,7 +375,7 @@ test_that("KIT-255 E24: a corrected view with a blank run has no removed factors
     runs <- c("R1", "R2", "R3", "R4", "R5")
     u <- data.frame(feature_id = sprintf("F%d", 1:6), matrix(stats::rnorm(30), 6, dimnames = list(NULL, runs)), check.names = FALSE)
     v <- u
-    v[2:7] <- v[2:7] + matrix(stats::rnorm(5), 6, 5, byrow = TRUE)
+    v[2:6] <- v[2:6] + matrix(stats::rnorm(5), 6, 5, byrow = TRUE)
     u$R3 <- NA_real_
     v$R3 <- NA_real_
     out <- integrationInputRemovedFactors(u, v, 1L, runs)
@@ -713,7 +717,7 @@ for (class in c("lipid", "metab")) {
         step <- Filter(function(s) identical(s$operation, paste0(prefix, "_pearson_selection")), record$steps)[[1L]]
         marker <- Filter(function(p) identical(p$name, "correlation_exclusion"), step$parameters)
         expect_length(marker, 1L)
-        expect_identical(marker[[1L]]$source, "fixed")
+        expect_identical(unlist(lapply(marker, function(p) p$source)), "fixed")
         expect_identical(workflowReplayRule(step, "correlation_exclusion"), "within_assay")
         # E14
         excluded <- step$outcomes$correlation_excluded_per_assay
