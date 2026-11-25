@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-190 I01 failing-first: tests-only commit 5185b830 (T9 iv), after merging staging 828dd105 and the D5 re-dump; new file only",
+  "label": "KIT-190 I01 failing-first 5185b830",
+  "package_commit": "5185b830a75c9fc6343b15a5d8b26513e09257e4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
