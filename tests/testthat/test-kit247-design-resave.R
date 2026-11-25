@@ -381,12 +381,18 @@ test_that("KIT-247 E22 (R1-03): a re-save that changes only a batch or factor va
 test_that("KIT-247 E13 (OD-2 (a)): lipidomics, Reset after a Quality Control Revert below the run's start brings nothing back", {
     out <- kit247Lane("lipid_canonical", "correlation", function(api, probe) {
         api$set(stats::setNames(list("qc"), api$tabs))
-        kit247Click(api, "qc-intensity-revert_filter")
+        # Each Revert selects the state before the head (registerOmicQcRevertObserver): pressed until the head is the
+        # design state, below the run's start (R1 run 45604461406: one press only reached lipid_normalized).
+        for (i in seq_len(15L)) {
+            if (identical(probe$head(), "lipid_raw_data_s4")) break
+            kit247Click(api, "qc-intensity-revert_filter")
+        }
         reverted <- list(history = probe$history(), head = probe$head())
         probe$clear_notes()
         kit247Reset(api, probe$lane)
         list(reverted = reverted, history = probe$history(), head = probe$head(), notes = probe$notes())
     })
+    testthat::expect_identical(out$reverted$head, "lipid_raw_data_s4")
     testthat::expect_false(any(grepl("_reset$", out$history)))
     testthat::expect_identical(out$head, out$reverted$head)
     testthat::expect_true(any(grepl("no longer current", out$notes, fixed = TRUE)))
