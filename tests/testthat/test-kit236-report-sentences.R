@@ -18,7 +18,7 @@ k236Spec <- list(
     DIANN_limpa = list(dir = "proteomics", file = "DIANN_limpa_report.rmd", omic = "proteomics",
         method = "FormatMethodDetails"))
 k236Omics <- c("lipid", "metab")
-k236Prot <- c("LFQ", "TMT", "DIANN", "DIANN_limpa")
+k236ProtNames <- c("LFQ", "TMT", "DIANN", "DIANN_limpa")
 
 #' A template file: the package's (head) or the stored base copy
 k236Path <- function(name, side = "head") {
@@ -496,8 +496,10 @@ test_that("KIT-236 G1: the Methods paragraphs outside section 1 print the base t
             # The log2 sentence (KIT-172, the owner's wording pass SUM-7) is unchanged; only the zeros sentence after it went.
             head_log <- k236Norm(k236Paragraph(head, "Data Preprocessing and Normalization"))
             base_log <- k236Norm(k236Paragraph(base, "Data Preprocessing and Normalization"))
-            expect_identical(head_log, k236Norm(sub(paste("Missing values (zeros or non-detects) were coded as NA to",
-                "distinguish true absence from missing measurements."), "", base_log, fixed = TRUE)), info = info)
+            zeros <- paste("Missing values (zeros or non-detects) were coded as NA to distinguish true absence from missing",
+                "measurements.")
+            expect_identical(k236Norm(sub(zeros, "", head_log, fixed = TRUE)), k236Norm(sub(zeros, "", base_log, fixed = TRUE)),
+                info = info)
         }
     }
 })
@@ -523,7 +525,7 @@ k236ProtContrasts <- list(c("groupKO-groupWT", "KO_vs_WT"))
 
 test_that("KIT-236 B1: the proteomics sample details count the declared technical replicates", {
     shared <- c("KO_1", "KO_1", "KO_3", "WT_1", "WT_1", "WT_3")
-    for (name in k236Prot) {
+    for (name in k236ProtNames) {
         got <- k236Prot(name, design = k236Design(tech = shared))
         expect_false(k236Has(got$sample, "with no technical replicates"), info = name)
         expect_true(k236Has(got$sample, paste("The design table lists 6 measured runs from 4 biological samples; 2 biological",
@@ -533,14 +535,14 @@ test_that("KIT-236 B1: the proteomics sample details count the declared technica
 
 test_that("KIT-236 W4: the proteomics 'none' normalisation sentence waits for KIT-242 and prints today's text", {
     steps <- list(list(order = 1L, operation = "normalization-ruv", parameters = list(k236Param("norm_method", "none"))))
-    for (name in k236Prot) {
+    for (name in k236ProtNames) {
         got <- k236Prot(name, record = k236Record(NULL, steps = steps, contrasts = k236ProtContrasts))
         expect_true(k236Has(got$method, "'none' method from the 'limma' R package"), info = name)
     }
 })
 
 test_that("KIT-236 B3: the proteomics FDR sentence names a Benjamini-Hochberg comparison from the record", {
-    for (name in k236Prot) {
+    for (name in k236ProtNames) {
         planted <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts, fdr = "BH"))
         expect_true(k236Has(planted$de, paste("except for KO_vs_WT, where q-values could not be computed and",
             "Benjamini-Hochberg adjusted p-values were used instead.")), info = name)
