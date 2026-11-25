@@ -30,3 +30,11 @@ after a Skip with no Apply, no block at all.
 - The operation name `pearson-skip` appears to readers of the study parameters and the record. A plainer reader's label
   (for example "Correlation filter skipped") would need a step label, which this ticket does not add.
 - Parity (R1-04): lipidomics and metabolomics skip steps still print nothing in the study parameters (KIT-254).
+- The fixed constant prints as 'skipped' (no reader's label), in the study parameters and in the supplement, beside the
+  internal codes `correlation_filtered` and `pearson-skip` (AUDIT-KIT-248-impl I09). The six reports (before and after
+  KIT-236) print nothing for the step, as for a proteomics Apply.
+- Read this NEWS bullet together with KIT-254's (AUDIT-KIT-248-impl I13): proteomics replays an older record whose
+  outcome says skipped as the skip and says nothing (VAL-238); lipidomics and metabolomics replay as recorded with a
+  statement of the samples left out (VAL-247). Consider "Analysis records made by the development builds" in place of
+  "Records made before this version" in the last sentence ('before this version' can be read as covering `main`,
+  which has no record).

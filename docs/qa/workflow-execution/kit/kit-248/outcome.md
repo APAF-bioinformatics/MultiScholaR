@@ -238,8 +238,12 @@ job-minutes. **Every failure is at its predicted value; G1, G2 and E10b pass.**
 
 ### R2 (run 45649121588; base 2630bf57, head 29072595; 80 files, 4 shards per side, check): observed
 
-`r2/compare.tsv`, `r2/check-compare.txt`, `r2/tests*.tsv`; 793.4 job-minutes (over the ticket's R2 row ceiling of 600;
-the scope recounted at 828dd105 is 80 files, about twice the files the ceiling was sized for).
+`r2/compare.tsv`, `r2/check-compare.txt`, `r2/tests*.tsv`; 793.4 job-minutes against the ticket's R2 row ceiling of 600
+(+193.4 min, 12.9 core-hours over the row). Cause (AUDIT-KIT-248-impl I05): the files took about 340 test-minutes per
+side (344.0 base, 336.2 head) against the 3 x 70 = 210 the row allows, before about 10 minutes of library install per
+shard; and the run was sent at 4 shards a side without re-declaring the ceiling. The scope went from 73 files (G0's step
+0 at 16112917) to 80 (79 + the new file at 828dd105), not double. Ticket total 854.9 job-minutes = 57.0 of 110.0
+core-hours.
 - 76 files `same`.
 - `test-kit248-correlation-skip-record.R`: fixed, 206 passed, 0 failed (every E and G row passes on head).
 - `test-workflow-operation-registry.R`: message-changed. The declared `pearson-skip` lines of both exact lists are
@@ -248,18 +252,23 @@ the scope recounted at 828dd105 is 80 files, about twice the files the ceiling w
   three loops over the registry (the new operation).
 - `test-workflow-partitions.R`: count-changed, passed 95 -> 96 (its loop over every operation; no failure).
 - **`test-prot-norm-core.R`: message-changed (not predicted).** KIT-111 W1 (a) and W2 compare each click's capture with
-  frozen digests (`tests/testthat/test-prot-norm-core.R:505-517`, frozen values from `:559`, `dia_correlation_skip` at
-  `:718`). Those frozen values already fail on runners on base and head (laptop-recorded); on head the
-  `dia_correlation_skip` provenance digest and one record digest (and the provenance digests of the later cases on the
-  same owner) take new values (`r2/prot-norm-core-w1-*.txt`, `-w2-*.txt`). This is the intended change (the Skip's
-  step is now `pearson-skip`) reaching a stored reference the ticket did not declare.
+  frozen digests (`tests/testthat/test-prot-norm-core.R:505-519`; frozen values from `:569`). Counts 1548/306 on both
+  sides. Exactly 12 messages change, six per test: the `provenance` and `record` of `dia_correlation_skip`,
+  `dia_normalization_refused` and `dia_normalization_retry` (`:732-733`, `:766-767`, `:800-801`). Provenance moves
+  from 4aac9383… to dcfdf833… and record from a14c1ee3… to 6844e105…, the same in process and through the worker.
+  Both digests cover the whole provenance map and every record step, and the correlation step stays in the history
+  through the refused and retried normalisation, so the later cases carry the Skip's new entry. Every other field
+  fails identically on both sides or passes on both. These six values already fail on runners and wait for the
+  end-of-project re-record (KIT-187, VAL-104). This is the intended change (the sequence is case (A): the step is now
+  `pearson-skip`) and nothing else (AUDIT-KIT-248-impl-20261126 I01).
+  No states, values, files, products, tab fields or calls move.
 - R CMD check: identical on both sides (0 errors, 3 warnings, 3 notes; nothing only on head).
 
 **Stop rule 3 applies** ("any file other than A3's moving: stop and report"): `test-prot-norm-core.R` (frozen KIT-111
 W1/W2 digests) and, benignly, `test-workflow-partitions.R` (+1 passed) moved beyond A3's declared pair. Work stopped
-here; no correction run was sent. Decision needed (owner, by file, as VAL-246 did for the same file): whether the
-`dia_correlation_skip` and the following cases' provenance and record digests in `test-prot-norm-core.R` may be
-re-pinned from a runner dump; the partitions count change needs no decision but is recorded.
+here; no correction run was sent. Settled by the implementation audit (I01): not re-pinned; recorded by the coordinator as waiting for the
+end-of-project re-record (VAL-<n>, applying VAL-104). The coordinator writes the ledger row at landing. The partitions
+count change is a mechanical consequence of the declared registration and needs no decision.
 
 ## For the change report (draft; final after the implementation audit)
 
@@ -277,16 +286,66 @@ re-pinned from a runner dump; the partitions count change needs no decision but 
   registration); `R/utils_workflow_analysis_record.R` (the mapping before the entry lookup and the `pearson-skip` branch).
 - **What changed in results.** No live result. The record and the study parameters now state the skip
   ('[n. correlation_filtered: pearson-skip]', 'skipped [fixed] = TRUE', no threshold); a replay keeps every sample and
-  its DA equals the live one (R2: E1 to E13 pass on head, including limpa's covariates and DA and KIT-244's second-press
-  sequence, E10). Records made before the fix replay as the skips they were (E9, E13).
+  its DA equals the live one (R2: E3 on label-free, TMT and DIA (iq); E6 on DIA with limpa, with its RUV covariates);
+  on DIA with limpa's second press the replayed table equals the live one (E10, in process and through the worker). Records made before the fix replay as the skips they were (E9, E13).
 - **Evidence and limits.** Runs G0 45592410449, G0b 45597013061, R1 45645244865, R2 45649121588. Synthetic "small"
   recipe (64 proteins x 12 samples); one sample removed at t_hi; no real data; Linux runners only.
 - **Parity (R1-04).** Lipidomics and metabolomics skip steps still print nothing in the study parameters (KIT-254).
+- **Limits.** (1) A record made on DIA with limpa by "press, Apply, press again, Skip" on a build before KIT-244
+  (staging before 2026-11-26) holds the filtered table under a step that says skipped; it now replays on every
+  sample, so its replay differs from that run's numbers (none in the programme, VAL-264). (2) A record file written
+  before the record stated outcomes (KIT-038, 2026-10-19) and not saved since replays an Apply then Skip as the Apply
+  and refuses a Skip alone, as before. (3) A Skip whose commit fails leaves its step entry pending (as for every step).
+  (4) Only the Skip writes `outcomes.skipped` on `correlation_filtered` (`diaCorrelationCommit`,
+  `finalizeProtNormCorrelationWorkflowState`, and the replay's own skip); no Apply commit carries it, so OD-1 (a)
+  cannot take a genuine Apply for a skip (AUDIT-KIT-248-impl I06).
+- **Replay beside lipidomics and metabolomics (KIT-254).** Both reproduce the run that was made (VAL-173 (1)):
+  proteomics replays an older Apply-then-Skip record as the skip, because the run used every sample, and says nothing
+  (it reinterprets an older record whose outcome says skipped, as VAL-238 decided); lipidomics and metabolomics replay
+  such a record as recorded, because the run used the filtered table, and the replay says which samples it left out
+  (VAL-247).
+- **Stored references.** Six KIT-111 values of `tests/testthat/test-prot-norm-core.R` wait for the end-of-project
+  re-record (VAL-<n>).
 - **Overlap.** KIT-257 (branch `kit-257`, not merged; AUDIT-KIT-257-impl I01) changes which files a DIA-with-limpa second
   press removes; this ticket's E10/E10b press twice and assert the store and the record, not those files.
 
 ## Not checked (implementation)
 
-- The full suite (the merge train's); `test-prot-norm-core.R` re-pinned values (awaiting the decision).
+- The full suite (the merge train's).
+- The clear of a stale pending Apply (an Apply that fails, or the same threshold applied twice, then Skip): by
+  reading the Skip's entry is `pearson-skip` with no `preceded_by`. No test leaves an Apply pending before a Skip, so
+  removing the clear (`R/utils_workflow_dia_products.R:1836`) would fail no test. An E11b row is not added now
+  (AUDIT-KIT-248-impl I04).
 - The supplement's rendering of a `pearson-skip` step; the GUI observers themselves (runners called directly).
 - KIT-257's merged code with this ticket; Windows; real data.
+
+## Implementation audit (AUDIT-KIT-248-impl-20261126): ready for a merge train
+
+No code or test repair; the correction pass is not needed. Records repaired in this commit: I02, I04, I05, I06, I07; I09
+and I13 in `wording.md`.
+
+### The merge train's scope and predictions (I03)
+
+- Resolution: `runDIAReferenceCorrelation` inside KIT-257's `withProtNormRemovedFiles(removed, { ... })` wrapper, with
+  KIT-248's commit block (the register's exact text); NEWS and ledger appends keep both, staging's first.
+- Scope: R2's 80 files on the resolved tree, plus `test-kit257-norm-own-files.R`, plus R CMD check (or the train's full
+  suite). **limpa and mixOmics must be installed in the run**, else E6, E10, E10b, the limpa half of E11 and
+  `test-kit244-limpa-pass-through.R` skip (an instrument defect under VAL-54).
+- `test-kit248-correlation-skip-record.R`: only on head, 206 passed, 0 failed, 0 skipped.
+- `test-prot-norm-core.R`: 1548/306 on both sides; message-changed at exactly the 12 labels of I01 (provenance
+  4aac9383… to dcfdf833…, record a14c1ee3… to 6844e105…); on a base holding KIT-257 the `files` labels of refused and
+  retry carry KIT-257's values on both sides.
+- `test-workflow-operation-registry.R`: 2 failures on both sides, each only the `integration_mofa_model` difference;
+  passed 1095 -> 1099 (labels loop 354 -> 356, defaults loop 264 -> 265, facts loop 206 -> 207).
+- `test-workflow-partitions.R`: passed 439 -> 440.
+- Every other file the same; check identical.
+
+### Findings routed to the coordinator (not this ticket's repairs)
+
+- I10: `integration_mofa_model` is missing from both stored registry lists on staging (pre-existing, identical on both
+  sides in every recent run; no row or ticket routes it).
+- I11: line citations drifted by one after KIT-244's re-pin (8fa690d0): KIT-257's records cite the `files` values at
+  `:767`, `:801`, now `:768`, `:802` (the old lines are the `record` values KIT-248 moves); plan section 11's KIT-187 row
+  has the same drift.
+- I12: KIT-236's proteomics reports never print the correlation filter's k-of-n or a step for it (hyphenated proteomics
+  operation names do not match its rules); for KIT-236.
