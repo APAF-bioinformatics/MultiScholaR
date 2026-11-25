@@ -325,7 +325,9 @@ kit235Capture <- function(base_dir) {
 }
 assign("kit235Capture", kit235Capture, envir = .GlobalEnv)
 trace_ok <- tryCatch({
-    trace("guiEntryArtifacts", tracer = quote(kit235Capture(base_dir)), where = runLane, print = FALSE)
+    # VAL-54 instrument fix 1 (run 45525539989): the tracer's frame does not reach the global environment, so the
+    # capture function is embedded in the call as an object, not looked up by name.
+    trace("guiEntryArtifacts", tracer = bquote(.(kit235Capture)(base_dir)), where = runLane, print = FALSE)
     TRUE
 }, error = function(e) { say("trace failed: ", conditionMessage(e)); FALSE })
 if (!trace_ok) {
