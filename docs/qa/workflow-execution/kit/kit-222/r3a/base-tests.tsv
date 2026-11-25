@@ -1,0 +1,37 @@
+test	nb	failed	skipped	error	warning
+KIT-222 E1: 'Use first selected sample's replicate' on A_1, B_1, A_2, B_2 keeps A and B apart	3	1	FALSE	FALSE	0
+KIT-222 E2: 'Specify replicate number' B=2, C=3, A=1 on sorted rows keeps three samples	4	1	FALSE	FALSE	0
+KIT-222 E3: the 100-sample corpus marked with 'Specify replicate number' gives 100 samples	102	2	FALSE	FALSE	0
+KIT-222 E3b: summing the corpus's technical replicates adds only each sample's own two runs	194	3	FALSE	FALSE	0
+KIT-222 E3c (G): the 24-run corpus gives 12 samples on base and on the fix	13	0	FALSE	FALSE	0
+KIT-222 E4: 'Use lowest replicate number' with three interleaved runs keeps B and C apart	4	1	FALSE	FALSE	0
+KIT-222 E7: the lipidomics, metabolomics and transcriptomics builders keep A and B apart	6	3	FALSE	FALSE	0
+KIT-222 E7: the proteomics builder keeps A and B apart	2	1	FALSE	FALSE	0
+KIT-222 E7: the proteomics builder refuses a number another sample holds with the shared text	4	2	FALSE	FALSE	0
+KIT-222 E7: the proteomics workbook applet keeps A and B apart	3	2	FALSE	FALSE	0
+KIT-222 consumers: transcriptomics sums only each sample's own runs	4	2	FALSE	FALSE	0
+KIT-222 consumers: the DA model's unit (the lipid fit's block) keeps A and B apart	4	1	FALSE	FALSE	0
+KIT-222 consumers: RUV-III's replicate sets keep A and B apart	4	1	FALSE	FALSE	0
+KIT-222 consumers: the integration averages each sample's own runs and pairs each name with one sample	7	3	FALSE	FALSE	1
+KIT-222 E5: a typed number held by another marked sample is refused in 'Specify replicate number'	5	4	FALSE	FALSE	0
+KIT-222 E6: re-marking only some of a sample's runs is refused	7	6	FALSE	FALSE	0
+KIT-222 E14: 'Specify replicate number' A=2, then 'Use lowest replicate number' on B is refused	7	3	FALSE	FALSE	0
+KIT-222 E15: 'Specify replicate number' A=2, then B=2: two samples, A shown as 1	3	1	FALSE	FALSE	0
+KIT-222 E16: re-assigning a marked run to another group clears its mark; the save refuses the shared number	4	2	FALSE	FALSE	0
+KIT-222 E16b: the proteomics builder's re-assignment clears the mark; the proteomics save refuses	2	2	FALSE	FALSE	0
+KIT-222 E8: the shared save refuses a design whose key holds two marking actions	1	1	FALSE	FALSE	0
+KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared number	3	3	FALSE	FALSE	0
+KIT-222 E9: the proteomics checkpoint (builder commit and import) refuses D1 and D2	4	4	FALSE	FALSE	0
+KIT-222 E10: the lipid import refuses a design file carrying D1 or D2	2	2	FALSE	FALSE	0
+KIT-222 E11: the consumers refuse a merged design; the display opts out	8	7	FALSE	FALSE	0
+KIT-222 E11: peptide imputation refuses a merged design	1	1	FALSE	FALSE	0
+KIT-222 G1: merge-free designs are byte-identical to base (exhaustive at 2 and 3 samples, 200 random at 50)	1	0	FALSE	FALSE	0
+KIT-222 G4: duplicate-injection proteomics against single-run transcriptomics pairs six of six	14	0	FALSE	FALSE	1
+KIT-222 G5: the peptide replicate filter's grouping is unchanged on a merge-free design	2	0	FALSE	FALSE	0
+KIT-222 E12b: opening a lipid session file whose design carries D1 names the key	2	1	FALSE	FALSE	0
+KIT-222 E12 (open check): a peptide checkpoint's design with D1 is named; a design without marks is not	3	3	FALSE	FALSE	0
+KIT-222 E13 (mechanism): inside the replay the refusal is recorded, base's block returned, and stated	5	3	FALSE	FALSE	0
+KIT-222 G6: every sequence of two edits on five runs keeps one marking action per biological sample	1	1	FALSE	FALSE	0
+KIT-222 E12a: adopting a proteomics native archive whose design carries D1 names the key	2	1	FALSE	FALSE	0
+KIT-222 E12d: opening a peptide checkpoint whose design carries D1 names the key	2	1	FALSE	FALSE	0
+KIT-222 G7: the proteomics edit leaves the replicate column's type as base did	3	0	FALSE	FALSE	0

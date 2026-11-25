@@ -1,0 +1,3 @@
+side	explored	depth	violation
+base	240	2	lowest(r1,r2) then lowest(r1,r3)
+head	140910	3	none

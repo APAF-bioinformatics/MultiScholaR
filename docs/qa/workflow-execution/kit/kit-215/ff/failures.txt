@@ -1,0 +1,36 @@
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T2: the tab shows the GO list as not tested, with its reason
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Showing 0 up-regulated GO terms
+  
+  Results displayed in table below.
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7b: an error in a g:Profiler comparison's processing refuses the run
+kind: failure
+message:
+  Expected `conditionMessage(project$error)` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "The enrichment test of comparison B_vs_A stopped with an error, so the run was not completed: In argument: `gene_name = stripEnrichmentIdSuffix(.data[[\"gene_name\"]])`.."
+  + "The enrichment test of comparison B_vs_A stopped with an error, so the run was not completed: k215 forced strip error."
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T11: a GO direction with no list says so in the summary and the download
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Showing 0 down-regulated GO terms
+  
+  Results displayed in table below.
+

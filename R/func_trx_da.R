@@ -89,9 +89,12 @@ trxDaContrasts <- function(ruvs_counts, pdata, contrast_entries) {
 #' @param gene_id_column,annotation_id_column The count table's gene ID and gene name columns.
 #' @return A list: `feature_meta` (GeneID, GeneName; GeneName falls back to GeneID when NA or empty), `de_annotated`
 #'   (`top_table` joined by GeneID, one match per GeneID, with DisplaySymbol) and `top_de` (top 10 up and 10 down at
-#'   FDR < 0.05, with `comparison`).
+#'   FDR < `fdr_thresh`, with `comparison`).
+#' @param fdr_thresh The FDR (BH) threshold of the top genes (KIT-220: the analysis's threshold; the notebook's 0.05 by
+#'   default).
 #' @noRd
-trxAnnotateDe <- function(top_table, count_table, comparison, gene_id_column = "GeneID", annotation_id_column = "GeneName") {
+trxAnnotateDe <- function(top_table, count_table, comparison, gene_id_column = "GeneID", annotation_id_column = "GeneName",
+    fdr_thresh = 0.05) {
     feature_meta <- count_table |>
         dplyr::select(GeneID = dplyr::all_of(gene_id_column), GeneName = dplyr::all_of(annotation_id_column)) |>
         dplyr::mutate(GeneName = ifelse(is.na(.data$GeneName) | .data$GeneName == "", .data$GeneID, .data$GeneName))
@@ -102,7 +105,7 @@ trxAnnotateDe <- function(top_table, count_table, comparison, gene_id_column = "
         dplyr::relocate(dplyr::all_of(c("GeneID", "GeneName", "DisplaySymbol")))
     top <- function(direction, regulation) {
         de_annotated |>
-            dplyr::filter(.data$FDR < 0.05, direction * .data$logFC > 0) |>
+            dplyr::filter(.data$FDR < fdr_thresh, direction * .data$logFC > 0) |>
             dplyr::arrange(.data$FDR) |>
             utils::head(10) |>
             dplyr::mutate(regulation = regulation)
