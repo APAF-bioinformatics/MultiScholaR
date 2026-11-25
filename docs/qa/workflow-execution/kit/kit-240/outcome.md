@@ -1,7 +1,7 @@
 # KIT-240 outcome: the integration tabs on by default
 
 Ticket revision 1.6. Branch `kit-240` from `v0.9-staging` 3eeaf100. Every run on `run-tests` (R 4.6.1, reference
-BLAS, ubuntu-22.04); run ids, commits and job minutes in `runs.tsv`. Evidence copies under `r1/` and `r2/`.
+BLAS, ubuntu-22.04); run ids, commits and job minutes in `runs.tsv`. Evidence copies under `r1/`, `r2/`, `r3/`, `r4/`, `r5/`, `merged/` (I and the base-against-head run), `m/` (M) and `b/` (B).
 
 | Commit | Content |
 |---|---|
@@ -10,7 +10,15 @@ BLAS, ubuntu-22.04); run ids, commits and job minutes in `runs.tsv`. Evidence co
 | ba6b44d8 | tests only (r1.3): T10, the Enrichment tab's mark |
 | fac10b51 | fix (r1.3): `integrationEnrichmentLabel` in `R/mod_integration_enrichment.R`; `mark_provisional` "default not yet confirmed"; the identity script's allowed insertion |
 | b89be231 | tests only (r1.4): T7 (I01), T8 (I09), T12 (I03, I05, I09, I10), `test-integration-gui.R` (I02) |
-| (next) | wording and records (r1.4): I01 display, I02, I03, I04, I05, I06 NEWS, I07, I09, I10 |
+| 37071446 | wording and records (r1.4): I01 display, I02, I03, I04, I05, I06 NEWS, I07, I09, I10 |
+| 651077e7 | records: R4 |
+| 925e532e | tests only (r1.5): the VAL-252 clause in T7 and T8 |
+| c74e3b36 | the VAL-252 clause on the Results tab and in the Methods paragraph (draft) |
+| ccc0a401 | records: R5 |
+| bded5eb2 | merge of staging 63143aa3 (KIT-234, KIT-239): ledger, NEWS, the Results list resolved as AUDIT-KIT-240-impl section 6 |
+| 83d1b222 | records: I, M and B at bded5eb2 |
+| cf91f07a | C1 (closure check): the clause's two strings corrected (draft) and `wording.md` |
+| (this commit) | C2 records; then the merge of staging 42846c0e |
 
 ## Observed
 
@@ -186,8 +194,49 @@ Owed (not made here):
   `integrationEnrichmentLabel`, `integrationAlignmentFacts`.
 - **Results.** No computed value changes; `mofa_reference/` is not re-recorded. The Methods paragraph gains the rank
   and limitation sentences; the record gains `seed_models$elbo_last` and `model$elbo_rank`.
-- **Evidence.** R1 to R5 (`runs.tsv`); M, B and the identity run after the rebase are owed; the checkpoint's
+- **Evidence.** R1 45579469695, R2 45581871256, R3 45587886914, R4 45596337362, R5 45603743811 (run-tests); at the
+  merge with staging 63143aa3 (bded5eb2): I with the base-against-head run 45608060716, M 45608049489 (MOFA lane, T9's
+  final ELBOs, `mofa_reference/` within 1e-5), B 45608074480 (bundle lane, three images, nine lifecycle passes);
+  `runs.tsv` has commits, minutes and results. The train's run repeats I and the run-tests files; the checkpoint's
   full-suite run id is owed (A7).
+
+## Closure check (2026-11-26): C1 to C4
+
+- **C1** (major, repaired in cf91f07a): the VAL-252 clause said "a difference of this size" / "Differences of this size
+  were observed", false for runs whose seeds differ far more (KIT-151c's uncapped arm, `feature_selection = "none"`:
+  258.84 below the highest, against a largest observed one-solution difference of 0.676), and it called the KIT-062
+  pair "one solution trained twice" without saying it was single precision (the shipped setting is double, where that
+  diagnosis found the runs identical). Both strings now carry the audit's texts; drafts for the owner. Checked by
+  reading: T7 reads both keys from the wording tables; T8's "where training stopped" is in both texts and they print
+  only with a rank; no other test and not the identity script pins them (they are server-rendered). The train's run is
+  the check.
+- **C2** (records): this commit (evidence folders, commit table, the change report's evidence, the ledger row,
+  `wording.md`'s revision, B's step conclusions `b/steps-45608074480.tsv` and version-table lines
+  `b/version-table-summary.txt`, the KIT-228 note in its ticket).
+- **B's steps** (`b/steps-45608074480.tsv`): in each of the three jobs the only failed step is the GUI-entry lanes
+  step; every later step ran (they depend on the install and test tools, not on the lanes step) and passed or was
+  skipped by its own condition (parity, D5, the 24.04 e2e lanes by matrix, a post step). Version table
+  (`b/version-table-summary.txt`, all three jobs): complete, no hard-closure package missing; "in the lockfile, not
+  bundled" names neither reticulate nor clusterProfiler, so both are bundled on each image; uwot and Rtsne are named as
+  bundled.
+- **C3** (note, the owner's polish): at rank 1 the tab and the Methods print "ranks 1 of 5: 0.00 below the highest",
+  true but redundant beside the rank.
+- **C4** (note): `methods_provisional` still says "provisional defaults" while the status word is "default not yet
+  confirmed"; no Model or Results setting can reach it today.
+
+## Release checklist (owed by this ticket; no checklist file exists yet)
+
+1. **KIT-228 merged before the release commit** (VAL-201: a Save that writes no new integration input removes the
+   earlier one), since the Integration tabs now reach every user. KIT-228 merges after KIT-240 and re-runs
+   `test-kit240-integration-default.R` and `kit-240/default-identity.R`.
+2. **The systemd observation** (R1-05): integration observed once on the systemd worker of a Linux desktop install of
+   the release candidate (staging with KIT-240 merged), started without `MULTISCHOLAR_TEST_FEATURES` (also not from
+   `~/.profile`; no "(test features on)" title, no `MSR-TEST-FEATURES` line), with the R log's `MSR-LAUNCHER` line saying
+   `systemd` and a worker unit's log for the Train in the run folder's systemd launcher folder. The owner's session
+   (KIT-170 6.8), not agent compute.
+3. **The eight enrichment defaults** (R1-04): confirmed by the owner before the release commit, or the release notes
+   state that the Enrichment tab's defaults (Pearson correlation, at least 5 samples, STRING species 9606, KEGG hsa,
+   Reactome Homo sapiens, pathway sizes 5 to 500, seed 20261121) await confirmation.
 
 ## Not checked
 
