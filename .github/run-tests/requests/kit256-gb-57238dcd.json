@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-256 GB: what the technical-replicate box shows after Assign in a browser, on the fix 57238dcd; decides A4 and stop rule 2; 1 job, ceiling 60 job-minutes (4.0 core-hours)",
+  "label": "KIT-256 GB browser-selection.R on kit-256 57238dcd (the fix)",
+  "package_commit": "57238dcdabaa2443613e2b772901edc4f63a365e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-256/browser-selection.R",
+      "args": [
+        "kit256-gb",
+        "gb"
+      ],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit256-gb",
+      "out_pattern": "\\.(tsv|txt|log|R)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
