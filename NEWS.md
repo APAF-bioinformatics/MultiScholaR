@@ -101,6 +101,17 @@
    earlier releases that carried these settings (since November 2025). Only the printed file changes; analyses,
    results and stored records do not. `createWorkflowArgsFromConfig()` gains `omic_type`; scripts that do not pass
    it get the same file as before (KIT-263).
+ * Transcriptomics report and analysis record: a RUVIII integration export made before the normalisation was run again
+   (with another k, or without RUV) is no longer described as part of the analysis. Before, the report still said
+   RUVIII had been applied, gave the earlier export's k and showed its figure, next to the current run's description (a
+   different k, or a caption saying no correction had been applied). The earlier export's figure is now removed when
+   you run the normalisation again, so the results package no longer carries it. In a project whose normalisation was
+   run again with an earlier version, that figure stays, and Copy still delivers it, until the normalisation is run
+   again; a report made from such a project's earlier copy of the report template
+   (`scripts/transcriptomics/transcriptomics_report.rmd`) still shows it until then. A report of an analysis saved
+   with an earlier version keeps the earlier statement until Save Workflow Arguments is pressed again. No result
+   changes: with RUV applied the integration input already refused such an export. This came with the 0.9 development
+   builds and is in 0.9.0 (KIT-264).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
