@@ -282,8 +282,9 @@ stopifnot(length(sim_text) > 100L)
 wanted <- c("GROUPS", "cell", "MED_VAR_PROT", "MED_VAR_OMIC", "maskMech", "maskRate", "scale1", "generateReplicate",
     "solveLod", "maskMatrix", "CELLS")
 for (expr in parse(text = sim_text, keep.source = FALSE)) {
-    if (is.call(expr) && as.character(expr[[1L]]) %in% c("<-", "=") && is.symbol(expr[[2L]]) &&
-        as.character(expr[[2L]]) %in% wanted) eval(expr, envir = generator)
+    # (R2 run 45526352392: `as.character()` of a call such as `pkg::fn` has length 3; compare the symbol itself.)
+    if (is.call(expr) && length(expr) == 3L && (identical(expr[[1L]], as.name("<-")) || identical(expr[[1L]], as.name("="))) &&
+        is.symbol(expr[[2L]]) && as.character(expr[[2L]]) %in% wanted) eval(expr, envir = generator)
 }
 stopifnot(all(wanted %in% ls(generator)))
 m_inputs <- list()
