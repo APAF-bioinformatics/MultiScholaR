@@ -153,6 +153,16 @@ only on head. Stop rule 3 not triggered. 385 job-minutes (25.67 core-hours).
   selection gets the first, naming the samples left out of the design with the assays they failed in, and none when no
   sample left the design. The register's point 6 said Apply, Skip, Apply records carry "input equals result"; G0's E13
   record shows `input_is_result=FALSE`, hence the definition above. Texts are drafts (`wording.md`).
+- **The re-apply signature (stands for the closure check to judge).** "A selection whose input is not the result
+  of the step before it", not the register's "input equals result": G0's E13 record (Apply, Skip, Apply on base) has
+  `input=b30f32faacad;result=1a202f6dc924;input_is_result=FALSE` (lipid; metab the same), its input being the skip
+  state; under the register's wording that record would get the first statement and a replay that differs from the
+  analysis that was run (G0 E13: replay 12 samples, live 11).
+- **E7 (coordinator's ruling; a declared-comparison change, for the owner):** t_hi 0.960024 = (0.957297 + 0.962751) / 2,
+  the two smallest best within-group partner correlations G0b observed on the merged tree; t_lo 0.95 by G0's rule;
+  PREDICTED to remove A_1 only; E7's sample assertions restored (db727407).
+- **E17 both ways (coordinator's ruling):** the opposite error (an assay wrongly omitted) is caught by a second case in
+  which A_1 fails in both assays and must be named with both (db727407).
 - **R2c:** predictions in `r2c-predictions.md` (committed before the request). **R2c (45635516160, base 44e3e910, head 904a5514; 506 job-minutes), OBSERVED:**
   57 files `same` (the seven with pre-existing failures at staging's counts; `test-omics-norm-state-guards.R` 651/0 and
   `test-workflow-analysis-record.R` 351/0 on both sides; the replay consumers unchanged); R CMD check identical, none only
@@ -162,8 +172,10 @@ only on head. Stop rule 3 not triggered. 385 job-minutes (25.67 core-hours).
   LCMS_Pos, LCMS_Neg)", while A_1 failed in LCMS_Pos only. **Cause (read):** `workflowReplayDesignSamples` intersects each
   assay's columns with the state's own design, and A_1 has left the after-state's design, so A_1 seems to leave every
   assay. **Repair (not made):** compare the after-state's assay columns as stored (`colnames(assay)`), intersected with
-  the before-state's design only. **Stop:** this was the run of the one correction pass (AGENTS.md; the coordinator's
-  message); a further fix and run need the coordinator's authority.
+  the before-state's design only. **Reading of the budget (coordinator's ruling, recorded here):** R2c was the statement code's first comparison
+  run; VAL-247 made the statement its own later commit ("the fix ships first ... and the statement follows"), so the
+  correction pass already used belonged to the main implementation's audit, and the statement keeps its own one
+  correction: the one-place fix and R2d below. No further correction after it.
 
 ## Acceptance criteria
 
