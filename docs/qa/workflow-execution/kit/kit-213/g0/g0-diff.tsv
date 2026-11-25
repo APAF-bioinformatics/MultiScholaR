@@ -1,0 +1,14 @@
+omic	line	heading	block	project_1	project_2
+lipidomics	8	Basic Information:		Timestamp: 2026-11-24 19:42:29	Timestamp: 2026-11-24 19:42:38
+lipidomics	99	Analysis Record:	[7. lipid_correlation_filtered: lipid_pearson_selection]	  pairs [input] = faa0c41dbb1ad6239a4be1e0f0ef134385ac3ad57da55cabe773f58fd6851e7b	  pairs [input] = 41235b143c392efa45ebbfb48b72b89fb11875ba497d0ab5dfe71aaf75eab327
+metabolomics	8	Basic Information:		Timestamp: 2026-11-24 19:42:47	Timestamp: 2026-11-24 19:42:54
+metabolomics	99	Analysis Record:	[7. metab_correlation_filtered: metab_pearson_selection]	  pairs [input] = 90b84f848a8fe8dc6700bdfbd63550a8b76e3427a6758072afeed675488eed0c	  pairs [input] = 434119f3e6942cd5d6a41d42df0e704b30283d906de3c0ede2060f502440f461
+transcriptomics	8	Basic Information:		Timestamp: 2026-11-24 19:43:17	Timestamp: 2026-11-24 19:43:34
+transcriptomics	34	Analysis Record:	[5. trx_ruvs: trx_ruvs]	  trx_ruv_grid.logcpm [input] = 1520c405054b5e07ffc23cce7427c4edfec263b6b85208a7fb0ff70fdde82dd1	  trx_ruv_grid.logcpm [input] = c6a3e2826934c1de33c5d07230339d20e0b70876e53b5d91782cbbea4216e00d
+transcriptomics	42	Analysis Record:	[5. trx_ruvs: trx_ruvs]	  logcpm [input] = 1520c405054b5e07ffc23cce7427c4edfec263b6b85208a7fb0ff70fdde82dd1	  logcpm [input] = c6a3e2826934c1de33c5d07230339d20e0b70876e53b5d91782cbbea4216e00d
+transcriptomics	43	Analysis Record:	[5. trx_ruvs: trx_ruvs]	  grid [input] = 136b99bbd97c59c1c466bd2934eba98037dd04ca17bb6981c5eccad0d23324a9	  grid [input] = 7d9656286153208ffddf2701a32ee707a441652df100fe63aa7d01c215efdfaf
+proteomics	8	Basic Information:		Timestamp: 2026-11-24 19:43:49	Timestamp: 2026-11-24 19:44:05
+proteomics	51	Workflow Parameters:		  timestamp = 2026-11-24 19:43:39.66383	  timestamp = 2026-11-24 19:43:54.288098
+proteomics	92	Additional Configuration Parameters:		  Timestamp: 2026-11-24 19:43:39.66383	  Timestamp: 2026-11-24 19:43:54.288098
+proteomics	100	Analysis Record:	[3. correlation_filtered: pearson-selection]	  pairs [input] = 7aaaaf33e50a5886e506a5d0d0f79e4b51ab177d8b5d489e5a7cb98daed7921f	  pairs [input] = 9f37840e32fbf4e3b95feb98c294147d3cd37a213be66fd988b52aabe99c85bb
+proteomics	112	Analysis Record:	[4. enrichment_completed: enrichment]	  results [input] = groupB-groupA=d7bcfbe68944a7137f14985e0cdcb77d52fe5bff983644ab6c16494ef0ab2116	  results [input] = groupB-groupA=9e52b9848abc14cd20af6e2a702573b21ae6f40765e3f1a7530652ee2f84980b
