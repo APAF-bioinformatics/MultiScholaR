@@ -1,3 +1,5 @@
+**Parked 2026-11-25 by the owner's decision to stop shipping the legacy workbooks; the gate's observations and the list of stale calls are kept for the later rehydration.** Branch `kit-231` is not to be merged. No fix was written. Kept: gate G0 (sections 1 to 6), the tests-only commit 1eb889ea (`tests/testthat/test-kit231-workbook-directory-names.R`, N1 to N5) and its run R1 (section 7).
+
 # KIT-231 gate G0: outcome
 
 **Stopped after G0, as instructed.** No fix has been written. The run binds to `origin/v0.9-staging` cf8af245 plus `g0.R`:
@@ -157,6 +159,17 @@ KIT-231 repairs, of G0's counts, only the five `createDAResultsForEnrichment(de_
 - `pdf(character(0))` writes a file named `NA` into the working directory, without error.
 - `ggsave(plot = NULL)` writes a file, without error (ggplot2 4.0.3).
 - `fs::dir_copy(overwrite = TRUE)` overwrites an edited workbook copy in place (the application's call, `R/app_server.R:544`): users' edits to a copied workbook are lost at the next session start (F11).
+
+## 7. R1: tests-only commit 1eb889ea (run 45513879518, 11.6 job-minutes)
+
+Failing first, as section 6 of the ticket states (`r1/tests.tsv`, `r1/failures.txt`): 8 passed, 25 failed, 0 errors.
+- N1: exactly the 10 misses (nine `$de_output_dir`, the `integration_` key at `DIA_workflow_limpa_starter.rmd:1170`); none other in workbooks or report templates (guard G1 on base).
+- N2: the 5 unused `de_output_dir =` arguments.
+- N3: `de_output_dir`, `pathway_dir`, `publication_graphs_dir`.
+- N4, each DIA workbook: "Error processing contrast: B_vs_A", no `da_proteins_B_vs_A_long_annot.tsv`, the enrichment call's "unused argument" error; limpa_experienced's `extract-top-de-genes`: "no applicable method for 'filter' applied to an object of class "NULL"", no `top_de_genes.tsv`.
+- N5 (testServer mocks): force FALSE "missing value where TRUE/FALSE needed"; force TRUE **no error is raised**, but no saved result reaches `stopApp` and no RDS is written (the Save's failure is not surfaced to the caller).
+
+Total job-minutes on this ticket: G0 21.2 + R1 11.6 = 32.8 (2.19 core-hours). No further run was sent.
 
 ## Not checked
 

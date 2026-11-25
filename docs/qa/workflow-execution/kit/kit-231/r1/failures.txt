@@ -1,0 +1,238 @@
+file: test-kit231-workbook-directory-names.R
+test: N1: every directories element a workbook or report template reads exists in what setupDirectories returns
+kind: failure
+message:
+  Expected `misses` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "DIA_workflow_limpa.rmd:2021 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_limpa.rmd:2064 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_limpa_experienced.rmd:1470 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_limpa_experienced.rmd:1563 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_limpa_experienced.rmd:1663 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_limpa_starter.rmd:1170 key project_dirs[[paste0(\"integration_\", experiment_label)]] (absent) multiomic_inputs_dir"
+  - "DIA_workflow_limpa_starter.rmd:1333 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_limpa_starter.rmd:1378 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_starter.rmd:1725 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+  - "DIA_workflow_starter.rmd:1768 key project_dirs[[paste0(omic_type, \"_\", experiment_label)]] de_output_dir"
+
+file: test-kit231-workbook-directory-names.R
+test: N2: the DIA workbooks' createDAResultsForEnrichment and outputDeAnalysisResults calls use only their formals
+kind: failure
+message:
+  Expected `misses` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "DIA_workflow_starter.rmd:1765 createDAResultsForEnrichment: unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, \"_\", experiment_label)]]$de_output_dir))"
+  - "DIA_workflow_limpa.rmd:2061 createDAResultsForEnrichment: unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, \"_\", experiment_label)]]$de_output_dir))"
+  - "DIA_workflow_limpa_starter.rmd:1375 createDAResultsForEnrichment: unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, \"_\", experiment_label)]]$de_output_dir))"
+  - "DIA_workflow_limpa_experienced.rmd:1660 createDAResultsForEnrichment: unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, \"_\", experiment_label)]]$de_output_dir))"
+  - "DIA_workflow_experienced.rmd:1172 createDAResultsForEnrichment: unused argument (de_output_dir = de_output_dir)"
+
+file: test-kit231-workbook-directory-names.R
+test: N3: the experienced workbook's DA output and enrichment chunks read no folder name the workbook never assigns
+kind: failure
+message:
+  Expected `sort(unique(free))` to be identical to `character()`.
+  Differences:
+  `actual`:   "de_output_dir" "pathway_dir" "publication_graphs_dir"
+  `expected`:                                                       
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_starter.rmd messages to be identical to `character()`.
+  Differences:
+  `lines(actual[[1]])` is a character vector ('Error processing contrast: B_vs_A', '')
+  `lines(expected[[1]])` is absent
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_starter.rmd long_annot to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_starter.rmd createDAResultsForEnrichment error to be NULL.
+  Differences:
+  `actual` is a character vector ('unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa.rmd messages to be identical to `character()`.
+  Differences:
+  `lines(actual[[1]])` is a character vector ('Error processing contrast: B_vs_A', '')
+  `lines(expected[[1]])` is absent
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa.rmd long_annot to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa.rmd createDAResultsForEnrichment error to be NULL.
+  Differences:
+  `actual` is a character vector ('unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_starter.rmd messages to be identical to `character()`.
+  Differences:
+  `lines(actual[[1]])` is a character vector ('Error processing contrast: B_vs_A', '')
+  `lines(expected[[1]])` is absent
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_starter.rmd long_annot to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_starter.rmd createDAResultsForEnrichment error to be NULL.
+  Differences:
+  `actual` is a character vector ('unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_experienced.rmd messages to be identical to `character()`.
+  Differences:
+  `lines(actual[[1]])` is a character vector ('Error processing contrast: B_vs_A', '')
+  `lines(expected[[1]])` is absent
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_experienced.rmd long_annot to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_experienced.rmd createDAResultsForEnrichment error to be NULL.
+  Differences:
+  `actual` is a character vector ('unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_experienced.rmd extract-top-de-genes error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\ni With name: B_vs_A.\nCaused by error in `UseMethod()`:\n! no applicable method for \'filter\' applied to an object of class "NULL"')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_limpa_experienced.rmd top_de_genes.tsv to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_experienced.rmd messages to be identical to `character()`.
+  Differences:
+  `lines(actual[[1]])` is a character vector ('Error processing contrast: B_vs_A', '')
+  `lines(expected[[1]])` is absent
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_experienced.rmd long_annot to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N4: each DIA workbook's DA output chunk writes its tables and its enrichment call reads them
+kind: failure
+message:
+  Expected DIA_workflow_experienced.rmd createDAResultsForEnrichment error to be NULL.
+  Differences:
+  `actual` is a character vector ('unused argument (de_output_dir = de_output_dir)')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N5: RunApplet runs the design applet on a setupDirectories() project and saves its result in source_dir
+kind: failure
+message:
+  Expected RunApplet error, force = FALSE to be NULL.
+  Differences:
+  `actual` is a character vector ('missing value where TRUE/FALSE needed')
+  `expected` is NULL
+
+file: test-kit231-workbook-directory-names.R
+test: N5: RunApplet runs the design applet on a setupDirectories() project and saves its result in source_dir
+kind: failure
+message:
+  Expected saved result, force = FALSE to be identical to `c("design_matrix", "data_cln", "contrasts_tbl", "config_list")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('design_matrix', 'data_cln', 'contrasts_tbl', 'config_list')
+
+file: test-kit231-workbook-directory-names.R
+test: N5: RunApplet runs the design applet on a setupDirectories() project and saves its result in source_dir
+kind: failure
+message:
+  Expected design_matrix_results.rds in source_dir, force = FALSE to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit231-workbook-directory-names.R
+test: N5: RunApplet runs the design applet on a setupDirectories() project and saves its result in source_dir
+kind: failure
+message:
+  Expected saved result, force = TRUE to be identical to `c("design_matrix", "data_cln", "contrasts_tbl", "config_list")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('design_matrix', 'data_cln', 'contrasts_tbl', 'config_list')
+
+file: test-kit231-workbook-directory-names.R
+test: N5: RunApplet runs the design applet on a setupDirectories() project and saves its result in source_dir
+kind: failure
+message:
+  Expected design_matrix_results.rds in source_dir, force = TRUE to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
