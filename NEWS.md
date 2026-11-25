@@ -594,8 +594,8 @@ First staging build with every omic in the distributable (Linux and Windows) and
    computed is analysed without RUV, with a warning; a model left without a residual degree of freedom, or the
    corrected object given together with the factors, stops. The corrected matrix of this design
    (for figures, export and integration) keeps each feature's mean abundance. Without `ruv_factors` every
-   result is as before. (Since KIT-224, `ruvIII_C_Varying()` for lipid and metabolite data also keeps each
-   feature's mean abundance.)
+   result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts
+   each feature by a constant (KIT-224 later removed the shift; see the unreleased section).
 
 ### Other changes
 

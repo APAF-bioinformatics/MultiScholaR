@@ -14,11 +14,11 @@ section 12, VAL-41), under `### Scientific changes` of the unreleased heading:
 > made. Transcriptomics: the RUVIII export file and the RUV-corrected integration input keep each gene's logCPM
 > level; the differential analysis is not affected (KIT-224).
 
-And, in the older entry (NEWS.md, KIT-127's lipidomics and metabolomics RUV entry), the limit sentence
-"`ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts each feature by a constant." is
-replaced by:
+In the older entry (NEWS.md, KIT-127's lipidomics and metabolomics RUV entry, a historical section), the true sentence is
+kept and a pointer added (implementation audit N1):
 
-> (Since KIT-224, `ruvIII_C_Varying()` for lipid and metabolite data also keeps each feature's mean abundance.)
+> Without `ruv_factors` every result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and
+> still shifts each feature by a constant (KIT-224 later removed the shift; see the unreleased section).
 
 The manifest field `correction$levels = "restored_to_tmm_logcpm"` (transcriptomics integration input) is a machine
 token, not shown on a screen.

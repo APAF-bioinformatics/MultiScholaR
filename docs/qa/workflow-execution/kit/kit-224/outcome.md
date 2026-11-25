@@ -68,7 +68,7 @@ missing in one assay only (see the unrelated finding below).
 - A2: met. R1 failed at the stated values; R2 head passes.
 - A3: met (R2: (vi); R2c: (i) to (v), with (a) and (b) reported).
 - A4: met for every file except three: `test-prot-norm-core.R`, `test-omics-summary-core.R` and `test-omic-summary-module.R` were accepted by the owner by file on 2026-11-25 (deferred to the end-of-project re-record). The edited tests pass (R2c).
-- A5: met except one file outside the lists, test-gui-entry-transcriptomics.R (R3 above), which awaits the owner's word.
+- A5: met except one file outside the lists, test-gui-entry-transcriptomics.R (R3 above), which awaits the owner's word; E5 of the new file was not reached in R3 (switch not set) and passes in R2 and R2c.
 - A6: NEWS, ledger row and M8's status are done; `man/`, `NAMESPACE` and `DESCRIPTION` are unchanged.
 
 ## Coordinator rulings of 2026-11-25 and what was done
@@ -135,9 +135,10 @@ No expected value, threshold, criterion or stop rule changed. The run binds the 
 
   On these synthetic objects the repair changes which features are called, but the false discovery proportion and power
   stay the same within Monte Carlo error.
-- **The legacy route itself, both sides (descriptive; not this ticket's).** FDP was about 0.36 (`k185`) and 0.42
-  (`level`) at nominal q < 0.05. Null objects had a call 60 to 67 % of the time. The likely reason is that the
-  corrected values are tested with full residual df (VAL-53 (1)); KIT-188 and KIT-210 own this.
+- **The legacy route itself, both sides (descriptive; not this ticket's; synthetic, not real data).** Design: two groups of six runs, two assays of 300 features, one unwanted factor orthogonal to the groups, feature variances from KIT-185's law (scaled inverse chi-square, 4 df) or that law with the SD doubling every 4 log2 below 20, 5 % value-dependent missingness in the even objects; route intensity filter, log2, cyclic loess, legacy RUV-III-C Automatic (percentage 1 to 20, no upper bound on k), Pearson filter at 0.5, limma on the corrected values with 10 residual df, eBayes(trend, robust), q < 0.05 at cutoff 0. Automatic chose k = 1 to 7 (`k185`) and 1 to 10 (`level`) per assay; some assay had k ≥ 3 in 30 of 50 and 39 of 49 objects. Null objects (complete null: the false discovery rate is the probability of any call): a call in 15 of 25 (0.60; Monte Carlo 95 % 0.40 to 0.80) and 16 of 24 (0.67; 0.47 to 0.86) against a nominal 0.05. Effect objects: mean false discovery proportion 0.36 (0.28 to 0.44) and 0.42 (0.36 to 0.49), power 0.91 and 0.88. By the chosen k (observational strata, small): null objects with k ≤ 2 in both assays had a call in 5 of 14 and 2 of 7 (mean under one call), with k ≥ 3 in some assay in 10 of 11 and 14 of 17 (mean 20 and 27 calls; 217 in one object with k = 10, the residual rank); effect objects' FDP 0.33 (6) and 0.22 (3) at k ≤ 2, 0.37 (19) and 0.45 (22) at k ≥ 3, and 0.24 (3) and 0.26 (2) with k = 1 in both assays, the true number of factors. The unbounded k (VAL-182) accounts for most of the null objects' false calls but not for the false discovery proportion, which stays at 4 to 7 times nominal at k ≤ 2. The cause of that remainder is not established by S1; testing corrected values with full residual df (VAL-53 (1)) is one candidate, not shown. The repair leaves all of this unchanged (paired differences above). To KIT-188 (truth-referenced calibration of the default route: arm LA against LCm at equal k separates the residual-df part; report FDP by chosen k), KIT-190 (a bound reduces the null objects' false calls but on S1 would not bring the FDP near nominal) and KIT-210 (k ≥ 3 with missing values gave the highest FDP, 0.43 and 0.49).
+
+  **This ticket's repair is a correctness and unit-invariance fix, not a calibration fix**: it removes the unit
+  dependence and leaves the route's error rates as they were.
 
 ### R3 (run 45573139074): full suite, 2871125b against staging 67569959
 
@@ -145,7 +146,7 @@ R3 was sent before staging moved to dd769671 and is kept as sent.
 
 **Overall result**
 - R CMD check: identical on both sides (0 findings only on head).
-- 468 files `same`; the new file is `only-on-head` (69 pass).
+- 468 files `same`; the new file is `only-on-head` with 65 passed and 1 failed: E5 stopped at the KIT-040 corpus manifest check (`trxDeclReference`, `helper-workflow-trx-declarations.R:34`) because R3 ran without `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` (R1, R2 and R2c set it), so its assertions were not reached (they pass in R2 and R2c, 69 of 69). For the same reason R3 did not reach the assertions after `trxDeclReference` in the transcriptomics files that call it; R2 did.
 - `test-omic-norm-module.R` and `test-kit129-run-path.R` are `same`.
 
 **Files that changed, all within the approved lists and the three owner-accepted files**
@@ -156,7 +157,7 @@ R3 was sent before staging moved to dd769671 and is kept as sent.
 - `message-changed`: the KIT-094 fixture (`records`).
 
 **Outside every list (stop and report):** `test-gui-entry-transcriptomics.R`, test "KIT-101 entry lane trx_screen: the KIT-040 count corpus, 12 samples, 300 genes", leaf `artifacts$integration/transcriptomics_normalized_data.tsv`.
-- Four expectations change. The digest that is 7b1698df... on base differs on head; the stored value is 0f500346....
+- Four expectations change. The digest is 4645738d... on base and 7b1698df... on head; the stored value is 0f500346.... Every other line of the file's 13 failures is identical on both sides.
 - The file already fails on base (16 passed, 13 failed on both sides).
 - The cause is the same as for the two summary files: under T-a', the exported transcriptomics file keeps each gene's TMM logCPM level, so its bytes change.
 - It was not in R2's scope (the ticket's grep does not match it), so it was first seen here.
@@ -188,6 +189,14 @@ R3 was sent before staging moved to dd769671 and is kept as sent.
 above. The data this repair restores made the filter drop a sample in one assay only; the defect is the filter's
 handling of a sample dropped in one assay, not this change. Not fixed here.
 
+## Hand-offs
+
+KIT-210: if KIT-224 is in its bound commit, R3's post-processing restores lipid/metab levels and E10's lipid/metab DA columns are compared under `MultiScholaR.ruv_feature_levels = "shifted"` or dropped (ticket 2.5). KIT-193: VAL-96's statement of the legacy RUV-III-C option gains the restoration. KIT-129: U8 implemented here (E-5). KIT-190: its VAL-185 run states whether it binds a commit with KIT-224; the second of the two to merge resolves the marker list and `omicsRuvOperation`'s `fixed` by hand and re-dumps the 12 `provenance` fields.
+
+## Note on the declared path (N2)
+
+R2's S1 part (v) raised `omics_ruv_correction_failed` on both sides on a KIT-172-style object (`technical_replicate_id = "tech_rep_group"`, one run per block). This may be a correct refusal (such blocks leave no residual if the declared design takes technical replicates as the replicate structure); not checked. Recorded for the declared-path owner.
+
 ## Hand-off to KIT-188 (OD-5 (c))
 
 The un-repaired legacy behaviour is reached by running the legacy route (Automatic or Manual) under
@@ -195,11 +204,17 @@ The un-repaired legacy behaviour is reached by running the legacy route (Automat
 
 ## Unrelated finding (not fixed)
 
+Routed to the coordinator for its own ticket (I07), with the reproduction recipe in "The unrelated correlation-filter observation" above (S1 object r = 16, seed 224000016, `level` law, `levels-control.R`, run 45510911807 head side). It is on the shipped default lipid route.
+
+
 The lipid correlation filter (`filterSamplesByLipidCorrelationThreshold`, through `binding$filter_correlation`) can remove
 a sample from the design while one assay keeps its column. The object then fails validity at the DA
 (`R/func_omics_design_shared.R:142`). This was seen once in S1, on the head; it does not come from this change.
 
 ## Not checked
+
+KIT-224's evidence covers the legacy route without internal-standard normalisation: E3, E6 and S1 (vi) ran KIT-172 T1b journeys whose 'ITSD on' step did nothing (annotation `ISTD`, regex `^IS_`; AUDIT-KIT-242-plan-20261125 P01), so the five `IS_` standards stayed in the data as features; S1's synthetic objects run no ITSD step. With ITSD acting, the repaired route's unit invariance follows by algebra (median ITSD rescales each sample by a ratio of standard aggregates, in which a change of unit cancels), not by observation.
+
 
 Windows; real data; R3 against staging dd769671 (R3 bound 67569959).
 
@@ -208,14 +223,13 @@ Windows; real data; R3 against staging dd769671 (R3 bound 67569959).
 - **What was wrong.** Legacy lipidomics and metabolomics RUV-III-C (Automatic, the shipped default, and Manual) shifted
   every feature by a constant, s_j = colMeans(W)' alpha_j. That constant depends on the unit of measurement. limma-trend's
   prior therefore read shifted mean abundances, so moderated t, p, q and calls depended on the unit. Fold changes did not.
-- **Who was affected.** Every lipid or metabolite analysis that applied RUV, on `main` (metabolomics since 2025-05-06,
-  lipidomics since 2026-01-18) and on staging. The transcriptomics RUVIII export file and the RUV-corrected integration
-  input carried the same kind of shift; the transcriptomics DA did not.
+- **Who was affected.** Every lipid or metabolite analysis that applied RUV-III-C through Automatic (the default) or Manual, on `main` (metabolomics since d375d9d4, 2025-05-06; lipidomics since ce640728, 2026-01-18; at `main` 436cdbe8 no restoration after `corrected_matrix <- t(cln_mat)`, `R/func_lipid_s4_objects.R:2887`, `R/func_metab_s4_objects.R:2887`; DA defaults `eBayes_trend = TRUE`, `eBayes_robust = TRUE`, `R/func_lipid_da.R:138-139`, `:229`, `R/func_metab_da.R:139-140`, `:230`; RUV `automatic` selected by default, `R/mod_lipid_norm.R:149`, `R/mod_metab_norm.R:149`) and on staging. Staging only (`main` has no transcriptomics workflow): the transcriptomics RUVIII export file and the RUV-corrected integration input carried the same kind of shift; the transcriptomics DA did not.
 - **Code.** Base cf8af245: `R/func_lipid_s4_ruv_methods.R:711`, `R/func_metab_s4_ruv_methods.R:711` (no restoration);
   `R/utils_workflow_trx_declarations.R:949-950`, `:1014`. Fix 12205bd4: the same lines plus `restoreRuvFeatureLevels`
   under the marker `ruv_feature_levels`; `R/func_omics_ruv_factors.R:361-364` (the declared path restores once);
   `trxRuviiiExportRestoredValues`.
 - **Evidence.** KIT-172 T1b and S1 (vi): a change of unit changed calls in 26 of 84 complete-data rows before the fix
-  and in 0 of 84 after (run 45510911807). E6 (seed 172102): 22 calls before, 0 after.
+  and in 0 of 84 after (run 45510911807). E6 (seed 172102): 22 calls before, 0 after. (KIT-172 T1b journeys: legacy Manual, k 2, 5 % controls, complete data, the 'ITSD on' step a no-op, AUDIT-KIT-242-plan P01). The repair is not shown to change error rates (S1: paired changes at most 0.0007).
+- **Not a calibration fix.** This repair is a correctness and unit-invariance fix, not a calibration fix: on S1 the legacy route was anticonservative on both sides of it (complete-null objects with a call 0.60 and 0.67, FDP 0.36 and 0.42 at nominal 0.05; cause not established; KIT-188, KIT-190, KIT-210, the owner).
 - **Limits.** Missing values with zero-filling, and the Automatic k chosen from the uncentred cancor plot, still depend
   on the unit (KIT-185, KIT-188, KIT-210).
