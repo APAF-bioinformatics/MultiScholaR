@@ -92,7 +92,7 @@ The R Markdown workbooks of earlier versions are archived and not supported in t
 
 | Omics Type       | Methods Supported            | Key Features                                              |
 | :--------------- | :--------------------------- | :-------------------------------------------------------- |
-| **Proteomics**   | DIA-NN, TMT-PD, LFQ-Fragpipe | Peptide rollup (IQ), Auto-RUV-IIIc, Mixed Species support |
+| **Proteomics**   | DIA-NN, TMT-PD, LFQ-Fragpipe | Peptide rollup (IQ), Auto-RUV-IIIc, Mixed-species FASTA files (one organism annotated and enriched) |
 | **Metabolomics** | LC-MS, GC-MS (MS-Dial)       | Intensity QC, Internal Standard Normalization             |
 | **Lipidomics**   | MS-Dial, LipidSearch         | Lipid-class specific analysis, QC & filtering             |
 | **Integration**  | MOFA2                        | Shared factors across two or more omics processed in the same project (the Integration tabs); for each data set, pathway enrichment of the features that follow a factor: STRING for protein and gene data sets (your own STRING key), KEGG and Reactome for metabolite and lipid data sets |
