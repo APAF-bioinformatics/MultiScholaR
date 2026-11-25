@@ -1,0 +1,22 @@
+KIT-190 observation lipid one: 2% ok k=2 reason=
+KIT-190 observation lipid one: 3% ok k=2 reason=
+KIT-190 observation lipid one: 4% ok k=2 reason=
+KIT-190 observation lipid one: 5% skipped_k_exceeds_complete_controls k=8 reason=k = 8 exceeds 6 controls complete in every sample
+KIT-190 observation lipid one: 6% skipped_k_exceeds_complete_controls k=9 reason=k = 9 exceeds 7 controls complete in every sample
+KIT-190 observation lipid two: 2% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 0 controls complete in every sample
+KIT-190 observation lipid two: 3% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation lipid two: 4% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation lipid two: 5% skipped_k_exceeds_complete_controls k=3 reason=k = 3 exceeds 1 controls complete in every sample
+KIT-190 observation lipid two: 6% skipped_k_exceeds_complete_controls k=5 reason=k = 5 exceeds 2 controls complete in every sample
+KIT-190 observation lipid two: No valid percentage found: RUV-III needs control lipids observed in every sample; at every control percentage tried (2-6%), only 0-2 were (k = 2-5). Filter for completeness first, lower k, or run normalisation without RUV.
+KIT-190 observation metab one: 2% ok k=2 reason=
+KIT-190 observation metab one: 3% ok k=2 reason=
+KIT-190 observation metab one: 4% ok k=2 reason=
+KIT-190 observation metab one: 5% skipped_k_exceeds_complete_controls k=8 reason=k = 8 exceeds 6 controls complete in every sample
+KIT-190 observation metab one: 6% skipped_k_exceeds_complete_controls k=9 reason=k = 9 exceeds 7 controls complete in every sample
+KIT-190 observation metab two: 2% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 0 controls complete in every sample
+KIT-190 observation metab two: 3% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation metab two: 4% skipped_k_exceeds_complete_controls k=2 reason=k = 2 exceeds 1 controls complete in every sample
+KIT-190 observation metab two: 5% skipped_k_exceeds_complete_controls k=3 reason=k = 3 exceeds 1 controls complete in every sample
+KIT-190 observation metab two: 6% skipped_k_exceeds_complete_controls k=5 reason=k = 5 exceeds 2 controls complete in every sample
+KIT-190 observation metab two: No valid percentage found: RUV-III needs control metabolites observed in every sample; at every control percentage tried (2-6%), only 0-2 were (k = 2-5). Filter for completeness first, lower k, or run normalisation without RUV.

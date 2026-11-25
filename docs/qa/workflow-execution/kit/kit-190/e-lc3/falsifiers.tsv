@@ -1,0 +1,50 @@
+falsifier	cell	class	count	evaluated	stated
+F1	N-r	lipid	0	4	0
+F2	N-r	lipid	0	2	0
+F3	N-r	lipid	0	2	0
+F1	N-r	metab	0	4	0
+F2	N-r	metab	0	2	0
+F3	N-r	metab	0	2	0
+F1	N-s	lipid	0	4	0
+F2	N-s	lipid	0	2	0
+F3	N-s	lipid	0	2	0
+F1	N-s	metab	0	4	0
+F2	N-s	metab	0	2	0
+F3	N-s	metab	0	2	0
+F1	E-r	lipid	0	4	0
+F2	E-r	lipid	2	2	2
+F3	E-r	lipid	0	2	0
+F1	E-r	metab	0	4	0
+F2	E-r	metab	2	2	2
+F3	E-r	metab	0	2	0
+F1	E-s	lipid	0	4	0
+F2	E-s	lipid	2	2	2
+F3	E-s	lipid	0	2	0
+F1	E-s	metab	0	4	0
+F2	E-s	metab	2	2	2
+F3	E-s	metab	0	2	0
+F1	E-p	lipid	0	4	0
+F2	E-p	lipid	2	2	2
+F3	E-p	lipid	0	2	0
+F1	E-p	metab	0	4	0
+F2	E-p	metab	2	2	2
+F3	E-p	metab	0	2	0
+F1	E-g	lipid	0	4	0
+F2	E-g	lipid	2	2	2
+F3	E-g	lipid	0	2	0
+F1	E-g	metab	0	4	0
+F2	E-g	metab	2	2	2
+F3	E-g	metab	0	2	0
+oracle_check	N-r	lipid,metab	0	4	0
+F1	E1	t11_concentration lipid	0	2	0
+F2	E1	t11_concentration lipid	1	1	1
+F3	E1	t11_concentration lipid	0	1	0
+F1	E1	t11_concentration metab	0	2	0
+F2	E1	t11_concentration metab	1	1	1
+F3	E1	t11_concentration metab	0	1	0
+F1	E1	t11_f172 lipid	0	2	0
+F2	E1	t11_f172 lipid	1	1	1
+F3	E1	t11_f172 lipid	0	1	0
+F1	E1	t11_f172 metab	0	2	0
+F2	E1	t11_f172 metab	1	1	1
+F3	E1	t11_f172 metab	0	1	0

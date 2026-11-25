@@ -1,0 +1,167 @@
+file	base_expected(p/f/e/s)	head_expected	verdict_expected	source
+test-prot-norm-core.R	1548/306/0/0	1548/306/0/0	message-changed	KIT-190: lipid_ruv and metab_ruv labels only (train 14 declared 1548/306 on base) ; base train 14 declared head
+test-workflow-native-session.R	734/0/0/2	734/0/0/2	same	same; base train 14 declared head
+test-workflow-partitions.R	440/0/0/2	440/0/0/2	same	same; base train 14 declared head
+test-workflow-analysis-record.R	351/0/0/0	351/0/0/0	same	same; base train 14 declared head
+test-dia-limpa-ruv-rules.R	333/1/0/0	333/1/0/0	same	same; base train 12 run table head
+test-enrichment-significance.R	181/0/0/0	181/0/0/0	same	same; base train 14 declared head
+test-general-filemgmt-config-contracts.R	52/0/0/0	52/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-general-filemgmt-config-direct-shared.R	33/0/0/0	33/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-go-propagation.R	321/0/0/1	321/0/0/1	same	same; base train 12 run table head
+test-integration-enrichment-mofa.R	0/0/0/3	0/0/0/3	same	same; base train 14 declared head
+test-integration-enrichment-options.R	271/0/0/0	271/0/0/0	same	same; base train 14 declared head
+test-integration-enrichment.R	349/0/0/0	349/0/0/0	same	same; base train 14 declared head
+test-integration-enrichment-tests.R	181/0/0/2	181/0/0/2	same	same; base train 14 declared head
+test-integration-gui.R	405/0/0/0	405/0/0/0	same	same; base train 14 declared head
+test-integration-input-lipid-metab.R	208/0/0/0	208/0/0/0	same	same; base train 13 declared head
+test-integration-input-matrix.R	84/0/0/0	84/0/0/0	same	same; base train 14 declared head
+test-integration-model.R	265/0/0/0	265/0/0/0	same	same; base train 14 declared head
+test-integration-mofa-model.R	0/0/0/4	0/0/0/4	same	same; base train 14 declared head
+test-integration-outputs.R	183/0/0/0	183/0/0/0	same	same; base train 14 declared head
+test-integration-record.R	167/0/0/0	167/0/0/0	same	same; base train 14 declared head
+test-integration-removed-factors.R	520/0/0/3	520/0/0/3	same	same; base train 14 declared head
+test-kit127-omics-ruv-factors.R	425/1/0/0	425/1/0/0	same	same; base train 12 run table head
+test-kit128-da-assay-failure.R	38/0/0/0	38/0/0/0	same	same; base train 14 declared head
+test-kit128-tech-reps-lipid-metab.R	60/0/0/0	60/0/0/0	same	same; base train 14 declared head
+test-kit129-run-path.R	711/0/0/1	711/0/0/1	same	same; base train 14 declared head
+test-kit172-downstream.R	84/0/0/0	84/0/0/0	same	same; base train 13 declared head
+test-kit172-reopen.R	14/0/0/0	14/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-kit174-ruv-grouping.R	77/0/0/0	77/0/0/0	same	same; base train 13 declared head
+test-kit196-da-no-value-features.R	540/0/0/0	540/0/0/0	same	same; base train 13 declared head
+test-kit200-prot-da-no-value-proteins.R	538/0/0/0	538/0/0/0	same	same; base train 14 declared head
+test-kit202-intensity-filter-samples.R	163/0/0/0	163/0/0/0	same	same; base train 14 declared head
+test-kit205-enrichment-background.R	228/0/0/0	228/0/0/0	same	same; base train 14 declared head
+test-kit207-summary-head-guard.R	292/0/0/0	292/0/0/0	same	same; base train 13 declared head
+test-kit212-da-current.R	309/0/0/0	309/0/0/0	same	same; base train 14 declared head
+test-kit214-sample-columns.R	176/0/0/0	176/0/0/0	same	same; base train 14 declared head
+test-kit215-not-tested-lists.R	112/0/0/0	112/0/0/0	same	same; base train 14 declared head
+test-kit224-ruv-feature-levels.R	69/0/0/0	69/0/0/0	same	same; base train 14 declared head
+test-kit227-report-ruv-sentences.R	162/0/0/0	162/0/0/0	same	same; base train 12 run table head
+test-lipid-09-s4-normalization-methods.R	39/0/0/0	39/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-lipid-12a-norm-module-characterization.R	5/0/0/5	5/0/0/5	same	same; base train 11 run table head
+test-lipid-12b-norm-ruv-helpers-shared.R	77/0/0/0	77/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-lipid-12c-ruv-s4-characterization.R	67/0/0/0	67/0/0/0	same	same; base train 12 run table head
+test-lipid-12-norm-module-contracts.R	0/0/0/0	0/0/0/0	same	same; base train 14 declared head
+test-metab-02y-get-neg-ctrl-metab-anova-characterization.R	26/0/0/0	26/0/0/0	same	same; base train 12 run table head
+test-metab-03a-ruviii-c-varying-characterization.R	40/0/0/0	40/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-metab-03b-norm-module-helper-characterization.R	0/0/0/0	0/0/0/0	same	same; base train 13 declared head
+test-metab-03d-norm-module-characterization.R	13/0/0/3	13/0/0/3	same	same; base train 14 declared head
+test-metab-04-ruv-optimization.R	53/0/0/0	53/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-metab-norm-standalone-shared.R	21/0/0/0	21/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-metab-qc-shared.R	20/0/0/0	23/0/0/0	count-changed	KIT-217: +3 passes (20/0 -> 23/0 on staging) ; base KIT-217 run 45666403751 base 3a6794b0
+test-module-ci-lipid-norm.R	156/0/0/0	156/0/0/0	same	same; base train 13 declared head
+test-module-ci-metab-norm.R	156/0/0/0	156/0/0/0	same	same; base train 13 declared head
+test-module-ci-prot-norm.R	60/0/0/4	60/0/0/4	same	same; base train 12 run table head
+test-module-ci-trx-da.R	52/1/0/0	52/1/0/0	same	same; base train 14 declared head
+test-module-ci-trx-design.R	66/0/1/0	66/0/1/0	same	same; base train 14 declared head
+test-module-ci-trx-norm.R	63/1/0/0	63/1/0/0	same	same; base train 14 declared head
+test-module-ci-trx-qc.R	read from the run	read from the run	same	same; base train 14 declared head
+test-module-ci-trx-summary.R	87/1/0/0	87/1/0/0	same	same; base train 14 declared head
+test-omic-enrich-module.R	1011/59/0/0	1011/59/0/0	same	same; base train 14 declared head
+test-omic-gui-config.R	1911/0/0/0	1911/0/0/0	same	same; base train 13 declared head
+test-omic-norm-module.R	639/0/0/0	639/0/0/0	same	same; base train 14 declared head
+test-omic-norm-ruv-design.R	1153/0/0/0	1153/0/0/0	same	same; base train 14 declared head
+test-omics-enrich-core.R	221/20/0/1	221/20/0/1	same	same; base train 14 declared head
+test-omics-norm-core.R	62/0/0/14	62/0/0/14	same	same; base train 14 declared head
+test-omics-norm-state-guards.R	651/0/0/0	651/0/0/0	same	same; base train 14 declared head
+test-perf-003.R	137/0/0/1	137/0/0/1	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-prot-04-design.R	488/0/0/118	488/0/0/118	same	same; base train 12 run table head
+test-prot-04d-peptide-s4-normalization-characterization.R	112/0/0/0	112/0/0/0	same	same; base train 12 run table head
+test-prot-05b-norm-module-contracts.R	440/0/0/22	440/0/0/22	same	same; base train 14 declared head
+test-prot-05d-norm-module-characterization.R	82/0/0/10	82/0/0/10	same	same; base train 14 declared head
+test-prot-06-ruv.R	35/0/0/1	35/0/0/1	same	same; base train 12 run table head
+test-prot-annotation-uniprot-empty.R	327/0/0/0	327/0/0/0	same	same; base train 14 declared head
+test-prot-design-log2.R	226/0/0/0	226/0/0/0	same	same; base train 14 declared head
+test-prot-missing-value-counts.R	67/0/0/0	67/0/0/0	same	same; base train 14 declared head
+test-prot-norm-optimization-direct-shared.R	93/0/0/0	93/0/0/0	same	same; base train 12 run table head
+test-prot-ruv-factors-in-model.R	312/0/0/0	312/0/0/0	same	same; base train 12 run table head
+test-prot-ruv-levels.R	36/0/0/0	36/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-prot-ruv-replicate-structure.R	21/0/0/0	21/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-prot-ruv-sweep-imputation.R	25/0/0/0	25/0/0/0	same	same; base train 12 run table head
+test-prot-s4-norm-methods-direct-shared.R	11/0/0/1	11/0/0/1	same	same; base train 12 run table head
+test-prot-s4-qc-direct-shared.R	72/0/0/0	72/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-ruv-control-anova-grouping.R	absent	139/0/0/0	only-on-head	KIT-190 closure (e)
+test-trx-da-without-ruv.R	103/0/0/0	103/0/0/0	same	same; base train 14 declared head
+test-trx-norm-core.R	58/0/0/0	58/0/0/0	same	same; base train 11 run table head
+test-trx-norm-module.R	109/0/0/0	109/0/0/0	same	same; base train 14 declared head
+test-workflow-execution.R	114/0/0/10	114/0/0/10	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-workflow-integration-input.R	241/0/0/0	241/0/0/0	same	same; base train 14 declared head
+test-workflow-kit-harness.R	734/1/0/0	734/1/0/0	same	same; base train 14 declared head
+test-workflow-lipid-declarations.R	259/0/0/0	259/0/0/0	same	same; base train 14 declared head
+test-workflow-metab-declarations.R	259/0/0/0	259/0/0/0	same	same; base train 14 declared head
+test-workflow-omics-binding-steps.R	58/1/0/0	57/2/0/0	message-changed	KIT-190 (message-changed, 58/1 both) combined with KIT-217 (58/1 -> 57/2)
+test-workflow-omics-da-contrasts.R	138/0/0/0	138/0/0/0	same	same; base train 14 declared head
+test-workflow-omics-owner.R	read from the run	read from the run	same	same; base train 14 declared head
+test-workflow-omics-ruv-cancor-once.R	14/2/0/0	16/0/0/0	fixed	KIT-190 closure (e) as the brief rules: base lacks the test edit, fails at :73
+test-workflow-omics-ruv-complete-controls.R	28/0/0/0	28/0/0/0	same	same; base KIT-190 R2 run 45651851022 base 828dd105
+test-workflow-omics-sessions.R	150/0/0/0	150/0/0/0	same	same; base train 14 declared head
+test-workflow-omics-worker.R	289/0/0/0	289/0/0/0	same	same; base train 14 declared head
+test-workflow-operation-registry.R	1099/2/0/0	1107/2/0/0	count-changed	KIT-217 +8 on a base with KIT-248 (train 14 predicted 1099/2); same two integration_mofa_model failures
+test-workflow-prot-declarations.R	303/0/0/2	303/0/0/2	same	same; base train 14 declared head
+test-workflow-ruv-pearson-diagnostic.R	301/0/2/5	301/0/2/5	same	same; base train 14 declared head
+test-workflow-saved-da.R	755/196/0/0	755/196/0/0	same	same; base train 14 declared head
+test-workflow-saved-qc.R	120/0/0/0	120/0/0/0	same	same; base train 11 run table head
+test-workflow-trx-declarations.R	313/31/0/0	313/31/0/0	same	same; base train 14 declared head
+test-workflow-omics-declarations.R	45/23/0/0	43/25/0/0	message-changed	KIT-190 and KIT-217 each 45/23 -> 43/25; both new failures are the same two expectations (line 51, current[[omic]]$values), so combined 43/25
+test-gui-entry-lipidomics.R	35/0/0/0	19/16/0/0	new-failure	KIT-217 (16 of 35 failing) ; base train 13 declared head
+test-gui-entry-metabolomics.R	105/0/0/0	57/48/0/0	new-failure	KIT-217 (48 of 105 failing) ; base train 13 declared head
+test-kit257-norm-own-files.R	133/0/0/0	133/0/0/0	same	same; base train 14 declared head
+test-workflow-saved-exports.R	read from the run	same as base	same	on no record: predicted same, count read from the run
+test-kit236-report-sentences.R	289/0/0/0	289/0/0/0	same	same; base train 12 run table head
+test-kit235-lipid-metab-report-parser.R	54/0/0/0	54/0/0/0	same	same; base train 12 run table head
+test-kit254-omics-correlation-skip.R	379/0/0/0	379/0/0/0	same	same; base train 13 declared head
+test-kit248-correlation-skip-record.R	206/0/0/0	206/0/0/0	same	same; base train 14 declared head
+test-kit249-prot-da-qvalue-fallback.R	144/0/0/0	144/0/0/0	same	same; base train 12 run table head
+test-gui-entry-proteomics.R	168/25/0/0	92/101/0/0	new-failure	KIT-217 ; base train 12 run table head
+test-omic-da-module.R	1289/80/0/0	1288/81/0/0	message-changed	KIT-204 closure C.5 ; base train 13 declared head
+test-general-filemgmt-report-helpers-shared.R	85/0/0/1	85/0/0/1	same	same; base train 13 declared head
+test-lipid-02ab-da-module-characterization.R	15/0/0/2	15/0/0/2	same	same; base train 12 run table head
+test-lipid-02b-da-module-contracts.R	0/0/0/0	0/0/0/0	same	same; base KIT-204 R2d base abfc99ac
+test-lipid-07-s4-da-plot-methods.R	16/0/0/0	16/0/0/0	same	same; base KIT-204 R2d base abfc99ac
+test-metab-02aa-da-display-filter-characterization.R	0/0/0/0	0/0/0/0	same	same; base train 13 declared head
+test-metab-02k-da-numsig-barplot-characterization.R	4/0/0/0	4/0/0/0	same	same; base KIT-204 R2d base abfc99ac
+test-module-ci-prot-da.R	250/0/0/1	250/0/0/1	same	same; base train 12 run table head
+test-omic-summary-module.R	1675/28/0/0	1675/28/0/0	same	same; base train 14 declared head
+test-prot-07-da-analysis.R	3/0/0/1	3/0/0/1	same	same; base train 12 run table head
+test-prot-07b-da-handlers-compat.R	35/0/0/2	35/0/0/2	same	same; base train 12 run table head
+test-prot-07c-da-results-characterization.R	23/0/0/0	23/0/0/0	same	same; base KIT-204 R2d base abfc99ac
+test-prot-07c-da-results-output-shared.R	38/0/0/0	38/0/0/0	same	same; base KIT-204 R2d base abfc99ac
+test-prot-07d-da-model-stats-shared.R	60/0/0/1	60/0/0/1	same	same; base train 12 run table head
+test-prot-da-compat-shared.R	16/0/0/0	16/0/0/0	same	same; base train 12 run table head
+test-prot-da-render-direct-shared.R	0/0/0/0	0/0/0/0	same	same; base train 12 run table head
+test-prot-summary-report-templates.R	123/0/0/0	123/0/0/0	same	same; base train 12 run table head
+test-workflow-dia-products.R	191/0/0/0	191/0/0/0	same	same; base train 14 declared head
+test-workflow-figure-paths.R	181/0/0/0	181/0/0/0	same	same; base train 12 run table head
+test-workflow-memory-mechanism-member.R	0/0/0/13	0/0/0/13	same	same; base train 14 declared head
+test-workflow-omics-application-reads.R	230/0/0/0	230/0/0/0	same	same; base train 13 declared head
+test-workflow-operations.R	75/0/0/0	75/0/0/0	same	same; base train 12 run table head
+test-lipid-08-s4-da-analysis-methods.R	20/0/0/0	20/0/0/0	same	same; base train 12 run table head
+test-metab-02p-da-analysis-characterization.R	18/0/0/0	18/0/0/0	same	same; base train 12 run table head
+test-metab-02q-da-analysis-helper-characterization.R	19/0/0/0	19/0/0/0	same	same; base train 12 run table head
+test-kit204-prot-da-not-tested.R	absent	81/0/0/0	only-on-head	KIT-204 closure C.5
+test-kit220-da-threshold-consumers.R	79/0/0/0	79/0/0/0	same	same; base train 13 declared head
+test-kit218-da-wrapper-tail.R	80/0/0/2	80/0/0/2	same	same; base train 12 run table head
+test-kit243-summary-current-outputs.R	246/0/0/0	246/0/0/0	same	same; base train 14 declared head
+test-kit201-treat-moderation.R	89/0/0/0	89/0/0/0	same	same; base train 14 declared head
+test-kit172-unit-equivariance.R	350/0/0/0	350/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-kit217-intensity-filter-missing.R	absent	344/0/0/0	only-on-head	KIT-217 closure C5
+test-omics-qc-core.R	115/0/0/0	115/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-kit222-replicate-keys.R	456/0/0/0	456/0/0/0	same	same; base train 13 declared head
+test-omic-qc-module.R	160/0/0/0	156/4/0/0	new-failure	KIT-217 test (b) four digests ; base KIT-217 run 45666403751 base 3a6794b0
+test-gui-entry-transcriptomics.R	16/13/0/0	16/13/0/0	same	same; base train 11 run table head
+test-module-ci-lipid-qc.R	68/0/0/0	68/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-kit172-log2-rule.R	read from the run	read from the run	same	same; base train 14 declared head
+test-module-ci-metab-qc.R	63/0/0/1	63/0/0/1	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-lipid-01k-qc-intensity-shared.R	16/0/0/1	16/0/0/1	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-metab-01q-qc-intensity-module-characterization.R	20/0/0/13	20/0/0/13	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-prot-02-qc-peptide-groupaware.R	39/0/0/0	39/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-lipid-01-qc-filtering-helpers.R	58/0/0/2	58/0/0/2	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-kit234-workbooks-withdrawn.R	29/0/0/0	29/0/0/0	same	same; base train 12 run table head
+test-prot-qc-peptide-methods-direct-shared.R	119/0/0/0	119/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-prot-qc-peptide-intensity-legacy-counts.R	3/0/0/0	3/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-metab-s4-qc-shared.R	32/0/0/0	32/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-prot-qc-peptide-intensity-group-batches.R	5/0/0/0	5/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-metab-02t-metabolite-intensity-filtering-characterization.R	14/0/0/0	14/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-lipid-01c-qc-duplicate-module-seams.R	0/0/0/0	0/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-metab-01b-qc-filtering-helpers-characterization.R	9/0/0/0	9/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0
+test-lipid-01d-qc-intensity-module-seams.R	0/0/0/0	0/0/0/0	same	same; base KIT-217 run 45666403751 base 3a6794b0

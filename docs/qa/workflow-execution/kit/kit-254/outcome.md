@@ -306,3 +306,14 @@ Skip did not reset `correlation_filtered_obj`: the tab's summary (`main:R/mod_li
 Apply's removals and the final PCA (`:1842` on) drew the filtered samples. A user who reported "k samples removed" from that
 screen reported a filter the analysis did not apply. The development line corrected that display on 2026-05-05 (b5f26546,
 ac052181) and broke the analysis on 2026-10-31; after this fix screen and analysis agree.
+
+## Addendum 2026-11-26 (merge train 15): the `lipid_ruv` thresholds re-derived on the train head
+
+On merge-train-20261126h (4308c5ae, which holds KIT-190's decided RUV control rule, VAL-110 and VAL-126) the E7 `lipid_ruv`
+expected sample lists no longer held (focused audit `AUDIT-TRAIN15-kit254-e7-20261126`; run 45681065939: three failures,
+the head removing A_5, A_6, B_1 at 0.960024 where 11 of 12 samples were expected). By the coordinator's ruling the
+constants were re-derived from G0b's script, run unchanged on 4308c5ae (run 45704341824, 12.7 job-minutes, exit 0,
+tables in `g0c/`): G0's rule gives `t_hi` = 0.8 (Apply removes B_1) and `t_lo` = 0.7 (removes none; stop rule 2 did not
+apply). `test-kit254-omics-correlation-skip.R`: `kit254T$lipid_ruv` = c(hi = 0.8, lo = 0.7), `kit254HiRuns$lipid_ruv` =
+all but B_1, `kit254LoRuns$lipid_ruv` = all. Tests-only edit; declared prediction: the file 379 passed, 0 failed.
+Not checked: the head's other lipid RUV samples by hand; the metab RUV case does not exist in this file.

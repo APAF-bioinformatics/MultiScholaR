@@ -1,0 +1,53 @@
+case	config	route	observable	value
+SCAN	lipid_ruv	in_process	run completed (t=0)	TRUE
+SCAN	lipid_ruv	in_process	t=0 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0 removed	<none>
+SCAN	lipid_ruv	in_process	t=0 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	11.3
+SCAN	lipid_ruv	in_process	run completed (t=0.3)	TRUE
+SCAN	lipid_ruv	in_process	t=0.3 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.3 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.3 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	9.2
+SCAN	lipid_ruv	in_process	run completed (t=0.5)	TRUE
+SCAN	lipid_ruv	in_process	t=0.5 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.5 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.5 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.7
+SCAN	lipid_ruv	in_process	run completed (t=0.7)	TRUE
+SCAN	lipid_ruv	in_process	t=0.7 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.7 removed	<none>
+SCAN	lipid_ruv	in_process	t=0.7 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.9
+SCAN	lipid_ruv	in_process	run completed (t=0.8)	TRUE
+SCAN	lipid_ruv	in_process	t=0.8 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.8 removed	B_1
+SCAN	lipid_ruv	in_process	t=0.8 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.8
+SCAN	lipid_ruv	in_process	run completed (t=0.9)	TRUE
+SCAN	lipid_ruv	in_process	t=0.9 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.9 removed	B_1
+SCAN	lipid_ruv	in_process	t=0.9 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	8
+SCAN	lipid_ruv	in_process	run completed (t=0.95)	TRUE
+SCAN	lipid_ruv	in_process	t=0.95 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.95 removed	A_5,A_6,B_1
+SCAN	lipid_ruv	in_process	t=0.95 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	8
+SCAN	lipid_ruv	in_process	run completed (t=0.99)	TRUE
+SCAN	lipid_ruv	in_process	t=0.99 head	lipid_correlation_filtered
+SCAN	lipid_ruv	in_process	t=0.99 removed	A_1,A_2,A_3,A_4,A_5,A_6,B_1,B_2,B_3,B_4,B_5,B_6
+SCAN	lipid_ruv	in_process	t=0.99 notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+SCAN	lipid_ruv	in_process	seconds	7.7
+SCAN	lipid_ruv	in_process	t_hi	0.8
+SCAN	lipid_ruv	in_process	t_lo	0.7
+SCAN	lipid_ruv	in_process	stop rule 2	FALSE
+SCAN	lipid_ruv	in_process	t_lo flagged (none below t_hi removes fewer)	FALSE
+C3	lipid_ruv	in_process	run head	lipid_ruv_corrected
+C3	lipid_ruv	in_process	Apply(0.8) head	lipid_correlation_filtered
+C3	lipid_ruv	in_process	Apply(0.8) removed	B_1
+C3	lipid_ruv	in_process	seconds	8.7
+II0	lipid_ruv	in_process	run head	lipid_ruv_corrected
+II0	lipid_ruv	in_process	Apply(0.7) head	lipid_correlation_filtered
+II0	lipid_ruv	in_process	Apply(0.7) removed	<none>
+II0	lipid_ruv	in_process	seconds	7.8
