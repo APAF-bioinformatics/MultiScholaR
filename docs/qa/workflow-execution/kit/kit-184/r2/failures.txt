@@ -1,0 +1,158 @@
+file: test-integration-removed-factors.R
+test: KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference
+kind: failure
+message:
+  Expected largest absolute difference of pvalue (0.0540463) <= 1e-06.
+  Actual comparison: 0.054046 > 0.000001
+  Difference: 0.054045 > 0
+
+file: test-integration-removed-factors.R
+test: KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference
+kind: failure
+message:
+  Expected largest absolute difference of p.adjust (0.0540463) <= 1e-06.
+  Actual comparison: 0.054046 > 0.000001
+  Difference: 0.054045 > 0
+
+file: test-integration-removed-factors.R
+test: KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference
+kind: failure
+message:
+  Expected largest absolute difference of correlation (0.0327082) <= 1e-06.
+  Actual comparison: 0.032708 > 0.000001
+  Difference: 0.032707 > 0
+
+file: test-integration-removed-factors.R
+test: KIT-184 cross-platform: K1's removed factors and K6's terms agree with the Linux reference
+kind: failure
+message:
+  Expected largest absolute difference of effect (1.10735) <= 1e-06.
+  Actual comparison: 1.107350 > 0.000001
+  Difference: 1.107349 > 0
+
+file: test-integration-input-transcriptomics.R
+test: KIT-136: with RUV applied the input is the accepted RUVIII export (INT-1), corrected, beside today's TSV
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─integrationTrxOwner() at test-integration-input-transcriptomics.R:48:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-integration-input-transcriptomics.R:14:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-integration-input-transcriptomics.R
+test: KIT-136: a new design names its RUV record fields; an export from an earlier RUV step is refused until run again
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─integrationTrxOwner() at test-integration-input-transcriptomics.R:115:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-integration-input-transcriptomics.R:14:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-integration-input-transcriptomics.R
+test: KIT-136: with RUV off (design none) the TMM logCPM is written, normalised, without a RUVIII export; the worker writes the same
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─integrationTrxOwner() at test-integration-input-transcriptomics.R:138:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-integration-input-transcriptomics.R:14:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit129-run-path.R
+test: (item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit129TrxOwner() at test-kit129-run-path.R:364:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit129-run-path.R:354:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit129-run-path.R
+test: (item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit129TrxOwner() at test-kit129-run-path.R:629:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit129-run-path.R:354:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit129-run-path.R
+test: (fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit129TrxOwner() at test-kit129-run-path.R:1152:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit129-run-path.R:354:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit129-run-path.R
+test: (fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit129TrxOwner() at test-kit129-run-path.R:1168:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit129-run-path.R:354:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit129-run-path.R
+test: (fifth pass item 4) transcriptomics: the separation rule on the declared run path reads the design's own controls
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit129TrxOwner() at test-kit129-run-path.R:1325:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit129-run-path.R:354:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit129-run-path.R
+test: (sixth pass items 4 and 5) transcriptomics: the record carries the design; save, reopen and replay give the same states
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit129TrxOwner() at test-kit129-run-path.R:1588:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit129-run-path.R:354:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+

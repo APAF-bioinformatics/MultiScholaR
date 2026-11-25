@@ -848,7 +848,7 @@ setMethod(
 #' @description
 #' Filters lipids in *all* assays of a LipidomicsAssayData object.
 #' It removes lipids that have intensities below a certain percentile threshold
-#' in a proportion of samples exceeding a defined cutoff. The threshold is calculated
+#' in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
 #' independently for each assay.
 #'
 #' @describeIn lipidIntensityFiltering Method for LipidomicsAssayData
@@ -909,6 +909,7 @@ setMethod(
             return(theObject)
         }
 
+        design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
         # Iterate using indices
         filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
             assay_table <- original_assay_list[[i]]
@@ -925,8 +926,10 @@ setMethod(
                 return(assay_table) # Return the original table if ID is missing
             }
 
-            # Identify numeric sample columns for this assay
-            sample_cols <- names(assay_table)[sapply(assay_table, is.numeric)]
+            # KIT-202 (VAL-118 (1)): the design's samples of this assay, less the id column (every numeric column under
+            # the earlier rule of a record made before); an absent or non-numeric design sample is refused.
+            sample_cols <- omicsIntensityFilterSampleColumns(names(assay_table),
+                names(assay_table)[sapply(assay_table, is.numeric)], design_samples, lipid_id_col, assay_name_for_msg)
 
             if (length(sample_cols) == 0) {
                 warning("No numeric sample columns found in assay '", assay_name_for_msg, "'. Skipping filtering for this assay.")
@@ -957,7 +960,8 @@ setMethod(
                 assay_table = assay_table,
                 min_lipid_intensity_threshold = min_lipid_intensity_threshold,
                 lipids_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final,
-                lipid_id_column = lipid_id_col
+                lipid_id_column = lipid_id_col,
+                sample_columns = sample_cols
             )
 
             message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
