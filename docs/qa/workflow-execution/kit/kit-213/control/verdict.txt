@@ -1,0 +1,7 @@
+sides: exit base=0 head-1=0 head-2=0; files base=4 head-1=4 head-2=4
+cases run: trx_main,trx_managed; in each dump: base=TRUE head-1=TRUE head-2=TRUE
+text: base vs head differing lines 12, all L lines: TRUE; head-1 vs head-2 identical: TRUE
+(i) base dump equals stored at every changed leaf: TRUE (3 changed leaves)
+(ii) the two head dumps byte-identical: TRUE
+(iii) changed leaves only study_parameters leaves of the listed cases: TRUE
+pre-existing leaves (base dump differs from stored, not changed): 7

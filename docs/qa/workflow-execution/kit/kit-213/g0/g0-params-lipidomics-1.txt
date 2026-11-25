@@ -1,0 +1,110 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: k207
+Description: N/A
+Timestamp: 2026-11-24 19:42:29
+
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: c0369d5
+Commit Timestamp: 2026-11-25T06:31:35+11:00
+Source: Local Git Repository
+
+Assay Information:
+-------------------
+* Number of Assays: 1
+* Assay Names: LCMS_Pos
+* Total Lipids: 514
+* Lipids per Assay:
+    - LCMS_Pos: 514
+
+ITSD Normalization:
+-------------------
+* Applied: No
+
+Log Transformation:
+------------------
+* Applied: Yes
+* Transform: log2
+
+Between-Sample Normalization:
+-----------------------------
+* Method: quantile
+
+Lipidomics Metadata:
+----------------------
+* Lipid ID Column: LipidName
+* Annotation ID Column: LipidClass
+* Database Identifier Type: Unknown
+* Sample ID Column: Run
+* Group ID Column: group
+* Number of Samples: 12
+* Number of Groups: 2
+* Group Names: A, B
+* Internal Standard Regex: ^IS_
+
+RUV-III Batch Correction:
+-------------------------
+* Status: Not Applied
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+[deAnalysisParameters]
+  formula_string = ~ 0 + group
+  de_q_val_thresh = 0.050000000000000003
+  treat_lfc_cutoff = 0
+[lipidIntensityFilteringFn]
+  lipids_intensity_cutoff_percentile = 1
+  lipids_proportion_of_samples_below_cutoff = 0.5
+Additional Configuration Parameters:
+-----------------------------------
+Qc:
+  Mode: declarations
+deAnalysisParameters:
+  Formula String: ~ 0 + group
+  De q Val Thresh: 0.050000000000000003
+  Treat Lfc Cutoff: 0
+lipidIntensityFilteringFn:
+  Lipids Intensity Cutoff Percentile: 1
+  Lipids Proportion of Samples Below Cutoff: 0.5
+
+Analysis Record:
+----------------
+
+[2. lipid_raw_data_s4: design_builder]
+  sample_id [unknown] = Run
+  group_id [unknown] = group
+  technical_replicate_id [unknown] = tech_rep_group
+
+[3. lipid_intensity_filtered: lipid_intensity_filter]
+  lipids_intensity_cutoff_percentile [no_shipped_default] = 1
+  lipids_proportion_of_samples_below_cutoff [no_shipped_default] = 0.5
+
+[5. lipid_log2: lipid_log2]
+  offset [no_shipped_default] = 0
+
+[6. lipid_normalized: lipid_between_sample_normalisation]
+  normalisation_method [user_set] = quantile
+
+[7. lipid_correlation_filtered: lipid_pearson_selection]
+  lipid_pearson_pairs.correlation_group [no_shipped_default] = group
+  pairs [input] = faa0c41dbb1ad6239a4be1e0f0ef134385ac3ad57da55cabe773f58fd6851e7b
+  min_pearson_correlation_threshold [no_shipped_default] = 0.5
+
+[differential_abundance: lipid_da_contrast]
+  formula [default] = ~ 0 + group
+  qvalue [default] = 0.050000000000000003
+  lfc [default] = 0
+
+
+Contrasts:
+----------
+   B_vs_A=groupB-groupA
