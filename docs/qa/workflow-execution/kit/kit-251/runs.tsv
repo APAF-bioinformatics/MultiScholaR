@@ -1,0 +1,4 @@
+run_id	commit	purpose	job_minutes	result
+45593374307	c0e1ee89	G0 base values (a) managed, (b) in process; stop rule 1	20.2	one click: 1 worker request, one false already-running warning (managed); in process no warning; stop rule 1 does not fire; R-log counts not observable (in-app logger)
+45596850061	6155d2a0	R1 tests-only, failing first	11.8	as predicted: E1, E2, E3 and test-perf107-audit.R fail 2 vs 1; G1 passes
+45599010969	26bc37fb vs 6155d2a0	R2 base against head, 12 files, 3 shards per side, R CMD check	139.2	as predicted: 10 files same, 2 fixed (new file, declared edit); check findings identical (0 E, 3 W, 3 N both sides)

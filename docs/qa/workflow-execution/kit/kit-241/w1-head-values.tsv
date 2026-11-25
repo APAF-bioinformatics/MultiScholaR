@@ -1,0 +1,133 @@
+gate	host	key	value
+W1	linux (job)	run branch	run branch head 9619cb16914a97cec4ade69e9e7aad634f09d311; commit under test e4b0f98ecf92ddb6bc93f067e7a90179c1dae264; gate W1
+W1	linux (job)	package commit of the build	9619cb16914a97cec4ade69e9e7aad634f09d311
+W1	linux-runner-ubuntu-22.04	closure (plan-packages.tsv)	385 packages (plan-packages.tsv); zip in the plan: 1
+W1	linux-runner-ubuntu-22.04	R	R version 4.6.1 (2026-06-24)
+W1	linux-runner-ubuntu-22.04	os	Linux 6.8.0-1070-azure
+W1	linux-runner-ubuntu-22.04	R_ZIPCMD	set: '/usr/bin/zip'
+W1	linux-runner-ubuntu-22.04	Sys.which(zip)	/usr/bin/zip
+W1	linux-runner-ubuntu-22.04	file.exists(/usr/bin/zip)	TRUE
+W1	linux-runner-ubuntu-22.04	PATH	/usr/bin:/bin
+W1	linux-runner-ubuntu-22.04	.libPaths()	/home/runner/work/_temp/scratch-install/share/multischolar/0.9.0/app/resources/runtime/R/library
+W1	linux-runner-ubuntu-22.04	packageVersion(zip)	3.0.1
+W1	linux-runner-ubuntu-22.04	find.package(zip)	/home/runner/work/_temp/scratch-install/share/multischolar/0.9.0/app/resources/runtime/R/library/zip
+W1	linux-runner-ubuntu-22.04	packageVersion(MultiScholaR)	0.9.0
+W1	linux-runner-ubuntu-22.04	MultiScholaR SourceCommit	9619cb16914a97cec4ade69e9e7aad634f09d311
+W1	linux-runner-ubuntu-22.04	tempdir()	/tmp/Rtmp0DHrRQ
+W1	linux-runner-ubuntu-22.04	nchar(tempdir())	15
+W1	linux-runner-ubuntu-22.04	writer default zipFn	function(zipfile, files, flags) zip::zipr(zipfile = zipfile,  ;     files = files)
+W1	linux-runner-ubuntu-22.04	A.folder	/tmp/Rtmp0DHrRQ/kit241-case-A
+W1	linux-runner-ubuntu-22.04	A.nchar(folder)	29
+W1	linux-runner-ubuntu-22.04	A.status	ok
+W1	linux-runner-ubuntu-22.04	A.warnings	<none>
+W1	linux-runner-ubuntu-22.04	A.error	<none>
+W1	linux-runner-ubuntu-22.04	A.archive_exists	TRUE
+W1	linux-runner-ubuntu-22.04	A.archive_size	648
+W1	linux-runner-ubuntu-22.04	A.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	linux-runner-ubuntu-22.04	A.listing_is_expected	TRUE
+W1	linux-runner-ubuntu-22.04	A.R_unzip_extract	members equal
+W1	linux-runner-ubuntu-22.04	B.folder	/tmp/Rtmp0DHrRQ/kit241-case-B
+W1	linux-runner-ubuntu-22.04	B.nchar(folder)	29
+W1	linux-runner-ubuntu-22.04	B.status	ok
+W1	linux-runner-ubuntu-22.04	B.warnings	<none>
+W1	linux-runner-ubuntu-22.04	B.error	<none>
+W1	linux-runner-ubuntu-22.04	B.archive_exists	TRUE
+W1	linux-runner-ubuntu-22.04	B.archive_size	649
+W1	linux-runner-ubuntu-22.04	B.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	linux-runner-ubuntu-22.04	B.listing_is_expected	TRUE
+W1	linux-runner-ubuntu-22.04	B.R_unzip_extract	members equal
+W1	linux-runner-ubuntu-22.04	cases.tsv	/home/runner/work/_temp/probe-runner/cases.tsv
+W1	linux-runner-ubuntu-22.04	END line	present
+W1	linux-bare-ubuntu-22.04	container	Ubuntu 22.04.5 LTS; /usr/bin/zip: ls: cannot access '/usr/bin/zip': No such file or directory; /usr/bin/which: lrwxrwxrwx 1 root root 23 Nov 14 14:04 /usr/bin/which -> /etc/alternatives/which
+W1	linux-bare-ubuntu-22.04	R	R version 4.6.1 (2026-06-24)
+W1	linux-bare-ubuntu-22.04	os	Linux 6.8.0-1070-azure
+W1	linux-bare-ubuntu-22.04	R_ZIPCMD	set: '/usr/bin/zip'
+W1	linux-bare-ubuntu-22.04	Sys.which(zip)	<none>
+W1	linux-bare-ubuntu-22.04	file.exists(/usr/bin/zip)	FALSE
+W1	linux-bare-ubuntu-22.04	PATH	/usr/bin:/bin
+W1	linux-bare-ubuntu-22.04	.libPaths()	/opt/msr installed/app/resources/runtime/R/library
+W1	linux-bare-ubuntu-22.04	packageVersion(zip)	3.0.1
+W1	linux-bare-ubuntu-22.04	find.package(zip)	/opt/msr installed/app/resources/runtime/R/library/zip
+W1	linux-bare-ubuntu-22.04	packageVersion(MultiScholaR)	0.9.0
+W1	linux-bare-ubuntu-22.04	MultiScholaR SourceCommit	9619cb16914a97cec4ade69e9e7aad634f09d311
+W1	linux-bare-ubuntu-22.04	tempdir()	/tmp/Rtmp1fzArc
+W1	linux-bare-ubuntu-22.04	nchar(tempdir())	15
+W1	linux-bare-ubuntu-22.04	writer default zipFn	function(zipfile, files, flags) zip::zipr(zipfile = zipfile,  ;     files = files)
+W1	linux-bare-ubuntu-22.04	A.folder	/tmp/Rtmp1fzArc/kit241-case-A
+W1	linux-bare-ubuntu-22.04	A.nchar(folder)	29
+W1	linux-bare-ubuntu-22.04	A.status	ok
+W1	linux-bare-ubuntu-22.04	A.warnings	<none>
+W1	linux-bare-ubuntu-22.04	A.error	<none>
+W1	linux-bare-ubuntu-22.04	A.archive_exists	TRUE
+W1	linux-bare-ubuntu-22.04	A.archive_size	650
+W1	linux-bare-ubuntu-22.04	A.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	linux-bare-ubuntu-22.04	A.listing_is_expected	TRUE
+W1	linux-bare-ubuntu-22.04	A.R_unzip_extract	members equal
+W1	linux-bare-ubuntu-22.04	B.folder	/tmp/Rtmp1fzArc/kit241-case-B
+W1	linux-bare-ubuntu-22.04	B.nchar(folder)	29
+W1	linux-bare-ubuntu-22.04	B.status	ok
+W1	linux-bare-ubuntu-22.04	B.warnings	<none>
+W1	linux-bare-ubuntu-22.04	B.error	<none>
+W1	linux-bare-ubuntu-22.04	B.archive_exists	TRUE
+W1	linux-bare-ubuntu-22.04	B.archive_size	650
+W1	linux-bare-ubuntu-22.04	B.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	linux-bare-ubuntu-22.04	B.listing_is_expected	TRUE
+W1	linux-bare-ubuntu-22.04	B.R_unzip_extract	members equal
+W1	linux-bare-ubuntu-22.04	cases.tsv	/tmp/probe-out/cases.tsv
+W1	linux-bare-ubuntu-22.04	END line	present
+W1	windows (job)	run branch	run branch head 9619cb16914a97cec4ade69e9e7aad634f09d311; commit under test e4b0f98ecf92ddb6bc93f067e7a90179c1dae264; gate W1
+W1	windows-installed	package commit of the build	9619cb16914a97cec4ade69e9e7aad634f09d311
+W1	windows-installed	closure (plan-packages.tsv)	385 packages (plan-packages.tsv); zip in the plan: 1
+W1	windows-installed	R	R version 4.6.1 (2026-06-24 ucrt)
+W1	windows-installed	os	Windows Server x64
+W1	windows-installed	R_ZIPCMD	unset
+W1	windows-installed	Sys.which(zip)	<none>
+W1	windows-installed	PATH	C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/x86_64-w64-mingw32.static.posix/bin;C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/usr/bin;C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0
+W1	windows-installed	.libPaths()	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library
+W1	windows-installed	packageVersion(zip)	3.0.1
+W1	windows-installed	find.package(zip)	C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library/zip
+W1	windows-installed	packageVersion(MultiScholaR)	0.9.0
+W1	windows-installed	MultiScholaR SourceCommit	9619cb16914a97cec4ade69e9e7aad634f09d311
+W1	windows-installed	tempdir()	C:\Users\RUNNER~1\AppData\Local\Temp\RtmpQHWAQJ
+W1	windows-installed	nchar(tempdir())	47
+W1	windows-installed	R_RTOOLS45_PATH	C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/x86_64-w64-mingw32.static.posix/bin;C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/usr/bin
+W1	windows-installed	RTOOLS45_HOME	C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools
+W1	windows-installed	writer default zipFn	function(zipfile, files, flags) zip::zipr(zipfile = zipfile,  ;     files = files)
+W1	windows-installed	A.folder	C:\Users\RUNNER~1\AppData\Local\Temp\RtmpQHWAQJ/kit241-case-A
+W1	windows-installed	A.nchar(folder)	61
+W1	windows-installed	A.status	ok
+W1	windows-installed	A.warnings	<none>
+W1	windows-installed	A.error	<none>
+W1	windows-installed	A.archive_exists	TRUE
+W1	windows-installed	A.archive_size	661
+W1	windows-installed	A.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	windows-installed	A.listing_is_expected	TRUE
+W1	windows-installed	A.R_unzip_extract	members equal
+W1	windows-installed	B.folder	C:\Users\RUNNER~1\AppData\Local\Temp\RtmpQHWAQJ/kit241-case-B
+W1	windows-installed	B.nchar(folder)	61
+W1	windows-installed	B.status	ok
+W1	windows-installed	B.warnings	<none>
+W1	windows-installed	B.error	<none>
+W1	windows-installed	B.archive_exists	TRUE
+W1	windows-installed	B.archive_size	661
+W1	windows-installed	B.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	windows-installed	B.listing_is_expected	TRUE
+W1	windows-installed	B.R_unzip_extract	members equal
+W1	windows-installed	C.folder	C:\Users\RUNNER~1\AppData\Local\Temp\RtmpQHWAQJ/Ü-数据/kit241-case-C
+W1	windows-installed	C.nchar(folder)	66
+W1	windows-installed	C.status	ok
+W1	windows-installed	C.warnings	<none>
+W1	windows-installed	C.error	<none>
+W1	windows-installed	C.archive_exists	TRUE
+W1	windows-installed	C.archive_size	661
+W1	windows-installed	C.listing	enrichment_analysis_summary.txt ; gprofiler2_results.tsv
+W1	windows-installed	C.listing_is_expected	TRUE
+W1	windows-installed	C.R_unzip_extract	members equal
+W1	windows-installed	cases.tsv	D:\a\_temp\probe/cases.tsv
+W1	windows-installed	END line	present
+W1	windows-installed	A.expand-archive	extracted, members equal (enrichment_analysis_summary.txt, gprofiler2_results.tsv)
+W1	windows-installed	A.explorer	extracted, members equal (enrichment_analysis_summary.txt, gprofiler2_results.tsv)
+W1	windows-installed	B.expand-archive	extracted, members equal (enrichment_analysis_summary.txt, gprofiler2_results.tsv)
+W1	windows-installed	B.explorer	extracted, members equal (enrichment_analysis_summary.txt, gprofiler2_results.tsv)
+W1	windows-installed	C.expand-archive	extracted, members equal (enrichment_analysis_summary.txt, gprofiler2_results.tsv)
+W1	windows-installed	C.explorer	extracted, members equal (enrichment_analysis_summary.txt, gprofiler2_results.tsv)
