@@ -1,0 +1,3 @@
+........KIT-062 corpus: |r| Z1 0.9962, Z2 0.9975, Z3 0.9906; 731 iterations (convergence_rule); trained in 27.0 s
+KIT-151 seeds 20261119, 20261120, 20261121, 20261122, 20261123: rounds 731, 731, 731, 731, 731 (convergence_rule, convergence_rule, convergence_rule, convergence_rule, convergence_rule); lowest agreement Factor1 1.0000, Factor2 1.0000, Factor3 1.0000, Factor4 1.0000, Factor5 1.0000; median 1.0000, 1.0000, 1.0000, 1.0000, 1.0000
+KIT-240 T9 final ELBO by seed 20261119, 20261120, 20261121, 20261122, 20261123: -45695.190153, -45695.191540, -45695.190312, -45695.191179, -45695.191303; rank 1 of 5, 0 below the highest, range 0.001386948839 (relative 3.03522e-08)

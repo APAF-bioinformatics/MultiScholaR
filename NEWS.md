@@ -4,6 +4,18 @@
 
 ### New features
 
+ * Multi-omics integration (MOFA2) is now part of the application: the Integration tile on the home page opens six tabs
+   (Import, Sample Matching, Model, Results, Enrichment, Record) that combine two or more omics processed in the same
+   project and saved for integration at their Summary tab. The installers include MOFA2 and the Python it uses. From R,
+   the Model tab needs the Bioconductor package MOFA2, the R package reticulate and a Python with the module mofapy2
+   (0.7.3 is the version tested); without them it says which one is missing and how to install it. Without
+   RETICULATE_PYTHON, the first software check lets reticulate download and set up a Python of its own (about 50 MB,
+   observed with reticulate 1.46.0), and a mofapy2 installed into the system Python is then not used. The Results tab
+   now shows where the reported model ranks among the training seeds by the final value of MOFA2's training objective
+   (the ELBO), how far it is below the highest and the range over the seeds. The test setting
+   `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
+   hides the tabs. The Enrichment tab marks its eight defaults not yet confirmed (KIT-240).
+
  * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
    analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
    could not find with 20 and 60 samples; how missing values are treated; which data sets averaged several runs per

@@ -1,0 +1,28 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit240-integration-default.R	0	0	0	0	absent	92	0	0	1	ok	only-on-head		
+test-integration-gui.R	401	0	0	0	ok	405	0	0	0	ok	count-changed	counts: KIT-138: with the gate off the home page and the integration module are as before (passed 9 -> NA, skipped 0 -> NA); counts: KIT-138: with the gate set off the home page and the integration module are as before (passed NA -> 9, skipped NA -> 0); counts: KIT-139: internal standards, features seen once and few samples are stated with their counts (passed 6 -> 10, skipped 0 -> 0); counts: KIT-140: the Model tab's settings are built from the parameter table, each marked with its status (passed NA -> 38, skipped NA -> 0); counts: KIT-140: the Model tab's settings are built from the parameter table, provisional ones marked (passed 38 -> NA, skipped 0 -> NA)	
+test-integration-model.R	263	0	0	0	ok	265	0	0	0	ok	count-changed	counts: KIT-062: the inputs and parameters are refused in plain words with classed conditions (passed 32 -> 34, skipped 0 -> 0)	
+test-integration-record.R	167	0	0	0	ok	167	0	0	0	ok	same		
+test-integration-results.R	258	0	0	0	ok	258	0	0	0	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		
+test-integration-removed-factors.R	520	0	0	3	ok	520	0	0	3	ok	same		
+test-workflow-checkpoint-harness.R	628	0	1	8	failed	628	0	1	8	failed	same		
+test-metab-03b-norm-module-helper-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-05b-norm-module-contracts.R	440	0	0	22	ok	440	0	0	22	ok	same		
+test-integration-enrichment-options.R	271	0	0	0	ok	271	0	0	0	ok	same		
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-sample-match.R	76	0	0	0	ok	76	0	0	0	ok	same		
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-perf-107.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-workflow-ui-shared.R	178	0	0	0	ok	178	0	0	0	ok	same		
+test-integration-enrichment-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-integration-model-tab-mofa.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-integration-mofa-model.R	0	0	0	4	ok	0	0	0	4	ok	same		
+test-integration-outputs-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-partitioned-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-record-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-results-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-workbook-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-enrichment-tests.R	181	0	0	2	ok	181	0	0	2	ok	same		
+test-integration-partitioned-alignment.R	253	0	0	0	ok	253	0	0	0	ok	same		
