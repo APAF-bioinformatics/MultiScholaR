@@ -5366,7 +5366,9 @@ test_that("KIT-112 W3 (F112-02): a click while the publication holds a pending r
     pending <- captures$pending
     expect_identical(pending$operations, c("DA-contrast-output", "da_publication"))
     expect_identical(pending$notes, c(omicDaK112Working, omicDaK112RunnerNotes, "remove da_working", omicDaK112PublicationStart,
-        "remove da_publication", "[error 15 -] Error applying DA publication: managed action ended: publication_pending"))
+        "remove da_publication", paste("[error 15 -] Error applying DA publication: the result was saved, but its tables and",
+            "figures could not be written to the project folder. Press the button again to write them; the step is not run",
+            "again.")))
     expect_true(pending$manifest)
     retry <- captures$retry
     expect_identical(retry$operations, "da_publication")
