@@ -22,13 +22,13 @@ kit252Text <- list(
         "process was closed). Its result was not saved. Press the button again; if it stops again, the application's log",
         "has the details."),
     not_started = paste("the step could not be started (too little free memory, or its process could not start).",
-        "Nothing was run. Close other programs and press the button again."),
+        "It did not run. Close other programs and press the button again."),
     publication_pending = paste("the result was saved, but its tables and figures could not be written to the project",
         "folder. Press the button again to write them; the step is not run again."),
     changed = paste("the table or the project changed while the step ran, so its result was not used.",
         "Press the button again."),
     internal = paste("the step's result could not be received (an internal check failed). Its result was not saved.",
-        "Press the button again; if it happens again, the application's log file has the details."),
+        "Press the button again; if it happens again, the application's log has the details."),
     not_closed = paste("the step's process could not be closed cleanly. Its result may have been saved; check this tab",
         "before running the step again, and restart the application if this happens again.")
 )

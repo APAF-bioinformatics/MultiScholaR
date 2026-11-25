@@ -47,17 +47,31 @@ Core-hours: R1 2.73 + R2 14.95 = **17.68** (expected 21.33, ceiling 86.0). No co
 - The sentences are true for their cause by reading the code cited in `wording.md`; they are DRAFTS for the owner's
   wording pass (VAL-41, row QC-8), each listed there.
 
+## Repair after the implementation audit
+
+AUDIT-KIT-252-impl-20261125 (I01 to I09) was applied in one commit of texts and records, without a run of its own
+(the merge train's run executes the new file and the four declared-edit files on the merged head): WP-5 "Nothing was
+run." became "It did not run." (I02); WP-8's "the application's log file has the details" became "the application's
+log has the details" (I03), in `R/utils_workflow_execution.R`, the new test file's constants and the declared edit in
+`test-workflow-omics-application-reads.R`; NEWS, the ledger row and `wording.md` no longer say a user is told of low
+memory on the computer (I01); `wording.md` lists every frame of the sentences and the owner's open points (I04 to I06,
+I08). Convention divergence (I10): 25 added lines in `R/utils_workflow_execution.R` exceed R.md's 100 characters
+(longest 126) and the test file uses `function(...)` lambdas, following the existing file's idiom (411 lines over 100
+at base).
+
 ## For the change report
 
 - **What was wrong, who was affected.** Every user of the installed application (every omic, user and test mode):
   when a step run on the managed worker ended without an error of its own (the application's memory limit for one
-  step, the computer low on memory, the per-step time limit of 30 minutes, a process killed or crashed, a result
+  step, a step that could not start, the per-step time limit of 30 minutes, a process killed or crashed, a result
   committed whose files were not written, an internal check), the notice showed an internal code, for example
   "Error applying precursor rollup: managed action ended: worker_failed" (KIT-233 run L3w), with no statement of what
   happened, whether anything was saved, or what to do. For `publication_pending` a generic sentence would have said
   nothing was saved when the result had been committed.
 - **Legacy or new.** New to 0.9: `main` has neither `R/utils_workflow_execution.R` nor `R/utils_workflow_omics_actions.R`
   (`git show main:<path>`: not in `main`), so the managed worker and this notice do not exist in the legacy pipeline.
+  The old literal was in the `v0.9.0` staging-build tag (12560b8a, `R/utils_workflow_execution.R:963`), which is not on
+  `main` (AUDIT-KIT-252-impl I12).
 - **Code.** Base 16112917: `R/utils_workflow_execution.R:960-966` (`paste("managed action ended:", result$status)`).
   Fix 0f34035a: `workflowManagedFailureText` at `R/utils_workflow_execution.R:824`; the log line
   "managed action <operation> ended: <status>" at `:1008`; the call at `:1011`; the action records its operation at
@@ -76,3 +90,5 @@ Core-hours: R1 2.73 + R2 14.95 = **17.68** (expected 21.33, ceiling 86.0). No co
 - The Windows plain launcher's statuses (KIT-237's runs may show them); systemd's `Result` at `RuntimeMaxSec`.
 - The full suite (rides the merge train).
 - The owner's final words (QC-8).
+- Under systemd the application's own memory guards stop the whole application (AUDIT-KIT-252-impl I01); the
+  low-memory sentence is mapped but not shown.

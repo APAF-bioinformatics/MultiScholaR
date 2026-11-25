@@ -61,11 +61,12 @@
 
 ### Fixes
 
- * Every omic: when a step's worker process stops without an error of its own (the application's memory limit for
-   one step, low memory on the computer, the time limit for one step, a process closed by the system, a result whose
-   files could not be written, an internal check), the message now says so in plain words, whether its result was
-   saved, and what to do; before, it showed an internal code such as 'managed action ended: memory_guard'. The
-   wording is a draft for the owner's review (KIT-252).
+ * Every omic: when a step run by the application's worker ends without an error of its own (the application's
+   memory limit for one step, the time limit for one step, a process that stopped or could not start, a table that
+   changed while the step ran, a result whose files could not be written, an internal check), the message now says
+   in plain words what happened, whether the step's result was saved, and what to do; before, it showed an
+   internal code such as 'managed action ended: memory_guard'. The wording is a draft for the owner's review
+   (KIT-252).
 
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's

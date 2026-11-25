@@ -566,7 +566,7 @@ test_that("KIT-082: the runner runs what waits in order, and tells what waits wh
     shown <- shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list()))
     # KIT-252: the poll's status "failed" is not a known one, so the user is told the internal sentence (draft WP-8).
     expect_match(shown$message, paste("the step's result could not be received (an internal check failed). Its result was",
-      "not saved. Press the button again; if it happens again, the application's log file has the details."), fixed = TRUE)
+      "not saved. Press the button again; if it happens again, the application's log has the details."), fixed = TRUE)
     hook$fail <- FALSE
     expect_null(shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list())))
   }))))
