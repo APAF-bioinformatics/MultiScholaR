@@ -5,11 +5,13 @@
 # Usage: Rscript score-k188.R <rows dir> <out dir> [<part L family> <part P family>]
 #   rows dir  the assembled rows (*.tsv.gz) of every S job (deciding, reported, munit, ba, lp, las)
 #   family    the Bonferroni family sizes (default 720 for Part L under D6 (a), 936 for Part P)
-# Environment (both read once, written to settings.txt):
-#   K188_PHI_DENOMINATOR  declared | reached: the owner's rule for phi's denominator once confirmed (40.1, R20-P09). Unset: phi
-#                         is computed and reported with both denominators and the outcome is written for each.
-#   K188_SCORE_R          "<deciding>,<other>": the declared data-set ranges (400,100 as 5.6 and 38.3 declare). Set ONLY by E16
-#                         (the scorer on a constructed row set, 7.4); a counted run never sets it.
+# Environment (read once, written to settings.txt; both are set ONLY by E16, the scorer on a constructed row set, 7.4; a counted run never
+# sets them):
+#   K188_SCORE_R      "<deciding>,<other>": the declared data-set ranges (400,100 as 5.6 and 38.3 declare)
+#   K188_SCORE_CELLS  "<cell>:<job>,...": the declared (cell, job) set of Part L's S (38.3 (ii), SA-P14)
+# phi (38.2 (6), VAL-335, r1.22): events are data sets with an assay not corrected because the method could not and no gate status
+# (gate first); phi, the deciding figure, divides by the data sets whose journey reached the RUV step; phi_all (all declared data
+# sets) is an informational column, not deciding.
 # Writes: conditions.tsv (per part, arm, cell, scenario, mask, estimand: R, mean, SD, Monte Carlo SE, limits, classification,
 #   r_used, r_out, n_gate, class_best, class_worst, sensitive, n_paired_dropped, phi columns, lan0_share, label), verdicts.tsv,
 #   outcome.txt, dataset.tsv (per data set and arm), statuses.tsv, statuses-assay.tsv, phi.tsv, capbind.tsv, partm-df.tsv,
@@ -38,8 +40,7 @@ JOB_ARMS <- list(L = list(deciding = c("LA", "GA", "NO", "OR"), reported = c("LA
 SCORED_JOBS <- c("deciding", "ba", "reported", "lp", "las")
 SCENARIOS <- c("N0", "N1", "E0", "E1", "N2", "E2")
 MASKS <- c("none", "vd5", "vd20")
-settings <- c(phi_denominator = Sys.getenv("K188_PHI_DENOMINATOR", "both (the owner's rule is pending, 40.1)"),
-    score_r = Sys.getenv("K188_SCORE_R", "400,100"))
+settings <- c(score_r = Sys.getenv("K188_SCORE_R", "400,100"), score_cells = Sys.getenv("K188_SCORE_CELLS", "declared (5.6, 38.3)"))
 ranges <- as.integer(strsplit(Sys.getenv("K188_SCORE_R", "400,100"), ",", fixed = TRUE)[[1L]])
 declaredRange <- function(job, cell) seq_len(if (identical(job, "deciding") && !identical(cell, "L24")) ranges[[1L]] else ranges[[2L]])
 writeLines(sprintf("%s = %s", names(settings), settings), file.path(out_dir, "settings.txt"))
@@ -81,7 +82,15 @@ expanded <- do.call(rbind, c(list(NULL), lapply(seq_len(nrow(unit_rows)), functi
 present <- unique(c(paste(rows$cell, rows$job, rows$scenario, rows$mask, rows$arm, rows$rep)[rows$job %in% SCORED_JOBS & rows$arm_scale == "1"],
     if (!is.null(expanded)) paste(expanded$cell, expanded$job, expanded$scenario, expanded$mask, expanded$arm, expanded$rep)))
 gaps <- character()
-cell_jobs <- unique(rbind(rows[rows$part == "L" & rows$job %in% SCORED_JOBS, c("cell", "job")], unit_rows[unit_rows$part == "L", c("cell", "job")]))
+# SA-P14, 38.3 (ii): the declared (cell, job) set of Part L's S, not what is present; a whole absent (cell, job) is a gap
+DECLARED_CELL_JOBS <- rbind(data.frame(cell = c("L12", "L64", "M12", "M168", "L24"), job = "deciding"),
+    data.frame(cell = rep(c("L12", "L64", "M12", "M168"), 3L), job = rep(c("reported", "lp", "las"), each = 4L)),
+    data.frame(cell = c("L64", "M168"), job = "ba"))
+if (nzchar(Sys.getenv("K188_SCORE_CELLS"))) {
+    spec <- strsplit(strsplit(Sys.getenv("K188_SCORE_CELLS"), ",", fixed = TRUE)[[1L]], ":", fixed = TRUE)
+    DECLARED_CELL_JOBS <- data.frame(cell = vapply(spec, `[[`, "", 1L), job = vapply(spec, `[[`, "", 2L), stringsAsFactors = FALSE)
+}
+cell_jobs <- if (any(rows$part == "L") || any(unit_rows$part == "L")) DECLARED_CELL_JOBS else DECLARED_CELL_JOBS[0, ]
 for (i in seq_len(nrow(cell_jobs))) {
     cell <- cell_jobs$cell[[i]]
     job <- cell_jobs$job[[i]]
@@ -231,6 +240,17 @@ classify <- function(r) {
     if (!is.finite(r$mean)) return("not determined")
     words[[1L + sum(r$mean >= edges)]]
 }
+# the paired excess over the oracle (5.7's oracle check): meets below 0.025 by the one-sided 97.5 % limit, fails at or above it by the
+# Bonferroni lower limit; with fewer than two paired data sets it is not determined (SA-P04)
+excessClass <- function(diff, part, no_result) {
+    if (isTRUE(no_result)) return("no result")
+    diff <- diff[is.finite(diff)]
+    if (length(diff) < 2L) return("not determined (excess over OR)")
+    se <- stats::sd(diff) / sqrt(length(diff))
+    upper <- mean(diff) + stats::qt(0.975, length(diff) - 1L) * se
+    lower <- mean(diff) - stats::qt(1 - 0.025 / family[[part]], length(diff) - 1L) * se
+    if (upper < 0.025) "meets (excess over OR)" else if (lower >= 0.025) "fails (excess over OR)" else "not determined (excess over OR)"
+}
 for (i in seq_len(nrow(conditions))) {
     r <- conditions[i, ]
     k <- paste(r$part, r$cell, r$job, r$scenario, r$mask, r$estimand)
@@ -243,15 +263,18 @@ for (i in seq_len(nrow(conditions))) {
         d <- merge(a, o, by = "rep")
         diff <- d[[2L]] - d[[3L]]
         diff <- diff[is.finite(diff)]
-        se <- stats::sd(diff) / sqrt(length(diff))
-        upper <- mean(diff) + stats::qt(0.975, length(diff) - 1L) * se
-        lower <- mean(diff) - stats::qt(1 - 0.025 / family[[r$part]], length(diff) - 1L) * se
-        conditions$classification[i] <- if (isTRUE(r$no_result)) "no result" else if (upper < 0.025) "meets (excess over OR)" else
-            if (lower >= 0.025) "fails (excess over OR)" else "not determined (excess over OR)"
+        conditions$classification[i] <- excessClass(diff, r$part, r$no_result)
         conditions$oracle_check[i] <- TRUE
         conditions$n_paired_dropped[i] <- r$R - length(diff)
-        conditions$class_best[i] <- conditions$class_worst[i] <- NA_character_ # not recomputed on the excess route (a reading, reported)
-        conditions$sensitive[i] <- FALSE
+        # 38.2 (4), r1.23 (SA-P13): the arm's data sets out under 38.2 (3) put at 0 (best) and 1 (worst), paired with the oracle's value
+        # on that data set where the oracle has a DA table
+        out_o <- merge(data.frame(rep = x$rep[x$arm == r$arm & !x$has_da]), o, by = "rep")[[2L]]
+        out_o <- out_o[is.finite(out_o)]
+        if (r$r_out > 0L) {
+            conditions$class_best[i] <- excessClass(c(diff, 0 - out_o), r$part, r$no_result)
+            conditions$class_worst[i] <- excessClass(c(diff, 1 - out_o), r$part, r$no_result)
+        } else conditions$class_best[i] <- conditions$class_worst[i] <- NA_character_
+        conditions$sensitive[i] <- !is.na(conditions$class_best[i]) && conditions$class_best[i] != conditions$class_worst[i]
     } else {
         conditions$classification[i] <- classify(r)
         conditions$oracle_check[i] <- FALSE
@@ -268,7 +291,7 @@ conditions$label <- ifelse(conditions$estimand == "S5" & is.finite(conditions$s5
 # divides by the R declared data sets (r1.19), phi by those whose journey reached the RUV step (the draft rule, 40.1).
 phi_rows <- list()
 for (x in split(dataset[!dataset$arm %in% c("OR", "NO"), ], dataset[!dataset$arm %in% c("OR", "NO"), cond_key], drop = TRUE)) {
-    events <- sum(x$phi_event %in% TRUE)
+    events <- sum(x$phi_event %in% TRUE & !x$gate) # gate first (38.2 (6), VAL-335): a data set enters at most one of the two
     declared <- nrow(x)
     reached <- sum(x$ruv_reached)
     phi_rows[[length(phi_rows) + 1L]] <- data.frame(x[1L, cond_key], events = events, r_declared = declared, r_reached = reached,
@@ -309,7 +332,7 @@ phiMax <- function(g, arm, column) {
     if (nrow(p)) max(p[[column]], na.rm = TRUE) else NA_real_
 }
 outcome <- character()
-denominators <- switch(Sys.getenv("K188_PHI_DENOMINATOR", "both"), declared = "phi_all_upper", reached = "phi_upper", c("phi_all_upper", "phi_upper"))
+denominators <- "phi_upper" # VAL-335: phi over the data sets that reached the RUV step is THE figure
 for (g in unique(verdicts$group)) {
     v <- stats::setNames(verdicts$verdict[verdicts$group == g], verdicts$arm[verdicts$group == g])
     safe <- function(arm) identical(unname(v[arm]), "safe")
@@ -336,8 +359,7 @@ for (g in unique(verdicts$group)) {
             if (safe("GA")) "K2" else if (safe("NO")) "K3" else "K4"
         outcome <- c(outcome, sprintf("%s: %s (LA %s, GA %s, NO %s%s%s)%s", g, k, v["LA"], v["GA"], v["NO"],
             if (la_worse) "; K1's efficiency clause failed" else "", if (!phi_pass) "; K1's non-correction clause failed" else "",
-            sprintf(" [phi denominator: %s%s; LA's largest upper limit %.3f%s]", if (identical(column, "phi_all_upper")) "the declared data sets" else "data sets that reached the RUV step",
-                if (length(denominators) == 2L) ", the owner's rule is pending (40.1)" else "", phiMax(g, "LA", column),
+            sprintf(" [phi over the data sets that reached the RUV step%s; LA's largest upper limit %.3f%s]", "", phiMax(g, "LA", column),
                 if (identical(k, "K2")) sprintf("; GA's largest upper limit %.3f, per condition in phi.tsv", phiMax(g, "GA", column)) else "")))
     }
 }
@@ -417,7 +439,7 @@ if (nrow(la)) {
     ga <- dataset[dataset$arm == "GA" & dataset$job == "deciding", c("cell", "scenario", "mask", "rep", "k_est_min")]
     names(ga)[5L] <- "ga_estimate_min"
     la <- merge(la, ga, by = c("cell", "scenario", "mask", "rep"), all.x = TRUE)
-    la$sig_k_above_cap <- vapply(seq_len(nrow(la)), function(i) any(num(strsplit(la$k_sweep[[i]], ";", fixed = TRUE)[[1L]]) > num(strsplit(la$k_cap[[i]], ";", fixed = TRUE)[[1L]]), na.rm = TRUE), NA)
+    la$sig_k_above_cap <- la$cap_bound # k_sweep > k_cap in any assay (the data-set flag, SA.6 (10))
     la$sig_controls_below_10 <- la$n_controls_min < 10
     la$sig_complete_below_5 <- la$complete_min < 5
     la$sig_logfc_above_5 <- la$logfc_max > 5
