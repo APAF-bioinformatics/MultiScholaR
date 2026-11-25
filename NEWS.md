@@ -67,6 +67,16 @@
    column other than the experimental groups is described as it was used. A project keeps the copy of the report
    template made at its first report; projects that generated a report before this version keep the earlier text
    unless that copy (`scripts/<omic>/<template>.rmd`) is removed (KIT-227).
+ * Reports (lipidomics, metabolomics): the report now reads the study-parameters file the application writes. Since
+   March 2026 the application wrote this file in a form these two reports did not read, so a report generated in the
+   application showed 'Error running Main function: …' in place of its Sample Details and no Methods, Results,
+   Comments or differential-abundance text. The Methods now state the number of assays, the internal-standard
+   normalisation, the log transformation, the between-sample normalisation and, for each assay, the number of unwanted
+   components removed and of control features, as recorded. A report generated after a save that failed (the short
+   study-parameters file the application writes on an error) still shows 'Error running Main function: …'; that file
+   records no assays. A project keeps the copy of the report template made at its first report; projects that
+   generated a lipidomics or metabolomics report before this version keep the earlier template unless that copy
+   (`scripts/<omic>/<omic>_report.rmd`) is removed (KIT-235).
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session

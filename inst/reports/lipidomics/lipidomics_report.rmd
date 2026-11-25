@@ -120,7 +120,7 @@ ReadStudyParamsNew <- function(filepath) {
     # Detect main sections
     if (grepl(":$", line) && !grepl("^[[:space:]]", original_line)) {
       # Strip bullet prefix and trailing colon from section name
-      main_section <- trimws(sub("^[-•][[:space:]]*", "", sub(":$", "", line)))
+      main_section <- trimws(sub("^[-•*][[:space:]]*", "", sub(":$", "", line)))
       d66_log("[D66] MAIN SECTION detected:", main_section, "\n")
       params[[main_section]] <- list()
       sub_section <- NULL
@@ -169,8 +169,8 @@ ReadStudyParamsNew <- function(filepath) {
 
     # Handle bullet points and dash-prefixed lines (e.g., "• Item" or "- Item")
     # Note: "-" must be at start or end of character class to be literal
-    if (grepl("^[•-]", line)) {
-      line <- sub("^[-•][[:space:]]*", "", line)
+    if (grepl("^[•*-]", line)) {
+      line <- sub("^[-•*][[:space:]]*", "", line)
     }
 
     # Handle key-value pairs
@@ -184,7 +184,7 @@ ReadStudyParamsNew <- function(filepath) {
       key <- trimws(parts[1, 1])
       value <- trimws(parts[1, 2])
 
-      key <- sub("^[•[:space:]-]+", "", key)
+      key <- sub("^[•*[:space:]-]+", "", key)
 
       if (nchar(key) > 0) {
         if (!is.null(config_block) && !is.null(sub_section) && !is.null(main_section)) {
