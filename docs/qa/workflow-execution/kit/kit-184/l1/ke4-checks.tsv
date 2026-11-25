@@ -1,0 +1,7 @@
+cell	view	kind	class	rho_key	arm	test	sets	replicates	T	mc_se	lower	upper	pass
+A	metabolomics_LCMS	F_main	C5		3	camera	25	5	0	0	0	0	TRUE
+A	proteomics	F_main	C5		3	camera	70	5	0	0	0	0	TRUE
+A	transcriptomics	F_main	C5		3	camera	75	5	0	0	0	0	TRUE
+B	metabolomics_LCMS	F_main	C5		3	camera	25	5	0.08	0.0489897948556636	-0.0560174761316511	0.216017476131651	FALSE
+B	proteomics	F_main	C5		3	camera	65	5	0.106666666666667	0.106666666666667	-0.189487477887765	0.402820811221098	FALSE
+B	transcriptomics	F_main	C5		3	camera	75	5	0.2	0.109544511501033	-0.104144322758327	0.504144322758327	FALSE
