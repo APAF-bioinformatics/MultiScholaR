@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-246c (VAL-305): the shared scaling passage regains four phrases; head 10df1d31 against tests-only bfc57ce7; 4 files, one shard per side, no check; ceiling 60 job-minutes; decides the record file fixed and the other three same",
+  "label": "KIT-246c wording 10df1d31 vs bfc57ce7",
+  "package_commit": "10df1d312c7a7d8b32d7c8f986dac4e6e9869887",
+  "base_commit": "bfc57ce721079219f6003580dd797c5f5349bfa9",
+  "tools_ref": "",
+  "tests": ["test-integration-record.R", "test-integration-results.R", "test-integration-gui.R", "test-integration-model.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
