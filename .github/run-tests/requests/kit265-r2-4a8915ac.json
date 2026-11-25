@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-265 R2: fix 4a8915ac against tests-only 2269d03a, 10 files, 1 shard per side, check both; ceiling 340 job-minutes, expected 113.5",
+  "label": "KIT-265 R2 base 2269d03a head 4a8915ac",
+  "package_commit": "4a8915ac9de13190aba32b779e0c75b0076d3e5b",
+  "base_commit": "2269d03ad00746e0db3be900819c8240a2d1a52a",
+  "tools_ref": "",
+  "tests": [
+    "test-kit265-organism-routes.R",
+    "test-e2e-test-mode-integration.R",
+    "test-kit250-organism-dialog.R",
+    "test-module-ci-prot-import.R",
+    "test-prot-01c-import-module-contracts.R",
+    "test-prot-01d-import-module-characterization.R",
+    "test-prot-import-core.R",
+    "test-workflow-gui-memory-lifetimes.R",
+    "test-workflow-server-shared.R",
+    "test-workflow-ui-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
