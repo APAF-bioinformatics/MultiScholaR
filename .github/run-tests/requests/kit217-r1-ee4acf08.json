@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-217 R1: the tests-only commit; each new test fails at the ticket's stated value (5.6, 5.11); guards pass; ceiling 45 job-minutes",
+  "label": "KIT-217 R1 tests first on kit-217 ee4acf08",
+  "package_commit": "ee4acf0876972d5f6846d5b475a1cbe4fce3260c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit217-intensity-filter-missing.R",
+    "test-metab-qc-shared.R",
+    "test-metab-02t-metabolite-intensity-filtering-characterization.R",
+    "test-metab-s4-qc-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
