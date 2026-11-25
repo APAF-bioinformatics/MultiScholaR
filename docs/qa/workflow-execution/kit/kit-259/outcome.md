@@ -1,7 +1,9 @@
 # KIT-259: outcome (implementation, ticket r1.2)
 
-**State: stopped at stop rule 3 (R2).** G0-B, R1 and the fix are done; R2 found one unpredicted test-code
-expectation that froze the A1 defect (section 1, R2). Everything else held as predicted.
+**State: correction pass done (section 1, R2c); ready for a fresh implementation audit.** R2 had stopped at stop rule 3
+on one unpredicted test-code expectation that froze the A1 defect; the coordinator ruled it a declared edit (ticket
+r1.3) and the one correction pass ran it. **Part B is a release prerequisite under E-4: stop rule 2 was met on both
+(b) and (c).**
 
 Branch `kit-259` from v0.9-staging c4505c7f. All computation on GitHub-hosted runners (run-tests); no R on the
 laptop. Runs and minutes: `runs.tsv`. Returned tables: `g0b-45623233776/`, `r1-45626688355/`, `r2-45629589384/`.
@@ -14,7 +16,12 @@ The triage that preceded the ticket (KIT-259 G0, run 45610170354) is recorded on
 | e0cb5a99 | R1 tests only: `tests/testthat/test-kit259-pearson-histogram-figure-failure.R`; declared edit `test-metab-01k-s4-plot-pearson-characterization.R:215` |
 | 040fc8a2 | R1 records |
 | 1d6737c1 | the fix (R/ only) |
-| (records commit) | R2 records, NEWS, ledger row, `wording.md`, this file (stopped at stop rule 3) |
+| 55278377 | R2 records, NEWS, ledger row, `wording.md`, this file (stopped at stop rule 3) |
+| b2703094 | correction, tests only: the declared edit of `test-workflow-saved-exports.R:730-731` |
+| 1fc916b2 | merge of origin/v0.9-staging 42846c0e (ledger append collision: both rows kept, staging's first) |
+| f3f58167 | correction-pass predictions (`correction-predictions.md`), committed before the run |
+| `run-k259-c-base` 545c4557 | the correction pass's base: e0cb5a99 + the edit (3a0f3c04) + staging 42846c0e |
+| (records commit) | R2c records |
 
 ## 1. Observed
 
@@ -44,14 +51,15 @@ The triage that preceded the ticket (KIT-259 G0, run 45610170354) is recorded on
   process). In the tab: `redraw_pre` FALSE on the first run; head `normalized`, unfinished, publication pending,
   notice "Error in normalization: Insufficient values in manual scale. ...". The failed `ggsave` left a 5,187-byte
   `post_norm_pca.png` behind (generator on the S4 object).
-- Not held (2): `ip.a.zero_pair_variable` predicted `batch`, observed `factor2,batch` (the builder leaves `factor2`
+- Not held (2), as stated here: `ip.a.zero_pair_variable` predicted `batch`, observed `factor2,batch` (the builder leaves `factor2`
   empty, so it also gives no pair; `batch` was used, as predicted); `c.c_entry.events` predicted the pre-normalisation
   PCA failing at tab entry, observed nothing drawn at tab entry in the harness (the `selected_tab` reactive given to
-  `testServer` did not trigger the tab-entry observer; not observed, not re-sent: no decision depends on it).
+  `testServer` did not trigger the tab-entry observer): the tab-entry probe in (c) not observed; not re-sent, no
+  decision depends on it.
 
 **Stop rule 2:** both (b) and (c) leave the normalisation committed and unfinished at the default `warn` (0 in the
 harness, 1 in the lane; neither promotes a warning). Part B stays; E-4 (as amended, "including (b) alone") makes it a
-release prerequisite.
+release prerequisite (both (b) and (c) met stop rule 2).
 
 ### R1 (run 45626688355, at e0cb5a99 = c4505c7f plus the tests; 13.4 job-minutes)
 
@@ -92,10 +100,24 @@ job-minutes. `r2-45629589384/`.
   the test froze the defect A1 repairs. The ticket's section 6 did not list it.
 - R CMD check: base and head 0 errors, 3 warnings, 3 notes; findings identical (6 on both, none only on either side).
 
-**Stop rule 3 (an unpredicted R2 verdict): stopped here.** Not edited and not re-run. What it needs (for the
-coordinator): a declared edit of `test-workflow-saved-exports.R:730-731` (test code, no stored reference; for example
-the expectation becomes that no removed-rows warning is raised, or the warning expectation is dropped), recorded in the
-ticket's section 6, then the correction pass the ticket allows (R1 and R2 again, at least this file base against head).
+**Stop rule 3 (an unpredicted R2 verdict): stopped.** R2 found that `test-workflow-saved-exports.R:730-731` required the
+A1 defect. It is test code, not a stored reference. The coordinator's ruling (2026-11-26): a declared edit (ticket
+r1.3, section 6) asserting the opposite, that saving the correlation product raises no removed-rows warning
+(`expect_no_warning(..., message = "Removed [0-9]+ rows?")`; the rest of the block unchanged), then the one
+correction pass (R2c below).
+
+### R2c, the correction pass (run 45641244855)
+
+Base `run-k259-c-base` 545c4557 (tests-only e0cb5a99 + the declared edit + staging 42846c0e; R/ without the fix),
+head f3f58167 (the fix + the edit + the same staging merge + the predictions file); three files, no check (R2's check
+stands; the merge train repeats it); 28.4 job-minutes. `r2c-45641244855/`. Predictions: `correction-predictions.md`,
+committed before the run. Every prediction held:
+
+| File | Base | Head | Verdict |
+|---|---|---|---|
+| `test-workflow-saved-exports.R` | 261 passed, 10 failed (the edited expectation, once per cycle: the warning is still raised), 1 error (lobstr absent) | 271 passed, 0 failed, the same 1 error | `fixed` |
+| `test-kit259-pearson-histogram-figure-failure.R` | 39 passed, 32 failed | 85 passed, 0 failed | `fixed` |
+| `test-metab-01k-s4-plot-pearson-characterization.R` | 16 passed, 1 failed | 17 passed, 0 failed | `fixed` |
 
 ## 2. Acceptance criteria
 
@@ -103,7 +125,7 @@ ticket's section 6, then the correction pass the ticket allows (R1 and R2 again,
 |---|---|---|---|
 | A1 | G0-B on base | `g0b-45623233776/g0b-base.tsv`; section 1 | met (2 rows not held, stated) |
 | A2 | E rows fail at base by assertion, G rows pass; all pass on the fix | R1; R2 head | met: all 85 expectations of the new file pass on the fix (R2 head) |
-| A3 | R2 every file `same` except the new file and the declared `test-metab-01k` | R2 `compare.tsv` | **not met**: one unpredicted `new-failure` (`test-workflow-saved-exports.R`, the frozen removed-rows warning of A1); stop rule 3 |
+| A3 | R2 every file `same` except the new file and the declared `test-metab-01k` | R2 `compare.tsv` | met after the correction pass: R2 40 files `same`, 2 `fixed`, check identical; the one unpredicted file is the declared edit (r1.3) and is `fixed` in R2c |
 | A4 | NEWS, ledger, wording; this file with "For the change report" and P16's note | `NEWS.md`, `docs/methods-decision-ledger.md` (VAL-<merge>), `wording.md`, section 4 | met (drafts for the owner's pass) |
 
 ## 3. Inferred, and notes

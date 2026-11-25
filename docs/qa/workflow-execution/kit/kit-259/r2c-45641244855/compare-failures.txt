@@ -1,0 +1,279 @@
+== test-workflow-saved-exports.R | fixed | ten small normalization revert style export cycles release action resources
+-- base:
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+  Expected `ggplot2::ggsave(...)` not to throw any warnings matching pattern 'Removed [0-9]+ rows?'.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A-E1: the rebuilt proteomics histogram draws all 20 pairs of a bin holding more than 4
+-- base:
+  Expected `as.integer(sum(ld$count[!is.na(ld$ymax)]))` to be identical to `as.integer(pairs)`.
+  Differences:
+    `actual`:  0
+  `expected`: 20
+  Expected `ggplot2::ggplotGrob(plot)` not to throw any warnings.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A-E2: the native plotPearson histogram draws all 20 pairs of a bin holding more than 4
+-- base:
+  Expected `as.integer(sum(ld$count[!is.na(ld$ymax)]))` to be identical to `as.integer(pairs)`.
+  Differences:
+    `actual`:  0
+  `expected`: 20
+  Expected `ggplot2::ggplotGrob(plot)` not to throw any warnings.
+  Actually got a <rlang_warning> with message:
+    Removed 1 row containing missing values or values outside the scale range (`geom_bar()`).
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A-E3: plotPearson with no within-group pair (an unset batch) returns a labelled empty figure
+-- base:
+  Expected `got$value` to inherit from "ggplot".
+  Actual class: "simpleError"/"error"/"condition".
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A-E4: the figure drawn from a saved reference with no within-group pair is labelled and its product saved
+-- base:
+  Expected `got$value` to inherit from "ggplot".
+  Actual class: "simpleError"/"error"/"condition".
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A-E5: every within-group correlation NA gives a labelled empty figure, native and rebuilt
+-- base:
+  Expected `inherits(rebuilt$value, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `native$value` to inherit from "ggplot".
+  Actual class: "simpleError"/"error"/"condition".
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A3-E1/E2 (lipid): a negative within-group correlation is drawn
+-- base:
+  Expected `plot$scales$get_scales("x")$limits[[1L]]` <= `min(plot$data$pearson_correlation)`.
+  Actual comparison: 0.0 > -1.0
+  Difference: 1.0 > 0
+  Expected `sum(ggplot2::layer_data(plot, 1L)$count)` to be identical to 2.
+  Differences:
+    `actual`: 1.0
+  `expected`: 2.0
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A3-E4 (lipid): a pair with no correlation is counted in a subtitle
+-- base:
+  Expected `plot$labels$subtitle` to be identical to "1 sample pairs shown; 1 have no correlation (too few shared values, or a sample with no variation) and are not shown.".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1 sample pairs shown; 1 have no correlation (too few shared values, or a sample with no variation) and are not shown.')
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A3-E1/E2 (metab): a negative within-group correlation is drawn
+-- base:
+  Expected `plot$scales$get_scales("x")$limits[[1L]]` <= `min(plot$data$pearson_correlation)`.
+  Actual comparison: 0.0 > -1.0
+  Difference: 1.0 > 0
+  Expected `sum(ggplot2::layer_data(plot, 1L)$count)` to be identical to 2.
+  Differences:
+    `actual`: 1.0
+  `expected`: 2.0
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 A3-E4 (metab): a pair with no correlation is counted in a subtitle
+-- base:
+  Expected `plot$labels$subtitle` to be identical to "1 sample pairs shown; 1 have no correlation (too few shared values, or a sample with no variation) and are not shown.".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1 sample pairs shown; 1 have no correlation (too few shared values, or a sample with no variation) and are not shown.')
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 B-E1: the post-normalisation generator replaces a figure it cannot draw by a placeholder
+-- base:
+  Expected `inherits(got$value, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `list.files(dir)` to have the same values as `c(...)`.
+  Actual: "post_norm_density.png", "post_norm_pca.png", "post_norm_rle.png"
+  Expected: "post_norm_pca.png", "post_norm_rle.png", "post_norm_density.png", "post_norm_correlation.png"
+  Absent: "post_norm_correlation.png"
+  Expected `unavailable` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 B-E2, B-E6: in process, a figure that cannot be drawn completes the step with one warning; Apply then runs
+-- base:
+  Expected `"[message 5] Correlation filtering completed! Ready for differential expression analysis." %in% out$apply$notes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `any(grepl("Error in normalization", out$fail$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `any(grepl("outputs are pending", out$apply$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `k259Completion %in% out$fail$notes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out$fail$complete` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `sum(grepl(k259Warning, out$fail$notes))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 B-E3: managed, a stage figure failing on the worker completes the chain with one warning
+-- base:
+  Expected `any(grepl("Error in normalization", out$fail$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `k259Completion %in% out$fail$notes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out$fail$complete` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `sum(grepl(k259Warning, out$fail$notes))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 B-E4: a failing run replaces the earlier run's figure by its placeholder
+-- base:
+  Expected `identical(out$second$md5, out$first$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 B-E5: 16 groups with the default 'Shape by' give a PCA placeholder naming the shape limit; the step completes
+-- base:
+  Expected `file.exists(pca)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k259Completion %in% out$run$notes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out$run$complete` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `sum(...)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-metab-01k-s4-plot-pearson-characterization.R | fixed | metabolomics S4 plotPearson source retains histogram guards and correlation delegation
+-- base:
+  Expected `target_text` to match regexp "scale_x_continuous\\(limits = c\\(lower, 1\\)".
+  Actual text:
+  x | setMethod(f = "plotPearson", signature = "MetaboliteAssayData", 
+    |     definition = function(theObject, tech_rep_remove_regex = "pool", 
+    |         correlation_group = NA) {
+    |         correlation_list <- pearsonCorForSamplePairs(theObject, 
+    |             tech_rep_remove_regex = tech_rep_remove_regex, correlation_group = correlation_group)
+    |         if (length(correlation_list) == 0) {
+    |             warning("No correlation results generated (likely no valid assays). Returning empty list.")
+    |             return(list())
+    |         }
+    |         if (is.null(names(correlation_list))) {
+    |             names(correlation_list) <- paste0("Assay_", seq_along(correlation_list))
+    |         }
+    |         pearson_plots_list <- purrr::map(seq_along(correlation_list), 
+    |             function(i) {
+    |                 assay_name <- names(correlation_list)[i]
+    |                 correlation_vec <- correlation_list[[i]]
+    |                 if (is.null(correlation_vec) || nrow(correlation_vec) == 
+    |                   0 || !"pearson_correlation" %in% colnames(correlation_vec)) {
+    |                   warning(sprintf("Assay '%s': Invalid or empty correlation data provided. Skipping Pearson plot.", 
+    |                     assay_name))
+    |                   return(NULL)
+    |                 }
+    |                 if (all(is.na(correlation_vec$pearson_correlation))) {
+    |                   warning(sprintf("Assay '%s': All Pearson correlation values are NA. Skipping plot.", 
+    |                     assay_name))
+    |                   return(NULL)
+    |                 }
+    |                 min_cor <- min(correlation_vec$pearson_correlation, 
+    |                   na.rm = TRUE)
+    |                 if (!is.finite(min_cor)) 
+    |                   min_cor <- 0
+    |                 hist_breaks <- seq(0, 1, 0.01)
+    |                 tryCatch({
+    |                   pearson_plot <- ggplot(correlation_vec, aes(pearson_correlation)) + 
+    |                     geom_histogram(breaks = hist_breaks, na.rm = TRUE) + 
+    |                     scale_x_continuous(limits = c(0, 1), breaks = seq(0, 
+    |                       1, 0.1), expand = c(0, 0)) + xlab("Pearson Correlation") + 
+    |                     ylab("Counts") + theme_bw() + theme(panel.grid.major = element_blank(), 
+    |                     panel.grid.minor = element_blank())
+    |                   return(pearson_plot)
+    |                 }, error = function(e) {
+    |                   warning(sprintf("Assay '%s': Error creating Pearson histogram: %s. Skipping.", 
+    |                     assay_name, e$message))
+    |                   return(NULL)
+    |                 })
+    |             })
+    |         names(pearson_plots_list) <- names(correlation_list)
+    |         pearson_plots_list <- pearson_plots_list[!sapply(pearson_plots_list, 
+    |             is.null)]
+    |         return(pearson_plots_list)
+    |     })
+-- head:
+  <passes>
+
