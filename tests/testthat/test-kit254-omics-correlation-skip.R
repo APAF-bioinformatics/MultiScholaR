@@ -185,8 +185,14 @@ kit254Replay <- function(fx, root) {
     scratch <- file.path(root, "scratch")
     dir.create(scratch)
     value <- NULL
+    warned <- character()
+    # KIT-254 (OD-1 (a), VAL-247): the replay's statement is also raised as a warning of its class; it is kept here.
     error <- tryCatch({
-        value <- kit172Quiet(replayWorkflowAnalysisRecord(record, prepared, inputs, fx$paths, scratch))
+        value <- kit172Quiet(withCallingHandlers(replayWorkflowAnalysisRecord(record, prepared, inputs, fx$paths, scratch),
+            workflow_replay_correlation_skip = function(w) {
+                warned <<- c(warned, conditionMessage(w))
+                invokeRestart("muffleWarning")
+            }))
         NULL
     }, error = function(e) e)
     head <- NULL
@@ -202,7 +208,7 @@ kit254Replay <- function(fx, root) {
         paste(vapply(record$steps, function(step) as.character(step$state), ""), collapse = ","),
         if (is.null(error)) "none" else paste(class(error)[[1L]], conditionMessage(error)), format(head %||% "<none>"),
         paste(kit254Removed(runs %||% character()), collapse = ",")))
-    list(record = record, error = error, value = value, head = head, runs = runs)
+    list(record = record, error = error, value = value, head = head, runs = runs, warned = warned)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -383,6 +389,9 @@ kit254ExpectSkipAfterApply <- function(fx, nd, label, root) {
     expect_null(out$error, info = paste("E4 replay precondition", label))
     expect_false(paste0(prefix, "_pearson_selection") %in% kit254Steps(out$record), info = paste("E4 record", label))
     expect_identical(out$runs, kit254All, info = paste("E4 replay design", label))
+    # G10 (OD-1 (a), VAL-247; both commits of the follow-up): a record made after the fix carries no statement.
+    expect_null(out$value$correlation_statement)
+    expect_length(out$warned, 0L)
     # E2: the DA's source has every sample.
     kit254Da(fx)
     source <- kit254DaSource(fx)
@@ -684,6 +693,7 @@ for (class in c("lipid", "metab")) {
         expect_null(out$error, info = paste("G1 replay", class))
         expect_false(paste0(q$fx$prefix, "_pearson_selection") %in% kit254Steps(out$record), info = paste("G1 record", class))
         expect_identical(out$runs, kit254All, info = paste("G1 replay design", class))
+        expect_null(out$value$correlation_statement)
         # G2: run, Apply(t_hi).
         q <- kit254Ran(file.path(root, "g2"), class)
         expect_true(isTRUE(kit254Apply(q$fx, q$nd, threshold = hi)))
@@ -693,6 +703,9 @@ for (class in c("lipid", "metab")) {
         expect_null(out$error, info = paste("G2 replay", class))
         expect_identical(sum(kit254Steps(out$record) == paste0(q$fx$prefix, "_pearson_selection")), 1L, info = paste("G2 record", class))
         expect_identical(out$runs, kit254HiRuns[[class]], info = paste("G2 replay design", class))
+        # G9 (OD-1 (a); both commits of the follow-up): a record without the pattern (Apply only) carries no statement.
+        expect_null(out$value$correlation_statement)
+        expect_length(out$warned, 0L)
         # G3: run, Apply(t_lo), Apply(t_hi) = Apply(t_hi) alone.
         q <- kit254Ran(file.path(root, "g3"), class)
         expect_true(isTRUE(kit254Apply(q$fx, q$nd, threshold = lo)))
@@ -713,6 +726,14 @@ for (class in c("lipid", "metab")) {
         expect_null(out$value$design_statement)
         expect_true(paste0(q$fx$prefix, "_pearson_selection") %in% kit254Steps(out$record), info = paste("E8 record", class))
         expect_identical(out$runs, live, info = paste("E8 replay design", class))
+        # E8, statement form (OD-1 (a), VAL-247; failing first in R1b): the replay states that the record shows the filter
+        # applied and then skipped, that it reproduces the analysis as computed, and names per assay the samples left out.
+        statement <- out$value$correlation_statement
+        kit254Line("E8-statement", class, paste("statement", format(statement %||% "<none>")), paste("warned", length(out$warned)))
+        expect_true(is.character(statement) && length(statement) == 1L, info = paste("E8 statement", class))
+        expect_true(isTRUE(grepl("LCMS_Pos: A_5", statement, fixed = TRUE)), info = paste("E8 statement names A_5 in LCMS_Pos", class))
+        expect_true(isTRUE(grepl(format(hi), statement, fixed = TRUE)), info = paste("E8 statement names the threshold", class))
+        expect_identical(out$warned, statement %||% "<none>", info = paste("E8 warning", class))
     })
 }
 
@@ -764,4 +785,17 @@ test_that("KIT-254 G8: a managed Apply pressed while a publication retry is pend
         kit254ExpectHead(q$fx, "_correlation_filtered", paste("G8", class))
         expect_identical(kit254Ref(q$fx)$entity_id, before, info = paste("G8", class))
     }
+})
+
+
+test_that("KIT-254 G11 (OD-1 (a), VAL-247): a proteomics record carries no correlation statement", {
+    # The statement is built from the record's steps only for lipidomics and metabolomics prefixes; a proteomics record
+    # with its correlation step followed by another step gets none (the builder is absent before the follow-up).
+    builder <- get0("workflowReplayCorrelationStatement", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    record <- list(steps = list(
+        list(state = "normalized", operation = "normalization-ruv", parameters = list()),
+        list(state = "correlation_filtered", operation = "pearson-selection",
+            parameters = list(list(name = "threshold", value = 0.5)), input_entity_ids = list("a"), result_entity_id = "b"),
+        list(state = "norm_complete", operation = "norm_complete", parameters = list())))
+    expect_null(if (is.function(builder)) builder(record, NULL) else NULL)
 })
