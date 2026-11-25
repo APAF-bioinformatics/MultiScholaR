@@ -1973,7 +1973,7 @@ publishDIAReferenceCorrelation <- function(manager, run, workflow, norm_data, pa
                 plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
             qc_plot <- stripProtNormQcPlotOwners(plot + ggplot2::labs(title = if (skipped)
                 "Final Data (Correlation Filter Skipped)" else "Final Correlation-Filtered Data"))
-            names <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
+            names <- resolveProtNormCorrelationTableNames(manager, norm_data$ruv_optimization_result,
                 workflow$ruv_optimization_result)
             writeDIADesignTable(manager, spec$components$protein_quant_table,
                 file.path(staged$protein_qc_dir, names$tsvFilename), readr::write_tsv)
