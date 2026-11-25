@@ -1,0 +1,38 @@
+{
+  "requested_by": "KIT-190 COUNTED stage 2 of the bounded-k measurement (declaration revision 10), cells E-s; seeds 1 to R_c from bound-s1/plan.tsv; stage-1 check",
+  "label": "KIT-190 bounded-k stage 2 E-s 0413a169",
+  "package_commit": "0413a16932b455373ea15819391c2385d5aca5a3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "stage2",
+        "k190-s2/es"
+      ],
+      "env": {
+        "K190_PLAN": "docs/qa/workflow-execution/kit/kit-190/bound-s1/plan.tsv",
+        "K190_STAGE1_ESTIMATE": "docs/qa/workflow-execution/kit/kit-190/bound-s1/reestimate.tsv",
+        "K190_CELLS": "E-s",
+        "K190_WORKERS": "2"
+      },
+      "out": "k190-s2",
+      "out_pattern": "(journeys\\.tsv|curves\\.tsv|provenance\\.json|stage1-check-reestimate\\.tsv)$",
+      "timeout_minutes": 140
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
