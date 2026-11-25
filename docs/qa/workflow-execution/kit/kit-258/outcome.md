@@ -68,6 +68,20 @@ PREDICTED (written before the run was read):
   ('TG 52:3', 3 of 4 measured, mean 177.333333) to head row 1 ('PC 34:1', 4 of 4, mean 150.5). Any other changed id is
   stop rule 1.
 
+OBSERVED (run 45620444058, head 81fdcf7c, base 63143aa3; 16.9 job-minutes, script 287 s, both sides exit 0;
+`s1/compare.tsv`, `s1/changed-rows.tsv`, `s1/classes.tsv`): **every prediction held; no stop rule.**
+- (a) 18/18 and (b) 20/20 rows equal base against head; non-vacuous for both omics; 28/28 equally measured groups keep
+  their row.
+- Classes `e`: exactly e1_lipid, e1_metab, lipid_msdial_dup_import (as predicted).
+- (c) head = KIT-258 oracle 44/44, base = KIT-214 oracle 44/44, head whole = partitioned 22/22.
+- (d1) 44/44, (d2) 44/44.
+- (e) exactly one id, both variants: lipid_msdial_dup_import / LCMS_Pos / P001, base row 2 'TG 52:3' (3 measured,
+  mean 177.333333) to head row 1 'PC 34:1' (4 measured, mean 150.5).
+
+Verdict: A4 met for the rule as decided (measured = not NA). It is re-judged if OD-1 (b) or OD-2 (b) changes the rule.
+
 ## Not checked
 
 - No R on the laptop; every result above comes from a runner.
+- R2, E5, E6, NEWS, ledger, user texts: wait for OD-1 and OD-2.
+- S1 under OD-1 (b) or OD-2 (b): not run (the rule as decided only).

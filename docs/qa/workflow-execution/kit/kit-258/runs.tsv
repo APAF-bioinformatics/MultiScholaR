@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	result
 45617808183	ddbedc3f153838cd8c04ae27fb997f274561e31f	R1: failing-first on the tests-only commit (R/ = staging 63143aa3), 4 files, 1 job; ceiling 45	14.5	as predicted: kit258 76 pass 26 fail (E1 to E4, T1 (b), T2 at KIT-214 values); kit214 176 pass 0 fail; 01m 3 and 02u 1 failing new pins only
+45620444058	81fdcf7c0fac256d0728e2c36fed4f71ec585fd5	S1: control, fix (pending OD-1, OD-2) against staging 63143aa3, A4 (a) to (e); 1 scripts job; ceiling 60	16.9	as predicted: every criterion equal (a 18/18, b 20/20, groups 28/28, c 44/44 44/44 22/22, d1 44/44, d2 44/44); exactly one changed id lipid_msdial_dup_import P001 row 2 to 1, both variants
