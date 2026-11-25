@@ -249,3 +249,13 @@ stage-1 check. 3.15 core-hours.
 
 Declaration revision 9 (e344c691, SHA-256 4ca0913e...288a) cites the owner's acceptance of R4-01 (VAL-192). Stage 1
 waits for the coordinator's word.
+
+## Bounded-k stage 1 (counted, blinded; run 45504138202, commit e344c691)
+
+Observed (only the nuisance quantities stage 1 returns, `bound-s1/reestimate.tsv`; n = 50 pairs per cell): discordant
+share N-r 0, N-s 0, N-w 0.06; SD of the paired FDP difference E-r 0.0559, E-s 0.1126, E-p 0.2233, E-g 0.1202, E-w 0.0618.
+Falsifiers 0. No mean difference, rate or statistic was computed or read. 8.06 core-hours.
+
+`reestimate.R plan`, run once (run 45521457364; spent 11.21): R per cell N-r 100, N-s 100, N-w 250, E-r 200, E-s 200,
+E-p 300, E-g 200, E-w 200 (equal to the auditor's recomputation); target per cell 0.97249, achieved joint probability
+under equality 0.987; projected 73.6 core-hours in total (ceiling 100). Files: `bound-s1/plan.tsv`, `plan-summary.tsv`.
