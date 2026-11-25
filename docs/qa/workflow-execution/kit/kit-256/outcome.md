@@ -9,7 +9,12 @@ Ticket KIT-256 r1.2 (owner's decision VAL-249). Branch `kit-256` from `v0.9-stag
 | b45c8779 | tests only: `tests/testthat/test-kit256-tech-rep-selection-cleared.R`; the browser script's notification recorder repaired (below) |
 | 37451255 | R1 records |
 | 57238dcd | the fix, `R/mod_omic_design_builder.R` only |
-| (records commit) | GB and R2 records, NEWS, ledger row `VAL-<merge>`, `wording.md`, this file |
+| 8912fe66 | GB and R2 records, NEWS, ledger row `VAL-<merge>`, `wording.md`, this file |
+| 3ae09360 | merge of `v0.9-staging` 42846c0e (NEWS and ledger appends kept both, staging's first) |
+| 83d6ffd7 | tests only: G3 reads from a mark (audit I01 (a)) |
+| 610829e6 | R3 predictions, before the run |
+| 81a6add0 | audit record repairs (I01 to I06) |
+| (this commit) | R3 records |
 
 ## Runs (runs.tsv)
 
@@ -19,8 +24,10 @@ Ticket KIT-256 r1.2 (owner's decision VAL-249). Branch `kit-256` from `v0.9-stag
 | 45620278822 | b45c8779 | R1, failing-first | 12 | E1, E2, E3, G3 fail at the base values; G1, G2, G4 pass |
 | 45622591472 | 57238dcd vs b45c8779 | R2, 18 files and check | 142 | every predicted verdict held |
 | 45622587312 | 57238dcd | GB, head browser values | 8 | 24 of 24 predictions held; stop rule 2 not met |
+| 45631885056 | 83d6ffd7 vs fb1b4503 | R3, the repaired G3 (audit I01 (a)) | 24 | every prediction of `r3/predictions.md` held |
 
-Total 174 job-minutes = 11.6 core-hours (expected 25.33, ceiling 110.0). No correction pass and no instrument rerun.
+Total 198 job-minutes = 13.2 core-hours (expected 25.33, ceiling 110.0). R3 is the one correction pass the
+implementation audit asked for (24 job-minutes of the 705 budgeted); no instrument rerun.
 
 ## Observed
 
@@ -44,6 +51,12 @@ identical on both sides: `test-gui-entry-proteomics.R` 4, `test-gui-entry-transc
 (base 14 passed 6 failed, head 20 passed 0 failed). R CMD check: 0 errors, 3 warnings, 3 notes on both sides; findings
 identical (none only on head). The regression list was recounted at the branch point 63143aa3: grep 1 of section 10
 gives the same 13 files, plus the 4 GUI-entry lanes.
+
+**R3 (run 45631885056; `r3/`, predictions in `r3/predictions.md`, committed 610829e6 before the run).** The repaired G3
+(read from a mark set just before its second Assign) on base fb1b4503 (37451255 with the repaired test; R/ as staging
+63143aa3) and head 83d6ffd7 (the fix merged with staging 42846c0e). Base: 14 passed, 6 failed, 0 errors; G3 fails by
+assertion with `actual` NULL (`KIT256-OBS G3: <no message>`), the other five failures as R1. Head: 20 passed, 0 failed
+(`KIT256-OBS G3: character(0)`). Verdict `fixed`.
 
 **GB (the fix, run 45622587312; `gb-head-values.tsv`, `gb/gb-compare.tsv`).** Phase 0 passed as in G0. Step 3 the box
 read `[]`; step 4 sent {S3, S4}; Assign gave two biological replicates, {S1, S2} and {S3, S4}, and the box read `[]`; the
@@ -76,7 +89,7 @@ repaired recorder and read the texts.
 | # | Criterion | Met | Evidence |
 |---|---|---|---|
 | A1 | G0 on base: step 3 `["S1","S2"]`; step 6 one key of four runs | met | `g0-base-values.tsv`; run 45617875300 |
-| A2 | E1, E2, E3, G3 fail at G0's values; G1, G2, G4 pass; all pass on the fix | met | R1 45620278822; R2 new file head 20/0 |
+| A2 | E1, E2, E3, G3 fail at G0's values; G1, G2, G4 pass; all pass on the fix | met | R1 45620278822; R2 new file head 20/0; R3 45631885056 (repaired G3: base NULL, head passes) |
 | A3 | R2: every file `same` except the new file; pre-existing failures identical | met | `r2/compare.tsv`, run 45622591472 |
 | A4 | GB: step 3 `[]`, step 4's union {S3, S4}, two keys; no-change Assign leaves `[]`; refused Assign keeps the box | met | `gb-head-values.tsv`; run 45622587312 |
 | A5 | NEWS, ledger, `outcome.md` with "For the change report" | met | `NEWS.md` (`### Fixes`), ledger `VAL-<merge>`, this file, `wording.md` |
