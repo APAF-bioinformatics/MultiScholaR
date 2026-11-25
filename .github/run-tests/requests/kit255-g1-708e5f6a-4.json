@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-255 G1 instrument rerun 2 of 3 (VAL-54): RUV objects' pairs hand-made, P-e and model mechanics fixed, no expected value changed; branch kit-255-g1; 1 job, ceiling 75 job-minutes",
+  "label": "KIT-255 G1 instrument rerun 2 708e5f6a (staging 988512e6 + tools/kit255/g1.R)",
+  "package_commit": "708e5f6a7d986249a8e3c99bd1f65087d922ca3d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit255/g1.R",
+      "args": [
+        "kit255-g1"
+      ],
+      "env": {},
+      "out": "kit255-g1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
