@@ -100,13 +100,18 @@ k236Design <- function(tech = k236Runs, runs = k236Runs, groups = sub("_[0-9]+$"
 k236Param <- function(name, value) list(name = name, source = "provenance", value = encodeWorkflowRecordValue(value),
     provenance = "default")
 
+#' One record step: dimensions (features summed over the assays; columns = samples plus the id columns), outcomes
+k236Step <- function(order, operation, rows, parameters = list(), columns = 8L, outcomes = list()) {
+    list(order = order, operation = operation, dimensions = list(rows = rows, columns = columns),
+        outcomes = c(list(rows = rows, columns = columns), outcomes),
+        parameters = unname(Map(k236Param, names(parameters), parameters)))
+}
+
 #' A record in the application's shape (v2 lipid/metab; `prefix` NULL gives a proteomics record without steps)
 k236Record <- function(prefix = "lipid", method = "cyclicloess", offset = 0, lfc = 0, treat_applied = FALSE,
     block_reason = "no_duplicates", contrasts = list(c("groupKO-groupWT", "KO_vs_WT")), tech = k236Runs, runs = k236Runs,
-    fdr = NULL, pearson = TRUE, assays = c("LCMS_Pos", "LCMS_Neg"), steps = NULL) {
-    step <- function(order, operation, rows, parameters = list()) list(order = order, operation = operation,
-        dimensions = list(rows = rows, columns = 8L), outcomes = list(rows = rows, columns = 8L),
-        parameters = unname(Map(k236Param, names(parameters), parameters)))
+    fdr = NULL, pearson = TRUE, assays = c("LCMS_Pos", "LCMS_Neg"), steps = NULL, failures = NULL) {
+    step <- function(order, operation, rows, parameters = list()) k236Step(order, operation, rows, parameters)
     if (is.null(steps) && !is.null(prefix)) {
         steps <- list(
             list(order = 1L, operation = "import", dimensions = list(rows = NULL, columns = NULL), parameters = list()),
@@ -138,7 +143,8 @@ k236Record <- function(prefix = "lipid", method = "cyclicloess", offset = 0, lfc
             parameters = list(k236Param("formula", "~ 0 + group"), k236Param("qvalue", 0.05), k236Param("lfc", lfc)),
             contrasts = lapply(contrasts, function(x) list(contrasts = x[[1L]], friendly_names = x[[2L]],
                 full_format = paste0(x[[2L]], "=", x[[1L]]))),
-            model = model, results = results)))
+            model = model, results = results,
+            failures = lapply(failures %||% list(), function(x) list(contrast = x[[1L]], assay = x[[2L]], error = x[[3L]])))))
 }
 
 #' One lipid/metab report through its Main: the report content, whitespace-normalised (`$norm`) and as printed (`$raw`)
@@ -339,8 +345,10 @@ test_that("KIT-236 T8: no integration step and no cross-assay check are describe
         got <- k236Case(name)
         expect_false(k236Has(got$norm$method_details, "before integration"), info = name)
         expect_false(k236Has(got$norm$method_details, "cross-assay consistency verified"), info = name)
-        expect_true(k236Has(got$norm$method_details, "tested separately within each assay"), info = name)
-        expect_true(k236Has(got$norm$method_details, "removed from every assay"), info = name)
+        expect_true(k236Has(got$norm$method_details, paste("Each assay was processed and tested for differential abundance",
+            "separately; the results of the 2 assays are reported together.")), info = name)
+        # KIT-236 I09: today a sample the correlation filter removes in one assay stays in the others (KIT-255).
+        expect_false(k236Has(got$norm$method_details, "removed from every assay"), info = name)
         expect_true(k236Has(got$norm$method_details, "The assays were required to contain the same samples."), info = name)
     }
 })
@@ -396,8 +404,9 @@ test_that("KIT-236 T17, T17b, T17g, T17n: the fold-change threshold and the sign
         expect_false(k236Has(treat$norm$de_details, "test for any deviation from zero log-fold-change"), info = name)
         expect_true(k236Has(treat$norm$de_details, "log2 fold-change threshold of 0.5"), info = name)
         expect_true(k236Has(treat$norm$de_details, "absolute log2 fold change of at least 0.5"), info = name)
-        older <- k236Case(name, lines = k236Lines(ui_block = ui))
-        expect_true(k236Has(older$norm$de_details, "log2 fold-change threshold of 0.5"), info = name)
+        # I10: the block the application writes ('Differential Expression UI Parameters'), no record.
+        written <- k236Case(name, lines = k236Lines(ui_block = ui))
+        expect_true(k236Has(written$norm$de_details, "log2 fold-change threshold of 0.5"), info = name)
         zero <- k236Case(name, record = k236Record(prefix))
         expect_true(k236Has(zero$norm$de_details, "for any difference from zero log2 fold change"), info = name)
         unrecorded <- k236Case(name)
@@ -468,10 +477,11 @@ test_that("KIT-236 T19, T19g: the count sentence reads the table Copy writes (da
     for (name in k236Omics) {
         word <- k236Spec[[name]]$word
         table <- data.frame(total = c(9L, 8L), significant = c(3L, 0L), up_regulated = c(2L, 0L), down_regulated = c(1L, 0L),
-            assay = c("LCMS_Pos", "LCMS_Neg"), mode = c("pos", "neg"), contrast = "KO_vs_WT", q_threshold = 0.05)
-        got <- k236Case(name, numsig_table = table, numsig = TRUE)
+            assay = c("LCMS_Pos", "LCMS_Neg"), mode = c("pos", "neg"), contrast = "groupKO-groupWT", q_threshold = 0.05)
+        got <- k236Case(name, numsig_table = table, numsig = TRUE, record = k236Record(k236Spec[[name]]$prefix))
         expect_true(k236Has(got$norm$de_summary, paste0("The number of significant differentially abundant ", word,
-            " is summarized in Figure 2 (q-value < 0.05).")), info = name)
+            " is summarised in Figure 2 (q-value < 0.05).")), info = name)
+        expect_false(k236Has(got$norm$de_summary, "groupKO-groupWT"), info = name)
         expect_true(k236Has(got$norm$de_summary, paste0("For the comparison KO_vs_WT in LCMS_Pos, there were 2 upregulated ",
             "and 1 downregulated ", word, ".")), info = name)
         none <- k236Case(name)
@@ -504,14 +514,12 @@ test_that("KIT-236 G1: the Methods paragraphs outside section 1 print the base t
     }
 })
 
-test_that("KIT-236 W1 to W3: the normalisation and internal-standard sentences wait for KIT-242 and print today's text", {
+test_that("KIT-236 W1, W3: the normalisation sentence of a method applied, and the internal-standard sentence, wait for KIT-242", {
     for (name in k236Omics) {
         prefix <- k236Spec[[name]]$prefix
         quantile <- k236Case(name, lines = k236Lines(method = "quantile"), record = k236Record(prefix, method = "quantile"))
         expect_true(k236Has(quantile$norm$method_details,
             "Between-sample normalization was performed using the 'quantile' method from the 'limma' R package"), info = name)
-        unrecorded <- k236Case(name, lines = k236Lines(method = NULL))
-        expect_true(k236Has(unrecorded$norm$method_details, "'cyclicloess' method from the 'limma' R package"), info = name)
         itsd <- k236Case(name)
         expect_true(k236Has(itsd$norm$method_details,
             "Internal standard (ITSD) normalization was applied using the average_centered method with median aggregation"),
@@ -533,11 +541,12 @@ test_that("KIT-236 B1: the proteomics sample details count the declared technica
     }
 })
 
-test_that("KIT-236 W4: the proteomics 'none' normalisation sentence waits for KIT-242 and prints today's text", {
+test_that("KIT-236 B2 (I12): the proteomics 'none' normalisation says none was applied", {
     steps <- list(list(order = 1L, operation = "normalization-ruv", parameters = list(k236Param("norm_method", "none"))))
     for (name in k236ProtNames) {
         got <- k236Prot(name, record = k236Record(NULL, steps = steps, contrasts = k236ProtContrasts))
-        expect_true(k236Has(got$method, "'none' method from the 'limma' R package"), info = name)
+        expect_false(k236Has(got$method, "'none' method from the 'limma' R package"), info = name)
+        expect_true(k236Has(got$method, "no between-sample normalisation was applied"), info = name)
     }
 })
 
@@ -595,4 +604,109 @@ test_that("KIT-236 B6: DIA with limpa no longer says technical replicates were a
         contrasts = k236ProtContrasts))
     expect_false(k236Has(block$method, "Technical replicate averaging"))
     expect_true(k236Has(block$method, "Technical replicates were modelled as a block through limma's duplicateCorrelation."))
+})
+
+# --- The correction pass (AUDIT-KIT-236-impl-20261125 I01, I02, I05 to I09, I12) -----------------------------------
+
+test_that("KIT-236 T6, T6b (I12): the Methods say no normalisation was applied, or that the method is not recorded", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        none <- k236Case(name, lines = k236Lines(method = "none"), record = k236Record(prefix, method = "none"))
+        expect_false(k236Has(none$norm$method_details, "'none' method from"), info = name)
+        expect_true(k236Has(none$norm$method_details, "No between-sample normalisation was applied."), info = name)
+        unrecorded <- k236Case(name, lines = k236Lines(method = NULL))
+        expect_false(k236Has(unrecorded$norm$method_details, "'cyclicloess' method from"), info = name)
+        expect_true(k236Has(unrecorded$norm$method_details,
+            "The between-sample normalisation method is not recorded for this analysis."), info = name)
+    }
+})
+
+test_that("KIT-236 T1d (I02): the samples kept are counted from the filter's own step", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        runs <- k236Runs[-6L]
+        steps <- list(k236Step(2L, "design_builder", 20L, columns = 8L), k236Step(3L, paste0(prefix, "_intensity_filter"), 17L),
+            k236Step(4L, paste0(prefix, "_between_sample_normalisation"), 17L, list(normalisation_method = "cyclicloess"),
+                columns = 7L),
+            k236Step(5L, paste0(prefix, "_pearson_selection"), 17L, list(min_pearson_correlation_threshold = 0.5), columns = 7L))
+        earlier <- k236Case(name, record = k236Record(prefix, runs = runs, tech = runs, steps = steps))
+        expect_true(k236Has(earlier$norm$comments, "5 of 5 samples were kept by the sample-correlation filter (threshold 0.5)."),
+            info = name)
+        steps[[3L]] <- k236Step(4L, paste0(prefix, "_between_sample_normalisation"), 17L, list(normalisation_method = "cyclicloess"))
+        filtered <- k236Case(name, record = k236Record(prefix, runs = runs, tech = runs, steps = steps))
+        expect_true(k236Has(filtered$norm$comments, "5 of 6 samples were kept by the sample-correlation filter (threshold 0.5)."),
+            info = name)
+    }
+})
+
+test_that("KIT-236 T1e (I05): the step list never prints an internal operation name", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        steps <- list(k236Step(2L, "design_builder", 20L), k236Step(3L, paste0(prefix, "_intensity_filter"), 17L),
+            k236Step(4L, paste0(prefix, "_ruv"), 17L), k236Step(5L, paste0(prefix, "_norm_complete"), 17L),
+            k236Step(6L, paste0(prefix, "_reset"), 17L), k236Step(7L, "legacy", 17L))
+        got <- k236Case(name, record = k236Record(prefix, steps = steps))
+        expect_false(k236Has(got$norm$comments, "norm complete"), info = name)
+        expect_false(k236Has(got$norm$comments, "legacy"), info = name)
+        expect_false(k236Has(got$norm$comments, paste(prefix, "reset")), info = name)
+        expect_true(k236Has(got$norm$comments, "intensity filter 17; RUV correction 17."), info = name)
+    }
+})
+
+test_that("KIT-236 T20 (I01): under the declared RUV design the DA paragraph names the uncorrected matrix and the factors", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        record <- k236Record(prefix)
+        record$steps <- c(record$steps, list(k236Step(8L, paste0(prefix, "_ruv"), 17L, list(ruv_design = "ruv3_factors"),
+            outcomes = list(ruv_design = "ruv3_factors", best_k = list(LCMS_Pos = 2L, LCMS_Neg = 3L)))))
+        got <- k236Case(name, record = record)
+        expect_false(k236Has(got$norm$de_details, "using the adjusted abundance matrix"), info = name)
+        expect_true(k236Has(got$norm$de_details, paste("on the uncorrected abundance matrix, with each assay's RUV factors as",
+            "covariates in the model (LCMS_Pos: 2 factors; LCMS_Neg: 3 factors)")), info = name)
+        plain <- k236Case(name, record = k236Record(prefix))
+        expect_true(k236Has(plain$norm$de_details, "using the adjusted abundance matrix"), info = name)
+    }
+})
+
+test_that("KIT-236 T21, B7 (I06): at a fold-change threshold the p-values are named as TREAT's", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        treat <- k236Case(name, record = k236Record(prefix, lfc = 0.5, treat_applied = TRUE))
+        expect_false(k236Has(treat$norm$de_details, "p-values were calculated using the 'eBayes' function"), info = name)
+        expect_true(k236Has(treat$norm$de_details, "p-values were calculated with limma's TREAT test"), info = name)
+        zero <- k236Case(name, record = k236Record(prefix))
+        expect_true(k236Has(zero$norm$de_details, "p-values were calculated using the 'eBayes' function"), info = name)
+    }
+    for (name in c("LFQ", "TMT", "DIANN")) {
+        got <- k236Prot(name, record = k236Record(NULL, lfc = 0.5, treat_applied = TRUE, contrasts = k236ProtContrasts))
+        expect_false(k236Has(got$de, "p-values were calculated using the 'eBayes' function"), info = name)
+        expect_true(k236Has(got$de, "p-values were calculated with limma's TREAT test"), info = name)
+    }
+})
+
+test_that("KIT-236 T19c (I07): at a fold-change threshold the count and volcano sentences state both criteria", {
+    for (name in k236Omics) {
+        word <- k236Spec[[name]]$word
+        table <- data.frame(total = 9L, significant = 3L, up_regulated = 2L, down_regulated = 1L, assay = "LCMS_Pos",
+            mode = "pos", contrast = "groupKO-groupWT", q_threshold = 0.05)
+        got <- k236Case(name, numsig_table = table, numsig = TRUE, volcano = TRUE,
+            record = k236Record(k236Spec[[name]]$prefix, lfc = 0.5, treat_applied = TRUE))
+        both <- "(q-value < 0.05 and an absolute log2 fold change of at least 0.5)"
+        expect_true(k236Has(got$norm$de_summary, paste0("is summarised in Figure 2 ", both, ".")), info = name)
+        expect_true(k236Has(got$norm$de_details, paste("with a threshold of q-value < 0.05 and an absolute log2 fold change",
+            "of at least 0.5.")), info = name)
+    }
+})
+
+test_that("KIT-236 T22 (I09): an assay whose test failed is named, and the Methods do not say every assay was tested", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        record <- k236Record(prefix, assays = "LCMS_Pos", failures = list(c("groupKO-groupWT", "LCMS_Neg", "too few samples")))
+        got <- k236Case(name, record = record)
+        expect_true(k236Has(got$norm$de_details,
+            "The test could not be computed for KO_vs_WT in LCMS_Neg (too few samples)."), info = name)
+        expect_true(k236Has(got$norm$method_details, paste("the results are reported together for the assays and comparisons",
+            "where the test could be computed")), info = name)
+        expect_false(k236Has(got$norm$method_details, "the results of the 2 assays are reported together"), info = name)
+    }
 })
