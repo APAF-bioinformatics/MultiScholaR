@@ -334,12 +334,21 @@ omicsDesignCanonicalTable <- function(design) {
     if (all(c("group", "replicates") %in% names(design))) {
         design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
     }
-    design[] <- lapply(design, as.character)
+    design[] <- lapply(design, omicsDesignCanonicalText)
     design <- design[, sort(names(design)), drop = FALSE]
     key <- if ("Run" %in% names(design)) "Run" else names(design)[[1L]]
     design <- design[order(design[[key]]), , drop = FALSE]
     rownames(design) <- NULL
     design
+}
+
+#' KIT-247 (VAL-288). A column as text, an empty or blank value read as missing (a design file read back gives NA where
+#' the saved design held "").
+#' @noRd
+omicsDesignCanonicalText <- function(column) {
+    column <- as.character(column)
+    column[!is.na(column) & !nzchar(trimws(column))] <- NA_character_
+    column
 }
 
 #' KIT-247. Whether two of a design save's data inputs (a table, a list of tables, or saved references to them) hold
@@ -354,7 +363,8 @@ omicsDesignSameData <- function(a, b, manager) {
         lapply(tables, function(table) {
             if (!is.data.frame(table)) return(table)
             table <- as.data.frame(table, stringsAsFactors = FALSE)
-            table[] <- lapply(table, function(column) if (is.factor(column)) as.character(column) else as.vector(column))
+            # As text (VAL-288): a table read back from an exported file and the saved one agree when their values do.
+            table[] <- lapply(table, omicsDesignCanonicalText)
             rownames(table) <- NULL
             table
         })
@@ -389,9 +399,21 @@ compareOmicsDesignResult <- function(manager, results, stateName, current) {
 #' the session owner, so that a save that failed after replacing the bus cannot make the next save of the same design
 #' look unchanged.
 #' @noRd
-rememberOmicsDesignCommit <- function(manager, design, data) {
-    if (inherits(manager, "DIAStateAdapter")) manager$.context$kit247_design_compared <- list(design_matrix = design, data = data)
+rememberOmicsDesignCommit <- function(manager, design, data, config = NULL) {
+    if (inherits(manager, "DIAStateAdapter")) {
+        manager$.context$kit247_design_compared <- list(design_matrix = design, data = data, config_list = config)
+    }
     invisible(NULL)
+}
+
+#' KIT-247 (VAL-288 (a)): the model formula as compared (spaces removed).
+#' @noRd
+omicsDesignFormulaKey <- function(configList) gsub("[[:space:]]", "", resolveOmicsDesignFormula(configList))
+
+#' KIT-247 (VAL-288 (a)): whether a save changes the model formula against the last commit's (or the bus's) configuration.
+#' @noRd
+omicsDesignFormulaChanged <- function(newConfig, compared) {
+    !is.null(compared$config_list) && !identical(omicsDesignFormulaKey(newConfig), omicsDesignFormulaKey(compared$config_list))
 }
 
 #' KIT-247 (VAL-277). What a design save is compared with: the last successful commit's record, else the bus (a session
@@ -399,8 +421,11 @@ rememberOmicsDesignCommit <- function(manager, design, data) {
 #' @noRd
 omicsDesignCompared <- function(manager, workflowData) {
     remembered <- if (inherits(manager, "DIAStateAdapter")) manager$.context$kit247_design_compared
-    if (!is.null(remembered)) return(remembered)
-    list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln)
+    if (!is.null(remembered)) {
+        if (is.null(remembered$config_list)) remembered$config_list <- workflowData$config_list
+        return(remembered)
+    }
+    list(design_matrix = workflowData$design_matrix, data = workflowData$data_cln, config_list = workflowData$config_list)
 }
 
 #' KIT-247. The states of the active history after the design state.
@@ -483,6 +508,18 @@ omicsDesignResaveUnconfirmedText <- function() {
         "Revert the Quality Control to the design state first, or save the design in the application, which asks.")
 }
 
+#' KIT-247 (VAL-288). The question for a change that resets only a later step (DRAFT wording, VAL-41).
+#' @param changes Any of `formula`, `organism`, `fasta`.
+#' @noRd
+omicsDesignResaveLimitedText <- function(changes) {
+    named <- c(formula = "the model formula", organism = "the organism or its taxonomy id", fasta = "the FASTA file")
+    what <- paste(unname(named[intersect(names(named), changes)]), collapse = " and ")
+    reset <- c(if ("formula" %in% changes) "the differential analysis is set back to be run again",
+        if (any(c("organism", "fasta") %in% changes)) "enrichment is set back to be run again")
+    paste0("This save changes ", what, " only. Saving it keeps Quality Control and normalisation; ",
+        paste(reset, collapse = ", and "), ".")
+}
+
 #' @noRd
 omicsDesignResaveConfirmText <- function() {
     paste0("This design changes the samples, groups, technical replicates, factors or batch. Saving it sets aside the ",
@@ -516,8 +553,9 @@ omicsDesignContrastsChanged <- function(new, old) {
 #' analysis until the DA is run again); the pending design provenance, if any, is cleared.
 #' @param daStatusKey The DA tab's status name (`differential_expression`, `differential_analysis`).
 #' @noRd
-applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify = shiny::showNotification) {
-    changed <- omicsDesignContrastsChanged(results$contrasts_tbl, workflowData$contrasts_tbl)
+applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify = shiny::showNotification,
+                                      forceDaPending = FALSE) {
+    changed <- omicsDesignContrastsChanged(results$contrasts_tbl, workflowData$contrasts_tbl) || isTRUE(forceDaPending)
     workflowData$contrasts_tbl <- results$contrasts_tbl
     workflowData$config_list <- results$config_list
     manager <- workflowData$state_manager
@@ -540,13 +578,13 @@ applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify
 #' @return The verdict, invisibly.
 #' @noRd
 runOmicsDesignResaveGate <- function(session, verdict, later, commit, unchanged,
-                                     showModal = shiny::showModal) {
+                                     showModal = shiny::showModal, limited = character()) {
     # A first save, or a save with nothing after the design state, is committed as before (G1, G2).
     if (!isTRUE(later) || !verdict %in% c("unchanged", "changed")) {
         commit(cut = FALSE)
         return(invisible(verdict))
     }
-    if (identical(verdict, "unchanged")) {
+    if (identical(verdict, "unchanged") && !length(limited)) {
         unchanged()
         return(invisible(verdict))
     }
@@ -556,13 +594,15 @@ runOmicsDesignResaveGate <- function(session, verdict, later, commit, unchanged,
         rlang::abort(omicsDesignResaveUnconfirmedText(), class = c("omics_design_resave_unconfirmed", "omics_design_refused"))
     }
     registerOmicsDesignResaveConfirmation(session)
-    assign(omicsDesignResaveKey(session), function() commit(cut = TRUE), envir = session$userData)
+    # VAL-288: a formula, organism or FASTA change only asks too; its Save resets only the later step it affects.
+    onSave <- if (identical(verdict, "unchanged")) function() unchanged() else function() commit(cut = TRUE)
+    assign(omicsDesignResaveKey(session), onSave, envir = session$userData)
     showModal(shiny::modalDialog(title = "Save the changed design?",
-        shiny::p(omicsDesignResaveConfirmText()),
+        shiny::p(if (identical(verdict, "unchanged")) omicsDesignResaveLimitedText(limited) else omicsDesignResaveConfirmText()),
         footer = shiny::tagList(shiny::modalButton("Cancel"),
             shiny::actionButton(session$ns("confirm_design_resave"), "Save", class = "btn-warning")),
         easyClose = FALSE))
-    invisible(verdict)
+    invisible("changed")
 }
 
 #' KIT-247. The pending save's key in the session's user data (the design tab's namespace: one per omic).

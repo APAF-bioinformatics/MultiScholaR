@@ -97,7 +97,8 @@ runProtDesignBuilderSaveFlow <- function(
       actionLabel = "Save Design"
     )
     # KIT-247 (VAL-239, OD-1 (D)): a changed design confirmed over later steps sets them aside.
-    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
+    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln,
+        workflowData$config_list)
     didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
     # KIT-177: the values the design step set to missing, named and counted.
     notifyProtDesignLog2Counts(workflowData)
@@ -178,13 +179,17 @@ runProtDesignBuilderObserverShell <- function(
   manager <- workflowData$state_manager
   if (!inherits(manager, "DIAStateAdapter")) return(commit(FALSE))
   stateName <- protDesignStateName(manager)
+  compared <- omicsDesignCompared(manager, workflowData)
   verdict <- compareOmicsDesignResult(manager,
     list(design_matrix = results$design_matrix, data = results$data_reference %||% results$data_cln), stateName,
-    omicsDesignCompared(manager, workflowData))
+    compared)
+  # VAL-288 (a): a formula-only change asks too, and on Save sets the differential analysis back to be run again.
+  formulaChanged <- omicsDesignFormulaChanged(results$config_list, compared)
   later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
   if (!later || !verdict %in% c("unchanged", "changed")) return(commit(FALSE))
-  runOmicsDesignResaveGate(session, verdict, later, commit = commit, unchanged = function() {
-    applyOmicsDesignUnchanged(workflowData, results, "differential_expression")
+  runOmicsDesignResaveGate(session, verdict, later, commit = commit,
+    limited = if (formulaChanged) "formula" else character(), unchanged = function() {
+    applyOmicsDesignUnchanged(workflowData, results, "differential_expression", forceDaPending = formulaChanged)
     sourceDir <- experimentPaths$source_dir
     if (!is.null(sourceDir) && dir.exists(sourceDir)) {
       tryCatch(persistProtDesignBuilderArtifacts(results = results, workflowData = workflowData, sourceDir = sourceDir),

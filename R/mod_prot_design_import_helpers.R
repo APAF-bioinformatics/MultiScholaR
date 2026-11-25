@@ -355,9 +355,13 @@ runProtDesignImportConfirmationFlow <- function(
   if (inherits(manager, "DIAStateAdapter")) {
     stateName <- protDesignStateName(manager)
     later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
+    compared <- omicsDesignCompared(manager, workflowData)
     verdict <- if (later) compareOmicsDesignResult(manager, list(design_matrix = importedArtifacts$importedDesign,
-      data = importedArtifacts$importedDataCln), stateName,
-      omicsDesignCompared(manager, workflowData)) else "first"
+      data = importedArtifacts$importedDataCln), stateName, compared) else "first"
+    # VAL-288: a formula-only change (a), or an organism, taxonomy id or FASTA change only (b), asks too; Save resets
+    # only the differential analysis (a) or enrichment (b).
+    limited <- c(if (omicsDesignFormulaChanged(workflowData$config_list, compared)) "formula",
+      protDesignImportOrganismChanges(workflowData, taxonId, organismName, importArtifacts$importPath))
     if (later && verdict %in% c("unchanged", "changed")) {
       importedConfig <- workflowData$config_list
       # AUDIT I01 (VAL-277): the confirmed import runs inside the import's error handling, as the unconfirmed one does
@@ -382,17 +386,44 @@ runProtDesignImportConfirmationFlow <- function(
         })
       }
       # AUDIT I01 (b): the working notice is closed before the question (Cancel then leaves nothing behind).
-      if (identical(verdict, "changed")) shiny::removeNotification(successNotificationId)
-      return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, unchanged = function() {
+      if (identical(verdict, "changed") || length(limited)) shiny::removeNotification(successNotificationId)
+      return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, limited = limited, unchanged = function() {
         shiny::removeNotification(successNotificationId)
         applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = importedArtifacts$importedContrasts,
-          config_list = workflowData$config_list), "differential_expression")
+          config_list = importedConfig), "differential_expression", forceDaPending = "formula" %in% limited)
+        if (any(c("organism", "fasta") %in% limited)) {
+          workflowData$taxon_id <- taxonId
+          workflowData$organism_name <- organismName
+          if ("fasta" %in% limited) hydrateFastaSidecar(workflowData = workflowData, importPath = importArtifacts$importPath,
+            sourceDir = experimentPaths$source_dir, resultsDir = experimentPaths$results_dir,
+            fastaPath = importArtifacts$fastaPath, organismName = organismName)
+          status <- workflowData$tab_status
+          if (!is.null(status$enrichment_analysis) && !identical(status$enrichment_analysis, "disabled")) {
+            status$enrichment_analysis <- "pending"
+            workflowData$tab_status <- status
+          }
+        }
       })))
     }
   }
   runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts, importedArtifacts, taxonId,
     organismName, session, qcTrigger, successMessage, successNotificationId, hydrateFastaSidecar,
     hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn, completePostCheckpointFn)
+}
+
+#' KIT-247 (VAL-288 (b)): what an Import Existing Design changes beside the design table: `organism` when the taxonomy
+#' id or the organism name differs from the session's (both known), `fasta` when the folder brings an
+#' `aa_seq_tbl_final.RDS` whose content differs from the session's.
+#' @noRd
+protDesignImportOrganismChanges <- function(workflowData, taxonId, organismName, importPath) {
+  current <- shiny::isolate(list(taxon = workflowData$taxon_id, organism = workflowData$organism_name,
+    aa = workflowData$aa_seq_tbl_final))
+  text <- function(x) if (is.null(x) || !length(x)) NA_character_ else trimws(as.character(x[[1L]]))
+  organism <- (!is.na(text(current$taxon)) && !is.na(text(taxonId)) && !identical(text(current$taxon), text(taxonId))) ||
+    (!is.na(text(current$organism)) && !is.na(text(organismName)) && !identical(text(current$organism), text(organismName)))
+  aaFile <- if (is.character(importPath) && length(importPath) == 1L) file.path(importPath, "aa_seq_tbl_final.RDS") else ""
+  fasta <- nzchar(aaFile) && file.exists(aaFile) && !identical(digest::digest(readRDS(aaFile)), digest::digest(current$aa))
+  c(if (organism) "organism", if (fasta) "fasta")
 }
 
 #' The import's commit (KIT-247: `runProtDesignImportConfirmationFlow` decides first); `cut` sets the previous design's
@@ -436,7 +467,8 @@ runProtDesignImportConfirmationFlowNow <- function(workflowData, experimentPaths
     actionLabel = "Import",
     validateColumnMapping = TRUE
   )
-  rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
+  rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln,
+        workflowData$config_list)
   didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
   # KIT-177: the values the design step set to missing, named and counted.
   notifyProtDesignLog2Counts(workflowData)
