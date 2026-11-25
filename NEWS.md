@@ -325,6 +325,28 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics: the internal-standard pattern proposed at import for every metabolomics file and every
+   lipidomics file except LipidSearch (the MS-DIAL pattern, which was proposed whatever the file's format) no longer
+   contains `w/o MS2:`, `IS-` now matches only at the start of a name, and a deuterium label in parentheses such as
+   '(d7)' is now recognised: the pattern is now `^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)`. MS-DIAL 4 and MS-DIAL 5.0 to
+   5.1 mark with 'w/o MS2:' a feature they annotated from the MS1 spectrum without an accepted MS/MS match; these are
+   ordinary features, not internal standards. (Later MS-DIAL versions write 'no MS2:' or 'low score:', which the
+   pattern never matched.) Before, with 'Apply ITSD normalization' ticked (the default) and no internal standard
+   selected in the ITSD Selection tab, every such feature, and every name containing 'IS-' in capitals, was used as an
+   internal standard to compute each sample's normalisation factor and was then removed from the data, the
+   differential analysis and the reports; the study-parameters file and the report listed them as the standards used.
+   With the default between-sample normalisation (cyclic loess) and no missing values that factor was undone by the
+   next step, so the lasting effect was the removal; with 'None' or 'Scale' the factor also shifted the fold changes.
+   With ITSD unticked they were still left out of the integration model. A new import of the same file now gives
+   results different from 0.9.0: these features are kept and tested, and where no labelled standard remains in an
+   assay, no internal-standard normalisation is applied to it. The normalisation tab now names, per assay, the rows it
+   used as internal standards (annotation and identifier) in its log and a notification, and the analysis record lists
+   them; the import's pattern box says where the pattern is matched, that the match is case-sensitive and that matched
+   rows are removed; the integration's Sample Matching tab and its record name the rows marked as internal standards in
+   each data set. Projects imported before this change keep the pattern they were imported with and replay as they
+   were made; where that pattern matched such features, the report, the analysis record and the integration tab say so
+   in one sentence. Re-import the files to use the new pattern (KIT-260).
+
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
    it counted in how many samples a feature was below it. An MS-DIAL table imported with its default identifier column

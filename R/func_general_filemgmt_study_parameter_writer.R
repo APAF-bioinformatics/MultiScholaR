@@ -294,6 +294,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                 if (!is.null(itsd$timestamp) && !is.na(itsd$timestamp)) {
                     itsd_lines <- c(itsd_lines, paste("* Timestamp:", itsd$timestamp))
                 }
+                # KIT-260 (VAL-241, OD-3 (a)): the analysis record's note, where the stored pattern matched names through the
+                # alternatives the corrected MS-DIAL default removed (no line otherwise: the block is as before).
+                itsd_note <- omicsItsdRecordNote(analysis_record)
+                if (!is.null(itsd_note)) itsd_lines <- c(itsd_lines, paste("* Note:", itsd_note))
 
                 # Add per-assay ITSD feature names
                 if (!is.null(itsd$features_per_assay) && is.list(itsd$features_per_assay) && length(itsd$features_per_assay) > 0) {
@@ -491,6 +495,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                 if (!is.null(itsd$timestamp) && !is.na(itsd$timestamp)) {
                     itsd_lines <- c(itsd_lines, paste("* Timestamp:", itsd$timestamp))
                 }
+                # KIT-260 (VAL-241, OD-3 (a)): the analysis record's note, where the stored pattern matched names through the
+                # alternatives the corrected MS-DIAL default removed (no line otherwise: the block is as before).
+                itsd_note <- omicsItsdRecordNote(analysis_record)
+                if (!is.null(itsd_note)) itsd_lines <- c(itsd_lines, paste("* Note:", itsd_note))
 
                 # Add per-assay ITSD feature names
                 if (!is.null(itsd$features_per_assay) && is.list(itsd$features_per_assay) && length(itsd$features_per_assay) > 0) {

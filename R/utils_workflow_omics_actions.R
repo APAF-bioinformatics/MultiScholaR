@@ -358,6 +358,8 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         actions <- c(actions, list(omicsManagedCommit(omicsItsdNormalisationStep(binding, settings$itsd_aggregation, settings$itsd_feature_ids), config,
             function(result) {
                 normData$post_itsd_obj <- result$stateReference
+                # KIT-260 (OD-2 (b)): the rows used per assay, from the step's result value (E-1).
+                omicsItsdReportResult(result$value, addLog, function(text) shiny::showNotification(text, type = "message"))
                 addLog("ITSD normalization complete")
             }, function() {
                 advance("Applying ITSD normalization...")
@@ -479,8 +481,11 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
             # managed twin resolves them; the head may have moved since (a second Run, a QC refilter).
             feature_ids <- omicsManualItsdFeatureIds(normData$itsd_selections, normData$itsd_candidate_ids, addLog)
             current <- NULL
-            normData$post_itsd_obj <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation,
-                feature_ids, config)$reference
+            itsd <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation, feature_ids, config)
+            normData$post_itsd_obj <- itsd$reference
+            # KIT-260 (OD-2 (b)): the rows used per assay, through the tab's notification.
+            omicsItsdReportResult(itsd$value, addLog, function(text) notify(text, type = "message"))
+            itsd <- NULL
             addLog("ITSD normalization complete")
         } else {
             addLog("ITSD normalization skipped")

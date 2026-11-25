@@ -650,6 +650,46 @@ integrationInternalStandards <- function(features) {
     toupper(trimws(as.character(flag))) %in% "TRUE"
 }
 
+#' The rows INT-3's rule marks as internal standards in each selected data set, named "display name (identifier)"
+#' (KIT-260, VAL-241, OD-4 (a)); a data set without a marked row is left out.
+#' @param object An `IntegrationViewsData` with its `features`.
+#' @param views The selected data sets.
+#' @return A named list of character vectors.
+#' @noRd
+integrationInternalStandardNames <- function(object, views) {
+    out <- list()
+    for (view in views) {
+        features <- object@features[[view]]
+        if (is.null(features)) next
+        marked <- integrationInternalStandards(features)
+        if (!any(marked)) next
+        out[[view]] <- sprintf("%s (%s)", as.character(features$display_name %||% features$feature_id)[marked],
+            as.character(features$feature_id)[marked])
+    }
+    out
+}
+
+#' Of the marked rows, those the data set's stored pattern matched through the alternatives the corrected MS-DIAL
+#' default removed (KIT-260, OD-3 (a); `omicsItsdLegacyPatternMatches` on the display names, with the pattern the
+#' integration input recorded); a data set without such a row is left out.
+#' @return A named list of character vectors (the display names).
+#' @noRd
+integrationInternalStandardLegacy <- function(object, views) {
+    view_omic <- integrationViewOmics(object)
+    out <- list()
+    for (view in views) {
+        features <- object@features[[view]]
+        if (is.null(features)) next
+        marked <- integrationInternalStandards(features)
+        if (!any(marked)) next
+        regex <- tryCatch(object@inputs[[view_omic[[view]]]]$manifest$internal_standards$regex, error = function(error) NULL)
+        names <- as.character(features$display_name %||% features$feature_id)[marked]
+        flagged <- omicsItsdLegacyPatternMatches(names, regex %||% NA_character_)
+        if (any(flagged)) out[[view]] <- names[flagged]
+    }
+    out
+}
+
 #' Average a view's runs per biological sample (INT-2): the mean of the observed values of the sample's runs, missing
 #' when none is observed.
 #' @param values Features x runs.
@@ -1341,7 +1381,7 @@ integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_, 
     file <- fit$model_file
     file_reference <- store$product(list(bytes = file$bytes %||% raw(0), sha256 = file$sha256 %||% NA_character_,
         size = file$size %||% NA_real_), "model_file", "integration.mofa_model_file")
-    list(schema = INTEGRATION_MODEL_SCHEMA, factors = factor_table, weights = weights, aligned_values = values,
+    product <- list(schema = INTEGRATION_MODEL_SCHEMA, factors = factor_table, weights = weights, aligned_values = values,
         variance_explained = variance,
         variance_total = data.frame(view = names(fit$r2_total), r2_percent = unname(as.numeric(fit$r2_total)),
             stringsAsFactors = FALSE),
@@ -1353,6 +1393,10 @@ integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_, 
         notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages, seeds = seeds,
         model_file = list(reference = file_reference, sha256 = file$sha256 %||% NA_character_, size = file$size %||% NA_real_,
             media_type = "application/x-hdf5"))
+    # KIT-260 (VAL-241, OD-4 (a)): the marked rows per data set, "display name (identifier)", when any data set has one
+    # (a model without marked rows is saved as before).
+    if (length(aligned$internal_standards_marked)) product$internal_standards_marked <- aligned$internal_standards_marked
+    product
 }
 
 #' Check that a value is a model product v2 (KIT-148), refused in words otherwise (`integration_model_outdated`).
@@ -1486,7 +1530,10 @@ integrationMofaOperation <- function(match = FALSE) {
                 fields = paste0(slot, "/", resolved$views)), slot)[resolved$views]
             # KIT-148: the rows carry the hand-off names (`<view>:<feature_id>`) from the read, so the aligned views are
             # handed to the trainer as they are, with no renamed copy.
-            integrationModelFromAligned(integrationAlignViews(object, resolved, prefix_rows = TRUE), resolved, parameters, store)
+            aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
+            # KIT-260 (OD-4 (a)): the rows INT-3's rule marks, named per data set, for the record.
+            aligned$internal_standards_marked <- integrationInternalStandardNames(object, resolved$views)
+            integrationModelFromAligned(aligned, resolved, parameters, store)
         })
     declaration$partitioned <- function(parameters, store) {
         object <- readWorkflowExecutionComponents(store$manager, store$source, fields = c("features", "design_matrix", "inputs"))
@@ -1494,6 +1541,7 @@ integrationMofaOperation <- function(match = FALSE) {
         aligned <- integrationAlignViewsPartitioned(object, resolved,
             integrationStateViewPages(store$manager, store$source, store$worker_cap, integrationModelViewsSlot(resolved)),
             prefix_rows = TRUE)
+        aligned$internal_standards_marked <- integrationInternalStandardNames(object, resolved$views)
         object <- NULL
         integrationModelFromAligned(aligned, resolved, parameters, store)
     }
@@ -1766,12 +1814,15 @@ computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
 integrationModelRecordOutcomes <- function(context, export) {
     value <- tryCatch(hydrateSavedWorkflowEntity(context$store, export$reference)$value, error = function(error) NULL)
     if (!is.list(value)) return(list())
-    list(views = value$view_summary$view, features_model = value$view_summary$features_model,
+    outcomes <- list(views = value$view_summary$view, features_model = value$view_summary$features_model,
         internal_standards_dropped = value$view_summary$internal_standards_dropped, samples = nrow(value$samples),
         shared_samples = value$shared_samples, factors = ncol(value$factors) - 1L,
         iterations = value$elbo$iterations, elbo_last = value$elbo$last, mofa2 = value$versions$MOFA2 %||% NA_character_,
         mofapy2 = value$versions$mofapy2 %||% NA_character_, python = value$versions$python %||% NA_character_,
         model_sha256 = value$model_file$sha256 %||% NA_character_, notes = value$notes)
+    # KIT-260 (VAL-241, OD-4 (a)): the marked rows named per data set, when the model has any (none before KIT-260).
+    if (length(value$internal_standards_marked)) outcomes$internal_standards_marked <- value$internal_standards_marked
+    outcomes
 }
 
 #' Replay an accepted model from the record's parameters on the replayed inputs state (the replay's analyses loop).

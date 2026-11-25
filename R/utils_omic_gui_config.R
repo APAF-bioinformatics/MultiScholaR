@@ -1346,6 +1346,31 @@ omicGuiLog2Texts <- function() {
             "and Quantile do not depend on the unit."))
 }
 
+#' The internal-standard texts of the lipidomics and metabolomics tabs and records (KIT-260, VAL-241: OD-2 (b), OD-3 (a),
+#' OD-4 (a); proposed wording, implemented as proposed, the owner edits it before release, VAL-41).
+#' @noRd
+omicGuiItsdTexts <- function() {
+    c(import_help = paste("Regular expression, case-sensitive. The normalisation matches it in the annotation column chosen",
+            "above (the integration also in the identifier column). With 'Apply ITSD normalization' ticked and no standard",
+            "selected in the ITSD Selection tab, every matching row is used as an internal standard to normalise each sample",
+            "and is then removed from the data. Leave it empty for none."),
+        # %s: the assay; %d: the rows; %s: the rows, each as `row`.
+        used_log = "ITSD, assay %s: %d rows used as internal standards, then removed: %s",
+        # %s: the annotation; %s: the identifier column; %s: the identifier.
+        row = "%s (%s %s)",
+        # %s: the identifier column; %s: the identifier (a row without an annotation).
+        row_no_annotation = "%s %s",
+        # %s: the counts per assay in words.
+        used_notification = paste("Internal-standard normalisation used %s rows as internal standards and removed them;",
+            "the log names them."),
+        # %s: where, e.g. "assay LCMS_Pos, 9 rows".
+        legacy_note = paste("This project was imported with an internal-standard pattern that also matches features MS-DIAL",
+            "annotated without MS/MS, or names containing 'IS-' in capitals; such features were used as internal standards",
+            "and removed (%s)."),
+        # %s: the data set; %s: the rows, each as `row`.
+        integration_names = "%s: internal standards marked: %s.")
+}
+
 #' The proteomics label-free and TMT log2 texts (KIT-177; proposed wording, implemented as proposed, the owner edits
 #' before release, VAL-41): the reopen sentence of a design saved by an earlier version, the notification and step-log
 #' lines of the values set to missing at the design step (`%d` the counts), the refusal of a negative or infinite
