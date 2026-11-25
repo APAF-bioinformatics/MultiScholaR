@@ -1634,10 +1634,14 @@ integrationElboRank <- function(elbo_last) {
         range = best - min(elbo_last), relative_spread = (best - min(elbo_last)) / abs(best))
 }
 
-#' An ELBO difference as the Results tab and the methods paragraph write it (KIT-240): two decimals, in ELBO units.
+#' An ELBO difference as the Results tab and the methods paragraph write it (KIT-240): two decimals, in ELBO units; a
+#' positive distance below 0.005 reads "less than 0.01", never "0.00" (AUDIT-KIT-240-impl I01).
 #' @param x A difference of final ELBOs.
 #' @noRd
-integrationElboText <- function(x) sprintf("%.2f", as.numeric(x))
+integrationElboText <- function(x) {
+    x <- as.numeric(x)
+    if (is.finite(x) && x > 0 && x < 0.005) "less than 0.01" else sprintf("%.2f", x)
+}
 
 #' How training stopped (KIT-151; INT-15): `convergence_rule` when it took fewer rounds than the limit (MOFA2's rule
 #' stopped it), `round_limit` when it reached the limit.

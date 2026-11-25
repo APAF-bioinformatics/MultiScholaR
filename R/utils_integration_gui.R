@@ -134,8 +134,9 @@ integrationGuiTexts <- function() {
             "named differently in two omics appears as two rows."),
         align_rules_heading = "What happens before the model",
         # KIT-240 (VAL-221 (4)): the matching rules' decisions, named (draft wording, docs/qa/.../kit-240/wording.md).
-        align_provisional = paste("These rules are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis",
-            "record names the decision behind each."),
+        align_provisional = paste("The averaging of runs, the removal of internal standards and the handling of missing",
+            "samples are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the",
+            "decision behind each."),
         # %d: all biological samples, those measured in every data set.
         fact_samples = "%d biological samples in all; %d measured in every data set.",
         # %d: samples missing from at least one data set.
@@ -150,14 +151,14 @@ integrationGuiTexts <- function() {
         # %s: the data set; %d: internal standards.
         fact_standards_drop = "%s: %d internal standards removed.",
         fact_standards_keep = "%s: %d internal standards kept.",
-        # %s: the data set; %d: features.
-        fact_sparse = "%s: %d features measured in fewer than two samples are left out.",
+        # %s: the data set; %d: features left out, the fewest biological samples a feature needs, the samples kept.
+        fact_sparse = "%s: %d features measured in fewer than %d of the %d biological samples are left out.",
         # %d: samples in every data set, the threshold.
         few_samples = paste("Only %d biological samples are measured in every data set (fewer than %d). A factor model",
             "needs more samples; its results may be unstable."),
         view_table_heading = "Data sets",
         col_standards_removed = "Internal standards removed",
-        col_sparse = "Features left out (fewer than two samples)",
+        col_sparse = "Features left out (measured in too few samples)",
         col_features_used = "Features used",
         sample_table_heading = "Biological samples",
         col_sample = "Biological sample",
@@ -1385,6 +1386,9 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
     # Counted over the union of the data sets' biological samples, whichever rule keeps them.
     total <- preview$all_samples
     missing <- total - preview$aligned$shared_samples
+    # KIT-240 r1.4 (AUDIT-KIT-240-impl I02): the rule the alignment applied, over the kept samples, as the Methods says.
+    kept <- nrow(preview$aligned$samples)
+    min_observed <- integrationMinObserved(parameters, kept)
     facts <- c(sprintf(texts[["fact_samples"]], total, preview$aligned$shared_samples),
         sprintf(text("fact_missing_", parameters$missing_samples), missing))
     for (i in seq_len(nrow(preview$replicates))) {
@@ -1396,7 +1400,7 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
             facts <- c(facts, sprintf(text("fact_standards_", parameters$internal_standards), row$view, row$standards))
         }
         sparse <- summary$sparse_dropped[summary$view == row$view]
-        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse))
+        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse, min_observed, kept))
     }
     unname(facts)
 }

@@ -1,7 +1,7 @@
 # KIT-240: user-facing texts (drafts awaiting the owner)
 
 Every text below is a **draft awaiting the owner's wording** (VAL-41 allows implementing proposed wording; ticket
-KIT-240 r1.2, OD-1 to OD-3). The values the marks describe are decided (VAL-221); only the words are open.
+KIT-240 r1.4, OD-1 to OD-3; implementation audit AUDIT-KIT-240-impl-20261125). The values the marks describe are decided (VAL-221); only the words are open.
 Ledger IDs in the marks refer to `docs/methods-decision-ledger.md` in the repository, which the installed application
 does not carry (AUDIT-KIT-240-plan-20261125, Re-check 1, R1-07). The predicate `integrationParameterProvisional()`
 marks a default as waiting when its mark contains "awaiting the owner": a reworded waiting mark must keep that token, or
@@ -55,14 +55,17 @@ The other marks (`input_matrix`, `feature_selection`, `features_per_view`, `min_
 
 | Key | Where shown | Draft |
 |---|---|---|
-| `align_provisional` | Sample Matching, under the rules | These rules are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the decision behind each. |
+| `align_provisional` (r1.4, I03) | Sample Matching, under the rules | The averaging of runs, the removal of internal standards and the handling of missing samples are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the decision behind each. |
+| `fact_sparse` (r1.4, I02; %s data set, %d features, the fewest samples, the samples kept) | Sample Matching, the rules list | %s: %d features measured in fewer than %d of the %d biological samples are left out. |
+| `col_sparse` (r1.4, I02) | Sample Matching, the data-set table's column | Features left out (measured in too few samples) |
 | `settings_provisional` | above the Model settings | Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you. |
 | `mark_provisional` | in brackets after the label of each Enrichment setting whose default is not yet confirmed (the eight above: correlation, smallest number of samples, STRING species, KEGG organism, Reactome organism, smallest and largest pathway, seed); none of the Model or Results settings (r1.3, coordinator's ruling on R1-04) | default not yet confirmed |
 | `results_provisional` | Results tab, above its settings and above Save | These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you. |
-| `legend_provisional_default` (record) | the report's status legend (always printed) | a default that still awaits the owner's decision |
+| `legend_provisional_default` (record; r1.4, I05) | the report's status legend (always printed) | a default not yet confirmed |
+| `status_provisional_default` (record; r1.4, I05) | the record's status of such a setting, and the legend | default not yet confirmed |
 
-`status_provisional_default` ("provisional default") and `methods_provisional` keep their text; they are shown only
-for a default that still waits, which no Model or Results setting does.
+`methods_provisional` keeps its text; it is shown only for a default that still waits, which no Model or Results
+setting does.
 
 ### The stability sentences (VAL-221 (1); Re-check 1 R1-01)
 
@@ -70,10 +73,28 @@ for a default that still waits, which no Model or Results setting does.
 |---|---|---|
 | `stability_elbo_rank` | Results tab, after the stability introduction, when every seed's final ELBO is known | By the final value of MOFA2's training objective (the ELBO, a lower bound on the model evidence; higher is better), the model shown ranks %d of %d: %s below the highest. The final values of all seeds span %s. |
 | `stability_limit` | Results tab, after the stability introduction, whenever two or more seeds were trained | The table describes only the factors of the model shown: a factor that other seeds find but this model lacks is not listed. |
-| `methods_seeds_elbo` (record) | the methods paragraph, after the seeds sentence, when the rank is known | By its final ELBO, the reported model ranked %d of the %d models, %s below the highest (range over the models %s); the stability figures describe only the reported model's factors. |
+| `methods_seeds_elbo` (record; r1.4, I09, I10) | the methods paragraph, after the seeds sentences, when the rank is known | By its final evidence lower bound (ELBO, MOFA2's training objective; higher is better), the reported model ranked %d of the %d models, %s below the highest (range over the models %s, in the objective's units). |
+| `methods_seeds_limit` (record; r1.4, I09) | the methods paragraph, after the seeds sentence, whenever two or more seeds were trained | The stability figures describe only the reported model's factors: a factor that other seeds find but the reported model lacks is not listed. |
 
-The two %s are ELBO differences written with two decimals (`integrationElboText`). No interpretive clause is added
-unless the owner adds one with a stated basis.
+The two %s are ELBO differences written with two decimals (`integrationElboText`); a positive difference below 0.005
+reads "less than 0.01" (r1.4, I01), so the rank line never prints "0.00 below the highest" at rank 2 or lower. No
+interpretive clause is added unless the owner adds one with a stated basis.
+
+### Open for the owner: how the rank is presented (AUDIT-KIT-240-impl I01)
+
+The seeds' final ELBOs can differ by less than training's own stopping slack (KIT-151c n20weak cap1000 slow: five seeds
+span 0.0146, the declared seed ranks 5 of 5; KIT-062: one solution stopped at 186 and 191 rounds ended 0.676 apart), so
+the rank can order one solution. Options, none implemented:
+
+- (a) recommended by the audit: one sentence after `stability_elbo_rank`, and the same clause in `methods_seeds_elbo`,
+  with its basis in the ledger row: "Training stops by a rule, not at an exact optimum, so a small difference in the
+  final value can come from where training stopped rather than from a better solution."
+- (b) a per-analysis figure instead: the reported model's rise over its last ELBO evaluations, read from
+  `value$elbo$trace`, for example "In its last evaluations the reported model's value still rose by %s." (a new field
+  and a test).
+- (c) drop the ordinal and keep the distance and the span: "the model shown is %s below the highest final value; the
+  final values of all seeds span %s." (changes VAL-221 (1)'s "where ... ranks can be shown").
+- or keep it as is.
 
 ## Two facts for the owner (Re-check 1, R1-07)
 
