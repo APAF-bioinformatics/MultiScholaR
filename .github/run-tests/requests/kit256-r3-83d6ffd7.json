@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-256 R3 (AUDIT-KIT-256-impl I01 (a)): repaired G3, new file only; base fb1b4503 (old code) predicted 14/6 with G3 at NULL, head 83d6ffd7 (fix merged with staging 42846c0e) 20/0; ceiling 60 job-minutes (4.0 core-hours)",
+  "label": "KIT-256 R3 repaired G3: base fb1b4503 vs head 83d6ffd7, new file only",
+  "package_commit": "83d6ffd75f093739172d532bea3c5607e1c37c28",
+  "base_commit": "fb1b4503f66e15bef5d9f7469a504257a5757830",
+  "tools_ref": "",
+  "tests": [
+    "test-kit256-tech-rep-selection-cleared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
