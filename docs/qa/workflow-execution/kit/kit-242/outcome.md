@@ -207,3 +207,17 @@ process, NA3, E11c, the row of ruling (7), G4, G5, G8, G9; seeds 242000 + k with
 The smallest falsifying test of the fix before P0's 186 files: `test-kit242-normalisation-fallback.R` on 5c856dff (the
 tests-only commit plus the fix), 1 job, ceiling 60 job-minutes. Prediction: every test passes (Part A's rows, the
 correction pass's rows, Part B's 42 tests including G4, G5, G8, G9).
+
+### R1d (run 45721168959, 5c856dff; 13.9 job-minutes, 0.93 core-hours): observed
+
+As predicted: 512 passed, 0 failed, 0 skipped. (Dispatcher run 45721099733 only launched it.)
+
+### P0, declared before the run
+
+Head-only job over the 186 files of `r2-files.txt`, 12 shards, no check, on scratch commit `kit-242-p0` = 0020144c plus
+the fix 5c856dff (no test edits: the tests-only commit fb5eee2b is not in it, so the new file runs in its Part A form
+and the two ITSD `fixed` pins at their old value). Expected 420 job-minutes (28.0 core-hours), ceiling 840 (56.0).
+Purpose: list every stored expectation that fails on the fix, then classify each by the marker or rule that moves it
+and whether it already failed on runners (R2a-2's tables for Part A's moves and the files' base failures; the staging
+train runs where they cover a file; otherwise stated as not known before R2). No prediction of the list is made (P0 is
+the measurement); an instrument failure (a shard that does not complete) is reported, not counted.
