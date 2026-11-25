@@ -97,4 +97,30 @@ Where "read from the run" is shown, the prediction is `same` and the count is re
 
 ## Result
 
-(filled after the run)
+Run 45707095842 (request commit 0b5ad4b6; conclusion success; jobs tests success, check success; started
+2026-11-25 21:44 UTC). Base 4bcff128, head 9f65a58c; 71 files, 6 shards per side. No re-send; dispatch was automatic.
+
+**Verdict: every prediction held. TRAIN GREEN** (landing only after trains 15 to 18 land with their code unchanged;
+train 18 has since landed on staging).
+
+| File | Base | Head | Verdict |
+|---|---|---|---|
+| test-kit264-trx-export-current.R | absent | 85/0/0/0 | only-on-head (as predicted) |
+| test-kit254-omics-correlation-skip.R | 376/3 | 376/3 | same (as predicted; staging has 379/0 through train 15's tests-only edit, VAL-325) |
+| test-integration-record.R | 200/0/0/0 | 200/0/0/0 | same |
+| test-workflow-operation-registry.R | 1107/2 | 1107/2 | same |
+| test-workflow-omics-binding-steps.R | 57/2 | 57/2 | same |
+| test-kit217-intensity-filter-missing.R | 344/0 | 344/0 | same |
+| test-ruv-control-anova-grouping.R | 139/0 | 139/0 | same |
+| test-kit248-correlation-skip-record.R | 206/0 | 206/0 | same |
+| test-kit263-prot-study-parameters-sections.R | 11/0 | 11/0 | same |
+| known red files (prot-norm-core 1548/306, saved-da 755/196, omic-enrich-module 1011/59, omic-summary-module 1675/28, omics-summary-core 676/25/0/2, omics-enrich-core 221/20/0/1, trx-declarations 313/31, module-ci-trx-da 52/1, -norm 63/1, -summary 87/1, -design 66/0/1, -qc 38/0/1, kit-harness 734/1, omics-owner 78/1) | as predicted | identical | same |
+| every other file of the 71 | read from the run | identical | same |
+
+compare.tsv: 71 files; the only non-`same` verdict is the new file (`only-on-head`).
+
+**R CMD check** (both sides exit 0): base ERRORs 0, WARNINGs 3, NOTEs 3; head ERRORs 0, WARNINGs 3, NOTEs 3; 6
+findings identical on both; only on head: none; only on base: none.
+
+**Cost.** 40822 job-seconds = **680.4 job-minutes = 45.36 core-hours** (job-minutes x 4 / 60); ceiling 980 (65.3
+core-hours), expected about 680. Check jobs 685 s (base) and 934 s (head).
