@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-260 P0, base side: the 8 files that failed in P0 run 45603194585 and are not in merge train 4's run, at staging e0747fc1, so moved expectations are told from runner-only failures; within P0's 490 job-minute ceiling (236 used)",
+  "label": "KIT-260 P0 base side, staging e0747fc1, 8 files",
+  "package_commit": "e0747fc198817596e3e66397a87e06b2f869c6a7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-omic-norm-module.R",
+    "test-omics-norm-core.R",
+    "test-workflow-omics-declarations.R",
+    "test-workflow-omics-import.R",
+    "test-workflow-omics-owner.R",
+    "test-metab-00-import-detection-characterization.R",
+    "test-metab-import-detection-direct-shared.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
