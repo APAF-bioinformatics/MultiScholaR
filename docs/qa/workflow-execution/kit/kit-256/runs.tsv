@@ -1,0 +1,2 @@
+run	commit	purpose	minutes	result
+45617875300	88f60b00	G0: browser-selection.R on base (R/ as staging 63143aa3), stop rule 1	12 (1 job)	phase 0 passed; step 3 box ["S1","S2"]; step 6 one key A_1={S1,S2,S3,S4}; stop rule 1 not met; 23 of 24 predictions held, step5.acted text empty (recorder read the notification before Shiny filled it: instrument, no acceptance value depends on it; recorder fixed for GB)
