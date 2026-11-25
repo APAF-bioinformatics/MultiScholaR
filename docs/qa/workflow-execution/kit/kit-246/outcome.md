@@ -163,3 +163,22 @@ Expected 10.53, ceiling 53.33 core-hours. No correction, instrument rerun or wor
   - Limits: synthetic data only; nothing between 20 and 60 samples.
   - Ledger: INT-31 (correction of INT-24's evidence), VAL-251, VAL-293, VAL-327. Runs: R1 45584885011, R2
     45675980031.
+
+## Follow-up (VAL-305), 2026-11-26: predictions (written before the change and before any run)
+
+Bounded item: put the four phrases of the text the owner was shown ("made for this software", "(two groups of 10)",
+"this scaling", "of four data sets") into the one shared passage `integrationScalingEvidenceText()`; both the Model
+tab's help and the Methods sentence change with it. Branch kit-246c from staging 176f9d3ff. The passage's last
+sentence (VAL-251) is unchanged.
+
+Tests-only commit bfc57ce7: one added block of assertions in the KIT-246 block (E5) of
+`tests/testthat/test-integration-record.R`: 4 phrases x 2 expectations (the shared passage holds the phrase; the help
+and the Methods sentence both hold it) + 1 (the passage's last sentence is unchanged) = 9 expectations.
+
+Predictions for the run (base = tests-only commit, head = the change):
+- `test-integration-record.R`: base 201 passed, 8 failed (the eight phrase expectations; the last-sentence one
+  passes); head 209 passed, 0 failed; verdict `fixed`. Staging has the file at 200 passed, 0 failed before the 9 added.
+- The other ten files: `same` (reading of the term lists of E2, E5, L7 and the whole-table scans: none of
+  "weak", "every computer|any computer|on every machine", "same total variance|unit variance", "too small",
+  "there was none", "no practical difference", "rose by" occurs in the four phrases).
+- R CMD check: findings identical on base and head.
