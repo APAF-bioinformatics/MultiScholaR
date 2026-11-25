@@ -677,6 +677,36 @@ removeProtNormOwnFiles <- function(paths, stage = c("normalization", "correlatio
     if (identical(stage, "normalization")) texts$norm_unremoved else texts$correlation_unremoved)
 }
 
+#' AUDIT-KIT-257-impl I05: a failure after this run removed its earlier files carries them (class
+#' `prot_norm_own_files_removed`, field `removed_own_files`), so the tab's notice can say so; the message is unchanged.
+#' @param error The condition; `removed` the paths the run removed.
+#' @return The condition.
+#' @noRd
+protNormTagRemovedFiles <- function(error, removed) {
+  if (!length(removed) || inherits(error, "prot_norm_own_files_removed")) return(error)
+  error$removed_own_files <- removed
+  class(error) <- c("prot_norm_own_files_removed", class(error))
+  error
+}
+
+#' Run `code`; an error after the removal is raised again carrying the removed paths (`protNormTagRemovedFiles`).
+#' @noRd
+withProtNormRemovedFiles <- function(removed, code) {
+  tryCatch(code, error = function(e) stop(protNormTagRemovedFiles(e, removed)))
+}
+
+#' The tab's error notice of a run that stopped after removing its earlier files: the reason's first line gains
+#' `removed_then_stopped` (the first line, so the in-process and worker notices keep the same first line).
+#' @noRd
+protNormRemovedFilesNotice <- function(error) {
+  if (!inherits(error, "prot_norm_own_files_removed")) return(error)
+  text <- omicNormGuardTexts()$removed_then_stopped
+  message <- error$message %||% conditionMessage(error)
+  cut <- regexpr("\n", message, fixed = TRUE)
+  error$message <- if (cut < 0) paste(message, text) else paste0(substr(message, 1L, cut - 1L), " ", text, substring(message, cut))
+  error
+}
+
 saveProtNormCorrelationResults <- function(
   finalS4ForDe,
   experimentPaths,

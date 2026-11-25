@@ -80,9 +80,12 @@
    - lipidomics' and metabolomics' Copy collected earlier RUV-corrected QC figures.
 
    A file that cannot be removed (for example, open in another program) stops the run before the normalisation is
-   computed. If a proteomics normalisation fails after it has started, the earlier RUV figures and normalised table
-   are no longer in the project: run it again before Copy. Projects normalised before this release keep such files
-   until the normalisation is run again. (KIT-257)
+   computed. If a proteomics normalisation or correlation filter stops after it has started (for example, a manual k
+   larger than the data allow), the analysis is unchanged but its RUV figures and normalised table are no longer in
+   the project, and the error notice says so: apply or skip the correlation filter again to write the table, and run
+   the normalisation again for the figures, before Copy. On DIA with limpa, pressing "Run Normalization & RUV" again
+   on the correlation's or the RUV covariates' result keeps that result's files. Projects normalised before this
+   release keep such files until the normalisation is run again. (KIT-257)
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

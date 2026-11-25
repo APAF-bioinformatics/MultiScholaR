@@ -792,6 +792,9 @@ omicNormGuardTexts <- function() {
             "run: %s. Close any program that has it open, then run the normalisation again."),
         correlation_unremoved = paste("An earlier file of the normalisation could not be removed, so this correlation filter",
             "was not run: %s. Close any program that has it open, then apply or skip the correlation filter again."),
+        # AUDIT-KIT-257-impl I05 (the coordinator's ruling): proteomics, a run that stops after its start removed files.
+        removed_then_stopped = paste("The earlier RUV figures and normalised table of this analysis were removed when this run",
+            "started; apply or skip the correlation filter again before Copy."),
         correlation = paste("the current table is not the one the last normalisation produced (Quality Control was reverted since),",
             "so the correlation filter would not use the normalised table the analysis reports. Press \"Run Normalization",
             "Pipeline\" again, then apply or skip the correlation filter."),

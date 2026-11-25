@@ -263,15 +263,18 @@ protNormFiguresDispatcher <- function(workflowData, getPlotAestheticsFn) {
 #' @noRd
 dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData, passThrough, failed, experimentPaths = NULL) {
   manager <- workflowData$state_manager
+  held <- new.env(parent = emptyenv())
   runner$run(function() shiny::isolate({
     source <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "normalization")
       source <- diaLimpaPassThroughSource(manager, normData)
-      removeProtNormOwnFiles(experimentPaths, "normalization")
+      # AUDIT-KIT-257-impl I01 (KIT-244 I07): only a press that designates the head makes the earlier files stale.
+      held$removed <- if (identical(source$entity_id, getDIAStateReference(manager)$entity_id))
+        removeProtNormOwnFiles(experimentPaths, "normalization")
       source
     })
     list(protNormFiguresAction(source, omicNormPlotAestheticsGetter(settings)(), deliver = function(result) passThrough()))
-  }), failed = failed)
+  }), failed = function(error) failed(protNormTagRemovedFiles(error, held$removed)))
   invisible(TRUE)
 }
 
@@ -487,6 +490,8 @@ runProtNormNormalizationWorkflow <- function(
   messageFn = message,
   generatePreNormalizationQcFn = NULL
 ) {
+  # AUDIT-KIT-257-impl I05: a run that stopped after removing its earlier files says so in its error notice.
+  fail <- function(e) handleErrorFn(error = protNormRemovedFilesNotice(e))
   return(tryCatch({
     settings <- resolveProtNormReferenceSettings(input)
     if (identical(workflowData$state_manager$workflow_type, "DIA_LIMPA")) {
@@ -505,14 +510,18 @@ runProtNormNormalizationWorkflow <- function(
       if (is.null(runner)) {
         # KIT-257 (VAL-250): the earlier run's own files go after the route's refusals, before the pass-through (whose
         # definition is pinned, test-prot-norm-core.R); managed, the dispatched action removes them when it starts.
-        withDIAStateScope(workflowData$state_manager, function() {
-          assertDIAExportReady(workflowData$state_manager, allow_action = "normalization")
-          removeProtNormOwnFiles(experimentPaths, "normalization")
+        removed <- withDIAStateScope(workflowData$state_manager, function() {
+          manager <- workflowData$state_manager
+          assertDIAExportReady(manager, allow_action = "normalization")
+          # AUDIT-KIT-257-impl I01 (KIT-244 I07): only a press that designates the head makes the earlier correlation's
+          # table and RUV figures stale; pressed again on the tab's correlation or RUV result, the pass-through keeps the
+          # input it designated before (P-35, KIT-244), so that result and its files stay current.
+          if (identical(diaLimpaPassThroughSource(manager, normData)$entity_id, getDIAStateReference(manager)$entity_id))
+            removeProtNormOwnFiles(experimentPaths, "normalization")
         })
-        return(pass_through())
+        return(withProtNormRemovedFiles(removed, pass_through()))
       }
-      return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through,
-        function(e) handleErrorFn(error = e), experimentPaths))
+      return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through, fail, experimentPaths))
     }
     # KIT-182: the request runs synchronously here on both paths; when the run reads another table than the previous
     # run, its classed message is shown as the tab's notice.
@@ -532,7 +541,7 @@ runProtNormNormalizationWorkflow <- function(
       runner <- workflowOmicsManagedActions("proteomics")
       if (!is.null(runner)) dispatchProtNormNormalization(runner, settings, workflowData, normData, experimentPaths,
         omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
-        finish, function(e) handleErrorFn(error = e), preQc = generatePreNormalizationQcFn) else
+        finish, fail, preQc = generatePreNormalizationQcFn) else
         finish(runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
           omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
           getRuvGroupingVariableFn, pre_qc = generatePreNormalizationQcFn))
@@ -540,7 +549,7 @@ runProtNormNormalizationWorkflow <- function(
       showNotificationFn(conditionMessage(condition), type = "message", duration = 10)
       invokeRestart("muffleMessage")
     })
-  }, error = function(e) handleErrorFn(error = e)))
+  }, error = fail))
 }
 
 #' The normalisation's completion on the tab, after the runner or the managed delivery: the RUV audit trail (unless
@@ -612,6 +621,8 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   entry <- proteomicsDiaBinding$norm$run
   state <- if (identical(settings$ruv_mode, "skip")) "normalized" else "ruv_corrected"
   held <- new.env(parent = emptyenv())
+  # AUDIT-KIT-257-impl I05: a failure after the removal carries the removed files, for the tab's notice.
+  stopped <- function(error) failed(protNormTagRemovedFiles(error, held$removed))
   publish <- function(result) {
     prior_plot <- ggplot2::get_last_plot()
     on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
@@ -626,7 +637,7 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
     composite <- protNormFiguresAction(saved$final, aesthetics, "composite", publish,
       list(product = held$result$reference$entity_id, ruv_mode = settings$ruv_mode))
     runner$run(c(protNormFiguresActions(sources, aesthetics, function(result) invisible(NULL)), list(composite)),
-      failed = failed)
+      failed = stopped)
   }
   actions <- list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
     function(result) held$result <- result))
@@ -635,9 +646,9 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   # KIT-257 (VAL-250, R1-01): the earlier run's own files are removed when the actions start, not at the click: a click
   # that waited behind another action (a correlation still publishing its table) removes what that action wrote.
   runner$run(function() {
-    removeProtNormOwnFiles(experimentPaths, "normalization")
+    held$removed <- removeProtNormOwnFiles(experimentPaths, "normalization")
     actions
-  }, done = figures, failed = failed)
+  }, done = figures, failed = stopped)
   invisible(TRUE)
 }
 
@@ -659,7 +670,7 @@ runProtNormApplyCorrelationObserver <- function(
   messageFn = message,
   generateRuvCorrectedQcFn = NULL
 ) {
-  failed <- function(e) handleCorrelationErrorFn(error = e,
+  failed <- function(e) handleCorrelationErrorFn(error = protNormRemovedFilesNotice(e),
     logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")
   # KIT-111 D3: on a managed session the pairs and the selection run on the worker and the delivery finishes the tab.
   runner <- workflowOmicsManagedActions("proteomics")
@@ -694,7 +705,7 @@ runProtNormApplyCorrelationObserver <- function(
     # KIT-041/053: on the DIA_LIMPA route the RUV-III covariates are the tab's own action after the filter
     # (`apply_ruv_covariates`), the script's order; nothing runs here.
     final
-  }), error = function(e) handleCorrelationErrorFn(error = e,
+  }), error = function(e) handleCorrelationErrorFn(error = protNormRemovedFilesNotice(e),
       logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
 }
 
@@ -712,16 +723,17 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
   group <- grouping()
   entry <- proteomicsDiaBinding$norm$correlation
   held <- new.env(parent = emptyenv())
+  stopped <- function(error) failed(protNormTagRemovedFiles(error, held$removed))
   # KIT-122: after the selection the worker saves the PCA product of its checkpoint, which the publication half draws.
   figures <- function() runner$run(list(protNormFiguresAction(held$final, aesthetics(), "final_pca", function(result) {
     run <- list(pairs = held$pairs$reference, final = held$final)
     final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
       threshold, FALSE, omicType, experimentLabel, aesthetics))
     finish(final)
-  })), failed = failed)
+  })), failed = stopped)
   select <- function() runner$run(list(protNormManagedAction(entry$selection,
     list(pairs = held$pairs$reference$entity_id, threshold = threshold), held$source, "correlation_filtered",
-    function(result) held$final <- result$value)), done = figures, failed = failed)
+    function(result) held$final <- result$value)), done = figures, failed = stopped)
   # GUI audit A111-01: the gate and the source are read when the pairs start, so a click that waited behind a
   # normalisation re-run runs on that re-run's final, as in process. The step's observer does not depend on the reads.
   runner$run(function() shiny::isolate({
@@ -729,13 +741,13 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
       assertDIAExportReady(manager, allow_action = "correlation")
       source <- diaCorrelationSource(manager, normData)
       # KIT-257 (VAL-250): the earlier results table (either name) goes before the pairs start.
-      removeProtNormOwnFiles(experimentPaths, "correlation")
+      held$removed <- removeProtNormOwnFiles(experimentPaths, "correlation")
       readDIAStateMetadata(manager, source)
       source
     })
     list(protNormManagedAction(entry$pairs, diaPearsonPairsParameters(group), held$source, NULL,
       function(result) held$pairs <- result))
-  }), done = select, failed = failed)
+  }), done = select, failed = stopped)
   invisible(TRUE)
 }
 
@@ -773,7 +785,7 @@ runProtNormSkipCorrelationObserver <- function(
     )
     # KIT-041/053: the RUV-III covariates follow the (skipped) filter through the tab's own action.
     final
-  }), error = function(e) handleCorrelationErrorFn(error = e,
+  }), error = function(e) handleCorrelationErrorFn(error = protNormRemovedFilesNotice(e),
       logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
 }
 

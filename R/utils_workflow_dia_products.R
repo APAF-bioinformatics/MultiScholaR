@@ -745,13 +745,16 @@ runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, o
         assertDIAExportReady(manager, allow_action = "normalization")
         request <- diaNormalizationRequest(manager, settings, norm_data, grouping())
         # KIT-257 (VAL-250): the earlier run's own files go before anything is drawn, computed or committed.
-        removeProtNormOwnFiles(paths, "normalization")
-        if (isTRUE(request$redraw_pre) && is.function(pre_qc)) pre_qc()
-        run <- computeDIAReferenceNormalization(manager, request$source, request$parameters)
-        commit <- diaNormalizationCommit(manager, settings, run)
-        if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
-        publishDIAReferenceNormalization(manager, settings, run, workflow, norm_data, paths, omic_type, experiment_label,
-            post_qc, ruv_qc)
+        removed <- removeProtNormOwnFiles(paths, "normalization")
+        # AUDIT-KIT-257-impl I05: a failure after the removal carries the removed files, for the tab's notice.
+        withProtNormRemovedFiles(removed, {
+            if (isTRUE(request$redraw_pre) && is.function(pre_qc)) pre_qc()
+            run <- computeDIAReferenceNormalization(manager, request$source, request$parameters)
+            commit <- diaNormalizationCommit(manager, settings, run)
+            if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+            publishDIAReferenceNormalization(manager, settings, run, workflow, norm_data, paths, omic_type, experiment_label,
+                post_qc, ruv_qc)
+        })
     })
 }
 
@@ -1809,13 +1812,15 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
         assertDIAExportReady(manager, allow_action = "correlation")
         source <- diaCorrelationSource(manager, norm_data)
         # KIT-257 (VAL-250): the earlier results table (either name) goes before anything is computed or committed.
-        removeProtNormOwnFiles(paths, "correlation")
-        original <- readDIAStateMetadata(manager, source)$data
-        run <- if (skipped) list(final = source) else computeDIAReferenceCorrelation(manager, source, grouping(), threshold)
-        commit <- diaCorrelationCommit(manager, run$final, threshold, skipped)
-        if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
-        publishDIAReferenceCorrelation(manager, run, workflow, norm_data, paths, threshold, skipped, omic_type,
-            experiment_label, aesthetics)
+        removed <- removeProtNormOwnFiles(paths, "correlation")
+        withProtNormRemovedFiles(removed, {
+            original <- readDIAStateMetadata(manager, source)$data
+            run <- if (skipped) list(final = source) else computeDIAReferenceCorrelation(manager, source, grouping(), threshold)
+            commit <- diaCorrelationCommit(manager, run$final, threshold, skipped)
+            if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+            publishDIAReferenceCorrelation(manager, run, workflow, norm_data, paths, threshold, skipped, omic_type,
+                experiment_label, aesthetics)
+        })
     })
 }
 

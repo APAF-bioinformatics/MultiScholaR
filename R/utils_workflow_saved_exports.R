@@ -666,12 +666,13 @@ checkWorkflowFigureFiles <- function(files, message = "required figures were not
 #' KIT-257 (VAL-250): remove a run's own earlier files before the run, by exact path. The present files that are not
 #' directories are removed with `unlink(expand = FALSE)`, so a bracket or star in the project's path is never read as a
 #' pattern (KIT-243 I02); a path that is a directory is never deleted and counts as not removed. One logger line names
-#' the files removed.
+#' the files removed. A leading `~` is expanded first (AUDIT-KIT-257-impl I02): `unlink(expand = FALSE)` does not.
 #' @param files The paths to remove; absent ones are skipped.
 #' @param message The refusal's text, `%s` the paths still present.
 #' @return The removed paths, invisibly; a condition of class `workflow_figure_unwritten` when any is still present.
 #' @noRd
 removeWorkflowOwnFiles <- function(files, message) {
+    files <- path.expand(files) # a leading `~` only; wildcards stay literal (`expand = FALSE` below)
     present <- files[file.exists(files)]
     removable <- present[!dir.exists(present)]
     unlink(removable, expand = FALSE)
