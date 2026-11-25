@@ -1,0 +1,9 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omic-enrich-module.R	1051	19	0	0	failed	1051	19	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-11a-enrichment-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-enrichment-significance.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-module-ci-prot-enrich.R	79	0	0	2	ok	79	0	0	2	ok	same		
+test-module-ci-manifest.R	33	0	0	0	ok	33	0	0	0	ok	same		
+test-e2e-proteomics-enrichment.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-kit241-enrich-download-zip.R	9	3	0	0	failed	15	0	0	0	ok	fixed	fixed: E1: the archive is written with no zip program (one g:Profiler table); fixed: E2: the archive is written with no zip program (no result tables); fixed: E3: the error note is archived with no zip program; counts: E1: the archive is written with no zip program (one g:Profiler table) (passed 1 -> 3, skipped 0 -> 0); counts: E2: the archive is written with no zip program (no result tables) (passed 1 -> 3, skipped 0 -> 0); counts: E3: the error note is archived with no zip program (passed 2 -> 4, skipped 0 -> 0)	

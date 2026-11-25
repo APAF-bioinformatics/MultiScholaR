@@ -1,0 +1,23 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit252-managed-failure-text.R	0	0	0	0	absent	72	0	0	0	ok	only-on-head		
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-omic-da-module.R	1316	53	0	0	failed	1316	53	0	0	failed	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-execution-process.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-execution.R	114	0	0	10	ok	114	0	0	10	ok	same		
+test-perf-107.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-perf-003.R	137	0	0	1	ok	137	0	0	1	ok	same		
+test-perf107-audit.R	191	0	0	1	ok	191	0	0	1	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-workflow-core-harness.R	131	0	0	0	ok	131	0	0	0	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-execution-adapters.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-kit251-replicate-filter-one-click.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-kit250-organism-dialog.R	0	0	0	0	absent	119	0	0	0	ok	only-on-head		
+test-prot-01c-import-module-contracts.R	437	0	0	0	ok	437	0	0	0	ok	same		
+test-prot-01d-import-module-characterization.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-server-shared.R	226	0	0	0	ok	226	0	0	0	ok	same		

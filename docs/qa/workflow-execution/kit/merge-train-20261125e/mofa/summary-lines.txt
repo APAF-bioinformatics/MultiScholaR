@@ -1,0 +1,3 @@
+test-integration-workbook-mofa.R: 3 tests, 0 failed, 0 errors, 0 skipped, 170.3 s
+KIT-239 L8: likelihoods gaussian, gaussian, gaussian, gaussian, gaussian, gaussian; groups 1
+test-integration-record-mofa.R: 1 tests, 0 failed, 0 errors, 0 skipped, 136.8 s

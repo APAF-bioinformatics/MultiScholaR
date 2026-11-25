@@ -1,0 +1,13 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-workflow-checkpoint-dia-state.R	174	0	0	4	ok	174	0	0	4	ok	same		
+test-workflow-gui-memory-repairs.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	ok	538	0	0	0	ok	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	ok	407	0	0	23	ok	same		
+test-prot-02h-qc-protein-replicate-shared.R	0	0	0	5	ok	0	0	0	5	ok	same		
+test-prot-02p-qc-protein-orchestrator-shared.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-module-ci-prot-protein-qc.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-perf107-audit.R	190	1	0	1	failed	191	0	0	1	ok	fixed	fixed: the KIT-015 protein QC modules take the managed worker under a managed application and the in-process declaration otherwise; counts: the KIT-015 protein QC modules take the managed worker under a managed application and the in-process declaration otherwise (passed 59 -> 60, skipped 0 -> 0)	
+test-kit251-replicate-filter-one-click.R	6	3	0	0	failed	9	0	0	0	ok	fixed	fixed: E1: under a managed application one click starts the managed step once; fixed: E2: under a managed application one click on a normalised table shows the refusal once; fixed: E3: in process one click runs the in-process apply path once; counts: E1: under a managed application one click starts the managed step once (passed 1 -> 2, skipped 0 -> 0); counts: E2: under a managed application one click on a normalised table shows the refusal once (passed 1 -> 2, skipped 0 -> 0); counts: E3: in process one click runs the in-process apply path once (passed 0 -> 1, skipped 0 -> 0)	
