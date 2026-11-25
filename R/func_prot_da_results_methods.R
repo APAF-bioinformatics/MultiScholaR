@@ -358,7 +358,7 @@ setMethod(
           # Generate combined barplot from the aggregated data
           # Filter to only significant results (KIT-204: not "Not tested" either)
           sig_only <- combined_numsig_table |>
-            dplyr::filter(status %in% c("Significant and Up", "Significant and Down"))
+            dplyr::filter(!status %in% c("Not significant", "Not tested"))
 
           if (nrow(sig_only) > 0) {
             num_sig_de_barplot <- sig_only |>

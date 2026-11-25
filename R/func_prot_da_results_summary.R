@@ -193,9 +193,9 @@ printCountDaGenesTable <- function(
   ) |>
     bind_rows()
 
-  # KIT-204: the barplot draws the two significant statuses only (not "Not tested").
+  # KIT-204: the barplot leaves out "Not tested" as it leaves out "Not significant".
   num_sig_da_genes_barplot <- num_significant_da_genes_all |>
-    dplyr::filter(status %in% c("Significant and Up", "Significant and Down")) |>
+    dplyr::filter(!status %in% c("Not significant", "Not tested")) |>
     ggplot(aes(x = status, y = counts)) +
     geom_bar(stat = "identity") +
     geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +

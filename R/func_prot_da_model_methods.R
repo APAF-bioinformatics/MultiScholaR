@@ -613,10 +613,10 @@ setMethod(
 
     # Create barplots if significant results exist (KIT-204: "Not tested" is neither)
     if (num_sig_da_molecules %>%
-      dplyr::filter(status %in% c("Significant and Up", "Significant and Down")) |>
+      dplyr::filter(!status %in% c("Not significant", "Not tested")) |>
       nrow() > 0) {
       num_sig_da_genes_barplot_only_significant <- num_sig_da_molecules %>%
-        dplyr::filter(status %in% c("Significant and Up", "Significant and Down")) %>%
+        dplyr::filter(!status %in% c("Not significant", "Not tested")) %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
         geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +
