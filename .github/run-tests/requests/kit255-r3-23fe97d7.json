@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-255 correction pass (the ticket's one): head 23fe97d7 against the tests-first commit 7f7fa56b; 4 files, 2 shards per side, check; expected 8 core-hours, ceiling 16",
+  "label": "KIT-255 R3 correction pass 23fe97d7 vs 7f7fa56b (new file, kit235, kit236, omic-norm-module; check)",
+  "package_commit": "23fe97d79cbf00b8de8516a3eaf2750ffe12acc9",
+  "base_commit": "7f7fa56b8e8d450e7cee6ce97514ea7ac85e311a",
+  "tools_ref": "",
+  "tests": [
+    "test-kit255-omics-correlation-assays.R",
+    "test-omic-norm-module.R",
+    "test-kit236-report-sentences.R",
+    "test-kit235-lipid-metab-report-parser.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
