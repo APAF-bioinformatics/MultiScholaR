@@ -214,10 +214,20 @@ omicsSummaryCoreRun <- function(case) {
 
 #' F108-03 (the lead's decision): the save before trx's RUVIII export shows the gate's warning and no "Saved
 #' Integration" notice (W1 (b)'s capture re-frozen once at W3; this holds before and after that re-freeze).
+#' KIT-212 (VAL-172 (5), VAL-186): in the eight cases whose Copy KIT-212 refuses (DA files on disk that no DA of the
+#' session made), the tab never reaches the Report entry (W1 (b) holds the frame's "copy first" notice); the entry,
+#' called here directly, refuses the same files itself: the stored Copy refusal under the Report's notice.
+omicsSummaryCoreDaRefused <- c("lipid_main", "lipid_variants", "lipid_github_fallback", "metab_main", "metab_variants",
+    "metab_github_fallback", "prot_owner", "prot_owner_variants")
 omicsSummaryCoreExpected <- function(case, step, field) {
     frozen <- omicSummaryW1Frozen[[case]][[step]][[field]]
     if (identical(c(case, step, field), c("trx_main", "save_before_export", "notes"))) {
         frozen <- setdiff(frozen, "[message 5 -] Saved Integration S4 Object")
+    }
+    if (case %in% omicsSummaryCoreDaRefused && step %in% c("report", "report_fallback", "report_bundle_fails") &&
+        identical(field, "notes")) {
+        frozen <- sub("^\\[error 10 -\\] Copy error: ", "[error 15 -] Report generation failed: ",
+            omicSummaryW1Frozen[[case]]$copy$notes)
     }
     frozen
 }
@@ -299,7 +309,7 @@ for (omicsSummaryCoreCase in omicsSummaryCoreProtCases) {
             expect_gt(length(run$replaced), 0L)
             for (step in run$replaced) {
                 for (field in omicsSummaryCoreFields) {
-                    expect_identical(run$captures[[step]][[field]], omicSummaryW1Frozen[[case]][[step]][[field]],
+                    expect_identical(run$captures[[step]][[field]], omicsSummaryCoreExpected(case, step, field),
                         info = paste(case, step, field))
                 }
             }

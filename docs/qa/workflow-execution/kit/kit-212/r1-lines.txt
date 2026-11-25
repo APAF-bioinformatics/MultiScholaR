@@ -1,0 +1,65 @@
+KIT-212 Q1 lipid status=<absent>
+KIT-212 E1 lipid	done=1	failed=	params=TRUE	source_state=<null>	planted=FALSE	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+KIT-212 E2 lipid	notes=[message] Publication files copied	copies=1
+KIT-212 E3 lipid	notes=[message] Report generated successfully!	render=1	bundle=1
+KIT-212 E4-Q2 lipid	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully	done=1
+KIT-212 E4-Q3 lipid	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully	done=1
+KIT-212 Q1 metab status=<absent>
+KIT-212 E1 metab	done=1	failed=	params=TRUE	source_state=<null>	planted=FALSE	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+KIT-212 E2 metab	notes=[message] Publication files copied	copies=1
+KIT-212 E3 metab	notes=[message] Report generated successfully!	render=1	bundle=1
+KIT-212 E4-Q2 metab	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully	done=1
+KIT-212 E4-Q3 metab	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully	done=1
+KIT-212 E5-save trx	notes=[warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully	done=1
+KIT-212 E5-copy trx	notes=[message] Publication files copied	copies=1
+KIT-212 E6 status=<absent>
+KIT-212 E6-copy prot	notes=[message] Publication files copied	copies=1
+KIT-212 E6-save prot	notes=[warning] Study parameters saved with warnings	done=0	failed=rlang_error	params=TRUE
+KIT-212 E6-report prot	notes=[message] Report generated successfully!	render=1
+KIT-212 E7 lipid	notes=[message] Publication files copied	copies=1
+KIT-212 E8 lipid	after_da=TRUE	results=TRUE	complete=TRUE	heatmap=FALSE	status=complete	head=lipid_correlation_filtered
+KIT-212 E10 lipid	head=lipid_normalized	name_after=lipid_correlation_filtered	da_source=lipid_correlation_filtered	save_done=1	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+KIT-212 G14 lipid	fired=TRUE	results=TRUE	status=complete
+KIT-212 replay e9	source_state=<null>	steps=initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_qc_complete,lipid_log2,lipid_normalized,lipid_correlation_filtered	error=none
+KIT-212 replay e9b	source_state=lipid_correlation_filtered	steps=initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_qc_complete,lipid_log2,lipid_normalized	error=none
+KIT-212 replay e9c	source_state=lipid_log2	steps=initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_qc_complete,lipid_log2,lipid_normalized	error=none
+KIT-212 G11 lipid	head=lipid_correlation_filtered	same_table=TRUE	first_save_done=1	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+KIT-212 replay G11-replay	source_state=lipid_correlation_filtered	steps=initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_qc_complete,lipid_log2,lipid_normalized,lipid_correlation_filtered	error=none
+KIT-212 G12 lipid	head=lipid_normalized	same_table=TRUE	first_save_done=1	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+KIT-212 replay G12-replay	source_state=lipid_normalized	steps=initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_qc_complete,lipid_log2,lipid_normalized	error=none
+KIT-212 E11-copy lipid	notes=[message] Publication files copied	copies=1	unmade=<absent>
+KIT-212 E11-report lipid	notes=[message] Report generated successfully!	render=1
+KIT-212 E12 lipid	notes=[message] Publication files copied	copies=1	da_files=de_posmode_lipids_groupA-groupB_long_annot.tsv,de_posmode_lipids_groupA-groupB_long_annot.xlsx,de_posmode_lipids_groupB-groupA_long_annot.tsv,de_posmode_lipids_groupB-groupA_long_annot.xlsx	heatmaps=	unmade=<absent>
+KIT-212 E13-copy prot	notes=[message] Publication files copied	copies=1	unmade=<absent>
+KIT-212 E13-report prot	notes=[message] Report generated successfully!	render=1
+KIT-212 G1 lipidomics	status=<absent>	copies=1	unmade=<absent>	files=de_posmode_lipids_groupB-groupA_long_annot.tsv,de_posmode_lipids_groupB-groupA_long_annot.xlsx,NumSigDeMolecules/lipids_num_sig_barplot.png,NumSigDeMolecules/lipids_num_sig_de_molecules.tab,NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/posmode_groupB-groupA.pdf,Volcano_Plots/posmode_groupB-groupA.png	notes=[message] Publication files copied
+KIT-212 G3 lipidomics	status=<absent>	copies=1	unmade=<absent>	files=	notes=[message] Publication files copied
+KIT-212 G8 lipid	head=lipid_correlation_filtered	status=<absent>	done=1
+KIT-212 G9 lipid Q1	queued=1	notes=
+KIT-212 G1 metabolomics	status=<absent>	copies=1	unmade=<absent>	files=de_posmode_metabolites_groupB-groupA_long_annot.tsv,de_posmode_metabolites_groupB-groupA_long_annot.xlsx,NumSigDeMolecules/metabolites_num_sig_barplot.png,NumSigDeMolecules/metabolites_num_sig_de_molecules.tab,NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/posmode_groupB-groupA.pdf,Volcano_Plots/posmode_groupB-groupA.png	notes=[message] Publication files copied
+KIT-212 G3 metabolomics	status=<absent>	copies=1	unmade=<absent>	files=	notes=[message] Publication files copied
+KIT-212 G8 metab	head=metab_correlation_filtered	status=<absent>	done=1
+KIT-212 G9 metab Q1	queued=1	notes=
+KIT-212 G1 transcriptomics	status=<absent>	copies=1	unmade=<absent>	files=de_results_Sera_vs_RPMI.csv,ruv_optimization_summary.txt,top_de_genes.tsv,NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf,NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png,Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf,Volcano_Plots/volcano_plot_Sera_vs_RPMI.png,canonical_correlation_optimization_summary.xlsx,canonical_correlation_panels.pdf,canonical_correlation_panels.png,normalization_comparison_grid.pdf,normalization_comparison_grid.png	notes=[message] Publication files copied
+KIT-212 G1 proteomics	status=<absent>	copies=1	unmade=<absent>	files=da_proteins_grouptreated-groupcontrol_long_annot.tsv,da_proteins_grouptreated-groupcontrol_long_annot.xlsx,Interactive_Volcano_Plots/treated_vs_control.html,NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf,NumSigDaMolecules/da_proteins_num_sig_da_molecules.png,NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab,NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/grouptreated-groupcontrol.pdf,Volcano_Plots/grouptreated-groupcontrol.png,filtering_qc/12_correlation_filtered_combined_plots.pdf,filtering_qc/12_correlation_filtered_combined_plots.png,filtering_qc/12_correlation_filtered_peptides_per_protein.pdf,filtering_qc/12_correlation_filtered_peptides_per_protein.png,filtering_qc/12_correlation_filtered_peptides_per_run.pdf,filtering_qc/12_correlation_filtered_peptides_per_run.png,filtering_qc/12_correlation_filtered_peptides_total.pdf,filtering_qc/12_correlation_filtered_peptides_total.png,filtering_qc/12_correlation_filtered_proteins_per_run.pdf,filtering_qc/12_correlation_filtered_proteins_per_run.png,filtering_qc/12_correlation_filtered_proteins_total.pdf,filtering_qc/12_correlation_filtered_proteins_total.png	notes=[message] Publication files copied
+KIT-212 G4 prot	head=enrichment_completed	status=<absent>	failed=0	notes=Saved Integration input | Study parameters saved successfully
+KIT-212 G8 prot	head=correlation_filtered	status_after_reopen=<absent>	failed=0	notes=Saved Integration input | Study parameters saved successfully
+KIT-212 G7	lipid	complete	<absent>	1
+KIT-212 G7	lipid	optional_missing	<absent>	1
+KIT-212 G7	lipid	none	<absent>	1
+KIT-212 G7	metab	complete	<absent>	1
+KIT-212 G7	metab	optional_missing	<absent>	1
+KIT-212 G7	metab	none	<absent>	1
+KIT-212 G7	prot_route	complete	<absent>	1
+KIT-212 G7	prot_owner	complete	<absent>	1
+KIT-212 G15 prot	notes=[message] Publication files copied	copies=1
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 (
+KIT-212 E1, E2, E3: lipid Q1 
