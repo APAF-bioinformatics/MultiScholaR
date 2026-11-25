@@ -71,7 +71,11 @@ on both sides); no timeout or crash. The watcher that should have read it stoppe
 result was read only on 2026-11-26.
 
 **R3** (the coordinator's run on the merge 6cff8354 with staging 4d588ba3, with check): predictions committed in
-`r3-predictions.md` before it was sent; result PENDING.
+`r3-predictions.md` before it was sent. Run 45700894419 (`r3/`): 511 files `same`, the new file only on head 56/0;
+`test-omic-summary-module.R` 1675/28 and `test-omics-summary-core.R` 676/25 `same`; check identical on both sides
+(0 errors, 3 warnings, 3 notes; nothing only on head); no timeout or crash. Predictions 1 to 4 met; prediction 5
+(cost about 84 core-hours) missed: 1,423.87 job-minutes = 94.92 core-hours, inside the R3 row's ceiling (R3a + R3 =
+176.22 of 186.67).
 
 ## Re-freeze by file (VAL-169 (1); ledger row `VAL-<merge>`)
 
@@ -93,8 +97,16 @@ object and is not edited. KIT-212's re-freeze (VAL-172, VAL-186; now on staging)
 | A2 | met | R1 45473753944 (failing at stated values; G3, G4 pass); R2 45481567724 (56/0 on head) |
 | A3 | met | control C in 45481567724; re-freeze commit fa335eb6 edits exactly the three changed leaves |
 | A4 | met | R2 `r2/compare.tsv`: only the new file and the two W1 files at the listed leaves; check identical |
-| A5 | met on e6791275 (R3a); PENDING on 4d588ba3 | R3a 45490237295; R3 (see `runs.tsv`) |
+| A5 | met | R3 45700894419 on the merge with staging 4d588ba3 (`r3/compare.tsv`, `r3/check-compare.txt`); also R3a 45490237295 on e6791275 |
 | A6 | met | NEWS `### Fixes` entry with VAL-169 (2)'s limit; ledger row `VAL-<merge>`; no version, NAMESPACE or man/ change (`git diff e6791275 36a8eccc -- DESCRIPTION NAMESPACE man` empty) |
+
+## Cost
+
+G0 and its three instrument reruns 51.0 job-minutes (3.40 core-hours; G row 6.00, instrument row 18.00); R1 13.15
+(0.88; 4.00); R2 with control C 248.65 (16.58; R2 36.00 + C 4.00); R3a 1,219.45 (81.30) and R3 1,423.87 (94.92;
+together 176.22 of the R3 row's 186.67). Total 2,956.55 job-minutes = 197.10 core-hours against the ticket's expected
+103.5 and ceiling 481.33. The excess over the expectation is the second full suite, sent on the coordinator's
+instruction after staging moved by 553 commits.
 
 ## Inferred, not executed
 
@@ -156,5 +168,5 @@ file named `study_parameters.txt`: `createWorkflowArgsFromConfig` (changed here)
 model's identity" is project-specific too (unchanged; hand-off H2).
 
 **Evidence.** G0 45471271185 (two projects per omic, raw differences); R1 45473753944; R2 and control C 45481567724;
-R3a 45490237295; R3 on 4d588ba3 PENDING. Simulation settings: none (deterministic fixtures: F172 seed 172001, MCI-032's trx corpus, MCI-009's
+R3a 45490237295; R3 45700894419. Simulation settings: none (deterministic fixtures: F172 seed 172001, MCI-032's trx corpus, MCI-009's
 proteomics object); limits as in "Inferred" above.
