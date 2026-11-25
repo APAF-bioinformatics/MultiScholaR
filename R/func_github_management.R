@@ -16,6 +16,11 @@
 
 #' Push Standard Project Files to GitHub (Wrapper for New Directory Structure)
 #'
+#' Sends the omic's source folder as it is, including copies of input files and saved session data.
+#'
+#' @details Calls [pushProjectToGithub()] with the omic's base and source folders; see there for the checks
+#'   made before anything is created on GitHub, what is sent, and where.
+#'
 #' @param project_dirs The project_dirs object returned by setupDirectories()
 #' @param omic_type The omic type (e.g., "proteomics", "metabolomics")
 #' @param experiment_label The experiment label
@@ -74,6 +79,24 @@ pushProjectToGithubFromDirs <- function(project_dirs,
 
 #' Push Standard Project Files to GitHub
 #'
+#' Sends the omic's source folder as it is, including copies of input files and saved session data.
+#'
+#' @details Before anything is created on GitHub the function checks the Project ID (letters, digits, '.', '-' and
+#'   '_' only), finds the project's one R Markdown file, and checks the project's `<project id>.Rproj` file, the
+#'   git program (2.31 or later) and that no file is larger than GitHub's limit of 100 MB for one file. It then
+#'   creates a repository named after the Project ID in the GitHub organisation `github_org`, always private
+#'   (the `private` argument is ignored): visible to the organisation's owners and to the members its settings
+#'   allow. It pushes one commit to its `main` branch holding the R Markdown file (as
+#'   `scripts/proteomics/<project id>.Rmd`), the `.Rproj` file and every file of `source_dir` except
+#'   names ending in `DIA_workflow.Rmd` or `data_cln.tab`. In the application `source_dir` is
+#'   `scripts/<omic>/`, which holds the design and contrast tables, `study_parameters.txt`,
+#'   `analysis_record.json` and any exported session state; for lipidomics, metabolomics and transcriptomics
+#'   `import_sources/` (exact copies of the input files) and the imported tables; for proteomics the session
+#'   archive (`filtered_session_*.msdia.tar`), its `.RDS` files, `peptide-checkpoints/` and
+#'   `reference_mapping/inputs/`. The token from `gh::gh_token()` is never written to a file: git receives
+#'   it only for the push. The temporary copy is removed whatever the outcome. A failure GitHub reports after the
+#'   creation leaves the new repository empty, and the message names it.
+#'
 #' @param base_dir Base directory of the project
 #' @param source_dir Source directory containing workflow files (scripts/proteomics)
 #' @param project_id Project identifier for the new repository and workflow file
@@ -119,6 +142,16 @@ pushProjectToGithub <- function(base_dir,
     stop("Please specify your GitHub organization or username using options() or as a parameter")
   }
   
+  # KIT-245 Part S item 0: the Project ID names a folder under tempdir() that is deleted recursively, and the
+  # repository; it is checked before any path is built (legacy: an ID such as ".." deleted folders outside tempdir()).
+  if (!is.character(project_id) || length(project_id) != 1L || is.na(project_id) ||
+      !grepl("^[A-Za-z0-9._-]{1,100}$", project_id) || project_id %in% c(".", "..")) {
+    cli::cli_abort(
+      "the Project ID may contain only letters, digits, '.', '-' and '_' (it becomes the repository's name on GitHub); nothing was created.",
+      class = "multischolar_github_project_id_invalid"
+    )
+  }
+
   # Create new repository name
   repo_name <- project_id
   
@@ -130,7 +163,9 @@ pushProjectToGithub <- function(base_dir,
     unlink(temp_dir, recursive = TRUE, force = TRUE)
   }
   dir.create(temp_dir, recursive = TRUE)
-  
+  # KIT-245 Part S item 1: the staged copy of the user's files is removed on every exit, error or not.
+  on.exit(unlink(temp_dir, recursive = TRUE, force = TRUE, expand = FALSE), add = TRUE)
+
   # === DEBUG: Print temp_dir ===
   # message("DEBUG: Created temp_dir: ", temp_dir)
   
@@ -233,6 +268,29 @@ pushProjectToGithub <- function(base_dir,
     overwrite = TRUE
   )
   
+  # KIT-245 Part S item 2: the git program, checked before the user's files are staged and before GitHub is called.
+  if (!nzchar(Sys.which("git"))) {
+    cli::cli_abort(
+      "pushing needs the git program, which was not found on this computer, so nothing was created on GitHub. Install Git (git-scm.com), start R again and press Push again.",
+      class = "multischolar_github_git_missing"
+    )
+  }
+  # KIT-245 Part S item 1b: the credential reaches git through GIT_CONFIG_COUNT (git 2.31 or later). An unreadable
+  # version is refused like an old one.
+  git_version_text <- tryCatch(
+    system2("git", "--version", stdout = TRUE, stderr = FALSE),
+    error = function(e) paste("an unreadable version:", conditionMessage(e))
+  )
+  git_version_text <- paste(git_version_text, collapse = " ")
+  git_version <- regmatches(git_version_text, regexpr("[0-9]+\\.[0-9]+(\\.[0-9]+)?", git_version_text))
+  if (length(git_version) != 1L || numeric_version(git_version) < numeric_version("2.31")) {
+    git_found <- if (length(git_version) == 1L) git_version else git_version_text
+    cli::cli_abort(
+      "pushing needs git 2.31 or later; this computer has {git_found}, so nothing was created on GitHub. Update Git (git-scm.com), start R again and press Push again.",
+      class = "multischolar_github_git_too_old"
+    )
+  }
+
   # Copy other files from source_dir (excluding any DIA workflow files)
   source_files <- list.files(source_dir, full.names = TRUE)
   # Ensure we don't accidentally copy the selected workflow file again if it happens to be in source_dir
@@ -254,6 +312,26 @@ pushProjectToGithub <- function(base_dir,
     )
   }
   
+  # KIT-245 Part S item 3: GitHub refuses a file over 100 MiB; checked before the repository is created. The file is
+  # named by its path in the project's source folder, not the staged one (scripts/proteomics for every omic).
+  staged_files <- list.files(temp_dir, recursive = TRUE, all.files = TRUE, full.names = TRUE)
+  too_large <- staged_files[file.size(staged_files) > 100 * 1024^2]
+  if (length(too_large) > 0L) {
+    staged_rel <- as.character(fs::path_rel(too_large, start = temp_dir))
+    staged_prefix <- "scripts/proteomics/"
+    from_source <- startsWith(staged_rel, staged_prefix)
+    too_large_shown <- staged_rel
+    too_large_shown[from_source] <- as.character(fs::path_rel(
+      file.path(source_dir, substring(staged_rel[from_source], nchar(staged_prefix) + 1L)),
+      start = base_dir
+    ))
+    source_shown <- as.character(fs::path_rel(source_dir, start = base_dir))
+    cli::cli_abort(
+      "{too_large_shown} {?is/are} larger than GitHub's limit of 100 MB for one file, so nothing was created on GitHub. Remove {?it/them} from {source_shown} or keep the project in Git another way.",
+      class = "multischolar_github_file_too_large"
+    )
+  }
+
   # Initialize git repository
   repo <- git2r::init(temp_dir)
   
@@ -319,14 +397,14 @@ pushProjectToGithub <- function(base_dir,
     stop(sprintf("Failed to create repository: %s", e$message))
   })
   
-  # Add remote
-  remote_url <- sprintf("https://x-access-token:%s@github.com/%s/%s.git",
-                       github_token, github_org, repo_name)
-  git2r::remote_add(repo, "origin", remote_url)
-  # message("DEBUG: Added remote 'origin' with URL: ", sprintf("https://github.com/%s/%s.git", github_org, repo_name)) # Hide token in debug
-  
+  # KIT-245 Part S item 1b: the remote URL holds no token, so no file holds it.
+  remote_url <- sprintf("https://github.com/%s/%s.git", github_org, repo_name)
+
   # Push to GitHub using the potentially renamed 'main' branch via system() call
   tryCatch({
+    # KIT-245 Part S item 4: an error adding the remote, after the creation, gets the message naming the repository.
+    git2r::remote_add(repo, "origin", remote_url)
+
     # Construct the git command to run in the temp directory
     git_cmd <- sprintf("git -C %s push origin %s", 
                        shQuote(normalizePath(temp_dir, winslash = "/", mustWork = FALSE)), # Normalize and quote path
@@ -334,8 +412,20 @@ pushProjectToGithub <- function(base_dir,
                        
     # message("DEBUG: Attempting push via system() command: git push origin ", paste0("refs/heads/", current_branch_name), " (in dir: ", normalizePath(temp_dir, winslash = "/", mustWork = FALSE), ")")
     
-    # Execute the command
-    push_output <- system(git_cmd, intern = TRUE, ignore.stderr = FALSE)
+    # Execute the command. KIT-245 Part S item 1b: the credential reaches git only through configuration carried in
+    # environment variables, set for this call alone and restored when it returns; the empty helper first clears the
+    # user's own credential helpers, so none of them stores the token.
+    push_output <- withr::with_envvar(
+      c(
+        GIT_CONFIG_COUNT = "2",
+        GIT_CONFIG_KEY_0 = "credential.helper",
+        GIT_CONFIG_VALUE_0 = "",
+        GIT_CONFIG_KEY_1 = "credential.helper",
+        GIT_CONFIG_VALUE_1 = "!f() { echo username=x-access-token; echo \"password=$MSR_GITHUB_PUSH_TOKEN\"; }; f",
+        MSR_GITHUB_PUSH_TOKEN = as.character(unclass(github_token))
+      ),
+      system(git_cmd, intern = TRUE, ignore.stderr = FALSE)
+    )
     
     # Check the system command exit status (0 means success)
     exit_status <- attr(push_output, "status")
@@ -352,8 +442,12 @@ pushProjectToGithub <- function(base_dir,
   }, error = function(e) {
     # === DEBUG: Push FAILED ===
     print(e)
-    # Include original error message if available
-    stop("Failed to push to repository. Error during push step: ", e$message)
+    # KIT-245 Part S item 4: the repository now exists, empty; the message names it.
+    push_reason <- conditionMessage(e)
+    cli::cli_abort(
+      "the repository {github_org}/{repo_name} was created on GitHub but the files could not be sent ({push_reason}). It is empty: delete it on GitHub or use another Project ID.",
+      class = "multischolar_github_push_failed"
+    )
   })
   
   # Clean up

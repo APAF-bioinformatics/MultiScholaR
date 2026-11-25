@@ -61,6 +61,18 @@
 
 ### Fixes
 
+ * 'Push to GitHub' (`pushProjectToGithub()`): the Project ID is now checked before anything is staged (letters,
+   digits, '.', '-' and '_' only); an ID such as `..` used to make it delete folders outside R's temporary folder.
+   It checks for the git program (2.31 or later) and that no file is over GitHub's 100 MB limit before it creates the
+   repository on GitHub, never writes the token to a file (git receives it only for the push), and removes its
+   temporary copy whatever the outcome. A failure GitHub reports after the creation still leaves the new repository
+   empty, and the message names it. The push sends the omic's scripts folder `scripts/<omic>/` as it is: the design
+   and contrast tables, `study_parameters.txt`, `analysis_record.json` and any exported session state; for
+   lipidomics, metabolomics and transcriptomics `import_sources/` (exact copies of the input files) and the imported
+   tables; for proteomics the session archive (`filtered_session_*.msdia.tar`), its `.RDS` files,
+   `peptide-checkpoints/` and `reference_mapping/inputs/`. The repository is created private in the GitHub
+   organisation you name; private means visible to that organisation's owners and to the members its settings allow
+   (KIT-245).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
@@ -546,8 +558,11 @@
    (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
    are in `?integrationTrainModel` (KIT-234).
  * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
-   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several, it asks in the R console
-   when R runs interactively, and otherwise stops with an error.
+   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several (for example after reports
+   of two omics in one project), it asks in the R console when R runs interactively, and otherwise stops with an
+   error. It also needs the git program, and it sends the omic's scripts folder, which holds copies of the input files
+   (lipidomics, metabolomics, transcriptomics) or the saved session with its data (proteomics) (KIT-245, under
+   Fixes).
 
 
 ### Scientific changes

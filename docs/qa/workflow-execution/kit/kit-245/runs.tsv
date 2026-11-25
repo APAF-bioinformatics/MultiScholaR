@@ -1,3 +1,4 @@
 run_id	commit	purpose	minutes	result
 45587834788	4ea6c951 (product 16112917)	G0, both platforms	52.0 (Windows 34.8, Linux 17.2)	Windows complete and valid; Linux instrument defect (step 0 stopped on the runner and in jammy-scm: unquoted git argument, shell syntax error); ubuntu:22.04 and P2n completed
 45593577523	278a980e (product 16112917)	G0 Linux, VAL-54 instrument rerun 1 of 3 (fix: shQuote of git arguments; a failing git query stops step 0)	15.5	complete and valid on all four Linux invocations
+45598693322	009fdb38 (tests only)	Part S R1s failing-first (run-tests kit245-r1s-009fdb38)	11.1	as declared: S1 to S5 fail by assertion at their base values (13 passed, 18 failed, 0 errors); G1, G2 pass; test-github-management-direct-shared.R with its declared edit 21/0

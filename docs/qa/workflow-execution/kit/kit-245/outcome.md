@@ -71,3 +71,31 @@ runner's output; the only such lines are P2n's (no network by construction, exem
 - Whether a forced termination leaves R's temporary folder on Windows.
 - Linux with the systemd launcher (the probe runs the installed Rscript directly).
 - What gh 1.6.1's `gh_token()` returned for the fake string (only "not the dummy" was recorded).
+
+## Part S (branch `kit-245` from `v0.9-staging` e0747fc1, after the merge train carrying KIT-234)
+
+At the branch point `R/func_github_management.R`, `tests/testthat/test-github-management-direct-shared.R` and the
+two `man/` pages are as at 3eeaf100 (every cited line holds); KIT-234's W8 is merged
+(`tests/testthat/test-kit234-workbooks-withdrawn.R:194-230`, the md5 assertion at `:228-229`).
+
+### R1s (declared before the request)
+
+- Purpose: show S1 to S5 failing by assertion at their declared base values on the tests-only commit; G1, G2 and
+  `test-github-management-direct-shared.R` (with its declared `unlink` edit) passing.
+- Binds 009fdb38 (tests only; nothing under `R/`). Ceiling 45 job-minutes. Decides whether the fix is written
+  (stop rule 3: an S row passing is dropped; S1 passing stops the work).
+- Result, run 45598693322 (`r1s-tests.tsv`, `r1s-failures.txt`): as declared. S1: not classed, no message naming the
+  repository, the staged folder left, the clone's `.git/config` holding the token at the push, no environment-borne
+  configuration, `k245-s1/.git/config` under `tempdir()` holding the token. S2: POST made, staged folder left. S3 and
+  S5: the call returned TRUE after the POST. S4: the sentinel's file beside `tempdir()` deleted. G1, G2 pass; the
+  existing file 21 passed, 0 failed. 11.1 job-minutes.
+
+### R2s (declared before the request)
+
+- Purpose: base (the tests-only commit 009fdb38) against head (the fix): the new file passes on head; every other
+  regression file `same` except the declared edit of KIT-234's W8 (b) (`fixed` or `same` on head with the edit;
+  base runs it unedited and passes); `R CMD check` on both, nothing only on head (the two `man/` pages changed,
+  declared). Files: the grep of section 10 at the branch point (12 files: the ten of r1.2, KIT-234's file, the new
+  file).
+- Binds the fix commit against 009fdb38. Ceiling 300 job-minutes (ticket section 11). Decides AS2; stop rule 4 (any
+  other file not `same`, or a new check finding on head) stops the work.

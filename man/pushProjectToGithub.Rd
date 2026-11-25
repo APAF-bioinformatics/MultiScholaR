@@ -36,5 +36,22 @@ pushProjectToGithub(
 Invisible TRUE if successful
 }
 \description{
-Push Standard Project Files to GitHub
+Sends the omic's source folder as it is, including copies of input files and saved session data.
+}
+\details{
+Before anything is created on GitHub the function checks the Project ID (letters, digits, '.', '-' and
+'_' only), finds the project's one R Markdown file, and checks the project's \verb{<project id>.Rproj} file, the
+git program (2.31 or later) and that no file is larger than GitHub's limit of 100 MB for one file. It then
+creates a repository named after the Project ID in the GitHub organisation \code{github_org}, always private
+(the \code{private} argument is ignored): visible to the organisation's owners and to the members its settings
+allow. It pushes one commit to its \code{main} branch holding the R Markdown file (as
+\verb{scripts/proteomics/<project id>.Rmd}), the \code{.Rproj} file and every file of \code{source_dir} except
+names ending in \code{DIA_workflow.Rmd} or \code{data_cln.tab}. In the application \code{source_dir} is
+\verb{scripts/<omic>/}, which holds the design and contrast tables, \code{study_parameters.txt},
+\code{analysis_record.json} and any exported session state; for lipidomics, metabolomics and transcriptomics
+\verb{import_sources/} (exact copies of the input files) and the imported tables; for proteomics the session
+archive (\code{filtered_session_*.msdia.tar}), its \code{.RDS} files, \verb{peptide-checkpoints/} and
+\verb{reference_mapping/inputs/}. The token from \code{gh::gh_token()} is never written to a file: git receives
+it only for the push. The temporary copy is removed whatever the outcome. A failure GitHub reports after the
+creation leaves the new repository empty, and the message names it.
 }
