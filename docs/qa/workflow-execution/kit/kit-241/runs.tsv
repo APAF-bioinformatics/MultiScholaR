@@ -1,0 +1,5 @@
+run_id	commit	purpose	job_minutes	result
+45577719573	3eeaf100 (run head 693c5d86)	G0: probe on the installed bundles, base (A0; stop rules 1, 2, 8)	47.3	defect observed on Windows and bare ubuntu:22.04; case B passes on all hosts; Explorer row an instrument fault (path form), fixed for W1, not re-run
+45583151571	89c3f246	R1: tests-only, failing-first	11.9	E1, E2, E3 fail at file.exists(archive) FALSE; E4, G1 pass
+45585303533	e4b0f98e vs 89c3f246	R2: 8 files base against head, R CMD check both (A2; stop rule 4)	91.1	new file fixed; every other file same; check findings identical (0 only on head)
+45588834064	e4b0f98e (run head 9619cb16)	W1: probe at the fix commit (A3; stop rule 5)	47.4	case A opens on every host; Windows: unzip, Expand-Archive, Explorer equal SHA-256; closure 385 as G0
