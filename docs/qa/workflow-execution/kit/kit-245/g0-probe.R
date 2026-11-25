@@ -338,11 +338,12 @@ if (caseSet == "main") {
         for (omic in c("proteomics", "lipidomics", "metabolomics", "transcriptomics")) {
             html <- as.character(MultiScholaR:::mod_omic_summary_ui("summary",
                 MultiScholaR:::omicGuiConfig(omic)$summary))
-            say(paste0("P5.", omic), sprintf("push_to_github=%s; enable_github=%s; github_org=%s; heading=%s",
+            say(paste0("P5.", omic), sprintf("push_to_github=%s; enable_github=%s; github_org=%s; heading=%s; not_available_sentence=%s",
                 yn(grepl("id=\"summary-push_to_github\"", html, fixed = TRUE)),
                 yn(grepl("id=\"summary-enable_github\"", html, fixed = TRUE)),
                 yn(grepl("id=\"summary-github_org\"", html, fixed = TRUE)),
-                yn(grepl("Version Control (Optional)", html, fixed = TRUE))))
+                yn(grepl("Version Control (Optional)", html, fixed = TRUE)),
+                yn(grepl("Pushing to GitHub is not available in the installed application.", html, fixed = TRUE))))
         }
     })
 } else {
