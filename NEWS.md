@@ -234,6 +234,18 @@
    argument `sample_columns`; without it they count every numeric column except the identifier column and warn which
    columns they counted. (KIT-202, VAL-118)
 
+ * Lipidomics and metabolomics: duplicate resolution now chooses, for an identifier listed more than once, the row with
+   the highest average over the design's samples. Before, it averaged every numeric column of the table. So a numeric
+   identifier or annotation column (for example a retention time or m/z chosen as annotation, or the numeric columns of
+   a design imported from a folder) entered the average and could decide which row was kept. Not affected: MS-DIAL
+   imports at their default identifier (their identifiers are unique), the metabolomics workbooks, and tables without a
+   duplicated identifier or whose only numeric columns are the samples. The Quality Control summary's sample count and
+   missingness, and the internal-standard means and CVs in Quality Control and in the normalisation's selection table,
+   now also count only the design's samples. An MS-DIAL import showed one sample too many, and an identifier of 0 was
+   counted as a missing value. Analyses recorded before this change replay with the earlier rule. A design sample that
+   is missing from a table with a duplicated identifier, or is not numeric, is now refused with a message. (KIT-214,
+   VAL-173)
+
  * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
    those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
    Before, it also held proteins that could not be tested (no value in a compared group, or none in the analysed

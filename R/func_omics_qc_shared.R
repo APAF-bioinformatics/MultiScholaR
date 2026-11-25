@@ -224,8 +224,8 @@ omicsDuplicateResolutionStats <- function(value, assay_names) {
 #' @param binding The omic's declaration binding.
 #' @param manager The session owner.
 #' @param pattern The pattern typed in the tab; NULL or empty uses the state's `internal_standard_regex`.
-#' @param itsd The omic's `qc$itsd`: `name_columns`, `metrics(assay_data, is_pattern, id_col, sample_id_col)`,
-#'   `quant(assay_data)` and the refusal's `tip`.
+#' @param itsd The omic's `qc$itsd`: `name_columns`, `metrics(assay_data, is_pattern, id_col, sample_id_col, ...)`,
+#'   `quant(assay_data, sample_columns)` and the refusal's `tip`; both are given the design's samples (KIT-214).
 #' @return `list(metrics, long_data, result_text, total, pattern, metrics_by_assay)`; `long_data` is NULL when no
 #'   standard's intensities could be read.
 #' @noRd
@@ -240,6 +240,7 @@ analyzeWorkflowOmicsItsd <- function(binding, manager, pattern, itsd) {
     id_column <- methods::slot(shell, binding$id_slot)
     columns <- unique(c(id_column, shell@annotation_id_column, itsd$name_columns))
     sample_id <- shell@sample_id
+    design_samples <- shell@design_matrix[[sample_id]]
     rm(shell)
     assays <- methods::slot(readWorkflowOmicsRows(binding, manager, NULL,
         function(page, id_column) omicsInternalStandardRows(page, pattern, columns)), binding$data_slot)
@@ -250,9 +251,14 @@ analyzeWorkflowOmicsItsd <- function(binding, manager, pattern, itsd) {
         assay_name <- if (!is.null(names(assays))) names(assays)[[i]] else paste0("Assay_", i)
         found <- data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric())
         used <- NULL
+        # KIT-214 (E-8): the design's samples that hold numbers, in the table's order (NULL, the kernels' own guess,
+        # only when there are none).
+        design_columns <- omicsDesignNumericColumnsOf(assay_data, design_samples, id_column)
+        if (!length(design_columns)) design_columns <- NULL
         for (column in columns) {
             if (!is.null(column) && column %in% colnames(assay_data)) {
-                found <- itsd$metrics(assay_data = assay_data, is_pattern = pattern, id_col = column, sample_id_col = sample_id)
+                found <- itsd$metrics(assay_data = assay_data, is_pattern = pattern, id_col = column, sample_id_col = sample_id,
+                    sample_columns = design_columns)
                 if (nrow(found) > 0) {
                     used <- column
                     logger::log_info(paste("Found IS in column:", column))
@@ -264,7 +270,7 @@ analyzeWorkflowOmicsItsd <- function(binding, manager, pattern, itsd) {
         found$assay <- assay_name
         metrics_by_assay[[assay_name]] <- found
         filter_column <- if (!is.null(used)) used else id_column
-        sample_columns <- itsd$quant(assay_data)$sample_names
+        sample_columns <- itsd$quant(assay_data, sample_columns = design_columns)$sample_names
         if (length(sample_columns) == 0 || !filter_column %in% colnames(assay_data)) next
         rows <- assay_data[[filter_column]] %in% found$is_id
         if (!any(rows)) next
