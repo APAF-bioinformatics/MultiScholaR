@@ -1,0 +1,58 @@
+{
+  "purpose": "KIT-237 WL instrument rerun 2 (VAL-54) after run 45619531044: lifecycle on the installed Windows application, four routes; decides instrument proven on Windows",
+  "run": "WL",
+  "commit_under_test": "7327607fbed47c01a45bda9998cfb17c4999455a",
+  "journey_commit": "76e4b519ba32490fa44cc788683f86dd8c0ac787",
+  "route_commit": "8f3b08eefa052c187ffd9bf6037156488d8274b4",
+  "route_files": [
+    "journey-route-lfq.R",
+    "journey-route-omics.R"
+  ],
+  "routes": [
+    "prot_lfq",
+    "lipid_canonical",
+    "metab_lc",
+    "trx_screen"
+  ],
+  "mode": "test",
+  "platforms": [
+    "windows"
+  ],
+  "e2e": true,
+  "gui_entry": false,
+  "deadline_minutes": 150,
+  "ceiling_job_minutes": 220,
+  "inputs": {
+    "prot_lfq": {
+      "dir": "prot_lfq_maxquant",
+      "files": {
+        "proteinGroups.txt": "4d94c48aecdd6d3d533fe8e21464d37befa3ea2638fbf622acb0a02cf0d2b04e",
+        "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32",
+        "design.tsv": "fed1f2da738f786f9a0ad38d0bd81b2c3ea306dd19e645e03d092122806411ec"
+      }
+    },
+    "lipid_canonical": {
+      "dir": "lipid_canonical",
+      "files": {
+        "lipidsearch_lcms_pos.txt": "c23154c95596cc055c5acfe9c14de4f9e2ca0d3b4821455f398595b957f8b0e4",
+        "lipidsearch_lcms_neg.txt": "14b100d399ffe23d381de9e5da4953a8e13cc07bb2916ad00abf3722cbd4d15f",
+        "design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310"
+      }
+    },
+    "metab_lc": {
+      "dir": "metab_lc",
+      "files": {
+        "lcms_pos_features.tsv": "77ea1cd00bf4292bf3112c64b8466bbd371a2971fe66ef351e5318c447ec21e5",
+        "lcms_neg_features.tsv": "f32cc0a3e60eed918f5fd42127eeecc43964f3b53dd248e2e40efa57f91cbf04",
+        "design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310"
+      }
+    },
+    "trx_screen": {
+      "dir": "trx_screen",
+      "files": {
+        "counts.tsv": "47f5b6ce4b388f38431ce82825b6712f80155e77eea45245ae8830a065a06a8d",
+        "design.tsv": "9437ea87a5a0175a52500e684c250f6f14c92c1f83ee4deb46c3d1652dd8dadc"
+      }
+    }
+  }
+}
