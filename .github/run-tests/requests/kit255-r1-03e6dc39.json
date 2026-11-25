@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-255 R1 (tests only, nothing under R/): each E row fails at its base value, G rows and T-OLD pass; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-255 R1 tests-only 03e6dc39 on kit-255b (staging 988512e6 code)",
+  "package_commit": "03e6dc393b3c9061f2bed3908d2c0f3f85ebe0d4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit255-omics-correlation-assays.R",
+    "test-metab-s4-qc-shared.R",
+    "test-kit254-omics-correlation-skip.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
