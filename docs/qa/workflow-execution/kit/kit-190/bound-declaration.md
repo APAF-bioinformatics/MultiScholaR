@@ -1,4 +1,17 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 10
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 11
+
+**Revision 11 (2026-11-25, after the decision; changes nothing in it).** Two items the audit "The decision" names:
+- **K190-D01, the declared metabolomics identity check, run late.** `effect.R` gains the smallest change that lets the
+  bound mode run the metabolomics object (`K190_CLASS = metab`) and a phase `metab-check` (seeds 1 to 5 of every
+  deciding cell, F+B and D+B, unbounded arms reused or run as in stage 2; no plan, no stage-1 check); new SHA-256
+  20c7f9ce885b05c677ebc099e47084d9c1fdd51e9027d0abc977c14773e3b8d2. **The counted stages used `effect.R` 7d76467a,
+  unchanged.** `metab-identity.R` (de918dd9…) compares the metabolomics rows field by field with the counted lipidomics
+  rows. Its result decides only whether "lipidomics and metabolomics" may be written beside the result; a difference is
+  a result, recorded and reported, not re-run.
+- **The per-cell bounds of section 5,** which `decide.R` computes in part and does not write: `bounds.R` (747f0a4f…),
+  computed after the decision, descriptive, non-simultaneous, deciding nothing; forms as the audit names them (paired-t
+  upper bound for the effect cells; the inverted Tango test for the null cells).
+
 
 **Revision 10 (2026-11-25): the audit's K190-L01 repaired in `decide.R` only.** The sign-flip test's observed statistic
 now goes through the same arithmetic as each sign vector's (the all-plus vector), so the identity pattern ties exactly

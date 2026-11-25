@@ -379,10 +379,12 @@ boundJourney <- function(task, arm, ruv, rule, k_ref = NA_real_) {
     gsub("[^A-Za-z0-9]", "", task$dataset), task$r, ruv$ruv_mode))
   on.exit(unlink(root, recursive = TRUE), add = TRUE)
   data <- if (identical(task$cell, "E1")) boundE1Data(task$dataset) else e2Data(task$cell, task$r)
-  object <- kit172Object(data$values, "lipid")
+  # K190-D01: the class is "lipid" unless K190_CLASS names "metab" (the declared metabolomics identity check).
+  omic_class <- Sys.getenv("K190_CLASS", "lipid")
+  object <- kit172Object(data$values, omic_class)
   head_row <- list(cell = task$cell, r = task$r, dataset = task$dataset, arm = arm, mode = ruv$ruv_mode,
     factor_group_r = data$factor_group_r %||% NA_real_)
-  run <- tryCatch(kit172Journey(root, object, "lipid", ruv = ruv), error = function(e) e)
+  run <- tryCatch(kit172Journey(root, object, omic_class, ruv = ruv), error = function(e) e)
   if (inherits(run, "error")) {
     return(c(head_row, list(error = gsub("[\t\n]", " ", conditionMessage(run)), seconds = proc.time()[[3L]] - started)))
   }
@@ -488,7 +490,7 @@ boundCommitted <- function(root) {
   ed <- read("ed")
   pick <- function(t, side) {
     ok <- is.na(t$error) | !nzchar(as.character(t$error))
-    t <- t[t$side == side & t$class == "lipid" & t$kind %in% c("e1", "e2") & ok, , drop = FALSE]
+    t <- t[t$side == side & t$class == Sys.getenv("K190_CLASS", "lipid") & t$kind %in% c("e1", "e2") & ok, , drop = FALSE]
     t$key <- vapply(seq_len(nrow(t)), function(i) boundKey(t$cell[[i]], t$r[[i]], as.character(t$dataset[[i]])), "")
     t[, c("key", "percentage", "k", "n_controls", "calls")]
   }
@@ -502,7 +504,9 @@ runBound <- function(phase, out) {
   if (blinded) options(warn = -1L) # no warning text reaches the console in a blinded run
   plant <- identical(Sys.getenv("K190_PLANT"), "1")
   fault <- identical(Sys.getenv("K190_FAULT"), "1")
-  stopifnot(phase %in% c("lc", "lc-stage1", "stage1", "stage2"), !plant || identical(phase, "lc-stage1"),
+  # "metab-check" (K190-D01): seeds 1 to 5 of every deciding cell, F+B and D+B (with their unbounded arms where not
+  # reused), through the class named by K190_CLASS; no plan, no stage-1 check, not blinded.
+  stopifnot(phase %in% c("lc", "lc-stage1", "stage1", "stage2", "metab-check"), !plant || identical(phase, "lc-stage1"),
     !fault || identical(phase, "lc"))
   dir.create(out, recursive = TRUE, showWarnings = FALSE)
   out <- normalizePath(out)
@@ -526,13 +530,14 @@ runBound <- function(phase, out) {
   R_of <- function(cell) {
     if (lifecycle) return(2L)
     if (identical(phase, "stage1")) return(50L)
+    if (identical(phase, "metab-check")) return(5L)
     as.integer(plan$R[plan$cell == cell])
   }
   tasks <- list(B = list(), F = list(), D = list())
   for (cell in cells) {
     entries <- if (identical(cell, "E1")) lapply(boundE1Datasets(!lifecycle), function(d) list(r = 1L, dataset = d)) else
       lapply(seq_len(R_of(cell)), function(r) list(r = r, dataset = ""))
-    for (arm in boundArms(cell)) for (en in entries) {
+    for (arm in if (identical(phase, "metab-check")) c("F", "D") else boundArms(cell)) for (en in entries) {
       key <- boundKey(cell, en$r, en$dataset)
       ref <- committed[[arm]][committed[[arm]]$key == key, , drop = FALSE]
       old <- !(cell %in% ALIGNED_CELLS) && nrow(ref) == 1L && is.finite(ref$percentage) && is.finite(ref$k)
