@@ -44,8 +44,12 @@ See `runs.tsv`.
   - All 26 files `same`, including KIT-202's `test-kit202-intensity-filter-samples.R`, `test-workflow-analysis-record.R`, `test-workflow-omics-binding-steps.R` and `test-gui-entry-proteomics.R` (KIT-184's re-frozen lane).
   - The new file is only on head: 112 passed, 0 failed. That includes T2's and T11's filtered summaries (K215-I01) and T7b's exact refusal text (K215-I02).
   - Check findings are identical on both sides (3 WARNINGs, 3 NOTEs).
-  - Failing-first for the repairs: the request takes one head and one base, and the base (staging) does not contain the new file. So the base values are as the audit states: I01 by reading ("Showing 0 up-/down-regulated GO terms"); I02 by R2's recorded head message (run 45495673217).
-- **Runner use:** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours within the ceiling (expected 105.67, ceiling 469.33), plus R2b 204 job-minutes = 13.6 core-hours (outside the ceiling, as ticket 11 states).
+  - Failing-first for the repairs, run 45525963187 (closure check C2; declared in `runs.tsv` before sending): the tests-only commit 9a14cfa7, new file only (`ff/`). Result, as declared: 109 passed, 3 failed.
+    - T2's filtered check shows "Showing 0 up-regulated GO terms".
+    - T11's filtered check shows "Showing 0 down-regulated GO terms".
+    - T7b fails with dplyr's header text ("In argument: `gene_name = …`..").
+    - So none of the new assertions is vacuous. Each passes on the repaired code in R2b.
+- **Runner use:** 24 + 13 + 215 + 1,281 = 1,533 job-minutes = 102.2 core-hours within the ceiling (expected 105.67, ceiling 469.33), plus R2b 204 job-minutes = 13.6 core-hours (outside the ceiling, as ticket 11 states) and the failing-first run 11 job-minutes = 0.75 core-hours.
 
 ## The design of the GO classification (S0-1; step-0 ruling SR-1)
 
@@ -97,7 +101,7 @@ Against KIT-216 section 15a (implementation audit K215-I04):
    - the kernel's `value$no_list` (`:710`);
    - `diaEnrichmentNoIdentifiers` now returns `list(not_tested, no_list)` (`:744-800`);
    - `runDIAReferenceEnrichment`'s `out$no_list` (`:885`).
-3. Item 3: `restoreProtEnrichResultsFromState` now calls `holdOmicEnrichOptionalFields` (`R/mod_omic_enrich_panels.R:790`).
+3. Item 3: `restoreProtEnrichResultsFromState` now calls `holdOmicEnrichOptionalFields` (`R/mod_omic_enrich_panels.R:794` after d73d8bc0; `:790` at a0d59269).
 4. Item 6: `test-omic-enrich-module.R` is not changed by KIT-215, so no leaf line moves.
 5. Item 7: the new test file reads no `current_state`, no history and no `replay$states`. It reads the record through `k215EnrichmentRecord` (`:81-85`) and `replay$error` only (T4b `:340-343`).
 6. Also: KIT-215's block in `restoreWorkflowEnrichment` (`:1334-1343`) reads `getWorkflowStateReference(manager, config$state_name)`, the map entry. Under KIT-216's E-1 (ii) that entry outlives the product, so the block must stay behind KIT-216's `diaEnrichmentProduct` gate (KIT-216 3.1 item 4 already gates the whole restore).
