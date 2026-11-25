@@ -82,6 +82,20 @@
 
 ### Fixes
 
+ * Lipidomics and metabolomics with two or more assays (for example positive and negative mode): the sample-correlation
+   filter now judges each sample within each assay. A sample whose correlation with its replicates is below the threshold
+   in one assay only has its values in that assay set to missing; it stays in the analysis of the other assays and leaves
+   the study only when no assay keeps a value for it. Before, such a sample left the study but its values stayed in the
+   other assays, so the lipidomics differential analysis stopped with a message naming the other assay, the metabolomics
+   one stopped on Windows, macOS and when the application runs without its background worker, and otherwise ran without
+   the sample in every assay. The version on `main` analysed every assay without the sample; results in the assays where
+   the sample passed now include it. The normalisation tab, the analysis record, the study parameters and the report name
+   each sample set missing, with the assay. Older analysis records replay as they were computed. The differential-analysis
+   heatmaps leave out a sample with no value in the assay. Limits: in an RUV-corrected data set holding a sample set
+   missing in it, the integration's removed RUV factors cannot be determined, so the optional adjustment for them is
+   unavailable there; and the integration model still counts such a sample as measured in that data set when the option to
+   keep only complete samples is chosen. Where a sample's values were missing altogether in one assay, that assay may not
+   have been normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

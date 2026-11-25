@@ -1326,6 +1326,10 @@ omicNormCorrelationSummary <- function(normData, workflowData, readMetadata) {
             summary_lines <- c(summary_lines, sprintf(
                 "\n\n[Sample Filtering]\n  Original: %d samples\n  After filtering: %d samples\n  Removed: %d samples",
                 original_samples, filtered_samples, original_samples - filtered_samples))
+            # KIT-255 (VAL-283): a line only when a sample was set missing in an assay and stays in the design.
+            excluded_line <- omicsCorrelationExclusionSummaryLine(
+                readMetadata(workflowData$state_manager, filtered_obj)$slots$args$correlation_exclusions)
+            if (!is.null(excluded_line)) summary_lines <- c(summary_lines, paste0("\n  ", excluded_line))
         }
         paste(summary_lines, collapse = "")
     })
