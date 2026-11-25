@@ -1,0 +1,4 @@
+MEMORY_READING mode=three VmRSS_before_kB=385924 VmHWM_before_kB=385924 VmRSS_after_kB=1234384 VmHWM_after_kB=1344204 build_seconds=37.0
+MEMORY_RISE mode=three rise_GiB=0.914 (VmHWM after minus VmRSS before) build_ok=TRUE
+MEMORY_READING mode=two VmRSS_before_kB=386072 VmHWM_before_kB=386072 VmRSS_after_kB=951532 VmHWM_after_kB=951532 build_seconds=23.5
+MEMORY_RISE mode=two rise_GiB=0.539 (VmHWM after minus VmRSS before) build_ok=TRUE

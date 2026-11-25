@@ -1,0 +1,12 @@
+mode: control
+BEFORE
+VmPeak:	  110432 kB
+VmSize:	  110432 kB
+VmHWM:	   54604 kB
+VmRSS:	   54604 kB
+AFTER
+VmPeak:	  347384 kB
+VmSize:	  347384 kB
+VmHWM:	  291600 kB
+VmRSS:	  291600 kB
+MEMORY_CONTROL rise_GiB=0.226 (allocated 3e7 doubles = 0.224 GiB) verdict=PASS

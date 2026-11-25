@@ -1,0 +1,5 @@
+R R version 4.6.1 (2026-06-24)
+HEAD 6dc549551b49731c3384528fb47f5bf934b71721
+BASE_BOUND 894b9cc82 (declared); R/ unchanged since it
+out /home/runner/work/MultiScholaR/MultiScholaR/pkg/kit266-g0
+imgdir /tmp/RtmpSeQ3XW/kit266-g0-images

@@ -1,0 +1,76 @@
+22:36:50.144 type=capture; step=import_refusal; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:36:50.180 type=tab_entry; selected=setup; current_state=initial
+22:36:50.183 type=tab_entry_exit; returned=FALSE
+22:36:55.319 type=capture; step=import; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:36:55.361 type=tab_entry; selected=design; current_state=initial
+22:36:55.362 type=tab_entry_exit; returned=FALSE
+22:36:55.583 type=capture; step=design_refusal; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:36:55.620 type=tab_entry; selected=design; current_state=initial
+22:36:55.621 type=tab_entry_exit; returned=FALSE
+22:36:59.274 type=capture; step=design; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:36:59.577 type=tab_entry; selected=qc; current_state=raw_data_s4
+22:36:59.578 type=tab_entry_exit; returned=FALSE
+22:37:09.869 type=capture; step=qc_peptide_qvalue_filter; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:37:10.210 type=tab_entry; selected=qc; current_state=qvalue_filtered
+22:37:10.211 type=tab_entry_exit; returned=FALSE
+22:37:22.825 type=capture; step=qc_peptide_rollup; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:37:23.198 type=tab_entry; selected=qc; current_state=precursor_rollup
+22:37:23.199 type=tab_entry_exit; returned=FALSE
+22:37:34.910 type=capture; step=qc_peptide_log2_matrix; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:37:35.328 type=tab_entry; selected=qc; current_state=log2_matrix
+22:37:35.329 type=tab_entry_exit; returned=FALSE
+22:37:48.405 type=capture; step=qc_peptide_accession_cleanup; n_qc=0; qc=<none>; composite_anywhere=<none>
+22:37:48.889 type=tab_entry; selected=qc; current_state=peptide_accession_cleaned
+22:37:48.891 type=tab_entry_exit; returned=FALSE
+22:38:03.149 type=capture; step=qc_protein_dpc_quant; n_qc=5; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png; composite_anywhere=<none>
+22:38:03.694 type=tab_entry; selected=qc; current_state=protein_dpc_quant
+22:38:03.695 type=tab_entry_exit; returned=FALSE
+22:38:15.698 type=capture; step=qc_protein_normalisation; n_qc=5; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png; composite_anywhere=<none>
+22:38:16.272 type=tab_entry; selected=qc; current_state=protein_normalised
+22:38:16.273 type=tab_entry_exit; returned=FALSE
+22:38:27.785 type=capture; step=qc_protein_peptide_count; n_qc=5; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png; composite_anywhere=<none>
+22:38:28.361 type=tab_entry; selected=da; current_state=peptide_count_filtered
+22:38:28.362 type=tab_entry_exit; returned=FALSE
+22:38:29.844 type=capture; step=da_refusal; n_qc=5; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png; composite_anywhere=<none>
+22:38:30.415 type=tab_entry; selected=normalization; current_state=peptide_count_filtered
+22:38:30.417 type=tab_entry_exit; returned=FALSE
+22:38:31.963 type=capture; step=norm_refusal; n_qc=5; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png; composite_anywhere=<none>
+22:38:32.535 type=tab_entry; selected=normalization; current_state=peptide_count_filtered
+22:38:32.536 type=tab_entry_exit; returned=FALSE
+22:38:41.043 type=capture; step=norm; n_qc=9; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png; composite_anywhere=<none>
+22:38:41.651 type=tab_entry; selected=normalization; current_state=peptide_count_filtered
+22:38:41.653 type=tab_entry_exit; returned=FALSE
+22:38:55.259 type=capture; step=correlation; n_qc=10; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:38:55.921 type=tab_entry; selected=normalization; current_state=correlation_filtered
+22:38:55.923 type=pre_generator
+22:39:02.585 type=tab_entry_exit; returned=TRUE
+22:39:30.754 type=capture; step=ruv_covariates; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:39:31.539 type=tab_entry; selected=normalization; current_state=ruv_covariates
+22:39:31.541 type=tab_entry_exit; returned=FALSE
+22:39:35.862 type=capture; step=session_export; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:39:35.891 type=p4_source; head=ruv_covariates; history=initial,raw_data_s4,qvalue_filtered,precursor_rollup,log2_matrix,peptide_accession_cleaned,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered,ruv_covariates; src_id=1f1722414fe3cb1d2ba1131ed4ddf197b9b49b7efb1a912df28c8ef129a007fa; state_ids=initial:ee1d015258eb22ceae6962b9768d9739de55436d1e2d3b3b8c5b3ea3b4fd846a | raw_data_s4:51b7c301ec62779112d40ee7cffda3056270c41c97da0cb4fefbfe66797d0c05 | qvalue_filtered:e6d68d477673bbb7ab5265b5b4010b04104008e9d80e345e4f18531c2598da96 | precursor_rollup:1d8caf5525d076d1497ded2227b3be0000cd49503926d29e88b2179a64935135 | log2_matrix:3569e0fe7e3c55b9237f5f669764a7a6c3e817ee69f9ef1fecb0ee4b27613014 | peptide_accession_cleaned:5534f0fd46f6543e47301036eab6e71de98fa4ff600527c6c961370575e334f9 | protein_dpc_quant:c5e565aa69308a19a7d168d908fedd5505edf5a93984fa89203a413445bfc757 | protein_normalised:37f67e84b709b1104e6afac167d76edac11902d7868dd2e6e21c79c3bd242ec1 | peptide_count_filtered:b9bed0bd12d9f3a0b2a126e4c386203009ba9fc84d5ff7ff83a577a3c73d6416 | correlation_filtered:1f1722414fe3cb1d2ba1131ed4ddf197b9b49b7efb1a912df28c8ef129a007fa | ruv_covariates:c20b6d53f03945de8d3eb63aef7a5bc2de58c1763edf55bcf0589b9fbaa57922; matching=correlation_filtered; error=
+22:39:35.893 type=images; from=/tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/protein_qc; copied=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png
+22:39:36.104 type=p7_reset; previous_state=correlation_filtered
+22:39:36.960 type=tab_entry; selected=da; current_state=correlation_filtered
+22:39:36.961 type=tab_entry_exit; returned=FALSE
+22:39:41.316 type=capture; step=da_load; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:39:42.208 type=tab_entry; selected=da; current_state=ruv_covariates
+22:39:42.209 type=tab_entry_exit; returned=FALSE
+22:39:55.486 type=capture; step=da; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:39:56.592 type=tab_entry; selected=session_summary; current_state=ruv_covariates
+22:39:56.593 type=tab_entry_exit; returned=FALSE
+22:39:58.451 type=capture; step=summary_refusal; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:39:59.458 type=tab_entry; selected=session_summary; current_state=ruv_covariates
+22:39:59.460 type=tab_entry_exit; returned=FALSE
+22:40:03.129 type=capture; step=summary_save; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:40:04.154 type=tab_entry; selected=session_summary; current_state=ruv_covariates
+22:40:04.156 type=tab_entry_exit; returned=FALSE
+22:40:04.889 type=copy_entry; omic_type=proteomics
+22:40:08.346 type=copy_exit; returned_class=list; n=3; failed_copies=Composite QC (PDF) | Composite QC (PNG) | Interactive Heatmaps
+22:40:11.329 type=capture; step=summary_copy; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:40:12.430 type=tab_entry; selected=session_summary; current_state=ruv_covariates
+22:40:12.431 type=tab_entry_exit; returned=FALSE
+22:40:16.880 type=capture; step=summary_report; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>
+22:40:17.906 type=tab_entry; selected=session_summary; current_state=ruv_covariates
+22:40:17.907 type=tab_entry_exit; returned=FALSE
+22:40:19.786 type=capture; step=summary_export; n_qc=22; qc=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv; composite_anywhere=<none>

@@ -1,0 +1,3 @@
+run_id	commit	purpose	job_minutes	result
+45711141374	b764c3c3	G0 first send	11.1	instrument defect: artifacts trace read step=NA (caller lookup); stopped at controls, no reading
+45713081362	6dc54955	G0 instrument re-send 1	15.8	all controls PASS; P1 to P7 as predicted; memory three-column rise 0.914 GiB, two-column 0.539 GiB

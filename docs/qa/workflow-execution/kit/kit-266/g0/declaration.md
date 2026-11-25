@@ -26,3 +26,6 @@
 
 ## Instrument defect 1 (run 45711141374, 2026-11-26), recorded under VAL-54
 The run stopped at the positive controls, by design: the artifacts trace fired and wrote (events.log: `type=capture; n_qc=2; qc=post_norm_pca.png,pre_norm_pca.png`) but the step id read `NA`, because `parent.frame()` inside a trace's tracer does not return the caller. Mechanics only: no lane reading was taken. Fix: the capture frame is found by scanning `sys.frames()` for the frame holding `step` and `refusal_before`. No prediction, threshold or stop rule changed. Records: `run1-45711141374/`.
+
+## Result record (run 45713081362, commit 6dc54955; files under run2-45713081362/)
+All five positive controls PASS; P1 to P7 as predicted (predictions.tsv). Memory: three-column rise 0.914 GiB, two-column 0.539 GiB (memory-readings.txt). Caveat on the informational per-step comparison: P7 moves the head at the `session_export` capture, so the comparison is valid up to `ruv_covariates` (all 16 steps identical to the oracle) and the later steps differ partly because of the observation itself.

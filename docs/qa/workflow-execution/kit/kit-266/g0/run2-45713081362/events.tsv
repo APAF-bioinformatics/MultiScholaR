@@ -1,0 +1,77 @@
+step	type	detail
+import_refusal	capture	n_qc=0; composite_anywhere=<none>
+import	tab_entry	selected=setup; current_state=initial
+import	tab_entry_exit	returned=FALSE
+import	capture	n_qc=0; composite_anywhere=<none>
+design_refusal	tab_entry	selected=design; current_state=initial
+design_refusal	tab_entry_exit	returned=FALSE
+design_refusal	capture	n_qc=0; composite_anywhere=<none>
+design	tab_entry	selected=design; current_state=initial
+design	tab_entry_exit	returned=FALSE
+design	capture	n_qc=0; composite_anywhere=<none>
+qc_peptide_qvalue_filter	tab_entry	selected=qc; current_state=raw_data_s4
+qc_peptide_qvalue_filter	tab_entry_exit	returned=FALSE
+qc_peptide_qvalue_filter	capture	n_qc=0; composite_anywhere=<none>
+qc_peptide_rollup	tab_entry	selected=qc; current_state=qvalue_filtered
+qc_peptide_rollup	tab_entry_exit	returned=FALSE
+qc_peptide_rollup	capture	n_qc=0; composite_anywhere=<none>
+qc_peptide_log2_matrix	tab_entry	selected=qc; current_state=precursor_rollup
+qc_peptide_log2_matrix	tab_entry_exit	returned=FALSE
+qc_peptide_log2_matrix	capture	n_qc=0; composite_anywhere=<none>
+qc_peptide_accession_cleanup	tab_entry	selected=qc; current_state=log2_matrix
+qc_peptide_accession_cleanup	tab_entry_exit	returned=FALSE
+qc_peptide_accession_cleanup	capture	n_qc=0; composite_anywhere=<none>
+qc_protein_dpc_quant	tab_entry	selected=qc; current_state=peptide_accession_cleaned
+qc_protein_dpc_quant	tab_entry_exit	returned=FALSE
+qc_protein_dpc_quant	capture	n_qc=5; composite_anywhere=<none>
+qc_protein_normalisation	tab_entry	selected=qc; current_state=protein_dpc_quant
+qc_protein_normalisation	tab_entry_exit	returned=FALSE
+qc_protein_normalisation	capture	n_qc=5; composite_anywhere=<none>
+qc_protein_peptide_count	tab_entry	selected=qc; current_state=protein_normalised
+qc_protein_peptide_count	tab_entry_exit	returned=FALSE
+qc_protein_peptide_count	capture	n_qc=5; composite_anywhere=<none>
+da_refusal	tab_entry	selected=da; current_state=peptide_count_filtered
+da_refusal	tab_entry_exit	returned=FALSE
+da_refusal	capture	n_qc=5; composite_anywhere=<none>
+norm_refusal	tab_entry	selected=normalization; current_state=peptide_count_filtered
+norm_refusal	tab_entry_exit	returned=FALSE
+norm_refusal	capture	n_qc=5; composite_anywhere=<none>
+norm	tab_entry	selected=normalization; current_state=peptide_count_filtered
+norm	tab_entry_exit	returned=FALSE
+norm	capture	n_qc=9; composite_anywhere=<none>
+correlation	tab_entry	selected=normalization; current_state=peptide_count_filtered
+correlation	tab_entry_exit	returned=FALSE
+correlation	capture	n_qc=10; composite_anywhere=<none>
+ruv_covariates	tab_entry	selected=normalization; current_state=correlation_filtered
+ruv_covariates	pre_generator	
+ruv_covariates	tab_entry_exit	returned=TRUE
+ruv_covariates	capture	n_qc=22; composite_anywhere=<none>
+session_export	tab_entry	selected=normalization; current_state=ruv_covariates
+session_export	tab_entry_exit	returned=FALSE
+session_export	capture	n_qc=22; composite_anywhere=<none>
+da_load	p4_source	head=ruv_covariates; history=initial,raw_data_s4,qvalue_filtered,precursor_rollup,log2_matrix,peptide_accession_cleaned,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered,ruv_covariates; src_id=1f1722414fe3cb1d2ba1131ed4ddf197b9b49b7efb1a912df28c8ef129a007fa; state_ids=initial:ee1d015258eb22ceae6962b9768d9739de55436d1e2d3b3b8c5b3ea3b4fd846a | raw_data_s4:51b7c301ec62779112d40ee7cffda3056270c41c97da0cb4fefbfe66797d0c05 | qvalue_filtered:e6d68d477673bbb7ab5265b5b4010b04104008e9d80e345e4f18531c2598da96 | precursor_rollup:1d8caf5525d076d1497ded2227b3be0000cd49503926d29e88b2179a64935135 | log2_matrix:3569e0fe7e3c55b9237f5f669764a7a6c3e817ee69f9ef1fecb0ee4b27613014 | peptide_accession_cleaned:5534f0fd46f6543e47301036eab6e71de98fa4ff600527c6c961370575e334f9 | protein_dpc_quant:c5e565aa69308a19a7d168d908fedd5505edf5a93984fa89203a413445bfc757 | protein_normalised:37f67e84b709b1104e6afac167d76edac11902d7868dd2e6e21c79c3bd242ec1 | peptide_count_filtered:b9bed0bd12d9f3a0b2a126e4c386203009ba9fc84d5ff7ff83a577a3c73d6416 | correlation_filtered:1f1722414fe3cb1d2ba1131ed4ddf197b9b49b7efb1a912df28c8ef129a007fa | ruv_covariates:c20b6d53f03945de8d3eb63aef7a5bc2de58c1763edf55bcf0589b9fbaa57922; matching=correlation_filtered; error=
+da_load	images	from=/tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/protein_qc; copied=limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png
+da_load	p7_reset	previous_state=correlation_filtered
+da_load	tab_entry	selected=da; current_state=correlation_filtered
+da_load	tab_entry_exit	returned=FALSE
+da_load	capture	n_qc=22; composite_anywhere=<none>
+da	tab_entry	selected=da; current_state=ruv_covariates
+da	tab_entry_exit	returned=FALSE
+da	capture	n_qc=22; composite_anywhere=<none>
+summary_refusal	tab_entry	selected=session_summary; current_state=ruv_covariates
+summary_refusal	tab_entry_exit	returned=FALSE
+summary_refusal	capture	n_qc=22; composite_anywhere=<none>
+summary_save	tab_entry	selected=session_summary; current_state=ruv_covariates
+summary_save	tab_entry_exit	returned=FALSE
+summary_save	capture	n_qc=22; composite_anywhere=<none>
+summary_copy	tab_entry	selected=session_summary; current_state=ruv_covariates
+summary_copy	tab_entry_exit	returned=FALSE
+summary_copy	copy_entry	omic_type=proteomics
+summary_copy	copy_exit	returned_class=list; n=3; failed_copies=Composite QC (PDF) | Composite QC (PNG) | Interactive Heatmaps
+summary_copy	capture	n_qc=22; composite_anywhere=<none>
+summary_report	tab_entry	selected=session_summary; current_state=ruv_covariates
+summary_report	tab_entry_exit	returned=FALSE
+summary_report	capture	n_qc=22; composite_anywhere=<none>
+summary_export	tab_entry	selected=session_summary; current_state=ruv_covariates
+summary_export	tab_entry_exit	returned=FALSE
+summary_export	capture	n_qc=22; composite_anywhere=<none>

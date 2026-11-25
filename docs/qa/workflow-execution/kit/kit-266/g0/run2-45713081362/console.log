@@ -1,0 +1,340 @@
+Warning message:
+── Conflicts ───────────────────────────────────────── MultiScholaR conflicts
+──
+✖ `%||%` masks `MultiScholaR::%||%()`.
+ℹ Did you accidentally source a file rather than using `load_all()`?
+  Run `rm(list = c("%||%"))` to remove the conflicts. 
+traces: guiEntryArtifacts=installed; runProtNormTabEntryWorkflow=installed; copyToResultsSummary=installed; generateProtNormPreNormalizationQcArtifacts=installed
+$`<store entries>`
+list()
+
+$`results/proteomics/protein_qc/post_norm_pca.png`
+[1] "<present>"
+
+$`results/proteomics/protein_qc/pre_norm_pca.png`
+[1] "<present>"
+
+CONTROL artifacts_trace: PASS (events: 1 ; step: control-step ; log lines: 1)
+CONTROL tab_entry_trace: PASS (entry events: 1 ; exit events: 1 ; exit returned: FALSE)
+CONTROL copy_trace: PASS (entry events: 1 ; exit events: 1 ; exit class: character)
+CONTROL lane_harness: PASS (memscript: TRUE)
+mode: control
+BEFORE
+VmPeak:	  110432 kB
+VmSize:	  110432 kB
+VmHWM:	   54604 kB
+VmRSS:	   54604 kB
+AFTER
+VmPeak:	  347384 kB
+VmSize:	  347384 kB
+VmHWM:	  291600 kB
+VmRSS:	  291600 kB
+MEMORY_CONTROL rise_GiB=0.226 (allocated 3e7 doubles = 0.224 GiB) verdict=PASS
+CONTROL memory_measure: PASS (MEMORY_CONTROL rise_GiB=0.226 (allocated 3e7 doubles = 0.224 GiB) verdict=PASS)
+::notice title=INFO::--- Processing setup for omic type: proteomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/data/proteomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261125_223644
+::notice title=INFO::Creating directory structure for 'proteomics'...
+::warning title=WARN::Source script directory not found for proteomics: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics. No scripts copied.
+::notice title=INFO::Ensured UniProt annotation directory exists: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/data/UniProt
+::notice title=INFO::Stored paths for proteomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa (5 items)
+  data_dir                       : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics (4 items)
+  timestamp                      : 20261125_223644
+  time_dir                       : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261125_223644 (0 items)
+  clean_features_dir             : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/integration (0 items)
+  pathway_dir                    : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/data/UniProt (0 items)
+------------------------------------------
+
+::notice title=INFO::Added base_dir to volumes for easier navigation: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa
+::notice title=INFO::=== PROTEOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: normalization
+::notice title=INFO::Proteomics test checkpoint capture DISABLED
+::notice title=INFO::Proteomics test checkpoint capture DISABLED
+::notice title=INFO::Detected format: diann (confidence: 1)
+::notice title=INFO::Reading diann data from /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/inputs/report.tsv
+::notice title=INFO::Starting DIA-NN import from: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/inputs/report.tsv
+::notice title=INFO::Read 8886 rows and 16 columns
+::notice title=INFO::Converting Precursor.Normalised to numeric
+::notice title=INFO::Using quantity column: Precursor.Normalised
+::notice title=INFO::Data imported successfully. Rows: 8886
+::notice title=INFO::Sanitized 8 unique sample names.
+::notice title=INFO::Processing FASTA file...
+::notice title=INFO::Checking experiment_paths...
+::notice title=INFO::Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/aa_seq_tbl_final.RDS
+::notice title=INFO::Saved FASTA metadata to scripts directory: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/fasta_metadata.RDS
+::notice title=INFO::FASTA Format: standard_uniprot, Sequences: 400
+::notice title=INFO::FASTA file processed successfully. Found 400 sequences
+::notice title=INFO::Using default configuration
+::notice title=INFO::config.ini not found in project. Retrieving default config.
+::notice title=INFO::Found default config.ini in package: /home/runner/work/MultiScholaR/MultiScholaR/pkg/inst/config/config.ini
+::notice title=INFO::Default config.ini copied to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/config.ini
+::notice title=INFO::Stored config_list on workflow_data
+::notice title=INFO::Creating processing log...
+::notice title=INFO::Processing log created successfully
+::notice title=INFO::Received results from design matrix builder module. Now saving to workflow and disk.
+::notice title=INFO::Writing design matrix to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/design_matrix.tab
+::notice title=INFO::Writing cleaned data to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/data_cln.tab
+::notice title=INFO::Writing contrasts to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/contrast_strings.tab
+::notice title=INFO::Saved manifest.json to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/manifest.json
+::notice title=INFO::Added workflow_type to config.ini: DIA_LIMPA
+::notice title=INFO::Writing config.ini to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/config.ini
+::notice title=INFO::Saved config.ini for future import/export.
+::notice title=INFO::Created tech_rep_group column for proper technical replicate identification
+::notice title=INFO::Design Matrix complete. Triggering UniProt annotation.
+::notice title=INFO::Saved uniprot_dat_cln to scripts directory: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/uniprot_dat_cln.RDS
+::notice title=INFO::UniProt annotations retrieved successfully. Found 400 annotations
+::notice title=INFO:: QC: starting the sub-modules on DIA_LIMPA
+::notice title=INFO::Peptide QC orchestrator: workflow type is DIA_LIMPA
+::notice title=INFO::Running DIA_LIMPA peptide processing sub-modules.
+::notice title=INFO::Protein QC orchestrator: workflow type is DIA_LIMPA
+::notice title=INFO::Running common protein processing sub-modules.
+::notice title=INFO::Q-value filter: S4 class = PeptideQuantitativeData
+::notice title=INFO::Q-value filter: S4 @peptide_data has 0 rows, 16 columns
+::notice title=INFO::Q-value filter: input_matrix_column_ids length = 9
+::notice title=INFO::Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+::notice title=INFO::QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+::notice title=INFO::Q-value filter applied successfully
+::notice title=INFO::Precursor rollup applied successfully
+::notice title=INFO::Log2 peptide matrix calculated
+::notice title=INFO::Choosing best protein accession at the peptide level...
+::notice title=INFO::Aggregation method for duplicate peptides will be: 'mean'
+::notice title=INFO::Aggregating peptide quantities for newly resolved protein groups...
+::notice title=INFO::Aggregation complete. Before: 6851 rows. After: 6851 rows.
+::notice title=INFO::Recalculating peptide matrix with updated protein accessions...
+::notice title=INFO::Peptide accession cleanup completed
+::notice title=INFO::Limpa DPC quantification completed
+::notice title=INFO::Between-sample normalisation step completed
+::notice title=INFO::Peptide count filter completed
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::error title=ERROR::Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = KO_vs_WT
+::notice title=INFO::   Glimma: Available contrasts in data: KO_vs_WT
+::notice title=INFO::   Glimma: Target contrast: KO_vs_WT
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 8 samples
+::notice title=INFO::   Glimma: Unique groups detected: KO, WT
+::notice title=INFO::   Glimma: Synchronized 393 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 393 proteins and 8 samples
+::notice title=INFO::   Glimma: Highlighting 19 significant genes (14 up, 5 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::Final QC state reached. Quality Control module is ready.
+::notice title=INFO::Quality Control complete. Normalization is ready.
+::notice title=INFO::Results summary directory for proteomics_prot_dia_limpa (/tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_prot_dia_limpa (/tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Attempting to render report:
+::notice title=INFO::- Rmd Source (Template): /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/scripts/proteomics/DIANN_limpa_report.rmd
+::notice title=INFO::- Output File: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics/DIANN_limpa_report_proteomics_prot_dia_limpa.docx
+::notice title=INFO::- Params: omic_type='proteomics', experiment_label='prot_dia_limpa'
+::notice title=INFO::Report successfully rendered to: /tmp/RtmpSeQ3XW/gui-entry-prot_dia_limpa-4c961bdbc384/project/prot_dia_limpa/results_summary/proteomics/DIANN_limpa_report_proteomics_prot_dia_limpa.docx
+lane finished in 217 s: ok
+per-step protein_qc files:
+ step                         n_protein_qc_files
+ import_refusal                0                
+ import                        0                
+ design_refusal                0                
+ design                        0                
+ qc_peptide_qvalue_filter      0                
+ qc_peptide_rollup             0                
+ qc_peptide_log2_matrix        0                
+ qc_peptide_accession_cleanup  0                
+ qc_protein_dpc_quant          5                
+ qc_protein_normalisation      5                
+ qc_protein_peptide_count      5                
+ da_refusal                    5                
+ norm_refusal                  5                
+ norm                          9                
+ correlation                  10                
+ ruv_covariates               22                
+ session_export               22                
+ da_load                      22                
+ da                           22                
+ summary_refusal              22                
+ summary_save                 22                
+ summary_copy                 22                
+ summary_report               22                
+ summary_export               22                
+ protein_qc_files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ <none>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png                                                                                                                                                                                                                                                                                                                                                                                                                                           
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png                                                                                                                                                                                                                                                                                                                                                                                                                                           
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png                                                                                                                                                                                                                                                                                                                                                                                                                                           
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png                                                                                                                                                                                                                                                                                                                                                                                                                                           
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png                                                                                                                                                                                                                                                                                                                                                                                                                                           
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png                                                                                                                                                                                                                                                                                                                                                       
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,ruv_normalised_results_cln_with_replicates.tsv                                                                                                                                                                                                                                                                                                        
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+ limpa_composite.png,limpa_dpc_curve.png,limpa_intensity_distribution.png,limpa_missing_comparison.png,limpa_summary.png,post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png,pre_norm_correlation.png,pre_norm_density.png,pre_norm_pca.png,pre_norm_rle.png,ruv_adjusted_protein_matrix.tsv,ruv_corrected_correlation.png,ruv_corrected_density.png,ruv_corrected_pca.png,ruv_corrected_rle.png,ruv_covariates_cancor.png,ruv_covariates_design.tsv,ruv_covariates_optimization.tsv,ruv_normalised_results_cln_with_replicates.tsv
+P1 to P7:
+P1 | predicted: at step norm only post_norm_{correlation,density,pca,rle}.png exist among the pre/post/ruv/composite figures of protein_qc | observed: post_norm_correlation.png,post_norm_density.png,post_norm_pca.png,post_norm_rle.png (all steps' figure files in steps.tsv) | as predicted
+P2 | predicted: pre_norm_* files first exist at step ruv_covariates | observed: ruv_covariates | as predicted
+P3 | predicted: no composite_QC_figure file in the project at any step | observed: none at any step | as predicted
+P4 | predicted: the final pre_normalization source entity equals exactly the correlation_filtered state's entity (matching states: correlation_filtered) | observed: matching states: correlation_filtered; source entity 1f1722414fe3cb1d2ba1131ed4ddf197b9b49b7efb1a912df28c8ef129a007fa; states initial=ee1d015258eb22ceae6962b9768d9739de55436d1e2d3b3b8c5b3ea3b4fd846a, raw_data_s4=51b7c301ec62779112d40ee7cffda3056270c41c97da0cb4fefbfe66797d0c05, qvalue_filtered=e6d68d477673bbb7ab5265b5b4010b04104008e9d80e345e4f18531c2598da96, precursor_rollup=1d8caf5525d076d1497ded2227b3be0000cd49503926d29e88b2179a64935135, log2_matrix=3569e0fe7e3c55b9237f5f669764a7a6c3e817ee69f9ef1fecb0ee4b27613014, peptide_accession_cleaned=5534f0fd46f6543e47301036eab6e71de98fa4ff600527c6c961370575e334f9, protein_dpc_quant=c5e565aa69308a19a7d168d908fedd5505edf5a93984fa89203a413445bfc757, protein_normalised=37f67e84b709b1104e6afac167d76edac11902d7868dd2e6e21c79c3bd242ec1, peptide_count_filtered=b9bed0bd12d9f3a0b2a126e4c386203009ba9fc84d5ff7ff83a577a3c73d6416, correlation_filtered=1f1722414fe3cb1d2ba1131ed4ddf197b9b49b7efb1a912df28c8ef129a007fa, ruv_covariates=c20b6d53f03945de8d3eb63aef7a5bc2de58c1763edf55bcf0589b9fbaa57922 | as predicted
+P5 | predicted: copyToResultsSummary's returned list names Composite QC (PDF) and Composite QC (PNG) as missing | observed: [Composite QC (PDF) | Composite QC (PNG) | Interactive Heatmaps] (list, n=3) | as predicted
+P6 | predicted: the tab entry fires at step ruv_covariates with current_state == correlation_filtered | observed: import -> selected=setup; current_state=initial | design_refusal -> selected=design; current_state=initial | design -> selected=design; current_state=initial | qc_peptide_qvalue_filter -> selected=qc; current_state=raw_data_s4 | qc_peptide_rollup -> selected=qc; current_state=qvalue_filtered | qc_peptide_log2_matrix -> selected=qc; current_state=precursor_rollup | qc_peptide_accession_cleanup -> selected=qc; current_state=log2_matrix | qc_protein_dpc_quant -> selected=qc; current_state=peptide_accession_cleaned | qc_protein_normalisation -> selected=qc; current_state=protein_dpc_quant | qc_protein_peptide_count -> selected=qc; current_state=protein_normalised | da_refusal -> selected=da; current_state=peptide_count_filtered | norm_refusal -> selected=normalization; current_state=peptide_count_filtered | norm -> selected=normalization; current_state=peptide_count_filtered | correlation -> selected=normalization; current_state=peptide_count_filtered | ruv_covariates -> selected=normalization; current_state=correlation_filtered | session_export -> selected=normalization; current_state=ruv_covariates | da_load -> selected=da; current_state=correlation_filtered | da -> selected=da; current_state=ruv_covariates | summary_refusal -> selected=session_summary; current_state=ruv_covariates | summary_save -> selected=session_summary; current_state=ruv_covariates | summary_copy -> selected=session_summary; current_state=ruv_covariates | summary_report -> selected=session_summary; current_state=ruv_covariates | summary_export -> selected=session_summary; current_state=ruv_covariates | as predicted
+P7 | predicted: Reset fallback (normalization_input_reference NULL) selects correlation_filtered | observed: correlation_filtered | as predicted
+per-step record against tests/testdata/gui-entry/prot_dia_limpa.json (INFORMATION ONLY):
+ step                         identical differing_fields               
+ import_refusal                TRUE     <none>                         
+ import                        TRUE     <none>                         
+ design_refusal                TRUE     <none>                         
+ design                        TRUE     <none>                         
+ qc_peptide_qvalue_filter      TRUE     <none>                         
+ qc_peptide_rollup             TRUE     <none>                         
+ qc_peptide_log2_matrix        TRUE     <none>                         
+ qc_peptide_accession_cleanup  TRUE     <none>                         
+ qc_protein_dpc_quant          TRUE     <none>                         
+ qc_protein_normalisation      TRUE     <none>                         
+ qc_protein_peptide_count      TRUE     <none>                         
+ da_refusal                    TRUE     <none>                         
+ norm_refusal                  TRUE     <none>                         
+ norm                          TRUE     <none>                         
+ correlation                   TRUE     <none>                         
+ ruv_covariates                TRUE     <none>                         
+ session_export               FALSE     artifacts                      
+ da_load                      FALSE     artifacts                      
+ da                           FALSE     artifacts                      
+ summary_refusal              FALSE     artifacts                      
+ summary_save                 FALSE     outputs,artifacts,notifications
+ summary_copy                 FALSE     artifacts                      
+ summary_report               FALSE     artifacts                      
+ summary_export               FALSE     artifacts                      
+ differing_artifact_keys
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  0                     
+  1                     
+  6                     
+  6                     
+  6                     
+ 12                     
+ 12                     
+ 12                     
+ 12                     
+mode: three
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE
+images present: limpa_composite.png limpa_dpc_curve.png limpa_intensity_distribution.png limpa_missing_comparison.png limpa_summary.png post_norm_correlation.png post_norm_density.png post_norm_pca.png post_norm_rle.png pre_norm_correlation.png pre_norm_density.png pre_norm_pca.png pre_norm_rle.png ruv_corrected_correlation.png ruv_corrected_density.png ruv_corrected_pca.png ruv_corrected_rle.png ruv_covariates_cancor.png
+images missing: 
+   [generateCompositeFromFiles] Generating composite from 15 files...
+   [generateCompositeFromFiles] Added column titles
+   [generateCompositeFromFiles] Added row: pca
+   [generateCompositeFromFiles] Added row: density
+   [generateCompositeFromFiles] Added row: rle
+   [generateCompositeFromFiles] Added row: correlation
+   [generateCompositeFromFiles] Added row: cancor
+   [generateCompositeFromFiles] Combining plot sections...
+BEFORE
+VmPeak:	  544768 kB
+VmSize:	  544768 kB
+VmHWM:	  385924 kB
+VmRSS:	  385924 kB
+AFTER
+VmPeak:	 1670244 kB
+VmSize:	 1562784 kB
+VmHWM:	 1344204 kB
+VmRSS:	 1234384 kB
+builder messages:
+*** STEP 6B: Generating composite QC figure from saved images ***
+*** STEP 6B: Composite QC figure saved to protein_qc_dir ***
+output files: limpa_composite.png proteomics_composite_QC_figure.pdf proteomics_composite_QC_figure.png proteomics_composite_QC_figure.rds
+PNG 1950 x 3900 px
+MEMORY_READING mode=three VmRSS_before_kB=385924 VmHWM_before_kB=385924 VmRSS_after_kB=1234384 VmHWM_after_kB=1344204 build_seconds=37.0
+MEMORY_RISE mode=three rise_GiB=0.914 (VmHWM after minus VmRSS before) build_ok=TRUE
+mode: two
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE
+images present: limpa_composite.png limpa_dpc_curve.png limpa_intensity_distribution.png limpa_missing_comparison.png limpa_summary.png post_norm_correlation.png post_norm_density.png post_norm_pca.png post_norm_rle.png pre_norm_correlation.png pre_norm_density.png pre_norm_pca.png pre_norm_rle.png ruv_corrected_correlation.png ruv_corrected_density.png ruv_corrected_pca.png ruv_corrected_rle.png ruv_covariates_cancor.png
+images missing: 
+   [generateCompositeFromFiles] Generating composite from 8 files...
+   [generateCompositeFromFiles] Added column titles
+   [generateCompositeFromFiles] Added row: pca
+   [generateCompositeFromFiles] Added row: density
+   [generateCompositeFromFiles] Added row: rle
+   [generateCompositeFromFiles] Added row: correlation
+   [generateCompositeFromFiles] Combining plot sections...
+BEFORE
+VmPeak:	  544768 kB
+VmSize:	  544768 kB
+VmHWM:	  386072 kB
+VmRSS:	  386072 kB
+AFTER
+VmPeak:	 1338708 kB
+VmSize:	 1279768 kB
+VmHWM:	  951532 kB
+VmRSS:	  951532 kB
+builder messages:
+*** STEP 6B: Generating composite QC figure from saved images ***
+*** STEP 6B: Composite QC figure saved to protein_qc_dir ***
+output files: limpa_composite.png proteomics_composite_QC_figure.pdf proteomics_composite_QC_figure.png proteomics_composite_QC_figure.rds
+PNG 1500 x 3300 px
+MEMORY_READING mode=two VmRSS_before_kB=386072 VmHWM_before_kB=386072 VmRSS_after_kB=951532 VmHWM_after_kB=951532 build_seconds=23.5
+MEMORY_RISE mode=two rise_GiB=0.539 (VmHWM after minus VmRSS before) build_ok=TRUE
+MEMORY SUMMARY:
+MEMORY_READING mode=three VmRSS_before_kB=385924 VmHWM_before_kB=385924 VmRSS_after_kB=1234384 VmHWM_after_kB=1344204 build_seconds=37.0
+MEMORY_RISE mode=three rise_GiB=0.914 (VmHWM after minus VmRSS before) build_ok=TRUE
+MEMORY_READING mode=two VmRSS_before_kB=386072 VmHWM_before_kB=386072 VmRSS_after_kB=951532 VmHWM_after_kB=951532 build_seconds=23.5
+MEMORY_RISE mode=two rise_GiB=0.539 (VmHWM after minus VmRSS before) build_ok=TRUE
+g0 finished

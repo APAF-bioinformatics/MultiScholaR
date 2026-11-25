@@ -1,0 +1,7 @@
+traces: guiEntryArtifacts=installed; runProtNormTabEntryWorkflow=installed; copyToResultsSummary=installed; generateProtNormPreNormalizationQcArtifacts=installed
+CONTROL artifacts_trace: PASS (events: 1 ; step: control-step ; log lines: 1)
+CONTROL tab_entry_trace: PASS (entry events: 1 ; exit events: 1 ; exit returned: FALSE)
+CONTROL copy_trace: PASS (entry events: 1 ; exit events: 1 ; exit class: character)
+CONTROL lane_harness: PASS (memscript: TRUE)
+CONTROL memory_measure: PASS (MEMORY_CONTROL rise_GiB=0.226 (allocated 3e7 doubles = 0.224 GiB) verdict=PASS)
+lane ok: TRUE
