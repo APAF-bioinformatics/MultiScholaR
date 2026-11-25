@@ -1,7 +1,7 @@
 # KIT-240: user-facing texts (drafts awaiting the owner)
 
 Every text below is a **draft awaiting the owner's wording** (VAL-41 allows implementing proposed wording; ticket
-KIT-240 r1.5, OD-1 to OD-3; implementation audit AUDIT-KIT-240-impl-20261125). The values the marks describe are decided (VAL-221); only the words are open.
+KIT-240 r1.6, OD-1 to OD-3; implementation audit AUDIT-KIT-240-impl-20261125). The values the marks describe are decided (VAL-221); only the words are open.
 Ledger IDs in the marks refer to `docs/methods-decision-ledger.md` in the repository, which the installed application
 does not carry (AUDIT-KIT-240-plan-20261125, Re-check 1, R1-07). The predicate `integrationParameterProvisional()`
 marks a default as waiting when its mark contains "awaiting the owner": a reworded waiting mark must keep that token, or
@@ -86,8 +86,16 @@ Drafts for the owner's wording pass; each fact cited to its evidence.
 
 | Key | Where shown | Draft |
 |---|---|---|
-| `stability_elbo_slack` | Results tab, after the rank sentence, when the rank is shown | Training stops by a rule, not at an exact optimum, so a difference of this size can come from where training stopped rather than from a better solution: in a check close to the default settings the five seeds' final values spanned 0.015 and the declared seed ranked 5 of 5, and one solution trained twice (factors correlated 0.999998) ended 0.68 apart when one run stopped five rounds later. |
-| `methods_seeds_elbo_slack` (record) | the methods paragraph, after the rank sentence, when the rank is known | Differences of this size were observed between runs of one solution: trained twice, one solution (matched factors correlated 0.999998) ended 0.676 apart when one run stopped five rounds later, and in a simulation close to the default settings five seeds' final values spanned 0.015 with the declared seed ranked 5 of 5; the rank can therefore reflect where training stopped rather than a better solution. |
+| `stability_elbo_slack` | Results tab, after the rank sentence, when the rank is shown | Training stops by a rule, not at an exact optimum, so a small difference in the final value can come from where training stopped rather than from a better solution: one model trained twice in single precision (not the shipped setting) on two processors, its factors correlated 0.999998, ended 0.68 apart when one run stopped five rounds later, and in a simulation with 20 samples and slow training five seeds' final values spanned 0.015, with the declared seed ranked 5 of 5. |
+| `methods_seeds_elbo_slack` (record) | the methods paragraph, after the rank sentence, when the rank is known | Small differences in the final ELBO can come from where training stopped rather than from a better solution: one model trained twice in single precision (not the shipped setting) on two processor models, its matched factors correlated 0.999998, ended 0.676 apart when one run stopped five rounds later, and in a simulation with 20 samples and slow training five seeds' final values spanned 0.015, with the declared seed ranked 5 of 5. |
+
+Corrected after the closure check of 2026-11-26 (AUDIT-KIT-240-impl-20261125, C1); both stay drafts for the owner's
+wording pass. Reason: the first drafts said "a difference of this size" / "Differences of this size were observed",
+which was false for runs whose seeds differ by much more, for example KIT-151c's uncapped arm (`feature_selection =
+"none"`, which the Model tab offers) with the declared seed 258.84 below the highest, against a largest observed
+one-solution difference of 0.676; and the KIT-062 pair was trained in single precision, not the shipped double precision,
+where that diagnosis found the runs identical. The corrected texts state the two observations as such, true for every
+run, and leave the comparison with the run's own numbers to the reader.
 
 Evidence: (1) KIT-151c, cell n20weak cap1000 slow, seeds 1 to 5: final ELBOs span 0.0146, seed 1 (the declared seed's
 position) ranks 5 of 5 (`docs/qa/workflow-execution/kit/kit-151c/seed-rows.tsv` on branch `run-mofa-evidence-k151c`);

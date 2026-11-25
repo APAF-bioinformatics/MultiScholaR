@@ -412,10 +412,11 @@ integrationGuiTexts <- function() {
         # r1.5 (owner's decision VAL-252): the basis of the rank, from two observed facts: KIT-151c (n20weak cap1000 slow,
         # run-mofa-evidence-k151c seed-rows.tsv: five seeds span 0.0146, seed 1 ranks 5 of 5) and KIT-062
         # (mofa-reproducibility-diagnose.json: one solution, matched factors r = 0.999998, 186 and 191 rounds, 0.676 apart).
-        stability_elbo_slack = paste("Training stops by a rule, not at an exact optimum, so a difference of this size can come",
-            "from where training stopped rather than from a better solution: in a check close to the default settings the",
-            "five seeds' final values spanned 0.015 and the declared seed ranked 5 of 5, and one solution trained twice",
-            "(factors correlated 0.999998) ended 0.68 apart when one run stopped five rounds later."),
+        stability_elbo_slack = paste("Training stops by a rule, not at an exact optimum, so a small difference in the final",
+            "value can come from where training stopped rather than from a better solution: one model trained twice in",
+            "single precision (not the shipped setting) on two processors, its factors correlated 0.999998, ended 0.68",
+            "apart when one run stopped five rounds later, and in a simulation with 20 samples and slow training five",
+            "seeds' final values spanned 0.015, with the declared seed ranked 5 of 5."),
         stability_limit = paste("The table describes only the factors of the model shown: a factor that other seeds find",
             "but this model lacks is not listed."),
         col_agreement_lowest = "Lowest agreement across seeds",

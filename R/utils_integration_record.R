@@ -190,10 +190,11 @@ integrationRecordTexts <- function() {
             "the reported model ranked %d of the %d models, %s below the highest (range over the models %s, in the",
             "objective's units)."),
         # r1.5 (owner's decision VAL-252): the rank's basis, from KIT-062's diagnosis and KIT-151c's per-seed rows.
-        methods_seeds_elbo_slack = paste("Differences of this size were observed between runs of one solution: trained twice,",
-            "one solution (matched factors correlated 0.999998) ended 0.676 apart when one run stopped five rounds later, and in",
-            "a simulation close to the default settings five seeds' final values spanned 0.015 with the declared seed ranked 5",
-            "of 5; the rank can therefore reflect where training stopped rather than a better solution."),
+        methods_seeds_elbo_slack = paste("Small differences in the final ELBO can come from where training stopped rather",
+            "than from a better solution: one model trained twice in single precision (not the shipped setting) on two",
+            "processor models, its matched factors correlated 0.999998, ended 0.676 apart when one run stopped five rounds",
+            "later, and in a simulation with 20 samples and slow training five seeds' final values spanned 0.015, with the",
+            "declared seed ranked 5 of 5."),
         methods_seeds_limit = paste("The stability figures describe only the reported model's factors: a factor that other",
             "seeds find but the reported model lacks is not listed."),
         # KIT-151 (INT-17). %s: the variables set.
