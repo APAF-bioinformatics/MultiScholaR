@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-220 control C base (staging 185ebf75 + script): test-gui-entry-proteomics.R, test-gui-entry-lipidomics.R, test-gui-entry-metabolomics.R with the dump switches; coordinator's word 2026-11-25; ceiling 240 job-minutes",
+  "label": "KIT-220 control C base (staging 185ebf75 + script) at c31ca4c9",
+  "package_commit": "c31ca4c94a91cb79a900969a3a2541ea30881e18",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "pkgload"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-220/redump.R",
+      "args": [
+        "kit220-c-base-c31ca4c9",
+        "test-gui-entry-proteomics.R",
+        "test-gui-entry-lipidomics.R",
+        "test-gui-entry-metabolomics.R"
+      ],
+      "out": "kit220-c-base-c31ca4c9",
+      "timeout_minutes": 240
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

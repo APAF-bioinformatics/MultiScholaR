@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-220 run D base dumps: test-workflow-saved-da.R, test-omic-da-module.R, test-omic-enrich-module.R, test-omics-da-core.R with the dump switches; coordinator's word 2026-11-25; ceiling 240 job-minutes",
+  "label": "KIT-220 run D base dumps at c31ca4c9",
+  "package_commit": "c31ca4c94a91cb79a900969a3a2541ea30881e18",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "pkgload"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-220/redump.R",
+      "args": [
+        "kit220-d-base-c31ca4c9",
+        "test-workflow-saved-da.R",
+        "test-omic-da-module.R",
+        "test-omic-enrich-module.R",
+        "test-omics-da-core.R"
+      ],
+      "out": "kit220-d-base-c31ca4c9",
+      "timeout_minutes": 240
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
