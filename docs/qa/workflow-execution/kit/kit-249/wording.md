@@ -1,6 +1,8 @@
 # KIT-249 wording drafts for the owner's pass (VAL-41)
 
-Drafts only: `NEWS.md` on the branch still carries the 82470db1 text until the owner words it. Source:
+Drafts only. W2a, W2b and W3 replaced the 82470db1 statements in `NEWS.md` at the closure check (2026-11-26; they
+corrected errors of fact) and stay drafts for the owner's wording pass; W1, W4 and W5 are not implemented (row 36's
+second question is undecided). Source:
 AUDIT-KIT-249-impl-20261125 I05, I06, I10; ticket section 15a.
 
 | # | Where | Today (82470db1) | Draft |

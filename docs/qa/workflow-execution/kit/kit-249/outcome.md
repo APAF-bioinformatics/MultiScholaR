@@ -102,7 +102,7 @@ R CMD check; 417.4 job-minutes, longest job 47.0.
 |---|---|---|
 | A1 | met | G0 45590869970 (table above) |
 | A2 | met: every listed row fails by assertion at G0's value (R1; E7 (b) on R2's base); all pass on the fix | R1 45592793437, R2 45601895895 |
-| A3 | **not met: stop rules 3 and 4.** Every file `same` except the new file (`fixed`) and `test-workflow-saved-da.R` (`message-changed`, a stored reference that encodes the defect); check identical | R2 45601895895 |
+| A3 | met, with the exception decided by file in VAL-274 (owner 2026-11-26): every file `same` except the new file (`fixed`) and `test-workflow-saved-da.R` (`message-changed` in exactly the leaves of AUDIT-KIT-249-impl-20261125 I01, the KIT-112 captures frozen with the defect; not edited, replaced at the end-of-project re-record); check identical | R2 45601895895, correction 45614191837 |
 | A4 | not yet (the merge train's or checkpoint's full suite) | |
 | A5 | NEWS and ledger row written (82470db1); `NAMESPACE`, `DESCRIPTION`, `man/` unchanged; change-report section below | 82470db1 |
 
@@ -112,10 +112,30 @@ The KIT-112 W1 (a) and W2 frozen captures in `tests/testthat/test-workflow-saved
 head in exactly the leaves of AUDIT-KIT-249-impl-20261125 I01 (every move traced to the six fallback comparisons;
 none where qvalue() succeeded; limpa does not move): they froze the empty q-value column. Put to the owner as parked row 36;
 this branch does not edit that file. Re-recording them is the owner's word by file
-(VAL-130 (4)); the ticket's section 3 and section 7 prediction ("none moves") missed this file's W1 captures. Whether
-to accept the move (and re-record, or leave the laptop-recorded values failing as they already do on runners for most
-fields) is OD-2. One correction pass remains in the budget; it is not used, because the result is valid, not an
-instrument defect.
+(VAL-130 (4)); the ticket's section 3 and section 7 prediction ("none moves") missed this file's W1 captures. Decided by the owner on 2026-11-26 (VAL-274): the captures are not edited; they are replaced at the single
+end-of-project re-record and are not to be read as correct output until then. The ticket's one correction pass was
+used (45614191837): the same leaves move on staging 63143aa3. Row 36's second question (the notice naming the
+comparisons that fell back; the caveat sentence) is not decided (`wording.md` W1, W5).
+
+Note (closure check C05): VAL-268's cause, the "two 'not available' notes an earlier click left", is this defect's
+product: those clicks are the KIT-112 fallback comparisons. With KIT-249 in, they write pages, so the three `files`
+leaves move for KIT-249's reason; the one re-record covers both.
+
+## The merge train's scope and predictions (closure check, on staging abfc99ac)
+
+- Files: section 9's grep at abfc99ac gives 71 (R2's 70, less the new file, plus `test-kit201-treat-moderation.R` and
+  `test-kit243-summary-current-outputs.R`, both on staging), plus the new file and the 7 named: **79 files**; plus
+  `test-kit236-report-sentences.R` if KIT-236 rides and `test-kit204-prot-da-not-tested.R` if KIT-204 rides; 6 shards
+  per side; base = staging at the train's start, head = the train's tip, `check: true`.
+- Predictions, declared before sending:
+  - the new file `only-on-head`, 144 / 0;
+  - `test-workflow-saved-da.R` `message-changed`, base 776 / 175 -> head 755 / 196, newly failing exactly R2's 21 info
+    lines (`r2-45601895895/saved-da-new.txt`), changed messages exactly I01's 87 leaves, nothing else in that file
+    (the digests in those messages are read off the train's run, not predicted);
+  - `test-kit201-treat-moderation.R` (89 / 0) and `test-kit243-summary-current-outputs.R` (246 / 0) `same`;
+  - every other file `same`; R CMD check: nothing only on head. Any other move: stop.
+- A4: the next checkpoint's full suite, reading I13's three replay files. No Windows run (no platform code).
+- Order: KIT-249 merges before KIT-236 or in the same train, with no tag between.
 
 ## R2 shard projection (R1-01)
 
