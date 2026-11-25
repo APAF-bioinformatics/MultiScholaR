@@ -20,3 +20,6 @@ and the assertions KIT-234 removed with the workbooks: KIT-203 S11 and KIT-173 T
 KIT-143's static test and KIT-154's workbook-code checks (`test-integration-workbook.R`), the render of the
 integration workbook (`test-integration-workbook-mofa.R`) and KIT-184's four phrases
 (`test-integration-removed-factors.R`). To bring them back: `git mv archive/workbooks inst/workbooks`.
+
+`project_setup.R` (archived with them, from the repository's top level) set up a project from R: it downloaded the
+workbooks, the report templates, the central `config.ini` and optional tutorial data.

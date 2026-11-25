@@ -88,8 +88,6 @@ For a **code-free, interactive experience**, use the standalone launcher.
 
 The R Markdown workbooks of earlier versions are archived and not supported in this version; use the application. The integration can also be run from R with the package's `integration*` functions (see `?integrationFindInputs`, and the limitations in `?integrationTrainModel`).
 
-> **Need Help?** Visit the [Multiomics Masterclass](https://zenodo.org/records/15573343) for a comprehensive guide and tutorial data.
-
 ## Supported Workflows
 
 | Omics Type       | Methods Supported            | Key Features                                              |
