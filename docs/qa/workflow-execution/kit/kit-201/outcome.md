@@ -100,6 +100,23 @@ legacy-test results: downstream of 6.2 (i) and (iii); **not named in 6.2**, list
 largest differences logFC 3.9e-14, raw p 3.2e-13, q 3.6e-13: **within 1e-10**, not bit-identical. Kernel level only:
 whether the two routes hand the DA the same matrix is not compared here (KIT-188's E2 does).
 
+**R2b (run 45607796537; base staging 63143aa3, head 50a5023d, the merge 0a16eb23 plus the predictions file; 3 shards
+per side, check).** Predictions committed before the run (`r2b/predictions.md`). Of 108 files: 101 `same` (including
+`test-kit174-ruv-grouping.R`, `test-kit212-da-current.R`, `test-kit215-not-tested-lists.R`,
+`test-kit218-da-wrapper-tail.R`, `test-kit220-da-threshold-consumers.R`, `test-kit222-replicate-keys.R`, every
+lipid/metab file, limpa and transcriptomics); `test-kit201-treat-moderation.R` only on head (all pass);
+`test-prot-ruv-factors-in-model.R` `fixed`; the five predicted files move with the same failing counts on head as R3
+(gui-entry proteomics 4 → 25, `test-workflow-saved-da.R` 171 → 175, `test-omic-da-module.R` 53 → 80,
+`test-omic-enrich-module.R` 19 → 59, `test-omics-enrich-core.R` 9 → 20) and the same moved tests; the one verdict that
+differs from R3 is `refusals` (`new-failure` here, `message-changed` in R3), because I13's flaky leaf passed on this
+base (19 base failures against R3's 22). No `compare-error`; `R CMD check` findings identical on both sides. **Verdict:
+as predicted; no stop rule.**
+
+**Departures by the coordinator (2026-11-25).** R3b is not run: the next full-suite checkpoint on staging stands in for it
+(as for KIT-204, KIT-218, KIT-222). M1 is not repeated: since dd769671 staging changed none of the TREAT path M1 executes;
+the one executed function that changed, `resolveProtTechnicalReplicateBlock` (KIT-222), returns nothing new unless the
+design has a `tech_reps` column, which M1's designs lack (AUDIT-KIT-201-impl section 4 (6)).
+
 ## Decisions and deviations
 
 - **Workbooks (owner, VAL-209, 2026-11-25).** No R Markdown workbook ships; nothing under `inst/workbooks/` is edited.
@@ -195,7 +212,7 @@ q at route level, with the tables' own column names; the kernel result does not 
 
 ## Current state
 
-R0, M1 (no worse, all three kernels), R2 and R3 done. Stop resolved (I01); records repaired; ready for a merge train.
+R0, M1 (no worse, all three kernels), R2 and R3 done. Stop resolved (I01); records repaired; merged with staging 63143aa3 (0a16eb23); R2b as predicted. Ready for a merge train.
 
 ## Acceptance criteria
 
@@ -210,7 +227,7 @@ R0, M1 (no worse, all three kernels), R2 and R3 done. Stop resolved (I01); recor
 
 ## Core-hours
 
-R1 1.7, R1-2 1.9, R0 1.5, M1 15.7 (L 6.0, M 5.9, P 3.9), R2 35.2, R3 82.8: 139.1, against 107.3 expected,
+R1 1.7, R1-2 1.9, R0 1.5, M1 15.7 (L 6.0, M 5.9, P 3.9), R2 35.2, R3 82.8, R2b 33.9: 173.0, against 107.3 expected,
 524.4 ceiling (812.4 cap). R2 and R3 ran above their expected figures (16.8 and 65.1), under their ceilings.
 
 ## For the change report
