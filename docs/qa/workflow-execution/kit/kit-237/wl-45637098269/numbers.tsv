@@ -1,0 +1,16 @@
+session	id	contrast	shown	saved	rule	result	where	planted
+WL1	N1	proteins	394	394	equal	equal	normalization-correlation_filter_summary vs scripts/proteomics/filtered_session_summary.txt	FALSE
+WL1	N1	samples	10	10	equal	equal	normalization-correlation_filter_summary vs scripts/proteomics/filtered_session_summary.txt	FALSE
+WL1	N2	KO_vs_WT	18	18	equal	equal	da_summary_stats vs da_proteins_groupKO-groupWT_long_annot.tsv (fdr_qvalue < 0.05)	FALSE
+WL1	N3	label	k237_wl_lfq	k237_wl_lfq	equal	equal	session_summary inputs vs scripts/proteomics/study_parameters.txt	FALSE
+WL1	N3	description	KIT-237 label-free journey on prot_lfq_maxquant	KIT-237 label-free journey on prot_lfq_maxquant	equal	equal	session_summary inputs vs scripts/proteomics/study_parameters.txt	FALSE
+WL1	N4	KO_vs_WT	18	18	equal	equal	report sentence (docx) vs N2 shown count	FALSE
+WL1	N2	KO_vs_WT (planted copy)	18	17	equal	differ	da_summary_stats vs a copy of da_proteins_groupKO-groupWT_long_annot.tsv with row 1's q moved across 0.05	TRUE
+WL1-lipid_canonical	N3	label	k237_wl_lipid_canonical	k237_wl_lipid_canonical	equal	equal	summary inputs vs scripts/lipidomics/study_parameters.txt	FALSE
+WL1-lipid_canonical	N3	description	KIT-237 lipidomics journey on lipid_canonical	KIT-237 lipidomics journey on lipid_canonical	equal	equal	summary inputs vs scripts/lipidomics/study_parameters.txt	FALSE
+WL1-metab_lc	N2	KO_vs_WT	0	0	equal	equal	da_summary_stats (All) vs de_negmode_metabolites_groupKO-groupWT_long_annot.tsv + de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (fdr_qvalue < 0.05)	FALSE
+WL1-metab_lc	N3	label	k237_wl_metab_lc	k237_wl_metab_lc	equal	equal	summary inputs vs scripts/metabolomics/study_parameters.txt	FALSE
+WL1-metab_lc	N3	description	KIT-237 metabolomics journey on metab_lc	KIT-237 metabolomics journey on metab_lc	equal	equal	summary inputs vs scripts/metabolomics/study_parameters.txt	FALSE
+WL1-trx_screen	K222	sample keys	6	6	no key shared by two biological samples	equal	design_matrix.tab tech_rep_group vs design.tsv tech_rep_group	FALSE
+WL1-trx_screen	N3	label	k237_wl_trx_screen	k237_wl_trx_screen	equal	equal	summary inputs vs scripts/transcriptomics/study_parameters.txt	FALSE
+WL1-trx_screen	N3	description	KIT-237 transcriptomics journey on trx_screen	KIT-237 transcriptomics journey on trx_screen	equal	equal	summary inputs vs scripts/transcriptomics/study_parameters.txt	FALSE

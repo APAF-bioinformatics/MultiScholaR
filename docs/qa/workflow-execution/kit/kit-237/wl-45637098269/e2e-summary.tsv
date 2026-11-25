@@ -1,0 +1,5 @@
+lane	passed	failed	errors	skipped	laptop_passed	seconds	run_error
+lipidomics-canonical	88	0	0	0	88	86.4	
+metabolomics-lc-gc	190	0	0	0	190	193.9	
+transcriptomics-screen	16	0	0	0	16	58.9	
+proteomics-tmt-lfq	162	0	0	0	153	346.7	

@@ -4,7 +4,11 @@ Run branch `run-k237-journey` (from `v0.9-staging` dd769671; never merged to sta
 
 ## State
 
-Built, not run. The stage `journey` of `.github/workflows/distributable.yml` and the files of this folder exist on the
+**WL: instrument proven on Windows** (instrument rerun 2, run 45637098269, 2026-11-25): WL-0, WL-0u, WL-1 to WL-4
+60 pass, 0 fail, 1 recorded; WL-5 passed on all four routes. Earlier: run 45605975875 and instrument rerun 1
+45619531044, not proven, every fail in the instrument's mechanics (below). WJ' waits for the release commit.
+
+Earlier state: built, not run. The stage `journey` of `.github/workflows/distributable.yml` and the files of this folder exist on the
 run branch. No run has been sent: WL waits for KIT-233's lifecycle run L to be recorded "instrument proven" (at
 2026-11-25 L was in its VAL-54 instrument reruns: `kit-233-journey` 4793c9e8 and 0260ac73 fix runs 45523435786 and
 45525410012; no `runs.tsv` or `outcome.md` on that branch yet). WJ' is not this item's.
@@ -214,4 +218,50 @@ metab sets "Show:" to "All Results" (a user's choice) before emptying the table.
 
 Predictions for rerun 2 (written before it): as rerun 1, plus WL-0u passing on all four routes, WL-5 passing on all
 four, `metab_lc` reaching S10.5 with N2 equal (0 and 0) and WL-4 (a) on metab passing.
+
+## WL instrument rerun 2, run 45637098269 (2026-11-25 14:43 to 15:43 UTC; 61 job-minutes, 4.07 core-hours)
+
+Records: `wl-45637098269/`. Binding: commit under test 7327607f (early and full checks passed; the planted wrong commit
+stopped), driver 76e4b519, routes 8f3b08ee. Machine as run 1. Journey step 23.7 minutes (internal deadline 150 not
+reached); `LongPathsEnabled` restored to 1 after the journey (job log).
+
+**Verdict (`verdict.txt`): instrument proven on Windows (WL-0, WL-0u, WL-1 to WL-4: 60 pass, 0 fail, 1 recorded); WL-5
+passed.**
+
+Observed (each against its prediction):
+- WL-0 passes in full (prediction 1: met).
+- WL-0u passes on all four routes: the chooser clicked through the folders to every input in user mode (prediction:
+  met after the two instrument fixes).
+- WL-1: all four routes reach S10.5 with workers seen (LFQ 245 s of steps, lipid 280, metab 275, trx 139). N1 to N4
+  equal on LFQ (394 proteins, 10 samples; 18 significant; the report's sentence 18); N3 equal on all four; N2 on
+  `metab_lc` equal (0 and 0, from `de_negmode_…` + `de_posmode_metabolites_groupKO-groupWT_long_annot.tsv`); K222 equal
+  on trx (6 keys, 6 biological samples).
+- WL-4 (a) on LFQ and on `metab_lc`, (b), (c) pass. WL-2, WL-3 pass.
+- WL-5 passes on all four routes.
+- e2e lanes: lipidomics 88/0, metabolomics 190/0, transcriptomics 16/0, TMT-LFQ 162/0 (laptop's 153; the lane gained
+  tests since).
+- Findings, all known except the last: S9 refused offline, "Enrichment needs protein annotation…" (as KIT-233's L; my
+  prediction 2 of a test-mode substitute was wrong); S9.d download 0 bytes, not a zip (K1, KIT-241); placeholder export
+  names (K2 to K4); "No internal standards found" on lipid and metab (K12, KIT-242); **new, for the coordinator:** on
+  lipid and metab the first press of "Run Normalization Pipeline" after opening the tab is refused "A step is still
+  running…" while the button is shown enabled (the tab's own entry QC); the same press 30 s later completes (all three
+  runs). WL3w (observation): a worker ended during the longest LFQ QC step; the step refused "managed action ended:
+  worker_failed".
+
+Inferred: the instrument (KIT-233's driver 76e4b519 under `journey-win.R` at 8f3b08ee) observes, on the installed
+Windows application at 7327607f, completion, refusal, crash, timeout (rerun 1's S8.1/S8.3), "not reachable" (runs 1 and
+rerun 1's chooser), planted silent outputs, and the digest/page agreement on each of the four routes, through their
+completion.
+
+## Core-hours
+
+WL 81 + rerun 1 97 + rerun 2 61 = 239 job-minutes = 15.93 core-hours (expected for WL 102 minutes; ceiling WL 220 plus
+instrument reruns within 1,410; two of three instrument reruns used).
+
+## Not checked
+
+- The internal deadline and a progress modal over 60 s were not met by any WL run (RA-01; owed before WJ', ticket 20).
+- That the firewall rules block outbound traffic from the application's R (shown only by their existence).
+- User mode beyond S2 (WJ''s; VAL-216), and WJ' itself (release commit).
+- Screenshots and per-step JSON are in the run artifacts only (30 days), not committed.
 

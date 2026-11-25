@@ -1,0 +1,309 @@
+session	step	input	value	utc
+WL1	S1	tile-proteomics	click	2026-11-25T15:20:02Z
+WL1	S1	btn-start-analysis	click	2026-11-25T15:20:03Z
+WL1	S1	experiment_label	k237_wl_lfq	2026-11-25T15:20:03Z
+WL1	S1	btn-confirm-setup	click	2026-11-25T15:20:03Z
+WL1	S2	proteomics_workflow-setup_import-search_results_standard	upload proteinGroups.txt	2026-11-25T15:20:07Z
+WL1	S2	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T15:20:07Z
+WL1	S2	prot-import-process	click	2026-11-25T15:20:08Z
+WL1	S3	proteomics_workflow-design_matrix-builder-new_factor	WT	2026-11-25T15:20:10Z
+WL1	S3	proteomics_workflow-design_matrix-builder-add_factor	click	2026-11-25T15:20:11Z
+WL1	S3	proteomics_workflow-design_matrix-builder-new_factor	KO	2026-11-25T15:20:11Z
+WL1	S3	proteomics_workflow-design_matrix-builder-add_factor	click	2026-11-25T15:20:11Z
+WL1	S3	proteomics_workflow-design_matrix-builder-selected_runs	wt_1,wt_2,wt_3,wt_4,wt_5	2026-11-25T15:20:11Z
+WL1	S3	proteomics_workflow-design_matrix-builder-factor1_select	WT	2026-11-25T15:20:12Z
+WL1	S3	proteomics_workflow-design_matrix-builder-assign_metadata	click	2026-11-25T15:20:12Z
+WL1	S3	proteomics_workflow-design_matrix-builder-selected_runs	ko_1,ko_2,ko_3,ko_4,ko_5	2026-11-25T15:20:12Z
+WL1	S3	proteomics_workflow-design_matrix-builder-factor1_select	KO	2026-11-25T15:20:13Z
+WL1	S3	proteomics_workflow-design_matrix-builder-assign_metadata	click	2026-11-25T15:20:13Z
+WL1	S3	proteomics_workflow-design_matrix-builder-contrast_group1	KO	2026-11-25T15:20:13Z
+WL1	S3	proteomics_workflow-design_matrix-builder-contrast_group2	WT	2026-11-25T15:20:13Z
+WL1	S3	proteomics_workflow-design_matrix-builder-add_contrast	click	2026-11-25T15:20:14Z
+WL1	S3	proteomics_workflow-design_matrix-builder-save_results	click	2026-11-25T15:20:14Z
+WL1	S5.1	proteomics_workflow-quality_control-protein_qc-cleanup-apply_accession_cleanup	click	2026-11-25T15:20:22Z
+WL1	S5.2	proteomics_workflow-quality_control-protein_qc-intensity_filter-apply_protein_intensity_filter	click	2026-11-25T15:20:32Z
+WL1	S5.3	proteomics_workflow-quality_control-protein_qc-duplicate_removal-apply_duplicate_removal	click	2026-11-25T15:20:43Z
+WL1	S5.4	proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter	click	2026-11-25T15:20:52Z
+WL1	S6.1	prot-norm-run	click	2026-11-25T15:21:02Z
+WL1	S6.2	proteomics_workflow-normalization-apply_correlation_filter	click	2026-11-25T15:22:15Z
+WL1	S7	prot-norm-export-session	click	2026-11-25T15:22:34Z
+WL1	S8.1	prot-da-load-session	click	2026-11-25T15:22:41Z
+WL1	S8.2	prot-da-run	click	2026-11-25T15:22:43Z
+WL1	S8.3	#proteomics_workflow-differential_expression-da_results_tabs a[data-value='DA Results Table']	click	2026-11-25T15:23:02Z
+WL1	S8.3	proteomics_workflow-differential_expression-table_contrast	KO_vs_WT	2026-11-25T15:23:04Z
+WL1	S9	proteomics_workflow-enrichment_analysis-selected_contrast	KO_vs_WT	2026-11-25T15:23:06Z
+WL1	S9	proteomics_workflow-enrichment_analysis-run_enrichment_analysis	click	2026-11-25T15:23:07Z
+WL1	S9.d	proteomics_workflow-enrichment_analysis-download_enrichment_results	download (the link's file fetched)	2026-11-25T15:24:09Z
+WL1	S10.1	proteomics_workflow-session_summary-experiment_label	k237_wl_lfq	2026-11-25T15:24:11Z
+WL1	S10.1	proteomics_workflow-session_summary-description	KIT-237 label-free journey on prot_lfq_maxquant	2026-11-25T15:24:12Z
+WL1	S10.1	prot-summary-save-args	click	2026-11-25T15:24:12Z
+WL1	S10.2	prot-summary-copy-publication	click	2026-11-25T15:24:20Z
+WL1	S10.3	prot-summary-generate-report	click	2026-11-25T15:24:25Z
+WL1	S10.4	prot-summary-download-report	download (the link's file fetched)	2026-11-25T15:24:30Z
+WL1	S10.5	prot-summary-export-state	click	2026-11-25T15:24:31Z
+WL2	S1	tile-proteomics	click	2026-11-25T15:24:40Z
+WL2	S1	btn-start-analysis	click	2026-11-25T15:24:40Z
+WL2	S1	experiment_label	k237_wl2	2026-11-25T15:24:41Z
+WL2	S1	project_dir	C:/Users/runneradmin/AppData/Local/Temp/RtmpGO9I8N/k237-work/no-such-folder	2026-11-25T15:24:41Z
+WL2	S1	btn-confirm-setup	click	2026-11-25T15:24:41Z
+WL3	S1	tile-proteomics	click	2026-11-25T15:25:49Z
+WL3	S1	btn-start-analysis	click	2026-11-25T15:25:49Z
+WL3	S1	experiment_label	k237_wl3	2026-11-25T15:25:50Z
+WL3	S1	btn-confirm-setup	click	2026-11-25T15:25:50Z
+WL3	S2	proteomics_workflow-setup_import-search_results_standard	upload proteinGroups.txt	2026-11-25T15:25:53Z
+WL3	S2	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T15:25:54Z
+WL3	S2	prot-import-process	click	2026-11-25T15:25:55Z
+WLu-prot_lfq	S1	tile-proteomics	click	2026-11-25T15:26:04Z
+WLu-prot_lfq	S1	btn-start-analysis	click	2026-11-25T15:26:04Z
+WLu-prot_lfq	S1	experiment_label	k237_wlu_prot_lfq	2026-11-25T15:26:04Z
+WLu-prot_lfq	S1	btn-confirm-setup	click	2026-11-25T15:26:04Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-search_results	click	2026-11-25T15:26:08Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-search_results chooser	dblclick Users	2026-11-25T15:26:08Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-search_results chooser	dblclick runneradmin	2026-11-25T15:26:09Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-search_results chooser	dblclick Documents	2026-11-25T15:26:09Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-search_results chooser	dblclick k237-input	2026-11-25T15:26:10Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-search_results chooser	click proteinGroups.txt	2026-11-25T15:26:10Z
+WLu-prot_lfq	S2	#proteomics_workflow-setup_import-search_results-modal #sF-selectButton	click	2026-11-25T15:26:10Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-fasta_file	click	2026-11-25T15:26:11Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-fasta_file chooser	dblclick Users	2026-11-25T15:26:12Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-fasta_file chooser	dblclick runneradmin	2026-11-25T15:26:12Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-fasta_file chooser	dblclick Documents	2026-11-25T15:26:13Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-fasta_file chooser	dblclick k237-input	2026-11-25T15:26:13Z
+WLu-prot_lfq	S2	proteomics_workflow-setup_import-fasta_file chooser	click proteins.fasta	2026-11-25T15:26:14Z
+WLu-prot_lfq	S2	#proteomics_workflow-setup_import-fasta_file-modal #sF-selectButton	click	2026-11-25T15:26:14Z
+WLu-prot_lfq	S2	prot-import-process	click	2026-11-25T15:26:14Z
+WLu-lipid_canonical	S1	tile-lipidomics	click	2026-11-25T15:26:23Z
+WLu-lipid_canonical	S1	btn-start-analysis	click	2026-11-25T15:26:23Z
+WLu-lipid_canonical	S1	experiment_label	k237_wlu_lipid_canonical	2026-11-25T15:26:24Z
+WLu-lipid_canonical	S1	btn-confirm-setup	click	2026-11-25T15:26:24Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_name	LCMS_Pos	2026-11-25T15:26:27Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-vendor_format	lipidsearch	2026-11-25T15:26:27Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_file	click	2026-11-25T15:26:27Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_file chooser	dblclick Users	2026-11-25T15:26:28Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_file chooser	dblclick runneradmin	2026-11-25T15:26:28Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_file chooser	dblclick Documents	2026-11-25T15:26:29Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_file chooser	dblclick k237-input	2026-11-25T15:26:29Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay1_file chooser	click lipidsearch_lcms_pos.txt	2026-11-25T15:26:30Z
+WLu-lipid_canonical	S2	#lipidomics_workflow-import-assay1_file-modal #sF-selectButton	click	2026-11-25T15:26:30Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_name	LCMS_Neg	2026-11-25T15:26:31Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_file	click	2026-11-25T15:26:31Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_file chooser	dblclick Users	2026-11-25T15:26:31Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_file chooser	dblclick runneradmin	2026-11-25T15:26:32Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_file chooser	dblclick Documents	2026-11-25T15:26:32Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_file chooser	dblclick k237-input	2026-11-25T15:26:33Z
+WLu-lipid_canonical	S2	lipidomics_workflow-import-assay2_file chooser	click lipidsearch_lcms_neg.txt	2026-11-25T15:26:33Z
+WLu-lipid_canonical	S2	#lipidomics_workflow-import-assay2_file-modal #sF-selectButton	click	2026-11-25T15:26:33Z
+WLu-lipid_canonical	S2	lipid-import-process	click	2026-11-25T15:26:34Z
+WLu-metab_lc	S1	tile-metabolomics	click	2026-11-25T15:26:42Z
+WLu-metab_lc	S1	btn-start-analysis	click	2026-11-25T15:26:42Z
+WLu-metab_lc	S1	experiment_label	k237_wlu_metab_lc	2026-11-25T15:26:43Z
+WLu-metab_lc	S1	btn-confirm-setup	click	2026-11-25T15:26:43Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_name	LCMS_Pos	2026-11-25T15:26:46Z
+WLu-metab_lc	S2	metabolomics_workflow-import-vendor_format	custom	2026-11-25T15:26:46Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_file	click	2026-11-25T15:26:47Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_file chooser	dblclick Users	2026-11-25T15:26:47Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_file chooser	dblclick runneradmin	2026-11-25T15:26:48Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_file chooser	dblclick Documents	2026-11-25T15:26:48Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_file chooser	dblclick k237-input	2026-11-25T15:26:49Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay1_file chooser	click lcms_pos_features.tsv	2026-11-25T15:26:49Z
+WLu-metab_lc	S2	#metabolomics_workflow-import-assay1_file-modal #sF-selectButton	click	2026-11-25T15:26:49Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_name	LCMS_Neg	2026-11-25T15:26:50Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_file	click	2026-11-25T15:26:50Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_file chooser	dblclick Users	2026-11-25T15:26:51Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_file chooser	dblclick runneradmin	2026-11-25T15:26:51Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_file chooser	dblclick Documents	2026-11-25T15:26:52Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_file chooser	dblclick k237-input	2026-11-25T15:26:52Z
+WLu-metab_lc	S2	metabolomics_workflow-import-assay2_file chooser	click lcms_neg_features.tsv	2026-11-25T15:26:53Z
+WLu-metab_lc	S2	#metabolomics_workflow-import-assay2_file-modal #sF-selectButton	click	2026-11-25T15:26:53Z
+WLu-metab_lc	S2	metabolomics_workflow-import-metabolite_id_col_custom	Feature.Name	2026-11-25T15:26:53Z
+WLu-metab_lc	S2	metabolomics_workflow-import-annotation_col_custom		2026-11-25T15:26:53Z
+WLu-metab_lc	S2	metabolomics_workflow-import-sample_cols_pattern	^(WT|KO)_	2026-11-25T15:26:54Z
+WLu-metab_lc	S2	metabolomics_workflow-import-is_pattern	^ITSD|_d[0-9]+$	2026-11-25T15:26:54Z
+WLu-metab_lc	S2	metab-import-process	click	2026-11-25T15:26:54Z
+WLu-trx_screen	S1	tile-transcriptomics	click	2026-11-25T15:27:02Z
+WLu-trx_screen	S1	btn-start-analysis	click	2026-11-25T15:27:03Z
+WLu-trx_screen	S1	experiment_label	k237_wlu_trx_screen	2026-11-25T15:27:03Z
+WLu-trx_screen	S1	btn-confirm-setup	click	2026-11-25T15:27:03Z
+WLu-trx_screen	S2	transcriptomics_workflow-import-assay1_file	click	2026-11-25T15:27:06Z
+WLu-trx_screen	S2	transcriptomics_workflow-import-assay1_file chooser	dblclick Users	2026-11-25T15:27:07Z
+WLu-trx_screen	S2	transcriptomics_workflow-import-assay1_file chooser	dblclick runneradmin	2026-11-25T15:27:07Z
+WLu-trx_screen	S2	transcriptomics_workflow-import-assay1_file chooser	dblclick Documents	2026-11-25T15:27:08Z
+WLu-trx_screen	S2	transcriptomics_workflow-import-assay1_file chooser	dblclick k237-input	2026-11-25T15:27:08Z
+WLu-trx_screen	S2	transcriptomics_workflow-import-assay1_file chooser	click counts.tsv	2026-11-25T15:27:09Z
+WLu-trx_screen	S2	#transcriptomics_workflow-import-assay1_file-modal #sF-selectButton	click	2026-11-25T15:27:09Z
+WLu-trx_screen	S2	trx-import-process	click	2026-11-25T15:27:09Z
+WL1-lipid_canonical	S1	tile-lipidomics	click	2026-11-25T15:27:17Z
+WL1-lipid_canonical	S1	btn-start-analysis	click	2026-11-25T15:27:17Z
+WL1-lipid_canonical	S1	experiment_label	k237_wl_lipid_canonical	2026-11-25T15:27:18Z
+WL1-lipid_canonical	S1	btn-confirm-setup	click	2026-11-25T15:27:18Z
+WL1-lipid_canonical	S2	lipidomics_workflow-import-assay1_name	LCMS_Pos	2026-11-25T15:27:21Z
+WL1-lipid_canonical	S2	lipidomics_workflow-import-vendor_format	lipidsearch	2026-11-25T15:27:21Z
+WL1-lipid_canonical	S2	lipidomics_workflow-import-assay1_file_std	upload lipidsearch_lcms_pos.txt	2026-11-25T15:27:22Z
+WL1-lipid_canonical	S2	lipidomics_workflow-import-assay2_name	LCMS_Neg	2026-11-25T15:27:22Z
+WL1-lipid_canonical	S2	lipidomics_workflow-import-assay2_file_std	upload lipidsearch_lcms_neg.txt	2026-11-25T15:27:23Z
+WL1-lipid_canonical	S2	lipid-import-process	click	2026-11-25T15:27:23Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-new_factor	WT	2026-11-25T15:27:25Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-add_factor	click	2026-11-25T15:27:25Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-new_factor	KO	2026-11-25T15:27:26Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-add_factor	click	2026-11-25T15:27:26Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-selected_runs	wt_1,wt_2,wt_3	2026-11-25T15:27:26Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-factor1_select	WT	2026-11-25T15:27:27Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-assign_metadata	click	2026-11-25T15:27:27Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-selected_runs	ko_1,ko_2,ko_3	2026-11-25T15:27:27Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-factor1_select	KO	2026-11-25T15:27:27Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-assign_metadata	click	2026-11-25T15:27:28Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-contrast_group1	KO	2026-11-25T15:27:28Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-contrast_group2	WT	2026-11-25T15:27:28Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-add_contrast	click	2026-11-25T15:27:28Z
+WL1-lipid_canonical	S3	lipidomics_workflow-design-builder-save_results	click	2026-11-25T15:27:29Z
+WL1-lipid_canonical	S5.1	lipidomics_workflow-qc-intensity-apply_filter	click	2026-11-25T15:27:31Z
+WL1-lipid_canonical	S5.2	lipidomics_workflow-qc-duplicates-detect_duplicates	click	2026-11-25T15:27:43Z
+WL1-lipid_canonical	S5.3	lipidomics_workflow-qc-duplicates-resolve_duplicates	click	2026-11-25T15:27:44Z
+WL1-lipid_canonical	S5.4	lipidomics_workflow-qc-itsd-analyze_is	click	2026-11-25T15:27:54Z
+WL1-lipid_canonical	S5.5	lipidomics_workflow-qc-s4_finalize-finalize_qc	click	2026-11-25T15:28:56Z
+WL1-lipid_canonical	S6.1	lipid-norm-run	click	2026-11-25T15:29:07Z
+WL1-lipid_canonical	S6.1w	lipid-norm-run	click	2026-11-25T15:30:39Z
+WL1-lipid_canonical	S6.2	lipidomics_workflow-norm-apply_correlation_filter	click	2026-11-25T15:31:35Z
+WL1-lipid_canonical	S7	lipid-norm-export-session	click	2026-11-25T15:31:56Z
+WL1-lipid_canonical	S8.1	lipid-da-load-session	click	2026-11-25T15:32:03Z
+WL1-lipid_canonical	S8.2	lipid-da-run	click	2026-11-25T15:32:05Z
+WL1-lipid_canonical	S8.3	#lipidomics_workflow-de-da_results_tabs a[data-value='DA Results Table']	click	2026-11-25T15:32:28Z
+WL1-lipid_canonical	S10.1	lipidomics_workflow-summary-experiment_label	k237_wl_lipid_canonical	2026-11-25T15:32:31Z
+WL1-lipid_canonical	S10.1	lipidomics_workflow-summary-description	KIT-237 lipidomics journey on lipid_canonical	2026-11-25T15:32:31Z
+WL1-lipid_canonical	S10.1	lipid-summary-save-args	click	2026-11-25T15:32:31Z
+WL1-lipid_canonical	S10.2	lipid-summary-copy-publication	click	2026-11-25T15:32:39Z
+WL1-lipid_canonical	S10.3	lipid-summary-generate-report	click	2026-11-25T15:32:45Z
+WL1-lipid_canonical	S10.4	lipid-summary-download-report	download (the link's file fetched)	2026-11-25T15:32:50Z
+WL1-lipid_canonical	S10.5	lipid-summary-export-state	click	2026-11-25T15:32:52Z
+WL1-metab_lc	S1	tile-metabolomics	click	2026-11-25T15:33:02Z
+WL1-metab_lc	S1	btn-start-analysis	click	2026-11-25T15:33:02Z
+WL1-metab_lc	S1	experiment_label	k237_wl_metab_lc	2026-11-25T15:33:02Z
+WL1-metab_lc	S1	btn-confirm-setup	click	2026-11-25T15:33:03Z
+WL1-metab_lc	S2	metabolomics_workflow-import-assay1_name	LCMS_Pos	2026-11-25T15:33:06Z
+WL1-metab_lc	S2	metabolomics_workflow-import-vendor_format	custom	2026-11-25T15:33:06Z
+WL1-metab_lc	S2	metabolomics_workflow-import-assay1_file_std	upload lcms_pos_features.tsv	2026-11-25T15:33:06Z
+WL1-metab_lc	S2	metabolomics_workflow-import-assay2_name	LCMS_Neg	2026-11-25T15:33:07Z
+WL1-metab_lc	S2	metabolomics_workflow-import-assay2_file_std	upload lcms_neg_features.tsv	2026-11-25T15:33:07Z
+WL1-metab_lc	S2	metabolomics_workflow-import-metabolite_id_col_custom	Feature.Name	2026-11-25T15:33:08Z
+WL1-metab_lc	S2	metabolomics_workflow-import-annotation_col_custom		2026-11-25T15:33:08Z
+WL1-metab_lc	S2	metabolomics_workflow-import-sample_cols_pattern	^(WT|KO)_	2026-11-25T15:33:09Z
+WL1-metab_lc	S2	metabolomics_workflow-import-is_pattern	^ITSD|_d[0-9]+$	2026-11-25T15:33:09Z
+WL1-metab_lc	S2	metab-import-process	click	2026-11-25T15:33:09Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-new_factor	WT	2026-11-25T15:33:11Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-add_factor	click	2026-11-25T15:33:11Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-new_factor	KO	2026-11-25T15:33:12Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-add_factor	click	2026-11-25T15:33:12Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-selected_runs	wt_1,wt_2,wt_3	2026-11-25T15:33:12Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-factor1_select	WT	2026-11-25T15:33:12Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-assign_metadata	click	2026-11-25T15:33:13Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-selected_runs	ko_1,ko_2,ko_3	2026-11-25T15:33:13Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-factor1_select	KO	2026-11-25T15:33:13Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-assign_metadata	click	2026-11-25T15:33:13Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-contrast_group1	KO	2026-11-25T15:33:14Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-contrast_group2	WT	2026-11-25T15:33:14Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-add_contrast	click	2026-11-25T15:33:14Z
+WL1-metab_lc	S3	metabolomics_workflow-design-builder-save_results	click	2026-11-25T15:33:15Z
+WL1-metab_lc	S5.1	metabolomics_workflow-qc-intensity-apply_filter	click	2026-11-25T15:33:17Z
+WL1-metab_lc	S5.2	metabolomics_workflow-qc-duplicates-detect_duplicates	click	2026-11-25T15:33:28Z
+WL1-metab_lc	S5.3	metabolomics_workflow-qc-duplicates-resolve_duplicates	click	2026-11-25T15:33:29Z
+WL1-metab_lc	S5.4	metabolomics_workflow-qc-itsd-analyze_is	click	2026-11-25T15:33:39Z
+WL1-metab_lc	S5.5	metabolomics_workflow-qc-s4_finalize-finalize_qc	click	2026-11-25T15:34:40Z
+WL1-metab_lc	S6.1	metab-norm-run	click	2026-11-25T15:34:52Z
+WL1-metab_lc	S6.1w	metab-norm-run	click	2026-11-25T15:36:23Z
+WL1-metab_lc	S6.2	metabolomics_workflow-norm-apply_correlation_filter	click	2026-11-25T15:37:18Z
+WL1-metab_lc	S7	metab-norm-export-session	click	2026-11-25T15:37:39Z
+WL1-metab_lc	S8.1	metab-da-load-session	click	2026-11-25T15:37:45Z
+WL1-metab_lc	S8.2	metab-da-run	click	2026-11-25T15:37:48Z
+WL1-metab_lc	S8.3	#metabolomics_workflow-de-da_results_tabs a[data-value='DA Results Table']	click	2026-11-25T15:38:07Z
+WL1-metab_lc	S8.3	metabolomics_workflow-de-table_contrast	KO_vs_WT	2026-11-25T15:38:09Z
+WL1-metab_lc	S8	metabolomics_workflow-de-table_significance	all	2026-11-25T15:38:12Z
+WL1-metab_lc	S10.1	metabolomics_workflow-summary-experiment_label	k237_wl_metab_lc	2026-11-25T15:38:13Z
+WL1-metab_lc	S10.1	metabolomics_workflow-summary-description	KIT-237 metabolomics journey on metab_lc	2026-11-25T15:38:13Z
+WL1-metab_lc	S10.1	metab-summary-save-args	click	2026-11-25T15:38:13Z
+WL1-metab_lc	S10.2	metab-summary-copy-publication	click	2026-11-25T15:38:21Z
+WL1-metab_lc	S10.3	metab-summary-generate-report	click	2026-11-25T15:38:27Z
+WL1-metab_lc	S10.4	metab-summary-download-report	download (the link's file fetched)	2026-11-25T15:38:32Z
+WL1-metab_lc	S10.5	metab-summary-export-state	click	2026-11-25T15:38:34Z
+WL1-trx_screen	S1	tile-transcriptomics	click	2026-11-25T15:38:44Z
+WL1-trx_screen	S1	btn-start-analysis	click	2026-11-25T15:38:45Z
+WL1-trx_screen	S1	experiment_label	k237_wl_trx_screen	2026-11-25T15:38:45Z
+WL1-trx_screen	S1	btn-confirm-setup	click	2026-11-25T15:38:45Z
+WL1-trx_screen	S2	transcriptomics_workflow-import-assay1_file_std	upload counts.tsv	2026-11-25T15:38:48Z
+WL1-trx_screen	S2	trx-import-process	click	2026-11-25T15:38:49Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-new_factor	RPMI	2026-11-25T15:38:50Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-add_factor	click	2026-11-25T15:38:50Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-new_factor	Sera	2026-11-25T15:38:50Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-add_factor	click	2026-11-25T15:38:51Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-selected_runs	RPMI_01_r1,RPMI_01_r2,RPMI_02_r1,RPMI_02_r2,RPMI_03_r1,RPMI_03_r2	2026-11-25T15:38:51Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-factor1_select	RPMI	2026-11-25T15:38:51Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_metadata	click	2026-11-25T15:38:52Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-selected_runs	Sera_01_r1,Sera_01_r2,Sera_02_r1,Sera_02_r2,Sera_03_r1,Sera_03_r2	2026-11-25T15:38:52Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-factor1_select	Sera	2026-11-25T15:38:52Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_metadata	click	2026-11-25T15:38:52Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_samples	RPMI_01_r1,RPMI_01_r2	2026-11-25T15:38:53Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_assignment_mode	manual	2026-11-25T15:38:53Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-manual_replicate_number	1	2026-11-25T15:38:53Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_tech_reps	click	2026-11-25T15:38:54Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_samples	Sera_01_r1,Sera_01_r2	2026-11-25T15:38:54Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_assignment_mode	manual	2026-11-25T15:38:55Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-manual_replicate_number	1	2026-11-25T15:38:55Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_tech_reps	click	2026-11-25T15:38:55Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_samples	RPMI_02_r1,RPMI_02_r2	2026-11-25T15:38:56Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_assignment_mode	manual	2026-11-25T15:38:56Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-manual_replicate_number	2	2026-11-25T15:38:56Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_tech_reps	click	2026-11-25T15:38:57Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_samples	Sera_02_r1,Sera_02_r2	2026-11-25T15:38:57Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_assignment_mode	manual	2026-11-25T15:38:58Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-manual_replicate_number	2	2026-11-25T15:38:58Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_tech_reps	click	2026-11-25T15:38:58Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_samples	RPMI_03_r1,RPMI_03_r2	2026-11-25T15:38:59Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_assignment_mode	manual	2026-11-25T15:38:59Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-manual_replicate_number	3	2026-11-25T15:38:59Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_tech_reps	click	2026-11-25T15:39:00Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_samples	Sera_03_r1,Sera_03_r2	2026-11-25T15:39:00Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-tech_rep_assignment_mode	manual	2026-11-25T15:39:01Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-manual_replicate_number	3	2026-11-25T15:39:01Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-assign_tech_reps	click	2026-11-25T15:39:01Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-contrast_group1	Sera	2026-11-25T15:39:02Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-contrast_group2	RPMI	2026-11-25T15:39:02Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-add_contrast	click	2026-11-25T15:39:02Z
+WL1-trx_screen	S3	transcriptomics_workflow-design-builder-save_results	click	2026-11-25T15:39:03Z
+WL1-trx_screen	S5.1	trx-qc-apply-filter	click	2026-11-25T15:39:05Z
+WL1-trx_screen	S5.2	transcriptomics_workflow-qc-s4_finalize-finalize_qc	click	2026-11-25T15:39:16Z
+WL1-trx_screen	S6.1	trx-norm-run	click	2026-11-25T15:39:21Z
+WL1-trx_screen	S8	trx-da-run	click	2026-11-25T15:40:15Z
+WL1-trx_screen	S10.0	trx-summary-ruviii-export	click	2026-11-25T15:40:42Z
+WL1-trx_screen	S10.1	transcriptomics_workflow-summary-experiment_label	k237_wl_trx_screen	2026-11-25T15:40:59Z
+WL1-trx_screen	S10.1	transcriptomics_workflow-summary-description	KIT-237 transcriptomics journey on trx_screen	2026-11-25T15:40:59Z
+WL1-trx_screen	S10.1	trx-summary-save-args	click	2026-11-25T15:41:00Z
+WL1-trx_screen	S10.2	trx-summary-copy-publication	click	2026-11-25T15:41:06Z
+WL1-trx_screen	S10.3	trx-summary-generate-report	click	2026-11-25T15:41:10Z
+WL1-trx_screen	S10.4	trx-summary-download-report	download (the link's file fetched)	2026-11-25T15:41:14Z
+WL1-trx_screen	S10.5	trx-summary-export-state	click	2026-11-25T15:41:16Z
+WL3w	S1	tile-proteomics	click	2026-11-25T15:41:25Z
+WL3w	S1	btn-start-analysis	click	2026-11-25T15:41:25Z
+WL3w	S1	experiment_label	k237_wl3w	2026-11-25T15:41:26Z
+WL3w	S1	btn-confirm-setup	click	2026-11-25T15:41:26Z
+WL3w	S2	proteomics_workflow-setup_import-search_results_standard	upload proteinGroups.txt	2026-11-25T15:41:29Z
+WL3w	S2	proteomics_workflow-setup_import-fasta_file_standard	upload proteins.fasta	2026-11-25T15:41:30Z
+WL3w	S2	prot-import-process	click	2026-11-25T15:41:30Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-new_factor	WT	2026-11-25T15:41:33Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-add_factor	click	2026-11-25T15:41:33Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-new_factor	KO	2026-11-25T15:41:33Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-add_factor	click	2026-11-25T15:41:34Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-selected_runs	wt_1,wt_2,wt_3,wt_4,wt_5	2026-11-25T15:41:34Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-factor1_select	WT	2026-11-25T15:41:34Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-assign_metadata	click	2026-11-25T15:41:35Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-selected_runs	ko_1,ko_2,ko_3,ko_4,ko_5	2026-11-25T15:41:35Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-factor1_select	KO	2026-11-25T15:41:35Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-assign_metadata	click	2026-11-25T15:41:35Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-contrast_group1	KO	2026-11-25T15:41:36Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-contrast_group2	WT	2026-11-25T15:41:36Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-add_contrast	click	2026-11-25T15:41:36Z
+WL3w	S3	proteomics_workflow-design_matrix-builder-save_results	click	2026-11-25T15:41:36Z
+WL3w	S5.1	proteomics_workflow-quality_control-protein_qc-cleanup-apply_accession_cleanup	click	2026-11-25T15:41:43Z
+WL3w	S5.2	proteomics_workflow-quality_control-protein_qc-intensity_filter-apply_protein_intensity_filter	click	2026-11-25T15:41:54Z
+WL3w	S5.3	proteomics_workflow-quality_control-protein_qc-duplicate_removal-apply_duplicate_removal	click	2026-11-25T15:42:06Z
+WL3w	S5.4	proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter	click	2026-11-25T15:42:15Z
+WL3w	S5.4r	proteomics_workflow-quality_control-protein_qc-replicate_filter-parallel_cores	1	2026-11-25T15:43:17Z
+WL3w	S5.4r	proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter	click	2026-11-25T15:43:18Z
