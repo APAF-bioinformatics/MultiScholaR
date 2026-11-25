@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-264 R1 (G0): tests-only commit, the new file alone; E rows must fail, L and G rows pass, X1 observed; ceiling 45 job-minutes, no base",
+  "label": "KIT-264 R1 tests-only b374e2c5",
+  "package_commit": "b374e2c59609e1bddc59a2b3a491b5717db50dfb",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit264-trx-export-current.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
