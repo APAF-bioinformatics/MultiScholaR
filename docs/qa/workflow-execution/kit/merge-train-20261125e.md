@@ -102,4 +102,92 @@ bytes with the `MultiScholaR/` prefix; none exceeds 100.
 
 ## Result
 
-(filled after the runs)
+Both runs were sent once.
+
+### run-tests: 45598541744
+
+The request was `merge-train-20261125e-cc3d4bdc`, run-tests commit 9f083f47, head cc3d4bdc against base e0747fc1.
+- Conclusion: success.
+- 578.1 job-minutes (check 30.1).
+- Tables in `merge-train-20261125e/`: `compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`,
+  `check-summary.txt`, `meta.txt`.
+
+Observed: of 92 files, 84 are `same` and 8 are not.
+
+| file | base p/f/e/s | head p/f/e/s | verdict | member, prediction |
+|---|---|---|---|---|
+| test-integration-results.R | 169/0/0/0 | 258/0/0/0 | count-changed | KIT-239, 169 to 258: held |
+| test-integration-record.R | 133/0/0/0 | 167/0/0/0 | count-changed | KIT-239, 133 to 167: held |
+| test-integration-gui.R | 397/0/0/0 | 401/0/0/0 | count-changed | KIT-239, 397 to 401: held |
+| test-kit214-sample-columns.R | absent | 176/0/0/0 | only-on-head | KIT-214, 176/0: held |
+| test-workflow-omics-declarations.R | 45/23/0/0 | 45/23/0/0 | message-changed | KIT-214: held (below) |
+| test-workflow-omics-binding-steps.R | 58/1/0/0 | 58/1/0/0 | message-changed | KIT-214: held (below) |
+| test-kit226-gprofiler-columns.R | absent | 38/0/0/0 | only-on-head | KIT-226, 38/0: held |
+| test-kit241-enrich-download-zip.R | absent | 15/0/0/0 | only-on-head | KIT-241, 15 passed: held |
+
+Predicted `same` and observed `same` (passed/failed/skipped, on both sides):
+
+| File | Result |
+|---|---|
+| `test-integration-model.R` | 263/0 |
+| `test-integration-removed-factors.R` | 520/0/3 |
+| `test-integration-workbook-mofa.R` | 0/0/3, skipped in run-tests |
+| `test-integration-record-mofa.R` | 0/0/1, skipped in run-tests |
+| `test-workflow-kit-harness.R` | 734/1 |
+| `test-workflow-operation-registry.R` | 1095/2 |
+| `test-omic-enrich-module.R` | 1051/19 |
+| `test-omics-enrich-core.R` | 232/9/1 |
+| `test-gui-entry-proteomics.R` | 189/4 |
+| `test-enrichment-significance.R` | 181/0 |
+| `test-e2e-proteomics-enrichment.R` | 0/0/2 |
+| `test-kit215-not-tested-lists.R` | `same` |
+
+In `test-omic-enrich-module.R` the head's 19 failures are clusterprofiler 8, kernel_clusterprofiler 9 and KIT-113 W1 2, the
+same as the base's. None is in gprofiler, so the re-frozen g:Profiler download leaves (`c5b5570d…`, `71e8ee7c…`) pass
+under `zip::zipr`.
+
+KIT-214's message changes, failure records base against head (temporary paths masked):
+- In the declarations file, the head adds exactly 6 lines: `declaration$fixed` is a list instead of NULL for
+  `lipid_duplicate_resolution` and `metab_duplicate_resolution`.
+- In the binding-steps file, the head adds exactly 12 lines: `steps[[4]]$parameters` is length 1 instead of 0, and its
+  `[[1]]` is a list instead of absent, in both omics. These lines are identical to KIT-214's own R2 record
+  (`kit-214/r2/compare-failures-binding-steps.txt`, lines 51-55 and 71-75).
+- Nothing else moved.
+
+R CMD check:
+- 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head.
+- The "'::' or ':::' import not declared" line names only `cli`, on both sides; `zip` is never named.
+- The portable-file-names NOTE lists 238 paths on each side.
+
+### MOFA lane: 45598538505
+
+The branch was `run-mofa-smoke-train5` (56154c47), package cc3d4bdc.
+- Conclusion: success; exit 0 after 307 s.
+- 14.6 job-minutes of the 60 ceiling.
+- Tables in `merge-train-20261125e/mofa/`.
+
+Results:
+- `test-integration-workbook-mofa.R`: 3 tests, 8 + 29 + 12 = 49 passed, 0 failed, 0 skipped. Held.
+- `test-integration-record-mofa.R`: 29 passed, 0 failed, 0 skipped. The console line reads "KIT-239 L8: likelihoods
+  gaussian, gaussian, gaussian, gaussian, gaussian, gaussian; groups 1". Held.
+
+### Verdict
+
+Every prediction of KIT-239, KIT-214, KIT-226 and KIT-241 held, and no other file differs. The check is identical. TRAIN
+GREEN.
+
+Job-minutes: 578.1 against the 2,020 ceiling, plus 14.6 against the MOFA lane's 60.
+
+### Staging and numbering
+
+While the runs were out, staging moved by ledger-only commits: e0747fc1 → 29065062, which touches only
+`docs/methods-decision-ledger.md`, with more such commits announced. The train's base therefore differs from staging in
+the ledger alone, and the check stands. The train lands by a merge. Its four rows stay `VAL-<train5-1>` to
+`VAL-<train5-4>`, numbered by the coordinator at landing, in train order.
+
+### Not checked
+
+- The trees after the runs' head: docs only.
+- Files outside the 92.
+- The members' shared full suites, which are owed after the train (KIT-226 section 6; KIT-241 A4).
+- The merge with the current staging.
