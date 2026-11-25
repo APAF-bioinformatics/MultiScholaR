@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-259 third pass (VAL-307) render job (closure check C.4): four proteomics lanes, V0/V1/V2, predictions in render3.R; 1 scripts job, ceiling 60 job-minutes",
+  "label": "KIT-259c render on kit-259b c6e8814d",
+  "package_commit": "c6e8814d020f03594d7f384b9ab7b99a36a7ee85",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-259/render3.R",
+      "args": [],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit259-render",
+      "out_pattern": "\\.(txt|tsv)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
