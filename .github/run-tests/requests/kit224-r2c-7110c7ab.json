@@ -1,0 +1,43 @@
+{
+  "requested_by": "KIT-224 R2c: the edited stored-reference tests and the new file on the merged head 7110c7ab (staging 67569959 merged), and S1 synthetic instrument rerun 1 of 3 (VAL-54), against staging 67569959",
+  "label": "KIT-224 R2c edited tests and S1 rerun 1 on 7110c7ab vs staging 67569959",
+  "package_commit": "7110c7ab7136a1a7013c5421cb1e7e5f88a4920a",
+  "base_commit": "6756995954684128d617ab92dab983bdcaa05394",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-norm-module.R",
+    "test-kit224-ruv-feature-levels.R",
+    "test-module-ci-trx-summary.R",
+    "test-integration-input-transcriptomics.R",
+    "test-workflow-trx-declarations.R",
+    "test-kit127-omics-ruv-factors.R",
+    "test-metab-03a-ruviii-c-varying-characterization.R",
+    "test-lipid-12c-ruv-s4-characterization.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-224/levels-control.R",
+      "args": [
+        "6756995954684128d617ab92dab983bdcaa05394",
+        "docs/qa/workflow-execution/kit/kit-224/s1",
+        "synthetic"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-224/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
