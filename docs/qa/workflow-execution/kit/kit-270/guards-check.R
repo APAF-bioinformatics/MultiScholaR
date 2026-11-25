@@ -113,7 +113,11 @@ runOnce <- function(code) {
     env$.guard <- .guard
     eval(code$helper, env)
     reporter <- testthat::ListReporter$new()
-    testthat::with_reporter(reporter, for (call in code$tests) eval(call, env))
+    testthat::with_reporter(reporter, {
+        reporter$start_file("guards-check")
+        for (call in code$tests) eval(call, env)
+        reporter$end_file()
+    })
     kinds <- unlist(lapply(reporter$get_results(), function(test) vapply(test$results, function(r) class(r)[[1L]], "")))
     list(log = state$log, broken = sum(kinds %in% c("expectation_failure", "expectation_error")),
         errors = sum(kinds == "expectation_error"), passed = sum(kinds == "expectation_success"))
