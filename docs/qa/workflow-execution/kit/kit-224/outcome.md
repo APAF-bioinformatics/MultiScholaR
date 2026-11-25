@@ -68,7 +68,7 @@ missing in one assay only (see the unrelated finding below).
 - A2: met. R1 failed at the stated values; R2 head passes.
 - A3: met (R2: (vi); R2c: (i) to (v), with (a) and (b) reported).
 - A4: met for every file except three: `test-prot-norm-core.R`, `test-omics-summary-core.R` and `test-omic-summary-module.R` were accepted by the owner by file on 2026-11-25 (deferred to the end-of-project re-record). The edited tests pass (R2c).
-- A5: not run.
+- A5: met except one file outside the lists, test-gui-entry-transcriptomics.R (R3 above), which awaits the owner's word.
 - A6: NEWS, ledger row and M8's status are done; `man/`, `NAMESPACE` and `DESCRIPTION` are unchanged.
 
 ## Coordinator rulings of 2026-11-25 and what was done
@@ -139,6 +139,29 @@ No expected value, threshold, criterion or stop rule changed. The run binds the 
   (`level`) at nominal q < 0.05. Null objects had a call 60 to 67 % of the time. The likely reason is that the
   corrected values are tested with full residual df (VAL-53 (1)); KIT-188 and KIT-210 own this.
 
+### R3 (run 45573139074): full suite, 2871125b against staging 67569959
+
+R3 was sent before staging moved to dd769671 and is kept as sent.
+
+**Overall result**
+- R CMD check: identical on both sides (0 findings only on head).
+- 468 files `same`; the new file is `only-on-head` (69 pass).
+- `test-omic-norm-module.R` and `test-kit129-run-path.R` are `same`.
+
+**Files that changed, all within the approved lists and the three owner-accepted files**
+- `count-changed`: the two characterization files, `test-kit127`, `test-integration-input-transcriptomics.R`. These are the accepted edits.
+- `message-changed`: `test-module-ci-trx-summary.R` and `test-workflow-trx-declarations.R` (accepted edits; their remaining failures are the base's laptop-pinned digests).
+- `message-changed`: `test-prot-norm-core.R`, `test-omics-summary-core.R`, `test-omic-summary-module.R`. These are the owner-accepted leaves, the same as in R2.
+- `message-changed`: the KIT-073 fixture. Only `_ruv_corrected` and `_correlation_filtered` (plus registry, correlations and DA) differ. Every earlier state's message is identical on base and head, so R1-01 holds.
+- `message-changed`: the KIT-094 fixture (`records`).
+
+**Outside every list (stop and report):** `test-gui-entry-transcriptomics.R`, test "KIT-101 entry lane trx_screen: the KIT-040 count corpus, 12 samples, 300 genes", leaf `artifacts$integration/transcriptomics_normalized_data.tsv`.
+- Four expectations change. The digest that is 7b1698df... on base differs on head; the stored value is 0f500346....
+- The file already fails on base (16 passed, 13 failed on both sides).
+- The cause is the same as for the two summary files: under T-a', the exported transcriptomics file keeps each gene's TMM logCPM level, so its bytes change.
+- It was not in R2's scope (the ticket's grep does not match it), so it was first seen here.
+- It needs the owner's word by file, like the other three. If accepted, it joins the end-of-project re-record list. Nothing is edited.
+
 ### The unrelated correlation-filter observation (for a ticket to reproduce)
 
 **Seen in R2's S1** (run 45510911807), on the head side (12205bd4) only.
@@ -178,7 +201,7 @@ a sample from the design while one assay keeps its column. The object then fails
 
 ## Not checked
 
-Windows; real data; R3 (run 45573139074, sent against staging 67569959 before staging moved to dd769671; kept as sent) until it is recorded.
+Windows; real data; R3 against staging dd769671 (R3 bound 67569959).
 
 ## For the change report
 
