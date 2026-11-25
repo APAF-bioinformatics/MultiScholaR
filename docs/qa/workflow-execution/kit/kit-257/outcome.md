@@ -10,7 +10,7 @@ runner (`run-tests`).
 | Commit | What |
 |---|---|
 | 1e1b0cee | tests only: `tests/testthat/test-kit257-norm-own-files.R` (nothing under `R/`) |
-| 413d739a | the fix (`R/`), NEWS, ledger row `VAL-<train11-1>` |
+| 413d739a | the fix (`R/`), NEWS, ledger row `VAL-281` |
 | 5ad937e4 | records: R1, wording drafts |
 | 0705e897, 18f76b28 | records: R2, outcome, runs |
 | 27cc9908 | correction pass, tests first (AUDIT-KIT-257-impl I01, I02, I03, I05): E8b, G2 with a `~` path, E10; the W2 harness of `test-prot-norm-core.R` makes the removal the managed dispatchers make (harness code, no stored value edited) |
@@ -245,7 +245,7 @@ RUV-corrected figures. The composite and the report did not use them.
 ## Correction pass, part 2 (after trains 8 and 9; declared before R2' is sent)
 
 - Merged `origin/v0.9-staging` 828dd105 into `kit-257` (4a8801db): conflicts only in `NEWS.md` and the ledger (append
-  collisions; both kept, staging's first; KIT-257's row `VAL-<train11-1>` after VAL-272). Code under `R/` and `tests/`
+  collisions; both kept, staging's first; KIT-257's row `VAL-281` after VAL-272). Code under `R/` and `tests/`
   merged without conflict.
 - M1 tests first (a092f2c2): the DA's own earlier figure under a `~` project path (KIT-243 E16's mocked owner; HOME a
   temporary folder, restored on exit). Then M1 (2c05df04): `removeWorkflowDaOwnFigures`'s removal is
