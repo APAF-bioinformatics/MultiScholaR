@@ -37,11 +37,12 @@ integrationGuiEnabled <- function() {
 #' @return A character string.
 #' @noRd
 integrationScalingEvidenceText <- function() {
-    paste("In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this",
-        "recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the",
-        "features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather",
-        "than 12 of 30 simulated data sets. Without missing values the difference could not be told from none (29",
-        "rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")
+    paste("In simulations made for this software with 20 samples (two groups of 10), in which about a fifth of the",
+        "values were missing, mostly low ones, this scaling recovered closely (a correlation of at least 0.9 with the",
+        "true pattern) a pattern carried by a tenth of the features of the two smallest of four data sets, each changed",
+        "by about as much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing",
+        "values the difference could not be told from none (29 rather than 26 of 30); with 60 samples the pattern was",
+        "recovered closely in 30 of 30 either way.")
 }
 
 #' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
