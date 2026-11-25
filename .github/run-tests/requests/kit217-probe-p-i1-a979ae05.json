@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-217 probe P instrument rerun 1 of 3 (VAL-54): helpers' environment fixed; predictions unchanged; base 16112917; ceiling 60 job-minutes",
+  "label": "KIT-217 probe P rerun 1 on run-k217-probe a979ae05",
+  "package_commit": "a979ae05d330bf5e4210aad0ff89980f5e2156d6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-217/probe-prot-config.R",
+      "args": [
+        "16112917329a63ab062655f04db5bf1dd7df9729",
+        "docs/qa/workflow-execution/kit/kit-217/p"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-217/p",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
