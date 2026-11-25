@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-259 third pass, VAL-54 instrument re-send 2 of 3 (closure check 2 D.4): test-kit259b-second-correction.R alone, base c0bb03bb (old code) vs head 6bdad55b; predictions in third-pass-predictions.md; ceiling 40 job-minutes",
+  "label": "KIT-259c re-send 2: base c0bb03bb head 6bdad55b (1 file)",
+  "package_commit": "6bdad55b8167aea472a9fc5db37470a16c7fa01c",
+  "base_commit": "c0bb03bbeaf87d02d6d587b8886a54e1aa327360",
+  "tools_ref": "",
+  "tests": [
+    "test-kit259b-second-correction.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
