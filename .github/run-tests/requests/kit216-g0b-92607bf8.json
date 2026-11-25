@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-216 G0b: G0 repeated on staging 16112917 (KIT-212 changed the Save/Report path G0 ran; KIT-225 the refresh guard's file); declared run; ceiling 110 job-minutes",
+  "label": "KIT-216 G0b inventory at 92607bf8 (staging 16112917 + script)",
+  "package_commit": "92607bf862dc9384d6b75b67a0f3d95f90302064",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-216/g0-inventory.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-216/g0-out",
+      "out_pattern": "\\.(tsv|log)$",
+      "timeout_minutes": 100
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
