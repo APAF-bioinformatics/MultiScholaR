@@ -189,6 +189,37 @@ step outcome, `inst/reports/shared/analysis_record_SI.rmd:55-57`; not rendered h
 - Budget: the correction pass used 23.6 + 467.3 = 490.9 job-minutes = 32.7 core-hours (R2b's ceiling 73.33); the
   ticket's total is now 778.2 + 490.9 = 1,269.1 job-minutes = 84.6 core-hours (ceiling 201.33).
 
+## The second correction (VAL-276; the owner's decisions VAL-275 and VAL-276, staging abfc99ac)
+
+Why: the first correction's I05 test showed that the replay harness counts KIT-260's additive ITSD product fields as a
+difference when an older record is replayed (run 45635735448). VAL-276 allowed one narrow correction: those fields are
+written only under a replay marker, the one KIT-242 uses, so one marker covers both tickets. VAL-275 allowed the one fact
+line in `test-integration-gui.R` and confirmed the 20 captures of `test-omic-norm-module.R` and the 1 key of
+`test-omics-norm-core.R`. No correction follows this one.
+
+- a649d90b, tests only: I05 now builds its older record as a build before KIT-260 made it (the ITSD step under the
+  marker's earlier token, so no marker recorded and none of the fields); its mirror: a record made at this version
+  replays exactly and its replayed ITSD product carries the rows used. I05 was the failing-first evidence (it fails on
+  the head before the fix, run 45635735448).
+- 933671b5, the merge of origin/v0.9-staging abfc99ac (fetched first): the ledger's append collision kept both,
+  staging's first; NEWS and every file under `R/` and `tests/` merged without conflict. The merge was made before the
+  fix so that the marker row follows staging's rows in `workflowReplayRuleMarkers` without a conflict.
+- 35496462, the fix: `workflowReplayRuleMarkers$itsd_outcome` (`option = "MultiScholaR.itsd_outcome"`,
+  `current = "per_assay"`, `earlier = "applied_flag"`, the same name, option and tokens as KIT-242's row on
+  `origin/kit-242` 2776b76c); the ITSD declaration fixes `itsd_outcome = "per_assay"` (as KIT-242's does); the kernel
+  writes `itsd_used`, `itsd_id_column` and `itsd_legacy_rows` only when the option does not hold the earlier token. The
+  record's `itsd_features_per_assay` and `itsd_note` are record outcomes, not part of any compared product, and stay as
+  they are (for an older record they are read from the stored states, I02 (a)).
+- KIT-242's semantics carry these fields: under its earlier token the ITSD step writes "no per-assay fields", which is
+  exactly the product of a build before KIT-260. When KIT-242 merges, both rows and both `fixed` entries are identical
+  (KIT-242 must keep one row and one entry).
+- **Stored references this correction may move beyond VAL-275 (predicted, not approved):** the ITSD step now records a
+  fixed constant, so the `provenance` digests of `omicNormFrozen` in `test-omic-norm-module.R` move wherever ITSD runs
+  (the lipid and metabolomics manual and automatic captures), and any capture that pins the ITSD step's recorded
+  parameters or step provenance may move (KIT-224's marker moved 12 such digests, re-pinned by the owner's word by file).
+  The comparison run lists them; none is re-pinned without the owner's word.
+- **Merge order:** KIT-260 merges with or after KIT-242 (the coordinator's instruction of 2026-11-26 with VAL-276).
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
