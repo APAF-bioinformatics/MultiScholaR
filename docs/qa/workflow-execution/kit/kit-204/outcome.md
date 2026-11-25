@@ -137,6 +137,81 @@ values (13 distinct steps, each the one line; 211 → 198 passed); `test-kit204-
 passed, 0 failed. R CMD check: 0 ERROR, 3 WARNING, 3 NOTE on both sides, none only on head. 248.4 job-minutes (16.6
 core-hours); total for the ticket 132.0 core-hours of 262.7.
 
+## The owner's decision VAL-278 (2026-11-26)
+
+The 13 `prot_main` stored summary values of `tests/testthat/test-omic-da-module.R` (`:3485` to `:3973`; unchanged
+on staging abfc99ac) are not edited and wait for the single end-of-project re-record; KIT-204 may merge after its
+re-merge with staging and one comparison run (below). The ledger row `VAL-<merge>` cites VAL-278.
+
+## Second merge with staging (abfc99ac) and R2d (declared before sending)
+
+**The merge.** d1bdcfe3 = `kit-204` 6e4f5994 + `origin/v0.9-staging` abfc99ac (KIT-239, 214, 226, 241, 224, 251, 252,
+250, 244, 243, 201, 240, 245, 256, 259 and the full-suite checkpoint since 7327607f). Files changed on both sides
+since 7327607f: `NEWS.md`, `R/func_prot_da_model_methods.R`, `R/utils_workflow_dia_da.R` (auto-merged) and
+`docs/methods-decision-ledger.md` (the one textual conflict: staging's rows through VAL-279 kept, then KIT-204's row
+`VAL-<merge>`, now citing VAL-278 in its source column and its stored-references sentence). NEWS: KIT-204's entry
+under the one unreleased heading, unchanged. No conflict under `R/`, `tests/`, `inst/` or `man/`.
+
+**One shared function body, kept as merged (the coordinator's ruling of 2026-11-26).** In
+`R/func_prot_da_model_methods.R`, method `differentialAbundanceAnalysisHelper` (`setMethod` at `:85`), git auto-merged
+three hunks about 95 lines apart (merged-tree lines):
+- KIT-201 `:414-416`: `if (is.null(ruv_model)) da_model <- c(da_model, workflowTreatModerationRecord())`, after the
+  contrasts are run;
+- KIT-204 `:512-518`: the first count call passes `p_value_column = !!rlang::sym(raw_pvalue_column)` after KIT-220's
+  `q_val_thresh`;
+- KIT-204 `:604-625`: the `"Not tested"` first `case_when` branch and the two barplot filters.
+Reading (INFERRED, not run): KIT-201's line writes only `da_model`, which is read once, at `:462`
+(`return_list$da_model`); KIT-204's hunks read and write only the count tables and their barplots. Neither reads a
+variable the other writes. Guarded by the predictions below on `test-kit201-treat-moderation.R`,
+`test-prot-ruv-factors-in-model.R` and the new file. `R/utils_workflow_dia_da.R`: KIT-243 changes
+`runDIAReferenceDaAnalysis` and adds three functions; KIT-204 changes only `resolveDIAResultSelection`: no shared body.
+
+**Scope, 37 files.** The ticket's grep on the merged tree (helpers dropped) finds 28 files: the 27 it found on
+6e4f5994 plus `test-kit243-summary-current-outputs.R`. With the ticket's named files and R2b's additions, the scope is
+R2b's 34 files plus `test-kit243-summary-current-outputs.R`, `test-kit201-treat-moderation.R` (KIT-201 changed the
+shared method; named by the register's section 6) and `test-prot-ruv-factors-in-model.R` (the coordinator's guard).
+KIT-249 is not on staging (its file is not run). `test-prot-norm-core.R` is not in scope, so only
+`MULTISCHOLAR_TRX_MANIFEST_NOTE=1`.
+
+**R2d.** Base abfc99ac (staging), head = the merged `kit-204` with this declaration, `check: true`, 3 shards per side,
+`extra_packages: ["sva"]` (as the checkpoint, whose counts for `test-prot-ruv-factors-in-model.R` ran with `sva`),
+reference BLAS. Ceiling 600 job-minutes (40.0 core-hours); ticket total at most 172.0 of 262.7. Decides: whether the
+merged tree is ready for a merge train.
+
+**Predictions.** Staging's counts are the checkpoint's head counts (`checkpoint-20261126/compare.tsv`, run 45644467847
+on 828dd105) or merge train 10's (`merge-train-20261126c/compare.tsv`, run 45650328815 on 96e72da2) where the file is
+there; since 828dd105 staging changed nothing in these files' code paths (KIT-259: normalisation figures; docs), so
+the counts carry over (INFERRED).
+
+| File | Base (staging) | Head | Verdict |
+|---|---|---|---|
+| `test-kit204-prot-da-not-tested.R` | absent | 81/0 | only-on-head, passing in full: the Not tested counts unaffected by KIT-201's moderation (INFERRED: `raw_pvalue` is missing only for untested rows under either moderation) |
+| `test-omic-da-module.R` | 1289/80 | 1288/81 | new-failure, see below |
+| `test-kit201-treat-moderation.R` | 89/0 | 89/0 | same (the TREAT moderation record still written) |
+| `test-prot-ruv-factors-in-model.R` | 312/0 | 312/0 | same |
+| `test-workflow-saved-da.R` | 776/175 | 776/175 | same, messages identical |
+| `test-gui-entry-proteomics.R` | 168/25 | 168/25 | same |
+| `test-omic-enrich-module.R` | 1011/59 | 1011/59 | same |
+| `test-omic-summary-module.R` | 1675/28 | 1675/28 | same |
+| `test-kit243-summary-current-outputs.R` | 246/0 | 246/0 | same |
+| `test-kit220-...`, `kit218` (2 skipped), `kit212`, `kit215` | 79, 80, 309, 112 passed, 0 failed | as base | same |
+| every other file (24) | the checkpoint's head count | as base | same |
+| R CMD check | 0 E, 3 W, 3 N | as base | findings identical, none only on head |
+
+`test-omic-da-module.R`, the 13 `prot_main` summary values, checked one by one against staging's failure list
+(KIT-201's `compare-failures.txt` of R2b 45607796537 and R3 45592673648; the checkpoint reproduces their count,
+`prot_main` 189 passed): KIT-201 already fails 12 of the 13 `values` expectations on staging, at element 8 (the `<ui>`
+digest): `dendrogram_off`, `download`, `save_heatmap`, `select`, `table_down`, `table_limit`, `tree_dynamic`,
+`tree_height`, `tree_k`, `tree_none`, `volcano_labels`, `volcano_ticked`. On head each of these 12 still fails, its
+message gaining KIT-204's element-5 difference (the one line before "Fold-change cutoff"): message-changed, no count
+change. The 13th, `volcano_unticked values`, passes on staging and newly fails on head by exactly the one line. So:
+head 1288 passed and 81 failed (`(b) in process: prot_main` 189 → 188 passed); nothing else in the file moves.
+The step attribution is read from the failure records, where each expectation's label follows its message.
+
+**Stop rule.** Any other difference is a finding: recorded and reported, not fixed or re-run. An unfavourable valid
+result is not re-run; an instrument defect with no result may be fixed and re-sent on the brief's four conditions, at
+most three times.
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
