@@ -9,7 +9,9 @@ test_that("the registry carries the built-in operations with every fact the exec
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_figures", "metab_qc_finalize", "metab_reset", "metab_ruv", "metab_session_export", "metab_volcano_page", "minimum_peptides_per_sample",
         "normalization-qc-figures", # KIT-122: the proteomics normalisation tab's QC figures as a worker product
-        "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
+        "normalization-ruv", "pearson-pairs", "pearson-selection",
+        "pearson-skip", # KIT-248 (VAL-238 (ii), by file): the correlation Skip's in-process step
+        "peptide_accession_cleanup", "peptide_imputation",
         "peptide_intensity_filter", "peptide_log2_matrix", "peptide_protein_evidence_filter", "peptide_qvalue_filter",
         "peptide_replicate_filter", "precursor_rollup", "protein_accession_cleanup", "protein_between_sample_normalisation",
         "protein_dpc_quant", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup", "protein_peptide_count_filter",
@@ -102,6 +104,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_finalize", "metab_reset", "metab_ruv", 
         "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",
+        "pearson-skip", # KIT-248 (VAL-238 (ii), by file)
         "peptide_intensity_filter", "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter",
         "precursor_rollup", "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter",
         "protein_iq_rollup", "protein_replicate_filter", "wfx_fixture",

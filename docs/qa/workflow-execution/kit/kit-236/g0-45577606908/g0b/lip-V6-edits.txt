@@ -1,0 +1,3 @@
+the file's ITSD block lists one assay
+block inserted after line 34: * ITSD Features Per Assay: /     - LCMS_Pos (2 features): IS_kit236_a, IS_kit236_b
+assays: LCMS_Pos, LCMS_Neg

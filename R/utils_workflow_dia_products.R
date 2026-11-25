@@ -1198,6 +1198,17 @@ diaPearsonSelectionOperation <- function() {
         })
 }
 
+#' The correlation filter's Skip as a step (KIT-248, VAL-238): no parameters, the fixed constant `skipped = TRUE`, no
+#' kernel work. The Skip commits the normalised source as `correlation_filtered` in the controller
+#' (`runDIAReferenceCorrelation`); the declaration names that step for the analysis record, the study parameters and
+#' the replay.
+#' @noRd
+diaPearsonSkipOperation <- function() {
+    newWorkflowOperation("pearson-skip", "ProteinQuantitativeData", fields = "design_matrix", unit = "store",
+        parameters = character(), product_type = "dia-pearson-skip", fixed = list(skipped = TRUE),
+        kernel = function(object, parameters, store) list())
+}
+
 #' Keep the Limpa results' sample columns in step with the design (KIT-041): the quantified EList, its standard
 #' errors and observation counts are subset to the design's samples when a sample was dropped.
 #' @noRd
@@ -1834,7 +1845,15 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
             original <- readDIAStateMetadata(manager, source)$data
             run <- if (skipped) list(final = source) else computeDIAReferenceCorrelation(manager, source, grouping(), threshold)
             commit <- diaCorrelationCommit(manager, run$final, threshold, skipped)
-            if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+            if (!is.null(commit)) {
+                # KIT-248 (VAL-238): the Skip records itself, only when it commits (a second Skip commits nothing and leaves
+                # nothing pending); a stale pending Apply is dropped so it is not chained into the Skip's entry.
+                if (skipped) {
+                    clearDIAStepProvenance(manager)
+                    setDIAStepProvenance(manager, "pearson-skip", "whole", character(), fixed = list(skipped = TRUE))
+                }
+                commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+            }
             publishDIAReferenceCorrelation(manager, run, workflow, norm_data, paths, threshold, skipped, omic_type,
                 experiment_label, aesthetics)
         })
