@@ -340,6 +340,16 @@ readWorkflowShippedDefaults <- function(path = system.file("config", "config.ini
     out
 }
 
+#' Whether an export's source is a state of the head's history (KIT-264): compared by the state's entity, never by its name,
+#' because a later run keeps the name `trx_ruvs` for a new entity. An export without a source entity is not current.
+#' @noRd
+workflowRecordExportIsCurrent <- function(snapshot, export) {
+    entity <- export$source$entity_id
+    if (is.null(entity)) return(FALSE)
+    history <- as.character(unlist(snapshot$state_history))
+    any(vapply(history, function(state) identical(snapshot$states[[state]]$entity_id, entity), logical(1)))
+}
+
 #' One accepted export of the head as a record analysis (KIT-095): its operation, source, parameters with their provenance,
 #' product and the outcomes its omic binding records.
 #' @noRd
@@ -530,7 +540,13 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     }
     # KIT-095: a product-only export accepted on the head after the DA (the transcriptomics RUVIII matrix) is listed as an
     # analysis with its parameters and the outcomes its binding records.
-    for (name in names(snapshot$exports)) analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    # KIT-264 (VAL-286): an omic's export stays in the state head after a later normalisation, so it is listed only while its
+    # source state is a state of the head's history (the test `workflowDaResultStatus` applies to the DA). The integration
+    # model's export has its own inputs state and is listed as before.
+    for (name in names(snapshot$exports)) {
+        if (!identical(name, INTEGRATION_MODEL_OPERATION) && !workflowRecordExportIsCurrent(snapshot, snapshot$exports[[name]])) next
+        analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    }
     # KIT-142: an integration store's model analysis carries what the integration adds (inputs, the confirmed match, each
     # setting's status, the model's identity, the saved results, the claim limit); an omic's record is as before.
     if (identical(context$omic_type, "integration") && !is.null(analyses[[INTEGRATION_MODEL_OPERATION]])) {
