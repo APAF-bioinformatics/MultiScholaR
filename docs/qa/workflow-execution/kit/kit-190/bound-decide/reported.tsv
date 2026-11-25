@@ -1,0 +1,24 @@
+item	n	estimate	p_value	note
+E1-T1b FDP by seed	20	-0.0399782566359276	1.9999800002e-05	no worse at 0.05: TRUE (reported, not deciding)
+t11_concentration F+B	1	1	NA	calls (all false); k = 2
+t11_concentration D+B	1	1	NA	calls (all false); k = 2
+t11_f172 F+B	1	0	NA	calls (all false); k = 2
+t11_f172 D+B	1	0	NA	calls (all false); k = 2
+N-r k D+B minus F+B	100	0.4	NA	95% t interval [0.2837, 0.5163], descriptive
+N-s k D+B minus F+B	100	0.48	NA	95% t interval [0.3765, 0.5835], descriptive
+N-w k D+B minus F+B	250	0.244	NA	95% t interval [0.1859, 0.3021], descriptive
+E-r k D+B minus F+B	200	0.4	NA	95% t interval [0.3274, 0.4726], descriptive
+E-r power D+B minus F+B	200	0.189230769230769	NA	95% t interval [0.1526, 0.2259], descriptive
+E-r abs_lfc_error D+B minus F+B	200	-0.113146633062765	NA	95% t interval [-0.1534, -0.0729], descriptive
+E-s k D+B minus F+B	200	0.315	NA	95% t interval [0.2471, 0.3829], descriptive
+E-s power D+B minus F+B	200	0.0794230769230769	NA	95% t interval [0.0490, 0.1098], descriptive
+E-s abs_lfc_error D+B minus F+B	200	-0.0818944009270935	NA	95% t interval [-0.1364, -0.0274], descriptive
+E-p k D+B minus F+B	300	0.453333333333333	NA	95% t interval [0.3930, 0.5137], descriptive
+E-p power D+B minus F+B	300	0.197307692307692	NA	95% t interval [0.1673, 0.2273], descriptive
+E-p abs_lfc_error D+B minus F+B	300	-0.160279763101677	NA	95% t interval [-0.1946, -0.1259], descriptive
+E-g k D+B minus F+B	200	0.44	NA	95% t interval [0.3692, 0.5108], descriptive
+E-g power D+B minus F+B	200	0.167596153846154	NA	95% t interval [0.1283, 0.2068], descriptive
+E-g abs_lfc_error D+B minus F+B	200	-0.174787508223857	NA	95% t interval [-0.2435, -0.1060], descriptive
+E-w k D+B minus F+B	200	0.08	NA	95% t interval [0.0329, 0.1271], descriptive
+E-w power D+B minus F+B	200	0.0327884615384615	NA	95% t interval [0.0064, 0.0591], descriptive
+E-w abs_lfc_error D+B minus F+B	200	-0.0255013059508561	NA	95% t interval [-0.0416, -0.0094], descriptive

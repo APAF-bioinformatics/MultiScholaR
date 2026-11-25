@@ -1,0 +1,22 @@
+{
+  "ticket": "KIT-190 E3",
+  "head_commit": "5c7d984df8d76a93cfcd3faf0806cd00a56a47cc",
+  "base_commit": "5c7d984df8d76a93cfcd3faf0806cd00a56a47cc",
+  "lifecycle": true,
+  "sizes": 520,
+  "seeds": [190900001, 190900002],
+  "generator": {
+    "file": "tests/testthat/helper-kit172.R",
+    "commit": "d4e2eb2c",
+    "lines": "21-62"
+  },
+  "projection_rule": "head Automatic RUV seconds / (features per assay x 2) x 50000 at the largest measured size",
+  "wall_seconds": 27.0079581737518,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "cores": 4,
+  "processor": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "script_sha256": "f8b1250bff00aecdd33406d50c70661ee646562db6761845b9b2649c4105312e"
+}

@@ -1,0 +1,481 @@
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: lipidomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E1 toggleState
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: lipidomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E1 label
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: lipidomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E2 toggleState
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: lipidomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E2 label
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: metabolomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E1 toggleState
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: metabolomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E1 label
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: metabolomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E2 toggleState
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E1, E2: metabolomics the button is disabled with the busy label while the entry figures run, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E2 label
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:277:13
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E3: lipidomics, Finalize QC's figure then the entry figures (queued behind it): busy throughout, enabled at the end
+kind: failure
+message:
+  Expected `ctx$rec$toggles` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E3: disabled once, while the metrics and then the entry figures ran
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:296:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E3: lipidomics, Finalize QC's figure then the entry figures (queued behind it): busy throughout, enabled at the end
+kind: failure
+message:
+  Expected `ctx$rec$toggles` to be identical to `c(FALSE, TRUE)`.
+  Differences:
+  `actual`:             
+  `expected`: FALSE TRUE
+  
+  E3 toggleState
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:296:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E3: lipidomics, Finalize QC's figure then the entry figures (queued behind it): busy throughout, enabled at the end
+kind: failure
+message:
+  Expected `ctx$rec$labels` to be identical to `c(k261Busy, k261Default)`.
+  Differences:
+   actual | expected                                     
+          - "Please wait: a step is still running..." [1]
+          - "Run Normalization Pipeline"              [2]
+  
+  E3 labels
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:296:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E5: lipidomics, the entry figures fail: the button is enabled again with its own label
+kind: failure
+message:
+  Expected `ctx$rec$toggles` to be identical to `c(FALSE, TRUE)`.
+  Differences:
+  `actual`:             
+  `expected`: FALSE TRUE
+  
+  E5 toggleState
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:318:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E5: lipidomics, the entry figures fail: the button is enabled again with its own label
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E5 label
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:318:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E6: transcriptomics, the button is disabled with the busy label while a transcriptomics step runs, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E6 toggleState
+trace (first lines):
+       ▆
+    1. ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:347:5
+    2. │ └─base::withCallingHandlers(...)
+    3. ├─base::suppressMessages(...)
+    4. │ └─base::withCallingHandlers(...)
+    5. ├─utils::capture.output(...)
+    6. │ └─base::withVisible(...elt(i))
+    7. ├─shiny::testServer(...)
+    8. │ ├─shiny:::withMockContext(...)
+    9. │ │ ├─shiny::isolate(...)
+   10. │ │ │ ├─shiny::..stacktraceoff..(...)
+   11. │ │ │ └─ctx$run(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E6: transcriptomics, the button is disabled with the busy label while a transcriptomics step runs, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E6 label
+trace (first lines):
+       ▆
+    1. ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:347:5
+    2. │ └─base::withCallingHandlers(...)
+    3. ├─base::suppressMessages(...)
+    4. │ └─base::withCallingHandlers(...)
+    5. ├─utils::capture.output(...)
+    6. │ └─base::withVisible(...elt(i))
+    7. ├─shiny::testServer(...)
+    8. │ ├─shiny:::withMockContext(...)
+    9. │ │ ├─shiny::isolate(...)
+   10. │ │ │ ├─shiny::..stacktraceoff..(...)
+   11. │ │ │ └─ctx$run(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E6: transcriptomics, the button is disabled with the busy label while a transcriptomics step runs, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E6 toggleState after
+trace (first lines):
+       ▆
+    1. ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:347:5
+    2. │ └─base::withCallingHandlers(...)
+    3. ├─base::suppressMessages(...)
+    4. │ └─base::withCallingHandlers(...)
+    5. ├─utils::capture.output(...)
+    6. │ └─base::withVisible(...elt(i))
+    7. ├─shiny::testServer(...)
+    8. │ ├─shiny:::withMockContext(...)
+    9. │ │ ├─shiny::isolate(...)
+   10. │ │ │ ├─shiny::..stacktraceoff..(...)
+   11. │ │ │ └─ctx$run(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E6: transcriptomics, the button is disabled with the busy label while a transcriptomics step runs, then enabled
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Default`.
+  Differences:
+  `actual`:                               
+  `expected`: "Run Normalization Pipeline"
+  
+  E6 label after
+trace (first lines):
+       ▆
+    1. ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:347:5
+    2. │ └─base::withCallingHandlers(...)
+    3. ├─base::suppressMessages(...)
+    4. │ └─base::withCallingHandlers(...)
+    5. ├─utils::capture.output(...)
+    6. │ └─base::withVisible(...elt(i))
+    7. ├─shiny::testServer(...)
+    8. │ ├─shiny:::withMockContext(...)
+    9. │ │ ├─shiny::isolate(...)
+   10. │ │ │ ├─shiny::..stacktraceoff..(...)
+   11. │ │ │ └─ctx$run(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E7: lipidomics, during the run the button stays disabled when the tab is left and opened again
+kind: failure
+message:
+  Expected `k261Since(ctx$rec$toggles, toggles)` to be identical to FALSE.
+  Differences:
+  `actual`:        
+  `expected`: FALSE
+  
+  E7: disabled once, kept disabled across the re-entry
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:365:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E7: lipidomics, during the run the button stays disabled when the tab is left and opened again
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$labels, 1L)` to be identical to `k261Busy`.
+  Differences:
+  `actual`:                                            
+  `expected`: "Please wait: a step is still running..."
+  
+  E7 label
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:365:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit261-norm-run-button.R
+test: KIT-261 E7: lipidomics, during the run the button stays disabled when the tab is left and opened again
+kind: failure
+message:
+  Expected `utils::tail(ctx$rec$toggles, 1L)` to be identical to TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  
+  E7: enabled after the run
+trace (first lines):
+       ▆
+    1. ├─k261Run(...) at test-kit261-norm-run-button.R:365:5
+    2. │ ├─base::suppressWarnings(...) at test-kit261-norm-run-button.R:124:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit261-norm-run-button.R:124:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit261-norm-run-button.R:124:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit261-norm-run-button.R:124:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+

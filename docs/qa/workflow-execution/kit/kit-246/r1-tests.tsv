@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-integration-record.R	139	6	0	0	0	667.4	failed

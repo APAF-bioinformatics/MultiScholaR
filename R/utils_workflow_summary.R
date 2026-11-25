@@ -263,7 +263,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         state <- workflowSummaryFinalState(config, workflowData, omicType, catFn)
         studyParamsFile <- createWorkflowArgsFn(workflow_name = label, description = description,
             source_dir_path = paths$source_dir, final_s4_object = state$finalS4Object, contrasts_tbl = state$contrastsTbl,
-            workflow_data = workflowData)
+            workflow_data = workflowData,
+            omic_type = omicType)
         # KIT-031: the analysis record, derived from the owner's head, beside study_parameters.txt.
         if (workflowSummaryRecords(config, workflowData)) {
             recordFile <- file.path(paths$source_dir, "analysis_record.json")

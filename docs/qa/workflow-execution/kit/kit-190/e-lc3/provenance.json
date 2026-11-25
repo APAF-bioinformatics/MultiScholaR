@@ -1,0 +1,88 @@
+{
+  "ticket": "KIT-190 E",
+  "head_commit": "bb3d10d87a0c5bd46e7bdf069b9ee5a82334633b",
+  "base_commit": "bb3d10d87a0c5bd46e7bdf069b9ee5a82334633b",
+  "base_arg": "self",
+  "generator": {
+    "file": "tests/testthat/helper-kit172.R",
+    "commit": "d4e2eb2c",
+    "lines": "21-62"
+  },
+  "lifecycle": true,
+  "fault": false,
+  "stop_rule": false,
+  "cells": ["E1", "N-r", "N-s", "E-r", "E-s", "E-p", "E-g"],
+  "replicates": 2,
+  "workers_per_side": 2,
+  "falsifier_counts_as_stated": true,
+  "seed_rule": "set.seed(190000000 + 10000 * cell + r); cells N-r 1, N-s 2, E-r 3, E-s 4, E-p 5, E-g 6",
+  "side_exit_status": {
+    "base": 0,
+    "head": 0
+  },
+  "journeys": 60,
+  "mean_journey_seconds": 16.3684642857143,
+  "projected_minutes_per_side_full": 88.1168994047619,
+  "seconds_per_cell_class": {
+    "N-r lipid": {
+      "base": 34.577,
+      "head": 35.325
+    },
+    "N-r metab": {
+      "base": 34.098,
+      "head": 36.588
+    },
+    "N-s lipid": {
+      "base": 35.06,
+      "head": 34.391
+    },
+    "N-s metab": {
+      "base": 35.187,
+      "head": 33.174
+    },
+    "E-r lipid": {
+      "base": 35.588,
+      "head": 33.656
+    },
+    "E-r metab": {
+      "base": 33.722,
+      "head": 34.604
+    },
+    "E-s lipid": {
+      "base": 32.327,
+      "head": 34.931
+    },
+    "E-s metab": {
+      "base": 33.77,
+      "head": 34.905
+    },
+    "E-p lipid": {
+      "base": 33.287,
+      "head": 26.887
+    },
+    "E-p metab": {
+      "base": 34.515,
+      "head": 22.462
+    },
+    "E-g lipid": {
+      "base": 34.849,
+      "head": 22.442
+    },
+    "E-g metab": {
+      "base": 32.158,
+      "head": 21.915
+    }
+  },
+  "wall_seconds_sides": 288.799643993378,
+  "wall_seconds": 289.446620225906,
+  "stopped_at": {},
+  "started": "2026-11-24T00:17:07+0000",
+  "finished": "2026-11-24T00:21:57+0000",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "cores": 4,
+  "processor": "AMD EPYC 9V74 80-Core Processor",
+  "script_sha256": "1b522c2841660a3691914869f23daee63626854f083cdb25d45ffc3b85a46f2d"
+}

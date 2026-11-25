@@ -1,0 +1,5 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit217-intensity-filter-missing.R	178	113	4	0	0	86.6	failed
+test-metab-qc-shared.R	19	4	0	0	0	7.6	failed
+test-metab-02t-metabolite-intensity-filtering-characterization.R	14	0	0	0	0	6.7	ok
+test-metab-s4-qc-shared.R	32	0	0	0	1	7.4	ok

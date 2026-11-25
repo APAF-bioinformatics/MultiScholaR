@@ -1,0 +1,13 @@
+config	assay	sample	best_partner	best_r
+lipid_ruv	LCMS_Pos	A_1	A_2	0.967169
+lipid_ruv	LCMS_Pos	A_2	A_4	0.967987
+lipid_ruv	LCMS_Pos	A_3	A_2	0.965337
+lipid_ruv	LCMS_Pos	A_4	A_2	0.967987
+lipid_ruv	LCMS_Pos	A_5	A_3	0.938458
+lipid_ruv	LCMS_Pos	A_6	A_4	0.906775
+lipid_ruv	LCMS_Pos	B_1	B_3	0.726684
+lipid_ruv	LCMS_Pos	B_2	B_3	0.978080
+lipid_ruv	LCMS_Pos	B_3	B_2	0.978080
+lipid_ruv	LCMS_Pos	B_4	B_3	0.965496
+lipid_ruv	LCMS_Pos	B_5	B_6	0.968266
+lipid_ruv	LCMS_Pos	B_6	B_2	0.972131

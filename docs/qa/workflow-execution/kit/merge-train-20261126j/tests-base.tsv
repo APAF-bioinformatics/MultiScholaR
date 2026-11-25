@@ -1,0 +1,12 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-integration-record.R	167	0	0	0	0	713.1	ok
+test-integration-removed-factors.R	520	0	0	3	0	381.8	ok
+test-integration-model.R	265	0	0	0	0	341.1	ok
+test-integration-gui.R	405	0	0	0	0	191.2	ok
+test-integration-enrichment.R	349	0	0	0	9	236.5	ok
+test-integration-results.R	258	0	0	0	0	245.4	ok
+test-integration-outputs.R	183	0	0	0	0	252.5	ok
+test-integration-workbook-api.R	144	0	0	0	0	111.4	ok
+test-kit240-integration-default.R	92	0	0	1	0	49.6	ok
+test-integration-input-matrix.R	84	0	0	0	0	43.7	ok
+test-integration-enrichment-mofa.R	0	0	0	3	0	14	ok

@@ -19,7 +19,9 @@ lipidomicsDeclarationBinding <- list(
     id_slot = "lipid_id_column", fields = lipidomicsOperationFields, merge = lipidomicsPartitionMerge,
     design_field = "design_matrix", feature_noun = "lipid", long_table = "da_lipids_long", design_input_prefix = "lipid_assay_",
     step_scope = "the lipid step", da_scope = "the lipid DA",
-    intensity_parameters = c("lipids_intensity_cutoff_percentile", "lipids_proportion_of_samples_below_cutoff"),
+    # KIT-217: the per-group count's two settings (values required per group, groups required) after today's two.
+    intensity_parameters = c("lipids_intensity_cutoff_percentile", "lipids_proportion_of_samples_below_cutoff",
+        "lipids_min_values_per_group", "lipids_min_groups"),
     intensity_threshold = "min_lipid_intensity_threshold",
     step_labels = c(lipid_intensity_filter = "2_Intensity_Filtered", lipid_duplicate_resolution = "3_Duplicates_Resolved",
         lipid_qc_finalize = "4_QC_Complete", lipid_itsd_normalisation = "5_ITSD_Normalised", lipid_log2 = "6_Log2",
@@ -49,7 +51,9 @@ lipidomicsDeclarationBinding <- list(
         lipidIntensityFilteringFn <- lipidIntensityFiltering
         lipidIntensityFilteringFn(object,
             lipids_intensity_cutoff_percentile = parameters$lipids_intensity_cutoff_percentile,
-            lipids_proportion_of_samples_below_cutoff = parameters$lipids_proportion_of_samples_below_cutoff)
+            lipids_proportion_of_samples_below_cutoff = parameters$lipids_proportion_of_samples_below_cutoff,
+            lipids_min_values_per_group = parameters$lipids_min_values_per_group,
+            lipids_min_groups = parameters$lipids_min_groups)
     },
     # Per assay, the row with the highest mean intensity over the design's samples is kept (KIT-214: every numeric column
     # under a record's earlier rule); the module reads the row counts before and after.
@@ -97,9 +101,11 @@ lipidomicsDeclarationBinding <- list(
     da_format = function(...) formatLipidDaContrastTable(...),
     da_count = function(...) countLipidDaSignificant(...),
     # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
-    filter_intensity_page = function(page, threshold, proportion, id_column, sample_columns) lipidIntensityFilteringHelper(assay_table = page,
+    filter_intensity_page = function(page, threshold, proportion, id_column, sample_columns, group_labels = NULL,
+        min_values_per_group = NULL, min_groups = NULL) lipidIntensityFilteringHelper(assay_table = page,
         min_lipid_intensity_threshold = threshold, lipids_proportion_of_samples_below_cutoff = proportion, lipid_id_column = id_column,
-        sample_columns = sample_columns),
+        sample_columns = sample_columns, group_labels = group_labels, min_values_per_group = min_values_per_group,
+        min_groups = min_groups),
     resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveLipidDuplicateFeaturesByIntensity(assay_tibble = batch,
         id_col = id_column, sample_cols = sample_columns),
     duplicate_value = function(before, after, without_samples) list(counts = list(before = before, after = after)),

@@ -1,0 +1,113 @@
+kit204-prot-da-not-tested: 1234..........5678.9abc.defg.hi.jk.......l..........mn.op.qr.....s......tuv......
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit204-prot-da-not-tested.R:151:5'): KIT-204 N1: countStatD
+Expected `k204Count(counts, "Not significant")` to be identical to 1.
+Differences:
+  `actual`: 3.0
+`expected`: 1.0
+
+
+── 2. Failure ('test-kit204-prot-da-not-tested.R:152:5'): KIT-204 N1: countStatD
+Expected `k204Count(counts, "Not tested")` to be identical to 2.
+Differences:
+  `actual`:  NA
+`expected`: 2.0
+
+
+── 3. Failure ('test-kit204-prot-da-not-tested.R:153:5'): KIT-204 N1: countStatD
+Expected `as.character(counts$status)` to be identical to `c(k204Statuses, "Not tested")`.
+Differences:
+    actual                 | expected                  
+[1] "Not significant"      | "Not significant"      [1]
+[2] "Significant and Up"   | "Significant and Up"   [2]
+[3] "Significant and Down" | "Significant and Down" [3]
+                           - "Not tested"           [4]
+
+
+── 4. Failure ('test-kit204-prot-da-not-tested.R:154:5'): KIT-204 N1: countStatD
+Expected `counts$counts` to be identical to `c(1L, 2L, 1L, 2L)`.
+Differences:
+`actual[2:3]`:     2 1
+   `expected`: 1 2 1 2
+
+
+── 5. Failure ('test-kit204-prot-da-not-tested.R:194:5'): KIT-204 N2: the method
+Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+Differences:
+  `actual`: 60.0
+`expected`: 59.0
+
+C-A num_sig_da_molecules_first_go
+Backtrace:
+    ▆
+ 1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+ 2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+── 6. Failure ('test-kit204-prot-da-not-tested.R:194:5'): KIT-204 N2: the method
+Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+Differences:
+  `actual`:  NA
+`expected`: 1.0
+
+C-A num_sig_da_molecules_first_go
+Backtrace:
+    ▆
+ 1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+ 2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+── 7. Failure ('test-kit204-prot-da-not-tested.R:194:5'): KIT-204 N2: the method
+Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+Differences:
+  `actual`: 60.0
+`expected`: 59.0
+
+C-A num_sig_da_molecules
+Backtrace:
+    ▆
+ 1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+ 2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+── 8. Failure ('test-kit204-prot-da-not-tested.R:194:5'): KIT-204 N2: the method
+Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+Differences:
+  `actual`:  NA
+`expected`: 1.0
+
+C-A num_sig_da_molecules
+Backtrace:
+    ▆
+ 1. └─k204ExpectCounts(k204Da(object, "C.vs.A=groupC-groupA"), 1, "C-A") at test-kit204-prot-da-not-tested.R:194:5
+ 2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+
+── 9. Failure ('test-kit204-prot-da-not-tested.R:200:5'): KIT-204 N2b: KIT-200's
+Expected `k204Count(table, "Not significant")` to be identical to `expected$not_significant`.
+Differences:
+  `actual`: 61.0
+`expected`: 60.0
+
+B-A num_sig_da_molecules_first_go
+Backtrace:
+    ▆
+ 1. └─k204ExpectCounts(k204Da(object, "B.vs.A=groupB-groupA"), 1, "B-A") at test-kit204-prot-da-not-tested.R:200:5
+ 2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:185:9
+
+── 10. Failure ('test-kit204-prot-da-not-tested.R:200:5'): KIT-204 N2b: KIT-200'
+Expected `k204Count(table, "Not tested")` to be identical to `if (untested > 0) untested else NA_real_`.
+Differences:
+  `actual`:  NA
+`expected`: 1.0
+
+B-A num_sig_da_molecules_first_go
+Backtrace:
+    ▆
+ 1. └─k204ExpectCounts(k204Da(object, "B.vs.A=groupB-groupA"), 1, "B-A") at test-kit204-prot-da-not-tested.R:200:5
+ 2.   └─testthat::expect_identical(...) at test-kit204-prot-da-not-tested.R:186:9
+  ... and 21 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit204-prot-da-not-tested.R pass 50 fail 31 error 0 skip 0 warn 0

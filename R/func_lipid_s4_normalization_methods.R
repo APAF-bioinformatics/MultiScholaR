@@ -849,13 +849,18 @@ setMethod(
 #' Filters lipids in *all* assays of a LipidomicsAssayData object.
 #' It removes lipids that have intensities below a certain percentile threshold
 #' in a proportion of the design's samples exceeding a defined cutoff. The threshold is calculated
-#' independently for each assay.
+#' independently for each assay. A lipid is also removed unless at least `lipids_min_groups` groups
+#' of the design each have a value (not missing) in at least `lipids_min_values_per_group` of their
+#' samples (in every sample, if the group is smaller); groups named like "pool" are not counted, and
+#' a design without a group column is refused.
 #'
 #' @describeIn lipidIntensityFiltering Method for LipidomicsAssayData
 #'
 #' @param theObject A LipidomicsAssayData object.
 #' @param lipids_intensity_cutoff_percentile See generic definition.
 #' @param lipids_proportion_of_samples_below_cutoff See generic definition.
+#' @param lipids_min_values_per_group See generic definition.
+#' @param lipids_min_groups See generic definition.
 #'
 #' @importFrom dplyr pull select all_of across
 #' @importFrom rlang sym
@@ -866,7 +871,8 @@ setMethod(
 setMethod(
     f = "lipidIntensityFiltering",
     signature = "LipidomicsAssayData",
-    definition = function(theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL) {
+    definition = function(theObject, lipids_intensity_cutoff_percentile = NULL, lipids_proportion_of_samples_below_cutoff = NULL,
+                          lipids_min_values_per_group = NULL, lipids_min_groups = NULL) {
         # --- Parameter Resolution (Done once) ---
         config_intensity_percentile <- "lipids_intensity_cutoff_percentile"
         raw_intensity_percentile <- checkParamsObjectFunctionSimplify(
@@ -910,6 +916,26 @@ setMethod(
         }
 
         design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+        # KIT-217 (VAL-173 (2)): the per-group count of present values: values required per group (default 2) and groups
+        # required (default 1), resolved after today's two, then checked against the design's groups (pool groups and
+        # samples without a group not counted; no group column, or only pool groups, refused) before any assay. Both are
+        # written to the object's arguments. A record made before replays with the earlier rule, which reads neither.
+        group_labels_of <- function(sample_cols) NULL
+        count_settings <- list(min_values_per_group = NULL, min_groups = NULL)
+        if (omicsIntensityFilterCountsInForce()) {
+            config_min_values <- "lipids_min_values_per_group"
+            config_min_groups <- "lipids_min_groups"
+            raw_min_values <- checkParamsObjectFunctionSimplify(theObject, config_min_values, 2L)
+            raw_min_groups <- checkParamsObjectFunctionSimplify(theObject, config_min_groups, 1L)
+            design_matrix <- theObject@design_matrix
+            group_id <- theObject@group_id
+            has_group_column <- group_id %in% names(design_matrix)
+            count_settings <- omicsIntensityFilterCountSettings(if (has_group_column) design_matrix[[group_id]],
+                raw_min_values, raw_min_groups, group_id, has_group_column)
+            theObject <- updateParamInObject(theObject, config_min_values)
+            theObject <- updateParamInObject(theObject, config_min_groups)
+            group_labels_of <- function(sample_cols) as.character(design_matrix[[group_id]])[match(sample_cols, design_samples)]
+        }
         # Iterate using indices
         filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
             assay_table <- original_assay_list[[i]]
@@ -961,7 +987,10 @@ setMethod(
                 min_lipid_intensity_threshold = min_lipid_intensity_threshold,
                 lipids_proportion_of_samples_below_cutoff = proportion_of_samples_below_cutoff_final,
                 lipid_id_column = lipid_id_col,
-                sample_columns = sample_cols
+                sample_columns = sample_cols,
+                group_labels = group_labels_of(sample_cols),
+                min_values_per_group = count_settings$min_values_per_group,
+                min_groups = count_settings$min_groups
             )
 
             message("Filtered assay '", assay_name_for_msg, "'. Original rows: ", nrow(assay_table), ", Filtered rows: ", nrow(filtered_assay))
