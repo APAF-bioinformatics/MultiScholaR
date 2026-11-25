@@ -419,8 +419,9 @@ omicsIntensityFilterRemovedCounts <- function(binding, object, filtered, min_val
     missing <- vapply(seq_along(before), function(i) {
         table <- before[[i]]
         if (!id_column %in% names(table)) return(0L)
-        numeric_columns <- names(table)[vapply(table, is.numeric, logical(1))]
-        sample_columns <- omicsIntensityFilterSampleColumns(names(table), numeric_columns, design_samples, id_column, assays[[i]])
+        # The filter has checked these columns already (`omicsIntensityFilterSampleColumns`); the count reads the
+        # design's samples of the table, the only columns it counts under the current rule.
+        sample_columns <- intersect(names(table), setdiff(design_samples, id_column))
         if (!length(sample_columns)) return(0L)
         values <- as.data.frame(table)[, sample_columns, drop = FALSE]
         if (all(is.na(unlist(values, use.names = FALSE)))) return(0L)
