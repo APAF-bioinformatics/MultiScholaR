@@ -66,3 +66,27 @@ The per-test failing set is identical to the prediction (checked from `failures.
 | R CMD check | | findings identical on both sides |
 
 Stop rules: an unpredicted verdict stops the work; a head failure or a differing check is the one correction pass.
+
+## R2 result (run 45700788798): as predicted
+
+Verdicts: `fixed` for the three files above with the predicted counts, `same` for the seven others (the 11 skips of
+`test-workflow-gui-memory-lifetimes.R` are on both sides); `R CMD check` findings identical (0 errors, 3 warnings,
+3 notes on both sides; none only on head, none only on base). About 56.5 job-minutes (3.77 core-hours) against 113.5
+expected (the files ran in 10 to 16 s each, not the 1.75 minutes the ticket assumed, and the check jobs took 13 to 16
+minutes) and the 340 ceiling.
+
+## H1 (browser): declared before it is sent
+
+- **Purpose:** the fix in a headless browser on a runner (A4). Observation only.
+- **Binding:** the commit under test is 4a8915ac (R/ identical to the fix c40435efe); the request's package commit is the
+  records commit that adds `h1.R`, `g0.R` and `k233-journey.R` (KIT-250's driver, byte for byte, with the cases and
+  predictions replaced) under this folder only; `h1.R` checks that the difference is limited to this folder.
+- **Settings:** one scripts job, `shinytest2`, test mode, network namespace (loopback only); script timeout 50.
+- **Ceiling:** 60 job-minutes. **Expected:** 15 (four sessions may take 25).
+- **Predictions:** written in `h1.R` (`K250_PREDICTIONS`) before the run: sessions A (headers without organisms:
+  persistent notice naming Mus musculus (taxon 10090), import completes, Design tab opens), B (ticked, empty FASTA
+  file: the (iv) error, window closed, nothing imported; then unticked in the same session: completes), C (unticked,
+  the same empty file: completes), D (valid FASTA naming organisms, none of the data's proteins: the (c) error).
+- **Instrument risk named now:** an empty (0-byte) FASTA upload, and the error-toast count, are new mechanics. If the
+  upload or the toast reading fails before a judged value is read it is an instrument defect (VAL-54); an empty file
+  that does not fail the FASTA step (the import then continues on route (i)) is a result, not a defect.
