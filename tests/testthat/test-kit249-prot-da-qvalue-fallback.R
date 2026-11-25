@@ -347,3 +347,15 @@ test_that("KIT-249 E8: the lipidomics and metabolomics exported differentialAbun
             id = "Name", checks = c("ii", "iii"))
     }
 })
+
+test_that("KIT-249 E7 (b): the scripted wrapper daAnalysisWrapperFunction (KIT-218 merged), its returned tables", {
+    contrasts <- data.frame(contrasts = unname(kit249Plain), full_format = unname(kit249Full), stringsAsFactors = FALSE)
+    captured <- kit249Capture(function() daAnalysisWrapperFunction(kit249Object(), contrasts_tbl = contrasts,
+        formula_string = "~ 0 + group", treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE,
+        args_row_id = "Protein.Ids"), plots = TRUE)
+    if (!kit249Completed(list(error = captured$error), "E7 (b) DA step error")) return(invisible())
+    if (!kit249Completed(captured$result, "E7 (b) wrapper error")) return(invisible())
+    kit249ExpectFallback(captured$kernel$results[[kit249Full[["B_vs_A"]]]], "E7 (b) kernel B_vs_A", checks = c("ii", "v", "vi"))
+    kit249ExpectFallback(captured$result$value$contrasts_results_table[[kit249Full[["B_vs_A"]]]], "E7 (b) returned B_vs_A",
+        checks = c("ii", "iii", "v", "vi"))
+})
