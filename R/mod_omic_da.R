@@ -234,7 +234,10 @@ registerOmicDaTableOutputs <- function(output, input, tab, da, binding) {
         results <- tab$da_results_list
         shiny::req(results)
         cat(omicDaSummaryText(results[[binding$long_table]], input$table_contrast, input$table_assay, input$da_q_val_thresh,
-            da$summary, da$table_filter, runQValThresh = results$da_q_val_thresh))
+            da$summary, da$table_filter, runQValThresh = results$da_q_val_thresh,
+            # KIT-220 E-7 (I04): transcriptomics' interactive page is coloured at the box too (trxVolcanoWidget's p.value).
+            boxConsumers = if (identical(binding$omic_type, "transcriptomics")) "the table filter and both volcano plots" else
+                "the table filter and the static volcano plot"))
     })
     output$da_results_table <- DT::renderDT({
         results <- tab$da_results_list

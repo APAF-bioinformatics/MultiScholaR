@@ -2961,8 +2961,7 @@ omicGuiTrxDa <- function() {
             tested = FALSE),
         columns = list(id = "GeneID", label = "GeneName", fold_change = "logFC", pvalue = "PValue", significance = "FDR",
             significance_label = "FDR (BH)"),
-        # KIT-220 E-7 (I04): the tab's interactive page follows the box too (the page action is given the box).
-        summary = list(noun = "genes", significance_label = "FDR (BH)", box_consumers = "the table filter and both volcano plots"),
+        summary = list(noun = "genes", significance_label = "FDR (BH)"),
         tabs = c(volcano = "Volcano Plot", table = "DA Results Table"),
         assays = "single", table_filter = "all_only",
         views = list(static_volcano = list(output = "volcano_static", plot = trxDaStaticVolcano, show_labels = TRUE,
