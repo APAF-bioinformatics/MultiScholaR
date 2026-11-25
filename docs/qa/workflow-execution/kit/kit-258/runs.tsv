@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45617808183	ddbedc3f153838cd8c04ae27fb997f274561e31f	R1: failing-first on the tests-only commit (R/ = staging 63143aa3), 4 files, 1 job; ceiling 45	14.5	as predicted: kit258 76 pass 26 fail (E1 to E4, T1 (b), T2 at KIT-214 values); kit214 176 pass 0 fail; 01m 3 and 02u 1 failing new pins only
