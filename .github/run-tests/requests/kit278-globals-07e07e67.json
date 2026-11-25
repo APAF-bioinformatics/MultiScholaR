@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-278: declared test edit, mod_omic_norm.R allowed in test-omics-module-globals.R (KIT-261 shown_idle), base versus head",
+  "label": "KIT-278 omics-module-globals file, base 75acd421 vs head 07e07e67",
+  "package_commit": "07e07e67124c81289e37d97feb634ba45a18b886",
+  "base_commit": "75acd4219cd2d2db9cab9a470147c0e8a479ef73",
+  "tools_ref": "",
+  "tests": [
+    "test-omics-module-globals.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
