@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-249 G0: observe the lost BH fallback of runTestsContrasts on each route at base (staging 16112917 + script only, branch kit-249-g0); 1 job, ceiling 60 job-minutes; decides stop rule 1 and the fixture instrument rule",
+  "label": "KIT-249 G0 base observation dcbce79f (staging 16112917 + tools/kit249/g0.R)",
+  "package_commit": "dcbce79f901cd8780dfdb1a8f6e665717e7f3cbe",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit249/g0.R",
+      "args": [
+        "kit249-g0"
+      ],
+      "env": {},
+      "out": "kit249-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
