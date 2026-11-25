@@ -51,3 +51,20 @@ nothing alone.
 ## Head (after the fix; judged in the same file)
 
 All 124 expectations pass (W1 10, W1b 10, W2 14, W3 17, W4 24, W5 18, W7 14, W8 15, W9 2), 0 failed. G4 passes.
+
+## Correction of 2026-11-26 (after run 45713440865)
+
+Predicted for the new file: 42 passed / 39 failed. Observed: 43 / 38. One expectation differs: W5's
+`length(contrasts_results$results) == 2` passes on base, because `differentialAbundanceAnalysis()` keeps every
+comparison in `contrasts_results` (ticket 2.1); the prediction mis-read 2.1. No expectation was changed after the
+result (only a comment marking it a guard, which passes on base and head); the ticket's correction pass is not used.
+Coordinator's ruling: R1's result stands and is not re-sent.
+
+## g1.R rerun (instrument rerun 1 of 3; written before it is sent)
+
+Purpose: the BASE digests of G1 and G3. R1's script job stopped at its first call (`ProteinQuantitativeData` is not
+exported): mechanics, no digest produced. Fix: the namespace accessor in `make_object`. Binding: the commit that
+carries the fix and nothing under `R/` (R/ identical to base 176f9d3ff); script only, no tests; base none. Predicted:
+exit 0, `g1-base.tsv` with the cases limma, limpa, ruv, kernel, alias, at least ten rows each. Expected about 1
+core-hour (one job, about 15 min); ceiling 30 min script timeout plus set-up, about 40 min = 2.67 core-hours. No
+expected value, threshold or comparison changes (condition i).

@@ -265,6 +265,8 @@ test_that("KIT-221 W5: two comparisons on the RUV-factors-in-the-model route giv
     if (!kit221Completed(singles$B_vs_A, "W5 B_vs_A error") || !kit221Completed(singles$C_vs_A, "W5 C_vs_A error")) return(invisible())
     expect_identical(multi$value$da_model$tested_matrix, "uncorrected")
     expect_identical(sort(unique(multi$value$significant_rows$comparison)), c("B_vs_A", "C_vs_A"))
+    # A GUARD, not a failing-first row: the S4 method keeps every comparison in contrasts_results (ticket 2.1), so this
+    # passes on base and on head; the derived tables below are what the fix changes.
     expect_identical(length(multi$value$contrasts_results$results), 2L)
     expect_identical(nrow(multi$value$significant_rows), 2L * nrow(singles$B_vs_A$value$significant_rows))
     kit221SameRows(multi$value$significant_rows, lapply(singles, function(run) run$value$significant_rows), "W5")

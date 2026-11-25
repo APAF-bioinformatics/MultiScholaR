@@ -37,7 +37,7 @@ make_design <- function(sizes = c(A = 4L, B = 4L, C = 4L)) {
 }
 make_object <- function(x, design) {
     rownames(design) <- NULL
-    ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x), x, row.names = NULL,
+    ns$ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x), x, row.names = NULL,
         check.names = FALSE, stringsAsFactors = FALSE), design_matrix = design, sample_id = "Run", group_id = "group",
         technical_replicate_id = "replicates", protein_id_column = "Protein.Ids",
         protein_id_table = data.frame(Protein.Ids = rownames(x), gene_names = paste0("GENE_", rownames(x)),
