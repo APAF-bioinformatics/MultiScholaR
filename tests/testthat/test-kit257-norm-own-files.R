@@ -98,9 +98,9 @@ k257CopyPaths <- function(paths, root, feature_qc_dir) {
 
 # --- Proteomics: the native DIA owner of helper-prot-norm-core.R (KIT-206's clicks, copied) ---
 
-k257ProtSettings <- function(mode = "skip") list(norm_method = "quantile", ruv_mode = mode, auto_percentage_min = NULL,
-    auto_percentage_max = NULL, separation_metric = NULL, k_penalty_weight = NULL, adaptive_k_penalty = NULL,
-    ruv_percentage = 50, ruv_k = 1, color_variable = "group", shape_variable = NULL)
+k257ProtSettings <- function(mode = "skip", ...) utils::modifyList(list(norm_method = "quantile", ruv_mode = mode,
+    auto_percentage_min = NULL, auto_percentage_max = NULL, separation_metric = NULL, k_penalty_weight = NULL,
+    adaptive_k_penalty = NULL, ruv_percentage = 50, ruv_k = 1, color_variable = "group", shape_variable = NULL), list(...))
 
 k257ProtAesthetics <- function() list(color_var = "group", shape_var = NULL)
 
@@ -127,7 +127,7 @@ k257ProtCorrelation <- function(fixture, norm, threshold = 0.5, skipped = FALSE)
 
 #' "Run Normalization & RUV": the tab's entry (`runProtNormNormalizationWorkflow`), in process (`runner` NULL) or
 #' managed, its notices and errors recorded.
-k257ProtTab <- function(fixture, norm, mode = "skip", runner = NULL) {
+k257ProtTab <- function(fixture, norm, mode = "skip", runner = NULL, settings = k257ProtSettings(mode)) {
     testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) runner, .package = "MultiScholaR")
     seen <- new.env(parent = emptyenv())
     seen$notes <- character()
@@ -136,7 +136,7 @@ k257ProtTab <- function(fixture, norm, mode = "skip", runner = NULL) {
         seen$notes <- c(seen$notes, sprintf("[%s] %s", type, paste(as.character(ui), collapse = " ")))
         invisible(NULL)
     }
-    protNormCoreQuiet(shiny::isolate(runProtNormNormalizationWorkflow(input = k257ProtSettings(mode),
+    protNormCoreQuiet(shiny::isolate(runProtNormNormalizationWorkflow(input = settings,
         workflowData = fixture$workflow, normData = norm, experimentPaths = fixture$paths, omicType = "proteomics",
         experimentLabel = "core", generatePostNormalizationQcFn = function(reference) invisible(NULL),
         generateRuvCorrectedQcFn = function(reference) invisible(NULL), getRuvGroupingVariableFn = function() "group",
@@ -619,4 +619,97 @@ test_that("KIT-257 G2 (lipid): users' files, another omic's folder and a sibling
     expect_true(all(vapply(user, k257Holds, NA, bytes = "user")), info = info)
     # Where the removal exists (the fix), the project's own file is removed through the bracket.
     if (!is.null(k257Fn("removeWorkflowOwnFiles"))) expect_false(file.exists(own))
+})
+
+# ------------------------------------------------------------------------------------------------
+# Correction pass (AUDIT-KIT-257-impl-20261126): E8b (I01), G2 with a `~` path (I02), E10 (I05). Written before the
+# repair; their base is the branch merged with merge train 8, before the repair (R2').
+# ------------------------------------------------------------------------------------------------
+
+k257ProtRuvCovariates <- function(fixture, norm, ruv_qc = function(reference) invisible(NULL)) {
+    protNormCoreQuiet(runDIAReferenceRuvCovariates(list(ruv_mode = "covariates", color_variable = "group",
+        shape_variable = NULL), fixture$workflow, norm, fixture$paths, "proteomics", "core", ruv_qc, function() "group"))
+}
+
+k257Md5 <- function(files) unname(tools::md5sum(files))
+
+test_that("KIT-257 E8b (I01): DIA with limpa, a press again at correlation_filtered and at ruv_covariates keeps the current result's table and RUV figures, in process and managed (fails before)", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    for (case in c("in process", "managed")) {
+        fixture <- protNormW1LimpaOwner()
+        norm <- new.env(parent = emptyenv())
+        qc <- fixture$paths$protein_qc_dir
+        first <- k257ProtTab(fixture, norm, "covariates")
+        expect_length(first$errors, 0L)
+        k257ProtCorrelation(fixture, norm, 0.5)
+        tables <- file.path(qc, k257ProtTables[1:2])
+        table <- tables[file.exists(tables)]
+        expect_length(table, 1L)
+        bytes <- k257Md5(table)
+        rec <- k257Recorder(table)
+        runner <- if (identical(case, "managed")) rec$runner
+        again <- k257ProtTab(fixture, norm, "covariates", runner = runner)
+        k257Log("E8b", case, "at correlation_filtered: errors", length(again$errors), "table present", file.exists(table),
+            "head", fixture$manager$current_state)
+        expect_length(again$errors, 0L)
+        expect_identical(fixture$manager$current_state, "correlation_filtered", info = case)
+        expect_true(file.exists(table), info = case)
+        if (file.exists(table)) expect_identical(k257Md5(table), bytes, info = case)
+        draw <- function(reference) for (name in k257ProtRuvFigures[1:4]) {
+            writeBin(charToRaw("covariates"), file.path(norm$publication_paths$protein_qc_dir, name))
+        }
+        k257ProtRuvCovariates(fixture, norm, draw)
+        expect_identical(fixture$manager$current_state, "ruv_covariates", info = case)
+        figures <- file.path(qc, k257ProtRuvFigures[1:4])
+        expect_true(all(file.exists(figures)), info = case)
+        third <- k257ProtTab(fixture, norm, "covariates", runner = runner)
+        k257Log("E8b", case, "at ruv_covariates: errors", length(third$errors), "table present", file.exists(table),
+            "figures", paste(k257Present(figures), collapse = ","))
+        expect_length(third$errors, 0L)
+        expect_true(file.exists(table), info = case)
+        expect_true(all(vapply(figures, k257Holds, NA, bytes = "covariates")), info = case)
+    }
+})
+
+test_that("KIT-257 G2 (I02, lipid): a project path beginning with `~` removes the project's own file and the run proceeds (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    home <- file.path(root, "home")
+    dir.create(home)
+    fx <- k257OmicFixture(file.path(root, "a"), "lipid")
+    assays <- k257OmicAssays(fx)
+    # HOME is a temporary folder for this test only (restored on exit): the real home directory is never touched.
+    withr::local_envvar(HOME = home)
+    expanded <- normalizePath(path.expand("~"), mustWork = FALSE)
+    k257Log("G2 ~", "path.expand('~') follows HOME:", identical(expanded, normalizePath(home)))
+    skip_if_not(identical(expanded, normalizePath(home)), "this R does not read HOME again after start-up")
+    seen <- k257Notes()
+    paths <- fx$paths
+    paths$lipid_qc_dir <- "~/Study/lipid_qc"
+    own <- k257Plant(k257OmicRuvFigures(file.path(home, "Study", "lipid_qc"), assays)[[1L]])
+    user <- k257Plant(file.path(home, "Study", "lipid_qc", "my_notes.png"), "user")
+    k257OmicRun(fx, omicNormReactiveState(), paths = paths)
+    info <- paste("G2 ~", paste(seen$notes, collapse = " | "))
+    k257Log("G2 ~", "own file present:", file.exists(own), "head:", k257OmicSnapshot(fx)$head, "notes:", paste(seen$notes, collapse = " | "))
+    expect_identical(k257OmicSnapshot(fx)$head, "lipid_normalized", info = info)
+    expect_false(file.exists(own), info = info)
+    expect_true(k257Holds(user, "user"), info = info)
+})
+
+test_that("KIT-257 E10 (I05): a proteomics normalisation that stops after its start tells the user its files were removed (fails before)", {
+    fixture <- protNormCoreOwner()
+    norm <- new.env(parent = emptyenv())
+    qc <- fixture$paths$protein_qc_dir
+    k257ProtClick(fixture, norm, "skip")
+    k257ProtCorrelation(fixture, norm, 0.5)
+    expect_true(any(file.exists(file.path(qc, k257ProtTables[1:2]))))
+    head <- k257ProtHead(fixture)
+    # The tab's error handler shows the error's message ("Error in normalization: ..."); the recorder keeps the error.
+    tab <- k257ProtTab(fixture, norm, "manual", settings = k257ProtSettings("manual", ruv_k = 50))
+    shown <- if (length(tab$errors)) tab$errors[[1L]]$message else NA_character_
+    k257Log("E10", "errors:", length(tab$errors), "shown:", shown)
+    expect_length(tab$errors, 1L)
+    expect_identical(k257ProtHead(fixture), head)
+    expect_match(shown, "were removed when this run started", fixed = TRUE)
 })
