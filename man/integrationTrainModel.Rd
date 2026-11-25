@@ -33,6 +33,25 @@ Trains the MOFA2 model on the confirmed match with the model settings' defaults 
 with the same settings and software is reused. How samples are matched (technical replicates, internal
 standards, missing samples) is fixed by the confirmed match.
 }
+\section{Limitations}{
+
+Read these before drawing conclusions from a model.
+\itemize{
+\item At about 20 samples, small or weak signals are not found: in the project's simulations, a factor present only in
+the smaller data sets with a modest signal in each feature was not recovered by any setting. MOFA2's own guidance
+is that factor models need more than about 15 samples. Treat the factors as descriptive.
+\item Missing values are left out of the model, which treats them as missing at random. Values missing because they
+were below the detection limit are not modelled as such, and MOFA2 fills them with means only to choose its
+starting point.
+\item The runs of one biological sample are averaged over the values that were observed. When low values are missing
+because they were too low to measure, this average is biased upward for low-abundance features.
+\item One group of samples (MOFA2's multi-group mode is not used), Gaussian models only, no imputation, and one input
+per omic.
+\item The agreement with the reference workbook was shown on synthetic data only.
+\item Pathway and network enrichment depends on external services (STRING, KEGG, Reactome) and their current releases.
+}
+}
+
 \examples{
 \dontrun{
 run <- integrationTrainModel(project, confirmed, overrides = list(num_factors = 5L))
