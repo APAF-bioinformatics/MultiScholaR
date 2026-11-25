@@ -254,3 +254,26 @@ edit.
 **The other 165 verdicts and R CMD check stand** from run 45681065939 (the edit touches one test file; `kit254T`,
 `kit254HiRuns` and `kit254LoRuns` are referenced nowhere else, the audit's argument; each file runs in its own process
 and the check runs with `--no-tests`). Trains 16, 17 and 18 are not rebuilt or touched.
+
+## After the focused audit: result
+
+**G0c (run 45704341824, request `kit254-g0c-4308c5ae`, run-tests commit after 0e351e1c; 13.5 job-minutes of 30).** The
+G0b script ran unchanged on 4308c5ae (exit 0, 91 s). Tables in `kit-254/g0c/`. G0's rule: `t_hi` = 0.8, `t_lo` = 0.7,
+stop rule 2 false. Scan (removed samples): 0, 0.3, 0.5, 0.7 none; 0.8 B_1; 0.9 B_1; 0.95 A_5, A_6, B_1; 0.99 all 12.
+C3 Apply(0.8) removes B_1; II0 Apply(0.7) removes none. The audit's SHOWN bound (0.95 removes A_5, A_6, B_1) is confirmed;
+the script's rule picks the lowest threshold that removes a sample, 0.8, and a `t_lo` that removes none. (The audit
+guessed `t_hi` 0.95; that was a guess it labelled as such, and it did not hold.)
+
+**The edit (commit 3865e5cf, tests-only):** `kit254T$lipid_ruv` = c(hi = 0.8, lo = 0.7); `kit254HiRuns$lipid_ruv` =
+`setdiff(kit254All, "B_1")`; `kit254LoRuns$lipid_ruv` = `kit254All` (unchanged value); comments cite run 45704341824.
+New tip of the train branch for landing: the records commit after 3865e5cf (3865e5cf is the code head).
+
+**File run (run 45707353015, request `kit254-e7-train15-3865e5cf`; 39.7 job-minutes of 60):** head 3865e5cf against base
+e69b411e, `test-kit254-omics-correlation-skip.R` alone, env, limpa, mixOmics, sva: base 379/0/0/0, head 379/0/0/0,
+verdict `same`, no failing expectation. Prediction held. Tables in `e7/`.
+
+**Final verdict table:** the 165 other files and R CMD check stand from run 45681065939 (the edit touches one test file;
+its constants are referenced nowhere else; each file runs in its own process; the check runs with `--no-tests`;
+AUDIT-TRAIN15-kit254-e7-20261126, section (4)). `test-kit254-omics-correlation-skip.R` is now `same` 379/0. Remaining
+deviation: the cancor-once declaration (the coordinator's brief error; 16/0 `same`). Train 15 verdict: GREEN after
+resolution (a). Job-minutes in total: 947.9 + 13.5 + 39.7 = 1,001.1.
