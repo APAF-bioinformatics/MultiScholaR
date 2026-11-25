@@ -1,0 +1,27 @@
+key	value
+run_mode	g0
+mode	test
+commit_under_test	4a8915ac9de13190aba32b779e0c75b0076d3e5b
+records_commit	01485d525fdd3a4148d660e8f09ee2f848376135
+diff_commit_under_test_vs_records	docs/qa/workflow-execution/kit/kit-265/g0.R docs/qa/workflow-execution/kit/kit-265/h1.R docs/qa/workflow-execution/kit/kit-265/k233-journey.R docs/qa/workflow-execution/kit/kit-265/predictions.md docs/qa/workflow-execution/kit/kit-265/r2-45700788798/check-compare.txt docs/qa/workflow-execution/kit/kit-265/r2-45700788798/check-summary.txt docs/qa/workflow-execution/kit/kit-265/r2-45700788798/compare-failures.txt docs/qa/workflow-execution/kit/kit-265/r2-45700788798/compare.tsv docs/qa/workflow-execution/kit/kit-265/r2-45700788798/meta.txt docs/qa/workflow-execution/kit/kit-265/r2-45700788798/tests-base.tsv docs/qa/workflow-execution/kit/kit-265/r2-45700788798/tests.tsv docs/qa/workflow-execution/kit/kit-265/runs.tsv
+diff_only_records_folder	TRUE
+launch_form	tree
+launch_e_form	e
+network_requested	namespace
+r_version	R version 4.6.1 (2026-06-24)
+effective_user_outer	runner
+blas	/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+lapack	/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0
+threads_outer	OMP_NUM_THREADS= OPENBLAS_NUM_THREADS=
+threads_application	OMP/OPENBLAS/MKL_NUM_THREADS=1 (5.1); workers set 1 themselves
+chrome	/usr/bin/google-chrome
+chrome_version	Google Chrome 157.0.8103.78 
+shinytest2	0.5.1
+chromote	0.5.1
+processx	3.9.0
+MultiScholaR	0.9.0
+cpu	AMD EPYC 7763 64-Core Processor
+cores	4
+memory	MemTotal:       16372448 kB
+github_run_id	45703724770
+started_utc	2026-11-25T21:34:06Z

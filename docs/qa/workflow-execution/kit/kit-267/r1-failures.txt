@@ -1,0 +1,594 @@
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `...[]` to have the same values as `character(0)`.
+  Actual: "correlation_method", "min_samples", "string_species", "kegg_organism", "reactome_organism", "min_set_size", "max_set_size", "seed"
+  Expected: 
+  Needs: "correlation_method", "min_samples", "string_species", "kegg_organism", "reactome_organism", "min_set_size", "max_set_size", "seed"
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  correlation_method
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  min_samples
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  string_species
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  kegg_organism
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  reactome_organism
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  min_set_size
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  max_set_size
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `... && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  seed
+
+file: test-kit240-integration-default.R
+test: KIT-240 T10: the Enrichment tab marks no default unconfirmed and its three organism defaults as human
+kind: failure
+message:
+  Expected `lengths(regmatches(ui, gregexpr(mark_old, ui, fixed = TRUE)))` to be identical to 0L.
+  Differences:
+    `actual`: 8
+  `expected`: 0
+
+file: test-kit240-integration-default.R
+test: KIT-240 T10: the Enrichment tab marks no default unconfirmed and its three organism defaults as human
+kind: failure
+message:
+  Expected `lengths(regmatches(ui, gregexpr(mark_org, ui, fixed = TRUE)))` to be identical to 3L.
+  Differences:
+    `actual`: 0
+  `expected`: 3
+
+file: test-kit240-integration-default.R
+test: KIT-240 T10: the Enrichment tab marks no default unconfirmed and its three organism defaults as human
+kind: failure
+message:
+  Expected `ui` to match string "STRING species number (9606 is human, 10090 mouse) (NA)</label>".
+  Actual text:
+  x | <div class="row">
+    |   <div class="col-sm-12">
+    |     <h3>Enrichment of a factor</h3>
+    |     <p>Find the biological processes, pathways or compound classes that follow a factor. Every measured feature of the chosen data set, not only those given to the model, is ranked by how closely its values follow the factor across the biological samples (a correlation from -1 to 1). Proteins and genes are tested with STRING; metabolites and lipids with KEGG or Reactome pathways.</p>
+    |     <p>
+    |       <em>This step is optional: the Record tab is open without it.</em>
+    |     </p>
+    |     <div id="e-status" class="shiny-html-output" data-testid="integration-enrichment-status"></div>
+    |     <div class="row">
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-factor-label" for="e-factor">Factor</label>
+    |           <div>
+    |             <select id="e-factor" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-factor" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-view-label" for="e-view">Data set</label>
+    |           <div>
+    |             <select id="e-view" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-view" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-database-label" for="e-database">Database</label>
+    |           <div>
+    |             <select id="e-database" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-database" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div id="e-id_column_ui" class="shiny-html-output" data-testid="integration-enrichment-id-column"></div>
+    |     <h4>Settings</h4>
+    |     <div class="row">
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-correlation_method-label" for="e-correlation_method">Correlation (default not yet confirmed)</label>
+    |           <div>
+    |             <select id="e-correlation_method" class="shiny-input-select"><option value="pearson" selected>Pearson (straight-line relation)</option>
+    | <option value="spearman">Spearman (rank order)</option></select>
+    |             <script type="application/json" data-for="e-correlation_method" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-min_samples-label" for="e-min_samples">Smallest number of biological samples a feature needs to be ranked (default not yet confirmed)</label>
+    |           <input id="e-min_samples" type="number" class="shiny-input-number form-control" value="5" data-update-on="change" min="3" step="1"/>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="shiny-panel-conditional" data-display-if="(input['e-database'] == 'kegg' || input['e-database'] == 'reactome') &amp;&amp; (input['e-test'] == 'gsea' || input['e-test'] == 'permutation')" data-ns-prefix="" data-testid="integration-enrichment-seed">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-seed-label" for="e-seed">Seed of the pre-ranked and permutation tests (the correlation-adjusted tests use none) (default not yet confirmed)</label>
+    |             <input id="e-seed" type="number" class="shiny-input-number form-control" value="20261121" data-update-on="change" step="1"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div data-testid="integration-enrichment-string">
+    |       <div class="row">
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_species-label" for="e-string_species">STRING species number (9606 is human, 10090 mouse) (default not yet confirmed)</label>
+    |             <input id="e-string_species" type="number" class="shiny-input-number form-control" value="9606" data-update-on="change" step="1"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_fdr-label" for="e-string_fdr">STRING: show terms up to this false discovery rate</label>
+    |             <input id="e-string_fdr" type="number" class="shiny-input-number form-control" value="0.05" data-update-on="change" min="0" max="1" step="0.01"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_key-label" for="e-string_key">Your STRING key</label>
+    |             <input id="e-string_key" type="password" class="shiny-input-password form-control" value="" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <p>
+    |         <em>STRING needs a personal key (free from string-db.org). It is used only for this query and is never saved, recorded or written to a file. Enter it each time.</em>
+    |       </p>
+    |     </div>
+    |     <div data-testid="integration-enrichment-pathways">
+    |       <div class="row">
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-kegg_organism-label" for="e-kegg_organism">KEGG organism code (hsa is human, mmu mouse) (default not yet confirmed)</label>
+    |             <input id="e-kegg_organism" type="text" class="shiny-input-text form-control" value="hsa" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-reactome_organism-label" for="e-reactome_organism">Reactome organism (such as Homo sapiens) (default not yet confirmed)</label>
+    |             <input id="e-reactome_organism" type="text" class="shiny-input-text form-control" value="Homo sapiens" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-min_set_size-label" for="e-min_set_size">Smallest pathway tested (measured compounds in it) (default not yet confirmed)</label>
+    |             <input id="e-min_set_size" type="number" class="shiny-input-number form-control" value="5" data-update-on="change" min="5" step="1"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-max_set_size-label" for="e-max_set_size">Largest pathway tested (measured compounds in it) (default not yet confirmed)</label>
+    |             <input id="e-max_set_size" type="number" class="shiny-input-number form-control" value="500" data-update-on="change" min="5" step="1"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div id="e-test_ui" class="shiny-html-output" data-testid="integration-enrichment-test"></div>
+    |       <div class="shiny-panel-conditional" data-display-if="input['e-test'] == 'permutation'" data-ns-prefix="" data-testid="integration-enrichment-permutations">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-permutations-label" for="e-permutations">Number of random reorderings (permutation test)</label>
+    |           <div>
+    |             <select id="e-permutations" class="shiny-input-select"><option value="1000" selected>1,000 (the number checked on simulated data)</option>
+    | <option value="10000">10,000 (smaller p-values possible; not checked separately)</option></select>
+    |             <script type="application/json" data-for="e-permutations" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div id="e-adjust_ui" class="shiny-html-output" data-testid="integration-enrichment-adjust"></div>
+    |       <div id="e-test_note" class="shiny-html-output" data-testid="integration-enrichment-test-note"></div>
+    |       <div id="e-evidence" class="shiny-html-output" data-testid="integration-enrichment-evidence"></div>
+    |       <p>
+    |         <em>KEGG's tables are free for academic use only; other users need a licence from KEGG (Pathway Solutions, www.pathway.jp) before downloading them.</em>
+    |       </p>
+    |       <button id="e-download" type="button" class="btn btn-default action-button" data-testid="integration-enrichment-download"><span class="action-icon"><i class="fas fa-download" role="presentation" aria-label="download icon"></i></span><span class="action-label">Download the pathway tables</span></button>
+    |       <div id="e-download_status" class="shiny-html-output" data-testid="integration-enrichment-download-status"></div>
+    |     </div>
+    |     <br/>
+    |     <button class="btn btn-default action-button btn-primary" data-testid="integration-enrichment-run" id="e-run" type="button"><span class="action-icon"><i class="fas fa-play" role="presentation" aria-label="play icon"></i></span><span class="action-label">Run the enrichment</span></button>
+    |     <div id="e-result" class="shiny-html-output" data-testid="integration-enrichment-result"></div>
+    |     <h4>Enriched terms and pathways</h4>
+    |     <div data-testid="integration-enrichment-terms">
+    |       <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item" id="e-terms" style="width:100%;height:auto;"></div>
+    |     </div>
+    |   </div>
+    | </div>
+  enrich_string_species
+
+file: test-kit240-integration-default.R
+test: KIT-240 T10: the Enrichment tab marks no default unconfirmed and its three organism defaults as human
+kind: failure
+message:
+  Expected `ui` to match string "KEGG organism code (hsa is human, mmu mouse) (NA)</label>".
+  Actual text:
+  x | <div class="row">
+    |   <div class="col-sm-12">
+    |     <h3>Enrichment of a factor</h3>
+    |     <p>Find the biological processes, pathways or compound classes that follow a factor. Every measured feature of the chosen data set, not only those given to the model, is ranked by how closely its values follow the factor across the biological samples (a correlation from -1 to 1). Proteins and genes are tested with STRING; metabolites and lipids with KEGG or Reactome pathways.</p>
+    |     <p>
+    |       <em>This step is optional: the Record tab is open without it.</em>
+    |     </p>
+    |     <div id="e-status" class="shiny-html-output" data-testid="integration-enrichment-status"></div>
+    |     <div class="row">
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-factor-label" for="e-factor">Factor</label>
+    |           <div>
+    |             <select id="e-factor" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-factor" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-view-label" for="e-view">Data set</label>
+    |           <div>
+    |             <select id="e-view" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-view" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-database-label" for="e-database">Database</label>
+    |           <div>
+    |             <select id="e-database" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-database" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div id="e-id_column_ui" class="shiny-html-output" data-testid="integration-enrichment-id-column"></div>
+    |     <h4>Settings</h4>
+    |     <div class="row">
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-correlation_method-label" for="e-correlation_method">Correlation (default not yet confirmed)</label>
+    |           <div>
+    |             <select id="e-correlation_method" class="shiny-input-select"><option value="pearson" selected>Pearson (straight-line relation)</option>
+    | <option value="spearman">Spearman (rank order)</option></select>
+    |             <script type="application/json" data-for="e-correlation_method" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-min_samples-label" for="e-min_samples">Smallest number of biological samples a feature needs to be ranked (default not yet confirmed)</label>
+    |           <input id="e-min_samples" type="number" class="shiny-input-number form-control" value="5" data-update-on="change" min="3" step="1"/>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="shiny-panel-conditional" data-display-if="(input['e-database'] == 'kegg' || input['e-database'] == 'reactome') &amp;&amp; (input['e-test'] == 'gsea' || input['e-test'] == 'permutation')" data-ns-prefix="" data-testid="integration-enrichment-seed">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-seed-label" for="e-seed">Seed of the pre-ranked and permutation tests (the correlation-adjusted tests use none) (default not yet confirmed)</label>
+    |             <input id="e-seed" type="number" class="shiny-input-number form-control" value="20261121" data-update-on="change" step="1"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div data-testid="integration-enrichment-string">
+    |       <div class="row">
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_species-label" for="e-string_species">STRING species number (9606 is human, 10090 mouse) (default not yet confirmed)</label>
+    |             <input id="e-string_species" type="number" class="shiny-input-number form-control" value="9606" data-update-on="change" step="1"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_fdr-label" for="e-string_fdr">STRING: show terms up to this false discovery rate</label>
+    |             <input id="e-string_fdr" type="number" class="shiny-input-number form-control" value="0.05" data-update-on="change" min="0" max="1" step="0.01"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_key-label" for="e-string_key">Your STRING key</label>
+    |             <input id="e-string_key" type="password" class="shiny-input-password form-control" value="" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <p>
+    |         <em>STRING needs a personal key (free from string-db.org). It is used only for this query and is never saved, recorded or written to a file. Enter it each time.</em>
+    |       </p>
+    |     </div>
+    |     <div data-testid="integration-enrichment-pathways">
+    |       <div class="row">
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-kegg_organism-label" for="e-kegg_organism">KEGG organism code (hsa is human, mmu mouse) (default not yet confirmed)</label>
+    |             <input id="e-kegg_organism" type="text" class="shiny-input-text form-control" value="hsa" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-reactome_organism-label" for="e-reactome_organism">Reactome organism (such as Homo sapiens) (default not yet confirmed)</label>
+    |             <input id="e-reactome_organism" type="text" class="shiny-input-text form-control" value="Homo sapiens" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-min_set_size-label" for="e-min_set_size">Smallest pathway tested (measured compounds in it) (default not yet confirmed)</label>
+    |             <input id="e-min_set_size" type="number" class="shiny-input-number form-control" value="5" data-update-on="change" min="5" step="1"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-max_set_size-label" for="e-max_set_size">Largest pathway tested (measured compounds in it) (default not yet confirmed)</label>
+    |             <input id="e-max_set_size" type="number" class="shiny-input-number form-control" value="500" data-update-on="change" min="5" step="1"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div id="e-test_ui" class="shiny-html-output" data-testid="integration-enrichment-test"></div>
+    |       <div class="shiny-panel-conditional" data-display-if="input['e-test'] == 'permutation'" data-ns-prefix="" data-testid="integration-enrichment-permutations">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-permutations-label" for="e-permutations">Number of random reorderings (permutation test)</label>
+    |           <div>
+    |             <select id="e-permutations" class="shiny-input-select"><option value="1000" selected>1,000 (the number checked on simulated data)</option>
+    | <option value="10000">10,000 (smaller p-values possible; not checked separately)</option></select>
+    |             <script type="application/json" data-for="e-permutations" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div id="e-adjust_ui" class="shiny-html-output" data-testid="integration-enrichment-adjust"></div>
+    |       <div id="e-test_note" class="shiny-html-output" data-testid="integration-enrichment-test-note"></div>
+    |       <div id="e-evidence" class="shiny-html-output" data-testid="integration-enrichment-evidence"></div>
+    |       <p>
+    |         <em>KEGG's tables are free for academic use only; other users need a licence from KEGG (Pathway Solutions, www.pathway.jp) before downloading them.</em>
+    |       </p>
+    |       <button id="e-download" type="button" class="btn btn-default action-button" data-testid="integration-enrichment-download"><span class="action-icon"><i class="fas fa-download" role="presentation" aria-label="download icon"></i></span><span class="action-label">Download the pathway tables</span></button>
+    |       <div id="e-download_status" class="shiny-html-output" data-testid="integration-enrichment-download-status"></div>
+    |     </div>
+    |     <br/>
+    |     <button class="btn btn-default action-button btn-primary" data-testid="integration-enrichment-run" id="e-run" type="button"><span class="action-icon"><i class="fas fa-play" role="presentation" aria-label="play icon"></i></span><span class="action-label">Run the enrichment</span></button>
+    |     <div id="e-result" class="shiny-html-output" data-testid="integration-enrichment-result"></div>
+    |     <h4>Enriched terms and pathways</h4>
+    |     <div data-testid="integration-enrichment-terms">
+    |       <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item" id="e-terms" style="width:100%;height:auto;"></div>
+    |     </div>
+    |   </div>
+    | </div>
+  enrich_kegg_organism
+
+file: test-kit240-integration-default.R
+test: KIT-240 T10: the Enrichment tab marks no default unconfirmed and its three organism defaults as human
+kind: failure
+message:
+  Expected `ui` to match string "Reactome organism (such as Homo sapiens) (NA)</label>".
+  Actual text:
+  x | <div class="row">
+    |   <div class="col-sm-12">
+    |     <h3>Enrichment of a factor</h3>
+    |     <p>Find the biological processes, pathways or compound classes that follow a factor. Every measured feature of the chosen data set, not only those given to the model, is ranked by how closely its values follow the factor across the biological samples (a correlation from -1 to 1). Proteins and genes are tested with STRING; metabolites and lipids with KEGG or Reactome pathways.</p>
+    |     <p>
+    |       <em>This step is optional: the Record tab is open without it.</em>
+    |     </p>
+    |     <div id="e-status" class="shiny-html-output" data-testid="integration-enrichment-status"></div>
+    |     <div class="row">
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-factor-label" for="e-factor">Factor</label>
+    |           <div>
+    |             <select id="e-factor" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-factor" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-view-label" for="e-view">Data set</label>
+    |           <div>
+    |             <select id="e-view" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-view" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-database-label" for="e-database">Database</label>
+    |           <div>
+    |             <select id="e-database" class="shiny-input-select"></select>
+    |             <script type="application/json" data-for="e-database" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div id="e-id_column_ui" class="shiny-html-output" data-testid="integration-enrichment-id-column"></div>
+    |     <h4>Settings</h4>
+    |     <div class="row">
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-correlation_method-label" for="e-correlation_method">Correlation (default not yet confirmed)</label>
+    |           <div>
+    |             <select id="e-correlation_method" class="shiny-input-select"><option value="pearson" selected>Pearson (straight-line relation)</option>
+    | <option value="spearman">Spearman (rank order)</option></select>
+    |             <script type="application/json" data-for="e-correlation_method" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-min_samples-label" for="e-min_samples">Smallest number of biological samples a feature needs to be ranked (default not yet confirmed)</label>
+    |           <input id="e-min_samples" type="number" class="shiny-input-number form-control" value="5" data-update-on="change" min="3" step="1"/>
+    |         </div>
+    |       </div>
+    |       <div class="col-sm-4">
+    |         <div class="shiny-panel-conditional" data-display-if="(input['e-database'] == 'kegg' || input['e-database'] == 'reactome') &amp;&amp; (input['e-test'] == 'gsea' || input['e-test'] == 'permutation')" data-ns-prefix="" data-testid="integration-enrichment-seed">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-seed-label" for="e-seed">Seed of the pre-ranked and permutation tests (the correlation-adjusted tests use none) (default not yet confirmed)</label>
+    |             <input id="e-seed" type="number" class="shiny-input-number form-control" value="20261121" data-update-on="change" step="1"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |     <div data-testid="integration-enrichment-string">
+    |       <div class="row">
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_species-label" for="e-string_species">STRING species number (9606 is human, 10090 mouse) (default not yet confirmed)</label>
+    |             <input id="e-string_species" type="number" class="shiny-input-number form-control" value="9606" data-update-on="change" step="1"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_fdr-label" for="e-string_fdr">STRING: show terms up to this false discovery rate</label>
+    |             <input id="e-string_fdr" type="number" class="shiny-input-number form-control" value="0.05" data-update-on="change" min="0" max="1" step="0.01"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-4">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-string_key-label" for="e-string_key">Your STRING key</label>
+    |             <input id="e-string_key" type="password" class="shiny-input-password form-control" value="" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <p>
+    |         <em>STRING needs a personal key (free from string-db.org). It is used only for this query and is never saved, recorded or written to a file. Enter it each time.</em>
+    |       </p>
+    |     </div>
+    |     <div data-testid="integration-enrichment-pathways">
+    |       <div class="row">
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-kegg_organism-label" for="e-kegg_organism">KEGG organism code (hsa is human, mmu mouse) (default not yet confirmed)</label>
+    |             <input id="e-kegg_organism" type="text" class="shiny-input-text form-control" value="hsa" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-reactome_organism-label" for="e-reactome_organism">Reactome organism (such as Homo sapiens) (default not yet confirmed)</label>
+    |             <input id="e-reactome_organism" type="text" class="shiny-input-text form-control" value="Homo sapiens" data-update-on="change"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-min_set_size-label" for="e-min_set_size">Smallest pathway tested (measured compounds in it) (default not yet confirmed)</label>
+    |             <input id="e-min_set_size" type="number" class="shiny-input-number form-control" value="5" data-update-on="change" min="5" step="1"/>
+    |           </div>
+    |         </div>
+    |         <div class="col-sm-3">
+    |           <div class="form-group shiny-input-container">
+    |             <label class="control-label" id="e-max_set_size-label" for="e-max_set_size">Largest pathway tested (measured compounds in it) (default not yet confirmed)</label>
+    |             <input id="e-max_set_size" type="number" class="shiny-input-number form-control" value="500" data-update-on="change" min="5" step="1"/>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div id="e-test_ui" class="shiny-html-output" data-testid="integration-enrichment-test"></div>
+    |       <div class="shiny-panel-conditional" data-display-if="input['e-test'] == 'permutation'" data-ns-prefix="" data-testid="integration-enrichment-permutations">
+    |         <div class="form-group shiny-input-container">
+    |           <label class="control-label" id="e-permutations-label" for="e-permutations">Number of random reorderings (permutation test)</label>
+    |           <div>
+    |             <select id="e-permutations" class="shiny-input-select"><option value="1000" selected>1,000 (the number checked on simulated data)</option>
+    | <option value="10000">10,000 (smaller p-values possible; not checked separately)</option></select>
+    |             <script type="application/json" data-for="e-permutations" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+    |           </div>
+    |         </div>
+    |       </div>
+    |       <div id="e-adjust_ui" class="shiny-html-output" data-testid="integration-enrichment-adjust"></div>
+    |       <div id="e-test_note" class="shiny-html-output" data-testid="integration-enrichment-test-note"></div>
+    |       <div id="e-evidence" class="shiny-html-output" data-testid="integration-enrichment-evidence"></div>
+    |       <p>
+    |         <em>KEGG's tables are free for academic use only; other users need a licence from KEGG (Pathway Solutions, www.pathway.jp) before downloading them.</em>
+    |       </p>
+    |       <button id="e-download" type="button" class="btn btn-default action-button" data-testid="integration-enrichment-download"><span class="action-icon"><i class="fas fa-download" role="presentation" aria-label="download icon"></i></span><span class="action-label">Download the pathway tables</span></button>
+    |       <div id="e-download_status" class="shiny-html-output" data-testid="integration-enrichment-download-status"></div>
+    |     </div>
+    |     <br/>
+    |     <button class="btn btn-default action-button btn-primary" data-testid="integration-enrichment-run" id="e-run" type="button"><span class="action-icon"><i class="fas fa-play" role="presentation" aria-label="play icon"></i></span><span class="action-label">Run the enrichment</span></button>
+    |     <div id="e-result" class="shiny-html-output" data-testid="integration-enrichment-result"></div>
+    |     <h4>Enriched terms and pathways</h4>
+    |     <div data-testid="integration-enrichment-terms">
+    |       <div class="datatables html-widget html-widget-output shiny-report-size html-fill-item" id="e-terms" style="width:100%;height:auto;"></div>
+    |     </div>
+    |   </div>
+    | </div>
+  enrich_reactome_organism
+
+file: test-kit267-enrichment-defaults.R
+test: KIT-267 T3: no Enrichment default is provisional, and the organism mark is worded
+kind: failure
+message:
+  Expected `sum(vapply(spec, integrationParameterProvisional, logical(1)))` to be identical to 0L.
+  Differences:
+    `actual`: 8
+  `expected`: 0
+
+file: test-kit267-enrichment-defaults.R
+test: KIT-267 T3: no Enrichment default is provisional, and the organism mark is worded
+kind: failure
+message:
+  Expected `k267Text(integrationGuiTexts(), "mark_organism")` to match string "human".
+  Actual text:
+  x | <NA>
+

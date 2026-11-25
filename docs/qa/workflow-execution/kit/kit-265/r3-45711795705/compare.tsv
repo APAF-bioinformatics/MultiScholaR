@@ -1,0 +1,11 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit265-organism-routes.R	126	3	0	0	failed	129	0	0	0	ok	fixed	fixed: E1b: route (i) with no form values passed says the form has no Taxonomy ID; fixed: E1c: route (i) with a cleared form says the form has no Taxonomy ID and never prints 'taxon NA'; fixed: E1e: route (i) with an empty organism name and a Taxonomy ID names the Taxonomy ID that will be used; counts: E1b: route (i) with no form values passed says the form has no Taxonomy ID (passed 8 -> 9, skipped 0 -> 0); counts: E1c: route (i) with a cleared form says the form has no Taxonomy ID and never prints 'taxon NA' (passed 9 -> 10, skipped 0 -> 0); counts: E1e: route (i) with an empty organism name and a Taxonomy ID names the Taxonomy ID that will be used (passed 9 -> 10, skipped 0 -> 0)	
+test-e2e-test-mode-integration.R	61	0	0	0	ok	61	0	0	0	ok	same		
+test-kit250-organism-dialog.R	118	1	0	0	failed	119	0	0	0	ok	fixed	fixed: G3: FASTA headers without organisms: no dialog, the import completes with the form's values; counts: G3: FASTA headers without organisms: no dialog, the import completes with the form's values (passed 5 -> 6, skipped 0 -> 0)	
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-prot-01c-import-module-contracts.R	437	1	0	0	failed	438	0	0	0	ok	fixed	fixed: analyzeProtImportMixedSpeciesData warns when no valid organism choices can be built; counts: analyzeProtImportMixedSpeciesData warns when no valid organism choices can be built (passed 4 -> 5, skipped 0 -> 0)	
+test-prot-01d-import-module-characterization.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-prot-import-core.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-server-shared.R	226	0	0	0	ok	226	0	0	0	ok	same		
+test-workflow-ui-shared.R	178	0	0	0	ok	178	0	0	0	ok	same		
