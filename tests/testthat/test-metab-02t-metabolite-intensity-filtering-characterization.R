@@ -170,8 +170,10 @@ newMetabFilteringObject <- function(args = list()) {
       )
     ),
     metabolite_id_column = "Name",
+    # KIT-217 (T-M2): one group per sample; the intensity filter refuses a design without a group column.
     design_matrix = data.frame(
       Run = c("Sample_1", "Sample_2"),
+      group = c("A", "B"),
       stringsAsFactors = FALSE
     ),
     sample_id = "Run",
