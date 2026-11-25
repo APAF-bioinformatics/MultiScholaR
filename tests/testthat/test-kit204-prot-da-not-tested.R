@@ -166,11 +166,13 @@ test_that("KIT-204 N4 (a) (guard): without an untested row the table and its typ
 
 # --- N2, N2b, N3, N4 (b): the S4 method's two count tables and barplots ------------------------------------------
 
-# For one contrast's result: the expected "Not significant" (finite p, not q < 0.05) and "Not tested" (p missing).
+# For one contrast's result: the expected "Not significant" (finite p, not q < 0.05; a missing q is not significant, as
+# the package's last case_when branch has it) and "Not tested" (p missing).
 k204Expected <- function(result) {
     table <- result$contrasts_results_table
     tested <- !is.na(table$raw_pvalue)
-    list(not_significant = as.numeric(sum(tested & !(table$fdr_qvalue < 0.05))),
+    significant <- !is.na(table$fdr_qvalue) & table$fdr_qvalue < 0.05
+    list(not_significant = as.numeric(sum(tested & !significant)),
         not_tested = as.numeric(sum(!tested)))
 }
 
@@ -289,7 +291,8 @@ test_that("KIT-204 N5: the tab's summary always shows the Not tested line, from 
 test_that("KIT-204 N9 and N3 (iii): the published table has a Not tested row; the figure and report do not change", {
     k204MockFigures()
     fixture <- k204Owner(k204Object(k204Values()))
-    manifest <- k204Click(fixture)
+    # C-B carries the group-B effect, so the NumSig figure is drawn (N3 (iii)'s precondition).
+    manifest <- k204Click(fixture, k204Contrasts(c("B.vs.A", "C.vs.A", "C.vs.B")))
     saved <- new.env(parent = emptyenv())
     saved$plots <- list()
     testthat::local_mocked_bindings(ggsave = function(filename, plot = ggplot2::last_plot(), ...) {
@@ -299,6 +302,11 @@ test_that("KIT-204 N9 and N3 (iii): the published table has a Not tested row; th
     out <- file.path(fixture$root, "publication")
     done <- k204Quiet(withDIAStateScope(fixture$manager, function() {
         object <- readDIAExecutionComponents(fixture$manager, manifest$source, fields = "design_matrix")
+        # The arguments produceDIADaPublication records on the object (R/utils_workflow_dia_da.R:586-590).
+        object@args$outputDaResultsAllContrasts <- list(uniprot_tbl = data.frame(),
+            da_output_dir = file.path(out, "da"), publication_graphs_dir = file.path(out, "graphs"),
+            file_prefix = "da_proteins", args_row_id = manifest$protein_id_column, gene_names_column = "gene_names",
+            uniprot_id_column = "Entry", da_q_val_thresh = 0.05, fdr_column = "fdr_qvalue", log2fc_column = "log2FC")
         outputDaResultsAllContrasts(object, manifest$results, uniprot_tbl = data.frame(),
             da_output_dir = file.path(out, "da"), publication_graphs_dir = file.path(out, "graphs"),
             file_prefix = "da_proteins", args_row_id = manifest$protein_id_column, gene_names_column = "gene_names",
@@ -312,7 +320,7 @@ test_that("KIT-204 N9 and N3 (iii): the published table has a Not tested row; th
     # N9: C-A's row (failing first); B-A has none.
     expect_identical(k204Count(at("C.vs.A"), "Not tested"), 1)
     expect_identical(k204Count(at("B.vs.A"), "Not tested"), NA_real_)
-    # N3 (iii) (guard): the NumSig figure draws the two significant statuses only. Precondition: it was drawn (B-A has a
+    # N3 (iii) (guard): the NumSig figure draws the two significant statuses only. Precondition: it was drawn (C-B has a
     # significant protein).
     figure <- saved$plots[["da_proteins_num_sig_da_molecules.png"]]
     expect_false(is.null(figure))
