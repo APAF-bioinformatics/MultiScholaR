@@ -1,0 +1,5 @@
+file	test	passed	failed	error	skipped	seconds
+test-integration-workbook-mofa.R	KIT-143: MOFA2's defaults are the settings the reference workbook trained with	8	0	FALSE	FALSE	35.88
+test-integration-workbook-mofa.R	KIT-143: the module reproduces the reference workbook's MOFA2 configuration exactly on synthetic data	29	0	FALSE	FALSE	0.14
+test-integration-workbook-mofa.R	KIT-143 (KIT-234): the twelve integration functions run end to end on the corpus with MOFA2 and repeat the model from the record	12	0	FALSE	FALSE	131.6
+test-integration-record-mofa.R	KIT-142: with MOFA2, a saved integration is reopened, repeated from its record to the same model, and reported	29	0	FALSE	FALSE	136.72

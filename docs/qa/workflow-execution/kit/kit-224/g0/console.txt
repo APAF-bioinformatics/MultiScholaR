@@ -1,0 +1,723 @@
+KIT-224 G0 at cea72da6fefde36e1d7ff52537cf0e289fb61d8d out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-224/g0 
+::notice title=INFO::Using 'ruv_grouping_variable' from function argument: group
+::notice title=INFO::Using 'ruv_number_k' from function argument.
+::notice title=INFO::Using 'ctrl' from function argument.
+::notice title=INFO::Starting RUV-III C Varying correction for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::  - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::   Assay 'pos': Using 60 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'pos': RUV correction applied. Dimensions before cleaning: 60x12, After: 60x12
+::notice title=INFO::   Assay 'neg': Using 60 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'neg': RUV correction applied. Dimensions before cleaning: 60x12, After: 60x12
+::notice title=INFO::Cleaning design matrix to match remaining samples after RUV...
+::notice title=INFO::RUV-III correction process finished for 2 assay(s).
+::notice title=INFO::Using 'ruv_grouping_variable' from function argument: group
+::notice title=INFO::Using 'ruv_number_k' from function argument.
+::notice title=INFO::Using 'ctrl' from function argument.
+::notice title=INFO::Starting RUV-III C Varying correction for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::  - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+::warning title=WARN::   Assay 'pos': Missing values (NA) detected in data matrix Y *before* RUV. RUVIII_C_Varying might fail or produce unexpected results if it doesn't handle NAs internally. Consider imputation *before* calling ruvIII_C_Varying if needed.
+::notice title=INFO::   Assay 'pos': Using 60 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'pos': RUV correction applied. Dimensions before cleaning: 60x12, After: 60x12
+::warning title=WARN::   Assay 'neg': Missing values (NA) detected in data matrix Y *before* RUV. RUVIII_C_Varying might fail or produce unexpected results if it doesn't handle NAs internally. Consider imputation *before* calling ruvIII_C_Varying if needed.
+::notice title=INFO::   Assay 'neg': Using 60 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'neg': RUV correction applied. Dimensions before cleaning: 60x12, After: 60x12
+::notice title=INFO::Cleaning design matrix to match remaining samples after RUV...
+::notice title=INFO::RUV-III correction process finished for 2 assay(s).
+::notice title=INFO::Using 'ruv_grouping_variable' from function argument: group
+::notice title=INFO::Using 'ruv_number_k' from function argument.
+::notice title=INFO::Using 'ctrl' from function argument.
+::notice title=INFO::Starting RUV-III C Varying correction for metabolites.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::  - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::   Assay 'pos': Using 60 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'pos': RUV correction applied. Dimensions before cleaning: 60x12, After: 60x12
+::notice title=INFO::   Assay 'neg': Using 60 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'neg': RUV correction applied. Dimensions before cleaning: 60x12, After: 60x12
+::notice title=INFO::Cleaning design matrix to match remaining samples after RUV...
+::notice title=INFO::RUV-III correction process finished for 2 assay(s).
+::notice title=INFO::=== Starting runLipidsDA ===
+::notice title=INFO::   Processing 2 assays: pos, neg
+::notice title=INFO::   Contrasts: groupB-groupA
+::notice title=INFO::--- Processing assay: pos ---
+::notice title=INFO::   Expression matrix: 60 lipids x 12 samples
+::notice title=INFO::--- Entering runTestsContrastsLipidDA ---
+::notice title=INFO::   data dims = 60 x 12, 1 contrasts
+::notice title=INFO::   contrasts = groupB-groupA
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 60 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 60 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Exiting runTestsContrastsLipidDA ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 60 rows
+::notice title=INFO::   expr_matrix: 60 lipids x 12 samples
+::notice title=INFO::   intensity_long: 720 rows
+::notice title=INFO::   intensity_wide: 60 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 60 rows x 29 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay pos: 60 total results
+::notice title=INFO::--- Processing assay: neg ---
+::notice title=INFO::   Expression matrix: 60 lipids x 12 samples
+::notice title=INFO::--- Entering runTestsContrastsLipidDA ---
+::notice title=INFO::   data dims = 60 x 12, 1 contrasts
+::notice title=INFO::   contrasts = groupB-groupA
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 60 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 60 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Exiting runTestsContrastsLipidDA ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 60 rows
+::notice title=INFO::   expr_matrix: 60 lipids x 12 samples
+::notice title=INFO::   intensity_long: 720 rows
+::notice title=INFO::   intensity_wide: 60 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 60 rows x 29 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay neg: 60 total results
+::notice title=INFO::   Combined results: 120 total rows
+::notice title=INFO::=== Completed runLipidsDA ===
+::notice title=INFO::=== Starting runLipidsDA ===
+::notice title=INFO::   Processing 2 assays: pos, neg
+::notice title=INFO::   Contrasts: groupB-groupA
+::notice title=INFO::--- Processing assay: pos ---
+::notice title=INFO::   Expression matrix: 60 lipids x 12 samples
+::notice title=INFO::--- Entering runTestsContrastsLipidDA ---
+::notice title=INFO::   data dims = 60 x 12, 1 contrasts
+::notice title=INFO::   contrasts = groupB-groupA
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 60 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running TREAT analysis with LFC cutoff...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 60 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Exiting runTestsContrastsLipidDA ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 60 rows
+::notice title=INFO::   expr_matrix: 60 lipids x 12 samples
+::notice title=INFO::   intensity_long: 720 rows
+::notice title=INFO::   intensity_wide: 60 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 60 rows x 28 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay pos: 60 total results
+::notice title=INFO::--- Processing assay: neg ---
+::notice title=INFO::   Expression matrix: 60 lipids x 12 samples
+::notice title=INFO::--- Entering runTestsContrastsLipidDA ---
+::notice title=INFO::   data dims = 60 x 12, 1 contrasts
+::notice title=INFO::   contrasts = groupB-groupA
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 60 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running TREAT analysis with LFC cutoff...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 60 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Exiting runTestsContrastsLipidDA ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 60 rows
+::notice title=INFO::   expr_matrix: 60 lipids x 12 samples
+::notice title=INFO::   intensity_long: 720 rows
+::notice title=INFO::   intensity_wide: 60 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 60 rows x 28 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay neg: 60 total results
+::notice title=INFO::   Combined results: 120 total rows
+::notice title=INFO::=== Completed runLipidsDA ===
+::notice title=INFO::Applying between-sample normalization method: cyclicloess
+::notice title=INFO::Between-sample normalization process finished for all assays.
+::notice title=INFO::Running RUV optimization for 1 assays in automatic mode
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 1
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 5
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 5 (based on percentage: 1%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 5 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 5 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 2
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 10
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 10 (based on percentage: 2%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 10 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 10 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 3
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 15
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 15 (based on percentage: 3%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 15 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 15 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 4
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 21
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 21 (based on percentage: 4%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 21 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 21 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 5
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 26
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 26 (based on percentage: 5%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 26 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 26 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 6
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 31
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 31 (based on percentage: 6%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 31 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 31 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 7
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 36
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 36 (based on percentage: 7%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 36 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 36 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 8
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 41
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 41 (based on percentage: 8%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 41 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 41 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 9
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 46
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 46 (based on percentage: 9%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 46 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 46 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 10
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 52
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 52 (based on percentage: 10%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 52 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 52 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 11
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 57
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 57 (based on percentage: 11%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 57 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 57 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 12
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 62
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 62 (based on percentage: 12%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 62 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 62 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 13
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 67
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 67 (based on percentage: 13%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 67 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 67 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 14
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 72
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 72 (based on percentage: 14%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 72 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 72 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 15
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 77
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 77 (based on percentage: 15%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 77 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 77 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 16
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 82
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 82 (based on percentage: 16%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 82 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 82 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 17
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 88
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 88 (based on percentage: 17%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 88 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 88 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 18
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 93
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 93 (based on percentage: 18%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 93 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 93 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 19
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 98
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 98 (based on percentage: 19%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 98 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 98 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 20
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 103
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 103 (based on percentage: 20%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 103 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Found assay-specific controls in 'ctrl' list.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 103 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Using 'ruv_grouping_variable' from function argument: group
+::notice title=INFO::Using 'ruv_number_k' from function argument.
+::notice title=INFO::Using 'ctrl' from function argument.
+::notice title=INFO::Starting RUV-III C Varying correction for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::  - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::   Assay 'LCMS_Pos': Using 41 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'LCMS_Pos': RUV correction applied. Dimensions before cleaning: 515x12, After: 515x12
+::notice title=INFO::Cleaning design matrix to match remaining samples after RUV...
+::notice title=INFO::RUV-III correction process finished for 1 assay(s).
+::notice title=INFO::Applying between-sample normalization method: cyclicloess
+::notice title=INFO::Between-sample normalization process finished for all assays.
+::notice title=INFO::Running RUV optimization for 1 assays in manual mode
+::notice title=INFO::Processing assay: LCMS_Pos
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 5
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 26
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 26 (based on percentage: 5%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 26 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Using the globally provided 'ctrl' vector.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 26 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Using 'ruv_grouping_variable' from function argument: group
+::notice title=INFO::Using 'ruv_number_k' from function argument.
+::notice title=INFO::Using 'ctrl' from function argument.
+::notice title=INFO::Starting RUV-III C Varying correction for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::  - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::   Assay 'LCMS_Pos': Using 26 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'LCMS_Pos': RUV correction applied. Dimensions before cleaning: 516x12, After: 516x12
+::notice title=INFO::Cleaning design matrix to match remaining samples after RUV...
+::notice title=INFO::RUV-III correction process finished for 1 assay(s).
+::notice title=INFO::   Expression matrix: 516 lipids x 12 samples
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 516 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 516 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 516 rows
+::notice title=INFO::   expr_matrix: 516 lipids x 12 samples
+::notice title=INFO::   intensity_long: 6192 rows
+::notice title=INFO::   intensity_wide: 516 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 516 rows x 29 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::Applying between-sample normalization method: cyclicloess
+::notice title=INFO::Between-sample normalization process finished for all assays.
+::notice title=INFO::Running RUV optimization for 1 assays in manual mode
+::notice title=INFO::Processing assay: LCMS_Pos
+::notice title=INFO::Starting Negative Control selection using ANOVA for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Q-value Cutoff: 0.05
+::notice title=INFO::  - RUV FDR Method: BH
+::notice title=INFO::   Assay 'LCMS_Pos': Using percentage from positional argument: 5
+::notice title=INFO::   Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 26
+::notice title=INFO::  Assay 'LCMS_Pos': Final Neg Ctrl Count: 26 (based on percentage: 5%)
+::notice title=INFO::  Assay 'LCMS_Pos': Selected 26 control features.
+::notice title=INFO::Finished Negative Control selection for 1 assay(s).
+::notice title=INFO::Starting RUV Canonical Correlation plot generation for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - Control Features Key: 'ctrl' (Value type depends on input/config)
+::notice title=INFO::  - Num Imputation Components: 2
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::   Assay 'LCMS_Pos': Using the globally provided 'ctrl' vector.
+::notice title=INFO::   Assay 'LCMS_Pos': Using 26 control features for cancor plot.
+::notice title=INFO::Finished RUV Canonical Correlation plot generation for 1 assay(s).
+::notice title=INFO::Using 'ruv_grouping_variable' from function argument: group
+::notice title=INFO::Using 'ruv_number_k' from function argument.
+::notice title=INFO::Using 'ctrl' from function argument.
+::notice title=INFO::Starting RUV-III C Varying correction for lipids.
+::notice title=INFO::Parameters (Resolved):
+::notice title=INFO::  - RUV Grouping Variable: group
+::notice title=INFO::  - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::  - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+::notice title=INFO::   Assay 'LCMS_Pos': Using 26 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+::notice title=INFO::   Assay 'LCMS_Pos': RUV correction applied. Dimensions before cleaning: 516x12, After: 516x12
+::notice title=INFO::Cleaning design matrix to match remaining samples after RUV...
+::notice title=INFO::RUV-III correction process finished for 1 assay(s).
+::notice title=INFO::   Expression matrix: 516 lipids x 12 samples
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 516 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 516 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 516 rows
+::notice title=INFO::   expr_matrix: 516 lipids x 12 samples
+::notice title=INFO::   intensity_long: 6192 rows
+::notice title=INFO::   intensity_wide: 516 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 516 rows x 29 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+   id     key                            
+1  E1     pos:max_abs_level_change       
+2  E1     pos:median_abs_level_change    
+3  E1     pos:features                   
+4  E1     neg:max_abs_level_change       
+5  E1     neg:median_abs_level_change    
+6  E1     neg:features                   
+7  E1m    pos:max_abs_level_change       
+8  E1m    pos:median_abs_level_change    
+9  E1m    pos:features                   
+10 E1m    neg:max_abs_level_change       
+11 E1m    neg:median_abs_level_change    
+12 E1m    neg:features                   
+13 E2     pos:max_abs_level_change       
+14 E2     pos:median_abs_level_change    
+15 E2     pos:features                   
+16 E2     neg:max_abs_level_change       
+17 E2     neg:median_abs_level_change    
+18 E2     neg:features                   
+19 DA     cutoff_0:significant           
+20 DA     cutoff_0.5:significant         
+21 CF     kept_samples                   
+22 E3     max_abs_level_change           
+23 E4_iii record_lists_ruv_feature_levels
+24 E5     error                          
+25 E6     rows                           
+26 E6     call_changes                   
+27 E6     max_abs_dt                     
+28 E6     max_abs_dlogfc                 
+29 E6     calls_x1                       
+   value                                                                                                                                                                                                                                                                                                                       
+1  10.2320975                                                                                                                                                                                                                                                                                                                  
+2  2.199913436                                                                                                                                                                                                                                                                                                                 
+3  60                                                                                                                                                                                                                                                                                                                          
+4  11.58936665                                                                                                                                                                                                                                                                                                                 
+5  2.673436583                                                                                                                                                                                                                                                                                                                 
+6  60                                                                                                                                                                                                                                                                                                                          
+7  7.558886916                                                                                                                                                                                                                                                                                                                 
+8  2.407643492                                                                                                                                                                                                                                                                                                                 
+9  60                                                                                                                                                                                                                                                                                                                          
+10 5.983363223                                                                                                                                                                                                                                                                                                                 
+11 1.667818827                                                                                                                                                                                                                                                                                                                 
+12 60                                                                                                                                                                                                                                                                                                                          
+13 10.2320975                                                                                                                                                                                                                                                                                                                  
+14 2.199913436                                                                                                                                                                                                                                                                                                                 
+15 60                                                                                                                                                                                                                                                                                                                          
+16 11.58936665                                                                                                                                                                                                                                                                                                                 
+17 2.673436583                                                                                                                                                                                                                                                                                                                 
+18 60                                                                                                                                                                                                                                                                                                                          
+19 22                                                                                                                                                                                                                                                                                                                          
+20 6                                                                                                                                                                                                                                                                                                                           
+21 S01,S02,S03,S04,S05,S06,S07,S08,S09,S10,S11,S12                                                                                                                                                                                                                                                                             
+22 22.36800579                                                                                                                                                                                                                                                                                                                 
+23 FALSE                                                                                                                                                                                                                                                                                                                       
+24 error: Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.\nDifferences:\n`actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"\n`expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"\n
+25 516                                                                                                                                                                                                                                                                                                                         
+26 22                                                                                                                                                                                                                                                                                                                          
+27 0.4204862977                                                                                                                                                                                                                                                                                                                
+28 6.394884622e-13                                                                                                                                                                                                                                                                                                             
+29 160                                                                                                                                                                                                                                                                                                                         
