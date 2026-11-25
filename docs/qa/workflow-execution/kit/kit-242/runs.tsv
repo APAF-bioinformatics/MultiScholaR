@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45602184961	17488ccf535835d737af5dafac268c59ed8a8005	R1 for the option-free rows (tests-only; staging e0747fc1 + the new test file); stop rule 1; ceiling 60	9.9	every one of the 14 tests fails at its base value (10 passed, 46 failed, 2 errors expectations); stop rule 1 not triggered
