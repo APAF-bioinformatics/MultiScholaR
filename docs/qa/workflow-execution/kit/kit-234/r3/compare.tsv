@@ -1,0 +1,15 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-app-shell-shared.R	29	0	0	0	ok	29	0	0	0	ok	same		
+test-applets-direct-shared.R	49	0	0	0	ok	49	0	0	0	ok	same		
+test-enrichment-significance.R	191	0	0	0	ok	181	0	0	0	ok	count-changed	counts: KIT-203 S11: the five workbooks pass the default rule (passed 10 -> NA, skipped 0 -> NA)	
+test-go-propagation.R	331	0	0	1	ok	321	0	0	1	ok	count-changed	counts: KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates (passed NA -> 2, skipped NA -> 0); counts: KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates; the workbooks pass the value (passed 12 -> NA, skipped 0 -> NA)	
+test-integration-gui.R	397	0	0	0	ok	397	0	0	0	ok	same		
+test-integration-removed-factors.R	526	0	0	3	ok	520	0	0	3	ok	count-changed	counts: KIT-184: no placeholder of the simulation's numbers is left in a shipped text (passed 12 -> 6, skipped 0 -> 0)	
+test-integration-workbook-mofa.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-integration-workbook.R	53	0	0	0	ok	43	0	0	0	ok	count-changed	counts: KIT-143: the shipped integration workbook is the thin one over the module, and the stub is gone (passed 7 -> NA, skipped 0 -> NA); counts: KIT-154 (KIT-234): the twelve integration functions are exported, documented and present (passed NA -> 36, skipped NA -> 0); counts: KIT-154: the workbook calls only the exported integration functions, each exported, documented and called (passed 39 -> NA, skipped 0 -> NA)	
+test-kit202-intensity-filter-samples.R	163	0	0	0	ok	163	0	0	0	ok	same		
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-github-management-direct-shared.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-kit234-workbooks-withdrawn.R	0	0	0	0	absent	29	0	0	0	ok	only-on-head		

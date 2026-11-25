@@ -1,0 +1,41 @@
+file: test-kit222-replicate-keys.R
+test: KIT-222 G1: merge-free designs are byte-identical to base (exhaustive at 2 and 3 samples, 200 random at 50)
+kind: failure
+message:
+  Expected `failures` to be identical to `character()`.
+  Differences:
+          actual                                 | expected 
+      [1] "lowest A_1,A_2,B_1,B_2 A,B"           -          
+      [2] "first A_1,A_2,B_1,B_2 A,B"            -          
+      [3] "manual A_1,A_2,B_1,B_2 A,B"           -          
+      [4] "lowest A_1,A_2,B_1,B_2 B,A"           -          
+      [5] "first A_1,A_2,B_1,B_2 B,A"            -          
+      [6] "lowest A_1,A_2,B_2,B_1 A,B"           -          
+      [7] "first A_1,A_2,B_2,B_1 A,B"            -          
+      [8] "manual A_1,A_2,B_2,B_1 A,B"           -          
+      [9] "lowest A_1,A_2,B_2,B_1 B,A"           -          
+     [10] "first A_1,A_2,B_2,B_1 B,A"            -          
+     [11] "lowest A_1,B_1,A_2,B_2 A,B"           -          
+     [12] "first A_1,B_1,A_2,B_2 A,B"            -          
+     [13] "manual A_1,B_1,A_2,B_2 A,B"           -          
+     [14] "lowest A_1,B_1,B_2,A_2 B,A"           -          
+     [15] "first A_1,B_1,B_2,A_2 B,A"            -          
+     [16] "manual A_1,B_1,B_2,A_2 B,A"           -          
+     [17] "lowest A_1,B_2,A_2,B_1 A,B"           -          
+     [18] "first A_1,B_2,A_2,B_1 A,B"            -          
+     [19] "manual A_1,B_2,A_2,B_1 A,B"           -          
+     [20] "lowest A_1,B_2,B_1,A_2 B,A"           -          
+     [21] "first A_1,B_2,B_1,A_2 B,A"            -          
+     [22] "manual A_1,B_2,B_1,A_2 B,A"           -          
+     [23] "lowest A_2,A_1,B_1,B_2 A,B"           -          
+     [24] "first A_2,A_1,B_1,B_2 A,B"            -          
+--
+file: test-kit222-replicate-keys.R
+test: KIT-222 G5: the peptide replicate filter's grouping is unchanged on a merge-free design
+kind: failure
+message:
+  Expected `head` to be identical to `base`.
+  Differences:
+  `actual$replicates` is an integer vector (1, 1, 1, 2, 2, ...)
+  `expected$replicates` is a double vector (1, 1, 1, 2, 2, ...)
+

@@ -2,6 +2,7 @@
 # section 10.1; S5 and S13 are the scripts replay-k203.R and options-k203.R). Fixtures: tests/testdata/
 # enrichment-significance/ (README.md: what the base commit wrote, and SHA-256) and KIT-173's go-propagation fixtures.
 # No service is called. Helpers: helper-go-propagation.R.
+# S11 removed by KIT-234 (the workbooks are archived).
 
 k203Fixture <- function(...) testthat::test_path("..", "testdata", "enrichment-significance", ...)
 
@@ -542,19 +543,7 @@ test_that("KIT-203 S10: the tab offers both rules before Run, each with its note
     })
 })
 
-# --- S11, S12: workbooks and record ---------------------------------------------------------------------------------
-
-test_that("KIT-203 S11: the five workbooks pass the default rule", {
-    for (file in c("DIA_workflow_experienced.rmd", "DIA_workflow_limpa.rmd", "DIA_workflow_limpa_starter.rmd",
-        "DIA_workflow_limpa_experienced.rmd", "DIA_workflow_starter.rmd")) {
-        text <- paste(readLines(system.file("workbooks", "proteomics", file, package = "MultiScholaR"), warn = FALSE),
-            collapse = "\n")
-        call <- regmatches(text, regexpr("processEnrichments\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\)", text,
-            perl = TRUE))
-        expect_length(call, 1L)
-        expect_true(grepl('significance_rule = "bh_whole_family"', call, fixed = TRUE), info = file)
-    }
-})
+# --- S12: record ---
 
 test_that("KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome", {
     expect_identical(workflowParameterLabels$enrichment$significance_rule,

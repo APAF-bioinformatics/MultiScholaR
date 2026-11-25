@@ -1,0 +1,12 @@
+lip file lip-c17-src-study_parameters.txt: 130 lines; lines starting '* ' = 23; starting '•' = 0; starting '- ' = 0
+lip ITSD Features Per Assay block present = FALSE
+lip RUV form: single ('k value:' line) = FALSE; per-assay ('Per-Assay Parameters') = FALSE; 'Status: Not Applied' = TRUE; 'Status: Applied' = FALSE
+lip Automatic RUV Optimization Results section = FALSE
+lip staging bullet: num_assays="2"; assay_names="LCMS_Pos, LCMS_Neg"; log_transform_applied=true; normalisation_method="cyclicloess"; itsd_applied=true; itsd_method_type="average_centered"; itsd_aggregation="median"; ruv_applied=false; Methods say ITSD 'was applied' = TRUE; 'Internal standard normalization was not applied' = FALSE; 'using the NA method' = FALSE; RUV 'was not applied' = TRUE; 'without log transformation' = FALSE
+lip kit227 bullet: num_assays="2"; assay_names="LCMS_Pos, LCMS_Neg"; log_transform_applied=true; normalisation_method="cyclicloess"; itsd_applied=true; itsd_method_type="average_centered"; itsd_aggregation="median"; ruv_applied=false; Methods say ITSD 'was applied' = TRUE; 'Internal standard normalization was not applied' = FALSE; 'using the NA method' = FALSE; RUV 'was not applied' = TRUE; 'without log transformation' = FALSE
+met file met-c17-src-study_parameters.txt: 130 lines; lines starting '* ' = 23; starting '•' = 0; starting '- ' = 0
+met ITSD Features Per Assay block present = FALSE
+met RUV form: single ('k value:' line) = FALSE; per-assay ('Per-Assay Parameters') = FALSE; 'Status: Not Applied' = TRUE; 'Status: Applied' = FALSE
+met Automatic RUV Optimization Results section = FALSE
+met staging bullet: num_assays="2"; assay_names="LCMS_Pos, LCMS_Neg"; log_transform_applied=true; normalisation_method="cyclicloess"; itsd_applied=true; itsd_method_type="average_centered"; itsd_aggregation="median"; ruv_applied=false; Methods say ITSD 'was applied' = TRUE; 'Internal standard normalization was not applied' = FALSE; 'using the NA method' = FALSE; RUV 'was not applied' = TRUE; 'without log transformation' = FALSE
+met kit227 bullet: num_assays="2"; assay_names="LCMS_Pos, LCMS_Neg"; log_transform_applied=true; normalisation_method="cyclicloess"; itsd_applied=true; itsd_method_type="average_centered"; itsd_aggregation="median"; ruv_applied=false; Methods say ITSD 'was applied' = TRUE; 'Internal standard normalization was not applied' = FALSE; 'using the NA method' = FALSE; RUV 'was not applied' = TRUE; 'without log transformation' = FALSE

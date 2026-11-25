@@ -1,0 +1,339 @@
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T1: a writer file (M metab, L2 lipid) reaches the Methods through Main
+-- base:
+  Expected `k235Has(got$content$method_details, "METHOD DETAILS")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  L2
+  Expected `k235Has(got$content$method_details, "METHOD DETAILS")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  M
+  Expected `k235Has(got$content$method_details, "The dataset contains 2 assays: assay_pos, assay_neg.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k235Has(got$content$sample_details, "Error running Main")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  L2
+  Expected `k235Has(got$content$sample_details, "Error running Main")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  M
+-- head:
+  <passes>
+
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T2: the per-assay RUV lines are read as the assays they name (M)
+-- base:
+  Expected `k235Has(got$content$method_details, "For assay_neg, 3 unwanted components were removed using 2 empirical negative control metabolites.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k235Has(got$content$method_details, "For assay_pos, 2 unwanted components were removed using 1 empirical negative control metabolites.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `names(got$extracted$ruv_assay_list)` to be identical to `c("assay_pos", "assay_neg")`.
+  Differences:
+  `actual`:   "* Status"  "* Grouping Variable"
+  `expected`: "assay_pos" "assay_neg"          
+-- head:
+  <passes>
+
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T3: the writer's fields are read (M, extractor, no record)
+-- base:
+  Expected `x$assay_names` to be identical to "assay_pos, assay_neg".
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('assay_pos, assay_neg')
+  Expected `x$itsd_aggregation` to be identical to "sum".
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('sum')
+  Expected `x$itsd_applied` to be identical to TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `x$itsd_method_type` to be identical to "median".
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('median')
+  Expected `x$itsd_removed` to be identical to TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `x$log_transform_offset` to be identical to "1".
+  Differences:
+  `actual` is a double vector (0)
+  `expected` is a character vector ('1')
+  Expected `x$normalisation_method` to be identical to "PQN".
+  Differences:
+  `actual`:   "cyclicloess"
+  `expected`: "PQN"        
+  Expected `x$num_assays` to be identical to "2".
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('2')
+  Expected `x$ruv_grouping_variable` to be identical to "group".
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('group')
+-- head:
+  <passes>
+
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T3b: the record's ITSD aggregation is kept through the overlay (M with a record)
+-- base:
+  Expected `got$numbers$itsd_aggregation` to be identical to "sum".
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('sum')
+-- head:
+  <passes>
+
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T4: the single RUV form (L1) reaches the Methods without a false k
+-- base:
+  Expected `k235Has(got$content$method_details, "METHOD DETAILS")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  L1
+  Expected `k235Has(got$content$sample_details, "Error running Main")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  L1
+  Expected `k235Has(method, "Data were analyzed on the original intensity scale without log transformation.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k235Has(method, "RUV correction was applied independently to each assay using the 'group' variable to preserve biological signal.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k235Has(method, "The dataset contains a single assay: assay_main.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T5: a writer file with RUV not applied says so (S lipid, S metab)
+-- base:
+  Expected `k235Has(got$content$method_details, "RUV-III batch correction was not applied.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  S_lipid
+  Expected `k235Has(got$content$method_details, "RUV-III batch correction was not applied.")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  S_metab
+-- head:
+  <passes>
+
+== test-kit235-lipid-metab-report-parser.R | fixed | KIT-235 T6: '•' and '-' files print the base text, and the same text as the '*' file (M, L1)
+-- base:
+  Expected `k235Text(head$content$method_details)` to be identical to `head_star`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - "METHOD DETAILS"
+  - ""
+  - "Data analyses were performed based on SOP xxx."
+  - "• SOP number(s) and name(s)"
+  - "• Brief summary of method(s):"
+  - ""
+  - "Multi-Assay Data Structure"
+  - "The dataset contains 2 assays: assay_pos, assay_neg. Each assay was processed independently through quality control and normalization steps before integration for differential abundance analysis."
+  - ""
+  - "Data Preprocessing and Normalization"
+  - "Metabolite intensities were transformed as log2(x + 1). Missing values (zeros or non-detects) were coded as NA to distinguish"
+  - "true absence from missing measurements."
+  - ""
+  - "ITSD Normalization"
+  - "Internal standard (ITSD) normalization was applied using the median method with sum aggregation across ITSD features. Internal standard features were removed after normalization."
+  - ""
+  - "Between-sample normalization was performed using the 'PQN' method from"
+  - "the 'limma' R package (Ritchie et al., 2015) to account for systematic technical"
+  - "variation across samples."
+  - ""
+  - "Batch Effect Correction"
+  - "To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative control metabolites, which are features with little or no changes in abundance between different samples. RUV correction was applied independently to each assay using the 'group' variable to preserve biological signal. For assay_pos, 2 unwanted components were removed using 1 empirical negative control metabolites. For assay_neg, 3 unwanted components were removed using 2 empirical negative control metabolites."
+  - ""
+  - "Quality Control"
+  - "At each stage of data normalization, samples were checked for batch effects using:"
+  - "• Principal component analysis (PCA) to visualize sample clustering"
+  - "• Density boxplots to assess distribution consistency"
+  - "• Relative log-expression (RLE) plots to detect systematic biases"
+  - "• Pearson correlation matrices to evaluate replicate consistency"
+  - ""
+  - "Per-Assay Quality Metrics"
+  - "Quality control metrics were evaluated separately for each assay to ensure data"
+  - "quality before integration. Each assay underwent independent QC assessment"
+  - "following the same protocol, with cross-assay consistency verified in the"
+  - "combined analysis."
+  - ""
+  - "• Comments on test specific conditions information (e.g. temperature), where"
+  - "  relevant"
+  - "• Comments on deviations, modifications, additions, or exclusions to the method(s)"
+  - "  including the acceptance from the client to proceed with them"
+  - "• Critical reagent details where relevant  "
+  
+  M bullet
+  Expected `k235Text(head$content$method_details)` to be identical to `head_star`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - "METHOD DETAILS"
+  - ""
+  - "Data analyses were performed based on SOP xxx."
+  - "• SOP number(s) and name(s)"
+  - "• Brief summary of method(s):"
+  - ""
+  - "Multi-Assay Data Structure"
+  - "The dataset contains 2 assays: assay_pos, assay_neg. Each assay was processed independently through quality control and normalization steps before integration for differential abundance analysis."
+  - ""
+  - "Data Preprocessing and Normalization"
+  - "Metabolite intensities were transformed as log2(x + 1). Missing values (zeros or non-detects) were coded as NA to distinguish"
+  - "true absence from missing measurements."
+  - ""
+  - "ITSD Normalization"
+  - "Internal standard (ITSD) normalization was applied using the median method with sum aggregation across ITSD features. Internal standard features were removed after normalization."
+  - ""
+  - "Between-sample normalization was performed using the 'PQN' method from"
+  - "the 'limma' R package (Ritchie et al., 2015) to account for systematic technical"
+  - "variation across samples."
+  - ""
+  - "Batch Effect Correction"
+  - "To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative control metabolites, which are features with little or no changes in abundance between different samples. RUV correction was applied independently to each assay using the 'group' variable to preserve biological signal. For assay_pos, 2 unwanted components were removed using 1 empirical negative control metabolites. For assay_neg, 3 unwanted components were removed using 2 empirical negative control metabolites."
+  - ""
+  - "Quality Control"
+  - "At each stage of data normalization, samples were checked for batch effects using:"
+  - "• Principal component analysis (PCA) to visualize sample clustering"
+  - "• Density boxplots to assess distribution consistency"
+  - "• Relative log-expression (RLE) plots to detect systematic biases"
+  - "• Pearson correlation matrices to evaluate replicate consistency"
+  - ""
+  - "Per-Assay Quality Metrics"
+  - "Quality control metrics were evaluated separately for each assay to ensure data"
+  - "quality before integration. Each assay underwent independent QC assessment"
+  - "following the same protocol, with cross-assay consistency verified in the"
+  - "combined analysis."
+  - ""
+  - "• Comments on test specific conditions information (e.g. temperature), where"
+  - "  relevant"
+  - "• Comments on deviations, modifications, additions, or exclusions to the method(s)"
+  - "  including the acceptance from the client to proceed with them"
+  - "• Critical reagent details where relevant  "
+  
+  M dash
+  Expected `k235Text(head$content$method_details)` to be identical to `head_star`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - "METHOD DETAILS"
+  - ""
+  - "Data analyses were performed based on SOP xxx."
+  - "• SOP number(s) and name(s)"
+  - "• Brief summary of method(s):"
+  - ""
+  - "Multi-Assay Data Structure"
+  - "The dataset contains a single assay: assay_main."
+  - ""
+  - "Data Preprocessing and Normalization"
+  - "Data were analyzed on the original intensity scale without log transformation. Missing values (zeros or non-detects) were coded as NA to distinguish"
+  - "true absence from missing measurements."
+  - ""
+  - "ITSD Normalization"
+  - "Internal standard normalization was not applied."
+  - ""
+  - "Between-sample normalization was performed using the 'median' method from"
+  - "the 'limma' R package (Ritchie et al., 2015) to account for systematic technical"
+  - "variation across samples."
+  - ""
+  - "Batch Effect Correction"
+  - "To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative control lipids, which are features with little or no changes in abundance between different samples. RUV correction was applied independently to each assay using the 'group' variable to preserve biological signal. "
+  - ""
+  - "Quality Control"
+  - "At each stage of data normalization, samples were checked for batch effects using:"
+  - "• Principal component analysis (PCA) to visualize sample clustering"
+  - "• Density boxplots to assess distribution consistency"
+  - "• Relative log-expression (RLE) plots to detect systematic biases"
+  - "• Pearson correlation matrices to evaluate replicate consistency"
+  - ""
+  - "Per-Assay Quality Metrics"
+  - "Quality control metrics were evaluated separately for each assay to ensure data"
+  - "quality before integration. Each assay underwent independent QC assessment"
+  - "following the same protocol, with cross-assay consistency verified in the"
+  - "combined analysis."
+  - ""
+  - "• Comments on test specific conditions information (e.g. temperature), where"
+  - "  relevant"
+  - "• Comments on deviations, modifications, additions, or exclusions to the method(s)"
+  - "  including the acceptance from the client to proceed with them"
+  - "• Critical reagent details where relevant  "
+  
+  L1 bullet
+  Expected `k235Text(head$content$method_details)` to be identical to `head_star`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - "METHOD DETAILS"
+  - ""
+  - "Data analyses were performed based on SOP xxx."
+  - "• SOP number(s) and name(s)"
+  - "• Brief summary of method(s):"
+  - ""
+  - "Multi-Assay Data Structure"
+  - "The dataset contains a single assay: assay_main."
+  - ""
+  - "Data Preprocessing and Normalization"
+  - "Data were analyzed on the original intensity scale without log transformation. Missing values (zeros or non-detects) were coded as NA to distinguish"
+  - "true absence from missing measurements."
+  - ""
+  - "ITSD Normalization"
+  - "Internal standard normalization was not applied."
+  - ""
+  - "Between-sample normalization was performed using the 'median' method from"
+  - "the 'limma' R package (Ritchie et al., 2015) to account for systematic technical"
+  - "variation across samples."
+  - ""
+  - "Batch Effect Correction"
+  - "To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative control lipids, which are features with little or no changes in abundance between different samples. RUV correction was applied independently to each assay using the 'group' variable to preserve biological signal. "
+  - ""
+  - "Quality Control"
+  - "At each stage of data normalization, samples were checked for batch effects using:"
+  - "• Principal component analysis (PCA) to visualize sample clustering"
+  - "• Density boxplots to assess distribution consistency"
+  - "• Relative log-expression (RLE) plots to detect systematic biases"
+  - "• Pearson correlation matrices to evaluate replicate consistency"
+  - ""
+  - "Per-Assay Quality Metrics"
+  - "Quality control metrics were evaluated separately for each assay to ensure data"
+  - "quality before integration. Each assay underwent independent QC assessment"
+  - "following the same protocol, with cross-assay consistency verified in the"
+  - "combined analysis."
+  - ""
+  - "• Comments on test specific conditions information (e.g. temperature), where"
+  - "  relevant"
+  - "• Comments on deviations, modifications, additions, or exclusions to the method(s)"
+  - "  including the acceptance from the client to proceed with them"
+  - "• Critical reagent details where relevant  "
+  
+  L1 dash
+-- head:
+  <passes>
+
