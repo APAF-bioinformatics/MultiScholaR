@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-245 correction R1c: tests-only ad9c8b7a; S1 (I01), S6 example.com (N01), S7 (I03) and E2 (I04) must fail by assertion, the rest pass; ceiling 45 job-minutes; decides whether the correction's fix is written",
+  "label": "KIT-245 correction R1c failing-first on kit-245 ad9c8b7a",
+  "package_commit": "ad9c8b7ae891c1c7c6994411f6a7941c862787c6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit245-github-push-safety.R", "test-kit245-github-panel.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
