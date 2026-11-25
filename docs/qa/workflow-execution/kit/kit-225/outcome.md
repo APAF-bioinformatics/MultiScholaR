@@ -59,7 +59,7 @@ Guards: G3 (KIT-182 T5, T6) and G4 (05d history-read error) are `same` in R2 (in
   Reset before any normalisation also cut Quality Control back; after a design saved again it could return the
   previous design's table.
 - **Code.** Base cf8af245: `R/mod_prot_norm_session_helpers.R:352-392` (revert by name list), `:443-454` (notice),
-  `:467-470` (call). Fix 17643d77: `:364-404` (revert by recorded source identity; no-op without a normalisation-tab
+  `:467-470` (call). Fix 17643d77: `:364-400` (revert by recorded source identity; no-op without a normalisation-tab
   state; refusal `prot_norm_reset_source_unknown`), `:457-474` (notice), `:486-490` (call passes `normData`).
 - **What changed in results.** Only for the affected users: the table after Reset, hence every later number.
   Unchanged where the source was the newest listed name (QC complete on DIA, label-free, TMT: G1, G2, KIT-182 T5).
