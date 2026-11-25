@@ -1,4 +1,5 @@
-# KIT-143 (plan item H; audit ENG-23, SCI-14): the workbook-equivalence proof and the workbook rendered, with MOFA2.
+# KIT-143 (plan item H; audit ENG-23, SCI-14): the workbook-equivalence proof and, since KIT-234, the twelve exported
+# integration functions run end to end, with MOFA2 (this run replaces the shipped workbook's render).
 # Skipped where MOFA2 or a Python with mofapy2 is absent (the package's own CI); run on the MOFA2 lane with the bundle's
 # Python. Declared before the first run:
 #   - Equivalence. Both sides run in this one process, after the maths-library pin (one thread, one code path, as the
@@ -27,17 +28,17 @@
 #     the comparison can fail.
 #     The claim: "the module reproduces the reference workbook's MOFA2 configuration exactly on synthetic data"
 #     (implementation conformance; nothing about the module's defaults, the collaborator's data or results).
-#   - The workbook (inst/workbooks/integration/integration_workflow_starter.rmd) renders end to end on a project holding
-#     the corpus, with its default settings: it writes the results, the record and report, and its repeat from the
-#     record equals the saved model within 1e-5 relative; the enrichment section runs STRING (stood in, no network) for
-#     the protein and gene data sets with the key from STRING_API_KEY, which reaches the query and no file or page, and
-#     the repeat gives the same ranking and terms from the recorded answer.
-# MULTISCHOLAR_INTEGRATION_EVIDENCE_OUT set: the comparison, both sides' settings, the maths libraries and the rendered
-# workbook are written to its kit143 folder.
+#   - The twelve exported integration functions (integrationFindInputs() to integrationReplayProject()) called in
+#     the order and with the arguments of the archived workbook's chunks (KIT-234; it rendered them until then), on the
+#     same project holding the corpus, with the default settings and the docx report: they write the results, the
+#     record and report, and the repeat from the record equals the saved model within 1e-5 relative; the enrichment
+#     runs STRING (stood in, no network) for the protein and gene data sets with the key from STRING_API_KEY, which
+#     reaches the query and no project file, and the repeat gives the same ranking and terms from the recorded answer.
+# MULTISCHOLAR_INTEGRATION_EVIDENCE_OUT set: the comparison, both sides' settings, the maths libraries and the run's
+# record and study parameters are written to its kit143 folder.
 
 intWbmRoot <- function() normalizePath(testthat::test_path("..", ".."), mustWork = FALSE)
 intWbmCorpus <- function() file.path(intWbmRoot(), "tests", "testdata", "integration", "corpus")
-intWbmWorkbook <- function() file.path(intWbmRoot(), "inst", "workbooks", "integration", "integration_workflow_starter.rmd")
 intWbmOmics <- c("lipidomics", "metabolomics", "proteomics", "transcriptomics")
 
 intWbmSkip <- function() {
@@ -277,8 +278,9 @@ test_that("KIT-143: the module reproduces the reference workbook's MOFA2 configu
     expect_false(control$within_1e5[control$table == "factors"], info = show(control))
 })
 
-test_that("KIT-143: the integration workbook renders end to end on the corpus and repeats its model from the record", {
+test_that("KIT-143 (KIT-234): the twelve integration functions run end to end on the corpus with MOFA2 and repeat the model from the record", {
     intWbmSkip()
+    # The record's integration_report.docx is rendered by pandoc.
     testthat::skip_if_not(rmarkdown::pandoc_available(), "pandoc is not available")
     project <- withr::local_tempdir()
     for (omic in intWbmOmics) {
@@ -288,8 +290,6 @@ test_that("KIT-143: the integration workbook renders end to end on the corpus an
     }
     scripts <- file.path(project, "scripts", "integration")
     dir.create(scripts, recursive = TRUE)
-    workbook <- file.path(scripts, basename(intWbmWorkbook()))
-    stopifnot(file.copy(intWbmWorkbook(), workbook))
     # KIT-141 (INT-21): STRING stood in, in the client's form (no network); the key a sentinel from STRING_API_KEY.
     key <- "kit143-lane-sentinel-not-a-real-key-Qz7w"
     withr::local_envvar(STRING_API_KEY = key)
@@ -310,35 +310,46 @@ test_that("KIT-143: the integration workbook renders end to end on the corpus an
             response = list(submission = list(job_id = "lane"), status = list(status = "success"), results_tsv = terms),
             terms = integrationStringTermsTable(terms))
     }, .package = "MultiScholaR")
-    env <- new.env(parent = globalenv())
-    html <- rmarkdown::render(workbook, output_dir = scripts, intermediates_dir = withr::local_tempdir(),
-        params = list(project_dir = project), envir = env, quiet = TRUE)
-    expect_true(file.exists(html))
-    expect_identical(env$run$status, "computed")
-    expect_gt(length(env$saved$tables), 0L)
-    expect_gt(length(env$saved$figures), 0L)
-    expect_true(all(file.exists(env$bundle$files)))
-    expect_identical(basename(env$bundle$files), c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt",
+    # The archived workbook's chunks (integration_workflow_starter.rmd:58-286 at 67569959), with its render's
+    # parameters (project_dir, sample_match_file "", report_format "docx").
+    inputs <- integrationFindInputs(project)
+    project_obj <- integrationOpenProject(inputs)
+    match <- integrationMatchSamples(project_obj, "")
+    confirmed <- integrationConfirmMatch(project_obj, match)
+    settings <- integrationSettings()
+    input_matrix <- settings$model$default[settings$model$parameter == "input_matrix"]
+    run <- integrationTrainModel(project_obj, confirmed, input_matrix = input_matrix, overrides = list())
+    results <- integrationGetResults(project_obj, run, overrides = list())
+    saved <- integrationExportResults(project_obj, run, results)
+    enriched <- integrationEnrichFactor(project_obj, results, factor = results$factor,
+        api_key = Sys.getenv("STRING_API_KEY"), id_columns = list(), overrides = list())
+    bundle <- integrationWriteRecord(project_obj, format = "docx")
+    store_root <- integrationCloseProject(project_obj)
+    replay <- integrationReplayProject(store_root)
+    expect_identical(run$status, "computed")
+    expect_gt(length(saved$tables), 0L)
+    expect_gt(length(saved$figures), 0L)
+    expect_true(all(file.exists(bundle$files)))
+    expect_identical(basename(bundle$files), c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt",
         "integration_report.docx", "model.hdf5", "sample_match.tsv"))
-    comparison <- env$replay$comparison
-    message(sprintf("KIT-143 workbook rendered (%d bytes); its repeat from the record: equal %s, identical %s, largest relative %.3g",
-        as.integer(file.size(html)), comparison$equal, comparison$identical, comparison$largest_relative))
+    comparison <- replay$comparison
+    message(sprintf("KIT-143 (KIT-234) direct run; its repeat from the record: equal %s, identical %s, largest relative %.3g",
+        comparison$equal, comparison$identical, comparison$largest_relative))
     expect_true(isTRUE(comparison$equal))
     # The enrichment: STRING for the protein and gene data sets with the key from the environment, KEGG and Reactome
     # skipped (no identifier column named); recorded and repeated offline from the recorded answer.
-    expect_setequal(names(env$enrichments), c("proteomics string", "transcriptomics string"))
+    expect_setequal(names(enriched$enrichments), c("proteomics string", "transcriptomics string"))
     expect_identical(seen$keys, rep(key, 2L))
-    expect_false(exists("string_key", envir = env, inherits = FALSE))
-    replayed <- env$replay$enrichment_comparison
+    replayed <- replay$enrichment_comparison
     message("KIT-143 enrichment repeated from the record:\n", paste(utils::capture.output(print(replayed)), collapse = "\n"))
     expect_identical(nrow(replayed), 2L)
     expect_true(all(replayed$ranking_equal) && all(replayed$terms_equal))
-    record <- jsonlite::read_json(env$bundle$files[[1L]], simplifyVector = FALSE)
+    record <- jsonlite::read_json(bundle$files[[1L]], simplifyVector = FALSE)
     expect_length(record$analyses$integration_mofa_model$integration$enrichment, 2L)
-    files <- c(html, list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE))
+    files <- list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE)
     holding <- files[vapply(files, function(path) length(grepRaw(key, readBin(path, "raw", file.info(path)$size),
         fixed = TRUE)) > 0L, logical(1))]
     expect_identical(holding, character())
     evidence <- intWbmEvidence()
-    if (!is.null(evidence)) file.copy(c(html, env$bundle$files[c(1L, 3L)]), evidence, overwrite = TRUE)
+    if (!is.null(evidence)) file.copy(bundle$files[c(1L, 3L)], evidence, overwrite = TRUE)
 })

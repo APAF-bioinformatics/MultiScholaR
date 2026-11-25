@@ -263,7 +263,10 @@ registerOmicDaTableOutputs <- function(output, input, tab, da, binding) {
         results <- tab$da_results_list
         shiny::req(results)
         cat(omicDaSummaryText(results[[binding$long_table]], input$table_contrast, input$table_assay, input$da_q_val_thresh,
-            da$summary, da$table_filter))
+            da$summary, da$table_filter, runQValThresh = results$da_q_val_thresh,
+            # KIT-220 E-7 (I04): transcriptomics' interactive page is coloured at the box too (trxVolcanoWidget's p.value).
+            boxConsumers = if (identical(binding$omic_type, "transcriptomics")) "the table filter and both volcano plots" else
+                "the table filter and the static volcano plot"))
     })
     output$da_results_table <- DT::renderDT({
         results <- tab$da_results_list
@@ -634,7 +637,7 @@ registerOmicDaPluginVolcanoOutputs <- function(output, input, tab, experimentPat
     output$volcano_glimma <- shiny::renderUI({
         shiny::req(isTRUE(input$volcano_interactive))
         diaDaVolcanoGlimmaView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, tab$current_s4_object,
-            experimentPaths$da_output_dir)
+            experimentPaths$da_output_dir, input$treat_lfc_cutoff)
     })
     output[[da$views$static_volcano$output]] <- shiny::renderPlot(alt = function() tab$volcano_plot_identity %||% NA_character_,
         diaDaStaticVolcanoView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, input$treat_lfc_cutoff,

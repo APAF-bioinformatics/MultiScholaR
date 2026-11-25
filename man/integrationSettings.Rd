@@ -13,7 +13,7 @@ A list: \code{model} and \code{results}, data frames with columns \code{paramete
 }
 \description{
 The settings of the model, of the results and of the enrichment, each with its default and the
-decision that settled it, as the Integration tab and the workbook show them. A setting is changed by naming it
+decision that settled it, as the Integration tab shows them. A setting is changed by naming it
 in the \code{overrides} of \code{\link[=integrationTrainModel]{integrationTrainModel()}}, \code{\link[=integrationGetResults]{integrationGetResults()}} or \code{\link[=integrationEnrichFactor]{integrationEnrichFactor()}}.
 }
 \examples{

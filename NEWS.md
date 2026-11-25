@@ -114,6 +114,58 @@
    Quality Control as it is. When the starting table can no longer be found, Reset now changes nothing and says so
    (KIT-225).
 
+ * Proteomics and transcriptomics: the published count of significant features, its figure and (proteomics) the report
+   sentence 'there were n upregulated and m downregulated proteins' now use the significance threshold set in the DA tab.
+   Before, they used q (FDR) < 0.05 whatever threshold was set, while the volcano plots and the report's methods sentence
+   used the threshold set, so a report could state one threshold and count at another. The proteomics count table now
+   has a `q_threshold` column, as the lipidomics and metabolomics tables do, and the report's count sentence states its
+   threshold, '(q-value < t)'. In transcriptomics the published volcano plot, the significance bar chart, the list of
+   top genes and the interactive volcano plot used 0.05 in the same way. At the default threshold (0.05) the counts do
+   not change. Lipidomics and metabolomics already counted at the threshold set (see the next item for their up and down
+   columns). A project opened from an earlier
+   version keeps its count table, figures and top-genes list until the differential analysis is run again, and a report
+   made from it before then still prints the counts at 0.05; a transcriptomics report rendered then captions the earlier
+   top-genes list with the threshold set, although the list was made at 0.05 (KIT-220).
+ * Lipidomics and metabolomics: the published table of significant counts (`lipids_num_sig_de_molecules`,
+   `metabolites_num_sig_de_molecules`, `.tab` and `.xlsx`, and the lipidomics copy in Publication_tables) showed 0 in its
+   `up_regulated` and `down_regulated` columns in every analysis; they now give the numbers of features called up and
+   down. Its `significant` column, its bar chart and every other output were right (KIT-220).
+ * Proteomics: the interactive volcano plot now colours proteins by the threshold and fold-change cutoff set; before,
+   it coloured only proteins with an absolute log2 fold change of at least 1, at every setting (KIT-220).
+ * Lipidomics, metabolomics and transcriptomics: the DA tab's summary states the threshold the analysis ran at, which
+   its counts use, and says so when the threshold box has been changed since; proteomics says so when the fold-change
+   box differs from the cutoff the analysis ran at (KIT-220).
+ * Reports: the paragraph on removing unwanted variation (RUV) now states what was run. A manually set RUV is no longer
+   described as an automatic optimisation; a skipped RUV is no longer attributed to 'dataset constraints'; when the
+   analysis did not record whether RUV was applied, or which design column it used, the report says so; a design
+   column other than the experimental groups is described as it was used. A project keeps the copy of the report
+   template made at its first report; projects that generated a report before this version keep the earlier text
+   unless that copy (`scripts/<omic>/<template>.rmd`) is removed (KIT-227).
+ * Reports (lipidomics, metabolomics): the report now reads the study-parameters file the application writes. Since
+   March 2026 the application wrote this file in a form these two reports did not read, so a report generated in the
+   application showed 'Error running Main function: …' in place of its Sample Details and no Methods, Results,
+   Comments or differential-abundance text. The Methods now print again, with the number of assays, the log
+   transformation, the between-sample normalisation and, for each assay, the number of unwanted components removed and
+   of control features, as the study-parameters file records them. Some of the text these two reports now print again
+   is not computed from the data, or can be false for the analysis that was run (for example, internal-standard
+   normalisation is reported as applied when no internal standard matched); that text is corrected in this release
+   (KIT-236). A report generated after a save that failed (the short
+   study-parameters file the application writes on an error) still shows 'Error running Main function: …'; that file
+   records no assays. A project keeps the copy of the report template made at its first report; projects that
+   generated a lipidomics or metabolomics report before this version keep the earlier template unless that copy
+   (`scripts/<omic>/<omic>_report.rmd`) is removed (KIT-235).
+ * `daAnalysisWrapperFunction()`, an older scripted proteomics function not used by the application, no longer stops
+   with 'is.data.frame(df) is not TRUE' after its differential-abundance step. It passed its per-comparison result
+   tables one list level too deep to the step that builds its summary tables, so it stopped on every input and returned
+   nothing. It now returns its tables, plots and counts when the comparisons table has a `full_format` column, as the
+   application writes it, or its first column holds `name=expression` strings. The numbers in its tables are those of
+   its differential-abundance step, unchanged. It still stops when the comparisons table gives only bare expressions,
+   when a group name begins with a digit, and, by our reading (not run), for data quantified with limpa. Its
+   gene-labelled volcano plots are not produced, and its first count table counts at q < 0.05 whatever threshold is
+   set. It stops with a clear message when `contrasts_tbl` is not a data frame, and reads the comparisons as text,
+   so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
+   name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
+   delivered to a user.
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session
@@ -290,9 +342,9 @@
    as a sample, so the threshold could be set by identifier numbers and whether a feature was removed could depend on
    its row number. For example, on an MS-DIAL metabolite table of 8 features and 4 samples at the 10th percentile and
    0.5, the threshold was 4.9 instead of 16,410 and no feature was removed instead of 2. A custom-format table with a
-   numeric identifier or annotation column was affected in the same way, and so were the metabolomics workbooks, which
-   keep retention time and m/z columns, and designs imported from a folder whose tables hold MS-DIAL's numeric columns
-   (retention time, m/z, scores). Tables with no such column (for example LipidSearch imports, and custom imports whose
+   numeric identifier or annotation column was affected in the same way, and so were designs imported from a folder
+   whose tables hold MS-DIAL's numeric columns (retention time, m/z, scores). Tables with no such column (for example
+   LipidSearch imports, and custom imports whose
    identifier and annotation columns are text) give the same results as before. Analyses saved before this change
    replay as they were made. A design sample that is missing from a table or is not numeric is now refused with a
    message. The helpers `lipidIntensityFilteringHelper()` and `metaboliteIntensityFilteringHelper()` take a new optional
@@ -454,10 +506,9 @@
    depends on the unit of the table, and on log2 values below 0 the absolute value treats -2 like +2. It stays
    selectable; when it runs on log2 values below 0, the normalisation log and a notification now say so. Cyclic
    Loess and Quantile do not depend on the unit.
- * Lipidomics and metabolomics filtering figures on log2 values (the workbooks draw them after the log step): a value
-   is counted as detected when it is not missing, and the step's missingness counts missing cells only (before, a log2
-   value of 0 or below, that is a measured value of 1 or below, was counted as not detected). On intensities a zero
-   still counts as not detected.
+ * Lipidomics and metabolomics filtering figures on log2 values: a value is counted as detected when it is not
+   missing, and the step's missingness counts missing cells only (before, a log2 value of 0 or below, that is a
+   measured value of 1 or below, was counted as not detected). On intensities a zero still counts as not detected.
  * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
    the assay holds missing values.
 
@@ -496,6 +547,17 @@
  * Help, About names the commit of the analysis code that was installed, beside the commit the installer was built
    from. Reports and analysis records made with the installed application name the same commit; before, they named
    none.
+ * The R Markdown workbooks (five for DIA proteomics, two for metabolomics and the multi-omics integration workbook)
+   are no longer installed with the package, and the application no longer copies them into projects. Each proteomics
+   and metabolomics workbook stopped with an error at one or more steps against this version. Copies already in a
+   project's `scripts` folder are kept and are no longer replaced when the project is opened. The workbooks are kept
+   in the source repository under `archive/workbooks/` for a later version, with the set-up script `project_setup.R`,
+   which downloaded them; that set-up route is withdrawn. The integration functions used by the integration workbook
+   (`integrationFindInputs()` to `integrationReplayProject()`) remain available for scripted use; their limitations
+   are in `?integrationTrainModel` (KIT-234).
+ * 'Push to GitHub' uses the project's single R Markdown file (a report made with 'Generate Report') and the
+   project's `<project id>.Rproj` file. With no R Markdown file it says so. With several, it asks in the R console
+   when R runs interactively, and otherwise stops with an error.
 
 
 ### Scientific changes

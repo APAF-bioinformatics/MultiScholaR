@@ -344,6 +344,13 @@ setMethod(
         if (length(all_numsig_tables) > 0) {
           # Combine all tables
           combined_numsig_table <- dplyr::bind_rows(all_numsig_tables)
+          # KIT-220 (VAL-191 (2)): the table states the threshold it was counted at, as the lipidomics and
+          # metabolomics tables do (the run's threshold, which the publication is given).
+          combined_numsig_table$q_threshold <- as.double(if (!is.null(theObject@args$outputDaResultsAllContrasts$da_q_val_thresh)) {
+            theObject@args$outputDaResultsAllContrasts$da_q_val_thresh
+          } else {
+            checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
+          })
 
           # Write the combined table
           table_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_da_molecules.tab"))
