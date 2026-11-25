@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-254 G0b (AUDIT-KIT-254-impl I01 step 2): lipid-with-RUV thresholds by G0's rule on the merged tree (993c454b + script, branch kit-254-g0b); 1 job, ceiling 30 job-minutes",
+  "label": "KIT-254 G0b lipid_ruv thresholds fcbb9f7b",
+  "package_commit": "fcbb9f7bc004b33d628fed4d0962104de497bf30",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-254/g0b-ruv-thresholds.R",
+      "args": [
+        "kit254-g0b"
+      ],
+      "env": {},
+      "out": "kit254-g0b",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
