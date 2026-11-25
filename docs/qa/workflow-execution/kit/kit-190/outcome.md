@@ -362,3 +362,19 @@ power by at most 0.00068; every decided cell's bound is far from its margin. Whe
 
 **R3: departure by the coordinator.** The next full-suite checkpoint on staging stands in for R3 after this merge (as for
 KIT-201, KIT-204, KIT-243).
+
+## R2, final comparison on the merged tree (run 45619021147, head d3318820, base staging c4505c7f)
+
+Observed, every file as predicted before sending: 98 `same`, including KIT-202's, KIT-205's, KIT-214's and KIT-224's
+files and every reader of the replay markers; the new file `only-on-head`, 126 passed; `test-kit172-downstream.R` ok
+(with k capped at 2); two `new-failure`: `test-omic-norm-module.R` (only the stored provenance digests of the lipid and
+metabolite manual and automatic blocks, from the markers; the D5 control shows 12 dump lines differ, all provenance
+digests) and `test-workflow-omics-ruv-cancor-once.R` (the sweep, which the bound leaves untouched, under rule (d): its
+success assertion was a property of the row-order defect; audit K190-M12); two `message-changed`:
+`test-prot-norm-core.R` (lipid and metabolite RUV pinned digests, failing on base too) and
+`test-workflow-omics-binding-steps.R` (its stored snapshot gains the markers and outcomes). R CMD check: no finding only
+on head. 41.06 core-hours.
+
+Open for the coordinator and the owner: the D5 re-dump of the 12 provenance fields (exception by file, D5 (a)); the two
+stored snapshots (`test-workflow-omics-binding-steps.R`, `test-prot-norm-core.R`) and `test-workflow-omics-ruv-cancor-once.R`'s
+success assertion are not changed here.
