@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-251 G0: base values of one real mouse click on Protein Replicate Filter Apply, managed (entry.R, plain launcher) and in process, at staging 16112917 + script only; 1 job, ceiling 60 job-minutes; decides stop rule 1",
+  "label": "KIT-251 G0 base values on kit-251 c0e1ee89 (staging 16112917 + docs/qa/workflow-execution/kit/kit-251/g0-base-values.R)",
+  "package_commit": "c0e1ee89b2b8ec49e9dedfcbd31a5ca27607260d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "shinytest2"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-251/g0-base-values.R",
+      "args": [
+        "outer",
+        "16112917329a63ab062655f04db5bf1dd7df9729",
+        "kit251-g0"
+      ],
+      "env": {},
+      "out": "kit251-g0",
+      "out_pattern": "\\.(tsv|txt|json|log)$|S5\\.5.*\\.png$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [
+    "kit-233-journey"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
