@@ -40,7 +40,8 @@ fault <- function(what) {
 gitPath <- Sys.which("git")
 hasGit <- nzchar(gitPath)
 gitText <- function(args) {
-    out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = TRUE))
+    # system2 runs through a shell: every argument is quoted (G0 run 45587834788: the unquoted regex was a shell syntax error).
+    out <- suppressWarnings(system2("git", shQuote(args), stdout = TRUE, stderr = TRUE))
     list(status = if (is.null(attr(out, "status"))) 0L else attr(out, "status"), text = out)
 }
 
@@ -102,6 +103,7 @@ if (nzchar(workspace) && startsWith(normalizePath(getwd(), winslash = "/"), norm
 if (hasGit) {
     q <- gitText(c("config", "--global", "--get-regexp", "^(url|http)\\."))
     say("step0.git_config_global_url_http", if (length(q$text)) q$text else "<none>")
+    if (!q$status %in% c(0L, 1L)) fault(paste("git config --get-regexp failed with status", q$status))
     if (caseSet == "main") {
         target <- paste0("url.file://", remoteRoot, "/.insteadof https://x-access-token:", DUMMY, "@github.com/")
         if (!any(q$text == target)) fault("git does not see the redirect to the remote root")
@@ -112,6 +114,7 @@ if (hasGit) {
     s <- gitText(c("config", "--system", "--list"))
     say("step0.git_config_system", if (length(s$text)) s$text else "<none>")
     a <- gitText(c("config", "--list", "--show-origin"))
+    say("step0.git_config_list_status", a$status)
     say("step0.git_config_all_with_origin", if (length(a$text)) a$text else "<none>")
     if (any(grepl("credential", a$text, ignore.case = TRUE))) fault("a credential setting is in force for git")
 }
