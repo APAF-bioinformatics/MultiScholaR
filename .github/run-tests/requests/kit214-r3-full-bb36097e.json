@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-214 R3: full suite base staging 67569959 against head bb36097e (kit-214 merged with it); 20 shards per side; ceiling 2800 job-min; decides A5",
+  "label": "KIT-214 R3 full suite bb36097e vs 67569959",
+  "package_commit": "bb36097e95c37c51ffe4386ddd214d2020f73752",
+  "base_commit": "6756995954684128d617ab92dab983bdcaa05394",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120,
+    "test-workflow-partitions.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
