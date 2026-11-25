@@ -1,0 +1,70 @@
+{
+  "requested_by": "KIT-188 smoke check (instrument check, no expectation, no prediction judged; ticket 10 r1.23): parse both scripts, E16, a mini lifecycle on the staging head of the day; charged to L1r's line, ceiling 40 job-minutes",
+  "label": "KIT-188 smoke d6e718c3",
+  "package_commit": "d6e718c33e8ffeb84cedad17be8fe0dc626e8317",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-smoke-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12,K172c",
+        "401",
+        "401",
+        "k188-smoke-m"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "deciding,lp,las,k172c",
+        "K188_JOB": "smoke-m"
+      },
+      "out": "k188-smoke-m",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "401",
+        "k188-smoke-c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "l1c",
+        "K188_JOB": "smoke-c",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-smoke.tsv"
+      },
+      "out": "k188-smoke-c",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
