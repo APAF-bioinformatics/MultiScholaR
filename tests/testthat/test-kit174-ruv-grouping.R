@@ -169,7 +169,7 @@ kit174DiaRun <- function(column, design, mode = "covariates", declared = FALSE) 
 
 #' The shared frame (lipidomics): "Run Normalization Pipeline" in process, the omic's runner
 #' stubbed.
-kit174FrameRun <- function(column, design, input = list()) {
+kit174FrameRun <- function(column, design, input = list(), omic = "lipidomics") {
     seen <- kit174Seen()
     testthat::local_mocked_bindings(
         showNotification = kit174Note(seen), withProgress = \(expr, ...) expr,
@@ -186,7 +186,7 @@ kit174FrameRun <- function(column, design, input = list()) {
     }
     config <- list(
         binding = list(binding = list(
-            omic_type = "lipidomics", prefix = "lipid", qc_dir_role = "qc"
+            omic_type = omic, prefix = "lipid", qc_dir_role = "qc"
         )),
         norm = list(run = list(in_process = in_process), panels = list(log2 = list(offset = 0)))
     )
@@ -426,3 +426,136 @@ test_that("T10 (KIT-174 (a), VAL-29): the shared frame warns once (lipidomics); 
     expect_true(seen$ran)
     expect_identical(kit174Count(seen, batch)[["warnings"]], 0L)
 })
+
+# KIT-174 audit I01, I02 (AUDIT-KIT-174a-impl-20261125): the live path. On a real session owner
+# whose bus has no design table, only the head state's design (omicNormRuvHeadDesign) can raise
+# the warning.
+
+#' A 2 groups x 2 batches x 3 runs protein matrix (no group or batch effect needed for the warning).
+kit174LiveValues <- function() {
+    set.seed(1741L)
+    values <- matrix(stats::rnorm(40L * 12L, 20, 0.3), 40L, 12L,
+        dimnames = list(sprintf("P%02d", 1:40), sprintf("S%02d", 1:12)))
+    values
+}
+
+test_that("T10 (live path, audit I01): classic proteomics reads the session's head design", {
+    root <- withr::local_tempdir()
+    object <- kit174ProteinObject(kit174LiveValues())
+    paths <- list(source_dir = root, protein_qc_dir = file.path(root, "qc"))
+    dir.create(paths$protein_qc_dir)
+    seen <- kit174Seen()
+    kit174MockLogger(seen)
+    testthat::local_mocked_bindings(
+        runDIAReferenceNormalization = function(...) {
+            seen$ran <- TRUE
+            TRUE
+        },
+        updateProtNormRuvAuditTrail = \(...) invisible(NULL),
+        workflowOmicsManagedActions = \(...) NULL
+    )
+    shiny::testServer(function(input, output, session) {
+        manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "k174-live", "LFQ"),
+            WorkflowState$new(audit_enabled = FALSE))
+        manager$.context$reference_states <- TRUE
+        manager$.context$experiment_paths <- paths
+        workflow <- shiny::reactiveValues(state_manager = manager, config_list = list())
+        attachDIAStateSession(manager, session, workflow)
+        manager$saveState("protein_replicate_filtered", object, list(), "source")
+        norm <- shiny::reactiveValues()
+    }, {
+        head <- MultiScholaR:::omicNormRuvHeadDesign(manager)
+        expect_identical(head$group_id, "group")
+        expect_identical(as.character(head$design$batch),
+            as.character(object@design_matrix$batch))
+        expect_null(shiny::isolate(workflow$design_matrix))
+        settings <- list(norm_method = "quantile", ruv_mode = "manual", ruv_k = 1,
+            ruv_percentage = 50, color_variable = "group", shape_variable = NULL,
+            ruv_grouping_variable = "batch")
+        run <- function() {
+            kit174Quiet(shiny::isolate(runProtNormNormalizationWorkflow(
+                settings, workflow, norm, paths, "proteomics", "k174",
+                generatePostNormalizationQcFn = \(...) NULL,
+                generateRuvCorrectedQcFn = \(...) NULL, getRuvGroupingVariableFn = \() "batch",
+                showNotificationFn = kit174Note(seen),
+                handleErrorFn = function(error, ...) {
+                    seen$errors <- c(seen$errors, conditionMessage(error))
+                },
+                messageFn = \(...) NULL)))
+        }
+        run()
+        expect_true(seen$ran)
+        expect_identical(seen$errors, character())
+        expect_identical(kit174Count(seen, kit174WarningText("batch", 2L, 2L)), kit174Once)
+        # The head wins over the bus: with the bus's table nesting batch in group, the head's
+        # text is still shown.
+        nested <- object@design_matrix
+        nested$batch <- paste(nested$group, nested$batch)
+        workflow$design_matrix <- nested
+        seen$notes <- character()
+        seen$warn <- character()
+        run()
+        expect_identical(kit174Count(seen, kit174WarningText("batch", 2L, 2L)), kit174Once)
+        try(closeDIAStateAdapter(manager), silent = TRUE)
+    })
+})
+
+test_that("T10 (live path, audit I01): lipidomics' frame reads the session's head design", {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    object <- kit172Object(kit172Values(172001L)$values, "lipid")
+    object@design_matrix$batch <- rep(rep(c("b1", "b2"), each = 3L), 2L)
+    fixture <- kit172Owner(root, object, "lipid")
+    withr::defer(try(closeDIAStateAdapter(fixture$workflow$state_manager), silent = TRUE))
+    binding <- kit172Binding("lipid")
+    kit172Quiet({
+        runWorkflowOmicsReferenceIntensityFilter(binding, fixture$owner, 1, 0.5,
+            fixture$workflow$config_list)
+        commitWorkflowOmicsStoreStep(fixture$owner, paste0(binding$prefix, "_qc_finalize"),
+            paste0(binding$prefix, "_qc_complete"), fixture$workflow$config_list, "QC complete")
+    })
+    expect_null(fixture$workflow$design_matrix)
+    seen <- kit174Seen()
+    kit174MockLogger(seen)
+    testthat::local_mocked_bindings(
+        showNotification = kit174Note(seen), withProgress = \(expr, ...) expr,
+        incProgress = \(...) invisible(NULL), removeNotification = \(...) invisible(NULL),
+        updateSelectInput = \(...) invisible(NULL), .package = "shiny"
+    )
+    testthat::local_mocked_bindings(workflowOmicsManagedActions = \(...) NULL)
+    config <- omicGuiConfig("lipidomics")
+    config$binding$binding$qc_plots <- \(...) invisible(NULL)
+    config$norm$run$in_process <- function(...) {
+        seen$ran <- TRUE
+        invisible(TRUE)
+    }
+    input <- list(apply_itsd = FALSE, itsd_aggregation = "median", log_offset = 0,
+        norm_method = "quantile", ruv_mode = "manual", auto_percentage_min = 1,
+        auto_percentage_max = 20, ruv_grouping_variable = "batch",
+        separation_metric = "max_difference", k_penalty_weight = 0.5,
+        adaptive_k_penalty = TRUE, ruv_k = 1L, ruv_percentage = 20)
+    head <- MultiScholaR:::omicNormRuvHeadDesign(fixture$workflow$state_manager)
+    expect_identical(head$group_id, "group")
+    expect_true("batch" %in% names(head$design))
+    kit172Quiet(shiny::isolate(runOmicNormPipeline(input, fixture$workflow, fixture$paths,
+        omicNormReactiveState(), function(text) seen$log <- c(seen$log, text),
+        \() list(color_var = "group", shape_var = NULL), config)))
+    expect_true(seen$ran)
+    batch <- kit174WarningText("batch", 2L, 2L)
+    expect_identical(kit174Count(seen, batch), kit174Once)
+    expect_identical(sum(grepl(batch, seen$log, fixed = TRUE)), 1L)
+})
+
+test_that("T10 (audit I02): the decision's written-out cases, and the metabolomics frame", {
+    isSets <- MultiScholaR:::omicNormRuvGroupingIsReplicateSets
+    expect_true(isSets("automatic", "supplied_controls", technical = TRUE, classic = TRUE))
+    expect_false(isSets("automatic", "first_pass_nulls", technical = TRUE, classic = TRUE))
+    expect_false(isSets("covariates", "groups_all_features", technical = TRUE, classic = FALSE))
+    expect_false(isSets("covariates", "technical_replicates", technical = FALSE, classic = FALSE))
+    expect_true(isSets("first_pass_nulls", "first_pass_nulls"))
+    expect_false(isSets("none", "none"))
+    crossed <- kit174FrameRun("batch", kit174Design(), omic = "metabolomics")
+    expect_true(crossed$ran)
+    expect_identical(kit174Count(crossed, kit174WarningText("batch", 2L, 2L)), kit174Once)
+})
+
