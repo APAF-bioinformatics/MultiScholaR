@@ -35,3 +35,19 @@ the run after the cut either commits at least one state or shows an error or war
 
 Predictions: every file present on base same; the three kit247 files only on head and passing (all rows, I07 lipid
 excepted if it is classified a test-design error: then it fails on head exactly as in R1'''); check identical.
+
+## R1''' (45676491133) as it happened, and its VAL-54 instrument rerun (declared before sending)
+
+R1''' produced no valid result for the lipidomics rows: its KIT247-LOG lines show every lipidomics lane after I02
+failing its first design save with "Error saving design matrix results: KIT-247 planted failure after the bus write"
+(history "initial" only), the error I02 plants. I02's `local_mocked_bindings(.env = ...)` + `withr::deferred_run()` did
+not remove the planted binding, so it outlived the row. The same leak explains I07 lipid in R1'' (45666094374) and in
+R2'' (45666101179, head) and I02's own second save in R2''. Instrument defect: fixed by scoping the planted failure to
+I02's two presses (`with_mocked_bindings`) and asserting it is gone (740a712f on kit-247; the same change on the
+tests-only base as 5c1229f4 on kit-247-r1d). No expected value changed. I07 on lipidomics is therefore not classified
+from R1'', R2'' or R1'''.
+
+R1'''b (VAL-54 instrument rerun 1 of 3; 5c1229f4, no VAL-288 fix; test-kit247-design-resave.R; ceiling 110 job-minutes).
+Predictions: I02 passes (its fix 40948dd8 is in); I07 prot_lfq and lipid_canonical pass; I07b passes; E15b passes; G3
+passes; F288a prot_lfq and lipid_canonical fail; F288b fails; F288c errors; every other row passes. The I07
+classification rule above applies to I07 lipid as written.
