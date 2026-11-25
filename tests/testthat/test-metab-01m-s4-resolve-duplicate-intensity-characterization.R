@@ -132,6 +132,8 @@ test_that("metabolomics S4 duplicate-intensity helper source retains ranking-bas
   expect_match(target_text, "dplyr::rowwise\\(\\)")
   expect_match(target_text, "avg_intensity = mean\\(dplyr::c_across\\(dplyr::any_of\\(sample_cols\\)\\),")
   expect_match(target_text, "na.rm = TRUE\\)\\)")
-  expect_match(target_text, "dplyr::slice_max\\(order_by = avg_intensity, n = 1, with_ties = FALSE\\)")
-  expect_match(target_text, "dplyr::select\\(-avg_intensity\\)")
+  # KIT-258 (VAL-254): the measured count beside the mean; the row kept by the shared rule (keepDuplicateResolutionRow).
+  expect_match(target_text, "n_measured = sum\\(!is.na\\(dplyr::c_across\\(dplyr::any_of\\(sample_cols\\)\\)\\)\\)")
+  expect_match(target_text, "keepDuplicateResolutionRow\\(\\)")
+  expect_match(target_text, "dplyr::select\\(-avg_intensity,[[:space:]]*-\"n_measured\"\\)")
 })
