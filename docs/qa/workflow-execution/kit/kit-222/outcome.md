@@ -3,8 +3,19 @@
 State: stopped after the audit-repair run (run 45574235919), as the coordinator ruled: one result not as predicted.
 The test file passes in full on head (G1 included), every file is `same` and check is identical, but C1 finds 48
 four-sample `manual` sequences, base merge-free, whose labels equal base and whose replicate column differs in type only
-(the audit predicted C1 identical in all 52,384 base merge-free sequences; observed 52,336). F5 (I09, clearing the
-selection) was not done: it needs more than one line (below).
+(the audit predicted C1 identical in all 52,384 base merge-free sequences; observed 52,336). The coordinator accepted the
+48 as a stated limit (2026-11-25; A3). Ready for the merge train; the full suite (A5) is satisfied by the first
+full-suite checkpoint on staging that contains the merge, and the ticket is not closed before it.
+
+Recorded limits:
+- E13 (I03): tested at the mechanism only; the smallest full test is named under "Deviations".
+- I07: the line in `integrationReadInputs` sits before the existing validity check, so a malformed manifest
+  (`biological_sample_column` of length other than 1) on a samples table with `tech_reps` gets a base-R error instead of
+  the classed `integration_input_invalid`; moving the two lines below the validity block fixes it at the next touch.
+  The refusal's positive case (a pre-fix input with D1) has no test. Development builds only.
+- I09 (F5): NOT done; with the owner. After "Assign Technical Replicates" the selection stays filled, so adding the next
+  sample's runs without removing the first ones marks two biological samples as one, and nothing refuses it. A fix
+  needs the builder's selection observer changed as well (about five lines); its own small ticket if the owner says yes.
 
 ## Commits (branch kit-222, from origin/v0.9-staging cf8af245)
 
@@ -113,7 +124,7 @@ beyond the ticket's one correction; the owner told before it ran).
 |---|---|---|
 | A1 | met: every E row failed on base by assertion at its base value; G rows passed (G5 errored on an instrument defect, repaired) | R1, R2 base side |
 | A2 | met at the audit-repair run: every E row written passes on head (E12a, E12d included); E12c has no route (I10); E13 at the mechanism only. Earlier, at R2c: every written E row passed on the fix, but E12a and E12d were not written, so A2 was not met (it was recorded as met; AUDIT-KIT-222-impl I02); E13 is tested at the mechanism only. See the audit-repair run below | R2, R2c |
-| A3 | partly: no head merge (G6 head none at depth 3; C1 head merged 0); every base merge absent on head; G1 in the test file passes in full; C1: labels identical in every base merge-free sequence, type differs in 48 four-sample `manual` sequences | r3a/c1 |
+| A3 | met with the stated limit (coordinator's ruling, 2026-11-25, against stop rule 5; authority: AUDIT-KIT-222-impl-20261125, closure check I12): no head merge (G6 head none at depth 3; C1 head merged 0); every base merge absent on head; G1 in the test file passes in full; C1: labels and values identical in every base merge-free sequence; in 48 of 40,320 four-sample `manual` orders the replicate column's storage type differs (integer against double, values identical). Mechanism (hand trace of sequence 43986: rows D_1, A_1, D_2, B_1, C_1, C_2, B_2, A_2, typed A=1, B=2, C=3, D=4): the head's ranks compact the unmarked D_2 that base leaves at 3, so when D is marked, C (3) is above D's highest number (2) on head and the column becomes double, while on base D's runs are at 1 and 3, nothing is above, and it stays integer. The type reaches no number, file, key, label or record text; it reaches R-object digests (the lipid/metab saved DA fit identity, the proteomics base fit, the DIA product design id), so a fit saved by an earlier build is recomputed, with the same numbers, for those designs; no stored reference moves. No further run | r3a/c1 |
 | A4 | met: every regression file `same`; check identical | R2, R2c, audit-repair run |
 | A5 | not run (full suite after the audit, by the coordinator's order) | — |
 | A6 | met except NEWS by decision: no NEWS (OD-6); ledger row naming IMP-036; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged | diff |
