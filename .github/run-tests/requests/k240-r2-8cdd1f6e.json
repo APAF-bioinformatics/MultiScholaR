@@ -1,0 +1,54 @@
+{
+  "requested_by": "KIT-240 R2: fix commit, targeted files and dependents base versus head, R CMD check, identity script kit-240/default-identity.R; decides A2 at the branch point",
+  "label": "KIT-240 R2 fix 8cdd1f6e vs 3eeaf100",
+  "package_commit": "8cdd1f6e9767ac9252a78e1cb3a4ea89f59812ae",
+  "base_commit": "3eeaf100110e661944f50c427d266d9b3f6a21df",
+  "tools_ref": "",
+  "tests": [
+    "test-kit240-integration-default.R",
+    "test-integration-gui.R",
+    "test-integration-model.R",
+    "test-integration-record.R",
+    "test-integration-results.R",
+    "test-integration-outputs.R",
+    "test-integration-removed-factors.R",
+    "test-workflow-checkpoint-harness.R",
+    "test-metab-03b-norm-module-helper-characterization.R",
+    "test-prot-05b-norm-module-contracts.R",
+    "test-integration-enrichment-options.R",
+    "test-integration-input-matrix.R",
+    "test-integration-sample-match.R",
+    "test-integration-workbook-api.R",
+    "test-perf-107.R",
+    "test-workflow-ui-shared.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-partitioned-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-workbook-mofa.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-240/default-identity.R",
+      "args": [
+        "3eeaf100110e661944f50c427d266d9b3f6a21df",
+        "kit240-identity"
+      ],
+      "out": "kit240-identity",
+      "out_pattern": "\\.(tsv|txt|json|log|html)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
