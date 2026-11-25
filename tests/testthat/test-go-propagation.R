@@ -1,6 +1,7 @@
 # KIT-173: Gene Ontology parent terms on the proteomics clusterProfiler route (T1 to T11 of the ticket, section 10).
 # Fixtures: tests/testdata/go-propagation/ (README.md: sources, releases, SHA-256, licences). No service is called.
 # Helpers: helper-go-propagation.R.
+# KIT-234: T10's loop over the five DIA workbooks removed (the workbooks are archived).
 
 goPropSkipUnlessGoDb <- function() {
     testthat::skip_if_not_installed("GO.db")
@@ -421,7 +422,7 @@ test_that("KIT-173 T9: a replay under another GO.db release warns with class wor
 
 # --- T10: script users and the electronic-annotation warning ---------------------------------------------------------
 
-test_that("KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates; the workbooks pass the value", {
+test_that("KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates", {
     goPropSkipUnlessGoDb()
     annotations <- data.frame(Entry = sprintf("Q%02d", 1:12), go_id_go_biological_process = "GO:0006110",
         go_term_go_biological_process = "regulation of glycolytic process", go_id_go_molecular_function = NA_character_,
@@ -444,15 +445,6 @@ test_that("KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workb
     expect_true("multischolar_enrichment_iea_not_excludable" %in% warned)
     five_set <- c("GO:0006110", setdiff(GO.db::GOBPANCESTOR[["GO:0006110"]], c("all", "GO:0008150")))
     expect_identical(sort(unique(acc$calls[[1L]]$term2gene[[1L]])), sort(five_set))
-    for (file in c("DIA_workflow_experienced.rmd", "DIA_workflow_limpa.rmd", "DIA_workflow_limpa_starter.rmd",
-        "DIA_workflow_limpa_experienced.rmd", "DIA_workflow_starter.rmd")) {
-        text <- paste(readLines(system.file("workbooks", "proteomics", file, package = "MultiScholaR"), warn = FALSE),
-            collapse = "\n")
-        call <- regmatches(text, regexpr("processEnrichments\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\)", text,
-            perl = TRUE))
-        expect_length(call, 1L)
-        expect_true(grepl('go_propagation = "is_a_part_of_regulates"', call, fixed = TRUE), info = file)
-    }
 })
 
 # --- T11: report text ---------------------------------------------------------------------------------------------------

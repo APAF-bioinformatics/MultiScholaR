@@ -14,7 +14,9 @@ ruvDesignIds <- c("groups_all_features", "technical_replicates", "supplied_contr
 # final-figures.tsv).
 ruvDesignFigures <- list(
     classic = list(groups_all_features = c(0.067, 0.92), technical_replicates = c(0.055, 0.90),
-        supplied_controls = c(0.054, 0.91), first_pass_nulls = c(0.079, 0.92), legacy = c(0.385, 0.92),
+        # KIT-201 (VAL-131, D2): the Legacy figure is KIT-124 S1 arm 28's, the legacy test with TREAT's trend and robust
+        # settings (scored/exact-gha: worst cell C5 0.389, C0 0.101); it was arm 3's 0.385.
+        supplied_controls = c(0.054, 0.91), first_pass_nulls = c(0.079, 0.92), legacy = c(0.389, 0.92),
         none = c(0.052, 0.49)),
     dia_limpa = list(groups_all_features = c(0.056, 0.91), technical_replicates = c(0.056, 0.77),
         supplied_controls = c(0.056, 0.91), first_pass_nulls = c(0.147, 0.92), legacy = c(0.435, 0.90),

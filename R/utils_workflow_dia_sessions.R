@@ -1352,6 +1352,9 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
         imported$extra_references)
     validateProtDaFilteredSession(view, source_dir, manager)
     view$enrichment_conversion <- conversion
+    # KIT-222 (owner's OD-3): a design whose sample names hold runs of two marking actions is named on open.
+    head <- readWorkflowHeadDesignForKeyCheck(manager)
+    if (!is.null(head)) noteOmicsDesignReplicateKeyCollisionOnOpen(head$design, head$group_id, head$technical_replicate_id, head$run)
     if (!is.null(experiment_paths)) restoreDIANativeGuiFiles(imported, experiment_paths)
     manager$.context$experiment_paths <- experiment_paths
     previous <- workflow_data$state_manager
@@ -1417,6 +1420,13 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     }
     checkSavedWorkflowPayload(value)
     validateProtDaFilteredSession(value, source_dir)
+    # KIT-222 (owner's OD-3): a design whose sample names hold runs of two marking actions is named on open.
+    if (isS4(value$current_s4_object) && methods::.hasSlot(value$current_s4_object, "design_matrix")) {
+        object <- value$current_s4_object
+        noteOmicsDesignReplicateKeyCollisionOnOpen(object@design_matrix, object@group_id, object@technical_replicate_id,
+            object@sample_id)
+        object <- NULL
+    }
     root <- tempfile(".dia-native-legacy-", tmpdir = source_dir)
     if (!dir.create(root, mode = "0700")) cli::cli_abort("cannot stage legacy import", class = "saved_entity_write")
     # The store label follows the import's (KIT-020): the DIA-NN IQ owner, or the session's recorded format;
@@ -1523,6 +1533,9 @@ ingestWorkflowOmicsLegacySession <- function(value, workflow_data, source_dir, o
     if (is.null(session)) {
         cli::cli_abort("the adopted owner needs the module's session to attach to", class = "saved_entity_scope")
     }
+    # KIT-222 (owner's OD-3): a design whose sample names hold runs of two marking actions is named on open.
+    noteOmicsDesignReplicateKeyCollisionOnOpen(object@design_matrix, object@group_id, object@technical_replicate_id,
+        object@sample_id)
     workflow_type <- toupper(omic_type)
     root <- normalizePath(source_dir, winslash = "/", mustWork = TRUE)
     state_root <- tempfile(".dia-native-legacy-", tmpdir = root)
@@ -2286,6 +2299,12 @@ openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
         cli::cli_abort("archive is not a supported peptide checkpoint", class = "saved_entity_invalid")
     }
     convertDIANativeLegacyCheckpoints(manager)
+    # KIT-222 (owner's OD-3): a design whose sample names hold runs of two marking actions is named on open.
+    checkpoint_design <- as.data.frame(metadata$peptide_design$design_matrix)
+    if (!"tech_rep_group" %in% names(checkpoint_design) && all(c("group", "replicates") %in% names(checkpoint_design))) {
+        checkpoint_design$tech_rep_group <- paste(checkpoint_design$group, checkpoint_design$replicates, sep = "_")
+    }
+    noteOmicsDesignReplicateKeyCollisionOnOpen(checkpoint_design)
     for (reference in imported$extra_references) validateSavedWorkflowReference(manager$.context$store, reference)
     if (!identical(workflow_data$state_manager, previous)) {
         cli::cli_abort("project changed during checkpoint open", class = "workflow_execution_stale")

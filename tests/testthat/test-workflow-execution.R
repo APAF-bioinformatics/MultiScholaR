@@ -829,15 +829,18 @@ test_that("(KIT-115 F112-06) a publication left pending by a replaced project is
             shiny::isolate(step$apply(parameters))
             session$flushReact()
         }
+        # KIT-252: the pending publication is told in plain words (draft WP-6).
+        pending_text <- paste("the result was saved, but its tables and figures could not be written to the project",
+            "folder. Press the button again to write them; the step is not run again.")
         click(list(a = 1))
         expect_identical(seen$runs, 1L)
-        expect_identical(seen$errors, "managed action ended: publication_pending")
+        expect_identical(seen$errors, pending_text)
         expect_false(is.null(shiny::isolate(step$pending())))
         # The project is replaced: the pending publication is the other project's.
         workflow_data$state_manager <- second
         click(list(a = 1))
         expect_identical(seen$runs, 2L)
-        expect_identical(seen$errors, rep("managed action ended: publication_pending", 2L))
+        expect_identical(seen$errors, rep(pending_text, 2L))
         expect_identical(shiny::isolate(step$pending())$owner$manager, second)
         # The same project, other parameters: still refused.
         click(list(a = 2))

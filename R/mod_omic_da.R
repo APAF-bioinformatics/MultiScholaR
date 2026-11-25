@@ -263,7 +263,10 @@ registerOmicDaTableOutputs <- function(output, input, tab, da, binding) {
         results <- tab$da_results_list
         shiny::req(results)
         cat(omicDaSummaryText(results[[binding$long_table]], input$table_contrast, input$table_assay, input$da_q_val_thresh,
-            da$summary, da$table_filter))
+            da$summary, da$table_filter, runQValThresh = results$da_q_val_thresh,
+            # KIT-220 E-7 (I04): transcriptomics' interactive page is coloured at the box too (trxVolcanoWidget's p.value).
+            boxConsumers = if (identical(binding$omic_type, "transcriptomics")) "the table filter and both volcano plots" else
+                "the table filter and the static volcano plot"))
     })
     output$da_results_table <- DT::renderDT({
         results <- tab$da_results_list
@@ -417,7 +420,7 @@ executeOmicDaRun <- function(tab, workflowData, session, experimentPaths, settin
         runner <- workflowOmicsManagedActions(binding$omic_type)
         if (!is.null(runner)) {
             if (is.function(da$model$formula)) settings$formula_string <- da$model$formula(manager, source)
-            da$run$managed(binding, runner, manager, source, settings, contrasts,
+            da$run$managed(binding, runner, manager, source, settings, contrasts, experiment_paths = experimentPaths,
                 deliver = function(results, export) {
                     completeOmicDaRun(results, tab, workflowData, session, experimentPaths, da, binding,
                         export = if (is.function(da$run$export_report)) da$run$export_report(export) else export)
@@ -495,6 +498,8 @@ completeOmicDaRun <- function(results, tab, workflowData, session, experimentPat
     }
     logger::log_info("   Writing DA results to disk...")
     export <- if (!is.null(export)) reportWorkflowOmicsDaExport(export) else exportOmicDaInProcess(workflowData, experimentPaths, da, binding)
+    # KIT-243 (part D): the publication completed on either path, so its marker is cleared.
+    if (identical(export$status, "completed")) clearWorkflowDaPublicationPending(experimentPaths)
     invisible(c(choices, list(export = export)))
 }
 
@@ -506,8 +511,12 @@ exportOmicDaInProcess <- function(workflowData, experimentPaths, da, binding) {
         logger::log_warn("   Output directories not configured, skipping file output")
         return(list(status = "skipped", success = FALSE))
     }
-    display <- tryCatch(runWorkflowOmicsPublicationInProcess(binding, workflowData$state_manager, paste0(binding$prefix, "_da_publication"),
-        list(), experimentPaths), error = function(e) list(success = FALSE, message = conditionMessage(e)))
+    # KIT-243 (S3): the earlier files under this DA's names removed first; a failure is the export's warning.
+    display <- tryCatch({
+        removeWorkflowDaOwnFigures(workflowData$state_manager, experimentPaths, binding$omic_type)
+        runWorkflowOmicsPublicationInProcess(binding, workflowData$state_manager, paste0(binding$prefix, "_da_publication"),
+            list(), experimentPaths)
+    }, error = function(e) list(success = FALSE, message = conditionMessage(e)))
     if (is.function(da$run$export_report)) display <- da$run$export_report(display)
     reportWorkflowOmicsDaExport(display, shiny::showNotification)
 }
@@ -634,7 +643,7 @@ registerOmicDaPluginVolcanoOutputs <- function(output, input, tab, experimentPat
     output$volcano_glimma <- shiny::renderUI({
         shiny::req(isTRUE(input$volcano_interactive))
         diaDaVolcanoGlimmaView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, tab$current_s4_object,
-            experimentPaths$da_output_dir)
+            experimentPaths$da_output_dir, input$treat_lfc_cutoff)
     })
     output[[da$views$static_volcano$output]] <- shiny::renderPlot(alt = function() tab$volcano_plot_identity %||% NA_character_,
         diaDaStaticVolcanoView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, input$treat_lfc_cutoff,

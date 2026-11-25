@@ -1,0 +1,94 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: metabolomics
+Description: N/A
+Timestamp: 2026-11-25 08:12:36
+
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: N/A
+Commit Timestamp: N/A
+Package Version: 0.9.0
+Source: Installed Package
+
+Assay Information:
+-------------------
+* Number of Assays: 2
+* Assay Names: assay_pos, assay_neg
+* Total Metabolites: 5
+* Metabolites per Assay:
+    - assay_pos: 2
+    - assay_neg: 3
+
+ITSD Normalization:
+-------------------
+* Applied: Yes
+* Method Type: median
+* Aggregation: sum
+* Pattern Columns: ISTD_1, ISTD_2
+* ITSD Removed After Normalization: Yes
+* Timestamp: 2026-04-18 09:00:00
+* ITSD Features Per Assay:
+    - assay_pos (2 features): ISTD_A1, ISTD_A2
+    - assay_neg (1 features): ISTD_B1
+
+Log Transformation:
+------------------
+* Applied: Yes
+* Offset: 1
+
+Between-Sample Normalization:
+-----------------------------
+* Method: PQN
+
+Metabolomics Metadata:
+----------------------
+* Metabolite ID Column: database_identifier
+* Annotation ID Column: metabolite_identification
+* Database Identifier Type: HMDB
+* Sample ID Column: Sample_ID
+* Group ID Column: group
+* Number of Samples: 3
+* Number of Groups: 2
+* Group Names: A, B
+* Internal Standard Regex: ^ISTD
+
+RUV-III Batch Correction:
+-------------------------
+* Status: Applied
+* Grouping Variable: group
+* Per-Assay Parameters:
+    - assay_pos: k=2, controls=1
+    - assay_neg: k=3, controls=2
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+[ITSDNormalization]
+  applied = TRUE
+  method_type = median
+  itsd_aggregation = sum
+  itsd_pattern_columns = c('ISTD_1', 'ISTD_2')
+  removed_itsd = TRUE
+  timestamp = [POSIXct object]
+  itsd_features_per_assay = [list object]
+  itsd_counts_per_assay = [list object]
+[ruv_number_k]
+  assay_pos = 2
+  assay_neg = 3
+[ctrl]
+  assay_pos = c(TRUE, FALSE)
+  assay_neg = c(TRUE, TRUE, FALSE)
+Additional Configuration Parameters:
+-----------------------------------
+
+Contrasts:
+----------
+   A_vs_B

@@ -1,0 +1,3 @@
+R R version 4.6.1 (2026-06-24)
+pandoc 2.9.2.1
+HEAD 8fd559b28737eb60b754844a7d9fd11659975e03

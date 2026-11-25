@@ -10,7 +10,8 @@ printCountDaGenesTable(
   formula_string = "analysis_type ~ comparison",
   facet_column = analysis_type,
   comparison_column = "comparison",
-  expression_column = "expression"
+  expression_column = "expression",
+  q_val_thresh = 0.05
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ printCountDaGenesTable(
 \item{comparison_column}{The name of the column describing the contrasts or comparison between groups (tidyverse style).}
 
 \item{expression_column}{The name of the column that will contain the formula expressions of the contrasts.}
+
+\item{q_val_thresh}{The q-value threshold the counts are made at (KIT-220: the analysis's threshold; the default
+0.05 keeps scripted callers as before).}
 }
 \description{
 Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.

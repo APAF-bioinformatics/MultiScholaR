@@ -1,0 +1,18 @@
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `!is.na(slack) && grepl(slack, intro, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `!is.na(methods_slack) && grepl(methods_slack, methods, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

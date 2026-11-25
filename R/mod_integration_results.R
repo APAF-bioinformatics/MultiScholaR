@@ -36,6 +36,8 @@ mod_integration_results_ui <- function(id) {
         testid(shiny::div(integrationModelSettingsUi(ns, integrationResultsParameterSpec(), texts, exclude = character(),
             testid = "integration-results-param-", note = texts[["results_provisional"]])), "integration-results-settings"),
         testid(shiny::uiOutput(ns("advisories")), "integration-results-advisories"),
+        # KIT-239 (INT-28): the limitations of the model, with this model's own numbers.
+        testid(shiny::uiOutput(ns("limitations")), "integration-results-limitations"),
         shiny::h4(texts[["variance_heading"]]),
         shiny::p(texts[["variance_intro"]]),
         testid(shiny::plotOutput(ns("variance_plot"), height = "420px"), "integration-results-variance-plot"),
@@ -174,6 +176,12 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
                 sprintf(texts[["few_samples"]], as.integer(value$shared_samples), INTEGRATION_FEW_SAMPLES))))
             shiny::tagList(shiny::h4(texts[["advisories_heading"]]), notes)
         })
+        output$limitations <- shiny::renderUI({
+            value <- results()
+            shiny::req(usable(value))
+            shiny::div(class = "alert alert-secondary", shiny::h4(texts[["limits_heading"]]), shiny::p(texts[["limits_lead"]]),
+                do.call(shiny::tags$ul, lapply(value$limitations, shiny::tags$li)))
+        })
         output$variance_plot <- shiny::renderPlot({
             value <- results()
             shiny::req(usable(value))
@@ -194,7 +202,15 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             shiny::req(usable(value))
             seeds <- value$seeds
             if (length(seeds) < 2L) return(shiny::p(texts[["stability_single"]]))
-            shiny::p(sprintf(texts[["stability_intro"]], length(seeds), paste(seeds, collapse = ", "), seeds[[1L]]))
+            # KIT-240 (VAL-221 (1)): the model shown's rank by final ELBO (when known), and what the table leaves out.
+            rank <- value$elbo_rank
+            shiny::tagList(
+                shiny::p(sprintf(texts[["stability_intro"]], length(seeds), paste(seeds, collapse = ", "), seeds[[1L]])),
+                if (!is.null(rank)) shiny::p(sprintf(texts[["stability_elbo_rank"]], as.integer(rank$rank), as.integer(rank$of),
+                    integrationElboText(rank$below_best), integrationElboText(rank$range))),
+                # r1.5 (VAL-252): the rank's basis.
+                if (!is.null(rank)) shiny::p(texts[["stability_elbo_slack"]]),
+                shiny::p(texts[["stability_limit"]]))
         })
         output$stability_table <- shiny::renderTable({
             value <- results()

@@ -1,0 +1,9 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-omic-enrich-module.R	1051	19	0	0	0	528	failed
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	0	6.7	ok
+test-prot-11a-enrichment-module-characterization.R	0	0	0	0	0	6.9	ok
+test-enrichment-significance.R	191	0	0	0	0	128.1	ok
+test-module-ci-prot-enrich.R	79	0	0	2	2	8.2	ok
+test-module-ci-manifest.R	33	0	0	0	0	7.1	ok
+test-e2e-proteomics-enrichment.R	0	0	0	2	0	6.9	ok
+test-kit241-enrich-download-zip.R	15	0	0	0	0	6.9	ok

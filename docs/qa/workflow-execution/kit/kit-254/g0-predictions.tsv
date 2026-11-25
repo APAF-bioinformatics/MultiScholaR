@@ -1,0 +1,25 @@
+case	observable	predicted
+SCAN	t_hi, t_lo	not predicted (stop rule 2 may apply); F172's within-group correlations are high
+PHASE0	managed Apply; Apply then Skip	complete: heads <prefix>_correlation_filtered, <prefix>_norm_complete; managed Apply design = in-process Apply design at the same t
+I	head / history	<prefix>_norm_complete; <prefix>_correlation_filtered in the active history before it
+I	head design	the t_hi Apply's kept samples (filtered)
+I	head components equal the run result's	FALSE (they are the Apply's)
+I	summary original / after / removed	N / N / 0 (both from the unfiltered run result)
+I	final PCA reference samples	N (the unfiltered run result)
+I	DA source entity / samples	the head (<prefix>_norm_complete); filtered count; status current
+I	Save: integration object samples / study parameters	filtered count; a pearson selection block with min_pearson_correlation_threshold = t_hi
+I	record steps	... <prefix>_correlation_filtered (<prefix>_pearson_selection at t_hi, preceded by pairs), <prefix>_norm_complete
+I	replay	completes, no statement; replay head design = the filtered samples (agrees with live)
+II	second Apply source entity	the t_hi state's entity (the head), not the run result
+II	second Apply design	t_hi's kept samples (one assay: max(t_hi, t_lo) = t_hi)
+II0	design	all samples (t_lo removes none by the rule)
+II	record correlation step	one <prefix>_pearson_selection at t_lo; input_entity_ids = result_entity_id
+II	replay design	t_lo on the run result: all samples; differs from live when t_hi removed a sample
+E13	head / history / design / replay	<prefix>_correlation_filtered; <prefix>_norm_complete after the head; t_hi's samples; replay all samples (differs)
+E14	Save	done 1, no failure; DA status current; filtered outputs
+E10	head / fields	the t_hi state; correlation_filtering_complete TRUE, correlation_filtered_obj = t_hi entity; an error notice
+E11	head / fields	the t_hi state; lipid: flags put back to t_hi's; metab: unchanged (t_hi's)
+E9	design after two Applies	A_1 and A_2 removed (cascade); one Apply removes A_1 only; or an error reading the second press's input (F2), recorded
+E12	second press source / design	the t_hi state (queued press reads the head); t_hi's samples; the queue is held (instrument)
+C1	design / record / replay	all samples; no pearson selection step; replay all samples
+C2 vs C3	design	equal (one assay)

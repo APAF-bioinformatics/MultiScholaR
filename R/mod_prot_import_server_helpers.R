@@ -13,7 +13,8 @@ createProtImportLocalData <- function(
     organism_distribution = NULL,
     organism_mapping = NULL,
     pending_import_completion = FALSE,
-    waiting_for_organism_selection = FALSE
+    waiting_for_organism_selection = FALSE,
+    organism_unconfirmed = FALSE
   )
 }
 
@@ -164,14 +165,17 @@ registerProtImportOutputs <- function(
       isProcessing = localData$processing,
       dataTbl = workflowData$data_tbl,
       dataFormat = workflowData$data_format,
-      dataType = workflowData$data_type
+      dataType = workflowData$data_type,
+      waitingForOrganism = localData$waiting_for_organism_selection,
+      organismUnconfirmed = localData$organism_unconfirmed
     )
   })
 
   output$data_summary <- renderUiFn({
     buildDataSummaryUiFn(
       dataTbl = workflowData$data_tbl,
-      setupImportLog = workflowData$processing_log$setup_import
+      setupImportLog = workflowData$processing_log$setup_import,
+      organismPending = isTRUE(localData$waiting_for_organism_selection) || isTRUE(localData$organism_unconfirmed)
     )
   })
 
@@ -201,6 +205,7 @@ registerProtImportObservers <- function(
     recordSetupLogFn = recordProtImportSetupLog,
     finalizeProcessingFn = finalizeProtImportProcessing,
     confirmOrganismSelectionFn = confirmProtImportOrganismSelection,
+    cancelOrganismSelectionFn = cancelProtImportOrganismSelection,
     updateStatusFn = updateProtImportProcessingStatus,
     importDataByFormatFn = importProtImportDataByFormat,
     recordImportedDataFn = recordProtImportImportedData,
@@ -435,6 +440,14 @@ registerProtImportObservers <- function(
       workflowData = workflowData,
       localData = localData,
       session = session
+    )
+  })
+
+  # KIT-250: Cancel in the organism dialog leaves the import unfinished and cleared.
+  observeEventFn(input$cancel_organism, {
+    cancelOrganismSelectionFn(
+      workflowData = workflowData,
+      localData = localData
     )
   })
 

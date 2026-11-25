@@ -1,0 +1,3 @@
+record design rows: two runs of one group share a technical_replicate_id value
+record tech_rep_group KO_2: 1 replacement(s) with "KO_1"
+tech_rep_group of run 2 of group KO set from KO_2 to KO_1

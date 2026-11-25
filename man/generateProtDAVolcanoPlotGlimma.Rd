@@ -17,11 +17,16 @@ generateProtDAVolcanoPlotGlimma(
   gene_names_column = "gene_names",
   display_columns = c("best_uniprot_acc"),
   output_dir = NULL,
+  lfc_thresh = 1,
   ...
 )
 }
 \arguments{
 \item{da_results_list, selected_contrast, uniprot_tbl, args_row_id, fdr_column, raw_p_value_column, log2fc_column, da_q_val_thresh, uniprot_id_column, gene_names_column, display_columns, output_dir, ...}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{lfc_thresh}{The absolute log2 fold-change cutoff a highlighted protein reaches (KIT-220, VAL-191 (6): the
+analysis's cutoff; a protein is highlighted when its FDR is below \code{da_q_val_thresh} and its absolute log2 fold
+change is at least this). The default 1 keeps other callers as before.}
 }
 \description{
 Generate Interactive Volcano Plot using Glimma

@@ -2096,13 +2096,18 @@ test_that("KIT-102 W6: completeProtImportSuccessState writes the statuses throug
       messageFn = function(...) invisible(NULL)
     )
 
-    expected_status <- list(setup_import = "complete", design_matrix = "pending", quality_control = "disabled")
+    # KIT-250 (declared edit): while the organism dialog is open the import is not complete; Confirm completes it.
+    expected_status <- if (waiting) {
+      list(setup_import = "incomplete", design_matrix = "disabled", quality_control = "disabled")
+    } else {
+      list(setup_import = "complete", design_matrix = "pending", quality_control = "disabled")
+    }
     expect_identical(result, expected_status)
     expect_identical(workflowData$tab_status, expected_status)
     expect_false(localData$processing)
     # One status write (the helper's, without its notification), then today's modal close and notification.
     expect_identical(events, if (waiting) {
-      "complete:notify=FALSE"
+      character()
     } else {
       c("complete:notify=FALSE", "removeModal", "notification:Data import successful!:message")
     })

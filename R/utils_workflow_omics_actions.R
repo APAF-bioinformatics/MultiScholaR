@@ -547,11 +547,19 @@ omicsNormFinalQcPcaPlot <- function(object, color, shape) {
 #' The correlation filter on the worker: the pairs, then the selection on them (`runWorkflowOmicsReferenceCorrelation`).
 #' @param deliver `function(correlations, reference)`, the tab's completion.
 #' @param failed `function(error)`, the tab's handling of a failure.
+#' @param start `function()` run when the actions start (KIT-254: the check and the return to the run's result), or
+#'   NULL. Not run while a failed publication waits for its retry, when the runner resolves the actions only to compare
+#'   them (R1-03); a press that waits is resolved again when it starts.
 #' @noRd
-runWorkflowOmicsManagedCorrelation <- function(binding, runner, group, threshold, config, deliver, failed) {
-    runner$run(list(omicsManagedProduct(paste0(binding$prefix, "_pearson_pairs"), list(correlation_group = group), function(result) {
+runWorkflowOmicsManagedCorrelation <- function(binding, runner, group, threshold, config, deliver, failed, start = NULL) {
+    pairs_action <- list(omicsManagedProduct(paste0(binding$prefix, "_pearson_pairs"), list(correlation_group = group), function(result) {
         runner$correlation_pairs <- result
-    })), done = function() {
+    }))
+    actions <- if (is.function(start)) function() {
+        if (!(is.function(runner$retrying) && isTRUE(runner$retrying()))) start()
+        pairs_action
+    } else pairs_action
+    runner$run(actions, done = function() {
         pairs <- runner$correlation_pairs
         runner$correlation_pairs <- NULL
         runner$run(list(omicsManagedCommit(omicsPearsonSelectionStep(binding, pairs$reference$entity_id, threshold), config,
@@ -581,8 +589,11 @@ runWorkflowOmicsInProcessCorrelation <- function(binding, manager, group, thresh
 #' @param failed `function(error)` for a failure before the results exist.
 #' @param invalidate `function()` clearing the tab's results: called when the new manifest is on the head but its rows could
 #'   not be read, so that the tab shows no results rather than the previous run's beside this run's volcano.
+#' @param experiment_paths The project's paths: KIT-243 (S4) removes the earlier files under this DA's names before its
+#'   publication is requested (NULL: none removed).
 #' @noRd
-runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings, contrasts, deliver, failed, invalidate = NULL) {
+runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings, contrasts, deliver, failed, invalidate = NULL,
+    experiment_paths = NULL) {
     # A worker's input is the head; a tab left on an earlier state reloads it (in process the DA could run on either).
     if (!identical(source, getWorkflowStateReference(manager))) {
         stop("the session has moved on from the state this tab loaded; load the session again", call. = FALSE)
@@ -594,6 +605,12 @@ runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings
     runner$run(actions, done = function() {
         # KIT-082: the worker reads the contrasts' tables, and the tab holds their rows without the per-sample columns.
         accepted <- withWorkflowStateScope(manager, function() acceptWorkflowOmicsDaManifest(binding, manager, source, settings, contrasts, values, read_results = FALSE))
+        # KIT-243 (S4): a removal that fails takes the no-results branch; its marker then refuses Copy and the Report.
+        removal <- tryCatch(removeWorkflowDaOwnFigures(manager, experiment_paths, binding$omic_type), error = function(error) error)
+        if (inherits(removal, "error")) {
+            if (is.function(invalidate)) invalidate()
+            return(failed(removal))
+        }
         tab <- NULL
         export <- NULL
         finish <- function(outcome) {

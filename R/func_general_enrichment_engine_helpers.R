@@ -197,7 +197,7 @@ buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
   ggplot2::ggplot(plot_data, ggplot2::aes(x = source, y = neg_log10_p, text = paste0(
     "Term: ", term_name, "\n",
     "ID: ", term_id, "\n",
-    "P-value: ", signif(p_value, 3), "\n",
+    "Adjusted p-value: ", signif(p_value, 3), "\n",
     "Genes: ", intersection_size
   ))) +
     # Add a line for the significance threshold
@@ -225,9 +225,22 @@ buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
     ) +
     ggplot2::labs(
       title = paste0("Enrichment for ", contrast, " (", direction, "-regulated)"),
-      x = "Annotation Source", y = "-log10(p-value)"
+      x = "Annotation Source", y = "-log10(adjusted p-value)"
     ) +
     ggplot2::guides(color = "none")
+}
+
+#' The multiple-testing correction a g:Profiler answer states it applied (KIT-226)
+#'
+#' g:Profiler returns only adjusted p-values (`p_value`); the answer's metadata states the correction,
+#' `meta$query_metadata$significance_threshold_method` (for example `g_SCS`). It is copied as the service spells it,
+#' never mapped or inferred from the selection.
+#' @param gost_result A gprofiler2 `gost` answer (`result`, `meta`).
+#' @return The method as the answer states it, or `"not recorded"` when the answer states none.
+#' @noRd
+gprofilerAdjustmentMethod <- function(gost_result) {
+  method <- gost_result$meta$query_metadata$significance_threshold_method
+  if (is.character(method) && length(method) == 1L && !is.na(method) && nzchar(method)) method else "not recorded"
 }
 
 #' Carry what a clusterProfiler result's plot needs beside its table (KIT-119)
@@ -398,6 +411,8 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
   tryCatch({
     result_table <- enrichment_result$result
     result_table$parents <- sapply(result_table$parents, paste, collapse = ", ")
+    # KIT-226 (VAL-196): `p_value` is the service's adjusted value; the file names the correction applied.
+    result_table$p_adjust_method <- gprofilerAdjustmentMethod(enrichment_result)
     readr::write_tsv(result_table,
       file = file.path(pathway_dir, paste0(contrast, "_", direction, "_enrichment_results.tsv"))
     )

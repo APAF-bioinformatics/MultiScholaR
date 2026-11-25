@@ -1311,12 +1311,18 @@ buildProtDesignSaveResultsPayload <- function(
     designMatrixFinal <- designMatrix |>
         dplyr::filter(!is.na(group) & group != "") |>
         dplyr::filter(!Run %in% currentRemovedSamples) |>
-        # group + replicates uniquely identifies a biological sample for
-        # downstream technical-replicate grouping.
+        # group + replicates names a biological sample for downstream technical-replicate grouping; KIT-222: the
+        # refusals below make it unique (the builder did not guarantee it before).
         dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
 
     if (nrow(designMatrixFinal) == 0) {
         return(NULL)
+    }
+    # KIT-222 (owner's OD-2, OD-5): a replicate number shared by an unmarked run (KIT-128's rule, as the other omics'
+    # builder save) or a key holding runs of two marking actions is refused; the refusal is its text.
+    refusal <- omicsDesignSaveRefusal(designMatrixFinal, unmarkedWithoutColumn = FALSE)
+    if (!is.null(refusal)) {
+        return(refusal)
     }
 
     assignedRuns <- designMatrixFinal$Run
@@ -1495,6 +1501,12 @@ buildProtDesignStateCheckpoint <- function(
 ) {
   workflowData$design_matrix <- workflowData$design_matrix |>
     dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+  # KIT-222 (owner's OD-2, OD-5): the builder's commit and the import refuse a shared number without marks or a key
+  # holding runs of two marking actions (designs with a `tech_reps` column).
+  refusal <- omicsDesignSaveRefusal(as.data.frame(workflowData$design_matrix), unmarkedWithoutColumn = FALSE)
+  if (!is.null(refusal)) {
+    rlang::abort(refusal, class = c("omics_design_replicate_key_collision", "omics_design_refused"))
+  }
   logger::log_info("Created tech_rep_group column for proper technical replicate identification")
 
   if (workflowType %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level; KIT-048: the owner is the one path

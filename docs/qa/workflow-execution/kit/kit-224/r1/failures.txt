@@ -1,0 +1,213 @@
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E1: the lipid ruvIII_C_Varying keeps each feature's mean (complete data, k = 1)
+kind: failure
+message:
+  Expected E1 lipid pos: largest |mean after - mean before| = 10.2321 < 1e-09.
+  Actual comparison: 10.232097496 >= 0.000000001
+  Difference: 10.232097495 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E1: the lipid ruvIII_C_Varying keeps each feature's mean (complete data, k = 1)
+kind: failure
+message:
+  Expected E1 lipid neg: largest |mean after - mean before| = 11.5894 < 1e-09.
+  Actual comparison: 11.589366648 >= 0.000000001
+  Difference: 11.589366647 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E1m: the lipid ruvIII_C_Varying keeps each feature's mean over its corrected samples (5 % missing)
+kind: failure
+message:
+  Expected E1m lipid pos: largest |mean after - mean before| = 7.55889 < 1e-09.
+  Actual comparison: 7.558886916 >= 0.000000001
+  Difference: 7.558886915 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E1m: the lipid ruvIII_C_Varying keeps each feature's mean over its corrected samples (5 % missing)
+kind: failure
+message:
+  Expected E1m lipid neg: largest |mean after - mean before| = 5.98336 < 1e-09.
+  Actual comparison: 5.983363223 >= 0.000000001
+  Difference: 5.983363222 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E2: the metabolomics ruvIII_C_Varying keeps each feature's mean, as the lipid method
+kind: failure
+message:
+  Expected E2 metab pos: largest |mean after - mean before| = 10.2321 < 1e-09.
+  Actual comparison: 10.232097496 >= 0.000000001
+  Difference: 10.232097495 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E2: the metabolomics ruvIII_C_Varying keeps each feature's mean, as the lipid method
+kind: failure
+message:
+  Expected E2 metab neg: largest |mean after - mean before| = 11.5894 < 1e-09.
+  Actual comparison: 11.589366648 >= 0.000000001
+  Difference: 11.589366647 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (i): the replay marker ruv_feature_levels exists; the legacy declarations fix it
+kind: failure
+message:
+  Expected `workflowReplayRuleMarkers$ruv_feature_levels` to be identical to `list(option = KIT224_OPTION, current = "restored", earlier = "shifted")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (i): the replay marker ruv_feature_levels exists; the legacy declarations fix it
+kind: failure
+message:
+  Expected `workflowReplayRule(marked, "ruv_feature_levels")` to be identical to "restored".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('restored')
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (i): the replay marker ruv_feature_levels exists; the legacy declarations fix it
+kind: failure
+message:
+  Expected `workflowReplayRule(registry, "ruv_feature_levels")` to be identical to "shifted".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('shifted')
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (i): the replay marker ruv_feature_levels exists; the legacy declarations fix it
+kind: failure
+message:
+  Expected `workflowReplayRule(list(parameters = list()), "ruv_feature_levels")` to be identical to "shifted".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('shifted')
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (i): the replay marker ruv_feature_levels exists; the legacy declarations fix it
+kind: failure
+message:
+  Expected `omicsRuvOperation(binding)$fixed$ruv_feature_levels` to be identical to "restored".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('restored')
+  
+  lipid
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (i): the replay marker ruv_feature_levels exists; the legacy declarations fix it
+kind: failure
+message:
+  Expected `omicsRuvOperation(binding)$fixed$ruv_feature_levels` to be identical to "restored".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('restored')
+  
+  metab
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E3 and E4 (iii): the legacy step lipid_ruv (Automatic) keeps each feature's level; its record lists the marker
+kind: failure
+message:
+  Expected E3 lipid_ruv Automatic: largest |mean after - mean before| = 22.368 < 1e-09.
+  Actual comparison: 22.368005793 >= 0.000000001
+  Difference: 22.368005792 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E3 and E4 (iii): the legacy step lipid_ruv (Automatic) keeps each feature's level; its record lists the marker
+kind: failure
+message:
+  Expected `marker` to have length 1.
+  Actual length: 0.
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (iv): a record made under each rule replays without a mismatch; only the current rule lists the marker
+kind: failure
+message:
+  Expected `identical(corrected$restored, corrected$shifted)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipidomics the two rules' corrected tables differ
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (iv): a record made under each rule replays without a mismatch; only the current rule lists the marker
+kind: failure
+message:
+  Expected `kit224RuvMarkers(saved$record, binding$prefix)` to have length 1.
+  Actual length: 0.
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (iv): a record made under each rule replays without a mismatch; only the current rule lists the marker
+kind: failure
+message:
+  Expected `identical(corrected$restored, corrected$shifted)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metabolomics the two rules' corrected tables differ
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E4 (iv): a record made under each rule replays without a mismatch; only the current rule lists the marker
+kind: failure
+message:
+  Expected `kit224RuvMarkers(saved$record, binding$prefix)` to have length 1.
+  Actual length: 0.
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E5: the RUVIII export file and the corrected integration input keep each gene's TMM logCPM mean
+kind: failure
+message:
+  Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f"
+  `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+trace (first lines):
+      ▆
+   1. └─kit224TrxOwner() at test-kit224-ruv-feature-levels.R:318:5
+   2.   └─trxDeclReference("trx_edge_12", env = env) at test-kit224-ruv-feature-levels.R:292:5
+   3.     └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:34:5
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E5: the RUVIII export file and the corrected integration input keep each gene's TMM logCPM mean
+kind: failure
+message:
+  Expected E5 file: largest |gene mean - TMM logCPM mean| = 2.43114 < 1e-09.
+  Actual comparison: 2.431139316 >= 0.000000001
+  Difference: 2.431139315 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E5: the RUVIII export file and the corrected integration input keep each gene's TMM logCPM mean
+kind: failure
+message:
+  Expected E5 integration input: largest |gene mean - TMM logCPM mean| = 2.43114 < 1e-09.
+  Actual comparison: 2.431139316 >= 0.000000001
+  Difference: 2.431139315 >= 0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E5: the RUVIII export file and the corrected integration input keep each gene's TMM logCPM mean
+kind: failure
+message:
+  Expected `input$manifest$correction$levels` to be identical to "restored_to_tmm_logcpm".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('restored_to_tmm_logcpm')
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E6: the legacy Manual route's calls do not change when every value is multiplied by 2^10 (T1b, seed 172102)
+kind: failure
+message:
+  Expected E6 calls changed (of 516; max |delta t| 0.4205) to be identical to 0L.
+  Differences:
+    `actual`: 22
+  `expected`:  0
+
+file: test-kit224-ruv-feature-levels.R
+test: KIT-224 E6: the legacy Manual route's calls do not change when every value is multiplied by 2^10 (T1b, seed 172102)
+kind: failure
+message:
+  Expected E6 max |delta t| = 0.420486 < 1e-06.
+  Actual comparison: 0.420486 >= 0.000001
+  Difference: 0.420485 >= 0
+
