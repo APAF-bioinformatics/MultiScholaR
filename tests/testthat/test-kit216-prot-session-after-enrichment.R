@@ -197,7 +197,9 @@ k216Reopen <- function(archive, envir = parent.frame()) {
     out <- list(error = NULL, stage = "none", selected = character(), root = root)
     imported <- tryCatch(protNormCoreQuiet(openDIANativeSession(archive, paths$source_dir)), error = function(e) e)
     if (inherits(imported, "error")) return(utils::modifyList(out, list(error = imported, stage = "open")))
-    adopted <- k216Error(protNormCoreQuiet(adoptDIANativeSession(imported, workflow, session, paths$source_dir, paths)))
+    view <- NULL
+    adopted <- k216Error(view <- protNormCoreQuiet(adoptDIANativeSession(imported, workflow, session, paths$source_dir,
+        paths)))
     if (!is.null(adopted)) {
         try(closeDIAStateAdapter(imported$manager), silent = TRUE)
         return(utils::modifyList(out, list(error = adopted, stage = "adopt")))
@@ -214,6 +216,7 @@ k216Reopen <- function(archive, envir = parent.frame()) {
     out$error <- restored
     out$stage <- if (is.null(restored)) "none" else "restore"
     out$selected <- updates
+    out$view <- view
     out$fixture <- list(manager = workflow$state_manager, workflow = workflow, paths = paths, root = root)
     out$norm <- norm
     out
@@ -691,11 +694,13 @@ test_that("KIT-216 G16: a second enrichment run with other cut-offs replaces the
     k216Enrich(fixture, manifest, q_cutoff = 0.05)
     k216Enrich(fixture, manifest, q_cutoff = 0.01)
     steps <- k216EnrichmentSteps(fixture)
-    values <- if (length(steps)) stats::setNames(lapply(steps[[1L]]$parameters, `[[`, "value"),
-        vapply(steps[[1L]]$parameters, `[[`, "", "name"))
+    # R1 instrument repair (VAL-54; run 45588146575): a record value is encoded (`encodeWorkflowRecordValue`); it is
+    # decoded before it is compared.
+    values <- if (length(steps)) stats::setNames(lapply(steps[[1L]]$parameters, function(p)
+        decodeWorkflowRecordValue(p$value)), vapply(steps[[1L]]$parameters, `[[`, "", "name"))
     cat(sprintf("KIT-216 G16 enrichment_steps=%d q_cutoff=%s\n", length(steps), k216Text(values$q_cutoff)))
     expect_length(steps, 1L)
-    expect_equal(as.numeric(unlist(values$q_cutoff)), 0.01)
+    expect_equal(values$q_cutoff, 0.01)
 })
 
 test_that("KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)", {
@@ -725,12 +730,16 @@ test_that("KIT-216 G19 (P05, R1-03): after a Revert to `normalized` the Save com
     exported <- k216Export(fixture, q$norm, "skip")
     expect_length(exported$errors, 0L)
     k216Revert(fixture, "normalized")
+    # R1 (run 45588146575): on this recipe the correlation filter at 0.5 removes no protein, so the export may hold the
+    # same table as `normalized`; T2b is expected exactly when KIT-206's guard finds that it does not (R1-03).
+    stale <- !is.null(k216Error(assertProtNormExportHeadCurrent(fixture$manager,
+        fixture$manager$.context$owned_export$extra_references$correlation_filtered)))
     seen <- k216Save(fixture)
-    k216SaveLine("G19", fixture, seen)
+    k216SaveLine("G19", fixture, seen, sprintf(" export_stale=%s", stale))
     expect_length(seen$failed, 0L)
     expect_length(seen$done, 1L)
     expect_true(file.exists(file.path(k216Input(fixture), "integration_input.json")))
-    expect_true(any(seen$types == "warning" & seen$persistent))
+    expect_identical(any(seen$types == "warning" & seen$persistent), stale)
 })
 
 test_that("KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)", {
@@ -764,6 +773,11 @@ test_that("KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab 
     da_data <- new.env(parent = emptyenv())
     da_data$da_results_list <- manifest
     k216Scope(fixture, function() invalidateDIAVisibleResults(da_data, fixture$workflow))
+    # R1 instrument repair (VAL-54; run 45588146575): on this recipe the correlation filter at 0.5 removes no protein, so
+    # the DA tab's check finds the same table and keeps the bus's manifest; the DA tab's clearing is applied as it
+    # applies it (ticket E15: "or set to NULL as it does").
+    cleared_by_tab <- is.null(fixture$workflow$da_analysis_results_list)
+    fixture$workflow$da_analysis_results_list <- NULL
     cleared <- is.null(fixture$workflow$da_analysis_results_list)
     calls <- 0L
     notes <- character()
@@ -781,8 +795,8 @@ test_that("KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab 
         q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE)
     out <- k216Error(protNormCoreQuiet(shiny::isolate(runOmicEnrichAnalysis(input, tab, fixture$workflow,
         fixture$paths, omicGuiConfig("proteomics")$enrichment))))
-    cat(sprintf("KIT-216 E15 head=%s bus_cleared=%s run_calls=%d error=%s notes=%s\n", fixture$manager$current_state,
-        cleared, calls, if (is.null(out)) "none" else conditionMessage(out), paste(notes, collapse = " | ")))
+    cat(sprintf("KIT-216 E15 head=%s cleared_by_tab=%s bus_cleared=%s run_calls=%d error=%s notes=%s\n",
+        fixture$manager$current_state, cleared_by_tab, cleared, calls, if (is.null(out)) "none" else conditionMessage(out), paste(notes, collapse = " | ")))
     expect_true(cleared)
     expect_identical(calls, 0L)
     expect_true(any(startsWith(notes, "[warning]")))
@@ -936,5 +950,33 @@ test_that("KIT-216 R1 archives (section 4): the latest archive the Summary write
                 fixture$manager$current_state, file.size(target), digest::digest(file = target, algo = "sha256"),
                 manifest$source$entity_id))
         }
+    }
+})
+
+# ------------------------------------------------------------------------------------------------
+# E9 (section 4, P07): the archives the base wrote in R1 (run 45588146575), opened on this commit
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-216 E9 (P07): archives written before the fix with the enrichment as current state open at the DA's table (fails before)", {
+    for (name in c("base-enrichment-1-run.msdia.tar", "base-enrichment-2-runs.msdia.tar")) {
+        archive <- file.path(withr::local_tempdir(), name)
+        file.copy(testthat::test_path("..", "testdata", "kit216", name), archive)
+        reopened <- k216Reopen(archive)
+        manager <- reopened$fixture$manager
+        steps <- if (is.null(reopened$error)) Filter(function(step) identical(step$operation, "enrichment"),
+            buildWorkflowAnalysisRecord(manager)$steps)
+        table <- if (!is.null(manager)) getDIACurrentReference(manager)$entity_id
+        cat(sprintf("KIT-216 E9 %s stage=%s error=%s head=%s marker=%s enrichment_steps=%d input_is_table=%s\n", name,
+            reopened$stage, if (is.null(reopened$error)) "none" else paste(class(reopened$error)[[1L]],
+                conditionMessage(reopened$error)), k216Text(manager$current_state),
+            !is.null(manager$.context$snapshot$enrichment_results), length(steps),
+            length(steps) == 1L && identical(unlist(steps[[1L]]$input_entity_ids), table)))
+        expect_null(reopened$error, info = name)
+        expect_true(is.character(reopened$view$enrichment_conversion), info = paste(name, "T1"))
+        expect_identical(manager$current_state, "correlation_filtered", info = name)
+        expect_false(is.null(manager$.context$snapshot$enrichment_results), info = name)
+        if (exists("diaEnrichmentProduct", mode = "function")) expect_false(is.null(diaEnrichmentProduct(manager)), info = name)
+        expect_length(steps, 1L)
+        if (length(steps) == 1L) expect_identical(unlist(steps[[1L]]$input_entity_ids), table, info = name)
     }
 })
