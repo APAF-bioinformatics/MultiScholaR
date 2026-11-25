@@ -358,6 +358,19 @@
    so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
    name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
    delivered to a user.
+ * Proteomics, scripted differential abundance: `differentialAbundanceAnalysis()` given several comparisons in one call
+   fitted all of them but built its significance table, wide and long tables, count tables and volcano and p-value
+   plots from the first comparison only, without a message; `protein_deAnalysisWrapperFunction()` (and
+   `deAnalysisWrapperFunction()`) given a plain data frame of several comparisons analysed only the first. Both now
+   return every comparison asked for; each comparison's values are the same as a call with that comparison alone (bit
+   for bit in a model without covariates; to floating-point rounding when the model has covariates). No reported
+   value was wrong for comparisons given as text; comparisons were missing. The application asks for one comparison
+   per call and is unchanged. `outputDaResultsAllContrasts()` still expects one comparison per list element.
+   `differentialAbundanceAnalysis()` now also accepts a tibble (it stopped with an error before). With several
+   comparisons the long table's per-sample columns are numbered rather than named by sample. Both functions now stop
+   with a clear message when `contrasts_tbl` is not a data frame (before: 'incorrect number of dimensions'), and read
+   the comparisons as text: with a comparisons column stored as a factor whose levels were not in row order,
+   `differentialAbundanceAnalysis()` labelled one comparison's results with another's name (KIT-221).
  * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
    `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
    those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).

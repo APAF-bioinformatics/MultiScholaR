@@ -34,3 +34,97 @@ stops at the first call: "could not find function". No digest was produced, no v
 ## Not checked
 
 Everything after R1: the fix's behaviour, G1 and G3 digests, R2 and R3, the check comparison, NEWS, ledger row.
+
+## Records added 2026-11-26 (coordinator's rulings)
+
+**Dated correction of R1's prediction.** Predicted 42 passed / 39 failed for the new file, observed 43 / 38: one
+expectation, W5's `length(contrasts_results$results) == 2`, which passes on base because `differentialAbundanceAnalysis()`
+keeps every comparison in `contrasts_results` (ticket 2.1). Cause: a mis-read of 2.1. No expectation was changed after
+the result (the test now carries a comment marking this assertion a guard that passes on base and on head); the
+ticket's correction pass is not used. R1's result stands and is not re-sent.
+
+**The fix** (commit 4654fd600) was drafted before R1's verdict and committed after it; it was not changed in the
+light of the result beyond what ticket 3.1 specifies (R1 showed no behaviour the draft had to answer).
+
+**Instrument rerun 1 of 3** (g1.R, the namespace accessor for `ProteinQuantitativeData`): run 45715339444, script job
+alone on e80e558d (R/ = base), predictions in `r1-predictions.md`; about 1 core-hour. Head digests: one script job
+attached to R2.
+
+**R2 scope (45 files, the ticket priced about 40; accepted by the coordinator).** The ticket's grep at 176f9d3ff,
+helpers dropped, gives 43 files (the new file included); plus `test-gui-entry-proteomics.R` and
+`test-workflow-operations.R` (not matched by the grep): 45.
+- test-dia-limpa-ruv-rules.R
+- test-enrichment-significance.R
+- test-gui-entry-proteomics.R
+- test-kit128-no-biological-replication-prot.R
+- test-kit129-run-path.R
+- test-kit174-ruv-grouping.R
+- test-kit200-prot-da-no-value-proteins.R
+- test-kit201-treat-moderation.R
+- test-kit204-prot-da-not-tested.R
+- test-kit205-enrichment-background.R
+- test-kit208-gprofiler-identifiers.R
+- test-kit212-da-current.R
+- test-kit215-not-tested-lists.R
+- test-kit218-da-wrapper-tail.R
+- test-kit220-da-threshold-consumers.R
+- test-kit221-da-several-comparisons.R
+- test-kit243-summary-current-outputs.R
+- test-kit248-correlation-skip-record.R
+- test-kit249-prot-da-qvalue-fallback.R
+- test-lipid-07-s4-da-plot-methods.R
+- test-lipid-08-s4-da-analysis-methods.R
+- test-metab-02k-da-numsig-barplot-characterization.R
+- test-metab-02p-da-analysis-characterization.R
+- test-metab-s4-da-methods-direct-shared.R
+- test-module-ci-prot-da.R
+- test-omic-da-module.R
+- test-omics-da-list-routing.R
+- test-prot-07b-da-handlers-compat.R
+- test-prot-07c-da-results-characterization.R
+- test-prot-07c-da-results-output-shared.R
+- test-prot-07-da-analysis.R
+- test-prot-07d-da-model-stats-shared.R
+- test-prot-annotation-uniprot-empty.R
+- test-prot-da-compat-shared.R
+- test-prot-design-log2.R
+- test-protein-da-golden-master.R
+- test-prot-ruv-factors-in-model.R
+- test-prot-s4-norm-methods-direct-shared.R
+- test-reference-mapping-enrichment.R
+- test-workflow-analysis-record.R
+- test-workflow-figure-paths.R
+- test-workflow-memory-mechanism-member.R
+- test-workflow-operations.R
+- test-workflow-saved-da.R
+- test-workflow-saved-installed.R
+
+R2 price and predictions: `r2-predictions.md` (expected 36.0, ceiling 55.2 core-hours with the head script job).
+
+**Stored values the change could move (declared by file and line; searched `tests/` whole, `tests/testdata/`
+included, `data/benchmark/` excluded by path).** The change alters outputs only for a call with more than one
+comparison, and the message of a non-data-frame input. Searches: every call of `differentialAbundanceAnalysis(`,
+`protein_deAnalysisWrapperFunction(` and `deAnalysisWrapperFunction(` under `tests/`; the pinned texts
+'incorrect number of dimensions', 'number of items to replace', 'subscript out of bounds'; the names of the returned
+fields (`da_proteins_long`, `significant_rows`, `contrasts_results_table`, `num_sig_da_molecules`) in non-R files of
+`tests/`. Result: none moved. Every proteomics call passes one comparison (e.g. `test-kit129-run-path.R:313, :570,
+:619, :706, :898`, `test-prot-07-da-analysis.R:139`, `test-prot-07d-da-model-stats-shared.R:698-745`,
+`test-workflow-saved-da.R:54`); the calls with two comparisons (`test-kit200-prot-da-no-value-proteins.R:743`,
+`test-kit249-prot-da-qvalue-fallback.R:342`) use the list method on lipidomics and metabolomics assays, not changed;
+the three sibling tests (`test-prot-da-compat-shared.R`, `test-protein-da-golden-master.R:16`,
+`tests/test_limpa_connection.R:20`) pass a one-row table or NULL. The pinned texts occur only in
+`test-general-enrichment-shared.R:175` (unrelated). The field names occur in `tests/testdata/gui-entry/prot_*.json`
+(application captures, one comparison per kernel call) and in `tests/testdata/kit227/base/*.rmd` and
+`tests/testdata/kit236/base/*.rmd` (report text); none holds a value of a multi-comparison call. No stored value,
+digest or pinned text is predicted to move; none is edited.
+
+**Register notes for the coordinator (ticket text minors, not applied by me).** R02: in 2.3 replace "No reported
+number is wrong: each comparison's moderated statistics" by "For comparisons given as text, no reported number is
+wrong: each comparison's moderated statistics". R03: front matter `description` "By reading at v0.9-staging e6791275:"
+-> "By reading at v0.9-staging 0cf0e440 (re-read at 9a0bf9f0 and d048898d; no change under R/, inst/, tests/):";
+2's heading "(SHOWED at e6791275 unless marked)" -> "(SHOWED at 0cf0e440, unchanged at d048898d, unless marked)";
+8 Files "`R/func_prot_da_compat.R:115`" -> "`R/func_prot_da_compat.R:114-115` (3.1 item 2)". R04: the tests-only
+commit carried (A)'s rows (OD-1 was answered (A) before it), so its text is not needed. Step 0 also notes that the
+ticket's sibling check is placed right after `contrasts_tbl` is read (before line 114, as 3.1 item 2 requires).
+
+**A4 (full suite): by the checkpoint after merge (coordinator's ruling, 2026-11-26).** R3 is not run by this ticket.
