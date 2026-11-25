@@ -1,0 +1,7 @@
+exits: base=1 head_1=1 head_2=1
+every case dumped: base=FALSE head_1=FALSE head_2=FALSE
+changed leaves: 0; pre-existing leaves: 507
+(i) every changed leaf's base dump equals the stored value: TRUE
+(ii) the two head dumps are identical: TRUE
+(iii) every changed leaf is at a Copy, Report or later step of the nine cases: TRUE
+cases with changed leaves: 

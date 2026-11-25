@@ -324,25 +324,10 @@ app_server <- function(input, output, session) {
         # For both "create_new" and "overwrite", we pre-stage scripts and use force=TRUE
         if (action == "create_new") {
           logger::log_info("Creating new project directories...")
-          # Pre-stage script templates
-          for (omic in values$selected_omics) {
-            # Try installed package path first (inst/workbooks/{omic}/)
-            source_template_dir <- system.file("workbooks", omic, package = "MultiScholaR")
-
-            # Fallback if package not installed or path differs (dev mode)
-            if (source_template_dir == "" || !dir.exists(source_template_dir)) {
-              source_template_dir <- file.path("inst", "workbooks", omic)
-            }
-
-            dest_template_dir <- file.path(experiment_dir, "scripts", omic)
-
-            if (dir.exists(source_template_dir)) {
-              # Copy all files from the workbooks folder to scripts destination
-              fs::dir_copy(source_template_dir, dest_template_dir, overwrite = TRUE)
-              logger::log_info(paste("Copied workbook templates for", omic, "to", dest_template_dir))
-            } else {
-              logger::log_warn(paste("No workbook templates found for", omic, "at", source_template_dir))
-            }
+          # KIT-234: no workbook is copied any more. As before, scripts/<omic> exists for the omics that had
+          # workbooks when setupDirectories(force = TRUE) runs below (it removes and recreates it empty).
+          for (omic in intersect(values$selected_omics, c("proteomics", "metabolomics", "integration"))) {
+            dir.create(file.path(experiment_dir, "scripts", omic), recursive = TRUE, showWarnings = FALSE)
           }
 
           if (exists("setupDirectories")) {
@@ -520,32 +505,14 @@ app_server <- function(input, output, session) {
       logger::log_info(sprintf("Watchdog detected new omics to initialize: %s", paste(new_omics, collapse = ", ")))
 
       # --- 1. Perform Filesystem Setup for New Omics ---
-      # We need to ensure folders exist and templates are copied for these new omics
+      # We need to ensure folders exist for these new omics
       experiment_dir <- values$project_base_dir
 
-      # Copy templates for new omics
-      for (omic in new_omics) {
-        # Try installed package path first (inst/workbooks/{omic}/)
-        source_template_dir <- system.file("workbooks", omic, package = "MultiScholaR")
-
-        # Fallback if package not installed or path differs (dev mode)
-        if (source_template_dir == "" || !dir.exists(source_template_dir)) {
-          source_template_dir <- file.path("inst", "workbooks", omic)
-        }
-
-        dest_template_dir <- file.path(experiment_dir, "scripts", omic)
-
-        if (dir.exists(source_template_dir)) {
-          # Copy all files from the workbooks folder to scripts destination
-          # Ensure destination parent exists
-          if (!dir.exists(dirname(dest_template_dir))) {
-            dir.create(dirname(dest_template_dir), recursive = TRUE)
-          }
-          fs::dir_copy(source_template_dir, dest_template_dir, overwrite = TRUE)
-          logger::log_info(paste("Copied workbook templates for", omic, "to", dest_template_dir))
-        } else {
-          logger::log_warn(paste("No workbook templates found for", omic, "at", source_template_dir))
-        }
+      # KIT-234: no workbook is copied any more. The copy used to create scripts/<omic> for the omics that had
+      # workbooks; their session stores need it (createWorkflowSessionOwner, integrationSessionOwner), so it is
+      # still created when absent, for the same omics only.
+      for (omic in intersect(new_omics, c("proteomics", "metabolomics", "integration"))) {
+        dir.create(file.path(experiment_dir, "scripts", omic), recursive = TRUE, showWarnings = FALSE)
       }
 
       # Update directory structure (Additive)

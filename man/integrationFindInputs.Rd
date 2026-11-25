@@ -19,7 +19,9 @@ a data frame with one row per data set found; and \code{scan}, the scan itself, 
 \description{
 Lays out a project's integration folders and lists the tables each omic's workflow saved at its
 Summary step under \verb{<project>/integration/<omic>/}, saying for each omic whether it can be used and, if not, why.
-The folder for the workbook's scratch files (\code{<project>/scripts/integration}) is created when absent.
+The project's integration scripts folder (\code{<project>/scripts/integration}), where the Integration tab and these
+functions keep their working files, is created when absent. Read the limitations in \code{\link[=integrationTrainModel]{integrationTrainModel()}}
+before drawing conclusions from a model.
 }
 \examples{
 \dontrun{

@@ -11,6 +11,7 @@ printCountDaGenesTable(
   facet_column = analysis_type,
   comparison_column = "comparison",
   expression_column = "expression",
+  q_val_thresh = 0.05,
   p_value_column = NULL
 )
 }
@@ -26,6 +27,9 @@ printCountDaGenesTable(
 \item{comparison_column}{The name of the column describing the contrasts or comparison between groups (tidyverse style).}
 
 \item{expression_column}{The name of the column that will contain the formula expressions of the contrasts.}
+
+\item{q_val_thresh}{The q-value threshold the counts are made at (KIT-220: the analysis's threshold; the default
+0.05 keeps scripted callers as before).}
 
 \item{p_value_column}{The name of the raw p-value column (tidyverse style), or NULL (the default); when given, rows
 without a p-value are counted as Not tested (\code{countStatDaGenes}).}

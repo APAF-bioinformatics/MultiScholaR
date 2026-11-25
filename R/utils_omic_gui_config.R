@@ -2036,9 +2036,26 @@ omicGuiProteomicsNorm <- function() {
             ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
                 "Skip RUV (troublesome datasets)" = "skip"), default = "automatic", percentage = 5, k = NULL, noun = "Proteins",
                 help = c(
-                    grouping = paste("Experimental factor to preserve during batch correction. RUV-III will remove unwanted",
-                        "variation while preserving differences between groups defined by this variable. For TMT workflows",
-                        "with batches, select 'batch' to remove batch effects."),
+                    # KIT-174 (a): what the column does (proposed wording, implemented as
+                    # proposed; the owner edits before release, VAL-41).
+                    grouping = paste(
+                        "Choose the column that holds your experimental groups (normally",
+                        "'group'). Samples that share a value in this column are treated as",
+                        "replicates of each other: RUV-III takes what differs between them to be",
+                        "unwanted variation and builds its correction from it. In the Automatic",
+                        "and Manual modes, and in both RUV modes of DIA with limpa, the same",
+                        "column is also used to pick the control proteins (those that differ",
+                        "least between its values), and, except in Manual mode, the number of",
+                        "factors; the sample-correlation filter on this tab compares samples",
+                        "within it. Do not choose 'batch', or any column in which a value",
+                        "contains samples of more than one group: the correction would then be",
+                        "built from the differences between your groups, and the differences",
+                        "between batches would stay in the data. If you know each sample's batch,",
+                        "add it to the Model Formula on the Differential Expression tab instead,",
+                        "for example ~ 0 + group + batch. If the design declares technical",
+                        "replicates, those are the replicates RUV-III uses; this column still",
+                        "picks the control proteins."
+                    ),
                     automatic = paste("These parameters control the automatic optimization of RUV-III negative control",
                         "selection. The function tests different percentages and finds the optimal balance between",
                         "separation quality and k value."),

@@ -505,11 +505,13 @@ setMethod(
     # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
     nested_list_for_count <- list(contrasts_results_table)
     names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
+    # KIT-220 (VAL-191): counted at the analysis's threshold, as the second table below (it took the 0.05 default).
     # KIT-204 (VAL-129 (1)): rows without a p-value are counted as "Not tested", not "Not significant".
     num_sig_da_molecules <- printCountDaGenesTable(
       list_of_da_tables = list(nested_list_for_count),
       list_of_descriptions = list("RUV applied"),
       formula_string = "analysis_type ~ comparison",
+      q_val_thresh = as.double(da_q_val_thresh),
       p_value_column = !!rlang::sym(raw_pvalue_column)
     )
 

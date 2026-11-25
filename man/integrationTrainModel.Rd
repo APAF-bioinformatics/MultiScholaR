@@ -33,6 +33,41 @@ Trains the MOFA2 model on the confirmed match with the model settings' defaults 
 with the same settings and software is reused. How samples are matched (technical replicates, internal
 standards, missing samples) is fixed by the confirmed match.
 }
+\section{Limitations}{
+
+Read these before drawing conclusions from a model.
+\itemize{
+\item How small a pattern the model can find depends on the number of samples. In simulations made for this software
+with 20 samples (two groups of 10), a pattern carried only by the two smallest of four data sets, in a tenth of their
+features, each changed by about two-thirds of its measurement noise, was recovered closely (a correlation of at least
+0.9 with the true pattern) in at most 2 of 10 simulated data sets, whichever setting was tried; the settings tried
+did not include this software's current default feature selection. With 60 samples and the slow training this
+software uses, the same pattern was recovered in 7 to 10 of 10, and with this software's default settings a pattern
+as large as the noise was recovered in 26 to 29 of 30 simulated data sets with 20 samples. MOFA2's documentation says
+that factor models are useful only with large numbers of samples, at least more than 15. A pattern this model does
+not show may still be in the data: treat the factors as descriptive.
+\item Where a value is missing, the model leaves it out (MOFA2 does not impute it), which assumes that whether a
+value is missing does not depend on the value itself (missing at random). Values missing because they were too low to
+measure are not modelled as such, so the model's estimates for low-abundance features can be biased. MOFA2 fills
+missing values with each feature's mean only to compute where training starts.
+\item Each average uses only the runs in which the value was measured. When a value is missing from some of a
+sample's runs because it was too low to measure, the average of the other runs is too high; this affects
+low-abundance features most.
+\item The model treats all samples as one group (the groups are not given to it, and MOFA2's option for several
+groups of samples is not used), assumes normally distributed (Gaussian) variation in every data set, and takes one
+input per omic (one input can hold several data sets, such as positive and negative ion mode). The integration fills
+in no missing value itself; values that an omic's own workflow estimated before saving are treated as measured.
+\item Given the settings of the analysis script it was adapted from, this software trains the identical model; this
+was checked on simulated data only, because the script's own data were not available. The check is about the
+software, not about any biological result, and this software's default settings differ from the script's. The
+defaults for the input matrix, the feature selection, the scaling and the convergence rule were chosen from
+simulations of one design, not from real data; the number of factors comes from the analysis script.
+\item Enrichment, at the Enrichment tab, needs external services: STRING, queried over the internet (by default its
+version 12.5), for proteins and genes, and tables downloaded from KEGG or Reactome for metabolites and lipids. Its
+results depend on the release used, which is recorded with each result.
+}
+}
+
 \examples{
 \dontrun{
 run <- integrationTrainModel(project, confirmed, overrides = list(num_factors = 5L))

@@ -165,6 +165,8 @@ countStatDaGenesHelper <- function(
 #' @param facet_column The name of the column describing the type of analysis or parameters used to generate the result table (tidyverse style). This is related to the \code{list_of_descriptions} parameter above.
 #' @param comparison_column The name of the column describing the contrasts or comparison between groups (tidyverse style).
 #' @param expression_column The name of the column that will contain the formula expressions of the contrasts.
+#' @param q_val_thresh The q-value threshold the counts are made at (KIT-220: the analysis's threshold; the default
+#'   0.05 keeps scripted callers as before).
 #' @param p_value_column The name of the raw p-value column (tidyverse style), or NULL (the default); when given, rows
 #'   without a p-value are counted as Not tested (`countStatDaGenes`).
 #' @export
@@ -175,6 +177,7 @@ printCountDaGenesTable <- function(
   facet_column = analysis_type,
   comparison_column = "comparison",
   expression_column = "expression",
+  q_val_thresh = 0.05,
   p_value_column = NULL
 ) {
   num_significant_da_genes_all <- purrr::map2(
@@ -187,6 +190,7 @@ printCountDaGenesTable <- function(
         facet_column = {{ facet_column }},
         comparison_column = comparison_column,
         expression_column = expression_column,
+        q_val_thresh = q_val_thresh,
         p_value_column = {{ p_value_column }}
       )
     }

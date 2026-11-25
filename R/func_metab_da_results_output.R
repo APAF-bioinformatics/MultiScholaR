@@ -96,18 +96,8 @@ outputMetabDaResultsAllContrasts <- function(
     logger::log_info(sprintf("   Found %d assays: %s", length(assays), paste(assays, collapse = ", ")))
     logger::log_info(sprintf("   Found %d contrasts: %s", length(contrasts), paste(contrasts, collapse = ", ")))
 
-    # Map assay names to mode prefixes
-    # LCMS_Pos -> posmode, LCMS_Neg -> negmode
-    get_mode_prefix <- function(assay_name) {
-        if (grepl("pos", assay_name, ignore.case = TRUE)) {
-            return("posmode")
-        } else if (grepl("neg", assay_name, ignore.case = TRUE)) {
-            return("negmode")
-        } else {
-            # Fallback: use sanitized assay name
-            return(gsub("[^A-Za-z0-9]", "", tolower(assay_name)))
-        }
-    }
+    # KIT-212: the file naming (mode prefix, table and figure bases) is `omicsDaFileNames`, callable, so the Summary can
+    # list the files a DA made; the names are unchanged.
 
     # What every heatmap is drawn with: part of its identity, since the data alone would serve the old colours.
     heatmap_parameters <- list(top_n = heatmap_top_n, clustering = heatmap_clustering, color_scheme = heatmap_color_scheme, q = da_q_val_thresh)
@@ -119,7 +109,7 @@ outputMetabDaResultsAllContrasts <- function(
 
     # Process each ASSAY x CONTRAST combination
     for (assay_name in assays) {
-        mode_prefix <- get_mode_prefix(assay_name)
+        mode_prefix <- omicsDaModePrefix(assay_name)
         logger::log_info(sprintf("   Processing assay: %s (mode: %s)", assay_name, mode_prefix))
 
         for (contrast_name in contrasts) {
@@ -163,7 +153,7 @@ outputMetabDaResultsAllContrasts <- function(
                     output_data <- assay_contrast_data[, final_col_order, drop = FALSE]
 
                     # Build filename: de_{mode}_metabolites_{contrast}_long_annot
-                    file_base <- paste0("de_", mode_prefix, "_metabolites_", contrast_name, "_long_annot")
+                    file_base <- omicsDaFileNames("metabolites", assay_name, contrast_name)$table
 
                     # Write TSV
                     tsv_path <- file.path(da_output_dir, paste0(file_base, ".tsv"))
@@ -207,7 +197,7 @@ outputMetabDaResultsAllContrasts <- function(
                         n_labels = 15
                     ))
                     volcano_content <- digest::digest(assay_contrast_data, algo = "sha256")
-                    volcano_base <- paste0(mode_prefix, "_", contrast_name)
+                    volcano_base <- omicsDaFileNames("metabolites", assay_name, contrast_name)$plot
                     write_volcano <- function(path) {
                         writeWorkflowOmicsFigure(path, function(target) {
                             plot <- volcano_plot()
@@ -264,7 +254,7 @@ outputMetabDaResultsAllContrasts <- function(
                         da_q_val_thresh = da_q_val_thresh
                     ))
                     heatmap_content <- omicsDaHeatmapContent(assay_contrast_data, da_results_list$theObject, "metabolite_data", assay_name)
-                    heatmap_base <- paste0(mode_prefix, "_", contrast_name)
+                    heatmap_base <- omicsDaFileNames("metabolites", assay_name, contrast_name)$plot
                     write_heatmap <- function(path, device) {
                         writeWorkflowOmicsFigure(path, function(target) {
                             # KIT-077: the generator returns list(plot, row_clusters, col_clusters); the export draws the plot.
@@ -309,13 +299,16 @@ outputMetabDaResultsAllContrasts <- function(
             tryCatch(
                 {
                     sig_summary <- assay_contrast_data |>
+                        # KIT-220 (r1.3, I01): up and down are counted before `significant` is replaced by its count;
+                        # summarise() let the new count mask the column, so both were always 0.
                         dplyr::summarise(
                             total = dplyr::n(),
-                            significant = sum(significant != "NS", na.rm = TRUE),
                             up_regulated = sum(significant == "Up", na.rm = TRUE),
                             down_regulated = sum(significant == "Down", na.rm = TRUE),
+                            significant = sum(significant != "NS", na.rm = TRUE),
                             .groups = "drop"
                         ) |>
+                        dplyr::relocate(dplyr::all_of("significant"), .after = dplyr::all_of("total")) |>
                         dplyr::mutate(
                             assay = assay_name,
                             mode = mode_prefix,
