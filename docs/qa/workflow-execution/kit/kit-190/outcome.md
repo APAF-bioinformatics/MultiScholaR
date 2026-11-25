@@ -313,3 +313,17 @@ minus F+B (paired t 95 %): k +0.08 to +0.48 in every cell; power +0.03 to +0.20 
 Descriptive B+B comparison (D1; `bb-compare.py`; `bound-decide/bb-compare.tsv`): N-w any-call share minus B+B: F+B
 +0.112, D+B +0.116, **both above 0.10: "far worse"** (reported to the owner and KIT-188 as the measured form of
 K190-M11; changes nothing here). E-w mean FDP minus B+B: F+B +0.050, D+B +0.049 (not far worse).
+
+## After the decision: bounds and the metabolomics check (both decide nothing)
+
+**Per-cell one-sided 95 % bounds** (`bound-decide/bounds.tsv`, run 45577176410; computed after the decision;
+descriptive; non-simultaneous; decides nothing): any-call difference upper bound N-r +0.026, N-s +0.007, N-w +0.035
+(margin 0.10; inverted Tango score test); mean FDP difference upper bound E-r −0.0017, E-s −0.0123, E-p −0.0721,
+E-g −0.0023, E-w +0.0116 (margin 0.05; paired t). These equal the audit's figures. The sign-flip p of every effect cell is
+reported as p < 3 × 10⁻⁵ (none of 100,000 sign vectors as extreme); in E-r, E-s, E-p and E-g Johnson's t_J decided and
+the sign-flip p is reported beside it; the Berger–Boos p is ≤ 0.0051.
+
+**K190-D01, the declared metabolomics identity check, run late** (run 45577183150; `effect.R` 20c7f9ce, phase
+`metab-check`; the counted stages used 7d76467a unchanged): 100 metabolomics rows, falsifiers 0; **100 of 100 identical
+to the counted lipidomics rows in all 23 compared fields**. The result may therefore be stated for lipidomics and
+metabolomics, within the audit's other limits (12 samples, cap 2 after the sweep, simulated data).
