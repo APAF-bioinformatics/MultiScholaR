@@ -327,3 +327,18 @@ the sign-flip p is reported beside it; the Berger–Boos p is ≤ 0.0051.
 `metab-check`; the counted stages used 7d76467a unchanged): 100 metabolomics rows, falsifiers 0; **100 of 100 identical
 to the counted lipidomics rows in all 23 compared fields**. The result may therefore be stated for lipidomics and
 metabolomics, within the audit's other limits (12 samples, cap 2 after the sweep, simulated data).
+
+## The bound on k (VAL-182, VAL-235; ticket section 18)
+
+Merged staging e0747fc1 at e6cc8496: the one code conflict, `workflowReplayRuleMarkers`, resolved by keeping all rows
+(missing_value_comparison, ruv_control_grouping, enrichment_background, intensity_filter_samples), each with its comment,
+no other line changed (coordinator's word). Tests first (ef9cda11, run 45602075177): T9 (i) to (iii) failed at the
+unbounded k, the missing notice, warning, record fields and marker; T1 to T8 passed. Code 00434b08: `omicsRuvKBound`
+(the sweep untouched; Automatic k = min(k_sweep, `calculateAdaptiveMaxK`) through `boundOmicsRuvSweepK`; Manual kept with a
+classed warning `multischolar_ruv_k_notice`), `omicsRuvAssayStatus` (per-assay `corrected` / `uncorrected` / `dropped`),
+record outcomes `k_sweep_per_assay`, `k_cap_per_assay`, `ruv_k_notice_per_assay`, `ruv_status_per_assay`, the marker
+`ruv_k_bound` (also dropped from managed new-design steps). Notice texts are drafts in `wording.md` (VAL-41).
+
+Inferred (for the implementation auditor): no cell of the rule-(d) evidence changes. The measured path (the untouched
+sweep, its percentage and controls, k = min(k_sweep, 2), RUV-III-C, limma) is the shipped route at n = 12, where
+`calculateAdaptiveMaxK` gives 2. Not covered: caps 3 to 5 at larger n (KIT-188).
