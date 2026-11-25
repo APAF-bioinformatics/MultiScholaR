@@ -113,6 +113,12 @@ one solution 0.676 apart), on the Results tab (`stability_elbo_slack`) and in th
 `wording.md`. Tests first (T7 expects both, T8 expects neither without a rank), then the code; run R5 (below, in
 `runs.tsv`).
 
+R5 (45603743811; base 925e532e, head c74e3b36; evidence under `r5/`): base 2 new failures, 0 errors, both in T7 (the
+tab clause and the Methods clause), as declared; head `test-kit240-integration-default.R` 92 passed, 0 failed (`fixed`,
+T9 skipped); `test-integration-results.R`, `-record.R`, `-outputs.R` `same`, 0 failures. Identity script against
+3eeaf100: every check TRUE, counts 1, 2, 21 and 8 per mode (no new allowed substitution: the clause is server-rendered).
+78.0 job-minutes, 5.20 core-hours (declared ceiling 6.00).
+
 ## A8: partner edits and release-checklist items
 
 Done (by the coordinator, read by the audit): KIT-170 6.8 step 2 (`KIT-170.md:664`); KIT-233 `:271` superseded
@@ -147,7 +153,7 @@ Owed (not made here):
   `integrationEnrichmentLabel`, `integrationAlignmentFacts`.
 - **Results.** No computed value changes; `mofa_reference/` is not re-recorded. The Methods paragraph gains the rank
   and limitation sentences; the record gains `seed_models$elbo_last` and `model$elbo_rank`.
-- **Evidence.** R1, R2, R3, R4 (`runs.tsv`); M, B and the identity run after the rebase are owed; the checkpoint's
+- **Evidence.** R1 to R5 (`runs.tsv`); M, B and the identity run after the rebase are owed; the checkpoint's
   full-suite run id is owed (A7).
 
 ## Not checked (so far)
