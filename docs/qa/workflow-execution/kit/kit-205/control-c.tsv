@@ -1,0 +1,27 @@
+case	kind	route	contrast	direction	rows_left_out	compared	checks	all_equal	not_equal	max_abs_log10p_change_vs_base_whole_table	terms_only_head	terms_only_base
+a_cluster_none	a	clusterprofiler	c1	down	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_none	a	clusterprofiler	c1	up	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_none	a	clusterprofiler	c2	down	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_none	a	clusterprofiler	c2	up	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_shipped	a	clusterprofiler	c1	down	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_shipped	a	clusterprofiler	c1	up	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_k189_form	a	clusterprofiler	c1	down	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_cluster_k189_form	a	clusterprofiler	c1	up	0	head(table) = base(table)	result,plot_inputs,universe,tsv	TRUE		NA	NA	NA
+a_gprofiler	a	gprofiler	c1	down	0	head(table) = base(table)	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+a_gprofiler	a	gprofiler	c1	up	0	head(table) = base(table)	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+a_gprofiler	a	gprofiler	c2	down	0	head(table) = base(table)	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+a_gprofiler	a	gprofiler	c2	up	0	head(table) = base(table)	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+b_cluster_none	b	clusterprofiler	c1	down	12	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.0871348	0	0
+b_cluster_none	b	clusterprofiler	c1	up	12	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.498475	0	0
+b_cluster_none	b	clusterprofiler	c2	down	12	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.0223094	0	0
+b_cluster_none	b	clusterprofiler	c2	up	12	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.255437	0	0
+b_cluster_shipped	b	clusterprofiler	c1	down	12	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.0940801	0	4
+b_cluster_shipped	b	clusterprofiler	c1	up	12	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.521705	0	0
+b_cluster_finite_q_no_p	b	clusterprofiler	c1	down	2	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.0219231	0	0
+b_cluster_finite_q_no_p	b	clusterprofiler	c1	up	2	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.116506	0	0
+b_cluster_k189_form	b	clusterprofiler	c1	down	2	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.00908739	0	0
+b_cluster_k189_form	b	clusterprofiler	c1	up	2	head(table) = base(table[tested, ])	result,plot_inputs,universe,tsv	TRUE		0.116506	0	0
+b_gprofiler	b	gprofiler	c1	down	12	head(table) = base(table[tested, ])	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+b_gprofiler	b	gprofiler	c1	up	12	head(table) = base(table[tested, ])	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+b_gprofiler	b	gprofiler	c2	down	12	head(table) = base(table[tested, ])	arguments,custom_bg,list_rows	TRUE		NA	NA	NA
+b_gprofiler	b	gprofiler	c2	up	12	head(table) = base(table[tested, ])	arguments,custom_bg,list_rows	TRUE		NA	NA	NA

@@ -1,0 +1,17 @@
+regime	method	class	form	design	transform	n	level	status	coverage	mc_se	source	statistic	coverage_min	coverage_max	failed_condition	failed_side	zero_width	effect	half_width_ratio
+C4	jackknife	rank	replicate	NA	NA	6	0.95	pass	0.98	0.00989949493661167	harness	pauc_diff@matrix4840	0.98	0.98	NA	NA	0	0.5	1.99996381708116
+C4	jackknife	rank	replicate	NA	NA	6	0.975	pass	0.99	0.00703562363973515	harness	pauc_diff@matrix4840	0.99	0.99	NA	NA	0	0.5	2.1521397187344
+C4	jackknife	rank	replicate	NA	NA	6	0.983333333333333	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840	0.995	0.995	NA	NA	0	0.5	2.25111904941866
+C4	jackknife	rank	replicate	NA	NA	6	0.9875	conservative	1	0	harness	pauc_diff@matrix4840	1	1	NA	NA	0	0.5	2.32607161098042
+C4	jackknife	rank	replicate	NA	NA	6	0.991666666666667	conservative	1	0	harness	pauc_diff@matrix4840	1	1	NA	NA	0	0.5	2.43872592448564
+C4	jackknife	rank	replicate	NA	NA	6	0.99375	conservative	1	0	harness	pauc_diff@matrix4840	1	1	NA	NA	0	0.5	2.52388190290243
+C4	jackknife	rank	replicate	NA	NA	6	0.995833333333333	conservative	1	0	harness	pauc_diff@matrix4840	1	1	NA	NA	0	0.5	2.65170069011804
+C4	jackknife	rank	replicate	NA	NA	6	0.996666666666667	conservative	1	0	harness	pauc_diff@matrix4840	1	1	NA	NA	0	0.5	2.72613112895468
+C4e	jackknife	rank	block	NA	NA	5	0.95	pass	0.985	0.00859505671883555	harness	pauc_diff@matrix4840_block	0.985	0.985	NA	NA	0	0.35	2.13831710847512
+C4e	jackknife	rank	block	NA	NA	5	0.975	conservative	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	2.35401287288658
+C4e	jackknife	rank	block	NA	NA	5	0.983333333333333	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	2.49742273057647
+C4e	jackknife	rank	block	NA	NA	5	0.9875	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	2.60757053907436
+C4e	jackknife	rank	block	NA	NA	5	0.991666666666667	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	2.77553045409729
+C4e	jackknife	rank	block	NA	NA	5	0.99375	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	2.90433746608592
+C4e	jackknife	rank	block	NA	NA	5	0.995833333333333	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	3.10053057328381
+C4e	jackknife	rank	block	NA	NA	5	0.996666666666667	pass	0.995	0.004987484335815	harness	pauc_diff@matrix4840_block	0.995	0.995	NA	NA	0	0.35	3.21629787865308

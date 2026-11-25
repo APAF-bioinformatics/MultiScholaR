@@ -34,7 +34,9 @@ INTEGRATION_INPUT_ROLE_PREFIX <- "integration_input_"
 #' @slot features Named list by view of the input's feature tables (`feature_id`, `display_name`, annotation).
 #' @slot design_matrix One row per run of every omic.
 #' @slot inputs Named list by omic: `omic`, `path`, `manifest_sha256`, `views`, `manifest`, `samples`,
-#'   `biological_sample_column`.
+#'   `biological_sample_column`; KIT-184: and, only for an omic whose input holds them, `removed_factors`, named by data
+#'   set: the manifest's record of the unwanted factors its correction removed, the file's `sha256` and `factors` (runs
+#'   by factors).
 #' @slot sample_id,group_id,biological_sample_id The design's run, group and biological-sample columns.
 #' @slot args Unused; the declared classes' argument slot.
 #' @slot corrected_views KIT-153: named list by view of the RUV-corrected tables of the views whose omic saved one (the
@@ -119,6 +121,8 @@ integrationReadInputs <- function(dirs) {
         if (!is.character(technical) || length(technical) != 1L) technical <- NA_character_
         biological <- manifest$biological_sample_column %||%
             integrationInputBiologicalSampleColumn(samples, technical, sample_column)
+        # KIT-222 (AUDIT-KIT-222-impl I07): an input written before the fix is read with the check too.
+        if (!identical(biological, sample_column)) refuseOmicsDesignReplicateKeyCollision(as.data.frame(samples), key = biological, run = sample_column)
         if (!is.character(biological) || length(biological) != 1L || !biological %in% names(samples)) {
             integrationRefuse(sprintf("the integration input of %s names no biological-sample column of its samples table",
                 omic), "integration_input_invalid")
@@ -142,6 +146,14 @@ integrationReadInputs <- function(dirs) {
         record[[omic]] <- list(omic = omic, path = normalizePath(path, mustWork = TRUE),
             manifest_sha256 = digest::digest(file = path, algo = "sha256"), views = names(input$views),
             manifest = manifest, samples = samples, biological_sample_column = biological)
+        # KIT-184: the removed unwanted factors of each data set that has them (record, sha256, runs by factors). The
+        # element is added only then, so an input without them gives the entry it gave before.
+        for (view in names(input$views)) {
+            removed <- input$views[[view]]$removed
+            if (is.null(removed)) next
+            record[[omic]]$removed_factors[[view]] <- c(removed,
+                list(factors = readIntegrationInputRemovedFactors(dirs[[i]], view, input)))
+        }
     }
     design <- do.call(rbind, design)
     rownames(design) <- NULL

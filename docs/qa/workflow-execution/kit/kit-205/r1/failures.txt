@@ -1,0 +1,2742 @@
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler run values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  clusterprofiler run notes
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_up values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_down values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_all values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler download values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"Enrichment_results_B_vs_A_<DATE>.zip"
+    clusterProfileR_results.tsv"671ae3ed12b3c1b51526dd991311d931bca4bb1e347a492381205a28f264372b"
+  - enrichment_analysis_summary.txt"a60935c35db368688973daa031f6f3eff6620946aab16e19fcc96ff9b0b4728e"
+  + enrichment_analysis_summary.txt"e7a41994feeebd115b4192c86580047e7109cce09c1185306b314c0d71b7dd8b"
+  
+  clusterprofiler download download
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[3]]) vs lines(expected[[3]])
+  - "<text> df4429afb7198599ba09e7101d22eb4a422dd839e3db2f8fce6ebece1b157aa4"
+  + "<text> 4cde847cac7e9c4ab85a093c84e945c7ddf8dfa3f4810877838ac40faaca1db2"
+  
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  kernel_clusterprofiler run notes
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                          | expected                           
+  [1] "<list> d626c0d8d1169c12"       - "<list> 6961aaa3fc9d92d9"       [1]
+  [2] "TRUE"                          | "TRUE"                          [2]
+  [3] "clusterprofiler"               | "clusterprofiler"               [3]
+  [4] "<data.frame> bacf7b29d4777485" - "<data.frame> 3fbdfddf484f8372" [4]
+  [5] "<ref>"                         | "<ref>"                         [5]
+  [6] "B_vs_A"                        | "B_vs_A"                        [6]
+  [7] "<list> 28df520b992b4a4b"       | "<list> 28df520b992b4a4b"       [7]
+  
+  actual[10:16] vs expected[10:16]
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> d8f57c99312ad90c"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3669:13
+
+file: test-omic-enrich-module.R
+test: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+kind: failure
+message:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"b85cc85cec7a640b"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"cd8fd89d6f6482f1"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  [17] "parameters$significance_rule" -                                    
+  
+  actual$record[13:17] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  
+  clusterprofiler
+
+file: test-omic-enrich-module.R
+test: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+kind: failure
+message:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+      actual$results      | expected$results       
+  [1] "EnrichmentResults" | "EnrichmentResults" [1]
+  [2] "609cb7b1bc247d2f"  - "46a64d167ddd9c1b"  [2]
+  [3] "28df520b992b4a4b"  | "28df520b992b4a4b"  [3]
+  [4] "950ddbb7d830df8c"  | "950ddbb7d830df8c"  [4]
+  [5] "28df520b992b4a4b"  | "28df520b992b4a4b"  [5]
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"1186145dadf9295c"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"cd8fd89d6f6482f1"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  [17] "parameters$significance_rule" -                                    
+  
+  actual$record[13:17] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  
+  kernel_clusterprofiler
+
+file: test-omic-enrich-module.R
+test: (R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity
+kind: failure
+message:
+  Expected `names(omicEnrichR3Parameters(r3$step))` to be identical to `c(r3$provenance$parameter_names, "enrichment_background")`.
+  Differences:
+      actual              | expected                    
+  [7] "protein_id_column" | "protein_id_column"     [7] 
+  [8] "contrast_names"    | "contrast_names"        [8] 
+  [9] "results"           | "results"               [9] 
+                          - "enrichment_background" [10]
+
+file: test-omic-enrich-module.R
+test: (R3, A107-03) a clusterProfiler run records the correction it applied (BH), keeps the selected one and tells the user
+kind: failure
+message:
+  Expected `seen$run$notes` to be identical to `c(...)`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins
+kind: failure
+message:
+  Expected `sort(intersect(untested, up@universe))` to be identical to `character(0)`.
+  Differences:
+       actual   | expected 
+   [1] "P00393" -          
+   [2] "P03817" -          
+   [3] "P06715" -          
+   [4] "P08202" -          
+   [5] "P0A6A6" -          
+   [6] "P0A6P5" -          
+   [7] "P0A6W9" -          
+   [8] "P0A7J7" -          
+   [9] "P0A7K6" -          
+  [10] "P0A7L0" -          
+  [11] "P0A7L3" -          
+  [12] "P0A7L8" -          
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins
+kind: failure
+message:
+  Expected `length(up@universe)` to be identical to `length(tested_annotated)`.
+  Differences:
+    `actual`: 120
+  `expected`: 108
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins
+kind: failure
+message:
+  Expected `sort(up@universe, method = "radix")` to be identical to `sort(tested_annotated, method = "radix")`.
+  Differences:
+       actual   | expected     
+  [22] "G3MTW7" | "G3MTW7" [22]
+  [23] "O32583" | "O32583" [23]
+  [24] "P00363" | "P00363" [24]
+  [25] "P00393" -              
+  [26] "P00490" | "P00490" [25]
+  [27] "P00547" | "P00547" [26]
+  [28] "P00562" | "P00562" [27]
+  
+       actual   | expected     
+  [41] "P02930" | "P02930" [40]
+  [42] "P03004" | "P03004" [41]
+  [43] "P03023" | "P03023" [42]
+  [44] "P03817" -              
+  [45] "P03856" | "P03856" [43]
+  [46] "P04079" | "P04079" [44]
+  [47] "P04395" | "P04395" [45]
+  
+       actual   | expected     
+  [55] "P06129" | "P06129" [53]
+  [56] "P06609" | "P06609" [54]
+  [57] "P06616" | "P06616" [55]
+  [58] "P06715" -              
+  [59] "P06864" | "P06864" [56]
+  [60] "P06966" | "P06966" [57]
+  [61] "P06983" | "P06983" [58]
+  
+       actual   | expected     
+  [69] "P07813" | "P07813" [66]
+  [70] "P08142" | "P08142" [67]
+  [71] "P08191" | "P08191" [68]
+  [72] "P08202" -              
+  [73] "P08312" | "P08312" [69]
+  [74] "P08368" | "P08368" [70]
+  [75] "P08390" | "P08390" [71]
+  
+       actual   | expected     
+  [83] "P09394" | "P09394" [79]
+  [84] "P09557" | "P09557" [80]
+  [85] "P09836" | "P09836" [81]
+  [86] "P0A6A6" -              
+  [87] "P0A6C5" | "P0A6C5" [82]
+  [88] "P0A6D7" | "P0A6D7" [83]
+  [89] "P0A6F1" | "P0A6F1" [84]
+  
+        actual   | expected     
+   [93] "P0A6K6" | "P0A6K6" [88]
+   [94] "P0A6L9" | "P0A6L9" [89]
+   [95] "P0A6N8" | "P0A6N8" [90]
+   [96] "P0A6P5" -              
+   [97] "P0A6Q6" | "P0A6Q6" [91]
+   [98] "P0A6S5" | "P0A6S5" [92]
+   [99] "P0A6T9" | "P0A6T9" [93]
+  [100] "P0A6V5" | "P0A6V5" [94]
+  [101] "P0A6W9" -              
+  [102] "P0A6Y5" | "P0A6Y5" [95]
+  [103] "P0A700" | "P0A700" [96]
+  [104] "P0A712" | "P0A712" [97]
+  
+        actual   | expected      
+  [109] "P0A784" | "P0A784" [102]
+  [110] "P0A799" | "P0A799" [103]
+  [111] "P0A7B1" | "P0A7B1" [104]
+  [112] "P0A7J7" -               
+  [113] "P0A7K6" -               
+  [114] "P0A7L0" -               
+  [115] "P0A7L3" -               
+  [116] "P0A7L8" -               
+  [117] "P0A7M2" | "P0A7M2" [105]
+  [118] "P0A7M6" | "P0A7M6" [106]
+  [119] "P0A7N4" | "P0A7N4" [107]
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins
+kind: failure
+message:
+  Expected `unique(up@result$family_size)` to be identical to `k205FamilySize(tested_annotated)`.
+  Differences:
+    `actual`: 9
+  `expected`: 6
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `calls[[key]]$custom_bg` to be identical to `expected`.
+  Differences:
+      actual   | expected    
+  [1] "P0A6P5" -             
+  [2] "P0A7J7" -             
+  [3] "P0A7K6" -             
+  [4] "P0A7L0" -             
+  [5] "P0A7L3" -             
+  [6] "P0A7L8" -             
+  [7] "P0A7M2" | "P0A7M2" [1]
+  [8] "P0A7M6" | "P0A7M6" [2]
+  [9] "P0A7N4" | "P0A7N4" [3]
+  
+       actual   | expected     
+  [37] "C1P5Z7" | "C1P5Z7" [31]
+  [38] "C1P615" | "C1P615" [32]
+  [39] "O32583" | "O32583" [33]
+  [40] "P00393" -              
+  [41] "P00547" | "P00547" [34]
+  [42] "P00582" | "P00582" [35]
+  [43] "P00805" | "P00805" [36]
+  
+       actual   | expected     
+  [51] "P02930" | "P02930" [44]
+  [52] "P03004" | "P03004" [45]
+  [53] "P03023" | "P03023" [46]
+  [54] "P03817" -              
+  [55] "P03856" | "P03856" [47]
+  [56] "P04079" | "P04079" [48]
+  [57] "P04395" | "P04395" [49]
+  
+       actual   | expected     
+  [65] "P06129" | "P06129" [57]
+  [66] "P06609" | "P06609" [58]
+  [67] "P06616" | "P06616" [59]
+  [68] "P06715" -              
+  [69] "P06864" | "P06864" [60]
+  [70] "P06966" | "P06966" [61]
+  [71] "P06983" | "P06983" [62]
+  
+       actual   | expected     
+  [79] "P07813" | "P07813" [70]
+  [80] "P08142" | "P08142" [71]
+  [81] "P08191" | "P08191" [72]
+  [82] "P08202" -              
+  [83] "P08312" | "P08312" [73]
+  [84] "P08368" | "P08368" [74]
+  [85] "P08390" | "P08390" [75]
+  
+       actual   | expected     
+  [93] "P09394" | "P09394" [83]
+  [94] "P09557" | "P09557" [84]
+  [95] "P09836" | "P09836" [85]
+  [96] "P0A6A6" -              
+  [97] "P0A6C5" | "P0A6C5" [86]
+  [98] "P0A6D7" | "P0A6D7" [87]
+  [99] "P0A6F1" | "P0A6F1" [88]
+  
+        actual   | expected      
+  [107] "P0A6S5" | "P0A6S5" [96] 
+  [108] "P0A6T9" | "P0A6T9" [97] 
+  [109] "P0A6V5" | "P0A6V5" [98] 
+  [110] "P0A6W9" -               
+  [111] "P0A6Y5" | "P0A6Y5" [99] 
+  [112] "P0A700" | "P0A700" [100]
+  [113] "P0A712" | "P0A712" [101]
+  
+  c1/up
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `calls[[key]]$custom_bg` to be identical to `expected`.
+  Differences:
+      actual   | expected    
+  [1] "P0A6P5" -             
+  [2] "P0A7J7" -             
+  [3] "P0A7K6" -             
+  [4] "P0A7L0" -             
+  [5] "P0A7L3" -             
+  [6] "P0A7L8" -             
+  [7] "P0A7M2" | "P0A7M2" [1]
+  [8] "P0A7M6" | "P0A7M6" [2]
+  [9] "P0A7N4" | "P0A7N4" [3]
+  
+       actual   | expected     
+  [37] "C1P5Z7" | "C1P5Z7" [31]
+  [38] "C1P615" | "C1P615" [32]
+  [39] "O32583" | "O32583" [33]
+  [40] "P00393" -              
+  [41] "P00547" | "P00547" [34]
+  [42] "P00582" | "P00582" [35]
+  [43] "P00805" | "P00805" [36]
+  
+       actual   | expected     
+  [51] "P02930" | "P02930" [44]
+  [52] "P03004" | "P03004" [45]
+  [53] "P03023" | "P03023" [46]
+  [54] "P03817" -              
+  [55] "P03856" | "P03856" [47]
+  [56] "P04079" | "P04079" [48]
+  [57] "P04395" | "P04395" [49]
+  
+       actual   | expected     
+  [65] "P06129" | "P06129" [57]
+  [66] "P06609" | "P06609" [58]
+  [67] "P06616" | "P06616" [59]
+  [68] "P06715" -              
+  [69] "P06864" | "P06864" [60]
+  [70] "P06966" | "P06966" [61]
+  [71] "P06983" | "P06983" [62]
+  
+       actual   | expected     
+  [79] "P07813" | "P07813" [70]
+  [80] "P08142" | "P08142" [71]
+  [81] "P08191" | "P08191" [72]
+  [82] "P08202" -              
+  [83] "P08312" | "P08312" [73]
+  [84] "P08368" | "P08368" [74]
+  [85] "P08390" | "P08390" [75]
+  
+       actual   | expected     
+  [93] "P09394" | "P09394" [83]
+  [94] "P09557" | "P09557" [84]
+  [95] "P09836" | "P09836" [85]
+  [96] "P0A6A6" -              
+  [97] "P0A6C5" | "P0A6C5" [86]
+  [98] "P0A6D7" | "P0A6D7" [87]
+  [99] "P0A6F1" | "P0A6F1" [88]
+  
+        actual   | expected      
+  [107] "P0A6S5" | "P0A6S5" [96] 
+  [108] "P0A6T9" | "P0A6T9" [97] 
+  [109] "P0A6V5" | "P0A6V5" [98] 
+  [110] "P0A6W9" -               
+  [111] "P0A6Y5" | "P0A6Y5" [99] 
+  [112] "P0A700" | "P0A700" [100]
+  [113] "P0A712" | "P0A712" [101]
+  
+  c1/down
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `calls[[key]]$custom_bg` to be identical to `expected`.
+  Differences:
+       actual       | expected         
+  [34] "P00861"     | "P00861"     [34]
+  [35] "P00894"     | "P00894"     [35]
+  [36] "A0A385XJL4" | "A0A385XJL4" [36]
+  [37] "C1P5Z7"     -                  
+  [38] "C1P615"     | "C1P615"     [37]
+  [39] "O32583"     | "O32583"     [38]
+  [40] "P00393"     | "P00393"     [39]
+  [41] "P00547"     | "P00547"     [40]
+  [42] "P00582"     -                  
+  [43] "P00805"     | "P00805"     [41]
+  [44] "P00887"     | "P00887"     [42]
+  [45] "P00903"     | "P00903"     [43]
+  
+       actual   | expected     
+  [48] "P00961" | "P00961" [46]
+  [49] "P02359" | "P02359" [47]
+  [50] "P02920" | "P02920" [48]
+  [51] "P02930" -              
+  [52] "P03004" | "P03004" [49]
+  [53] "P03023" | "P03023" [50]
+  [54] "P03817" | "P03817" [51]
+  [55] "P03856" | "P03856" [52]
+  [56] "P04079" -              
+  [57] "P04395" | "P04395" [53]
+  [58] "P04816" | "P04816" [54]
+  [59] "P04968" | "P04968" [55]
+  
+       actual   | expected     
+  [62] "P05459" | "P05459" [58]
+  [63] "P05707" | "P05707" [59]
+  [64] "P05824" | "P05824" [60]
+  [65] "P06129" -              
+  [66] "P06609" | "P06609" [61]
+  [67] "P06616" | "P06616" [62]
+  [68] "P06715" | "P06715" [63]
+  [69] "P06864" | "P06864" [64]
+  [70] "P06966" -              
+  [71] "P06983" | "P06983" [65]
+  [72] "P06992" | "P06992" [66]
+  [73] "P07001" | "P07001" [67]
+  
+       actual   | expected     
+  [76] "P07118" | "P07118" [70]
+  [77] "P07464" | "P07464" [71]
+  [78] "P07649" | "P07649" [72]
+  [79] "P07813" -              
+  [80] "P08142" | "P08142" [73]
+  [81] "P08191" | "P08191" [74]
+  [82] "P08202" | "P08202" [75]
+  [83] "P08312" | "P08312" [76]
+  [84] "P08368" -              
+  [85] "P08390" | "P08390" [77]
+  [86] "P08506" | "P08506" [78]
+  [87] "P08722" | "P08722" [79]
+  
+        actual   | expected     
+   [90] "P09151" | "P09151" [82]
+   [91] "P09163" | "P09163" [83]
+   [92] "P09372" | "P09372" [84]
+   [93] "P09394" -              
+   [94] "P09557" | "P09557" [85]
+   [95] "P09836" | "P09836" [86]
+   [96] "P0A6A6" | "P0A6A6" [87]
+   [97] "P0A6C5" | "P0A6C5" [88]
+   [98] "P0A6D7" -              
+   [99] "P0A6F1" | "P0A6F1" [89]
+  [100] "P0A6G5" | "P0A6G5" [90]
+  [101] "P0A6I0" | "P0A6I0" [91]
+  
+        actual   | expected      
+  [104] "P0A6L9" | "P0A6L9" [94] 
+  [105] "P0A6N8" | "P0A6N8" [95] 
+  [106] "P0A6Q6" | "P0A6Q6" [96] 
+  [107] "P0A6S5" -               
+  [108] "P0A6T9" | "P0A6T9" [97] 
+  [109] "P0A6V5" | "P0A6V5" [98] 
+  [110] "P0A6W9" | "P0A6W9" [99] 
+  [111] "P0A6Y5" | "P0A6Y5" [100]
+  [112] "P0A700" -               
+  [113] "P0A712" | "P0A712" [101]
+  [114] "P0A725" | "P0A725" [102]
+  [115] "P0A742" | "P0A742" [103]
+  
+  c2/up
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `calls[[key]]$custom_bg` to be identical to `expected`.
+  Differences:
+       actual       | expected         
+  [34] "P00861"     | "P00861"     [34]
+  [35] "P00894"     | "P00894"     [35]
+  [36] "A0A385XJL4" | "A0A385XJL4" [36]
+  [37] "C1P5Z7"     -                  
+  [38] "C1P615"     | "C1P615"     [37]
+  [39] "O32583"     | "O32583"     [38]
+  [40] "P00393"     | "P00393"     [39]
+  [41] "P00547"     | "P00547"     [40]
+  [42] "P00582"     -                  
+  [43] "P00805"     | "P00805"     [41]
+  [44] "P00887"     | "P00887"     [42]
+  [45] "P00903"     | "P00903"     [43]
+  
+       actual   | expected     
+  [48] "P00961" | "P00961" [46]
+  [49] "P02359" | "P02359" [47]
+  [50] "P02920" | "P02920" [48]
+  [51] "P02930" -              
+  [52] "P03004" | "P03004" [49]
+  [53] "P03023" | "P03023" [50]
+  [54] "P03817" | "P03817" [51]
+  [55] "P03856" | "P03856" [52]
+  [56] "P04079" -              
+  [57] "P04395" | "P04395" [53]
+  [58] "P04816" | "P04816" [54]
+  [59] "P04968" | "P04968" [55]
+  
+       actual   | expected     
+  [62] "P05459" | "P05459" [58]
+  [63] "P05707" | "P05707" [59]
+  [64] "P05824" | "P05824" [60]
+  [65] "P06129" -              
+  [66] "P06609" | "P06609" [61]
+  [67] "P06616" | "P06616" [62]
+  [68] "P06715" | "P06715" [63]
+  [69] "P06864" | "P06864" [64]
+  [70] "P06966" -              
+  [71] "P06983" | "P06983" [65]
+  [72] "P06992" | "P06992" [66]
+  [73] "P07001" | "P07001" [67]
+  
+       actual   | expected     
+  [76] "P07118" | "P07118" [70]
+  [77] "P07464" | "P07464" [71]
+  [78] "P07649" | "P07649" [72]
+  [79] "P07813" -              
+  [80] "P08142" | "P08142" [73]
+  [81] "P08191" | "P08191" [74]
+  [82] "P08202" | "P08202" [75]
+  [83] "P08312" | "P08312" [76]
+  [84] "P08368" -              
+  [85] "P08390" | "P08390" [77]
+  [86] "P08506" | "P08506" [78]
+  [87] "P08722" | "P08722" [79]
+  
+        actual   | expected     
+   [90] "P09151" | "P09151" [82]
+   [91] "P09163" | "P09163" [83]
+   [92] "P09372" | "P09372" [84]
+   [93] "P09394" -              
+   [94] "P09557" | "P09557" [85]
+   [95] "P09836" | "P09836" [86]
+   [96] "P0A6A6" | "P0A6A6" [87]
+   [97] "P0A6C5" | "P0A6C5" [88]
+   [98] "P0A6D7" -              
+   [99] "P0A6F1" | "P0A6F1" [89]
+  [100] "P0A6G5" | "P0A6G5" [90]
+  [101] "P0A6I0" | "P0A6I0" [91]
+  
+        actual   | expected      
+  [104] "P0A6L9" | "P0A6L9" [94] 
+  [105] "P0A6N8" | "P0A6N8" [95] 
+  [106] "P0A6Q6" | "P0A6Q6" [96] 
+  [107] "P0A6S5" -               
+  [108] "P0A6T9" | "P0A6T9" [97] 
+  [109] "P0A6V5" | "P0A6V5" [98] 
+  [110] "P0A6W9" | "P0A6W9" [99] 
+  [111] "P0A6Y5" | "P0A6Y5" [100]
+  [112] "P0A700" -               
+  [113] "P0A712" | "P0A712" [101]
+  [114] "P0A725" | "P0A725" [102]
+  [115] "P0A742" | "P0A742" [103]
+  
+  c2/down
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `any(first %in% calls[["c1/up"]]$custom_bg)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `any(second %in% calls[["c2/down"]]$custom_bg)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays
+kind: failure
+message:
+  Expected `... %in% by_name[["c1/up"]]$custom_bg` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither
+kind: failure
+message:
+  Expected `odd_id %in% odd_calls[["k205/up"]]$ids` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither
+kind: failure
+message:
+  Expected `odd_id %in% odd_calls[["k205/up"]]$custom_bg` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither
+kind: failure
+message:
+  Expected `odd_id %in% odd_up@gene` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither
+kind: failure
+message:
+  Expected `odd_id %in% odd_up@universe` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B5: a table without raw_pvalue (KIT-189's form) is reduced by its q-value alone
+kind: failure
+message:
+  Expected `table$Protein.IDs[[row]] %in% reduced@universe` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B5: a table without raw_pvalue (KIT-189's form) is reduced by its q-value alone
+kind: failure
+message:
+  Expected `length(reduced@universe)` to be identical to 119L.
+  Differences:
+    `actual`: 120
+  `expected`: 119
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it
+kind: failure
+message:
+  Expected `manager$.context$snapshot$step_provenance$enrichment_completed$fixed` to be identical to `list(enrichment_background = "tested")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it
+kind: failure
+message:
+  Expected `unique(as_made$seen)` to be identical to "tested".
+  Differences:
+  `actual`:   "<unset>"
+  `expected`: "tested" 
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it
+kind: failure
+message:
+  Expected `unique(old$seen)` to be identical to "all_rows".
+  Differences:
+  `actual`:   "<unset>" 
+  `expected`: "all_rows"
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `read$enrichment_background` to be identical to "tested".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('tested')
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd tested gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd tested
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd absent gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd absent
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd no_record gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd no_record
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd tested gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd tested
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd absent gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd absent
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd no_record gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd no_record
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd tested gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd tested
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd absent gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd absent
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd no_record gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd no_record
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd tested bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd tested qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd tested gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd tested
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd absent bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd absent qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd absent gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd absent
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd no_record bh_whole_family
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(paste0(family[[want]], tails[[rule]]), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(background[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("measured proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd no_record qvalue
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl(gprofiler[[want]], text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd no_record gprofiler2
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B7: the report reads the marker; each template states the background and family of its rule
+kind: failure
+message:
+  Expected `grepl("otherwise protein accessions", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd no_record
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `default$label` to be identical to "Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)".
+  Differences:
+  actual vs expected
+  - "Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  + "Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `default$notice` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins."
+  + "For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins."
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `any(grepl("measured proteins", rules[[column]], fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  label
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `any(grepl("measured proteins", rules[[column]], fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  note
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `any(grepl("measured proteins", rules[[column]], fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  notice
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit205-enrichment-background.R
+test: KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output
+kind: failure
+message:
+  Expected `grepl("measured proteins", html, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-workflow-analysis-record.R
+test: KIT-107 F-16: a DIA record's enrichment step replays after the DA to the same enrichment data, summaries and product (D6 test 3)
+kind: failure
+message:
+  Expected `vapply(step$parameters, `[[`, "", "name")` to be identical to `c(utils::head(diaEnrichmentOperation()$parameters, 9L), "enrichment_background")`.
+  Differences:
+      actual              | expected                    
+  [7] "protein_id_column" | "protein_id_column"     [7] 
+  [8] "contrast_names"    | "contrast_names"        [8] 
+  [9] "results"           | "results"               [9] 
+                          - "enrichment_background" [10]
+
+file: test-workflow-analysis-record.R
+test: KIT-107 F-16: a DIA record's enrichment step replays after the DA to the same enrichment data, summaries and product (D6 test 3)
+kind: failure
+message:
+  Expected `vapply(step$parameters, `[[`, "", "source")` to be identical to `c(rep("provenance", 9L), "fixed")`.
+  Differences:
+  `actual[7:9]`:    "provenance" "provenance" "provenance"        
+  `expected[7:10]`: "provenance" "provenance" "provenance" "fixed"
+
+file: test-go-propagation.R
+test: KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets
+kind: failure
+message:
+  Expected `names` to be identical to `c(...)`.
+  Differences:
+       actual              | expected                    
+   [9] "results"           | "results"               [9] 
+  [10] "go_propagation"    | "go_propagation"        [10]
+  [11] "significance_rule" | "significance_rule"     [11]
+                           - "enrichment_background" [12]
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+
+file: test-go-propagation.R
+test: KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+
+file: test-enrichment-significance.R
+test: KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome
+kind: failure
+message:
+  Expected `names_of(default$step)` to be identical to `c(ten, "significance_rule", "enrichment_background")`.
+  Differences:
+       actual              | expected                    
+   [9] "results"           | "results"               [9] 
+  [10] "go_propagation"    | "go_propagation"        [10]
+  [11] "significance_rule" | "significance_rule"     [11]
+                           - "enrichment_background" [12]
+
+file: test-enrichment-significance.R
+test: KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome
+kind: failure
+message:
+  Expected `names_of(qvalue$step)` to be identical to `c(ten, "enrichment_background")`.
+  Differences:
+       actual           | expected                    
+   [8] "contrast_names" | "contrast_names"        [8] 
+   [9] "results"        | "results"               [9] 
+  [10] "go_propagation" | "go_propagation"        [10]
+                        - "enrichment_background" [11]
+
+file: test-enrichment-significance.R
+test: KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome
+kind: failure
+message:
+  Expected `names_of(gprofiler$step)` to be identical to `c(utils::head(diaEnrichmentOperation()$parameters, 9L), "enrichment_background")`.
+  Differences:
+      actual              | expected                    
+  [7] "protein_id_column" | "protein_id_column"     [7] 
+  [8] "contrast_names"    | "contrast_names"        [8] 
+  [9] "results"           | "results"               [9] 
+                          - "enrichment_background" [10]
+
+file: test-enrichment-significance.R
+test: KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told
+kind: failure
+message:
+  Expected `grepl(family_clause, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told
+kind: failure
+message:
+  Expected `grepl(family_clause, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told
+kind: failure
+message:
+  Expected `grepl(family_clause, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told
+kind: failure
+message:
+  Expected `grepl(family_clause, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step
+kind: failure
+message:
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step
+kind: failure
+message:
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  clusterprofiler
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+
+file: test-omics-enrich-core.R
+test: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+kind: failure
+message:
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  kernel_clusterprofiler
+
+file: test-omics-enrich-core.R
+test: (F-16, D6 test 4) the enrichment state records its provenance, and a failed commit leaves none pending
+kind: failure
+message:
+  Expected `entry$fixed` to be identical to `list(enrichment_background = "tested")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-omics-enrich-core.R
+test: (F-16, D6 test 1) after a Run the record's enrichment step carries its operation, variant and 9 declared parameters (passes from W3)
+kind: failure
+message:
+  Expected `vapply(parameters, `[[`, "", "name")` to be identical to `c(utils::head(diaEnrichmentOperation()$parameters, 9L), "enrichment_background")`.
+  Differences:
+      actual              | expected                    
+  [7] "protein_id_column" | "protein_id_column"     [7] 
+  [8] "contrast_names"    | "contrast_names"        [8] 
+  [9] "results"           | "results"               [9] 
+                          - "enrichment_background" [10]
+
+file: test-omics-enrich-core.R
+test: (F-16, D6 test 1) after a Run the record's enrichment step carries its operation, variant and 9 declared parameters (passes from W3)
+kind: failure
+message:
+  Expected `vapply(parameters, `[[`, "", "source")` to be identical to `c(rep("provenance", 9L), "fixed")`.
+  Differences:
+  `actual[7:9]`:    "provenance" "provenance" "provenance"        
+  `expected[7:10]`: "provenance" "provenance" "provenance" "fixed"
+
+file: test-omics-enrich-core.R
+test: (F-16, D6 test 1) after a Run the record's enrichment step carries its operation, variant and 9 declared parameters (passes from W3)
+kind: failure
+message:
+  Expected `vapply(parameters, `[[`, "", "provenance")` to be identical to `c(...)`.
+  Differences:
+  `actual[7:9]`:    "input" "input" "input"        
+  `expected[7:10]`: "input" "input" "input" "fixed"
+
+file: test-workflow-omics-binding-steps.R
+test: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+kind: failure
+message:
+  Expected `all(kit173 %in% names(current$report_sources))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─kit095WithoutTranscriptomics(current, expected) at test-workflow-omics-binding-steps.R:195:5
+   2.   └─testthat::expect_true(all(kit173 %in% names(current$report_sources))) at test-workflow-omics-binding-steps.R:157:5
+
+file: test-workflow-omics-binding-steps.R
+test: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+kind: failure
+message:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  records
+

@@ -1,0 +1,758 @@
+== test-omic-enrich-module.R | message-changed | (b) in process: clusterprofiler
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"Enrichment_results_B_vs_A_<DATE>.zip"
+    clusterProfileR_results.tsv"671ae3ed12b3c1b51526dd991311d931bca4bb1e347a492381205a28f264372b"
+  - enrichment_analysis_summary.txt"a60935c35db368688973daa031f6f3eff6620946aab16e19fcc96ff9b0b4728e"
+  + enrichment_analysis_summary.txt"e7a41994feeebd115b4192c86580047e7109cce09c1185306b314c0d71b7dd8b"
+  
+  clusterprofiler download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_all values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler filter_up values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  clusterprofiler run values
+
+== test-omic-enrich-module.R | message-changed | (b) in process: kernel_clusterprofiler
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                          | expected                           
+  [1] "<list> c53a37b383548f32"       - "<list> 6961aaa3fc9d92d9"       [1]
+  [2] "TRUE"                          | "TRUE"                          [2]
+  [3] "clusterprofiler"               | "clusterprofiler"               [3]
+  [4] "<data.frame> 598624d8a7388e0f" - "<data.frame> 3fbdfddf484f8372" [4]
+  [5] "<ref>"                         | "<ref>"                         [5]
+  [6] "B_vs_A"                        | "B_vs_A"                        [6]
+  [7] "<list> 28df520b992b4a4b"       | "<list> 28df520b992b4a4b"       [7]
+  
+  actual[10:16] vs expected[10:16]
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> 22b60690a0221a27"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x11 598624d8a7388e0f"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 598624d8a7388e0f" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "22b60690a0221a27"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 593dc7f3aadde355"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"2c1b7ca19097eef50fd8c7525c3179f1a5ec475460553b79ffccb5ebae528ddf"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"2c1b7ca19097eef50fd8c7525c3179f1a5ec475460553b79ffccb5ebae528ddf"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                          | expected                           
+  [1] "<list> d626c0d8d1169c12"       - "<list> 6961aaa3fc9d92d9"       [1]
+  [2] "TRUE"                          | "TRUE"                          [2]
+  [3] "clusterprofiler"               | "clusterprofiler"               [3]
+  [4] "<data.frame> bacf7b29d4777485" - "<data.frame> 3fbdfddf484f8372" [4]
+  [5] "<ref>"                         | "<ref>"                         [5]
+  [6] "B_vs_A"                        | "B_vs_A"                        [6]
+  [7] "<list> 28df520b992b4a4b"       | "<list> 28df520b992b4a4b"       [7]
+  
+  actual[10:16] vs expected[10:16]
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> d8f57c99312ad90c"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  kernel_clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[3]]) vs lines(expected[[3]])
+  - "<text> df4429afb7198599ba09e7101d22eb4a422dd839e3db2f8fce6ebece1b157aa4"
+  + "<text> 4cde847cac7e9c4ab85a093c84e945c7ddf8dfa3f4810877838ac40faaca1db2"
+  
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+
+== test-omic-enrich-module.R | message-changed | (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+-- base:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 45dcef65e31e97cd"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+      actual$results      | expected$results       
+  [1] "EnrichmentResults" | "EnrichmentResults" [1]
+  [2] "baf1c79a30bf9c00"  - "46a64d167ddd9c1b"  [2]
+  [3] "28df520b992b4a4b"  | "28df520b992b4a4b"  [3]
+  [4] "950ddbb7d830df8c"  | "950ddbb7d830df8c"  [4]
+  [5] "28df520b992b4a4b"  | "28df520b992b4a4b"  [5]
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"d8289efe33d30cd8"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"824ba94bb240476c"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  
+  actual$record[13:16] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  
+  kernel_clusterprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 45dcef65e31e97cd"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"5cbbde4509069e50"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"824ba94bb240476c"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  
+  actual$record[13:16] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  
+  clusterprofiler
+-- head:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+      actual$results      | expected$results       
+  [1] "EnrichmentResults" | "EnrichmentResults" [1]
+  [2] "609cb7b1bc247d2f"  - "46a64d167ddd9c1b"  [2]
+  [3] "28df520b992b4a4b"  | "28df520b992b4a4b"  [3]
+  [4] "950ddbb7d830df8c"  | "950ddbb7d830df8c"  [4]
+  [5] "28df520b992b4a4b"  | "28df520b992b4a4b"  [5]
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"1186145dadf9295c"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"cd8fd89d6f6482f1"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  [17] "parameters$significance_rule" -                                    
+  
+  actual$record[13:17] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  
+  kernel_clusterprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 78f2d3a35ecc6ef7"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"b85cc85cec7a640b"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation|significance_rule"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"cd8fd89d6f6482f1"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  [17] "parameters$significance_rule" -                                    
+  
+  actual$record[13:17] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  - parameters$significance_rule"provenance ; no_shipped_default ; bh_whole_family"
+  
+  clusterprofiler
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step
+-- base:
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+-- head:
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+-- base:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "22b60690a0221a27"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 593dc7f3aadde355"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"2c1b7ca19097eef50fd8c7525c3179f1a5ec475460553b79ffccb5ebae528ddf"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"2c1b7ca19097eef50fd8c7525c3179f1a5ec475460553b79ffccb5ebae528ddf"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x11 598624d8a7388e0f"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 598624d8a7388e0f" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  kernel_clusterprofiler
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+

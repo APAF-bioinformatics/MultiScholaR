@@ -65,9 +65,19 @@ setMethod(
 
         # Add UniProt annotations if available
         if (!is.null(uniprot_tbl) && nrow(uniprot_tbl) > 0) {
+          # KIT-208 (VAL-147 (2)): a column both tables carry keeps the annotation's bare name and the DA table's
+          # copy is suffixed `.input` (with dplyr's default suffixes neither was `gene_names`, so every gene name was
+          # blank). `gene_names` takes the annotation's value, and the identifier table's where the annotation has none.
           da_proteins_long_annot <- da_proteins_long_annot |>
-            left_join(uniprot_tbl, by = join_by(uniprot_acc_cleaned == !!sym(uniprot_id_column))) |>
+            left_join(uniprot_tbl, by = join_by(uniprot_acc_cleaned == !!sym(uniprot_id_column)),
+              suffix = c(".input", "")) |>
             dplyr::select(-uniprot_acc_cleaned)
+          if (all(c("gene_names", "gene_names.input") %in% names(da_proteins_long_annot))) {
+            da_proteins_long_annot <- da_proteins_long_annot |>
+              mutate(gene_names = dplyr::if_else(is.na(.data$gene_names) | .data$gene_names == "",
+                as.character(.data$gene_names.input), as.character(.data$gene_names))) |>
+              dplyr::select(-"gene_names.input")
+          }
         } else {
           da_proteins_long_annot <- da_proteins_long_annot |>
             dplyr::select(-uniprot_acc_cleaned)
@@ -334,6 +344,13 @@ setMethod(
         if (length(all_numsig_tables) > 0) {
           # Combine all tables
           combined_numsig_table <- dplyr::bind_rows(all_numsig_tables)
+          # KIT-220 (VAL-191 (2)): the table states the threshold it was counted at, as the lipidomics and
+          # metabolomics tables do (the run's threshold, which the publication is given).
+          combined_numsig_table$q_threshold <- as.double(if (!is.null(theObject@args$outputDaResultsAllContrasts$da_q_val_thresh)) {
+            theObject@args$outputDaResultsAllContrasts$da_q_val_thresh
+          } else {
+            checkParamsObjectFunctionSimplify(theObject, "da_q_val_thresh", 0.05)
+          })
 
           # Write the combined table
           table_path <- file.path(numsigde_dir, paste0(file_prefix, "_num_sig_da_molecules.tab"))

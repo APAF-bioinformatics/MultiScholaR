@@ -1,0 +1,3 @@
+state	stop
+reason	a ticket's committed rows disagree with G1(r)'s own rows: docs/qa/workflow-execution/kit/kit-172/k156-gui-entry-failures.tsv
+commit	c9f6f4bff708ff8a11705394e494002fde275647

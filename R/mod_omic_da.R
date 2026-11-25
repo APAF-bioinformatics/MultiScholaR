@@ -131,7 +131,36 @@ runOmicDaServer <- function(input, output, session, workflowData, experimentPath
         shiny::observeEvent(input$save_heatmap, saveOmicDaHeatmap(input, tab, experimentPaths, da))
     }
     registerOmicDaTableOutputs(output, input, tab, da, binding)
+    # KIT-212 (VAL-172 (4); E-8): the tab follows the head, as proteomics' does.
+    shiny::observeEvent(workflowData$state_update_trigger, omicDaFollowHead(workflowData, tab, da))
     invisible(tab)
+}
+
+#' KIT-212 (VAL-172 (4); E-8): on a head change, the shown results are cleared (with the heatmap Save Heatmap would save,
+#' and the status set pending, as the managed run's `invalidate`) when the DA was run on another table or the store holds
+#' no DA (a session adopted into a new owner); and a state the session load named is forgotten once the head is another
+#' state, so that the next run takes the head (KIT-194's head rule, as the managed DA requires). Only on a
+#' reference-state session owner.
+#' @noRd
+omicDaFollowHead <- function(workflowData, tab, da) {
+    manager <- workflowData$state_manager
+    if (!usesWorkflowReferenceStates(manager)) return(invisible(NULL))
+    if (!is.null(tab$da_results_list) && (is.null(manager$.context$snapshot$da_results) ||
+        identical(workflowDaResultStatus(manager), "stale"))) {
+        tab$da_results_list <- NULL
+        tab$analysis_complete <- FALSE
+        tab$current_heatmap_plot <- NULL
+        tab$current_row_clusters <- tab$current_col_clusters <- NULL
+        status <- workflowData$tab_status
+        status[[da$status_key]] <- "pending"
+        workflowData$tab_status <- status
+    }
+    loaded <- tab$current_state_name
+    if (!is.null(loaded) && !identical(getWorkflowStateReference(manager, loaded)$entity_id,
+        getWorkflowStateReference(manager)$entity_id)) {
+        tab$current_state_name <- NULL
+    }
+    invisible(NULL)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -234,7 +263,10 @@ registerOmicDaTableOutputs <- function(output, input, tab, da, binding) {
         results <- tab$da_results_list
         shiny::req(results)
         cat(omicDaSummaryText(results[[binding$long_table]], input$table_contrast, input$table_assay, input$da_q_val_thresh,
-            da$summary, da$table_filter))
+            da$summary, da$table_filter, runQValThresh = results$da_q_val_thresh,
+            # KIT-220 E-7 (I04): transcriptomics' interactive page is coloured at the box too (trxVolcanoWidget's p.value).
+            boxConsumers = if (identical(binding$omic_type, "transcriptomics")) "the table filter and both volcano plots" else
+                "the table filter and the static volcano plot"))
     })
     output$da_results_table <- DT::renderDT({
         results <- tab$da_results_list
@@ -288,6 +320,36 @@ omicDaHeadFallbackAllowed <- function(workflowData, binding) {
     identical(as.character(workflowData$tab_status$normalization %||% ""), "complete")
 }
 
+#' KIT-194 (D2, 7.5): whether the head the lipidomics or metabolomics DA falls back to is the normalisation's result. As
+#' proteomics' DA (`R/mod_prot_da_handlers_init.R:19`), only `<prefix>_normalized`, `_ruv_corrected`,
+#' `_correlation_filtered` and `_norm_complete`; the last three only when made from the last run (A01: a Revert after
+#' Reset and a second run can make an earlier run's state current). An owner that holds no `<prefix>_normalized` has no
+#' run to tell them apart by, so the name decides there (a fixture's or an older project's single state). TRUE for every
+#' other omic and for a manager that is not a session owner (as before).
+#' @return TRUE when the DA may run on the head.
+#' @noRd
+omicDaFallbackHeadNormalised <- function(workflowData, binding) {
+    manager <- workflowData$state_manager
+    if (!isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics")) || !inherits(manager, "DIAStateAdapter")) return(TRUE)
+    normalized <- paste0(binding$prefix, "_normalized")
+    head <- manager$current_state
+    if (!isTRUE(head %in% c(normalized, paste0(binding$prefix, c("_ruv_corrected", "_correlation_filtered", "_norm_complete"))))) {
+        return(FALSE)
+    }
+    if (identical(head, normalized) || is.null(getWorkflowStateReference(manager, normalized))) return(TRUE)
+    omicNormDerivesFromCurrentRun(binding, manager, getWorkflowStateReference(manager))
+}
+
+#' KIT-194 (D4 (b1)): whether a loaded lipidomics or metabolomics session is named after a state before normalisation (a
+#' design, QC, reset, ITSD or log2 state); such a name in an exported file comes only from an export after a Revert past the
+#' normalisation (routes J5, J6). A deny list: other names (`loaded_for_de`, the normalisation's) load as before.
+#' @noRd
+omicDaLoadedStateRefused <- function(binding, state) {
+    isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics")) && is.character(state) && length(state) == 1L &&
+        state %in% paste0(binding$prefix, c("_raw_data_s4", "_intensity_filtered", "_duplicates_resolved", "_qc_complete", "_reset",
+            "_itsd_norm", "_log2"))
+}
+
 # ------------------------------------------------------------------------------------------------
 # The run.
 # ------------------------------------------------------------------------------------------------
@@ -300,10 +362,18 @@ runOmicDaAnalysis <- function(input, session, workflowData, tab, experimentPaths
     settings <- list(formula_string = if (isTRUE(da$model$editable)) input$formula_string,
         da_q_val_thresh = input$da_q_val_thresh, treat_lfc_cutoff = input$treat_lfc_cutoff)
     logger::log_info("=== RUN DA ANALYSIS BUTTON CLICKED ===")
-    current <- omicDaLoadedMetadata(tab, workflowData, binding) %||%
-        (if (omicDaHeadFallbackAllowed(workflowData, binding)) omicDaReadSource(workflowData, da$source))
+    loaded <- omicDaLoadedMetadata(tab, workflowData, binding)
+    current <- loaded %||% (if (omicDaHeadFallbackAllowed(workflowData, binding)) omicDaReadSource(workflowData, da$source))
     if (!is.list(current) || !identical(current$class, da$source$class)) {
         shiny::showNotification(da$source$no_data, type = "error", duration = 5)
+        return(invisible(NULL))
+    }
+    # KIT-194 (D2, D3, D4 (b1)): the head fallback takes only the normalisation's states made by its last run, and a loaded
+    # session named after a state before normalisation is refused.
+    normalised <- if (is.null(loaded)) omicDaFallbackHeadNormalised(workflowData, binding) else
+        !omicDaLoadedStateRefused(binding, tab$current_state_name)
+    if (!normalised) {
+        shiny::showNotification(omicNormGuardTexts()$da, type = "error", duration = 10)
         return(invisible(NULL))
     }
     contrasts <- workflowData$contrasts_tbl
@@ -494,12 +564,19 @@ saveOmicDaHeatmap <- function(input, tab, experimentPaths, da) {
         color_scheme = input$heatmap_color_scheme, tree_cut_method = input$heatmap_tree_cut_method,
         n_clusters = input$heatmap_n_clusters, cut_height = input$heatmap_cut_height,
         min_cluster_size = input$heatmap_min_cluster_size)
-    prefix <- gsub("[^A-Za-z0-9_]", "_", paste0(da$views$heatmap$save_prefix, input$heatmap_contrast))
+    prefix <- omicDaHeatmapSavePrefix(da$views$heatmap$save_prefix, input$heatmap_contrast)
     save_heatmap_products(heatmap_obj = plot, row_clusters = clusters, params_list = params,
         output_dir = experimentPaths$publication_graphs_dir, file_prefix = prefix)
     shiny::showNotification("Heatmap and cluster info saved to publication_graphs/Heatmap", type = "message", duration = 5)
     invisible(list(params = params, prefix = prefix))
 }
+
+#' The file prefix of a heatmap saved with Save Heatmap (KIT-212: made callable so the Summary can tell a saved heatmap's
+#' contrast; the name is unchanged): the group's prefix and the contrast, every other character an underscore.
+#' @param save_prefix The group's `views$heatmap$save_prefix` (`prot_`, `lipid_`, `metab_`).
+#' @param contrast The heatmap's contrast.
+#' @noRd
+omicDaHeatmapSavePrefix <- function(save_prefix, contrast) gsub("[^A-Za-z0-9_]", "_", paste0(save_prefix, contrast))
 
 # ------------------------------------------------------------------------------------------------
 # The plugin registry: an omic whose group names `plugins` (proteomics, KIT-106 W5, D5).
@@ -560,7 +637,7 @@ registerOmicDaPluginVolcanoOutputs <- function(output, input, tab, experimentPat
     output$volcano_glimma <- shiny::renderUI({
         shiny::req(isTRUE(input$volcano_interactive))
         diaDaVolcanoGlimmaView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, tab$current_s4_object,
-            experimentPaths$da_output_dir)
+            experimentPaths$da_output_dir, input$treat_lfc_cutoff)
     })
     output[[da$views$static_volcano$output]] <- shiny::renderPlot(alt = function() tab$volcano_plot_identity %||% NA_character_,
         diaDaStaticVolcanoView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, input$treat_lfc_cutoff,

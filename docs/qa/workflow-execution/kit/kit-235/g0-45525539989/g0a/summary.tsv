@@ -1,0 +1,31 @@
+case	version	shape	main_error	sample_details_head	method_details_chars	method_has_METHOD_DETAILS	extractor_length	analyze_numbers_length	swallowed_error	chunk_errors	num_assays	ruv_applied	ruv_assay_list_names
+M	main	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable
+M	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable
+M	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable
+M	main	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2468	TRUE	41	46	none	0	"2"	true	assay_pos|assay_neg
+M	staging	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2436	TRUE	41	46	none	0	"2"	true	assay_pos|assay_neg
+M	kit227	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2436	TRUE	41	46	none	0	"2"	true	assay_pos|assay_neg
+L1	main	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status|* Grouping Variable|* k value|* Control features
+L1	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status|* Grouping Variable|* k value|* Control features
+L1	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable|* k value|* Control features
+L1	main	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1985	TRUE	41	46	none	0	"1"	true	k value|Control features
+L1	staging	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1985	TRUE	41	46	none	0	"1"	true	k value|Control features
+L1	kit227	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1985	TRUE	41	46	none	0	"1"	true	k value|Control features
+L2	main	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable
+L2	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable
+L2	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	true	* Status|* Grouping Variable
+L2	main	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2078	TRUE	41	46	none	0	"1"	true	assay_main
+L2	staging	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2078	TRUE	41	46	none	0	"1"	true	assay_main
+L2	kit227	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2078	TRUE	41	46	none	0	"1"	true	assay_main
+S-lip	main	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status
+S-lip	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status
+S-lip	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status
+S-lip	main	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1768	TRUE	41	46	none	0	"1"	false	
+S-lip	staging	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1768	TRUE	41	46	none	0	"1"	false	
+S-lip	kit227	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1741	TRUE	41	46	none	0	"1"	false	
+S-met	main	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status
+S-met	staging	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status
+S-met	kit227	star	TRUE	Error running Main function: missing value where TRUE/FALSE needed	0	FALSE	41	46	none	0	"NA"	false	* Status
+S-met	main	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2051	TRUE	41	46	none	0	"2"	false	
+S-met	staging	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	2019	TRUE	41	46	none	0	"2"	false	
+S-met	kit227	bullet	FALSE	 SAMPLE DETAILS There are 3 samples in total which consists of: • 3 biological samples with no technical replicates. • S	1992	TRUE	41	46	none	0	"2"	false	

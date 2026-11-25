@@ -1,0 +1,49 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-classify.R	T-CLS: the four outcomes, no_worse and inclusive ends	10	10	0	0	0	0	0.09
+test-classify.R	T-CLS: refusals and a one-arm comparison against a fixed value	5	5	0	0	0	0	0.073
+test-classify.R	T-CLS: a within-run interval decides only when declared on that comparison	2	2	0	0	0	0	0.005
+test-classify.R	T-CLS-regime: no regime, no harness regime for the class, flagged without consent	6	6	0	0	0	0	0.043
+test-classify.R	T-CLS-compound: conjunctions, worse_when, controls and guards	11	11	0	0	0	0	0.027
+test-classify.R	T-CLS-compound: a guard requiring match, and a contradicted guard	4	4	0	0	0	0	0.012
+test-coverage-rank.R	T-RANK-1: the rank effect is calibrated into the declared pAUC band and recorded	4	4	0	0	0	0	7.21
+test-coverage-rank.R	T-RANK-2: a cell with zero-width intervals or a target at a bound is degenerate	5	5	0	0	0	0	0.015
+test-coverage-rank.R	T-RANK-3: run-level conservative is read on the miss rate	4	4	0	0	0	0	0.01
+test-coverage-rank.R	T-RANK-4: a degenerate condition makes the regime row degenerate (not offered)	1	1	0	0	0	0	0.006
+test-coverage-table.R	T-COV-ENDS: both ends and the failing condition and side are in the regime row	9	9	0	0	0	0	0.034
+test-coverage-table.R	T-COV-ENDS-2: the committed T2 table is what the summary gives on the committed detail	7	7	0	0	0	0	0.521
+test-coverage.R	pass bands: approximate run-level, within-run, exact and Clopper-Pearson	9	9	0	0	0	0	0.016
+test-coverage.R	the summary flags a paired t count passing on normal and failing on skewed data	3	3	0	0	0	0	0.011
+test-coverage.R	the catalogue has unique cells and every regime of 10.2	2	2	0	0	0	0	0.041
+test-coverage.R	small runs of a C1 and a C3 cell return one row per level	5	5	0	0	0	0	0.076
+test-coverage.R	a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused	15	15	0	0	0	0	0.349
+test-coverage.R	seeds depend on the cell and the index only	3	3	0	0	0	0	0.043
+test-coverage.R	a coverage plan splits each cell into fixed consecutive ranges	3	3	0	0	0	0	0.041
+test-intervals.R	T-ORD: order-statistic intervals and their achieved levels	7	7	0	0	0	0	0.036
+test-intervals.R	T-PT: paired t on eight per-unit differences	5	5	0	0	0	0	0.014
+test-intervals.R	T-JK-1: the delete-one jackknife of the mean has SE sd / sqrt(n)	2	2	0	0	0	0	0.005
+test-intervals.R	T-JK-2: jackknife from full and deletion values	3	3	0	0	0	0	0.006
+test-intervals.R	T-JK-2-bias: the bias estimate and its flag against half the margin	3	3	0	0	0	0	0.006
+test-intervals.R	T-JK-log: the log transform and an undefined deletion	4	4	0	0	0	0	0.008
+test-intervals.R	T-JK-crit: a declared critical value may be larger than t, never smaller	3	3	0	0	0	0	0.017
+test-intervals.R	T-JK-3: the jackknife of a median is refused	2	2	0	0	0	0	0.014
+test-intervals.R	the jackknife needs four deletions; dependent units are refused	2	2	0	0	0	0	0.014
+test-intervals.R	T-CP: Clopper-Pearson intervals	3	3	0	0	0	0	0.007
+test-intervals.R	T-ONE: the one-sample paired t against a fixed value	2	2	0	0	0	0	0.004
+test-intervals.R	T-WIL: Wilson intervals without an event floor	3	3	0	0	0	0	0.006
+test-intervals.R	T-NEW: Newcombe's paired interval, method 10	3	3	0	0	0	0	0.006
+test-intervals.R	T-BOOT-1: the same seed and B give identical intervals	2	2	0	0	0	0	0.662
+test-intervals.R	T-BOOT-2: a constant paired shift gives a zero-width interval at the shift	1	1	0	0	0	0	0.3
+test-intervals.R	T-BOOT-3: strata keep their sizes; clusters are resampled whole	2	2	0	0	0	0	4.23
+test-intervals.R	T-BOOT-4: B below 50 / tail probability is refused	3	3	0	0	0	0	0.015
+test-intervals.R	T-REF-FILL: the least favourable fill decides whether the verdict stands	8	8	0	0	0	0	0.018
+test-intervals.R	refusals under 30 units: one is dropped with a substitute required, two are not evaluable	3	3	0	0	0	0	0.061
+test-repair2.R	R-O8: over independent units nothing is widened at any count; report only, stated	9	9	0	0	0	0	0.022
+test-repair2.R	R-O5: T2 rows reading pass under T2's band and conservative under r1.13's; both printed	5	5	0	0	0	0	0.015
+test-repair2.R	R-O4: a conservative row with no observed miss licenses only the statistic it simulated	5	5	0	0	0	0	0.05
+test-repair2.R	R-O4: the half-width ratio is mean half-width over the statistic's SD times z	6	6	0	0	0	0	0.108
+test-repair2.R	R-I10: the redraw generator is unchanged; the fixed generator draws features once per cell	11	11	0	0	0	0	0.148
+test-repair2.R	R-I10: under the fixed symmetric generator the plain arm's null rejection share is near 0.05	2	2	0	0	0	0	1.171
+test-repair2.R	R-I10: a plan's generator column reaches the cell in the chunk tasks and the detail	4	4	0	0	0	0	0.139
+test-repair3.R	R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes	8	8	0	0	0	0	0.028
+test-repair3.R	R-K199: no admission path; the DIA-with-limpa link is a declared change; two classes in a step	8	8	0	0	0	0	0.017
+test-repair3.R	R-K199b: counts are per (step, class), not per difference row: several keys in one step	3	3	0	0	0	0	0.01

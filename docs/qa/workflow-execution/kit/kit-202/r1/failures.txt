@@ -1,0 +1,283 @@
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T1 (metab_msdial): the S4 method counts only the design's samples
+kind: failure
+message:
+  Expected `unname(out$thresholds[["LCMS_Pos"]])` to equal `expected$head$threshold`.
+  Differences:
+    `actual`:     4.9
+  `expected`: 16410.0
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T1 (metab_msdial): the S4 method counts only the design's samples
+kind: failure
+message:
+  Expected `k202Kept(out$object)` to be identical to `expected$head$kept`.
+  Differences:
+    `actual[2:8]`: 2 3 4 5 6 7 8
+  `expected[2:6]`: 2 3 4     7 8
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T1 (lipid_msdial): the S4 method counts only the design's samples
+kind: failure
+message:
+  Expected `unname(out$thresholds[["LCMS_Pos"]])` to equal `expected$head$threshold`.
+  Differences:
+    `actual`:   2.2
+  `expected`: 100.9
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T1 (lipid_msdial): the S4 method counts only the design's samples
+kind: failure
+message:
+  Expected `k202Kept(out$object)` to be identical to `expected$head$kept`.
+  Differences:
+    `actual`: 3  
+  `expected`: 2 3
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T2 (metab_msdial, partitioned): the declared step counts only the design's samples
+kind: failure
+message:
+  Expected `run$kept` to be identical to `expected$head$kept`.
+  Differences:
+    `actual[2:8]`: 2 3 4 5 6 7 8
+  `expected[2:6]`: 2 3 4     7 8
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T2 (metab_msdial, whole): the declared step counts only the design's samples
+kind: failure
+message:
+  Expected `run$kept` to be identical to `expected$head$kept`.
+  Differences:
+    `actual[2:8]`: 2 3 4 5 6 7 8
+  `expected[2:6]`: 2 3 4     7 8
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T2 (lipid_msdial, partitioned): the declared step counts only the design's samples
+kind: failure
+message:
+  Expected `run$kept` to be identical to `expected$head$kept`.
+  Differences:
+    `actual`: 3  
+  `expected`: 2 3
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T2 (lipid_msdial, whole): the declared step counts only the design's samples
+kind: failure
+message:
+  Expected `run$kept` to be identical to `expected$head$kept`.
+  Differences:
+    `actual`: 3  
+  `expected`: 2 3
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T3 (a) (metab_msdial): the helper counts the sample columns it is given
+kind: failure
+message:
+  Expected `is.null(result)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T3 (a) (lipid_msdial): the helper counts the sample columns it is given
+kind: failure
+message:
+  Expected `is.null(result)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T3 (b) (metab_msdial): without sample_columns the id column is not counted, with a warning
+kind: failure
+message:
+  Expected `result <- k202Helper(object, expected$threshold, 0.2)` to throw a warning with class <omics_intensity_filter_samples_guessed>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T3 (b) (metab_msdial): without sample_columns the id column is not counted, with a warning
+kind: failure
+message:
+  Expected `k202HelperIds(result, object)` to be identical to `expected$kept`.
+  Differences:
+    `actual[1:3]`:         5 6 7
+  `expected[1:7]`: 1 2 3 4 5 6 7
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T3 (b) (lipid_msdial): without sample_columns the id column is not counted, with a warning
+kind: failure
+message:
+  Expected `result <- k202Helper(object, expected$threshold, 0.2)` to throw a warning with class <omics_intensity_filter_samples_guessed>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T3 (b) (lipid_msdial): without sample_columns the id column is not counted, with a warning
+kind: failure
+message:
+  Expected `k202HelperIds(result, object)` to be identical to `expected$kept`.
+  Differences:
+    `actual`: 3    
+  `expected`: 1 2 3
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T5 (a) (module_ci_lipid, absent): the S4 method refuses the design sample
+kind: failure
+message:
+  Expected `suppressMessages(k202Method(k202Invalid(name, kind), 10, 0.5))` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T5 (a) (module_ci_lipid, text): the S4 method refuses the design sample
+kind: failure
+message:
+  Expected `suppressMessages(k202Method(k202Invalid(name, kind), 10, 0.5))` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T5 (a) (module_ci_lipid, text): the partitioned step refuses the design sample
+kind: failure
+message:
+  Expected `kit172Quiet(...)` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T5 (a) (module_ci_metab, absent): the S4 method refuses the design sample
+kind: failure
+message:
+  Expected `suppressMessages(k202Method(k202Invalid(name, kind), 10, 0.5))` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T5 (a) (module_ci_metab, text): the S4 method refuses the design sample
+kind: failure
+message:
+  Expected `suppressMessages(k202Method(k202Invalid(name, kind), 10, 0.5))` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T5 (a) (module_ci_metab, text): the partitioned step refuses the design sample
+kind: failure
+message:
+  Expected `kit172Quiet(...)` to throw a error with class <omics_intensity_filter_samples_invalid>.
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (i): the replay rule of the intensity filter follows the step's marker
+kind: failure
+message:
+  Expected `!is.null(markers[["intensity_filter_samples"]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iii) (metab_msdial): a step made now records the marker
+kind: failure
+message:
+  Expected `k202Marker(run$record, run$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iii) (lipid_msdial): a step made now records the marker
+kind: failure
+message:
+  Expected `k202Marker(run$record, run$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iv) (metab_msdial): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `identical(a$kept, b$kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iv) (metab_msdial): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k202Marker(b$record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iv) (metab_msdial): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k202Marker(b$replayed_record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iv) (lipid_msdial): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `identical(a$kept, b$kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iv) (lipid_msdial): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k202Marker(b$record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (iv) (lipid_msdial): records made before and after the change replay, each with its own rule
+kind: failure
+message:
+  Expected `k202Marker(b$replayed_record, b$state)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (v): a managed intensity filter step records the marker
+kind: failure
+message:
+  Expected `k202Marker(buildWorkflowAnalysisRecord(fixture$owner), step$state_name)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  
+  lipid
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T6 (v): a managed intensity filter step records the marker
+kind: failure
+message:
+  Expected `k202Marker(buildWorkflowAnalysisRecord(fixture$owner), step$state_name)` to be identical to `list(source = "fixed", value = "design")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  
+  metab
+
+file: test-kit202-intensity-filter-samples.R
+test: KIT-202 T7: retention time, m/z and the id kept by the workbook are not counted
+kind: failure
+message:
+  Expected `k202Kept(out$object)` to be identical to `c(1L, 2L, 3L, 4L, 7L, 8L)`.
+  Differences:
+    `actual`: 3 4 5 6 7 8
+  `expected`: 1 2 3 4 7 8
+
+file: test-metab-qc-shared.R
+test: metaboliteIntensityFiltering preserves numeric parsing, per-assay skipping, and helper-driven filtering
+kind: failure
+message:
+  Expected `recorded$thresholds[[1]]$sample_columns` to be identical to `c("S1", "S2")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('S1', 'S2')
+
+file: test-metab-qc-shared.R
+test: metaboliteIntensityFiltering preserves numeric parsing, per-assay skipping, and helper-driven filtering
+kind: failure
+message:
+  Expected `suppressWarnings(metaboliteIntensityFiltering(no_numeric_object))` to throw a error with class <omics_intensity_filter_samples_invalid>.
+

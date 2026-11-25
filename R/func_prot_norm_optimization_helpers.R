@@ -393,10 +393,13 @@ ruvNoValidPercentageMessage <- function(percentages, status, best_k, complete_co
 #' group's, so such a design is standard, with the reason recorded.
 #' @param design_matrix Ordered sample metadata.
 #' @param group_id,technical_replicate_id Column names from the object's slots.
+#' @param check KIT-222 (owner's OD-3, R1-01): refuse a design whose blocks hold runs of more than one
+#'   technical-replicate marking action (`refuseOmicsDesignReplicateKeyCollision`, read from the design's `tech_reps`
+#'   column), so every caller that computes numbers refuses; FALSE only for a display.
 #' @return List `block` (character per row, or NULL), `technical` (logical), `reason` (one of
 #'   `technical_replicates`, `spanned_by_design`, `no_duplicates`, `no_declaration`, `missing_values`), `blocks`.
 #' @noRd
-resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technical_replicate_id) {
+resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technical_replicate_id, check = TRUE) {
   stopifnot(is.data.frame(design_matrix))
   declared <- is.character(technical_replicate_id) && length(technical_replicate_id) == 1L &&
     is.character(group_id) && length(group_id) == 1L &&
@@ -408,6 +411,7 @@ resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technica
   value <- as.character(value)
   nested <- all(vapply(split(group, value), function(g) length(unique(g)) == 1L, logical(1)))
   block <- if (nested) value else paste(group, value, sep = "_")
+  if (isTRUE(check)) refuseOmicsDesignReplicateKeyCollision(design_matrix, keys = block)
   if (!anyDuplicated(block)) return(list(block = block, technical = FALSE, reason = "no_duplicates", blocks = length(block)))
   spanned <- all(vapply(split(block, group), function(b) length(unique(b)) == 1L, logical(1)))
   list(block = block, technical = !spanned, reason = if (spanned) "spanned_by_design" else "technical_replicates",

@@ -12,7 +12,12 @@
 
 resolveProtEnrichAnalysisInputColumns <- function(methodInfo,
                                                   daResultsForEnrichment,
-                                                  currentS4Object = NULL) {
+                                                  currentS4Object = NULL,
+                                                  id_choice = NULL) {
+  # KIT-167 (8.3 item 3): the reference identifiers when chosen; "imported" or NULL keeps today's resolution.
+  if (identical(id_choice, "reference")) {
+    return(list(idColumn = "reference_accession_used", source = "reference_mapping", geneNameOverrideApplied = FALSE))
+  }
   idColumn <- tryCatch({
     if (!is.null(currentS4Object)) {
       currentS4Object@protein_id_column
@@ -51,7 +56,8 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
                                                   contrastNames,
                                                   correctionMethod,
                                                   excludeIea = FALSE,
-                                                  goPropagation = NULL) {
+                                                  goPropagation = NULL,
+                                                  significanceRule = NULL) {
   validatedParams <- validateProtEnrichProcessParameters(
     organismTaxid = organismTaxid,
     upCutoff = upCutoff,
@@ -88,8 +94,10 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
       contrast_names = contrastNames,
       correction_method = validatedParams$correction_method
     ),
-    # KIT-173: the GO parent-term rule reaches the kernel only when given (the clusterProfiler route).
-    if (!is.null(goPropagation)) list(go_propagation = goPropagation))
+    # KIT-173: the GO parent-term rule reaches the kernel only when given (the clusterProfiler route); KIT-203: so
+    # does the significance rule.
+    if (!is.null(goPropagation)) list(go_propagation = goPropagation),
+    if (!is.null(significanceRule)) list(significance_rule = significanceRule))
   )
 }
 
@@ -814,6 +822,27 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
     list(notice = paste(notices, collapse = " "), outcome = paste(outcomes, collapse = "; "))
 }
 
+#' The proteins without a gene name per comparison on the g:Profiler route (KIT-208, VAL-147 (3))
+#'
+#' Tested rows of each comparison's DA table (`enrichmentTestedRows`, the background in force, KIT-205) whose identifier
+#' (the route's `gene_name`) is NA or empty; they leave the lists and the background g:Profiler is sent.
+#' @param da_results The run's `da_results_for_enrichment` (after the organism filter, when it applied).
+#' @param contrasts_tbl The contrasts table (display names).
+#' @param id_column The identifier column sent to g:Profiler.
+#' @return One string, "<comparison>: <unnamed> of <tested rows>" per comparison joined by "; ", or NULL when every
+#'   tested protein of every comparison has a name.
+#' @noRd
+workflowEnrichmentUnnamedProteins <- function(da_results, contrasts_tbl, id_column) {
+    tables <- lapply(Filter(Negate(is.null), da_results@da_data), function(table) enrichmentTestedRows(table)$rows)
+    unnamed <- vapply(tables, function(table) {
+        ids <- table[[id_column]]
+        sum(is.na(ids) | !nzchar(as.character(ids)))
+    }, 0L)
+    if (!any(unnamed > 0L)) return(NULL)
+    paste(sprintf("%s: %d of %d", enrichmentContrastDisplayNames(contrasts_tbl, names(tables)), unnamed,
+        vapply(tables, nrow, 0L)), collapse = "; ")
+}
+
 #' Run the enrichment on an accepted DA manifest (KIT-107 D3)
 #'
 #' The module's manifest path at the start commit (`runProtEnrichAnalysisBody`, its setup, finalise and persist steps,
@@ -829,12 +858,16 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
 #' @param config The omic's `enrichment` group (`omicGuiConfig(<omic>)$enrichment`).
 #' @param manifest The accepted DA result manifest.
 #' @param parameters The run's inputs: `selected_contrast`, `organism_taxid`, `up_cutoff`, `down_cutoff`, `q_cutoff`,
-#'   `correction_method`, `enable_organism_filter`, and `go_propagation` (KIT-173; absent takes the shipped value,
-#'   `goPropagationShipped`; used on the clusterProfiler route only).
+#'   `correction_method`, `enable_organism_filter`, `go_propagation` (KIT-173; absent takes the shipped value,
+#'   `goPropagationShipped`; used on the clusterProfiler route only), and `significance_rule` (KIT-203; absent takes
+#'   `enrichmentSignificanceShipped`; clusterProfiler route only, where every run records the rule it applied as the
+#'   outcome `significance_rule` and notifies it).
 #' @param paths Experiment paths (`da_output_dir`, `pathway_dir`, `results_dir`, `source_dir`).
 #' @param process_fn The kernel; NULL selects `config$kernel$select()` when called (the double in test mode).
-#' @param notify `function(message, type, duration)`: the organism filter's warning, and the notice that the backend
-#'   applies another correction than the selected one (A107-03); NULL notifies nobody.
+#' @param notify `function(message, type, duration)`: the organism filter's warning, and on the clusterProfiler route
+#'   the notice of the significance rule applied (KIT-203), with the sentence that the selected correction was not used
+#'   when the selection is not `fdr` or `BH` (A107-03; then a warning); on the g:Profiler route a warning naming the
+#'   lists not tested because none of their proteins has a gene name (KIT-208); NULL notifies nobody.
 #' @param progress `function(value, detail)`; NULL reports nothing.
 #' @param refuse_missing_da TRUE refuses a run whose DA table is missing for a contrast before anything is written
 #'   (class `workflow_enrichment_input`; F107-03). FALSE is the start commit's behaviour: the run continues on the
@@ -846,6 +879,13 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
 #'   contrast name; the contrasts table; the pathway directory; the annotation match (NULL when none); the
 #'   organism-filter metadata written to the bus; the service identity; the product reference; the declared values
 #'   the product's identity used (9, and the organism filter's 2 when it is on; P-28); and the state save's result.
+#'   KIT-208: a g:Profiler comparison without a named protein refuses the run (class
+#'   `workflow_enrichment_no_identifiers`, from the kernel) before anything is saved; the step's outcomes gain
+#'   `enrichment_lists_not_tested` when a list was not tested and `enrichment_unnamed_proteins` when a comparison has
+#'   proteins without a gene name. KIT-215 (VAL-170): on both routes; a GO comparison with lists and no annotated
+#'   tested protein or no term of 10 to 500 of them, and a test that raised an error, refuse the run (classes
+#'   `workflow_enrichment_no_identifiers`, `workflow_enrichment_test_error`); the list also carries `not_tested` and
+#'   `no_list` (`diaEnrichmentNoIdentifiers`) when there are some, and the state's config commits them.
 #' @noRd
 runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths, process_fn = NULL, notify = NULL,
     progress = NULL, refuse_missing_da = FALSE) {
@@ -882,18 +922,49 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     }
     # KIT-119 (A107-06): each contrast's DA table as the run read it, before the organism filter.
     da_inputs <- lapply(da_results@da_data, function(table) diaAnnotationDigest(table) %||% NA_character_)
+    # KIT-167 (8.3): with the reference identifiers chosen (gate on, a mapping on the head), each contrast's table gains
+    # the group's `reference_accession_used` and unmapped groups leave the query lists and the background; the tables
+    # on disk are unchanged.
+    reference <- NULL
+    if (identical(parameters$id_source, "reference")) {
+        if (!referenceMappingEnabled()) {
+            rlang::abort("Orthologue identifiers need the reference mapping tool, which is switched off.",
+                class = "workflow_enrichment_input")
+        }
+        stored <- readReferenceMapping(manager)
+        if (is.null(stored)) {
+            rlang::abort("Orthologue identifiers need a reference mapping saved in this project; there is none.",
+                class = "workflow_enrichment_input")
+        }
+        attached <- attachReferenceMapping(da_results, stored$mapping, source_object@protein_id_column,
+            q_cutoff = parameters$q_cutoff, up_cutoff = parameters$up_cutoff, down_cutoff = parameters$down_cutoff)
+        da_results <- attached$da_results
+        reference <- list(stored = stored, counts = attached$counts,
+            mapping_sha256 = stored$record$value[stored$record$field == "mapping_sha256"])
+        # The tab's 2 x 2 counts and the unmapped changed groups, per contrast (5.6); written only on this route.
+        workflow$enrichment_reference_mapping <- attached$counts
+    }
     # KIT-175 (items 5, 5a): the annotation's problems are reported, and a run without annotation is refused before
     # any service is called and before the GO outcome step (D1, VAL-30; KIT-173 audit I04). The conditions of the
     # step's own retrieval are seen, not muffled.
     retrieval <- NULL
     keep <- function(w) retrieval <<- w
-    resolved <- withCallingHandlers(config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
-        currentS4Object = source_object, organismTaxid = parameters$organism_taxid),
-        prot_annotation_uniprot_empty = keep, prot_annotation_uniprot_incomplete = keep)
+    # KIT-167 (8.3 item 3, exemption): with the reference identifiers the resolver returns the reference's table (the
+    # shipped GO capture, or one fetch for a supplied reference) and KIT-175's refusal below tests that table.
+    resolved <- withCallingHandlers(if (is.null(reference)) {
+        config$annotation$resolve(workflowData = workflow, experimentPaths = paths, currentS4Object = source_object,
+            organismTaxid = parameters$organism_taxid)
+    } else {
+        reference$annotation <- referenceAnnotationTable(reference$stored$mapping, reference$stored$record,
+            project_dir = paths$source_dir)
+        config$annotation$resolve(workflowData = workflow, experimentPaths = paths, currentS4Object = source_object,
+            organismTaxid = parameters$organism_taxid, referenceAnnotation = reference$annotation$table)
+    }, prot_annotation_uniprot_empty = keep, prot_annotation_uniprot_incomplete = keep)
     annotations <- resolved$uniprotDatCln
     if (!is.null(retrieval) && !is.null(annotations)) {
         attr(annotations, "annotation_outcome") <- uniprotOutcomeFromCondition(retrieval)
-        workflow$uniprot_dat_cln <- annotations
+        # KIT-167: the project's annotation slot never holds a reference's table.
+        if (is.null(reference)) workflow$uniprot_dat_cln <- annotations
     }
     annotation_problem <- workflowEnrichmentAnnotationProblem(annotations, resolved)
     if (if (is.null(annotations)) !is_test_mode() else nrow(annotations) == 0L) {
@@ -902,11 +973,16 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
             "retrieve it, then run the later steps again."), class = "workflow_enrichment_annotation")
     }
     if (!is.null(annotation_problem)) notify(annotation_problem$notice, "warning", NULL)
+    match_object <- source_object
+    if (!is.null(reference)) match_object@protein_id_column <- "reference_accession_used"
     matching <- config$annotation$match(uniprotDatCln = annotations, daResultsForEnrichment = da_results,
-        currentS4Object = source_object)
+        currentS4Object = match_object)
     filter_applied <- FALSE
     filter_stats <- list(proteins_before = 0, proteins_after = 0, proteins_removed = 0)
-    filter_enabled <- isTRUE(parameters$enable_organism_filter) && !is.null(config$organism_filter)
+    # KIT-167 (8.3 item 2, D05): with the reference identifiers the organism filter is not applied (the join keeps only
+    # the strain's entries) and none of its names is declared.
+    filter_enabled <- isTRUE(parameters$enable_organism_filter) && !is.null(config$organism_filter) &&
+        is.null(reference)
     if (filter_enabled) {
         target <- as.character(parameters$organism_taxid)
         mapping <- config$organism_filter$mapping(workflowData = workflow, uniprotDatCln = annotations,
@@ -923,23 +999,28 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         }
     }
     organism_filter <- persistProtEnrichOrganismFilterMetadata(workflowData = workflow,
-        organismFilterEnabled = parameters$enable_organism_filter, organismFilterApplied = filter_applied,
+        organismFilterEnabled = isTRUE(parameters$enable_organism_filter) && is.null(reference),
+        organismFilterApplied = filter_applied,
         targetTaxonId = parameters$organism_taxid, filterStats = filter_stats)
     progress(0.5, "Running enrichment analysis...")
     # `[[` (exact): `$organism` would partially match `organism_filter`.
     method <- config[["organism"]]$method(organismTaxid = parameters$organism_taxid,
         supportedOrganisms = config[["organism"]]$supported())$methodInfo
     columns <- resolveProtEnrichAnalysisInputColumns(methodInfo = method, daResultsForEnrichment = da_results,
-        currentS4Object = source_object)
+        currentS4Object = source_object, id_choice = if (!is.null(reference)) "reference")
     # KIT-173: the GO parent-term rule, on the clusterProfiler route only (the g:Profiler route's arguments, declared
     # names and record are unchanged).
     go_propagation <- if (identical(method$method, "clusterprofiler"))
         checkGoPropagation(parameters$go_propagation %||% goPropagationShipped)
+    # KIT-203: the significance rule, on the clusterProfiler route only.
+    significance_rule <- if (identical(method$method, "clusterprofiler"))
+        checkEnrichmentSignificanceRule(parameters$significance_rule %||% enrichmentSignificanceShipped)
     arguments <- buildProtEnrichProcessEnrichmentsArgs(daResultsForEnrichment = da_results,
         organismTaxid = parameters$organism_taxid, upCutoff = parameters$up_cutoff, downCutoff = parameters$down_cutoff,
         qCutoff = parameters$q_cutoff, pathwayDir = directories$pathwayDir, goAnnotations = annotations,
         proteinIdColumn = columns$idColumn, contrastNames = names(manifest$results),
-        correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea, goPropagation = go_propagation)
+        correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea, goPropagation = go_propagation,
+        significanceRule = significance_rule)
     kernel <- process_fn %||% config$kernel$select()
     .capture_checkpoint(arguments$checkpointArgs, "cp10", "enrichment_input")
     # GUI audit R3, P-28: the organism filter is declared when it is on, and what it did is recorded as the step's
@@ -951,12 +1032,21 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     if (!identical(correction, parameters$correction_method)) {
         run_arguments$correction_method_effective <- correction
         outcomes <- list(correction_method_requested = parameters$correction_method)
-        # g:Profiler's `fdr` is Benjamini-Hochberg under another name: nothing to tell the user.
-        if (!isTRUE(parameters$correction_method %in% c("fdr", "BH"))) {
-            notify(sprintf(paste("clusterProfiler adjusts p-values with %s (Benjamini-Hochberg). The selected",
-                "correction, %s, applies to g:Profiler only and was not used."), correction,
-                parameters$correction_method), "warning", 8)
-        }
+    }
+    # KIT-203 (VAL-86, OD10): every clusterProfiler run is told which rule calls a term significant; the sentence that
+    # the selected correction was not used follows when the selection is not g:Profiler's `fdr` (Benjamini-Hochberg
+    # under another name) or BH, and makes the notice a warning.
+    if (!is.null(significance_rule)) {
+        unused <- !isTRUE(parameters$correction_method %in% c("fdr", "BH"))
+        notify(paste0(ENRICHMENT_SIGNIFICANCE_RULES$notice[ENRICHMENT_SIGNIFICANCE_RULES$rule == significance_rule],
+            if (unused) sprintf(" The selected correction, %s, applies to g:Profiler only and was not used.",
+                parameters$correction_method)), if (unused) "warning" else "message", 8)
+    }
+    if (!is.null(reference)) {
+        run_arguments$id_source <- "reference"
+        run_arguments$reference_mapping_sha256 <- reference$mapping_sha256
+        run_arguments$go_table_sha256 <- reference$annotation$go_table_sha256
+        outcomes <- c(outcomes, list(reference_mapping_groups = reference$counts))
     }
     if (filter_enabled) {
         run_arguments$organism_filter_enabled <- TRUE
@@ -977,7 +1067,31 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     if (!is.null(go_propagation) && !identical(go_propagation, "none")) {
         outcomes <- c(outcomes, workflowEnrichmentGoOutcomes(annotations, go_propagation, da_results, columns$idColumn))
     }
+    # KIT-203 (OD10): the rule applied, provenance only (not identity), last so positional reads keep their entries.
+    if (!is.null(significance_rule)) outcomes <- c(outcomes, list(significance_rule = significance_rule))
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
+    # KIT-208 (VAL-147 (1), SD-1 (a)): a g:Profiler list whose proteins all lack a gene name was not sent; the run says
+    # so once and records it, so that its empty result is not read as "no term enriched". Absent otherwise.
+    # KIT-215 (VAL-170): a GO list none of whose proteins has an annotation the analysis tests likewise, in its own
+    # sentence; each route has one reason, so the route names it.
+    not_tested <- declared$not_tested
+    if (NROW(not_tested) > 0L) {
+        go <- identical(method$method, "clusterprofiler")
+        notify(paste(if (go) sprintf(paste("Comparison %s, %s: none of its %d proteins has a Gene Ontology annotation",
+            "that this analysis tests, so this list was not tested (its empty result does not mean that no term is",
+            "enriched)."), not_tested$comparison, not_tested$direction, not_tested$proteins) else
+            sprintf(paste("Comparison %s, %s: none of its %d proteins has a gene name, so this list was not",
+            "sent to g:Profiler and was not tested (its empty result does not mean that no term is enriched)."),
+            not_tested$comparison, not_tested$direction, not_tested$proteins), collapse = " "), "warning", NULL)
+        outcomes$enrichment_lists_not_tested <- paste(not_tested$comparison, not_tested$direction, sep = ": ",
+            collapse = "; ")
+    }
+    # KIT-208 (VAL-147 (3), SD-3 (c)): on the g:Profiler route, the proteins of each comparison without a gene name,
+    # which leave its lists and its background; recorded only when there are some.
+    if (identical(method$method, "gprofiler2")) {
+        outcomes$enrichment_unnamed_proteins <- workflowEnrichmentUnnamedProteins(da_results, contrasts_tbl,
+            columns$idColumn)
+    }
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
     # KIT-018: each contrast's result tables are also saved display tables (content-addressed).
@@ -1004,7 +1118,7 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid)
     updateProtEnrichStateManagerUiParams(workflowData = workflow, storedUiParams = ui_parameters$storedUiParams)
     saved <- saveWorkflowEnrichmentState(workflow, config, stamped, declared$parameters, method, parameters,
-        directories$pathwayDir, outcomes = outcomes)
+        directories$pathwayDir, outcomes = outcomes, not_tested = declared$not_tested, no_list = declared$no_list)
     if (isTRUE(saved$saved)) {
         status <- workflow$tab_status
         status[[config$status_key]] <- "complete"
@@ -1015,10 +1129,14 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
             saved$warning %||% "unknown error"), "warning", 10)
     }
     progress(1.0, "Complete!")
-    list(results = results, method = method, contrasts = contrast_results, selected = shown,
+    out <- list(results = results, method = method, contrasts = contrast_results, selected = shown,
         raw_contrast = selection$rawContrastName, contrasts_tbl = contrasts_tbl, pathway_dir = directories$pathwayDir,
         annotation_match = matching$annotationMatchResults, organism_filter = organism_filter, service = declared$service,
         reference = declared$reference, parameters = declared$parameters, saved = saved)
+    # KIT-215: the lists not tested and the directions with no list, for the tab; absent when there are none.
+    out$not_tested <- declared$not_tested
+    out$no_list <- declared$no_list
+    out
 }
 
 #' The GO parent-term outcomes of a propagated clusterProfiler run (KIT-173)
@@ -1074,18 +1192,24 @@ workflowEnrichmentGoOutcomes <- function(annotations, go_propagation, da_results
 #' @param outcomes Named list of provenance-only values of the run (the organism filter's applied flag and row
 #'   counts; the selected correction when the backend applied another, A107-03; the sha256 of the annotation table and
 #'   of each contrast's DA table the run read, KIT-119 A107-06), or NULL for none.
+#' @param not_tested,no_list KIT-215: the lists not tested and the directions with no list
+#'   (`diaEnrichmentNoIdentifiers`), committed in the config beside `outcomes` only when they have rows (display
+#'   only: neither identity nor record).
 #' @return `list(attempted, saved, warning)`.
 #' @noRd
 saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,
-    outcomes = NULL) {
+    outcomes = NULL, not_tested = NULL, no_list = NULL) {
     manager <- workflow$state_manager
     warning_message <- NULL
     saved <- FALSE
     tryCatch({
         results <- portableWorkflowEnrichmentResults(results) # F107-05
         entry <- workflowOperationEntry(config$operation()$name)
+        # KIT-167: the reference identifiers' three values are recorded after the declaration's names when the run
+        # used them (a run without them records exactly what it did before), so that its replay checks them.
         setWorkflowStepProvenance(manager, entry$name, entry$default_variant,
-            intersect(entry$parameters, names(declared)), entry$declaration$fixed, values = declared)
+            c(intersect(entry$parameters, names(declared)), intersect(referenceEnrichmentNames, names(declared))),
+            entry$declaration$fixed, values = declared)
         saveDIAOwnerState(manager,
             state_name = config$state_name,
             s4_data_object = results,
@@ -1098,7 +1222,9 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
                 q_cutoff = parameters$q_cutoff,
                 organism_taxid = parameters$organism_taxid,
                 pathway_dir = pathway_dir),
-                if (length(outcomes)) list(outcomes = outcomes)),
+                if (length(outcomes)) list(outcomes = outcomes),
+                if (NROW(not_tested) > 0L) list(not_tested = not_tested),
+                if (NROW(no_list) > 0L) list(no_list = no_list)),
             description = paste("Enrichment analysis completed using", method$method, "for contrast:",
                 parameters$selected_contrast))
         saved <- TRUE
@@ -1189,7 +1315,8 @@ portableWorkflowEnrichmentResults <- function(results) {
 #' @param manager The session owner.
 #' @param config The omic's `enrichment` group (`state_name`).
 #' @return NULL when the state is not in the history or is not an `EnrichmentResults`; otherwise
-#'   `list(all_enrichment_results, enrichment_results_full, method)`.
+#'   `list(all_enrichment_results, enrichment_results_full, method)`, with KIT-215's `not_tested` and `no_list` from the
+#'   state's config when it carries them.
 #' @noRd
 restoreWorkflowEnrichment <- function(manager, config) {
     if (is.null(manager) || !config$state_name %in% unlist(diaStateHistory(manager))) return(NULL)
@@ -1203,7 +1330,18 @@ restoreWorkflowEnrichment <- function(manager, config) {
         contrast_results[[contrast]]$clusterprofiler_results_table <- saveDIADisplayTable(manager,
             contrast_results[[contrast]]$clusterprofiler_results)
     }
-    list(all_enrichment_results = contrast_results, enrichment_results_full = results, method = method)
+    out <- list(all_enrichment_results = contrast_results, enrichment_results_full = results, method = method)
+    # KIT-215: the record's lists not tested and directions with no list (absent from a record without them).
+    # A state stored as a whole legacy object has no component metadata and carries neither (as the record writer
+    # reads it, `buildWorkflowAnalysisRecord`).
+    reference <- getWorkflowStateReference(manager, config$state_name)
+    if (!is.null(reference)) {
+        recorded <- tryCatch(readComponentMetadata(manager, reference)$config,
+            saved_entity_unsupported = function(e) NULL)
+        out$not_tested <- recorded$not_tested
+        out$no_list <- recorded$no_list
+    }
+    out
 }
 
 #' Replay a recorded enrichment step after the replayed DA (KIT-107 D5; F-16)
@@ -1253,13 +1391,25 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
     workflow$contrasts_tbl <- contrasts
     workflow$tab_status <- list()
     run_paths <- utils::modifyList(as.list(paths), list(da_output_dir = staged$da_output_dir, pathway_dir = pathway_dir))
-    run <- runWorkflowEnrichment(workflow, config, manifest, list(selected_contrast = contrasts$friendly_names[[1L]],
+    run_parameters <- list(selected_contrast = contrasts$friendly_names[[1L]],
         organism_taxid = format(parameters$taxon_id, scientific = FALSE, trim = TRUE), up_cutoff = parameters$up_cutoff,
         down_cutoff = parameters$down_cutoff, q_cutoff = parameters$q_cutoff,
         correction_method = parameters$correction_method,
         enable_organism_filter = isTRUE(parameters$organism_filter_enabled),
         # KIT-173: a record made before parent terms, or without them, replays without them.
-        go_propagation = parameters$go_propagation %||% "none"), run_paths)
+        go_propagation = parameters$go_propagation %||% "none",
+        # KIT-203 (OD6): a record made before the rule, or with the q-value, replays with the q-value.
+        significance_rule = parameters$significance_rule %||% "qvalue")
+    # KIT-167: a step recorded with the reference identifiers replays with them, the tool switched on for this step
+    # only; its recorded mapping and GO-table SHA-256 are then compared below like every declared value.
+    reference_ids <- identical(parameters$id_source, "reference")
+    if (reference_ids) run_parameters$id_source <- "reference"
+    if (reference_ids) {
+        previous <- options(MultiScholaR.reference_mapping = TRUE)
+        on.exit(options(previous), add = TRUE)
+    }
+    run <- runWorkflowEnrichment(workflow, config, manifest, run_parameters, run_paths)
+    if (reference_ids) options(previous)
     # The record holds each value through its JSON encoding; the produced values are compared in the same form.
     as_recorded <- function(value) decodeWorkflowRecordValue(jsonlite::fromJSON(jsonlite::toJSON(
         encodeWorkflowRecordValue(value), auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),

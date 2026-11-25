@@ -267,9 +267,10 @@ ExtractStudyParametersTMT <- function(study_params) {
     # RUV Status (check both sections for backwards compatibility)
     ruv_applied = if (!is.null(ruv_batch_correction$"Status")) {
       tolower(trimws(ruv_batch_correction$"Status")) != "not applied"
+    } else if (!is.null(ruv_results$"Best k value")) {
+      TRUE
     } else {
-      # Default to TRUE for backwards compatibility with old sessions
-      !is.null(ruv_results$"Best k value")
+      NA # KIT-227: neither section: not recorded (was FALSE, printed as 'not applied')
     },
     
     # RUV Auto-optimisation Results (only populated when RUV was applied)
@@ -279,6 +280,7 @@ ExtractStudyParametersTMT <- function(study_params) {
     composite_score = ruv_results$"Composite score", 
     num_neg_ctrl = ruv_results$"Control genes",
     ruv_grouping_variable = ruv_results$"RUV grouping variable",
+    ruv_separation_metric = ruv_results$"Separation metric", # KIT-227: 'manual' for a manual run
     
     # TMT Protein-level filtering parameters (FIXED: explicit NULL check to handle 0 values)
     groupwise_percentage_cutoff = if(is.null(s4_prot_filt$groupwise_percentage_cutoff) || is.na(s4_prot_filt$groupwise_percentage_cutoff)) 60 else as.numeric(s4_prot_filt$groupwise_percentage_cutoff),
@@ -467,7 +469,7 @@ FormatMethodDetailsTMT <- function(numbers) {
     ""
   }
   
-  ruv_count_text <- if(!is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) {
+  ruv_count_text <- if(isTRUE(numbers$ruv_applied) && !is.null(numbers$protein_count_ruv) && !is.na(numbers$protein_count_ruv)) { # KIT-227: only after RUV
     paste0(" Following RUV-III batch correction and subsequent missing value cleanup, ", 
            numbers$protein_count_ruv, " proteins were retained for differential abundance analysis.")
   } else {
@@ -484,22 +486,70 @@ FormatMethodDetailsTMT <- function(numbers) {
     if (n %% 100 %in% 11:13) "th" else switch(as.character(n %% 10), "1" = "st", "2" = "nd", "3" = "rd", "th") }
   intensity_cutoff_suffix <- ordinal_suffix(intensity_cutoff_pct)
   
-  # Generate RUV text conditionally based on whether RUV was applied
-  ruv_applied_val <- numbers$ruv_applied %||% TRUE  # Default to TRUE for backwards compatibility
+  # KIT-227: the RUV sentence states what was run, by the recorded state: applied, not applied or not recorded (the
+  # record's outcome, else the file's sections); the mode (the record's ruv_mode, else the file's separation metric),
+  # the analyst's percentage for a manual run and the grouping (the record's, else the file's). A value written as
+  # 'N/A' counts as not recorded. Automatic on the 'group' column keeps the earlier text word for word.
+  ruv_known <- function(value) !is.null(value) && length(value) == 1L && !is.na(value) &&
+    !trimws(as.character(value)) %in% c("", "N/A", "NA", "not recorded")
+  ruv_applied_val <- if (isTRUE(numbers$ruv_applied)) TRUE else if (isFALSE(numbers$ruv_applied)) FALSE else NA
+  ruv_mode_val <- if (ruv_known(numbers$record_ruv_mode) && numbers$record_ruv_mode %in% c("automatic", "manual")) {
+    numbers$record_ruv_mode
+  } else if (ruv_known(numbers$ruv_separation_metric)) {
+    if (identical(numbers$ruv_separation_metric, "manual")) "manual" else "automatic"
+  } else NA
+  ruv_pct <- if (identical(ruv_mode_val, "manual") && ruv_known(numbers$record_ruv_percentage)) numbers$record_ruv_percentage else numbers$best_percentage
+  ruv_grouping <- if (ruv_known(numbers$record_ruv_grouping)) numbers$record_ruv_grouping else numbers$ruv_grouping_variable
+  ruv_other_column <- ruv_known(ruv_grouping) && !identical(as.character(ruv_grouping), "group")
+  ruv_groups <- if (!ruv_known(ruv_grouping)) "the sample groups (the design column used is not recorded)" else
+    if (ruv_other_column) paste0("the sample groups given by the design column '", ruv_grouping, "'") else "biological groups"
+  ruv_controls <- if (ruv_known(numbers$num_neg_ctrl)) paste0(numbers$num_neg_ctrl, " proteins") else "number of proteins not recorded"
+  ruv_share <- if (ruv_known(numbers$num_neg_ctrl)) paste0("(not recorded; ", numbers$num_neg_ctrl, " proteins were used)") else
+    "(not recorded, nor the number of proteins used)"
+  ruv_k_val <- if (ruv_known(numbers$best_k)) numbers$best_k else "an unrecorded number of"
+  ruv_detail <- if (identical(ruv_mode_val, "automatic")) {
+    if (ruv_known(ruv_pct)) glue::glue(
+      "For this study, an automatic ",
+      "optimisation process was run, which identified that using {ruv_pct}% of ",
+      "features as empirical negative controls ({ruv_controls}) ",
+      "provided the best separation of {ruv_groups}. Based on this, ",
+      "{ruv_k_val} unwanted components were selected for removal."
+    ) else glue::glue(
+      "For this study, an automatic optimisation process was run, which selected the share of features used as ",
+      "empirical negative controls {ruv_share} that provided the best separation of {ruv_groups}. Based on this, ",
+      "{ruv_k_val} unwanted components were selected for removal."
+    )
+  } else if (identical(ruv_mode_val, "manual")) {
+    paste0(if (ruv_known(ruv_pct)) glue::glue(
+      "For this study, no automatic optimisation was run: the analyst chose to use {ruv_pct}% of features as empirical ",
+      "negative controls ({ruv_controls}) and to remove {ruv_k_val} unwanted components."
+    ) else glue::glue(
+      "For this study, no automatic optimisation was run: the analyst set the share of features used as empirical ",
+      "negative controls {ruv_share} and chose to remove {ruv_k_val} unwanted components."
+    ), if (ruv_other_column) paste0(" The controls were chosen by comparing ", ruv_groups, ".") else "")
+  } else {
+    if (ruv_known(ruv_pct)) glue::glue(
+      "For this study, {ruv_pct}% of features were used as empirical negative controls ({ruv_controls}) and {ruv_k_val} ",
+      "unwanted components were removed; whether these values came from an automatic optimisation or were set by the ",
+      "analyst is not recorded."
+    ) else glue::glue(
+      "For this study, a share of features {ruv_share} served as empirical negative controls and {ruv_k_val} unwanted ",
+      "components were removed; whether these values came from an automatic optimisation or were set by the analyst ",
+      "is not recorded."
+    )
+  }
   
   ruv_text <- if (isTRUE(ruv_applied_val)) {
-    glue::glue(
+    paste0(
       "To remove batch effects from biological data, the remove unwanted variation ",
       "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
       "negative control proteins, which are proteins with little or no changes in ",
-      "protein abundances between different samples. For this study, an automatic ",
-      "optimisation process was run, which identified that using {best_pct_val}% of ",
-      "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
-      "provided the best separation of biological groups. Based on this, ",
-      "{best_k_val} unwanted components were selected for removal."
+      "protein abundances between different samples. ", ruv_detail
     )
+  } else if (isFALSE(ruv_applied_val)) {
+    "RUV-III batch correction was not applied. The analysis proceeded directly with normalised data for differential abundance analysis."
   } else {
-    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalised data for differential abundance analysis."
+    "Whether RUV-III batch correction was applied is not recorded for this analysis."
   }
   
   # NEW: Generate mixed species FASTA text BEFORE glue block
@@ -591,9 +641,10 @@ Test conditions, deviations from the method and critical reagent details: [to be
 FormatResults <- function(correlation_data,
                          figures_dir = file.path(results_dir, "protein_qc"),
                          ruv_applied = TRUE) {
+  ruv_state <- if (isTRUE(ruv_applied)) TRUE else if (isFALSE(ruv_applied)) FALSE else NA # KIT-227: NA = not recorded
   # KIT-055: the text describes what Figure 1 contains; it makes no claim about what this dataset's panels show.
   # Interpretation belongs to the analyst (see "Analyst interpretation").
-  if (isTRUE(ruv_applied)) {
+  if (isTRUE(ruv_state)) {
     glue::glue("
 Quality Control  
 
@@ -605,6 +656,21 @@ after RUVIII-C correction (right column: c, f, i, l).
 • Density plots (panels d-f): the distribution of protein intensities per sample.  
 • Relative log expression (panels g-i): per-sample deviations from the protein-wise median.  
 • Pearson correlation (panels j-l): the distribution of between-sample correlations within groups.  
+
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
+.trim = FALSE)
+  } else if (is.na(ruv_state)) {
+    # KIT-227: RUV not recorded: the figure's column layout is not known, so no stages are named.
+    glue::glue("
+Quality Control  
+
+Figure 1 shows four quality-control views at each stage of processing drawn for this analysis. Whether RUV-III correction was applied is not recorded for this analysis.  
+• Principal component analysis: samples plotted on the first two principal components,
+  coloured by experimental group.  
+• Density plots: the distribution of protein intensities per sample.  
+• Relative log expression: per-sample deviations from the protein-wise median.  
+• Pearson correlation: the distribution of between-sample correlations within groups.  
 
 Whether technical variation was reduced and biological signal retained is assessed from these panels
 by the analyst; this report draws no automated conclusion from them. ",
@@ -726,6 +792,9 @@ FormatGOEnrichment <- function(numbers) {
   # KIT-173: the run records its method as "gprofiler2" or "clusterprofiler"; "gprofiler" is the legacy literal.
   is_gprofiler <- isTRUE(database_source_val %in% c("gprofiler2", "gprofiler"))
   is_clusterprofiler <- identical(database_source_val, "clusterprofiler")
+  # KIT-205 (VAL-129 (2)): the background rule the run recorded. A record without it was made before the rule, with
+  # every row of each comparison's table; a report without a record describes the current rule (the tested proteins).
+  every_row <- isTRUE(numbers$record_present) && !identical(numbers$enrichment_background %||% NA, "tested")
 
   enrichment_tool_text <- if (database_source_val == "gprofiler") {
     # g:Profiler text
@@ -770,13 +839,43 @@ FormatGOEnrichment <- function(numbers) {
     }
     background_clause <- if (propagated) " (on a run with parent terms, at least one below the three top-level terms)" else ""
     parameter_bullets <- lfc_text
+    # KIT-203: the significance rule the run recorded (declared, else the rule it recorded as applied); a record
+    # carrying neither was made with the q-value.
+    family_rule <- identical(numbers$enrichment_significance_rule %||% NA, "bh_whole_family")
+    family_members <- if (every_row) "annotated proteins of that comparison's differential-abundance table" else
+      "annotated tested proteins"
+    family_text <- if (family_rule) paste0("terms with 10 to 500 ", family_members, ", whether or not a listed ",
+      "protein falls in them (terms without one enter with p = 1).") else paste0("terms with 10 to 500 ",
+      family_members, " and at least one protein in the list.")
+    background_text <- if (every_row) paste0("The background was every protein listed in that comparison's ",
+      "differential-abundance table, including any without a p-value, with at least one Gene Ontology annotation") else
+      paste0("The background was the proteins tested in that comparison (those with a p-value) with at least one Gene ",
+      "Ontology annotation")
+    flag_text <- if (family_rule) glue::glue("A term was called significant when its Benjamini-Hochberg adjusted ",
+      "p-value over that family was below {q_val_cutoff_val}; Storey's q-value and the Benjamini-Hochberg value over ",
+      "the terms with at least one listed protein are also given in the results table.") else
+      glue::glue("A term was called significant when its q-value (Storey, 2002) was below {q_val_cutoff_val}; ",
+      "Benjamini-Hochberg adjusted p-values are also given in the results table.")
+    # The measured limits: after the flag sentence under the default, after the paragraph for the q-value.
+    limits_text <- if (family_rule) paste0(" In simulations through this route at a cutoff of 0.05 (lists drawn at ",
+      "random from the reviewed UniProt proteomes of E. coli K-12, a 2,000-protein subset of it, and S. cerevisiae, ",
+      "the last run through this route as a stand-in; lists of 25, 126 and 400 proteins; with parent terms over the ",
+      "five relations and without them; 2,000 random lists per setting), 1.0 % to 2.5 % of random lists had any ",
+      "significant term, and on lists of 126 built around one process the mean false discovery proportion was at ",
+      "most 1.7 % (in a design where the other listed proteins avoid that process, which tends to lower false calls). ",
+      "Not simulated: down lists, other cutoffs, lists of proteins that change together as in real data, other ",
+      "organisms or annotation sources, and parent terms over is a and part of only. Transcriptomics tests sets of 5 ",
+      "to 500 genes; this route 10 to 500 proteins.") else paste0(" Because terms without a list protein are left ",
+      "out before the adjustment, the estimated share of true null terms falls far below 1 on many random lists; on ",
+      "simulated random lists at a cutoff of 0.05 the share of lists with any significant term was 1.7 % to 42.9 % ",
+      "depending on the proteome, list size and parent terms (failing a 7.5 % line in 6 of 18 settings, two of them ",
+      "with parent terms, both with lists of 25 proteins), against 1.6 % to 8.2 % for Benjamini-Hochberg over the ",
+      "same terms.")
     enrichment_tool_text <- glue::glue("{go_sets_text}Over-representation was tested with clusterProfiler (Yu et al., ",
       "2012) against Gene Ontology annotations from UniProt. Biological process, molecular function and cellular ",
-      "component terms were tested together as one family per comparison and direction: terms with 10 to 500 ",
-      "annotated measured proteins and at least one protein in the list. A term was called significant when its ",
-      "q-value (Storey, 2002) was below {q_val_cutoff_val}; Benjamini-Hochberg adjusted p-values are also given in the ",
-      "results table. The background was the measured proteins with at least one Gene Ontology ",
-      "annotation{background_clause}.")
+      "component terms were tested together as one family per comparison and direction: {family_text} {flag_text}",
+      "{if (family_rule) limits_text else ''} {background_text}{background_clause}.",
+      "{if (family_rule) '' else limits_text}")
   } else if (is_gprofiler) {
     # KIT-173: the corrected g:Profiler paragraph; the correction is named from the analysis record when there is one.
     correction_val <- numbers$enrichment_correction_method %||% NA
@@ -788,14 +887,36 @@ FormatGOEnrichment <- function(numbers) {
     } else {
       "with the correction selected for the run (g:SCS unless the Benjamini-Hochberg false discovery rate was chosen)"
     }
+    # KIT-208 (E-7): a protein without a gene name is never sent as its accession; it leaves the lists and background.
+    named_clause <- paste0("the first gene name of each protein, from the protein annotation or, where the annotation ",
+      "gives none, from the identifier table; proteins without a gene name were left out of the lists and the background")
     parameter_bullets <- paste0(lfc_text, "\n",
       "• A term was called significant when its adjusted p-value was below ", q_val_cutoff_val, ".", "\n",
-      "• The background was the identifiers of each comparison's differential-abundance table (gene names where the ",
-      "table has them, otherwise protein accessions) that g:Profiler recognises (a custom background).")
+      if (every_row) paste0("• The background was the identifiers of each comparison's differential-abundance table (",
+        named_clause, ") that g:Profiler recognises (a custom background).") else
+        paste0("• The background was the identifiers of the proteins tested in each comparison (those with a p-value ",
+        "in its differential-abundance table; ", named_clause, ") that g:Profiler recognises (a custom background)."))
     enrichment_tool_text <- glue::glue("The enrichment analysis was performed with g:Profiler (Kolberg et al., 2023) ",
       "through the gprofiler2 R package (Kolberg et al., 2020). Gene Ontology biological process, molecular function ",
       "and cellular component terms, KEGG pathways and Reactome pathways were tested, each data source as its own ",
-      "family, {correction_text}.")
+      "family, {correction_text}. On g:Profiler, a list for which no term is significant cannot be told apart from ",
+      "a list in which the service recognised none of the gene names.") # KIT-215 (VAL-170 (6))
+  }
+  # KIT-215 (VAL-170): the lists the run recorded as not tested, with the route's reason (each route has one); printed
+  # only when the record holds the outcome (the report map turns an absent outcome into "not recorded").
+  not_tested_val <- numbers$enrichment_lists_not_tested
+  if ((is_clusterprofiler || is_gprofiler) && is.character(not_tested_val) && length(not_tested_val) == 1L &&
+    !is.na(not_tested_val) && nzchar(not_tested_val) && !identical(not_tested_val, "not recorded")) {
+    not_tested_lists <- sub("^(.*): (up|down)$", "\\1 (\\2-regulated)",
+      strsplit(not_tested_val, "; ", fixed = TRUE)[[1L]])
+    not_tested_reason <- if (is_clusterprofiler) {
+      "none of its proteins has a Gene Ontology annotation that this analysis tests"
+    } else {
+      "none of its proteins has a gene name, and g:Profiler tests gene names"
+    }
+    parameter_bullets <- paste0(parameter_bullets, "\n", "• Not tested: ", paste(not_tested_lists, collapse = "; "),
+      ": ", not_tested_reason, ". A list that was not tested has no result; its absence from the results does not ",
+      "mean that no term is enriched.")
   }
   
   glue::glue("
@@ -890,6 +1011,19 @@ AnalyzeSamples <- function(design_matrix, study_params) {
     # values it carries; the variables it does not carry keep the report's defaults, named in the methods text.
     params_extracted <- MultiScholaR:::workflowRecordReportParameters(file.path(report_source_dir, "analysis_record.json"),
       params_extracted, study_params)
+    # KIT-227: the RUV step's own parameters (stored encoded; the overlay does not map them): the mode, the analyst's
+    # percentage and the grouping the RUV sentence states.
+    record_ruv_path <- file.path(report_source_dir, "analysis_record.json")
+    record_ruv_steps <- if (file.exists(record_ruv_path)) Filter(function(step) identical(step$operation, "normalization-ruv"),
+      jsonlite::read_json(record_ruv_path, simplifyVector = FALSE)$steps) else list()
+    record_ruv_parameter <- function(name) {
+      hit <- if (length(record_ruv_steps)) Filter(function(parameter) identical(parameter$name, name),
+        record_ruv_steps[[length(record_ruv_steps)]]$parameters) else list()
+      if (length(hit)) MultiScholaR:::decodeWorkflowRecordValue(hit[[1L]]$value) else NULL
+    }
+    params_extracted$record_ruv_mode <- record_ruv_parameter("ruv_mode")
+    params_extracted$record_ruv_percentage <- record_ruv_parameter("ruv_percentage")
+    params_extracted$record_ruv_grouping <- record_ruv_parameter("grouping")
     
     # Combine base counts/metrics with extracted params
     final_numbers <- c(numbers, params_extracted)
@@ -934,7 +1068,11 @@ FormatDESummaryTable <- function(filepath) {
       dplyr::pull(text) %>%
       paste(collapse = " ")
       
-    return(paste("The number of significant differentially expressed proteins is summarised in Figure 2.", summary_text))
+    # KIT-220 (VAL-191 (7)): the sentence states the threshold its counts were made at; a table written before the
+    # q_threshold column existed was counted at 0.05.
+    q_threshold <- if ("q_threshold" %in% names(data)) paste(unique(data$q_threshold), collapse = ", ") else "0.05"
+    return(paste0("The number of significant differentially expressed proteins is summarised in Figure 2 (q-value < ",
+      q_threshold, "). ", summary_text))
   }, error = function(e) {
     return(paste("Error reading DE summary table:", e$message))
   })
@@ -999,7 +1137,7 @@ Main <- function() {
       method_details = paste0(FormatMethodDetailsTMT(analysis_results$numbers),
         if (is.character(analysis_results$numbers$record_defaults_note) && !is.na(analysis_results$numbers$record_defaults_note))
           analysis_results$numbers$record_defaults_note else ""),
-      results        = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% TRUE),
+      results        = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% NA), # KIT-227: NA = not recorded
       interpretation = FormatAnalystInterpretation(),
       de_details     = FormatDEDetails(analysis_results$numbers),
       de_summary     = de_summary_text,

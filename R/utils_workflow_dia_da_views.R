@@ -44,15 +44,18 @@ diaDaStatusView <- function(analysisComplete, contrastsAvailable, texts) {
 }
 
 #' The interactive volcano: the DA-time page, or why it is absent (mod_prot_da_render_volcano.R:17-28 at fe97aac1).
+#' KIT-220 (VAL-191 (6)): coloured at the run's fold-change cutoff, as the published page (`lfcCutoff`, the box, only
+#' for a result that records none).
 #' @noRd
-diaDaVolcanoGlimmaView <- function(daResultsList, selectedContrast, daQValThresh, s4Object, outputDir) {
+diaDaVolcanoGlimmaView <- function(daResultsList, selectedContrast, daQValThresh, s4Object, outputDir, lfcCutoff = NULL) {
     shiny::req(selectedContrast, daResultsList)
     generateProtDAVolcanoPlotGlimma(
         da_results_list = daResultsList,
         selected_contrast = selectedContrast,
         da_q_val_thresh = daQValThresh,
         args_row_id = diaGuiProteinKey(s4Object),
-        output_dir = outputDir
+        output_dir = outputDir,
+        lfc_thresh = diaRunLfcCutoff(daResultsList, lfcCutoff)
     ) %||% shiny::p(diaInteractiveVolcanoUnavailableText(selectedContrast)) # KIT-101 F-08: say why it is absent
 }
 
@@ -284,10 +287,16 @@ diaDaSummaryStatsView <- function(daResultsList, tableContrast, daQValThresh, lf
             if (isDIAResultManifest(daResultsList)) {
                 counts <- readDIAResultPage(daResultsList, tableContrast,
                     qvalue = daQValThresh, lfc = lfcCutoff, limit = 1L)$counts
-                return(paste(sprintf("Total genes: %d", counts$total),
+                # KIT-220 E-7: the interactive volcano follows the run's fold-change cutoff (SD-6 (a)); a box that
+                # differs from it is said beside the summary.
+                run_lfc <- daResultsList$parameters$lfc
+                note <- if (!is.null(run_lfc) && !isTRUE(all.equal(as.numeric(run_lfc), as.numeric(lfcCutoff))))
+                    sprintf(paste("The fold-change cutoff box (%.2f) differs from the cutoff the analysis ran at (%.2f);",
+                        "the interactive volcano plot uses the analysis's cutoff."), lfcCutoff, as.numeric(run_lfc))
+                return(paste(c(sprintf("Total genes: %d", counts$total),
                     sprintf("Significant (q < %.3f): %d", daQValThresh, counts$significant),
                     sprintf("Up-regulated: %d", counts$up), sprintf("Down-regulated: %d", counts$down),
-                    sprintf("Fold-change cutoff: %.2f", lfcCutoff), sep = "\n"))
+                    sprintf("Fold-change cutoff: %.2f", lfcCutoff), note), collapse = "\n"))
             }
             if (!is.null(daResultsList$da_proteins_long)) {
                 # Filter for selected contrast

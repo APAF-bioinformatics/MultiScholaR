@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-gui-entry-proteomics.R	189	4	0	0	0	1135.8	failed

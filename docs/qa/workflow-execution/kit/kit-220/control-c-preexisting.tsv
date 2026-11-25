@@ -1,0 +1,25 @@
+file	key (base dump differs from the stored oracle at 185ebf75; unchanged by KIT-220)
+prot_dia.json	/summary_copy/artifacts/integration/proteomics/features_proteomics.parquet
+prot_dia.json	/summary_copy/artifacts/integration/proteomics/features_proteomics.tsv
+prot_dia.json	/summary_copy/artifacts/integration/proteomics/matrix_proteomics.parquet
+prot_dia.json	/summary_copy/artifacts/integration/proteomics/matrix_proteomics.tsv
+prot_dia.json	/summary_copy/artifacts/integration/proteomics/samples.parquet
+prot_dia.json	/summary_copy/artifacts/integration/proteomics/samples.tsv
+prot_dia.json	/summary_export/artifacts/integration/proteomics/features_proteomics.parquet
+prot_dia.json	/summary_export/artifacts/integration/proteomics/features_proteomics.tsv
+prot_dia.json	/summary_export/artifacts/integration/proteomics/matrix_proteomics.parquet
+prot_dia.json	/summary_export/artifacts/integration/proteomics/matrix_proteomics.tsv
+prot_dia.json	/summary_export/artifacts/integration/proteomics/samples.parquet
+prot_dia.json	/summary_export/artifacts/integration/proteomics/samples.tsv
+prot_dia.json	/summary_report/artifacts/integration/proteomics/features_proteomics.parquet
+prot_dia.json	/summary_report/artifacts/integration/proteomics/features_proteomics.tsv
+prot_dia.json	/summary_report/artifacts/integration/proteomics/matrix_proteomics.parquet
+prot_dia.json	/summary_report/artifacts/integration/proteomics/matrix_proteomics.tsv
+prot_dia.json	/summary_report/artifacts/integration/proteomics/samples.parquet
+prot_dia.json	/summary_report/artifacts/integration/proteomics/samples.tsv
+prot_dia.json	/summary_save/artifacts/integration/proteomics/features_proteomics.parquet
+prot_dia.json	/summary_save/artifacts/integration/proteomics/features_proteomics.tsv
+prot_dia.json	/summary_save/artifacts/integration/proteomics/matrix_proteomics.parquet
+prot_dia.json	/summary_save/artifacts/integration/proteomics/matrix_proteomics.tsv
+prot_dia.json	/summary_save/artifacts/integration/proteomics/samples.parquet
+prot_dia.json	/summary_save/artifacts/integration/proteomics/samples.tsv

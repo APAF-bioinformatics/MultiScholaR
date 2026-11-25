@@ -1,0 +1,7 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-p1k.R	P1K: the 170 earlier cells, their seeds and the pinned coverage table are unchanged	5	5	0	0	0	0	0.235
+test-p1k.R	P1K: the P1 cell has its own index after DI10K's; T-COV's catalogue does not hold it	7	2	5	0	0	0	0.294
+test-p1k.R	P1K: the effect is the rank cells' rule on the one contrast; the pooled rule unchanged	1	1	0	0	1	0	96.275
+test-p1k.R	P1K: 40 positives of 4,840 on one contrast at the one-contrast scale; pauc_diff on it	0	0	0	0	1	0	0.075
+test-p1k.R	P1K: the existing rank and C4e cells dispatch as before	8	8	0	0	0	0	1.543
+test-p1k.R	P1K: a plan naming the cell runs it with the plan's generator in the chunk tasks	0	0	0	0	1	0	0.056

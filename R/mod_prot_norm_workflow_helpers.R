@@ -92,6 +92,11 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     if (!mode %in% c("covariates", "correction")) stop("the RUV mode must be covariates, correction or skip")
     settings <- c(list(ruv_mode = mode, color_variable = input$color_variable, shape_variable = input$shape_variable),
       protNormDiaRuvDesignRules(choice))
+    # KIT-174 (a), VAL-29: the RUV grouping warning (on this route declared technical replicates
+    # are the replicate sets under every design).
+    omicNormWarnRuvGrouping(workflowData, getRuvGroupingVariableFn(), mode, choice$ruv_design,
+      technical = omicNormRuvHeadTechnicalReplicates(manager),
+      showNotificationFn = showNotificationFn)
     finish <- function(accepted) finishProtNormRuvCovariates(accepted, mode, output, workflowData, normData, renderTextFn,
       showNotificationFn, messageFn)
     # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
@@ -476,11 +481,16 @@ runProtNormNormalizationWorkflow <- function(
   buildCompletionNotificationFn = buildProtNormCompletionNotification,
   showNotificationFn = shiny::showNotification,
   handleErrorFn = handleProtNormNormalizationError,
-  messageFn = message
+  messageFn = message,
+  generatePreNormalizationQcFn = NULL
 ) {
   return(tryCatch({
     settings <- resolveProtNormReferenceSettings(input)
     if (identical(workflowData$state_manager$workflow_type, "DIA_LIMPA")) {
+      # KIT-182 (VAL-91 D1): a table to which quality control was applied after normalisation (a session saved before
+      # the fix) is not designated.
+      withDIAStateScope(workflowData$state_manager, function()
+        assertDIALimpaDesignationNotNormalised(workflowData$state_manager, normData))
       # KIT-041: the route's normalisation ran in the protein QC stage; RUV covariates follow the correlation step.
       pass_through <- function() {
         completed <- runDIAReferenceLimpaNormalisationPassThrough(settings, workflowData, normData, generatePostNormalizationQcFn)
@@ -493,21 +503,32 @@ runProtNormNormalizationWorkflow <- function(
       return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through,
         function(e) handleErrorFn(error = e)))
     }
-    # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice (the classic routes' table).
-    settings <- applyProtNormRuvDesign(settings, omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics",
-      workflowData$state_manager$workflow_type)))
-    recordProtNormMethod(workflowData, settings$norm_method)
-    finish <- function(completed) finishProtNormNormalization(completed, settings, workflowData, normData,
-      buildCompletionNotificationFn, showNotificationFn, messageFn)
-    # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
-    runner <- workflowOmicsManagedActions("proteomics")
-    if (!is.null(runner)) return(dispatchProtNormNormalization(runner, settings, workflowData, normData, experimentPaths,
-      omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
-      finish, function(e) handleErrorFn(error = e)))
-    completed <- runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
-      omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
-      getRuvGroupingVariableFn)
-    finish(completed)
+    # KIT-182: the request runs synchronously here on both paths; when the run reads another table than the previous
+    # run, its classed message is shown as the tab's notice.
+    withCallingHandlers({
+      # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice (the classic routes' table).
+      route <- workflowData$state_manager$workflow_type
+      choice <- omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics", route))
+      settings <- applyProtNormRuvDesign(settings, choice)
+      # KIT-174 (a), VAL-29: the RUV grouping warning, once the mode and the design are known.
+      omicNormWarnRuvGrouping(workflowData, getRuvGroupingVariableFn(), settings$ruv_mode,
+        choice$ruv_design, classic = TRUE, showNotificationFn = showNotificationFn,
+        technical = omicNormRuvHeadTechnicalReplicates(workflowData$state_manager))
+      recordProtNormMethod(workflowData, settings$norm_method)
+      finish <- function(completed) finishProtNormNormalization(completed, settings, workflowData, normData,
+        buildCompletionNotificationFn, showNotificationFn, messageFn)
+      # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
+      runner <- workflowOmicsManagedActions("proteomics")
+      if (!is.null(runner)) dispatchProtNormNormalization(runner, settings, workflowData, normData, experimentPaths,
+        omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
+        finish, function(e) handleErrorFn(error = e), preQc = generatePreNormalizationQcFn) else
+        finish(runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
+          omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
+          getRuvGroupingVariableFn, pre_qc = generatePreNormalizationQcFn))
+    }, prot_norm_input_current = function(condition) {
+      showNotificationFn(conditionMessage(condition), type = "message", duration = 10)
+      invokeRestart("muffleMessage")
+    })
   }, error = function(e) handleErrorFn(error = e)))
 }
 
@@ -565,10 +586,13 @@ warnProtNormScaleNegativeLogs <- function(completed, settings, workflowData, nor
 #' publication half writes (`writeDIACompositeFigureFiles`).
 #' @param postQc,ruvQc,grouping The module's QC callbacks and grouping function.
 #' @param finish `function(completed)`; `failed` `function(error)`.
+#' @param preQc KIT-182 (F-e): the tab's pre-normalisation figure generator. When the request's source differs from the
+#'   table the figures were drawn from (`redraw_pre`), the actions start with the source's figures, whose delivery calls
+#'   it; NULL dispatches no such action, as before.
 #' @return TRUE, invisibly, once dispatched.
 #' @noRd
 dispatchProtNormNormalization <- function(runner, settings, workflowData, normData, experimentPaths, omicType,
-                                          experimentLabel, postQc, ruvQc, grouping, finish, failed) {
+                                          experimentLabel, postQc, ruvQc, grouping, finish, failed, preQc = NULL) {
   manager <- workflowData$state_manager
   request <- withDIAStateScope(manager, function() {
     assertDIAExportReady(manager, allow_action = "normalization")
@@ -593,8 +617,11 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
     runner$run(c(protNormFiguresActions(sources, aesthetics, function(result) invisible(NULL)), list(composite)),
       failed = failed)
   }
-  runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
-    function(result) held$result <- result)), done = figures, failed = failed)
+  actions <- list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
+    function(result) held$result <- result))
+  if (isTRUE(request$redraw_pre) && is.function(preQc)) actions <- c(list(protNormFiguresAction(request$source,
+    omicNormPlotAestheticsGetter(settings)(), deliver = function(result) preQc())), actions)
+  runner$run(actions, done = figures, failed = failed)
   invisible(TRUE)
 }
 
@@ -770,6 +797,10 @@ runProtNormExportObserver <- function(
   }
 
   tryCatch({
+    # KIT-206: refused, before anything is written or left pending, when the current table is not the tab's last
+    # result. Here and not in the workflow: KIT-182's F1 (h) exports a stale head through the workflow on purpose.
+    assertProtNormExportHeadCurrent(if (is.list(workflowData) || is.environment(workflowData))
+      workflowData$state_manager, normData$correlation_filtered_obj)
     source_dir <- resolveExportSourceDirFn(experimentPaths)
 
     export_result <- runExportSessionWorkflowFn(

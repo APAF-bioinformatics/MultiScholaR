@@ -1,0 +1,551 @@
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `sum(t1$notes == k215NotTestedGo)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `sum(grepl("not tested", t1$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `t1$types[match(k215NotTestedGo, t1$notes)]` to be identical to "warning".
+  Differences:
+  `actual`:   NA       
+  `expected`: "warning"
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `t1$outcomes$enrichment_lists_not_tested` to be identical to "B_vs_A: up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_vs_A: up')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `NROW(t1$config$not_tested)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `t1$config$not_tested$contrast` to be identical to "groupB-groupA".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('groupB-groupA')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `t1$config$not_tested$direction` to be identical to "up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('up')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T1: a GO list without an annotated protein is reported once, recorded and committed
+kind: failure
+message:
+  Expected `t1$config$not_tested$route` to be identical to "clusterprofiler".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('clusterprofiler')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T2: the tab shows the GO list as not tested, with its reason
+kind: failure
+message:
+  Expected `k215Plot(...)` to be identical to `k215Placeholder(k215GoReason)`.
+  Differences:
+  actual vs expected
+  - "No up-regulated enrichment data"
+  + "Not tested: none of its 25 proteins has a Gene Ontology annotation that this analysis tests. An empty result here does not mean that no term is enriched."
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T2: the tab shows the GO list as not tested, with its reason
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Total GO terms: 48
+  Up-regulated: 0
+  Down-regulated: 48
+  
+  Results displayed in table below.
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T2b: after a reopen the tab shows the same texts
+kind: failure
+message:
+  Expected `NROW(reopened$not_tested)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T2b: after a reopen the tab shows the same texts
+kind: failure
+message:
+  Expected `k215Plot(...)` to be identical to `k215Placeholder(k215GoReason)`.
+  Differences:
+  actual vs expected
+  - "No up-regulated enrichment data"
+  + "Not tested: none of its 25 proteins has a Gene Ontology annotation that this analysis tests. An empty result here does not mean that no term is enriched."
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T2b: after a reopen the tab shows the same texts
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Total GO terms: 48
+  Up-regulated: 0
+  Down-regulated: 48
+  
+  Results displayed in table below.
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T3: the download summary has a section of the lists not tested
+kind: failure
+message:
+  Expected `grepl("## Not tested:", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  # MultiScholaR Enrichment Analysis Results
+  Date: <time>
+  Contrast: B_vs_A
+  Analysis Method: clusterprofiler
+  Organism: Taxon ID 999999
+  Taxonomy ID: 999999
+  
+  ## Analysis Parameters:
+  Up log2FC Cutoff: 0
+  Down log2FC Cutoff: 0
+  Significance cutoff: 0.05
+  Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)
+  
+  ## Results Summary:
+  gprofiler2 terms: 0
+  clusterProfileR terms: 48
+  STRING-DB networks: 0
+  
+  ## Files Included:
+  * clusterProfileR_results.tsv
+  
+  Generated by MultiScholaR Enrichment Analysis Module
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T3: the download summary has a section of the lists not tested
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  # MultiScholaR Enrichment Analysis Results
+  Date: <time>
+  Contrast: B_vs_A
+  Analysis Method: clusterprofiler
+  Organism: Taxon ID 999999
+  Taxonomy ID: 999999
+  
+  ## Analysis Parameters:
+  Up log2FC Cutoff: 0
+  Down log2FC Cutoff: 0
+  Significance cutoff: 0.05
+  Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)
+  
+  ## Results Summary:
+  gprofiler2 terms: 0
+  clusterProfileR terms: 48
+  STRING-DB networks: 0
+  
+  ## Files Included:
+  * clusterProfileR_results.tsv
+  
+  Generated by MultiScholaR Enrichment Analysis Module
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T4: a GO comparison with lists and no annotated tested protein refuses the run (C3)
+kind: failure
+message:
+  Expected `inherits(project$error, "workflow_enrichment_no_identifiers")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T4: a GO comparison with lists and no annotated tested protein refuses the run (C3)
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(conditionMessage(project$error), k215C3) at test-kit215-not-tested-lists.R:322:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(project$error)
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T4b (head): a record replayed where the comparison has no annotated tested protein is refused
+kind: failure
+message:
+  Expected `inherits(replay$error, "workflow_enrichment_no_identifiers")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  no error
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T10: a GO comparison with lists and no term of 10 to 500 annotated tested proteins refuses (C4)
+kind: failure
+message:
+  Expected `inherits(project$error, "workflow_enrichment_no_identifiers")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T10: a GO comparison with lists and no term of 10 to 500 annotated tested proteins refuses (C4)
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_match(...) at test-kit215-not-tested-lists.R:354:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(project$error)
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T5: KIT-208's g:Profiler list without a gene name is shown as not tested
+kind: failure
+message:
+  Expected `t5$config$not_tested$route` to be identical to "gprofiler2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('gprofiler2')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T5: KIT-208's g:Profiler list without a gene name is shown as not tested
+kind: failure
+message:
+  Expected `k215Plot(...)` to be identical to `k215Placeholder(k215GpReason)`.
+  Differences:
+  actual vs expected
+  - "No up-regulated enrichment data"
+  + "Not tested: none of its 25 proteins has a gene name, and g:Profiler tests gene names. An empty result here does not mean that no term is enriched."
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T5: KIT-208's g:Profiler list without a gene name is shown as not tested
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  No gprofiler2 results available.
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `go$enrichment_lists_not_tested` to be identical to "B_vs_A: up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_vs_A: up')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(k215Limits, gp_text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(k215Limits, gp_text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(k215Limits, gp_text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T6: each template states the list not tested, with the route's reason; g:Profiler its limit
+kind: failure
+message:
+  Expected `grepl(k215Limits, gp_text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7: an error inside a GO list's test refuses the run
+kind: failure
+message:
+  Expected `inherits(project$error, "workflow_enrichment_test_error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7: an error inside a GO list's test refuses the run
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(...) at test-kit215-not-tested-lists.R:424:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(project$error)
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7b: an error in a g:Profiler comparison's processing refuses the run
+kind: failure
+message:
+  Expected `inherits(project$error, "workflow_enrichment_test_error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7b: an error in a g:Profiler comparison's processing refuses the run
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(...) at test-kit215-not-tested-lists.R:434:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(project$error)
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7c: an error inside a g:Profiler list's call refuses the run
+kind: failure
+message:
+  Expected `inherits(project$error, "workflow_enrichment_test_error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T7c: an error inside a g:Profiler list's call refuses the run
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_identical(...) at test-kit215-not-tested-lists.R:448:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(project$error)
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T11: a GO direction with no list says so in the summary and the download
+kind: failure
+message:
+  Expected `NROW(project$config$no_list)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T11: a GO direction with no list says so in the summary and the download
+kind: failure
+message:
+  Expected `project$config$no_list$direction` to be identical to "down".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('down')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T11: a GO direction with no list says so in the summary and the download
+kind: failure
+message:
+  Expected `project$config$no_list$comparison` to be identical to "B_vs_A".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_vs_A')
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T11: a GO direction with no list says so in the summary and the download
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Total GO terms: 75
+  Up-regulated: 75
+  Down-regulated: 0
+  
+  Results displayed in table below.
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T11: a GO direction with no list says so in the summary and the download
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T12: a later run with every list tested clears the tab's not-tested field
+kind: failure
+message:
+  Expected `NROW(first)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit215-not-tested-lists.R
+test: KIT-215 T12: a later run with every list tested clears the tab's not-tested field
+kind: failure
+message:
+  Expected `first$direction` to be identical to "up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('up')
+

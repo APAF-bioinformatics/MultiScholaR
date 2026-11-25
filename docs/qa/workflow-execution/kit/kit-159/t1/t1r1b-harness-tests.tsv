@@ -1,0 +1,19 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-inputs.R	T-IN-1 to T-IN-3: a missing column, a bad URL and a bad hash format are refused	5	5	0	0	0	0	0.217
+test-inputs.R	T-IN-4 and T-IN-5: size and hash mismatches are refused and the file deleted	4	4	0	0	0	0	0.066
+test-inputs.R	T-IN-6: a verified input is reached by role; an undeclared role is refused	3	3	0	0	0	0	0.027
+test-inputs.R	T-IN-7: 2.5 times the bytes to fetch above the free space is refused	1	1	0	0	0	0	0.018
+test-inputs.R	T-IN-8: three members of one archive from one download, each verified	4	4	0	0	0	0	0.046
+test-inputs.R	T-IN-9: an optional role that cannot be fetched is recorded, a required one refused	3	3	0	0	0	0	0.032
+test-inputs.R	the record phase hashes inputs and members; two equal records compare equal	3	3	0	0	0	0	0.021
+test-inputs.R	T-ANN-1: an incomplete or empty UniProt answer refuses the record	7	7	0	0	0	2	0.054
+test-inputs.R	T-PRE-1: phase pre admits listed aggregates only and refuses truth reads	4	4	0	0	0	0	0.058
+test-licence.R	T-LIC-1 to T-LIC-4: unlisted file, extra column, per-feature class, too many rows	6	6	0	0	0	0	0.088
+test-licence.R	T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz	5	5	0	0	0	0	2.921
+test-licence.R	T-LIC-9: declared outputs, keyed lineage, and path placeholders	8	8	0	0	0	0	0.131
+test-licence.R	T-LIC-10: the lifecycle keeps scored.tsv.gz and primary call counts private	3	3	0	0	0	0	0.053
+test-licence.R	T-LIC-11: result tables of a not-permitted input, label keys, attribution	6	6	0	0	0	0	0.054
+test-licence.R	T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach only the private log	8	8	0	0	0	0	0.242
+test-record-uniprot.R	T-R1-1: the record writes uniprot.tsv with the release and hash; the cache stays private	7	7	0	0	0	0	0.021
+test-record-uniprot.R	T-R1-2: uniprot.tsv is on the allow-list with its columns; an extra column is refused	2	2	0	0	0	0	0.031
+test-record-uniprot.R	T-R1-3: an incomplete UniProt answer refuses the record and writes nothing	2	2	0	0	0	0	0.018

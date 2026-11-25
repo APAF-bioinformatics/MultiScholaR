@@ -17,13 +17,17 @@ perform_enrichment <- function(data_subset,
                                max_retries = 5,
                                wait_time = 5,
                                protein_id_column,
-                               correction_method = "gSCS") {
+                               correction_method = "gSCS",
+                               contrast = NA_character_,
+                               direction = NA_character_) {
   
   
   
   if (nrow(data_subset) == 0) {
     return(NULL)
   }
+  # KIT-208: the list's size before the NA filter below empties `data_subset`.
+  list_size <- nrow(data_subset)
 
   # Clean data before enrichment
   protein_ids <- data_subset[[protein_id_column]]
@@ -63,6 +67,22 @@ perform_enrichment <- function(data_subset,
   }
 
   custom_bg <- unique(custom_bg)
+
+  # KIT-208 (VAL-147 (1)): g:Profiler is not asked when nothing would be tested: the list has proteins but no named
+  # identifier, or the custom background has none (`gost` answers an empty query with NULL, read as "no terms"). The
+  # classed condition, with the labels `processEnrichments` passes, does nothing unless a caller handles
+  # `multischolar_enrichment_no_identifiers` (`diaEnrichmentOperation`'s kernel refuses an empty background and reports
+  # an empty list as not tested); the return value stays NULL.
+  query_ids <- length(protein_ids)
+  background_ids <- sum(!is.na(custom_bg) & nzchar(as.character(custom_bg)))
+  if ((list_size > 0 && query_ids == 0) || (identical(domain_scope, "custom") && background_ids == 0)) {
+    signalCondition(structure(class = c("multischolar_enrichment_no_identifiers", "condition"),
+      list(message = sprintf(paste("g:Profiler was given no gene names to test: %d proteins in the list, %d named",
+        "proteins in the background"), list_size, background_ids), call = NULL, contrast = as.character(contrast),
+        direction = as.character(direction), list_size = list_size, query_ids = query_ids,
+        background_ids = background_ids)))
+    return(NULL)
+  }
 
   result <- NULL
   attempt <- 1
@@ -219,20 +239,26 @@ buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
 #' @param enrichment_result The `enrichResult`.
 #' @param plot_data The run's plot table: `@result` joined to the GO maps, with `ID`, `source` and `term`.
 #' @param q_cutoff The run's q-value cutoff.
+#' @param significance_rule KIT-203: `"bh_whole_family"` on a run flagged by the whole-family value, carried so the
+#'   plot is drawn from `p_adjust_family`; NULL (a `"qvalue"` run) adds nothing, as before.
 #' @return `enrichment_result` with the attribute: `list(go_terms, q_cutoff)`, `go_terms` the distinct `ID`,
-#'   `source` and `term` of `plot_data`, in its order.
+#'   `source` and `term` of `plot_data`, in its order, and `significance_rule` when given.
 #' @noRd
-setEnrichmentPlotInputs <- function(enrichment_result, plot_data, q_cutoff) {
+setEnrichmentPlotInputs <- function(enrichment_result, plot_data, q_cutoff, significance_rule = NULL) {
   go_terms <- data.frame(ID = plot_data$ID, source = as.character(plot_data$source), term = plot_data$term,
     stringsAsFactors = FALSE)
-  attr(enrichment_result, "enrichment_plot_inputs") <- list(go_terms = unique(go_terms), q_cutoff = q_cutoff)
+  inputs <- list(go_terms = unique(go_terms), q_cutoff = q_cutoff)
+  if (!is.null(significance_rule)) inputs$significance_rule <- significance_rule
+  attr(enrichment_result, "enrichment_plot_inputs") <- inputs
   enrichment_result
 }
 
 #' The static plot of a clusterProfiler result (KIT-119: `processEnrichments`' plot, moved here)
 #' @param enrichment_result The stored `enrichResult`, with `enrichment_plot_inputs` when the run set them. Without
 #'   them (a result stored before KIT-119) every term is `Other` and named by its `Description`, and the threshold is
-#'   the result's `pvalueCutoff`, which the run sets to its q-value cutoff.
+#'   the result's `pvalueCutoff`, which the run sets to its q-value cutoff. KIT-203: inputs naming
+#'   `significance_rule = "bh_whole_family"` draw the whole-family value (`p_adjust_family`) in place of the q-value;
+#'   any other stored result (every result stored before KIT-203, and every `"qvalue"` run) is drawn as before.
 #' @param contrast,direction As `buildEnrichmentGgplot`.
 #' @return A ggplot, or NULL when the result has no terms.
 #' @noRd
@@ -244,22 +270,28 @@ buildClusterProfilerEnrichmentGgplot <- function(enrichment_result, contrast, di
   q_cutoff <- inputs$q_cutoff %||% enrichment_result@pvalueCutoff
   go_terms <- inputs$go_terms %||%
     data.frame(ID = character(), source = character(), term = character(), stringsAsFactors = FALSE)
+  # KIT-203: the value drawn and its names, by the run's rule (the q-value's are the earlier versions').
+  family <- identical(inputs$significance_rule, "bh_whole_family")
+  value <- if (family) "p_adjust_family" else "qvalue"
+  value_tooltip <- if (family) "Adjusted p (all terms): " else "Q-value: "
+  value_legend <- if (family) "-log10(adjusted p-value)" else "-log10(q-value)"
+  value_axis <- if (family) "-log10(adjusted p-value, all terms of 10 to 500 proteins)" else "-log10(q-value)"
 
   plot_data <- enrichment_result@result |>
     dplyr::left_join(go_terms, by = "ID") |>
     dplyr::mutate(
       source = dplyr::coalesce(.data$source, "Other"),
       source = factor(.data$source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
-      neg_log10_q = -log10(.data$qvalue),  # Using qvalue directly from clusterProfiler output
+      neg_log10_q = -log10(.data[[value]]),  # the q-value from clusterProfiler, or the whole-family value
       gene_count = .data$Count,
       term = dplyr::coalesce(.data$term, .data$Description)
     )
 
-  # Generate static plot with q-value threshold line
+  # Generate static plot with the cutoff's threshold line
   # First identify top significant terms to label
   top_terms <- plot_data %>%
-    dplyr::filter(.data$qvalue < q_cutoff) %>%
-    dplyr::arrange(.data$qvalue) %>%
+    dplyr::filter(.data[[value]] < q_cutoff) %>%
+    dplyr::arrange(.data[[value]]) %>%
     dplyr::slice_head(n = 5) # Label top 5 most significant terms
 
   ggplot2::ggplot(plot_data,
@@ -271,13 +303,13 @@ buildClusterProfilerEnrichmentGgplot <- function(enrichment_result, contrast, di
                                  "Genes: ", .data$Count, "\n",
                                  "Gene Ratio: ", .data$GeneRatio, "\n",
                                  "Background Ratio: ", .data$BgRatio, "\n",
-                                 "Q-value: ", signif(.data$qvalue, 3)
+                                 value_tooltip, signif(.data[[value]], 3)
                                ))) +
     ggplot2::geom_hline(yintercept = -log10(q_cutoff),
                         linetype = "dashed",
                         color = "darkgrey") +
     ggplot2::geom_jitter(ggplot2::aes(size = .data$gene_count,
-                                      color = -log10(.data$qvalue)),
+                                      color = -log10(.data[[value]])),
                          alpha = 0.7,
                          position = ggplot2::position_jitter(width = 0.2, seed = ENRICHMENT_PLOT_SEED)) +
     # Add labels for significant terms
@@ -293,7 +325,7 @@ buildClusterProfilerEnrichmentGgplot <- function(enrichment_result, contrast, di
     ) +
     ggplot2::scale_color_gradient(low = "#FED976",
                                   high = "#800026",
-                                  name = "-log10(q-value)") +
+                                  name = value_legend) +
     ggplot2::scale_size_continuous(name = "Gene Count",
                                    range = c(3, 12)) +
     ggplot2::theme_minimal() +
@@ -307,7 +339,7 @@ buildClusterProfilerEnrichmentGgplot <- function(enrichment_result, contrast, di
     ggplot2::labs(
       title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
       x = "GO Category",
-      y = "-log10(q-value)"
+      y = value_axis
     )
 }
 

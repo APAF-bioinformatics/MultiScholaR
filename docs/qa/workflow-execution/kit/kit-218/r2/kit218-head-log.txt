@@ -1,0 +1,18 @@
+kit218-da-wrapper-tail: ............................
+KIT-218 W2: num_sig_da_molecules (P_empty's status is counted here):
+  comparison          status counts
+1     B_vs_A Not significant     61
+..........S.
+KIT-218 M1: caught message: <text>:1:2: unexpected input
+1: 2_
+     ^
+.........................S
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. KIT-218 G1: on base, with the nesting undone by test doubles, the tail runs to its end on W1 to W4's inputs ('test-kit218-da-wrapper-tail.R:191:5') - Reason: the fix is present (G1 is base only)
+
+2. KIT-218 M2 (recorded, not judged; base only): W6's factor input through G1's doubles ('test-kit218-da-wrapper-tail.R:285:5') - Reason: the fix is present (M2 is base only)
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit218-da-wrapper-tail.R pass 64 fail 0 error 0 skip 2 warn 0

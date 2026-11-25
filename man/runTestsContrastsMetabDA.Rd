@@ -49,10 +49,13 @@ A list containing:
 \item results: Named list of DE result tables (one per contrast)
 \item fit.eb: The eBayes fit object
 \item qvalue_warnings: List of contrasts where qvalue() failed
+\item features_without_values: present only when the assay held features with no value in any sample; their
+ids. Such a feature is not tested: it is a row of every table without statistics (\code{AveExpr} missing)
 }
 }
 \description{
 Performs limma-based differential abundance analysis on a
 single metabolomics assay matrix. This is the core DA engine adapted from
-the proteomics \code{runTestsContrastsDA()} function.
+the proteomics \code{runTestsContrastsDA()} function. A feature with no value in any sample is not tested and
+is listed (\code{features_without_values}).
 }

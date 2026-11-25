@@ -1,0 +1,29 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-chain.R	T-CHAIN-1: a first link absorbing an unintended difference is refused at link one	2	2	0	0	0	0	0.066
+test-chain.R	T-CHAIN-1: a correct chain is accepted; a later link's base is compared with zero	3	3	0	0	0	0	0.06
+test-chain.R	T-CHAIN-1: a re-frozen file without a record; a lane not re-frozen against the counts	4	4	0	0	0	0	0.015
+test-chain.R	T-CHAIN-1: declared keys before the changed step, and unclassed differences after it	4	4	0	0	0	0	0.022
+test-chain.R	T-CHAIN-1: rows a re-freezing ticket committed earlier are adopted when they agree	2	2	0	0	0	0	0.047
+test-g13.R	G13-SWD083: the measured DIA-with-limpa difference passes under the rule	5	5	0	0	0	0	0.102
+test-g13.R	G13-O4: the bundle lane's six DIA-with-limpa DA steps are excluded by name	6	6	0	0	0	0	0.015
+test-g1a.R	G1A-LOAD: KIT-199's real record is one certified link of prot_dia_limpa	8	8	0	0	0	0	0.031
+test-g1a.R	G1A-VAL: link (i) checks each declared row's stored and live digest values	4	4	0	0	0	0	0.019
+test-g1a.R	G1A-LOAD: KIT-172's real record certifies each of its four lanes	18	18	0	0	0	0	0.214
+test-g1a.R	G1A-LOAD: KIT-180 then KIT-177 on the proteomics lanes, in merge order	14	14	0	0	0	0	0.107
+test-g1a.R	G1A-ADOPT: reference rows are adopted by (lane, step, class) and key sets	5	5	0	0	0	0	0.064
+test-g1a.R	G1A-D7: the release-commit DA values against the link's da-runner table	9	9	0	0	0	0	0.104
+test-g1a.R	G1A-D7: exact only on the link's CPU models with its whole recorded environment	7	7	0	0	0	0	0.024
+test-g1a.R	G1A-REL: VAL-133 (2): identical captures first, else values; certified with the difference	8	8	0	0	0	0	0.079
+test-g1a.R	G1A-P1: part (1) compares installed against load_all; prot_dia stops at da	6	6	0	0	0	0	0.034
+test-g1a.R	G1A-P2: part (2) reads each lane's chain from the history and judges the live run	6	6	0	0	0	0	0.388
+test-parity-stage.R	T-PAR-1: a parity request is read and checked	7	7	0	0	0	0	0.099
+test-parity-stage.R	T-PAR-2: the bundle's commit is the release commit, or equal over PKG_PATHS	3	3	0	0	0	0	0.112
+test-parity-stage.R	T-PAR-3: distributable.yml has stage parity and one guarded upload per platform job	3	3	0	0	0	0	0.083
+test-parity-stage.R	T-PAR-4: the request's copied L1 values must equal L1's committed evidence (5 (e))	2	2	0	0	0	0	0.083
+test-parity.R	the browser's inputValues lose their type suffixes	1	1	0	0	0	0	0.005
+test-parity.R	the ledgers are compared per action and input, with excluded client-state inputs	5	5	0	0	0	0	0.053
+test-parity.R	the browser replays the driver's actions in order and records its values before each	4	4	0	0	0	0	0.015
+test-parity.R	the bundle DA table against L1's: digest, then the values under SWD-083 (VAL-133 (1))	4	4	0	0	0	0	0.033
+test-repair3.R	R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes	8	8	0	0	0	0	0.044
+test-repair3.R	R-K199: no admission path; the DIA-with-limpa link is a declared change; two classes in a step	8	8	0	0	0	0	0.025
+test-repair3.R	R-K199b: counts are per (step, class), not per difference row: several keys in one step	3	3	0	0	0	0	0.019
