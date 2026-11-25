@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-252 R2: fix 0f34035a against tests-only ce9d359d; the 13 regression-scope files and the new file, 3 shards per side, check; ceiling 600 job-minutes",
+  "label": "KIT-252 R2 fix 0f34035a vs tests-only ce9d359d",
+  "package_commit": "0f34035a7008c224345955d81e3adbb25b6149ad",
+  "base_commit": "ce9d359d908974b8199febc35ce6b16d6f6a71ca",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-prot-norm-input-current.R",
+    "test-omic-da-module.R",
+    "test-workflow-omics-application-reads.R",
+    "test-kit252-managed-failure-text.R",
+    "test-workflow-execution-process.R",
+    "test-workflow-execution.R",
+    "test-perf-107.R",
+    "test-perf-003.R",
+    "test-perf107-audit.R",
+    "test-prot-07b-da-handlers-compat.R",
+    "test-workflow-core-harness.R",
+    "test-workflow-kit-harness.R",
+    "test-workflow-execution-adapters.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
