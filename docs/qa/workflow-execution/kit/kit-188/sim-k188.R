@@ -68,6 +68,8 @@ CELLS <- list(
     P2 = cellDef(8L, "P", "prot", "proteins", 3000L, 2L, 3L, 20, 2, "drift_factor"),
     P3 = cellDef(9L, "P", "prot", "proteins", 6000L, 5L, 4L, 20, 2, "drift_factor"),
     P4b = cellDef(10L, "P", "prot", "proteins", 5000L, 5L, 10L, 20, 2, "batch_drift", blocks = 5L),
+    # 38.5 (r1.19, VAL-243; reported, cap 3 at 24 runs): L12 with 12 runs per group, seed index c = 11 (5.2), no N2 or E2
+    L24 = cellDef(11L, "L", "lipid", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 12L, 20, 2, "drift_factor"),
     # 5.8b: KIT-172's concentration fixture, both classes, one fixed data set (reported; job k172c only)
     K172c = cellDef(0L, "L", "lipid", "LCMS_Pos", 515L, 2L, 6L, NA, NA, "none"))
 scenariosOf <- function(cellname) if (isTRUE(CELLS[[cellname]]$n2)) SCENARIOS else SCENARIOS[1:4]
@@ -86,13 +88,31 @@ BLIND <- c("n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls
 
 warning_count <- new.env()
 warning_count$n <- 0L
+warning_count$log <- character()
+warning_count$assays <- character()
+# r1.21 (R20-P08, 40.3 (4)): each warning's class, and each classed message's (a notice raised by rlang::inform), per
+# journey and assay: "class@assay", the assay being the one the text names ("" when it names none)
 quiet <- function(expr) {
     value <- NULL
-    invisible(utils::capture.output(value <- withCallingHandlers(suppressMessages(expr), warning = function(w) {
+    noteOf <- function(cond) {
+        text <- conditionMessage(cond)
+        hit <- warning_count$assays[vapply(warning_count$assays, grepl, logical(1L), x = text, fixed = TRUE)]
+        warning_count$log <- c(warning_count$log, paste(class(cond)[[1L]], if (length(hit)) hit[[1L]] else "", sep = "@"))
+    }
+    invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
         warning_count$n <- warning_count$n + 1L
+        noteOf(w)
         invokeRestart("muffleWarning")
+    }, message = function(m) {
+        if (!identical(class(m)[[1L]], "simpleMessage")) noteOf(m)
+        invokeRestart("muffleMessage")
     }), type = "output"))
     value
+}
+warningClasses <- function() {
+    if (!length(warning_count$log)) return("")
+    counts <- table(warning_count$log)
+    paste(sprintf("%s=%d", names(counts), as.integer(counts)), collapse = ";")
 }
 standardise <- function(v) {
     v <- v - mean(v)
@@ -102,6 +122,37 @@ residStd <- function(v, basis) standardise(stats::lm.fit(basis, v)$residuals)
 sha <- function(f) strsplit(system2("sha256sum", shQuote(f), stdout = TRUE), " ")[[1L]][[1L]]
 byName <- function(l, n) if (length(n) == 1L && !is.na(n) && n %in% names(l)) l[[n]] else NULL
 oneLine <- function(x, n = 300L) substr(gsub("[\r\n\t]+", " ", paste(x, collapse = " ")), 1L, n)
+
+# ---- replay markers (40.3 (5), R20-P02) ------------------------------------------------------------------------------------
+# The marker options are process-wide and the arms of a child run in sequence, so each journey sets its arm's markers
+# itself, restores them on exit and, at its start, asserts that no other marker leaks. The earlier tokens an arm sets are
+# the ticket's (5.3: LP `ruv_control_grouping` "dropped" and `ruv_k_bound` "none"; 34: LAs `ruv_feature_levels` "shifted"),
+# and each is asserted equal to the marker table's `earlier` at the bound commit; a difference stops the unit.
+ARM_MARKERS <- list(
+    LP = list(MultiScholaR.ruv_control_grouping = "dropped", MultiScholaR.ruv_k_bound = "none"),
+    LAs = list(MultiScholaR.ruv_feature_levels = "shifted"))
+armMarkers <- function(arm) {
+    set <- ARM_MARKERS[[arm]] %||% list()
+    for (option in names(set)) {
+        marker <- Filter(function(m) identical(m$option, option), workflowReplayRuleMarkers)[[1L]]
+        stopifnot(identical(marker$earlier, set[[option]]))
+    }
+    set
+}
+markerLeaks <- function(set = list()) {
+    leaks <- character()
+    for (marker in workflowReplayRuleMarkers) {
+        if (marker$option %in% names(set)) next
+        value <- getOption(marker$option)
+        if (!is.null(value) && !identical(value, marker$current)) leaks <- c(leaks, sprintf("%s=%s", marker$option, value))
+    }
+    leaks
+}
+withMarkers <- function(set, expr) {
+    old <- options(set)
+    on.exit(options(old), add = TRUE)
+    expr
+}
 
 # ---- the generator (5.2, 18.3) -------------------------------------------------------------------------------------
 generate <- function(cellname, scenario, r) {
@@ -280,26 +331,38 @@ contrastsOf <- function(sim) {
     data.frame(contrasts = sprintf("group%s-groupA", g), friendly_names = sprintf("%s_vs_A", g),
         full_format = sprintf("%s_vs_A=group%s-groupA", g, g), stringsAsFactors = FALSE)
 }
-omicObject <- function(sim, log2_values, ids = NULL, scale = 1) {
+# 35.2 (1), r1.16: a `Name` column holds every row's name and is the annotation column, so the ITSD step's regex mode (the
+# default user's path, `^IS_` in the annotation column) finds the standards; the class column and the slot regex are as
+# before. `plant` (35.6, L1c only; the plant changes the generator's input, never the route's state): "itsd" builds the
+# table as r1.15 did (the class column is the annotation column, so ITSD finds nothing); "itsdpos" gives the standards of
+# the first assay (LCMS_Pos in L cells; here the assay named LCMS_Pos) the names STD_01..STD_05 in the `Name` column only.
+omicObject <- function(sim, log2_values, ids = NULL, scale = 1, plant = NULL) {
     omic <- sim$p$omic
     tables <- lapply(sim$p$assays, function(a) {
         rows <- sim$order_of[[a]]
         if (!is.null(ids)) rows <- rows[rows %in% ids]
         values <- 2^log2_values[rows, sim$runs, drop = FALSE] * scale
         annotation <- ifelse(startsWith(rows, "IS_"), "ISTD", "PC")
-        table <- if (identical(omic, "lipid")) data.frame(LipidName = rows, LipidClass = annotation, stringsAsFactors = FALSE) else
-            data.frame(Metabolite = rows, Ontology = annotation, stringsAsFactors = FALSE)
+        names_col <- rows
+        if (identical(plant, "itsdpos") && identical(a, "LCMS_Pos")) {
+            is_rows <- startsWith(rows, "IS_")
+            names_col[is_rows] <- sprintf("STD_%02d", seq_len(sum(is_rows)))
+        }
+        table <- if (identical(omic, "lipid")) data.frame(LipidName = rows, Name = names_col, LipidClass = annotation,
+            stringsAsFactors = FALSE) else data.frame(Metabolite = rows, Name = names_col, Ontology = annotation,
+            stringsAsFactors = FALSE)
         cbind(table, stats::setNames(as.data.frame(unname(values)), sim$runs))
     })
     names(tables) <- sim$p$assays
+    annotation_column <- if (identical(plant, "itsd")) (if (identical(omic, "lipid")) "LipidClass" else "Ontology") else "Name"
     args <- list(deAnalysisParameters = list(formula_string = "~ 0 + group", de_q_val_thresh = 0.05, treat_lfc_cutoff = 0))
     if (identical(omic, "lipid")) {
         methods::new("LipidomicsAssayData", lipid_data = tables, design_matrix = sim$design, lipid_id_column = "LipidName",
-            annotation_id_column = "LipidClass", sample_id = "Run", group_id = "group", technical_replicate_id = "tech_rep_group",
+            annotation_id_column = annotation_column, sample_id = "Run", group_id = "group", technical_replicate_id = "tech_rep_group",
             database_identifier_type = "Unknown", internal_standard_regex = "^IS_", args = args)
     } else {
         methods::new("MetaboliteAssayData", metabolite_data = tables, design_matrix = sim$design, metabolite_id_column = "Metabolite",
-            annotation_id_column = "Ontology", sample_id = "Run", group_id = "group", technical_replicate_id = "tech_rep_group",
+            annotation_id_column = annotation_column, sample_id = "Run", group_id = "group", technical_replicate_id = "tech_rep_group",
             database_identifier_type = "Unknown", internal_standard_regex = "^IS_", args = args)
     }
 }
@@ -345,16 +408,22 @@ routeDefaults <- function(omic) {
     c(common, list(method = norm$between_sample$default, offset = norm$log2$offset, itsd = unname(norm$itsd$aggregation[[1L]]),
         ruv_mode = norm$ruv_iii$default, manual_pct = norm$ruv_iii$percentage, manual_k = norm$ruv_iii$k,
         percentile = as.numeric(builderValue(mod_omic_qc_intensity_ui, "intensity_cutoff_percentile")),
-        proportion = as.numeric(builderValue(mod_omic_qc_intensity_ui, "proportion_below_cutoff"))))
+        proportion = as.numeric(builderValue(mod_omic_qc_intensity_ui, "proportion_below_cutoff")),
+        # r1.20 (KIT-217; 7.4 E3): the per-group count's two settings, from the QC tab's inputs
+        min_values_per_group = as.numeric(builderValue(mod_omic_qc_intensity_ui, "min_values_per_group")),
+        min_groups = as.numeric(builderValue(mod_omic_qc_intensity_ui, "min_groups"))))
 }
 EXPECTED_DEFAULTS <- list(
     lipid = list(auto_min = 1, auto_max = 20, metric = "max_difference", penalty = 0.5, adaptive = TRUE, correlation = 0.5,
         method = "cyclicloess", offset = 0, itsd = "median", ruv_mode = "automatic", manual_pct = 5, manual_k = 2,
-        percentile = 10, proportion = 0.5),
+        percentile = 10, proportion = 0.5, min_values_per_group = 2, min_groups = 1),
     prot = list(auto_min = 1, auto_max = 20, metric = "max_difference", penalty = 0.5, adaptive = TRUE, correlation = 0.5,
         method = "cyclicloess", ruv_mode = "automatic", manual_pct = 5, manual_k = NULL, min_reps = 2, min_groups = 2,
         percentile = 1, strict = FALSE))
 EXPECTED_DEFAULTS$metab <- EXPECTED_DEFAULTS$lipid
+# 5.2 (r1.20; VAL-241 OD-1 (c)), the import's default pattern as KIT-260 ships it, read at the bound commit by E3 (a difference
+# stops: the route under test changed)
+ITSD_DEFAULT_PATTERN <- "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
 checkE3 <- function(omic) {
     got <- routeDefaults(omic)
     want <- EXPECTED_DEFAULTS[[omic]]
@@ -364,9 +433,18 @@ checkE3 <- function(omic) {
         "(?i)_d[0-9]+$|_13c|_15n|deuterated|labeled")
     names_checked <- c(sprintf("LBL_%03d", 1:10), sprintf("CTL_%03d", 1:5))
     matched <- names_checked[vapply(names_checked, function(x) any(vapply(patterns, grepl, logical(1L), x = x, perl = TRUE)), logical(1L))]
-    list(pass = !length(differ) && !length(matched), got = got,
-        note = sprintf("differ: %s; labelled names matching an ITSD pattern: %s", paste(differ, collapse = ",") %||% "",
-            paste(matched, collapse = ",")))
+    # r1.21 (R20-P06): the cyclic-loess minimum's state is recorded and either state passes; every marker holds its current
+    # token (40.3 (5)); 5.2 (r1.20, VAL-241 OD-1 (c)): the import's default ITSD pattern as KIT-260 ships it
+    loess_minimum <- tryCatch(omicsCyclicLoessMinimumActive(), error = function(e) NA)
+    leaked <- markerLeaks()
+    imported <- tryCatch(if (identical(omic, "metab")) getMetabolomicsColumnDefaults("msdial")$is_pattern else
+        getLipidomicsColumnDefaults("msdial")$is_pattern, error = function(e) NA_character_)
+    pattern_ok <- identical(omic, "prot") || identical(imported, ITSD_DEFAULT_PATTERN)
+    got$cyclic_loess_minimum <- loess_minimum
+    got$itsd_import_pattern <- imported
+    list(pass = !length(differ) && !length(matched) && !length(leaked) && pattern_ok, got = got,
+        note = sprintf("differ: %s; labelled names matching an ITSD pattern: %s; markers off their current token: %s; import pattern as shipped %s",
+            paste(differ, collapse = ",") %||% "", paste(matched, collapse = ","), paste(leaked, collapse = ","), pattern_ok))
 }
 
 # ---- Part L journeys (5.3) ------------------------------------------------------------------------------------------
@@ -392,20 +470,161 @@ expectedOperations <- function(binding, itsd, ruv, correlation, filter = TRUE) {
         if (ruv) paste0(prefix, "_ruv"), if (correlation) paste0(prefix, "_pearson_selection"))
 }
 
+# ---- the per-journey checks E12 to E14 (35.2 (2), (3); 7.4) ------------------------------------------------------------
+#' E12 (journeys that run ITSD): per assay (a) no row starting `IS_` remains after the ITSD step, (b) the step's own record
+#' count equals the `IS_` rows the assay held at `<prefix>_qc_complete` (0 when the record holds none), (c) at least one
+#' non-standard value differs from its `qc_complete` value. `itsd_failed` lists the failing letters.
+checkItsdActed <- function(m_qc, m_itsd, record) {
+    counts <- record$itsd_counts_per_assay
+    do.call(rbind, lapply(names(m_qc), function(a) {
+        before <- m_qc[[a]]
+        after <- m_itsd[[a]]
+        standards <- startsWith(rownames(before), "IS_")
+        expected <- sum(standards)
+        left <- if (is.null(after)) NA_integer_ else sum(startsWith(rownames(after), "IS_"))
+        used <- as.integer((unlist(counts[[a]]) %||% 0L)[[1L]])
+        rows <- setdiff(intersect(rownames(before), rownames(after)), rownames(before)[standards])
+        cols <- if (is.null(after)) character() else intersect(colnames(before), colnames(after))
+        change <- if (length(rows) && length(cols)) suppressWarnings(max(abs(log2(after[rows, cols, drop = FALSE]) -
+            log2(before[rows, cols, drop = FALSE])), na.rm = TRUE)) else NA_real_
+        if (!is.finite(change)) change <- NA_real_
+        failed <- c(if (!isTRUE(left == 0L)) "a", if (!isTRUE(used == expected)) "b", if (!isTRUE(change > 0)) "c")
+        data.frame(assay = a, itsd_is_left = left, itsd_n_used = used, itsd_n_expected = expected, itsd_max_change = change,
+            itsd_ok = !length(failed), itsd_failed = paste(failed, collapse = ","), stringsAsFactors = FALSE)
+    }))
+}
+#' E13 (every journey with a between-sample method other than `none`, not OR): per assay at least one finite value of the
+#' normalised matrix differs from the log2 matrix, values matched by feature id and run.
+checkNormActed <- function(m_norm, m_log2) {
+    do.call(rbind, lapply(names(m_log2), function(a) {
+        x <- m_norm[[a]]
+        y <- m_log2[[a]]
+        change <- NA_real_
+        if (!is.null(x) && !is.null(y)) {
+            rows <- intersect(rownames(x), rownames(y))
+            cols <- intersect(colnames(x), colnames(y))
+            diff <- abs(x[rows, cols, drop = FALSE] - y[rows, cols, drop = FALSE])
+            diff <- diff[is.finite(diff)]
+            if (length(diff)) change <- max(diff)
+        }
+        data.frame(assay = a, norm_max_change = change, norm_ok = isTRUE(change > 0), stringsAsFactors = FALSE)
+    }))
+}
+#' The same matrix, rows and columns matched by name, at tolerance 0 (E14; the product's own status uses `identical()`).
+sameByName <- function(a, b) {
+    if (is.null(a) || is.null(b)) return(FALSE)
+    if (!setequal(rownames(a), rownames(b)) || !setequal(colnames(a), colnames(b))) return(FALSE)
+    identical(unname(a[rownames(a), colnames(a), drop = FALSE]), unname(b[rownames(a), colnames(a), drop = FALSE]))
+}
+recordOutcomes <- function(record, state) {
+    steps <- Filter(function(s) identical(s$state, state), record$steps %||% list())
+    if (length(steps)) steps[[1L]]$outcomes else NULL
+}
+#' r1.21 (R20-P11, 35.2 (3)): the samples the correlation filter left out of one assay only ("assay:sample"), from the
+#' matrices before the filter and after it; a sample missing from every assay is not listed.
+oneAssayRemovals <- function(before, after) {
+    gone <- lapply(stats::setNames(names(before), names(before)), function(a) {
+        x <- before[[a]]
+        y <- after[[a]]
+        present <- colnames(x)[colSums(is.finite(x)) > 0L]
+        kept <- if (is.null(y)) character() else colnames(y)[colSums(is.finite(y)) > 0L]
+        setdiff(present, kept)
+    })
+    hits <- character()
+    for (a in names(gone)) for (s in gone[[a]]) {
+        if (length(gone) < 2L || !all(vapply(setdiff(names(gone), a), function(o) s %in% gone[[o]], logical(1L)))) hits <- c(hits, paste(a, s, sep = ":"))
+    }
+    if (length(gone) < 2L) character() else hits
+}
+eqField <- function(x, y) isTRUE(all.equal(as.character(unlist(x)), as.character(unlist(y))))
+pickAssay <- function(l, a) {
+    v <- l[[a]]
+    if (is.null(v) || !length(v)) NA else v[[1L]]
+}
+#' The per-assay columns of a journey (35.2 (2), (3)): E12 and E13 results, the RUV outcome (E14) and the DA outcome, each
+#' recorded whatever happens later. `ruv_status` is `not_reached`, `failed` (unclassed error at step ruv), `refused` (classed),
+#' else the factors' status (declared designs) or, for the legacy step, `dropped`, `uncorrected` (by name, tolerance 0) or
+#' `corrected`; the product's own `ruv_status` is written beside it.
+journeyAssayColumns <- function(out, request, assays) {
+    requested <- !is.null(request$ruv)
+    declared <- requested && isTRUE(request$gate)
+    lapply(stats::setNames(assays, assays), function(a) {
+        e12 <- if (!is.null(out$e12)) out$e12[out$e12$assay == a, , drop = FALSE]
+        e13 <- if (!is.null(out$e13)) out$e13[out$e13$assay == a, , drop = FALSE]
+        field <- function(x, column) if (!is.null(x) && nrow(x)) x[[column]][[1L]] else NA
+        trace <- out$optimisation[[a]]
+        res <- trace$optimization_results
+        product <- out$ruv_value
+        status <- if (!requested) NA_character_ else if (!isTRUE(out$ruv_reached)) "not_reached" else
+            if (identical(out$error_step, "ruv")) (if (isTRUE(out$error_refused)) "refused" else "failed") else
+            if (declared) as.character(out$ruv_factors[[a]]$status %||% "no_status") else
+            if (is.null(out$m_out) || !a %in% names(out$m_out)) "dropped" else
+            if (sameByName(out$m_in[[a]], out$m_out[[a]])) "uncorrected" else "corrected"
+        product_status <- if (requested && !declared) as.character(pickAssay(product$ruv_status, a)) else NA_character_
+        reason <- NA_character_
+        if (requested && !declared && !is.null(trace) && !isTRUE(trace$success) && is.data.frame(res) && nrow(res)) {
+            counts <- table(res$status)
+            reason <- paste(sprintf("%s:%d", names(counts), as.integer(counts)), collapse = ";")
+            first <- res$error_reason[nzchar(as.character(res$error_reason))]
+            if (length(first)) reason <- paste0(reason, " | ", substr(first[[1L]], 1L, 300L))
+            if (any(res$status == "skipped_k_exceeds_complete_controls")) reason <- paste0(reason, " | ", oneLine(trace$error))
+        }
+        record <- out$record_ruv
+        legacy_return <- requested && !declared && status %in% c("corrected", "uncorrected", "dropped")
+        da_failed <- identical(out$error_step, "da")
+        failed_here <- if (!is.null(out$da_errors)) out$da_errors[out$da_errors$assay == a, , drop = FALSE]
+        da_status <- if (da_failed) "failed" else if (!isTRUE(out$da_reached)) "not_reached" else
+            if (is.null(out$da) || !nrow(out$da) || !a %in% out$da$assay || (!is.null(failed_here) && nrow(failed_here))) "no_da" else "ok"
+        list(itsd_is_left = field(e12, "itsd_is_left"), itsd_n_used = field(e12, "itsd_n_used"), itsd_n_expected = field(e12, "itsd_n_expected"),
+            itsd_max_change = field(e12, "itsd_max_change"), itsd_ok = field(e12, "itsd_ok"),
+            norm_max_change = field(e13, "norm_max_change"), norm_ok = field(e13, "norm_ok"),
+            ruv_status = status, ruv_status_product = product_status,
+            ruv_status_agree = if (legacy_return && !is.na(product_status)) identical(status, product_status) else NA,
+            ruv_changed = if (legacy_return) identical(status, "corrected") else NA,
+            ruv_k_found = if (requested && !declared && !is.null(trace)) (if (isTRUE(trace$success)) as.integer(trace$best_k) else NA_integer_) else NA_integer_,
+            ruv_n_controls = if (requested && !declared && !is.null(trace)) sum(trace$control_genes_index, na.rm = TRUE) else NA_integer_,
+            ruv_no_k_reason = reason,
+            ruv_k_sweep = if (requested && !declared) pickAssay(product$k_sweep, a) else NA,
+            ruv_k_used = if (requested && !declared) pickAssay(product$best_k, a) else NA,
+            ruv_k_cap = if (requested && !declared) pickAssay(product$k_cap, a) else NA,
+            ruv_k_samples = if (requested && !declared) pickAssay(product$k_samples, a) else NA,
+            ruv_k_notice = if (requested && !declared) oneLine(pickAssay(product$k_notice, a) %|NA|% "") else NA_character_,
+            ruv_record_applied = if (!is.null(record)) as.logical(record$ruv_applied %||% NA) else NA,
+            ruv_record_match = if (!is.null(record) && requested && !declared) all(eqField(record$k_sweep_per_assay[[a]], product$k_sweep[[a]]),
+                eqField(record$k_cap_per_assay[[a]], product$k_cap[[a]]), eqField(record$k_per_assay[[a]], product$best_k[[a]]),
+                eqField(record$ruv_status_per_assay[[a]], product$ruv_status[[a]])) else NA,
+            da_status = da_status, da_class = if (da_failed) out$error_class else NA_character_,
+            da_message = if (da_failed) out$error_message else if (!is.null(failed_here) && nrow(failed_here)) failed_here$error[[1L]] else NA_character_,
+            warning_classes = out$warning_classes %||% NA_character_, corr_removed_one_assay = out$corr_one_assay %||% NA_character_,
+            itsd_record_fields = out$itsd_record_fields %||% NA_character_)
+    })
+}
+`%|NA|%` <- function(x, y) if (is.null(x) || (length(x) == 1L && is.na(x))) y else x
+
 #' One journey on its own session owner. Returns the statuses, the RUV choice, the matrices the checks need and the DA.
+#' `plant` (35.6, L1c only): "itsd" and "itsdpos" change the table the route is given (omicObject); "normplant" changes the
+#' matrix E13 compares; "daerror" stops at step da. A plant never changes the route's own state.
 journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, itsd = isTRUE(sim$itsd) || identical(sim$p$omic, "lipid"),
-    method = d$method, correlation = TRUE, ids = NULL, scale = 1, keep_states = FALSE, fault = FALSE) {
+    method = d$method, correlation = TRUE, ids = NULL, scale = 1, keep_states = FALSE, fault = FALSE, plant = NULL) {
     t0 <- proc.time()[[3L]]
     warning_count$n <- 0L
+    warning_count$log <- character()
+    warning_count$assays <- sim$p$assays
     binding <- bindingOf(sim$p$omic)
     prefix <- binding$prefix
+    # 40.3 (5): the arm's markers, asserted before anything is built (a leak stops the unit, not the journey)
+    markers <- armMarkers(arm)
+    leaks <- markerLeaks(markers)
+    if (length(leaks)) stop(sprintf("K188 marker leak at the start of a %s journey: %s", arm, paste(leaks, collapse = "; ")))
     out <- list(arm = arm, status = "ok", class = NA_character_, step = NA_character_)
-    old <- options(MultiScholaR.ruv_design_panel = isTRUE(request$gate))
+    old <- options(c(list(MultiScholaR.ruv_design_panel = isTRUE(request$gate)), markers))
     on.exit(options(old), add = TRUE)
+    stopifnot(all(vapply(names(markers), function(o) identical(getOption(o), markers[[o]]), logical(1L))))
     fixture <- NULL
     step <- "owner"
+    omic_plant <- if (!is.null(plant) && plant %in% c("itsd", "itsdpos")) plant else NULL
     result <- tryCatch({
-        object <- omicObject(sim, log2_values, ids = ids, scale = scale)
+        object <- omicObject(sim, log2_values, ids = ids, scale = scale, plant = omic_plant)
         fixture <- quiet(if (identical(sim$p$omic, "lipid")) lipidDeclarationsOwner(root, object) else metabDeclarationsOwner(root, object))
         fixture$workflow$contrasts_tbl <- contrastsOf(sim)
         owner <- fixture$owner
@@ -413,26 +632,53 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         if (fault) stop("K188 deliberate fault (E7)")
         if (filter) {
             step <- "intensity_filter"
-            quiet(runWorkflowOmicsReferenceIntensityFilter(binding, owner, d$percentile, d$proportion, config))
+            # 40.3 (3): KIT-217's two settings are passed from E3's read values, not left to the function's defaults
+            quiet(runWorkflowOmicsReferenceIntensityFilter(binding, owner, d$percentile, d$proportion, config,
+                min_values_per_group = as.integer(d$min_values_per_group), min_groups = as.integer(d$min_groups)))
         }
         step <- "duplicate_resolution"
         quiet(runWorkflowOmicsReferenceDuplicateResolution(binding, owner, config))
         step <- "qc_finalize"
         quiet(commitWorkflowOmicsStoreStep(owner, paste0(prefix, "_qc_finalize"), paste0(prefix, "_qc_complete"), config, "QC complete"))
-        out$kept <- unlist(lapply(stateMatrices(owner, binding, paste0(prefix, "_qc_complete")), rownames), use.names = FALSE)
+        m_qc <- stateMatrices(owner, binding, paste0(prefix, "_qc_complete"))
+        out$kept <- unlist(lapply(m_qc, rownames), use.names = FALSE)
+        out$rows_filter <- vapply(m_qc, nrow, integer(1L))
         if (itsd) {
             step <- "itsd"
             quiet(runWorkflowOmicsReferenceItsdNormalisation(binding, owner, d$itsd, NULL, config))
-            if (keep_states) out$m_itsd <- stateMatrices(owner, binding, paste0(prefix, "_itsd_norm"))
+            out$m_itsd <- stateMatrices(owner, binding, paste0(prefix, "_itsd_norm"))
+            out$rows_itsd <- vapply(out$m_itsd, nrow, integer(1L))
+            itsd_record <- owner$getState(paste0(prefix, "_itsd_norm"))@args$ITSDNormalization
+            out$itsd_record_fields <- paste(names(itsd_record), collapse = ",")
+            out$e12 <- checkItsdActed(m_qc, out$m_itsd, itsd_record)
+            if (!all(out$e12$itsd_ok)) {
+                bad <- out$e12[!out$e12$itsd_ok, , drop = FALSE]
+                out$status <- "instrument"
+                out$class <- paste(sprintf("itsd_not_applied:%s:%s", bad$assay, bad$itsd_failed), collapse = " | ")
+            }
         }
         step <- "log2"
         quiet(runWorkflowOmicsReferenceLog2(binding, owner, d$offset, config))
-        if (keep_states) out$m_log2 <- stateMatrices(owner, binding, paste0(prefix, "_log2"))
+        out$m_log2 <- stateMatrices(owner, binding, paste0(prefix, "_log2"))
         step <- "between_sample"
         quiet(runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, method, config))
         out$m_in <- stateMatrices(owner, binding, paste0(prefix, "_normalized"))
+        out$rows_ruv_input <- vapply(out$m_in, nrow, integer(1L))
+        if (!identical(method, "none") && !identical(arm, "OR")) {
+            compared <- out$m_in
+            # `normplant` (35.6): the matrix E13 compares is the log2 matrix for one assay; the route's output is untouched
+            if (identical(plant, "normplant")) compared[["LCMS_Pos"]] <- out$m_log2[["LCMS_Pos"]]
+            out$e13 <- checkNormActed(compared, out$m_log2)
+            if (!all(out$e13$norm_ok)) {
+                bad <- out$e13[!out$e13$norm_ok, , drop = FALSE]
+                text <- paste(sprintf("norm_not_applied:%s", bad$assay), collapse = " | ")
+                out$class <- if (identical(out$status, "instrument")) paste(out$class, text, sep = " | ") else text
+                out$status <- "instrument"
+            }
+        }
         if (!is.null(request$ruv)) {
             step <- "ruv"
+            out$ruv_reached <- TRUE
             run <- quiet(runWorkflowOmicsReferenceRuv(binding, owner, request$ruv, config))
             out$ruv_value <- run$value[setdiff(names(run$value), c("final", "optimisation", "factors", "separation_plots"))]
             out$ruv_factors <- lapply(run$value$factors, function(f) f[intersect(names(f), c("status", "reason", "k", "control_ids",
@@ -440,14 +686,21 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             out$optimisation <- lapply(run$optimisation, function(o) o[intersect(names(o), c("success", "best_k", "best_percentage",
                 "control_genes_index", "optimization_results", "error"))])
             out$m_out <- stateMatrices(owner, binding, paste0(prefix, "_ruv_corrected"))
+            # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
+            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+            out$record_ruv <- recordOutcomes(record, paste0(prefix, "_ruv_corrected"))
         }
         if (correlation) {
             step <- "correlation"
             quiet(runWorkflowOmicsReferenceCorrelation(binding, owner, "group", d$correlation, config))
+            out$corr_one_assay <- paste(oneAssayRemovals(out$m_out %||% out$m_in, stateMatrices(owner, binding, owner$current_state)),
+                collapse = ";")
         }
         final <- owner$getState(owner$current_state)
         out$runs_final <- as.character(final@design_matrix[[final@sample_id]])
         step <- "da"
+        out$da_reached <- TRUE
+        if (identical(plant, "daerror")) stop("K188 planted DA error (E15)")
         da <- quiet(runWorkflowOmicsReferenceDaAnalysis(binding, owner, getWorkflowStateReference(owner),
             list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), contrastsOf(sim)))
         long <- as.data.frame(da$results[[binding$long_table]])
@@ -492,19 +745,32 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         NULL
     }, error = function(e) {
         cls <- intersect(class(e), REFUSALS)
-        out$status <<- if (length(cls)) "refused" else "crashed"
-        out$class <<- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
+        text <- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
+        # r1.17 (R16-P07): a journey already `instrument` keeps its status; the later error goes to `class`
+        if (identical(out$status, "instrument")) {
+            out$class <<- paste(out$class, text, sep = " | ")
+        } else {
+            out$status <<- if (length(cls)) "refused" else "crashed"
+            out$class <<- text
+        }
         out$step <<- step
+        out$error_step <<- step
+        out$error_refused <<- length(cls) > 0L
+        out$error_class <<- class(e)[[1L]]
+        out$error_message <<- oneLine(conditionMessage(e))
         NULL
     }, finally = {
         if (!is.null(fixture)) try(closeDIAStateAdapter(fixture$owner), silent = TRUE)
         unlink(root, recursive = TRUE)
     })
-    # what the legacy RUV step returned (2.7): an assay missing, or every assay as it came in
+    out$warning_classes <- warningClasses()
+    out$assay_cols <- journeyAssayColumns(out, request, sim$p$assays)
+    # what the legacy RUV step returned (2.7, E14): the status comparison runs whatever happens later; the journey's own
+    # status keeps its precedence (a crash, a refusal or an instrument failure stands)
     if (identical(out$status, "ok") && !is.null(request$ruv) && !isTRUE(request$gate) && !is.null(out$m_in)) {
-        if (is.null(out$m_out) || length(setdiff(names(out$m_in), names(out$m_out)))) out$status <- "dropped"
-        if (!is.null(out$m_out) && setequal(names(out$m_out), names(out$m_in)) &&
-            all(vapply(names(out$m_in), function(a) identical(out$m_in[[a]], out$m_out[[a]]), logical(1L)))) out$status <- "uncorrected"
+        statuses <- vapply(out$assay_cols, function(x) x$ruv_status, "")
+        if (any(statuses == "dropped")) out$status <- "dropped"
+        if (all(statuses == "uncorrected")) out$status <- "uncorrected"
     }
     if (identical(out$status, "ok") && (is.null(out$da) || !nrow(out$da))) out$status <- "no_da"
     out$warnings <- warning_count$n
@@ -512,13 +778,18 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
     out
 }
 
-#' The legacy choice per assay: k, the winning percentage, the control ids (2.2).
+#' The legacy choice per assay: the k used (the RUV product's `best_k`, which is what the route removed and what Part M,
+#' LCm, E8, M-amp and M-df take), the sweep's k (the optimisation trace's `best_k`, the uncapped one; r1.21, R20-P04), the
+#' winning percentage, the control ids (2.2).
 legacyChoice <- function(journey) {
     o <- journey$optimisation
     if (is.null(o)) return(NULL)
-    lapply(o, function(x) {
+    lapply(stats::setNames(names(o), names(o)), function(a) {
+        x <- o[[a]]
         ctl <- x$control_genes_index
-        list(k = if (isTRUE(x$success)) as.integer(x$best_k) else NA_integer_, pct = x$best_percentage %||% NA_real_,
+        k_sweep <- if (isTRUE(x$success)) as.integer(x$best_k) else NA_integer_
+        k_used <- suppressWarnings(as.integer(unlist(journey$ruv_value$best_k[[a]])[1L]))
+        list(k = if (length(k_used) && !is.na(k_used)) k_used else k_sweep, k_sweep = k_sweep, pct = x$best_percentage %||% NA_real_,
             controls = if (is.logical(ctl)) names(ctl)[which(ctl)] else character(), trace = x$optimization_results)
     })
 }
@@ -743,9 +1014,15 @@ scoreFamily <- function(da, T_ids, theta, or_err = NULL) {
     out$err_by_feature <- stats::setNames(err, da$feature)
     out
 }
+ASSAY_COLUMNS <- c("itsd_is_left", "itsd_n_used", "itsd_n_expected", "itsd_max_change", "itsd_ok", "norm_max_change", "norm_ok",
+    "ruv_status", "ruv_status_product", "ruv_status_agree", "ruv_changed", "ruv_k_found", "ruv_n_controls", "ruv_no_k_reason",
+    "ruv_k_sweep", "ruv_k_used", "ruv_k_cap", "ruv_k_samples", "ruv_k_notice", "ruv_record_applied", "ruv_record_match",
+    "da_status", "da_class", "da_message", "warning_classes", "corr_removed_one_assay", "itsd_record_fields")
 ROW_COLUMNS <- c("part", "cell", "job", "scenario", "mask", "rep", "arm", "arm_scale", "scoreset", "assay", "contrast", "status", "class", "step",
     "seconds", "warnings", "samples_removed", "k", "pct", "n_controls", "complete_controls", "k_estimate", "e1_pass",
-    "n_T", "n_tested", "lost", BLIND, "q_method", "miss_share", "miss_after", "tie_rule_match")
+    "n_T", "n_tested", "lost", BLIND, "q_method", "miss_share", "miss_after", "tie_rule_match",
+    # r1.16 to r1.21 (35.2): the per-assay E12 to E14 columns, the product's and the record's k fields, the DA outcome
+    ASSAY_COLUMNS)
 newRow <- function(...) {
     row <- stats::setNames(as.list(rep(NA, length(ROW_COLUMNS))), ROW_COLUMNS)
     given <- list(...)
@@ -777,7 +1054,8 @@ armRows <- function(sim, journey, T_ids, common, choice, or_errs = NULL, extra_s
             e1_pass = if (is.null(journey$e1)) NA else journey$e1$pass,
             miss_after = if (is.null(journey$m_in[[a]])) NA_real_ else mean(!is.finite(journey$m_in[[a]])),
             ctl_planted_share = if (length(ch$controls)) mean(sim$planted[intersect(ch$controls, names(sim$planted))]) else NA_real_,
-            ctl_labelled = if (length(ch$controls)) sum(grepl("^(LBL|CTL)_", ch$controls)) else NA_integer_))
+            ctl_labelled = if (length(ch$controls)) sum(grepl("^(LBL|CTL)_", ch$controls)) else NA_integer_),
+            journey$assay_cols[[a]])
         if (is.null(da)) {
             rows[[length(rows) + 1L]] <- do.call(newRow, c(base, list(n_T = length(ids), n_tested = 0L, lost = length(ids))))
             next
