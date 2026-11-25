@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-245 product (b) R2p: fix 9efafdad against tests-only c85267e8; panel file passes, the 12 other files same (frozen UI unchanged without MSR_BUNDLE), R CMD check nothing only on head; ceiling 460 job-minutes; decides A2",
+  "label": "KIT-245 product (b) R2p base c85267e8 head 9efafdad with check",
+  "package_commit": "9efafdad5ecc909a9fe278d89ee8eecde2cd4492",
+  "base_commit": "c85267e8400839f2cac927c7639fd6eeb92dfa30",
+  "tools_ref": "",
+  "tests": [
+    "test-kit245-github-panel.R",
+    "test-omic-summary-module.R",
+    "test-kit245-github-push-safety.R",
+    "test-github-management-direct-shared.R",
+    "test-kit234-workbooks-withdrawn.R",
+    "test-lipid-14a-summary-module-characterization.R",
+    "test-lipid-15-summary-module-seams.R",
+    "test-metab-05-summary-module-characterization.R",
+    "test-module-ci-trx-summary.R",
+    "test-module-ui-wrapper-direct-shared.R",
+    "test-omic-gui-config.R",
+    "test-optional-packages.R",
+    "test-prot-12-summary-module-contracts.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
