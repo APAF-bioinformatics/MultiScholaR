@@ -1,4 +1,4 @@
-# KIT-226 outcome (ticket r1.2; owner's decisions VAL-196)
+# KIT-226 outcome (ticket r1.2; owner's decisions VAL-196, wording corrected by VAL-208)
 
 State: R1, R2, the merge of staging 16112917 (KIT-215 in), control C and the re-freeze are done. The merge check rides
 a merge train and the shared full suite is pending (no own full suite, coordinator).
@@ -68,12 +68,13 @@ cover the same behaviour. Stop rule 1 not triggered (no failing-first row passed
 | Re-freeze of exactly the changed leaves | met | 1e2641be (49 lines) |
 | Merge check, shared R3 | pending | rides a merge train |
 
-## Stored references awaiting re-freeze (not edited)
+## Stored references re-frozen (1e2641be; authority VAL-196 with VAL-208)
 
 `test-omic-enrich-module.R`: the 38 leaves of section 5 (i), the two plot leaves (`:1842`, `:1847`), the summary leaf
-(`:1259`), and the two `kernel_gprofiler` run `files` leaves of the pathway TSVs (OD-3; VAL-196 (4) does not name
-them: coordinator to confirm). `tests/testdata/gui-entry/prot_dia.json`: 6 leaves. `test-omics-enrich-core.R`
-reads the W1 frozen values, so it follows that re-freeze with no edit of its own.
+(`:1259`), and the two `kernel_gprofiler` run `files` leaves of the pathway TSVs (`:1923`, `:1926`; named by VAL-208).
+`tests/testdata/gui-entry/prot_dia.json`: 6 leaves. `test-enrichment-significance.R:497` (named by VAL-208) was
+changed in the tests-first commit. `test-omics-enrich-core.R` reads the W1 frozen values, so it follows that
+re-freeze with no edit of its own.
 `tests/testthat/helper-module-ci-prot-enrich.R:167-170` keeps its own fixture with the old mapping (left as is).
 
 ## Attribution and re-freeze go leaf by leaf (audit K226-I04, I07)
