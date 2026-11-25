@@ -147,17 +147,19 @@ OBSERVED (run 45676413310, head e337e72b, base 5dfe2bc8; 238.1 job-minutes in al
   both sides: `test-kit224-ruv-feature-levels.R` (1), `test-workflow-operation-registry.R` (2).
 - Check: 0 errors, 3 warnings, 3 notes on both sides; findings identical (6), none only on head.
 
-## R3 (the ticket's one correction pass: test E7, tests only; declared before the request)
+## R3 (the ticket's one correction pass: test E7, tests only): NOT RUN
 
-- Purpose: the mean half of VAL-284 (1) has no falsifying test (audit I02). E7: id V, row A (0, 300, 300, NA) against
+- Purpose: the mean half of VAL-284 (1) had no falsifying test (audit I02). E7: id V, row A (0, 300, 300, NA) against
   row B (NA, NA, 250, 250), both measured in 2 of 4; A's mean of its measured values 300 (200 with the zero averaged),
   B's 250; the decided rule keeps A, KIT-214's rule keeps B.
-- Base: the R2 base `5dfe2bc8` plus the E7 test file only (the commit is recorded in `runs.tsv`); head: the commit of
-  this section. Files: `test-kit258-duplicate-completeness.R` only; no change under `R/`.
-- Prediction: base, E7 fails (it keeps B) in the declared-step cases and the kernel and S4 cases; head, E7 passes; the
-  file's passed count rises by E7's assertions (142 to 149 on head per the audit's count), no failure.
-- Ceiling: about 30 job-minutes for both jobs (the ticket's correction ceiling of 705 is unchanged). Decision: if E7 does
-  not behave as predicted, stop and report; no second run and no code change.
+- Not run. The base side needs a tests-only commit on `5dfe2bc8` pushed to a base branch; that push was refused by the
+  permission system on 2026-11-26 and is parked for the owner. No commit or run for R3 is recorded in `runs.tsv`.
+- E7's failure under KIT-214's rule is shown by reading only until the owner allows the base push (KIT-214 averages
+  A's non-missing values to 200, below B's 250, and keeps B).
+- E7's first execution is the merge train's run, head side only. Prediction there: `test-kit258-duplicate-completeness.R`
+  only on head, 162 passed, 0 failed (142 + 20: E7 adds seven tests, four on the declared step with three
+  expectations each, one on the two kernels with four, two on the S4 methods with two each). Any other count, or a
+  failure in E7: stop and report; no code change.
 
 ## Acceptance criteria
 
