@@ -42,4 +42,50 @@ staging as base. KIT-200 is not in this train (it joins a later one).
 
 ## Result
 
-(filled after the run)
+Run 45503677179 (request `merge-train-20261125-485ec43d`, run-tests commit 664d0579), head
+485ec43d against base cf8af245, sent once; conclusion success; 538.7 job-minutes of the 900
+ceiling (tests 511.6, check 26.2, plan and results 0.8). Tables in `merge-train-20261125/`
+(`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`). Staging was still at cf8af245 when the result was read.
+
+Observed, 67 files: 54 `same`, 13 not `same`:
+
+| file | base p/f | head p/f | verdict | ticket |
+|---|---|---|---|---|
+| test-kit202-intensity-filter-samples.R | absent | 163/0 | only-on-head | KIT-202, declared |
+| test-metab-qc-shared.R | 19/0 | 20/0 | count-changed | KIT-202, declared |
+| test-workflow-omics-declarations.R | 46/22 | 45/23 | message-changed | KIT-202, declared (VAL-181) |
+| test-workflow-omics-binding-steps.R | 58/1 | 58/1 | message-changed | KIT-202, declared (VAL-189) |
+| test-integration-removed-factors.R | absent | 526/0 (3 skipped) | only-on-head | KIT-184, declared |
+| test-workflow-integration-input.R | 181/0 | 241/0 | count-changed | KIT-184 |
+| test-integration-input-lipid-metab.R | 132/0 | 208/0 | count-changed | KIT-184 |
+| test-integration-input-transcriptomics.R | 57/0 | 78/0 | count-changed | KIT-184 |
+| test-integration-enrichment-tests.R | 180/0 | 181/0 | count-changed | KIT-184 |
+| test-integration-gui.R | 395/0 | 397/0 | count-changed | KIT-184 |
+| test-integration-enrichment-mofa.R | 0/0 (2 skipped) | 0/0 (3 skipped) | count-changed | KIT-184 |
+| test-omic-summary-module.R | 1675/28 | 1675/28 | message-changed | KIT-184 |
+| test-omics-summary-core.R | 676/25 | 676/25 | message-changed | KIT-184 |
+
+`test-gui-entry-proteomics.R` is `same` (189/4 on both sides; the 4 are lane `prot_dia`);
+`test-gui-entry-lipidomics.R` and `test-gui-entry-metabolomics.R` `same`. R CMD check: 0 ERRORs,
+3 WARNINGs, 3 NOTEs on both sides, all 6 findings identical, none only on head.
+
+Each of the four KIT-202 rows above is byte-identical to its row in KIT-202's R3 table
+(`kit-202/r3/compare.tsv`), and each of the nine KIT-184 rows is byte-identical to its row in
+KIT-184's audited R3b table (`kit-184/r3/b/compare.tsv`).
+
+Verdicts:
+
+- KIT-202: meets its declared differences exactly; every other file `same`.
+- KIT-184: its two declared items met (new file only on head and passing; GUI-entry file `same`).
+  Eight further rows are not in the coordinator's short list: six count-changed files where
+  head passes more tests and fails none (this ticket's added tests), and the two summary files,
+  message-changed on expectations that fail on both sides. In those two the transcriptomics
+  captures now list the integration file the ticket writes ("transcriptomics": "<present>").
+  This is the ticket's intended change against references that already fail on staging,
+  recorded in `kit-184/outcome.md` and accepted at Re-check 1 on R3b. Inferred: same or better
+  under the ticket's audited declarations; the coordinator confirms.
+- Check: identical on both sides.
+
+Not checked: the trees after the run's head (docs only: this file, the tables, the ledger's
+status cells); any file outside the 67.
