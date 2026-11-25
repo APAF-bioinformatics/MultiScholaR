@@ -1,3 +1,4 @@
 run_id	commit	purpose	minutes	result
 45328062374	ed56c7a6	R1 failing-first: new test file and the two rewritten contract files; family.tsv check	25	every stated value seen; T-A5 instrument defect (fixture row names), family identical
 45329779064	base 2c399d0c, head fa1f9909	R1-2: T-A5 instrument re-run (VAL-54, 1 of 3) on base; the new and rewritten tests on the fix	29	base: every stated failing value, T-A5 included; head: all pass (60, 312, 1153 expectations), verdict fixed in all 3 files
+45573413958	base dd769671, head 65da7eab	R0: blind M1 lifecycle (r 9001-9005, three kernels, forced-failure cell)	23	every check passes (17 of 17); precision by formula: 982 gated, 8 reported, projected 11.63 core-hours
