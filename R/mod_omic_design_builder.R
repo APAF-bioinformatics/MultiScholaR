@@ -432,7 +432,8 @@ mod_omic_design_builder_server <- function(id, data_tbl, config_list, column_map
         registerOmicsDesignBuilderObservers(input, output, session, data_tbl, initial_state, column_mapping,
             config_list, list(design_matrix = design_matrix, data_cln = data_cln_reactive,
                 sample_names = sample_names_reactive, groups = groups, factors = factors, contrasts = contrasts,
-                removed_samples = removed_samples, result = result_rv),
+                removed_samples = removed_samples, result = result_rv,
+                tech_rep_selection_clear = shiny::reactiveVal(FALSE)),
             adapter, builder_texts, replicate_testid, function(value) {
                 # The level order the user entered and the runs the user removed (trx).
                 if (record_excluded_runs) {
@@ -528,6 +529,12 @@ registerOmicsDesignSelectionInputs <- function(input, session, state) {
         # Each selection kept where it is still offered (a NULL selection stays NULL); the single
         # rename choice is "" otherwise.
         selected <- shiny::isolate(lapply(stats::setNames(inputIds, inputIds), function(inputId) input[[inputId]]))
+        # KIT-256 (VAL-249): after a successful technical-replicate Assign the box is emptied. The input still holds
+        # the old selection in this flush, so the Assign observer's clear would otherwise be overwritten here.
+        if (isTRUE(shiny::isolate(state$tech_rep_selection_clear()))) {
+            selected$tech_rep_samples <- character(0)
+            state$tech_rep_selection_clear(FALSE)
+        }
         rename <- selected$sample_to_rename
         selected$sample_to_rename <- if (!is.null(rename) && rename %in% availableRuns) rename else ""
         for (inputId in inputIds) {
@@ -651,7 +658,14 @@ registerOmicsDesignEdits <- function(input, session, state, adapter) {
         shiny::req(input$tech_rep_samples)
         assignment <- adapter$tech_reps(state$design_matrix(), input$tech_rep_samples,
             input$tech_rep_assignment_mode, input$manual_replicate_number)
-        if (isTRUE(assignment$ok)) state$design_matrix(assignment$designMatrix)
+        if (isTRUE(assignment$ok)) {
+            # KIT-256 (VAL-249): the selection is emptied after a successful Assign; a refused one keeps it. The
+            # selection observer runs only when the design changed and reads the flag; the direct clear covers an
+            # Assign that left the design as it was.
+            if (!identical(assignment$designMatrix, state$design_matrix())) state$tech_rep_selection_clear(TRUE)
+            state$design_matrix(assignment$designMatrix)
+            shiny::updateSelectizeInput(session, "tech_rep_samples", selected = character(0))
+        }
         shiny::showNotification(assignment$message, type = assignment$type)
     })
     shiny::observeEvent(input$add_contrast, {

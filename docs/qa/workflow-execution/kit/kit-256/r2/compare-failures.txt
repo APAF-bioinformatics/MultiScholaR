@@ -1,0 +1,56 @@
+== test-kit256-tech-rep-selection-cleared.R | fixed | KIT-256 E1: after a successful Assign the box is emptied (lipidomics, transcriptomics)
+-- base:
+  Expected lipidomics last message for tech_rep_samples to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+  Expected transcriptomics last message for tech_rep_samples to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+-- head:
+  <passes>
+
+== test-kit256-tech-rep-selection-cleared.R | fixed | KIT-256 E2: after a successful Assign the box is emptied (proteomics, dia_long)
+-- base:
+  Expected `last` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+-- head:
+  <passes>
+
+== test-kit256-tech-rep-selection-cleared.R | fixed | KIT-256 E3: the next sample's runs added to what the box shows give two samples, not one
+-- base:
+  Expected lipidomics samples of S1 to S4 to be identical to `list(c("S1", "S2"), c("S3", "S4"))`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `actual[[1]]`:   "S1" "S2" "S3" "S4"
+  `expected[[1]]`: "S1" "S2"          
+  
+  `actual[[2]]` is absent
+  `expected[[2]]` is a character vector ('S3', 'S4')
+  Expected transcriptomics samples of S1 to S4 to be identical to `list(c("S1", "S2"), c("S3", "S4"))`.
+  Differences:
+  `actual` is length 1
+  `expected` is length 2
+  
+  `actual[[1]]`:   "S1" "S2" "S3" "S4"
+  `expected[[1]]`: "S1" "S2"          
+  
+  `actual[[2]]` is absent
+  `expected[[2]]` is a character vector ('S3', 'S4')
+-- head:
+  <passes>
+
+== test-kit256-tech-rep-selection-cleared.R | fixed | KIT-256 G3: an Assign that leaves the design identical also empties the box
+-- base:
+  Expected `kit256Obs("G3", kit256Last(api$log, "tech_rep_samples"))` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "S1" "S2"
+  `expected`:          
+-- head:
+  <passes>
+

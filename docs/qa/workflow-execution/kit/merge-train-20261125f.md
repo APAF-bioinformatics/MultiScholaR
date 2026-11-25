@@ -237,3 +237,11 @@ Stored references that move with KIT-224 and are not edited (they wait for the s
 end-of-project re-record): the files named in the owner's decisions VAL-206, VAL-213 and VAL-236.
 
 Not shown by this record: the full suite on the landed tree (next checkpoint).
+
+## Correction note (coordinator, 2026-11-26)
+
+Two items in this record's "Not checked" list are worded wrongly; the record above is left as
+written. (1) "KIT-251's A4 at the next checkpoint": KIT-251's A4 is its records (NEWS, ledger,
+outcome, hand-off) and is met; the full suite is not one of KIT-251's criteria. (2) "KIT-224's R3
+on the merged tree": KIT-224's R3 (run 45573139074) ran at 2871125b against 67569959, not on the
+merged tree; the full suite on the merged tree is the staging checkpoint.

@@ -589,8 +589,11 @@ runWorkflowOmicsInProcessCorrelation <- function(binding, manager, group, thresh
 #' @param failed `function(error)` for a failure before the results exist.
 #' @param invalidate `function()` clearing the tab's results: called when the new manifest is on the head but its rows could
 #'   not be read, so that the tab shows no results rather than the previous run's beside this run's volcano.
+#' @param experiment_paths The project's paths: KIT-243 (S4) removes the earlier files under this DA's names before its
+#'   publication is requested (NULL: none removed).
 #' @noRd
-runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings, contrasts, deliver, failed, invalidate = NULL) {
+runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings, contrasts, deliver, failed, invalidate = NULL,
+    experiment_paths = NULL) {
     # A worker's input is the head; a tab left on an earlier state reloads it (in process the DA could run on either).
     if (!identical(source, getWorkflowStateReference(manager))) {
         stop("the session has moved on from the state this tab loaded; load the session again", call. = FALSE)
@@ -602,6 +605,12 @@ runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings
     runner$run(actions, done = function() {
         # KIT-082: the worker reads the contrasts' tables, and the tab holds their rows without the per-sample columns.
         accepted <- withWorkflowStateScope(manager, function() acceptWorkflowOmicsDaManifest(binding, manager, source, settings, contrasts, values, read_results = FALSE))
+        # KIT-243 (S4): a removal that fails takes the no-results branch; its marker then refuses Copy and the Report.
+        removal <- tryCatch(removeWorkflowDaOwnFigures(manager, experiment_paths, binding$omic_type), error = function(error) error)
+        if (inherits(removal, "error")) {
+            if (is.function(invalidate)) invalidate()
+            return(failed(removal))
+        }
         tab <- NULL
         export <- NULL
         finish <- function(outcome) {

@@ -1105,29 +1105,34 @@ INTEGRATION_ENRICHMENT_CHECKED_SAMPLES <- 11L
 #' @noRd
 integrationEnrichmentTestOfRecord <- function(n_samples) "camera"
 
-#' The enrichment's settings with their defaults (KIT-141; INT-18, INT-19): the rules chosen in this ticket, for the
-#' user to confirm (`settled_by`).
+#' The enrichment's settings with their defaults (KIT-141; INT-18, INT-19), each with what settled it (`settled_by`).
+#' KIT-240: eight of the defaults chosen in KIT-141 still await the owner's confirmation and say so; the STRING false
+#' discovery rate and rank direction were decided as recorded best practice.
 #' @return Named list by setting: `default`, `choices` (NULL for a number or a free value), `settled_by`.
 #' @noRd
 integrationEnrichmentParameterSpec <- function() {
-    chosen <- "KIT-141 (to be confirmed by the user)"
+    ranked <- "KIT-141 (chosen 2026-11-21 under INT-18; awaiting the owner's confirmation; methods ledger, the ranked list)"
+    pathways <- paste("KIT-141 (chosen 2026-11-21 under INT-19; awaiting the owner's confirmation; methods ledger, KEGG and",
+        "Reactome rules)")
+    string <- "KIT-141 (decided 2026-11-20 as recorded best practice; methods ledger, the STRING ranked enrichment client)"
     list(
         # The correlation of each feature with the factor over the biological samples (pairwise complete).
-        correlation_method = list(default = "pearson", choices = c("pearson", "spearman"), settled_by = chosen),
+        correlation_method = list(default = "pearson", choices = c("pearson", "spearman"), settled_by = ranked),
         # A feature needs a value in at least this many of the model's biological samples to be ranked.
-        min_samples = list(default = 5L, choices = NULL, type = "whole", settled_by = chosen),
+        min_samples = list(default = 5L, choices = NULL, type = "whole", settled_by = ranked),
         # STRING: the species (NCBI taxon), the false discovery rate of the terms it reports, the rank direction
         # (`ge_enrichment_rank_direction`, as STRING's own example: -1).
-        string_species = list(default = 9606L, choices = NULL, type = "whole", settled_by = chosen),
-        string_fdr = list(default = 0.05, choices = NULL, type = "number", settled_by = chosen),
-        string_rank_direction = list(default = -1L, choices = NULL, type = "whole", settled_by = chosen),
+        string_species = list(default = 9606L, choices = NULL, type = "whole",
+            settled_by = "KIT-141 (human, 9606, as the starting value; no decision recorded; awaiting the owner's decision)"),
+        string_fdr = list(default = 0.05, choices = NULL, type = "number", settled_by = string),
+        string_rank_direction = list(default = -1L, choices = NULL, type = "whole", settled_by = string),
         # KEGG and Reactome: the organism, the pathway sizes tested (measured, mapped members), the seed of the test.
-        kegg_organism = list(default = "hsa", choices = NULL, type = "text", settled_by = chosen),
-        reactome_organism = list(default = "Homo sapiens", choices = NULL, type = "text", settled_by = chosen),
-        min_set_size = list(default = 5L, choices = NULL, type = "whole", settled_by = chosen),
-        max_set_size = list(default = 500L, choices = NULL, type = "whole", settled_by = chosen),
+        kegg_organism = list(default = "hsa", choices = NULL, type = "text", settled_by = pathways),
+        reactome_organism = list(default = "Homo sapiens", choices = NULL, type = "text", settled_by = pathways),
+        min_set_size = list(default = 5L, choices = NULL, type = "whole", settled_by = pathways),
+        max_set_size = list(default = 500L, choices = NULL, type = "whole", settled_by = pathways),
         # The seed of the pre-ranked and (KIT-191) permutation tests; the correlation-adjusted tests use none.
-        seed = list(default = 20261121L, choices = NULL, type = "whole", settled_by = chosen),
+        seed = list(default = 20261121L, choices = NULL, type = "whole", settled_by = pathways),
         # KIT-183: KEGG, Reactome (and Gene Ontology): the test; absent, the test of record for the data set
         # (`integrationEnrichmentTestOfRecord()`); STRING ignores it. KIT-191: four tests offered (VAL-85 (2)).
         test = list(default = NULL, choices = INTEGRATION_ENRICHMENT_TESTS_OFFERED, type = "text",

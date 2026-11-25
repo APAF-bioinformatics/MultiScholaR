@@ -46,3 +46,7 @@ A list containing two elements. $results returns a list of tables containing log
 \description{
 Run the linear model fitting and statistical tests for a set of contrasts, then adjust with Empirical Bayes function. A protein with no value in any analysed sample is not tested and is listed (\code{features_without_values}).
 }
+\details{
+TREAT uses the same trend and robust settings as the moderated test (\code{eBayes_trend}, \code{eBayes_robust}; KIT-201).
+With both FALSE the TREAT statistics are those of one prior variance without the robust step, as before KIT-201.
+}
