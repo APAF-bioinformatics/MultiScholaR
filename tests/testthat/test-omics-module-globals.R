@@ -53,7 +53,9 @@ test_that("KIT-030: the super-assignments in the lipid and metab code are the li
         "func_omics_design_shared.R",
         "func_lipid_da_model.R", "func_metab_da_core_engine.R",
         "func_lipid_da_results.R", "func_metab_da_orchestration.R",
-        "func_lipid_s4_correlation_methods.R", "func_metab_s4_qc_methods.R"
+        "func_lipid_s4_correlation_methods.R", "func_metab_s4_qc_methods.R",
+        # KIT-261: registerOmicNormRunButtonState's `shown_idle`, the last state sent to the page.
+        "mod_omic_norm.R"
     )
     hits <- omics_global_hits(sources, "<<-")
     files_hit <- unique(sub(":.*$", "", hits))
