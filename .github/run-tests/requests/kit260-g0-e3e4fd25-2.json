@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-260 G0: observe the MS-DIAL default ITSD pattern's matches and each consumer at base (staging 16112917 + script only, branch kit-260-g0); cases D0, D0b, D1 to D7; 1 job, ceiling 60 job-minutes; replaces kit260-g0-e3e4fd25 (pushed blank, stops at plan)",
+  "label": "KIT-260 G0 base observation e3e4fd25 (staging 16112917 + tools/kit260/g0.R)",
+  "package_commit": "e3e4fd25db2a74690d03b1803e8e210c2492d56b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tools/kit260/g0.R",
+      "args": [
+        "kit260-g0"
+      ],
+      "env": {},
+      "out": "kit260-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
