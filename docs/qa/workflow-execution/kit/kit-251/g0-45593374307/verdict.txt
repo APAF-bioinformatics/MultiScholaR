@@ -1,0 +1,2 @@
+A (managed): one click, 1 worker request(s) for protein_replicate_filter; stop rule 1 does not fire
+B recorded
