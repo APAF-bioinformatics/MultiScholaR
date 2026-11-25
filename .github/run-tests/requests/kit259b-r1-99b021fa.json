@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-259 second correction (VAL-287) R1 failing-first on the tests-only commit (R/ as staging 12701142); decides whether I02 is real (A3-E5 must fail by the printed label); 1 job, ceiling 45 job-minutes",
+  "label": "KIT-259b R1 on kit-259b 99b021fa (tests only)",
+  "package_commit": "99b021fac9dcc47ffac79d2b3151bf73c24c7d39",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit259b-second-correction.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
