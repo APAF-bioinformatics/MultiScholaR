@@ -905,12 +905,25 @@ k233Selector <- function(S, target, by) {
 k233Press <- function(S, step, target, by = "id") {
     selector <- k233Selector(S, target, by)
     started <- Sys.time()
+    answered <- 0
+    last <- NULL
+    silent <- 0L
     repeat {
+        polled <- Sys.time()
         r <- k233Js(S, sprintf(K233_PRESS_JS, k233Json(selector), "false"))
-        if (isTRUE(r$visible) && !isTRUE(r$disabled)) break
-        if (k233Seconds(started) > 30 || k233Remaining(S$G) <= 0) {
-            reason <- if (!isTRUE(r$found)) "not in the page" else if (!isTRUE(r$visible)) "not visible" else "disabled"
-            return(list(ok = FALSE, reason = sprintf("%s is %s (%s)", target, reason, r$test %||% ""), test = r$test))
+        if (is.null(r)) {
+            silent <- silent + 1L
+        } else {
+            last <- r
+            answered <- answered + k233Seconds(polled) + 0.5
+            if (isTRUE(r$visible) && !isTRUE(r$disabled)) break
+        }
+        if (answered > 30 || k233Seconds(started) > S$hard_s || k233Remaining(S$G) <= 0) {
+            reason <- if (is.null(last)) "not answered by the page" else if (!isTRUE(last$found)) "not in the page" else
+                if (!isTRUE(last$visible)) "not visible" else "disabled"
+            k233KeepPane(S, step)
+            return(list(ok = FALSE, test = last$test, reason = sprintf("%s is %s (%s; %d unanswered polls; last script error: %s)",
+                target, reason, last$test %||% "", silent, S$js_error %||% "none")))
         }
         Sys.sleep(0.5)
     }
@@ -918,6 +931,14 @@ k233Press <- function(S, step, target, by = "id") {
     k233LogAction(S, step, target, "click")
     if (!isTRUE(r$clicked)) return(list(ok = FALSE, reason = paste(target, "could not be clicked"), test = r$test))
     list(ok = TRUE, t = r$t, test = r$test)
+}
+
+k233KeepPane <- function(S, step) {
+    html <- k233Js(S, paste0("(function(){var u=document.getElementById('proteomics_workflow-workflow_tabs');",
+        "var a=u?u.querySelector('li.active > a, a.active'):null;var h=a?(a.getAttribute('href')||''):'';",
+        "var p=h?document.querySelector(h):document.body;return p?p.outerHTML:'';})()"))
+    writeLines(as.character(html %||% paste("no answer:", S$js_error %||% "")),
+        file.path(S$G$out, sprintf("%s-%s-unreachable-dom.txt", S$label, step)))
 }
 
 k233Upload <- function(S, step, id, path, timeout_s = S$hard_s) {
@@ -987,26 +1008,29 @@ k233Wait <- function(S, spec, since) {
         if (!isTRUE(st$conn) || isTRUE(st$overlay)) {
             return(result("crashed", "the browser session was disconnected from the application"))
         }
+        open <- Filter(\(m) is.null(m$end), st$modals)
+        open <- if (length(open)) open[[length(open)]] else NULL
+        expected <- !is.null(open) && open$title %in% spec$modals
+        if (expected && !any(handled == open$start) && is.function(spec$on_modal)) {
+            handled <- c(handled, open$start)
+            spec$on_modal(S, open)
+        }
         d <- isTRUE(spec$dom(st))
         g <- if (S$test_mode && is.function(spec$digest)) isTRUE(spec$digest(st)) else NA
         if (d && is.na(dom_t)) dom_t <- el
         if (isTRUE(g) && is.na(dig_t)) dig_t <- el
-        if (if (is.na(g)) d else g) return(k233Settle(S, spec, result("complete"), started))
+        # A user answers an expected dialog before going on: an open expected dialog holds the step's completion.
+        if (!expected && (if (is.na(g)) d else g)) return(k233Settle(S, spec, result("complete"), started))
         errors <- Filter(\(n) identical(n$type, "error"), st$notes)
         if (length(errors) && is.null(err)) err <- list(t = el, msg = errors[[1L]]$text)
         if (!is.null(spec$status_out) && !is.null(spec$refusal) && is.null(ref)) {
             text <- k233Text(st, spec$status_out)
             if (grepl(spec$refusal, text, ignore.case = TRUE)) ref <- list(t = el, msg = text)
         }
-        open <- Filter(\(m) is.null(m$end), st$modals)
-        open <- if (length(open)) open[[length(open)]] else NULL
         if (is.null(open)) {
             mod <- NULL
-        } else if (open$title %in% spec$modals) {
-            if (!any(handled == open$start) && is.function(spec$on_modal)) {
-                handled <- c(handled, open$start)
-                spec$on_modal(S, open)
-            }
+        } else if (expected) {
+            mod <- NULL
         } else if (!isTRUE(open$progress) && (is.null(mod) || !identical(mod$start, open$start))) {
             mod <- list(t = el, start = open$start, msg = sprintf("modal '%s': %s", open$title, open$text))
         }
@@ -1156,8 +1180,9 @@ k233Capture <- function(S, spec, res, since) {
     for (o in outputs) {
         covered <- isTRUE(o$exists) && is.finite(ratio) && o$bottom * ratio <= size[[2L]] + 2 &&
             o$right * ratio <= size[[1L]] + 2 && o$top >= -1
-        how <- if (covered) "pane image" else "not covered"
-        if (!covered && isTRUE(o$exists)) {
+        zero <- isTRUE(o$exists) && isTRUE(o$bottom - o$top <= 0)
+        how <- if (covered) "pane image" else if (zero) "zero size (nothing drawn)" else "not covered"
+        if (!covered && !zero && isTRUE(o$exists)) {
             element <- file.path(G$out, sprintf("%s-out-%s.png", stem, sub(".*-", "", o$id)))
             k233Js(S, sprintf("(function(){var e=document.getElementById(%s);if(e){e.scrollIntoView();}return !!e;})()",
                 k233Json(o$id)))
@@ -1519,7 +1544,8 @@ k233StepNormalisation <- function(S, R, step, route) {
         NULL
     }
     first <- k233Action(S, list(step = "S6.1", name = "normalisation and RUV at the defaults", target = "prot-norm-run",
-        by = "testid", tabs = tabs, prepare = prepare, digest = \(st) k233DigestHas(st, "ruv_corrected"),
+        by = "testid", tabs = tabs, prepare = prepare,
+        # No digest signal: the state ruv_corrected is committed before the step ends (run L rerun 1, 45525410012).
         dom = \(st) k233Noted(st, "Normali[sz]ation (and RUV correction )?completed", "message"),
         outputs = norm(c("norm_log", "ruv_optimization_summary"))))
     if (!identical(first$outcome, "complete")) return(first)
