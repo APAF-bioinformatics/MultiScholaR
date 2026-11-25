@@ -76,12 +76,30 @@ them are the evidence; no result file was compared).
 One addition to the ticket's list of rows: E1d (the observer passes the form's organism and taxon to the notice), a
 falsifier for the plumbing in `mod_prot_import_server_helpers.R`; it failed on the code before the fix and passes on it.
 
+## Correction pass (AUDIT-KIT-265-impl-20261126 I01; coordinator's ruling)
+
+The ticket's one correction pass, spent on I01: when only the form's Organism Name was empty, the notice said the form
+had no organism, although the form's Taxonomy ID (9606 by default) still sets the UniProt query and the enrichment
+organism. Repair as the register gives it: the notice follows the taxon (name and taxon: as before; taxon alone: "This
+analysis will use the Taxonomy ID entered in the form: <id> (the form gives no organism name)."; no taxon: "The form has no
+Taxonomy ID, so UniProt annotation will have no organism to use.", the enrichment clause dropped because enrichment's
+behaviour with no taxon is not checked). Staging 15d86bd4 was merged first (a14f956c4; NEWS and ledger kept both
+sides, staging's first; no conflict under R/, tests/ or inst/). Tests first (6eb7dd239: E1e and the new blank-form text
+in E1b, E1c and the two declared edits; nothing under R/), predictions committed (54bc05dea), the fix (d42443b6f), then
+one comparison run in R2's form: **45711795705, base 6eb7dd23, head d42443b6, as predicted** (new file 126/3 -> 129/0,
+kit250 118/1 -> 119/0, 01c 437/1 -> 438/0, seven files `same`, check identical; 53.3 job-minutes). No H1: session A's
+notice (name and taxon present) does not change. Also in this pass (records only): the ledger row replaced with the
+register's text (I02, placeholder `VAL-<merge>` kept, the bracketed I01 clause omitted because I01 is closed), the
+line ranges, the tag list and the limits above corrected, and the register's R-c alternative added to `wording.md`.
+
 ## Budget
 
-Core-hours = job-minutes x 4 / 60: R1 13.0 (0.87); R2 56.5 (3.77); H1 26.5 (1.77) = 96.0 job-minutes, **6.40
-core-hours** against 9.37 expected and the 64.33 ceiling. R2 came in under its estimate because the ten files ran in
-10 to 16 s each (the ticket assumed 1.75 minutes in all, plus install) and the checks took 13 to 16 minutes. The
-correction pass was not used; one H1 instrument rerun (1 of 3).
+Core-hours = job-minutes x 4 / 60: R1 13.0 (0.87); R2 56.6 (3.77); H1 26.5 (1.77); correction comparison 53.3 (3.55)
+= 149.4 job-minutes, **9.96 core-hours** against 9.37 expected for the ticket (without a correction pass) and the 64.33
+ceiling. (The register's per-job figures: R1 13.02, R2 56.58, H1 13.42 + 13.07; the first three lines above are
+rounded per run.) R2 came in under its estimate because the ten files ran in 10 to 16 s each (the ticket assumed 1.75
+minutes in all, plus install) and the checks took 13 to 16 minutes. The correction pass is spent; one H1 instrument
+rerun (1 of 3).
 
 ## Divergences and notes
 
@@ -92,6 +110,31 @@ correction pass was not used; one H1 instrument rerun (1 of 3).
 - `tools/refactor/staging/import-server-wave2/` holds an old copy of the organism helpers with the old texts; untouched
   (not part of the package build).
 - Unrelated defects: none found.
+
+## Hand-offs (AUDIT-KIT-265-impl-20261126; the register's words)
+
+- **I03 (owner information; candidate).** The refusal also stops imports whose search engine writes protein identifiers
+  differently from the FASTA's (for example `sp|P12345|ALBU_HUMAN` against `P12345`). Before the change these imports
+  could never show the organism window either; they silently used the form's organism. Now they are stopped with "check
+  that this is the FASTA file the search used". The way out (untick, enter the organism) works. Whether such identifiers
+  should be recognised is a later question: it would change the window's counts (normalise UniProt identifiers on both
+  sides in `analyzeOrganismDistribution` and the (c) test, or say that the identifiers differ).
+- **I04 (owner; wording with substance).** The (c) message adds "or untick 'Mixed species FASTA' ..." to VAL-304's
+  words. For a wrong FASTA that advice leads to an unticked import, which never compares the FASTA with the data. For
+  I03's case it is the right escape. The register's conditional text is in `wording.md` as an ALTERNATIVE; the shipped
+  string is unchanged.
+- **I05 (owner; wording pass).** The 10 s error toast against the refusals' length: R-iv 51 words and R-c 54 words
+  (15.3 s and 16.2 s at 200 words a minute). N1 is 72 words, but it persists.
+- **I06 (owner; wording pass).** The window sentence's "tested for enrichment" holds while the enrichment tab's "Filter to
+  target organism only" stays ticked (auto-ticked after Confirm; the user can untick it). What enrichment does with the
+  other organisms' proteins then is not checked. The README's "(one organism annotated and enriched)": "enriched" reads
+  as "tested for enrichment".
+- **I10 (coordinator; candidate).** A later failure in the same import (configuration or setup, after the (i) notice)
+  leaves the persistent "This analysis will use ..." notice beside the error until it is closed or the next import
+  starts. By reading. Candidate (small): remove the notice in `resetProtImportWorkflowStateOnError` (KIT-250's function).
+- **I14 (owner information; candidate).** Zero matches is VAL-304's "none" read literally. One match by chance (for
+  example one shared contaminant with OS=/OX=) shows the window preselected on that organism, with the unmatched row
+  beside it. That is not silent, but no low-match warning exists; a threshold would be a new owner decision.
 
 ## Not checked
 
@@ -126,18 +169,30 @@ it. Probably rare (not known how many users import mixed-species FASTA files).
 **Code references.** Base (82a5df02): `R/mod_prot_import_organism_helpers.R:72-76` (no protein column: silent
 `return(FALSE)`), `:86-98` (the warning, no organism named, 5 s), `:104-111` (counting error: a warning);
 `R/mod_prot_import_orchestration_helpers.R:358-360` (no FASTA table: silent `return(FALSE)`); the FASTA failure itself is
-logged at `R/func_prot_annotation_fasta_processing_helpers.R:341-352`. Fix (c40435efe):
-`R/mod_prot_import_organism_helpers.R:154-163` (protein column), `:178-197` (route (i)(c) refusal and the persistent
-notice), `:204-213` (the handler), `:50-110` (the constants and helpers); `R/mod_prot_import_orchestration_helpers.R:358-372`
-(the (iv) refusal); `R/mod_prot_import_server_helpers.R` (the call passes the form's organism and taxon). Present on
-`main` (`git show main:R/mod_prot_import.R`, around `:785` to `:883`) since 2025-12-04 (179eb0d2); in the tags v0.3.6.3,
-v0.5.0-rc1 and v0.9.0.
+logged at `R/func_prot_annotation_fasta_processing_helpers.R:341-352`. Fix (c40435efe; line numbers at that commit, the correction pass below moved the notice builder by a few lines):
+`R/mod_prot_import_organism_helpers.R:150-163` (protein column), `:177-196` (route (i)(c) refusal and the persistent
+notice), `:202-216` (the handler), `:50-122` (the constants and helpers); `R/mod_prot_import_orchestration_helpers.R:357-372`
+(the split condition and the (iv) refusal); `R/mod_prot_import_server_helpers.R:371-372` (the call passes the form's
+organism and taxon). Present on `main` (`git show main:R/mod_prot_import.R`: `:783-787` the FASTA failure continues,
+`:792` the analysis is skipped without a table, `:804` the column check skips silently, `:873-877` the headers warning,
+`:880-885` the counting warning) since 2025-12-04 (179eb0d2); in the tags archive/performance, archive/v0.35.1,
+v0.3.6.3, v0.5.0-rc1 and v0.9.0.
 
 **What changed in results.** No number of an import that completes changes. What changes is what the user is told and,
 for the four stopped cases, whether the import completes: it now stops, with a message saying what failed and what to do
 (untick 'Mixed species FASTA' and enter the organism, or fix the file), and clears what it wrote. For the case with no
 organism information in the FASTA headers the import still completes, now with a notice that stays until closed and
-names the organism used.
+names the organism used (when the form's Organism Name is empty but its Taxonomy ID is not, the notice names the
+Taxonomy ID; AUDIT-KIT-265-impl I01, repaired in the correction pass).
+
+Limits (AUDIT-KIT-265-impl I03, I01). (I03) The refusal for a FASTA that names organisms and contains none of the
+data's proteins compares accessions exactly (after splitting at ";", trimming and dropping an isoform suffix).
+Data whose protein identifiers are written differently from the FASTA's accession (for example
+`sp|P12345|ALBU_HUMAN` against `P12345`) match nothing and are refused with "Check that this is the FASTA file the search
+used", although it is. Before this change such imports never got the organism window either and silently kept the
+form's organism; unticking the option and entering the organism completes the import. Not checked against real exports.
+(I01) In the first implementation the notice said the form had no organism when only the Organism Name was empty,
+although the form's Taxonomy ID was then used; repaired in the correction pass (the notice follows the Taxonomy ID).
 
 **Evidence.** Runs 45698567707 (R1, failing first), 45700788798 (R2, base against head, check identical), 45703724770
 and 45706090379 (H1, a headless browser on a runner on the prot_dia fixture: 400 proteins, one organism, synthetic FASTA

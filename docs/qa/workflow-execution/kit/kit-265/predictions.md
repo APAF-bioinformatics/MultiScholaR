@@ -149,3 +149,10 @@ two declared edits (KIT-250 G3, the 01c test). The fix is the next commit.
 
 The failures on the base side are by assertion at the stated values and only the message differs (the notice's
 `duration`, `id`, type and the rest already hold on that code). Counts are derived by hand from the assertions.
+
+### Correction comparison result (run 45711795705): as predicted
+
+Every cell of the table above held: `fixed` for the three files with the predicted counts (the base failures are the
+message assertions only: E1b, E1c, E1e, G3, the 01c test), `same` for the seven others; `R CMD check` findings
+identical (0 errors, 3 warnings, 3 notes on both sides, 6 findings, none only on either). 53.3 job-minutes (3.55
+core-hours) against about 60 expected and the 120 ceiling. No H1: session A's notice (name and taxon present) is unchanged.
