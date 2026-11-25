@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-217 R3: full suite, head 6b9131dc (kit-217 after merging staging 16112917) vs staging 16112917, 20+20 shards, check; prediction in kit-217/outcome.md; ceiling 2980 job-minutes",
+  "label": "KIT-217 R3 full suite on kit-217 6b9131dc vs 16112917",
+  "package_commit": "6b9131dc6d36298ffbda9d15e9e31eac3191d8f2",
+  "base_commit": "16112917329a63ab062655f04db5bf1dd7df9729",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
