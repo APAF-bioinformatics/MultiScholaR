@@ -174,6 +174,20 @@ k237StopSession <- function(S) {
     invisible(NULL)
 }
 
+#' WL-4 (a) on metab_lc (SC-05): after S8 completes, the DA results table body is emptied in the page and the named
+#' outputs read again; a kind-3 finding naming the table is required.
+k237L4aOmic <- function(S, R, route) {
+    da <- sprintf("%s_workflow-de-da_results_table", route$omic)
+    emptied <- k233Js(S, sprintf(paste0("(function(){var e=document.getElementById(%s);if(!e){return false;}",
+        "var b=e.querySelectorAll('tbody');b.forEach(function(x){x.innerHTML='';});return b.length>0;})()"), k233Json(da)))
+    outputs <- k233CheckOutputs(S, c(sprintf("%s_workflow-de-da_summary_stats", route$omic), da))
+    empty <- vapply(Filter(function(o) !isTRUE(o$nonempty), outputs), function(o) o$id, character(1))
+    for (o in empty) k233Finding(S, "S8", 3L, paste("named output empty:", o, "(WL-4 (a) on metab_lc, planted)"), planted = TRUE)
+    k237Criterion(S$G, "WL-4", "(a) on metab_lc: the emptied DA results table gives a kind-3 finding naming it",
+        da %in% empty, sprintf("tbody emptied: %s; empty outputs at the second check: %s", k233Clean(emptied),
+            paste(empty, collapse = ", ")))
+}
+
 #' WL-3's crash: the whole tree ended while S2 waits; the port must refuse within 10 s. The processx handle is then
 #' replaced by one that reports the process alive, so that the step's `crashed` can come only from the browser session
 #' (its disconnection or the page no longer answering), never from the handle's exit alone (6, WL-3).
@@ -289,23 +303,32 @@ k237ProjectPaths <- function(R) {
         da = file.path(base, "results", omic, if (identical(omic, "proteomics")) "da_proteins" else "de"))
 }
 
-#' Point the page helpers that name the proteomics shell at the route's omic (the active pane for screenshots).
+#' Point the page helpers that name the proteomics shell at the route's omic: the active pane for screenshots, and
+#' (SC-04) the state script's stepper, `<omic>_workflow-workflow_progress` (R/mod_omic_workflow.R:40, :119).
 k237SetOmic <- function(omic, tabs_id) {
     assign("K233_MARK_PANE_JS", gsub("proteomics_workflow-workflow_tabs", tabs_id, K237_MARK_PANE_JS_KIT233,
         fixed = TRUE), envir = globalenv())
+    assign("K233_STATE_JS", gsub("#proteomics_workflow-workflow_progress", sprintf("#%s_workflow-workflow_progress", omic),
+        K237_STATE_JS_KIT233, fixed = TRUE), envir = globalenv())
 }
 
 k237Rebind <- function() {
     env <- globalenv()
     assign("k233ActionKit233", k233Action, envir = env)
     assign("K237_MARK_PANE_JS_KIT233", K233_MARK_PANE_JS, envir = env)
+    assign("K237_STATE_JS_KIT233", K233_STATE_JS, envir = env)
+    if (!grepl("#proteomics_workflow-workflow_progress", K233_STATE_JS, fixed = TRUE)) {
+        stop("journey.R's state script no longer names #proteomics_workflow-workflow_progress: the stepper rebinding ",
+            "(SC-04) needs revising")
+    }
     assign("k233Action", k237Action, envir = env)
     assign("k233StopSession", k237StopSession, envir = env)
     assign("k233ProjectPaths", k237ProjectPaths, envir = env)
     c("k233Action -> k237Action (journey.R's action, then this ticket's records)",
         "k233StopSession -> k237StopSession (tree kill, port refusal confirmed)",
         "k233ProjectPaths -> k237ProjectPaths (the folder S1 kept; the route's omic)",
-        "K233_MARK_PANE_JS -> the route's workflow tabset (per session)")
+        "K233_MARK_PANE_JS -> the route's workflow tabset (per session)",
+        "K233_STATE_JS -> the route's omic stepper (per session, SC-04)")
 }
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -456,21 +479,10 @@ k237WL <- function(G) {
     planted <- Filter(function(f) identical(f$session, "WL1") && identical(f$step, "S6.2") && identical(f$kind, 3L) &&
         isTRUE(f$planted) && grepl("post_norm_pca", f$message, fixed = TRUE), G$findings)
     k237Criterion(G, "WL-4", "(c) a named normalisation figure deleted after S6 gives a kind-3 finding naming it",
-        length(planted) == 1L, sprintf("deleted: %s; findings: %s", k233Clean(S1$planted_deleted),
+        length(planted) == 1L && nzchar(S1$planted_deleted %||% ""), sprintf("deleted: %s; findings: %s", k233Clean(S1$planted_deleted),
             paste(vapply(planted, function(f) f$message, character(1)), collapse = " || ")))
     guard("WL-5", k237L5(G, "WL1"))
-    # One journey on each further Windows route (OD-1 (b), owner 2026-11-25, VAL-225).
-    for (id in setdiff(names(routes), "prot_lfq")) {
-        if (k233Remaining(G) < 600) {
-            k237Criterion(G, "WL-1", sprintf("%s: journey run", id), FALSE, "not started: less than 10 minutes left")
-            next
-        }
-        label <- paste0("WL1-", id)
-        S <- k237RunSession(G, routes[[id]], G$runs[[id]](paste0("k237_wl_", id)), label)
-        k237StopSession(S)
-        guard("WL-1", k237WL1Criteria(G, label, proteomics = FALSE))
-        guard("WL-5", k237L5(G, label))
-    }
+    # SC-07: the blocking WL-2 and WL-3, and the user-mode chooser sessions, before the three added journeys.
     # WL-2: a base directory that does not exist.
     missing <- paste0(k237Slash(G$work), "/no-such-folder")
     R2 <- G$runs$prot_lfq("k237_wl2")
@@ -499,8 +511,53 @@ k237WL <- function(G) {
             grepl("browser", msg, fixed = TRUE),
         sprintf("S2 %s: %s; killed %s s after the press; %s; port refused after %s s", if (length(s2)) s2[[1L]]$outcome
             else "-", msg, k233Clean(S3$kill_at), k233Clean(S3$kill_said), k233Clean(S3$port_refused_s)))
+    # SC-02: user mode (VAL-216): the chooser selects every input file, on each of the four routes, to S2 (blocking).
+    for (id in names(routes)) {
+        label <- paste0("WLu-", id)
+        Su <- k237RunSession(G, routes[[id]], G$runs[[id]](paste0("k237_wlu_", id)), label, test_mode = FALSE,
+            upto = "S2")
+        k237StopSession(Su)
+        s2u <- Filter(function(r) identical(r$session, label) && identical(r$step, "S2"), G$steps)
+        wanted <- if (identical(id, "prot_lfq")) 2L else sum(vapply(Su$R$import %||% list(),
+            function(a) identical(a$kind, "upload"), logical(1)))
+        k237Criterion(G, "WL-0u", sprintf("the chooser selects every input file in user mode on %s", id),
+            length(s2u) == 1L && identical(s2u[[1L]]$outcome, "complete") && length(Su$chooser) == wanted &&
+                all(Su$chooser),
+            sprintf("S2 %s: %s; chooser selections %s of %d; %s", if (length(s2u)) s2u[[1L]]$outcome else "-",
+                if (length(s2u)) k233Clean(s2u[[1L]]$message) else "-", sum(Su$chooser %in% TRUE),
+                wanted, paste(vapply(Filter(function(o) identical(o$session, label), G$observations),
+                    function(o) paste(o$what, o$text), character(1)), collapse = " || ")))
+    }
     k237Verdict(G)
-    # Observations, while time remains: a worker ended during the longest QC step; the chooser once in user mode.
+    # One journey on each further Windows route (OD-1 (b), owner 2026-11-25, VAL-225); WL-4 (a) planted once on metab_lc.
+    for (id in setdiff(names(routes), "prot_lfq")) {
+        if (k233Remaining(G) < 600) {
+            k237Criterion(G, "WL-1", sprintf("%s: journey run", id), FALSE, "not started: less than 10 minutes left")
+            next
+        }
+        label <- paste0("WL1-", id)
+        R <- G$runs[[id]](paste0("k237_wl_", id))
+        if (identical(id, "metab_lc")) R$after <- list(S8 = function(S, R) k237L4aOmic(S, R, routes[[id]]))
+        S <- k237RunSession(G, routes[[id]], R, label)
+        k237StopSession(S)
+        guard("WL-1", k237WL1Criteria(G, label, proteomics = FALSE))
+        guard("WL-5", k237L5(G, label))
+        if (identical(id, "metab_lc")) {
+            numbers <- Filter(function(n) identical(n$session, label) && identical(n$id, "N2") && !isTRUE(n$planted),
+                G$numbers)
+            k237Criterion(G, "WL-1", "WL1-metab_lc: N2 computed", length(numbers) > 0 &&
+                all(vapply(numbers, function(n) !identical(n$result, "not_computed"), logical(1))),
+                paste(vapply(numbers, function(n) paste(n$contrast, n$shown, n$saved, n$result), character(1)),
+                    collapse = "; "))
+            if (!any(vapply(G$criteria, function(c) identical(c$item, "(a) on metab_lc: the emptied DA results table gives a kind-3 finding naming it"),
+                logical(1)))) {
+                k237Criterion(G, "WL-4", "(a) on metab_lc: the emptied DA results table gives a kind-3 finding naming it",
+                    FALSE, "S8 of the metab_lc journey did not complete, so the planted check did not run")
+            }
+        }
+    }
+    k237Verdict(G)
+    # Observation, while time remains: a worker ended during the longest QC step.
     qc <- Filter(function(r) identical(r$session, "WL1") && grepl("^S5\\.[0-9]+$", r$step) &&
         identical(r$outcome, "complete"), G$steps)
     if (length(qc) && k233Remaining(G) > 420) {
@@ -513,15 +570,6 @@ k237WL <- function(G) {
             longest$name), sprintf("worker ended: %s at %s s; the step: %s", isTRUE(Sw$worker_killed),
                 k233Clean(Sw$worker_kill_at), if (length(shown)) paste(shown[[1L]]$outcome, shown[[1L]]$message) else "-"))
     }
-    if (k233Remaining(G) > 300) {
-        Ru <- G$runs$prot_lfq("k237_wl_user")
-        Ru$user_inputs <- TRUE
-        Su <- k237RunSession(G, lfq, Ru, "WLu", test_mode = FALSE, upto = "S2")
-        k237StopSession(Su)
-        k237Criterion(G, "WL-chooser", "the shinyFiles chooser once in user mode (observation)", NA, paste(vapply(
-            Filter(function(o) identical(o$session, "WLu"), G$observations), function(o) paste(o$what, o$text),
-            character(1)), collapse = " || "))
-    }
     k237Verdict(G)
 }
 
@@ -529,10 +577,13 @@ k237Verdict <- function(G, stop_text = NULL) {
     for (i in seq_along(G$criteria)) G$criteria[[i]]$criterion <- sub("^L-", "WL-", G$criteria[[i]]$criterion)
     results <- vapply(G$criteria, function(c) c$result, character(1))
     names <- vapply(G$criteria, function(c) c$criterion, character(1))
-    blocking <- names %in% c("WL-0", "WL-1", "WL-2", "WL-3", "WL-4")
+    blocking <- names %in% c("WL-0", "WL-0u", "WL-1", "WL-2", "WL-3", "WL-4")
     proven <- is.null(stop_text) && !any(results[blocking] == "fail")
+    # WL-0u is required on all four routes (SC-02): a missing route's row counts as not proven.
+    routes_u <- sum(names == "WL-0u")
+    if (!is.null(G$routes) && routes_u < length(G$routes)) proven <- FALSE
     l5 <- !any(results[names == "WL-5"] == "fail")
-    writeLines(c(stop_text %||% sprintf("instrument %s on Windows (WL-0 to WL-4: %d pass, %d fail, %d recorded)",
+    writeLines(c(stop_text %||% sprintf("instrument %s on Windows (WL-0, WL-0u, WL-1 to WL-4: %d pass, %d fail, %d recorded)",
         if (proven) "proven" else "not proven", sum(results[blocking] == "pass"), sum(results[blocking] == "fail"),
         sum(results[blocking] == "recorded")),
         sprintf("WL-5 %s", if (l5) "passed" else "not passed: no user-mode WJ' may rely on the DOM signals")),

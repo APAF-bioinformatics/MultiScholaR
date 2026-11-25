@@ -24,8 +24,8 @@ run branch. No run has been sent: WL waits for KIT-233's lifecycle run L to be r
 ```json
 {
   "run": "WL",
-  "commit_under_test": "<40-hex: v0.9-staging at send time>",
-  "journey_commit": "<40-hex: kit-233-journey commit whose L is recorded instrument proven>",
+  "commit_under_test": "<40-hex: the v0.9-staging commit just merged into run-k237-journey (SC-03 (a))>",
+  "journey_commit": "<40-hex: kit-233-journey commit whose L is recorded instrument proven (at or after 628545be)>",
   "route_commit": "<40-hex: the run-k237-journey commit holding these files>",
   "route_files": ["journey-route-lfq.R", "journey-route-omics.R"],
   "routes": ["prot_lfq", "lipid_canonical", "metab_lc", "trx_screen"],
@@ -54,6 +54,11 @@ run branch. No run has been sent: WL waits for KIT-233's lifecycle run L to be r
 }
 ```
 
+Before the request is written (SC-03 (a)): merge the current `v0.9-staging` into `run-k237-journey` (a merge commit
+on the run branch only) and set `commit_under_test` to that staging commit; the build's package commit is then that
+commit, and the early check after "The package commit" step (SC-03 (b)) stops a mismatch in seconds. While WL runs,
+nothing else is dispatched on the branch (SC-10: any other stage's dispatch would still cancel it).
+
 SHA-256 from `tests/testdata/e2e/manifest.json` (prot_lfq :172-174, lipid_canonical :365-368, metab_lc :251-254,
 trx_screen :407-409). Dispatch: `gh workflow run distributable.yml --ref run-k237-journey -f stage=journey
 -f platform=windows -f journey_request=<name>`, one at a time (stop rule 7).
@@ -61,6 +66,20 @@ trx_screen :407-409). Dispatch: `gh workflow run distributable.yml --ref run-k23
 WL as declared in the ticket (r1.2): purpose "instrument proven on Windows"; binding the commit under test, the
 KIT-233 commit and the route commit named in the request; journey step `timeout-minutes` 160, internal deadline 150
 minutes; WL ceiling 220 job-minutes (14.67 core-hours), expected 102; at most three VAL-54 instrument reruns.
+
+## r1.3 (script check before WL, SC-01 to SC-08)
+
+- SC-01: lipid and metab QC press intensity filter, duplicate detection and resolution, the internal-standard analysis,
+  then Finalize, at rendered defaults; `sanitize_names` left at its rendered TRUE. The ITSD analysis is expected to
+  refuse on these fixtures (no standards; `known.tsv` K12, KIT-242); the refusal is recorded and QC goes on.
+- SC-02: user-mode chooser import on every route; WL-0u (blocking) per route, the chooser selecting every input.
+- SC-03: early package-commit check in the stage; staging merged into the branch before the request.
+- SC-04: the omic's own stepper as the DOM signal (state script rebound per session); exact texts elsewhere.
+- SC-05: named screen outputs (import status; DA status, summary statistics, results table); N2 on metab_lc; WL-4 (a)
+  planted on metab_lc. The trx route names only its DA status (its results tab was not read).
+- SC-06: WL-4 (c) requires a non-empty deleted-file name.
+- SC-07: WL-2, WL-3 and the four user-mode sessions run before the three added journeys.
+- SC-08: `LongPathsEnabled` restored after the driver (finally).
 
 ## Observed
 

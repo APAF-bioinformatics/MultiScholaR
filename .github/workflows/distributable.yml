@@ -805,6 +805,17 @@ jobs:
           echo "package commit $package_commit; on the release line ($RELEASE_LINE): $on_release_line; build commit $GITHUB_SHA"
           { echo "MSR_PACKAGE_COMMIT=$package_commit"; echo "MSR_PACKAGE_ON_RELEASE_LINE=$on_release_line"; } >> "$GITHUB_ENV"
 
+      # KIT-237 SC-03 (b): in stage journey, a package commit other than the request's commit under test stops the job
+      # here, in seconds, before the library is built; the journey step's full check stays.
+      - name: "Journey (KIT-237): the package commit is the request's commit under test (early check)"
+        if: needs.plan.outputs.stage == 'journey'
+        env:
+          JOURNEY_REQUEST: docs/qa/workflow-execution/kit/kit-237/requests/${{ inputs.journey_request }}.json
+        run: |
+          $cut = (Get-Content -Raw $env:JOURNEY_REQUEST | ConvertFrom-Json).commit_under_test
+          "package commit $env:MSR_PACKAGE_COMMIT; the request's commit under test $cut"
+          if ($env:MSR_PACKAGE_COMMIT -ne $cut) { throw "val_product_tree_mismatch (early)" }
+
       - name: "Install the library: snapshot binaries, the source builds, the internal packages attempted (read token), MultiScholaR from this commit"
         env:
           MSR_INTERNAL: attempt
@@ -1290,7 +1301,8 @@ jobs:
           Add-Record firewall_unruled @($programs | Where-Object { $rules -notcontains "kit-134 block $($_.FullName)" }).Count
           # Windows' default on a desktop installation (5.3), for the rest of this disposable runner's job.
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
-          Add-Record LongPathsEnabled_before (Get-ItemProperty $key).LongPathsEnabled
+          $longPathsBefore = (Get-ItemProperty $key).LongPathsEnabled
+          Add-Record LongPathsEnabled_before $longPathsBefore
           Set-ItemProperty -Path $key -Name LongPathsEnabled -Value 0 -Type DWord
           Add-Record LongPathsEnabled_set (Get-ItemProperty $key).LongPathsEnabled
           Add-Record runner_image "$env:ImageOS $env:ImageVersion"
@@ -1301,8 +1313,14 @@ jobs:
           $record | Set-Content -Encoding utf8 (Join-Path $out 'environment-workflow.tsv')
           # The driver last: windows-clean-run.ps1 reduces this shell's environment as the shell does for R.
           $requestPath = (Resolve-Path $env:JOURNEY_REQUEST).Path
-          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script "$src\docs\qa\workflow-execution\kit\kit-237\journey-win.R" -NoBundleArgument -Arguments $requestPath, $env:APP_FOLDER, $env:TEST_TOOLS, $out, $src, "$fixtures\tests\testdata\e2e", $env:GITHUB_WORKSPACE *> "$env:OUT\journey.log"
-          $status = $LASTEXITCODE
+          try {
+            & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script "$src\docs\qa\workflow-execution\kit\kit-237\journey-win.R" -NoBundleArgument -Arguments $requestPath, $env:APP_FOLDER, $env:TEST_TOOLS, $out, $src, "$fixtures\tests\testdata\e2e", $env:GITHUB_WORKSPACE *> "$env:OUT\journey.log"
+            $status = $LASTEXITCODE
+          } finally {
+            # SC-08: the runner's own value restored for any part that shares this job after the journey.
+            Set-ItemProperty -Path $key -Name LongPathsEnabled -Value ([int]$longPathsBefore) -Type DWord
+            "LongPathsEnabled restored to $((Get-ItemProperty $key).LongPathsEnabled) after the journey"
+          }
           Get-Content "$env:OUT\journey.log" -Tail 80
           if ($status -ne 0) { throw "the journey driver exited $status" }
 

@@ -2,7 +2,8 @@
 # tests/testdata/e2e/prot_lfq_maxquant (MaxQuant proteinGroups.txt, 400 proteins plus 5 CON__ and 5 REV__ rows the
 # reader drops, 10 samples WT_1..WT_5 and KO_1..KO_5, proteins.fasta, design.tsv; manifest.json:134-175, SHA-256
 # :172-174). Sourced by journey-win.R after journey.R. Steps S3, S6, S7, S8 and S10 are journey.R's own; S1, S2, S5 and
-# S9 are this route's variants (5.2). The ids, named outputs and named files below are fixed before WL and not changed
+# S9 are this route's variants (5.2). r1.3: the chooser's selections are counted for WL-0u (SC-02); the S9 download
+# uses journey.R's click-free form (journey_commit at or after 628545be). The ids, named outputs and named files below are fixed before WL and not changed
 # after WL passes.
 
 K237_ROUTES <- if (exists("K237_ROUTES", inherits = FALSE)) K237_ROUTES else list()
@@ -131,6 +132,7 @@ k237StepImportLfq <- function(S, R, step, route) {
             if (!up$ok) return(list(refuse = paste("search results upload:", up$text)))
         } else {
             chosen <- k233ChooseFile(S, "S2", paste0(ns, "search_results"), k237UserInput(R, R$report))
+            S$chooser <- c(S$chooser, isTRUE(chosen$ok))
             k233Observation(S$G, S$label, "S2 search results chooser", chosen$how)
             if (!chosen$ok) return(list(refuse = paste("not reachable as a user: search results chooser:", chosen$how)))
         }
@@ -148,6 +150,7 @@ k237StepImportLfq <- function(S, R, step, route) {
             if (!up$ok) return(list(refuse = paste("FASTA upload:", up$text)))
         } else {
             chosen <- k233ChooseFile(S, "S2", paste0(ns, "fasta_file"), k237UserInput(R, R$fasta))
+            S$chooser <- c(S$chooser, isTRUE(chosen$ok))
             k233Observation(S$G, S$label, "S2 FASTA chooser", chosen$how)
             if (!chosen$ok) return(list(refuse = paste("not reachable as a user: FASTA chooser:", chosen$how)))
         }
@@ -195,7 +198,10 @@ k237StepEnrichmentLfq <- function(S, R, step, route) {
 
 k237DownloadEnrichment <- function(S, R) {
     id <- paste0(K233_NS, "enrichment_analysis-download_enrichment_results")
-    p <- k233Press(S, "S9.d", id, "id")
+    # As journey.R's report download since 628545be: the link's reachability checked without a click, then the link's
+    # file fetched (one request: the user's press); needs a journey_commit at or after 628545be.
+    p <- k233Press(S, "S9.d", id, "id", click = FALSE)
+    k233LogAction(S, "S9.d", id, "download (the link's file fetched)")
     if (!isTRUE(p$ok)) {
         S$enrich_download <- list(bytes = 0, opens = FALSE, note = paste("not reachable:", p$reason))
         return(list(outcome = "refused", message = paste("not reachable as a user:", p$reason)))
