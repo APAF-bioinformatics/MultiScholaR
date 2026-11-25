@@ -456,6 +456,58 @@ caseC4 <- function(root) {
   }
 }
 
+# ---- C4b (ticket r1.3, optional, declared): C4's object, RUV skipped, then the correlation filter at 0.5 ------------
+# Prediction (r1.3 section 6, written before any value is read): the filter removes B_6 from A2 and from the whole
+# design (R/func_lipid_qc_support_helpers.R:140-153, R/func_lipid_s4_correlation_methods.R:377-408).
+C4B_PREDICTION <- "B_6 removed from A2 and from the design (so from every assay's DA)"
+
+caseC4b <- function(root) {
+  for (class in c("lipid", "metab")) {
+    binding <- kit172Binding(class)
+    prefix <- binding$prefix
+    arm <- "RUV skipped, correlation 0.5"
+    obs("C4b", class, arm, "prediction (written before the run)", C4B_PREDICTION)
+    v <- g0Draw(4L)
+    v$A2[startsWith(rownames(v$A2), "IS_"), S] <- NA_real_
+    object <- g0Object(v, class)
+    local({
+      fixture <- g0Owner(file.path(root, "c4b", class), object, class)
+      owner <- fixture$owner
+      on.exit(closeQuietly(owner), add = TRUE)
+      config <- fixture$workflow$config_list
+      steps <- list(
+        qc_finalize = function() commitWorkflowOmicsStoreStep(owner, paste0(prefix, "_qc_finalize"), paste0(prefix, "_qc_complete"), config, "QC complete"),
+        itsd = function() runWorkflowOmicsReferenceItsdNormalisation(binding, owner, "median", NULL, config),
+        log2 = function() runWorkflowOmicsReferenceLog2(binding, owner, 0, config),
+        between_sample = function() runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, "cyclicloess", config),
+        correlation_0.5 = function() runWorkflowOmicsReferenceCorrelation(binding, owner, "group", 0.5, config))
+      states <- c(qc_finalize = "_qc_complete", itsd = "_itsd_norm", log2 = "_log2", between_sample = "_normalized",
+        correlation_0.5 = "_correlation_filtered")
+      for (step in names(steps)) {
+        run <- capture(steps[[step]](), "C4b", class, arm, step)
+        if (run$failed) {
+          obs("C4b", class, arm, paste(step, "result"), paste("failed:", conditionMessage(run$value)))
+          break
+        }
+        obs("C4b", class, arm, paste(step, "result"), "completed")
+        g0StateSummary("C4b", class, arm, owner, paste0(prefix, states[[step]]), binding, step)
+        if (identical(step, "correlation_0.5")) {
+          cors <- run$value$correlations
+          obs("C4b", class, arm, "correlation pairs naming B_6 (per assay: rows; finite correlations)",
+            tryCatch(lapply(cors, function(t) {
+              t <- as.data.frame(t)
+              hit <- apply(t, 1L, function(r) any(r == S, na.rm = TRUE))
+              num <- vapply(t, is.numeric, logical(1L))
+              vals <- if (any(num)) unlist(t[hit, num, drop = FALSE]) else numeric()
+              sprintf("%d rows; %d finite", sum(hit), sum(is.finite(vals)))
+            }), error = function(e) paste("not summarised:", conditionMessage(e))))
+        }
+      }
+      if (identical(owner$current_state, paste0(prefix, "_correlation_filtered"))) g0Da("C4b", class, arm, binding, owner)
+    })
+  }
+}
+
 # ---- C6, C11: KIT-145's guard on -------------------------------------------------------------------------------------
 guardObs <- function(case, class, arm, run) {
   e <- run$value
@@ -994,6 +1046,7 @@ runGroup <- function(group, tree, out_dir) {
     runCase("C14", function() caseC14(root))
   }
   if (identical(group, "c9")) runCase("C9", function() caseC9(root))
+  if (identical(group, "c4b")) runCase("C4b", function() caseC4b(root))
   if (identical(group, "tab")) runCase("tab", function() caseTab(root))
   if (identical(group, "replay")) runCase("C8", function() caseC8(root, tree))
   if (identical(group, "lanes")) {
@@ -1094,7 +1147,7 @@ k188_sim <- file.path(tempdir(), "sim-k188.R")
 if (!is.na(k188_ref)) system2("git", c("show", paste0(k188_ref, ":", K188_SIM)), stdout = k188_sim)
 provenance <- c(provenance, sprintf("k188_commit\t%s", k188_ref),
   sprintf("k188_sim_sha256\t%s", if (file.exists(k188_sim)) digest::digest(file = k188_sim, algo = "sha256") else NA))
-minutes <- c(core = 30, c9 = 10, tab = 15, replay = 12, lanes = 30, k188 = 12)
+minutes <- c(core = 30, c9 = 10, c4b = 10, tab = 15, replay = 12, lanes = 30, k188 = 12)
 rscript <- file.path(R.home("bin"), "Rscript")
 status <- list()
 collected <- list()
