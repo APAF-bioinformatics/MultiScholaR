@@ -1,0 +1,8 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit250-organism-dialog.R	103	16	0	0	failed	108	11	0	0	failed	message-changed	fixed: E4: Cancel leaves the import unfinished, closes the dialog and says so until closed; fixed: E5: a stale waiting flag is reset when an import starts and when an import fails; message-changed: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window; counts: E4: Cancel leaves the import unfinished, closes the dialog and says so until closed (passed 10 -> 11, skipped 0 -> 0); counts: E5: a stale waiting flag is reset when an import starts and when an import fails (passed 5 -> 6, skipped 0 -> 0); counts: E8: the Cancel observer clears the import; a re-import and Confirm complete it; an unticked import closes the window (passed 19 -> 22, skipped 0 -> 0)	
+test-prot-01c-import-module-contracts.R	437	0	0	0	ok	437	0	0	0	ok	same		
+test-prot-01d-import-module-characterization.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-server-shared.R	226	0	0	0	ok	226	0	0	0	ok	same		

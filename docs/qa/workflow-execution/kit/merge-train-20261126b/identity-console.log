@@ -1,0 +1,38 @@
+Preparing worktree (detached HEAD b24fc159)
+Updating files:  68% (6168/8971)Updating files:  69% (6190/8971)Updating files:  70% (6280/8971)Updating files:  71% (6370/8971)Updating files:  72% (6460/8971)Updating files:  73% (6549/8971)Updating files:  74% (6639/8971)Updating files:  75% (6729/8971)Updating files:  76% (6818/8971)Updating files:  77% (6908/8971)Updating files:  78% (6998/8971)Updating files:  79% (7088/8971)Updating files:  80% (7177/8971)Updating files:  81% (7267/8971)Updating files:  82% (7357/8971)Updating files:  83% (7446/8971)Updating files:  84% (7536/8971)Updating files:  85% (7626/8971)Updating files:  86% (7716/8971)Updating files:  87% (7805/8971)Updating files:  88% (7895/8971)Updating files:  89% (7985/8971)Updating files:  90% (8074/8971)Updating files:  91% (8164/8971)Updating files:  92% (8254/8971)Updating files:  93% (8344/8971)Updating files:  94% (8433/8971)Updating files:  95% (8523/8971)Updating files:  96% (8613/8971)Updating files:  97% (8702/8971)Updating files:  98% (8792/8971)Updating files:  99% (8882/8971)Updating files: 100% (8971/8971)Updating files: 100% (8971/8971), done.
+HEAD is now at b24fc159 Merge train 8 of 2026-11-26: the run declared before it is sent (base 42846c0e, head aceb7190, 177 files and check, ceiling 2,280 job-minutes; combined saved-da prediction)
+base: b24fc15984329100926bda0eac77f073e160e34e
+head: 700853e7f91447f8b73def755f78c730ac3d0e71
+R version 4.6.1 (2026-06-24)
+substitutions (old -> new, count in base, count in head):
+  production settings_provisional: Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones. -> Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you. (1, 0)
+  production results_provisional: How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them. -> These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you. (2, 0)
+  production mark: (provisional default) -> (decided) (21, 0)
+  production enrichment_mark_insertion:  ->  (default not yet confirmed) (0, 8)
+  test settings_provisional: Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones. -> Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you. (1, 0)
+  test results_provisional: How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them. -> These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you. (2, 0)
+  test mark: (provisional default) -> (decided) (21, 0)
+  test enrichment_mark_insertion:  ->  (default not yet confirmed) (0, 8)
+(i) app_ui, production: head unset = base TRUE: TRUE
+(i) module, production: settings_provisional found in base (1) and not in head (0): TRUE
+(i) module, production: results_provisional found in base (2) and not in head (0): TRUE
+(i) module, production: mark found in base (21) and not in head (0): TRUE
+(i) module, production: the Enrichment mark inserted 8 times in head (8) and absent from base (0): TRUE
+(i) module, production: head unset = base TRUE after the substitutions: TRUE
+(ii) app_ui, production: head FALSE = base unset: TRUE
+(ii) module, production: head FALSE = base unset: TRUE
+(iii) app_ui, production: head unset the same in two processes: TRUE
+(iii) module, production: head unset the same in two processes: TRUE
+(i) app_ui, test: head unset = base TRUE: TRUE
+(i) module, test: settings_provisional found in base (1) and not in head (0): TRUE
+(i) module, test: results_provisional found in base (2) and not in head (0): TRUE
+(i) module, test: mark found in base (21) and not in head (0): TRUE
+(i) module, test: the Enrichment mark inserted 8 times in head (8) and absent from base (0): TRUE
+(i) module, test: head unset = base TRUE after the substitutions: TRUE
+(ii) app_ui, test: head FALSE = base unset: TRUE
+(ii) module, test: head FALSE = base unset: TRUE
+(iii) app_ui, test: head unset the same in two processes: TRUE
+(iii) module, test: head unset the same in two processes: TRUE
+(ii) head FALSE: the module is the unavailable panel: TRUE
+head unset: the module is not the unavailable panel: TRUE
+all checks pass: TRUE

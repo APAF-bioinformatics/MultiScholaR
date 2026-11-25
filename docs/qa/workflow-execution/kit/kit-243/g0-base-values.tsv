@@ -1,0 +1,34 @@
+probe	field	value
+lipid	publication figures (DA1)	NumSigDeMolecules/lipids_num_sig_barplot.png,NumSigDeMolecules/lipids_num_sig_de_molecules.tab,NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/posmode_groupB-groupA.pdf,Volcano_Plots/posmode_groupB-groupA.png
+lipid	made figures (DA1)	de_posmode_lipids_groupB-groupA_long_annot.xlsx,posmode_groupB-groupA_heatmap.png              ,posmode_groupB-groupA_heatmap.pdf              ,all_heatmaps_combined.pdf                      ,lipids_num_sig_de_molecules.tab                ,lipids_num_sig_de_molecules.xlsx               ,lipids_num_sig_barplot.png                     
+lipid	save done	1
+lipid	record exists after Save	TRUE
+lipid	G1 record vs store after Save	equal
+lipid	G6 record vs store after an identical DA re-run	equal
+lipid	E5 record vs store after a DA at q 0.1	/differential_abundance/parameters/2/value/value: saved 0.05; current 0.1
+lipid-in-process	probe	ok
+metab	publication figures (DA1)	NumSigDeMolecules/metabolites_num_sig_barplot.png,NumSigDeMolecules/metabolites_num_sig_de_molecules.tab,NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/posmode_groupB-groupA.pdf,Volcano_Plots/posmode_groupB-groupA.png
+metab	made figures (DA1)	de_posmode_metabolites_groupB-groupA_long_annot.xlsx,posmode_groupB-groupA_heatmap.png                   ,posmode_groupB-groupA_heatmap.pdf                   ,all_heatmaps_combined.pdf                           ,lipids_num_sig_de_molecules.tab                     ,lipids_num_sig_de_molecules.xlsx                    ,lipids_num_sig_barplot.png                          
+metab	save done	1
+metab	record exists after Save	TRUE
+metab	G1 record vs store after Save	equal
+metab	G6 record vs store after an identical DA re-run	equal
+metab	E5 record vs store after a DA at q 0.1	/differential_abundance/parameters/2/value/value: saved 0.05; current 0.1
+metab-in-process	probe	ok
+trx	head after run	trx_ruvs
+trx	publication figures (DA1)	canonical_correlation_optimization_summary.xlsx,canonical_correlation_panels.pdf,canonical_correlation_panels.png,normalization_comparison_grid.pdf,normalization_comparison_grid.png,NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf,NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png,Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf,Volcano_Plots/volcano_plot_Sera_vs_RPMI.png
+trx	save done	1
+trx	record exists after Save	TRUE
+trx	G1 record vs store after Save	equal
+trx-in-process	probe	ok
+prot-k212	publication figures (DA1)	filtering_qc/12_correlation_filtered_combined_plots.pdf,filtering_qc/12_correlation_filtered_combined_plots.png,filtering_qc/12_correlation_filtered_peptides_per_protein.pdf,filtering_qc/12_correlation_filtered_peptides_per_protein.png,filtering_qc/12_correlation_filtered_peptides_per_run.pdf,filtering_qc/12_correlation_filtered_peptides_per_run.png,filtering_qc/12_correlation_filtered_peptides_total.pdf,filtering_qc/12_correlation_filtered_peptides_total.png,filtering_qc/12_correlation_filtered_proteins_per_run.pdf,filtering_qc/12_correlation_filtered_proteins_per_run.png,filtering_qc/12_correlation_filtered_proteins_total.pdf,filtering_qc/12_correlation_filtered_proteins_total.png,Interactive_Volcano_Plots/treated_vs_control.html,NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf,NumSigDaMolecules/da_proteins_num_sig_da_molecules.png,NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab,NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/grouptreated-groupcontrol.pdf,Volcano_Plots/grouptreated-groupcontrol.png
+prot-k212	save done; failed	1
+prot-k212	save notes	Saved Integration input            ,Study parameters saved successfully
+prot-k212	record exists after Save	TRUE
+prot-k212	G1 record vs store after Save	equal
+prot-k212	G6 record vs store after an identical DA re-run	equal
+prot-k212-in-process	probe	ok
+prot-saved-da	publication figures (DA1, q 0.05)	Interactive_Volcano_Plots/treated_vs_control.unavailable.txt,NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf,NumSigDaMolecules/da_proteins_num_sig_da_molecules.png,NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab,NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/treated_vs_control.pdf,Volcano_Plots/treated_vs_control.png
+prot-saved-da	publication figures (DA2, q 1e-300)	Interactive_Volcano_Plots/treated_vs_control.unavailable.txt,NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf,NumSigDaMolecules/da_proteins_num_sig_da_molecules.png,NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab,NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx,Volcano_Plots/all_volcano_plots_combined.pdf,Volcano_Plots/treated_vs_control.pdf,Volcano_Plots/treated_vs_control.png
+prot-saved-da	count barplot sha256 DA1, DA2	cf9ca328b207689c57d0d67dd3ecb1c69fe23c8e5b7dbb0ddd3eb96639bbe7a0,cf9ca328b207689c57d0d67dd3ecb1c69fe23c8e5b7dbb0ddd3eb96639bbe7a0
+prot-saved-da-in-process	probe	ok

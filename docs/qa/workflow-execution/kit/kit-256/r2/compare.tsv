@@ -1,0 +1,19 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	105	0	0	0	ok	105	0	0	0	ok	same		
+test-kit256-tech-rep-selection-cleared.R	14	6	0	0	failed	20	0	0	0	ok	fixed	fixed: KIT-256 E1: after a successful Assign the box is emptied (lipidomics, transcriptomics); fixed: KIT-256 E2: after a successful Assign the box is emptied (proteomics, dia_long); fixed: KIT-256 E3: the next sample's runs added to what the box shows give two samples, not one; fixed: KIT-256 G3: an Assign that leaves the design identical also empties the box; counts: KIT-256 E1: after a successful Assign the box is emptied (lipidomics, transcriptomics) (passed 0 -> 2, skipped 0 -> 0); counts: KIT-256 E2: after a successful Assign the box is emptied (proteomics, dia_long) (passed 1 -> 2, skipped 0 -> 0); counts: KIT-256 E3: the next sample's runs added to what the box shows give two samples, not one (passed 2 -> 4, skipped 0 -> 0); counts: KIT-256 G3: an Assign that leaves the design identical also empties the box (passed 2 -> 3, skipped 0 -> 0)	
+test-kit222-replicate-keys.R	456	0	0	0	ok	456	0	0	0	ok	same		
+test-lipid-13-design-builder-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-13a-design-module-characterization.R	2	0	0	17	ok	2	0	0	17	ok	same		
+test-metab-04-design-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-trx-design.R	66	0	1	0	failed	66	0	1	0	failed	same		
+test-omic-design-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omics-design-core.R	64	0	0	10	ok	64	0	0	10	ok	same		
+test-prot-04-design.R	488	0	0	118	ok	488	0	0	118	ok	same		
+test-prot-04a-design-module-characterization.R	109	0	0	18	ok	109	0	0	18	ok	same		
+test-prot-04b-design-server-shared.R	47	0	0	0	ok	47	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-omics-residency.R	97	0	0	0	ok	97	0	0	0	ok	same		
+test-workflow-ruv-pearson-diagnostic.R	301	0	2	5	failed	301	0	2	5	failed	same		

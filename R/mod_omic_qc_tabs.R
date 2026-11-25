@@ -616,8 +616,10 @@ omicQcDataSummaryUi <- function(shell, config) {
             sprintf(" No %s object available.", binding$class)))
     }
     assays <- methods::slot(shell, binding$data_slot)
-    samples <- if (length(assays) > 0) names(assays[[1]])[vapply(assays[[1]], is.numeric, logical(1))] else character(0)
     design <- shell@design_matrix
+    # KIT-214 (E-8): the design's samples of the first assay, not its numeric columns.
+    samples <- if (length(assays) > 0) omicsDesignSampleColumnsOf(names(assays[[1]]), design[[shell@sample_id]],
+        methods::slot(shell, binding$id_slot)) else character(0)
     groups <- if (nrow(design) > 0 && shell@group_id %in% names(design)) length(unique(design[[shell@group_id]])) else NA
     row <- function(label, value) shiny::tags$tr(shiny::tags$td(shiny::strong(label)), shiny::tags$td(value))
     shiny::tagList(shiny::tags$table(class = "table table-condensed", style = "margin-bottom: 0;", shiny::tags$tbody(
@@ -657,12 +659,15 @@ omicQcAssayStatsFrame <- function(shell, config) {
     if (is.null(shell) || !inherits(shell, binding$class)) return(NULL)
     assays <- methods::slot(shell, binding$data_slot)
     id_column <- methods::slot(shell, binding$id_slot)
+    # KIT-214 (E-8): Samples counts the design's samples; the missingness reads those that hold numbers.
+    design_samples <- shell@design_matrix[[shell@sample_id]]
     table <- data.frame(Assay = names(assays), Features = attr(shell, "feature_counts") %||% sapply(assays, function(a) {
         if (id_column %in% names(a)) length(unique(a[[id_column]])) else nrow(a)
-    }), Samples = sapply(assays, function(a) sum(vapply(a, is.numeric, logical(1)))), stringsAsFactors = FALSE)
+    }), Samples = sapply(assays, function(a) length(omicsDesignSampleColumnsOf(names(a), design_samples, id_column))),
+        stringsAsFactors = FALSE)
     names(table)[[2L]] <- config$qc$texts[["finalize_count_column"]]
     table$Missingness <- attr(shell, "missing_percent") %||% sapply(assays, function(a) {
-        columns <- names(a)[vapply(a, is.numeric, logical(1))]
+        columns <- omicsDesignNumericColumnsOf(a, design_samples, id_column)
         if (length(columns) == 0) return(NA)
         missing <- sum(vapply(columns, function(column) sum(is.na(a[[column]]) | a[[column]] == 0), numeric(1)))
         round((missing / (nrow(a) * length(columns))) * 100, 1)

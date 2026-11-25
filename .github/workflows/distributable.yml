@@ -563,7 +563,8 @@ jobs:
           reason=""
           if [ "${{ matrix.runner }}" = ubuntu-24.04 ]; then reason="D-Bus"; fi
           # KIT-156: without and with the test setting (MULTISCHOLAR_TEST_FEATURES=1, packaging/electron/entry.R):
-          # off, R reports nothing and the Integration tile is the placeholder; on, both pre-release options are TRUE.
+          # off, R reports nothing; on, the RUV design panel's option is TRUE. KIT-240: the Integration tile is live in
+          # every pass (the package's default).
           # KIT-176: pass 1 also checks the package commit and the About lines (T2); pass 3, test setting off, runs the
           # application with ELECTRON_RUN_AS_NODE=1 (T1). Every pass runs whatever the one before gave; the step fails
           # after the third if any failed. Values enter the inner command as positional parameters (the outer sudo

@@ -709,6 +709,13 @@ setMethod(
             # --- Clean Corrected Matrix ---
             # Transpose result back to Features x Samples for cleaning
             corrected_matrix <- t(cln_mat)
+            # KIT-224 (decision M8): each feature keeps its level, as in proteomics (`restoreRuvFeatureLevels`). The
+            # earlier rule (the replay of a record made before) keeps RUVIII_C_Varying's values as they are.
+            levels_marker <- workflowReplayRuleMarkers$ruv_feature_levels
+            if (!identical(getOption(levels_marker$option), levels_marker$earlier)) {
+                corrected_matrix <- restoreRuvFeatureLevels(corrected_matrix,
+                    t(Y_final)[rownames(corrected_matrix), colnames(corrected_matrix), drop = FALSE])
+            }
 
             # Remove features (rows) with no finite values
             valid_features <- rowSums(is.finite(corrected_matrix), na.rm = TRUE) > 0

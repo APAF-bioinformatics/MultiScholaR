@@ -1,0 +1,131 @@
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `integrationElboText(0.004)` to be identical to "less than 0.01".
+  Differences:
+  `actual`:   "0.00"          
+  `expected`: "less than 0.01"
+
+file: test-kit240-integration-default.R
+test: KIT-240 T8: seeds trained without an ELBO give no rank and no sentence, and nothing fails
+kind: failure
+message:
+  Expected `!is.na(limit) && grepl(limit, methods, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `gui[["align_provisional"]]` to match string "averaging of runs".
+  Actual text:
+  x | These rules are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the decision behind each.
+  averaging of runs
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `gui[["align_provisional"]]` to match string "internal standards".
+  Actual text:
+  x | These rules are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the decision behind each.
+  internal standards
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `gui[["align_provisional"]]` to match string "missing samples".
+  Actual text:
+  x | These rules are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the decision behind each.
+  missing samples
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `grepl("owner", record[["legend_provisional_default"]], fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `record[["status_provisional_default"]]` to be identical to `gui[["mark_provisional"]]`.
+  Differences:
+  `actual`:   "provisional default"      
+  `expected`: "default not yet confirmed"
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `record[["methods_seeds_elbo"]]` to match string "evidence lower bound (ELBO".
+  Actual text:
+  x | By its final ELBO, the reported model ranked %d of the %d models, %s below the highest (range over the models %s); the stability figures describe only the reported model's factors.
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `record[["methods_seeds_elbo"]]` to match string "units".
+  Actual text:
+  x | By its final ELBO, the reported model ranked %d of the %d models, %s below the highest (range over the models %s); the stability figures describe only the reported model's factors.
+
+file: test-kit240-integration-default.R
+test: KIT-240 T12: the alignment note, the report legend and the ELBO sentence say exactly what is true
+kind: failure
+message:
+  Expected `grepl("stability figures", record[["methods_seeds_elbo"]], fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-integration-gui.R
+test: KIT-139: internal standards, features seen once and few samples are stated with their counts
+kind: failure
+message:
+  Expected `facts[[6L]]` to match string "proteomics: 1 features measured in fewer than 3 of the 5 biological samples".
+  Actual text:
+  x | proteomics: 1 features measured in fewer than two samples are left out.
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-integration-gui.R:441:5
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-integration-gui.R
+test: KIT-139: internal standards, features seen once and few samples are stated with their counts
+kind: failure
+message:
+  Expected `grepl("two samples", texts[["col_sparse"]], fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-integration-gui.R:441:5
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+

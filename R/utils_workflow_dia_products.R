@@ -932,14 +932,23 @@ protQcManagedApplyAllowed <- function(workflowData, label) {
 #' The DIA_LIMPA pass-through's refusal of a normalised table (KIT-182, VAL-91 D1, second part; the third re-check's
 #' C02): the table it would designate (`diaLimpaPassThroughSource`) is a protein state with normalisation in its lineage,
 #' as in a session saved before the fix in which Between-Sample Normalisation or Peptide Count Filter ran on
-#' `ruv_corrected`, `ruv_covariates` or `correlation_filtered`. A no-op on a non-reference owner.
+#' `ruv_corrected`, `ruv_covariates` or `correlation_filtered`. KIT-244: a peptide table (the press before DPC
+#' Quantification) is refused first, in plain words, before anything is designated, drawn or queued. A no-op on a
+#' non-reference owner.
 #' @param manager,normData Session owner and the tab's state.
-#' @return TRUE invisibly, or an error of class `prot_norm_input_after_normalisation`.
+#' @return TRUE invisibly, or an error of class `prot_norm_limpa_peptide_input` or
+#'   `prot_norm_input_after_normalisation`.
 #' @noRd
 assertDIALimpaDesignationNotNormalised <- function(manager, normData) {
     if (!usesDIAReferenceStates(manager)) return(invisible(TRUE))
     source <- diaLimpaPassThroughSource(manager, normData)
     spec <- readDIALineageRecord(manager, source)
+    # KIT-244 (draft wording, VAL-41): names no state, so it holds at every peptide head.
+    if (identical(spec$class, "PeptideQuantitativeData")) rlang::abort(paste0("on DIA with limpa, \"Run Normalization & ",
+        "RUV\" needs the protein table that DPC Quantification makes, and the current table is still a peptide table. ",
+        "In the Quality Control tab apply the remaining peptide steps and DPC Quantification (normally followed by ",
+        "Between-Sample Normalisation and the Peptide Count Filter), then press \"Run Normalization & RUV\" again."),
+        class = "prot_norm_limpa_peptide_input")
     head <- identical(source$entity_id, getDIAStateReference(manager)$entity_id)
     if (identical(spec$class, "ProteinQuantitativeData") && diaNormalisedLineage(manager, spec, head = head))
         abortDIANormalisedInput(manager)

@@ -1,0 +1,796 @@
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `integrationGuiEnabled()` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `page` to match string "<div id=\"integration_box\" class=\"omic-selection-box\" onclick=\"toggleOmicSelection(&#39;integration&#39;)\" data-testid=\"tile-integration\">".
+  Actual text:
+  x | <body class="skin-blue" style="min-height: 611px;">
+    |   <div class="wrapper">
+    |     <header class="main-header">
+    |       <span class="logo">MultiScholaR</span>
+    |       <nav class="navbar navbar-static-top" role="navigation">
+    |         <span style="display:none;">
+    |           <i class="fas fa-bars" role="presentation" aria-label="bars icon"></i>
+    |         </span>
+    |         <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+    |           <span class="sr-only">Toggle navigation</span>
+    |         </a>
+    |         <div class="navbar-custom-menu">
+    |           <ul class="nav navbar-nav">
+    |             <li class="dropdown">
+    |               <a id="dark_mode_toggle" href="#" onclick="toggleDarkMode(); return false;" style="padding: 10px 15px;" title="Toggle Dark Mode">
+    |                 <i class="far fa-moon" role="presentation" aria-label="moon icon"></i>
+    |               </a>
+    |             </li>
+    |           </ul>
+    |         </div>
+    |       </nav>
+    |     </header>
+    |     <aside id="sidebarCollapsed" class="main-sidebar" data-collapsed="false">
+    |       <section id="sidebarItemExpanded" class="sidebar">
+    |         <div style="text-align: center; padding: 10px;">
+    |           <img src="www/MultiScholaR_v2.png" style="width: 80%; height: auto;"/>
+    |         </div>
+    |         <ul class="sidebar-menu" data-testid="sidebar-menu">
+    |           <li>
+    |             <a href="#shiny-tab-home" data-toggle="tab" data-value="home">
+    |               <i class="fas fa-house" role="presentation" aria-label="house icon"></i>
+    |               <span>Home</span>
+    |             </a>
+    |           </li>
+    |           <div id="dynamic_menu" class="shiny-html-output"></div>
+    |           <div id="main_menu" class="sidebarMenuSelectedTabItem" data-value="null"></div>
+    |         </ul>
+    |       </section>
+    |     </aside>
+    |     <div class="content-wrapper">
+    |       <section class="content">
+    |         <div class="tab-content">
+    |           <div role="tabpanel" class="tab-pane" id="shiny-tab-home">
+    |             <div class="row">
+    |               <div class="col-sm-12">
+    |                 <h2>Welcome to MultiScholaR Interactive Workflow</h2>
+    |                 <p>Select the type(s) of omics data you want to analyze:</p>
+    |                 <br/>
+    |               </div>
+    |             </div>
+    |             <div class="row">
+    |               <div class="col-sm-4">
+    |                 <div id="proteomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;proteomics&#39;)" data-testid="tile-proteomics">
+    |                   <h3>
+    |                     <i class="fas fa-dna" role="presentation" aria-label="dna icon"></i>
+    |                     Proteomics
+    |                   </h3>
+    |                   <p>Analyze protein abundance data from DIA-NN or similar tools</p>
+    |                 </div>
+    |               </div>
+    |               <div class="col-sm-4">
+    |                 <div id="metabolomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;metabolomics&#39;)" data-testid="tile-metabolomics">
+    |                   <h3>
+    |                     <i class="fas fa-flask" role="presentation" aria-label="flask icon"></i>
+    |                     Metabolomics
+    |                   </h3>
+    |                   <p>Process and analyze metabolite profiling data</p>
+    |                 </div>
+    |               </div>
+    |               <div class="col-sm-4">
+    |                 <div id="transcriptomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;transcriptomics&#39;)" data-testid="tile-transcriptomics">
+    |                   <h3>
+    |                     <i class="fas fa-chart-line" role="presentation" aria-label="chart-line icon"></i>
+    |                     Transcriptomics
+    |                   </h3>
+    |                   <p>Analyze gene expression data from RNA-seq</p>
+    |                 </div>
+    |               </div>
+    |             </div>
+    |             <div class="row">
+    |               <div class="col-sm-4">
+    |                 <div id="lipidomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;lipidomics&#39;)" data-testid="tile-lipidomics">
+    |                   <h3>
+    |                     <i class="fas fa-oil-can" role="presentation" aria-label="oil-can icon"></i>
+    |                     Lipidomics
+    |                   </h3>
+    |                   <p>Comprehensive lipid profiling and analysis</p>
+    |                 </div>
+    |               </div>
+    |               <div class="col-sm-4">
+    |                 <div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">
+    |                   <h3>
+    |                     <i class="fas fa-diagram-project" role="presentation" aria-label="diagram-project icon"></i>
+    |                     Integration
+    |                   </h3>
+    |                   <p>Multi-omics integration (available when 2+ omics selected)</p>
+    |                 </div>
+    |               </div>
+    |             </div>
+    |             <br/>
+    |             <div class="row">
+    |               <div class="col-sm-12">
+    |                 <button class="btn btn-default action-button btn-primary btn-lg" data-testid="btn-start-analysis" id="start_analysis" style="width:100%;" type="button"><span class="action-icon"><i class="fas fa-play" role="presentation" aria-label="play icon"></i></span><span class="action-label">Start Analysis</span></button>
+    |               </div>
+    |             </div>
+    |             <div id="selection_tracker" class="shinyjs-hide">
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="proteomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Proteomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="metabolomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Metabolomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="transcriptomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Transcriptomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="lipidomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Lipidomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="integration_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Integration</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |             </div>
+    |           </div>
+    |           <div id="dynamic_tabs" class="shiny-html-output" data-testid="dynamic-tabs-container"></div>
+    |         </div>
+    |         <div id="log_terminal_ui" class="shiny-html-output"></div>
+    |         <script>
+    |       // ========== DARK MODE TOGGLE ==========
+    |       function toggleDarkMode() {
+    |         document.body.classList.toggle('dark-mode');
+    |         var isDark = document.body.classList.contains('dark-mode');
+    |         localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+    |         // Update icon
+    |         var icon = document.querySelector('#dark_mode_toggle i');
+    |         if (icon) {
+    |           icon.className = isDark ? 'fa fa-sun' : 'fa fa-moon';
+    |         }
+    |       }
+    | 
+    |       // Apply saved preference on page load
+    |       document.addEventListener('DOMContentLoaded', function() {
+    |         var savedMode = localStorage.getItem('darkMode');
+    |         // Default to dark mode if no preference saved (user prefers dark)
+    |         if (savedMode === 'true' || savedMode === null) {
+    |           document.body.classList.add('dark-mode');
+    |           var icon = document.querySelector('#dark_mode_toggle i');
+    |           if (icon) icon.className = 'fa fa-sun';
+    |           if (savedMode === null) localStorage.setItem('darkMode', 'true');
+    |         }
+    |       });
+    | 
+    |       // ========== OMICS SELECTION ==========
+    |       var selectedOmics = [];
+    | 
+    |       function toggleOmicSelection(omic) {
+    |         if (omic === 'integration') return; // Integration is auto-enabled
+    | 
+    |         var box = document.getElementById(omic + '_box');
+    |         var checkbox = document.getElementById(omic + '_selected');
+    | 
+    |         if (selectedOmics.includes(omic)) {
+    |           selectedOmics = selectedOmics.filter(item => item !== omic);
+    |           box.classList.remove('selected');
+    |         } else {
+    |           selectedOmics.push(omic);
+    |           box.classList.add('selected');
+    |         }
+    | 
+    |         // Update hidden checkboxes
+    |         checkbox.checked = selectedOmics.includes(omic);
+    |         checkbox.dispatchEvent(new Event('change'));
+    | 
+    |         // Enable/disable integration based on selection count
+    |         var integrationBox = document.getElementById('integration_box');
+    |         if (selectedOmics.length >= 2) {
+    |           integrationBox.classList.remove('disabled');
+    |           integrationBox.onclick = function() { toggleOmicSelection('integration'); };
+    |         } else {
+    |           integrationBox.classList.add('disabled');
+    |           integrationBox.classList.remove('selected');
+    |           integrationBox.onclick = null;
+    |           selectedOmics = selectedOmics.filter(item => item !== 'integration');
+    |           document.getElementById('integration_selected').checked = false;
+    |           document.getElementById('integration_selected').dispatchEvent(new Event('change'));
+    |         }
+    | 
+    |         Shiny.setInputValue('selected_omics', selectedOmics);
+    |       }
+    |     </script>
+    |       </section>
+    |     </div>
+    |   </div>
+    | </body>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `page` to match string "if (true) { // KIT-138: the Integration tile stays enabled".
+  Actual text:
+  x | <body class="skin-blue" style="min-height: 611px;">
+    |   <div class="wrapper">
+    |     <header class="main-header">
+    |       <span class="logo">MultiScholaR</span>
+    |       <nav class="navbar navbar-static-top" role="navigation">
+    |         <span style="display:none;">
+    |           <i class="fas fa-bars" role="presentation" aria-label="bars icon"></i>
+    |         </span>
+    |         <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+    |           <span class="sr-only">Toggle navigation</span>
+    |         </a>
+    |         <div class="navbar-custom-menu">
+    |           <ul class="nav navbar-nav">
+    |             <li class="dropdown">
+    |               <a id="dark_mode_toggle" href="#" onclick="toggleDarkMode(); return false;" style="padding: 10px 15px;" title="Toggle Dark Mode">
+    |                 <i class="far fa-moon" role="presentation" aria-label="moon icon"></i>
+    |               </a>
+    |             </li>
+    |           </ul>
+    |         </div>
+    |       </nav>
+    |     </header>
+    |     <aside id="sidebarCollapsed" class="main-sidebar" data-collapsed="false">
+    |       <section id="sidebarItemExpanded" class="sidebar">
+    |         <div style="text-align: center; padding: 10px;">
+    |           <img src="www/MultiScholaR_v2.png" style="width: 80%; height: auto;"/>
+    |         </div>
+    |         <ul class="sidebar-menu" data-testid="sidebar-menu">
+    |           <li>
+    |             <a href="#shiny-tab-home" data-toggle="tab" data-value="home">
+    |               <i class="fas fa-house" role="presentation" aria-label="house icon"></i>
+    |               <span>Home</span>
+    |             </a>
+    |           </li>
+    |           <div id="dynamic_menu" class="shiny-html-output"></div>
+    |           <div id="main_menu" class="sidebarMenuSelectedTabItem" data-value="null"></div>
+    |         </ul>
+    |       </section>
+    |     </aside>
+    |     <div class="content-wrapper">
+    |       <section class="content">
+    |         <div class="tab-content">
+    |           <div role="tabpanel" class="tab-pane" id="shiny-tab-home">
+    |             <div class="row">
+    |               <div class="col-sm-12">
+    |                 <h2>Welcome to MultiScholaR Interactive Workflow</h2>
+    |                 <p>Select the type(s) of omics data you want to analyze:</p>
+    |                 <br/>
+    |               </div>
+    |             </div>
+    |             <div class="row">
+    |               <div class="col-sm-4">
+    |                 <div id="proteomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;proteomics&#39;)" data-testid="tile-proteomics">
+    |                   <h3>
+    |                     <i class="fas fa-dna" role="presentation" aria-label="dna icon"></i>
+    |                     Proteomics
+    |                   </h3>
+    |                   <p>Analyze protein abundance data from DIA-NN or similar tools</p>
+    |                 </div>
+    |               </div>
+    |               <div class="col-sm-4">
+    |                 <div id="metabolomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;metabolomics&#39;)" data-testid="tile-metabolomics">
+    |                   <h3>
+    |                     <i class="fas fa-flask" role="presentation" aria-label="flask icon"></i>
+    |                     Metabolomics
+    |                   </h3>
+    |                   <p>Process and analyze metabolite profiling data</p>
+    |                 </div>
+    |               </div>
+    |               <div class="col-sm-4">
+    |                 <div id="transcriptomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;transcriptomics&#39;)" data-testid="tile-transcriptomics">
+    |                   <h3>
+    |                     <i class="fas fa-chart-line" role="presentation" aria-label="chart-line icon"></i>
+    |                     Transcriptomics
+    |                   </h3>
+    |                   <p>Analyze gene expression data from RNA-seq</p>
+    |                 </div>
+    |               </div>
+    |             </div>
+    |             <div class="row">
+    |               <div class="col-sm-4">
+    |                 <div id="lipidomics_box" class="omic-selection-box" onclick="toggleOmicSelection(&#39;lipidomics&#39;)" data-testid="tile-lipidomics">
+    |                   <h3>
+    |                     <i class="fas fa-oil-can" role="presentation" aria-label="oil-can icon"></i>
+    |                     Lipidomics
+    |                   </h3>
+    |                   <p>Comprehensive lipid profiling and analysis</p>
+    |                 </div>
+    |               </div>
+    |               <div class="col-sm-4">
+    |                 <div id="integration_box" class="omic-selection-box disabled" data-testid="tile-integration">
+    |                   <h3>
+    |                     <i class="fas fa-diagram-project" role="presentation" aria-label="diagram-project icon"></i>
+    |                     Integration
+    |                   </h3>
+    |                   <p>Multi-omics integration (available when 2+ omics selected)</p>
+    |                 </div>
+    |               </div>
+    |             </div>
+    |             <br/>
+    |             <div class="row">
+    |               <div class="col-sm-12">
+    |                 <button class="btn btn-default action-button btn-primary btn-lg" data-testid="btn-start-analysis" id="start_analysis" style="width:100%;" type="button"><span class="action-icon"><i class="fas fa-play" role="presentation" aria-label="play icon"></i></span><span class="action-label">Start Analysis</span></button>
+    |               </div>
+    |             </div>
+    |             <div id="selection_tracker" class="shinyjs-hide">
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="proteomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Proteomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="metabolomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Metabolomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="transcriptomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Transcriptomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="lipidomics_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Lipidomics</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |               <div class="form-group shiny-input-container">
+    |                 <div class="checkbox">
+    |                   <label>
+    |                     <input id="integration_selected" type="checkbox" class="shiny-input-checkbox"/>
+    |                     <span>Integration</span>
+    |                   </label>
+    |                 </div>
+    |               </div>
+    |             </div>
+    |           </div>
+    |           <div id="dynamic_tabs" class="shiny-html-output" data-testid="dynamic-tabs-container"></div>
+    |         </div>
+    |         <div id="log_terminal_ui" class="shiny-html-output"></div>
+    |         <script>
+    |       // ========== DARK MODE TOGGLE ==========
+    |       function toggleDarkMode() {
+    |         document.body.classList.toggle('dark-mode');
+    |         var isDark = document.body.classList.contains('dark-mode');
+    |         localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+    |         // Update icon
+    |         var icon = document.querySelector('#dark_mode_toggle i');
+    |         if (icon) {
+    |           icon.className = isDark ? 'fa fa-sun' : 'fa fa-moon';
+    |         }
+    |       }
+    | 
+    |       // Apply saved preference on page load
+    |       document.addEventListener('DOMContentLoaded', function() {
+    |         var savedMode = localStorage.getItem('darkMode');
+    |         // Default to dark mode if no preference saved (user prefers dark)
+    |         if (savedMode === 'true' || savedMode === null) {
+    |           document.body.classList.add('dark-mode');
+    |           var icon = document.querySelector('#dark_mode_toggle i');
+    |           if (icon) icon.className = 'fa fa-sun';
+    |           if (savedMode === null) localStorage.setItem('darkMode', 'true');
+    |         }
+    |       });
+    | 
+    |       // ========== OMICS SELECTION ==========
+    |       var selectedOmics = [];
+    | 
+    |       function toggleOmicSelection(omic) {
+    |         if (omic === 'integration') return; // Integration is auto-enabled
+    | 
+    |         var box = document.getElementById(omic + '_box');
+    |         var checkbox = document.getElementById(omic + '_selected');
+    | 
+    |         if (selectedOmics.includes(omic)) {
+    |           selectedOmics = selectedOmics.filter(item => item !== omic);
+    |           box.classList.remove('selected');
+    |         } else {
+    |           selectedOmics.push(omic);
+    |           box.classList.add('selected');
+    |         }
+    | 
+    |         // Update hidden checkboxes
+    |         checkbox.checked = selectedOmics.includes(omic);
+    |         checkbox.dispatchEvent(new Event('change'));
+    | 
+    |         // Enable/disable integration based on selection count
+    |         var integrationBox = document.getElementById('integration_box');
+    |         if (selectedOmics.length >= 2) {
+    |           integrationBox.classList.remove('disabled');
+    |           integrationBox.onclick = function() { toggleOmicSelection('integration'); };
+    |         } else {
+    |           integrationBox.classList.add('disabled');
+    |           integrationBox.classList.remove('selected');
+    |           integrationBox.onclick = null;
+    |           selectedOmics = selectedOmics.filter(item => item !== 'integration');
+    |           document.getElementById('integration_selected').checked = false;
+    |           document.getElementById('integration_selected').dispatchEvent(new Event('change'));
+    |         }
+    | 
+    |         Shiny.setInputValue('selected_omics', selectedOmics);
+    |       }
+    |     </script>
+    |       </section>
+    |     </div>
+    |   </div>
+    | </body>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-workflow-tabs\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-tab-import\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-tab-alignment\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-tab-model\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-tab-results\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-tab-enrichment\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T1: with the option unset the Integration tile is live and the six tabs are shown
+kind: failure
+message:
+  Expected `ui` to match string "data-testid=\"integration-tab-record\"".
+  Actual text:
+  x | <div class="alert alert-warning">
+    |   <h4>Module not yet implemented</h4>
+    |   <p>The integration workflow module is under development.</p>
+    | </div>
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `grepl(texts[["refusal_mofa_unavailable"]], readiness, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  MOFA2
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `!is.na(sentence) && grepl(sentence, readiness, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  MOFA2
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `!is.na(sentence) && grepl(name, sentence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  MOFA2
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `grepl(texts[["refusal_mofa_unavailable"]], readiness, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  reticulate
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `!is.na(sentence) && grepl(sentence, readiness, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  reticulate
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `!is.na(sentence) && grepl(name, sentence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  reticulate
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `grepl(texts[["refusal_mofa_unavailable"]], readiness, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  mofapy2
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `!is.na(sentence) && grepl(sentence, readiness, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  mofapy2
+
+file: test-kit240-integration-default.R
+test: KIT-240 T3: the Model tab names the missing MOFA2, reticulate or mofapy2 and how to get it
+kind: failure
+message:
+  Expected `!is.na(sentence) && grepl(name, sentence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  mofapy2
+
+file: test-kit240-integration-default.R
+test: KIT-240 T4: the software check says which piece is missing
+kind: failure
+message:
+  Expected `capability$missing` to be identical to `expected`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('mofapy2')
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `any(grepl("workbook|provisional|may override|awaiting", table$settled_by))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  model technical_replicates, internal_standards, missing_samples, center_groups, num_factors, seed, training_seeds
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `all(grepl("INT-|VAL-|KIT-060", table$settled_by))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  model
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `any(grepl("workbook|provisional|may override|awaiting", table$settled_by))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  results factors_shown, top_features, weight_scale, design_covariate, association_test, p_adjust_method, figure_format, figure_width, figure_height, figure_dpi, feature_values, heatmap_scaling, umap, umap_n_neighbors, tsne, tsne_perplexity, map_seed
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `all(grepl("INT-|VAL-|KIT-060", table$settled_by))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  results
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `any(vapply(spec, integrationParameterProvisional, logical(1)))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `any(vapply(spec, integrationParameterProvisional, logical(1)))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `...[]` to have the same values as `waiting`.
+  Actual: 
+  Expected: "correlation_method", "min_samples", "string_species", "kegg_organism", "reactome_organism", "min_set_size", "max_set_size", "seed"
+  Absent: "correlation_method", "min_samples", "string_species", "kegg_organism", "reactome_organism", "min_set_size", "max_set_size", "seed"
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit240-integration-default.R
+test: KIT-240 T6: the marks name the decision behind each default; the eight waiting enrichment settings say so
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `seeds$models$elbo_last` to equal `c(-100, -99, -101, -100.5, -102)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (-100, -99, -101, -100.5, -102)
+
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `seeds$elbo_rank` to equal `list(rank = 2L, of = 5L, below_best = 1, range = 3, relative_spread = 3/99)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `!is.na(rank_sentence) && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `!is.na(limit) && grepl(limit, intro, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit240-integration-default.R
+test: KIT-240 T7: each seed's final ELBO is kept and the reported model's rank shown, the model unchanged
+kind: failure
+message:
+  Expected `!is.na(methods_sentence) && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
