@@ -1,0 +1,16 @@
+      2 test: KIT-212 E10: lipid, a loaded state name is forgotten once the head moves, and the DA runs on the head
+      5 test: KIT-212 E11: lipid, a new session's owner on a project holding an earlier session's DA tables: Copy and Report refuse
+      2 test: KIT-212 E12: lipid, a DA of contrasts A and B, then of A only: Copy refuses and names B's table
+      5 test: KIT-212 E13: proteomics, a session owner without a DA on a project holding DA files: Copy and Report refuse
+     12 test: KIT-212 E1, E2, E3: lipid Q1 (a second run without a DA): Save, Copy and Report refuse
+     12 test: KIT-212 E1, E2, E3: metab Q1 (a second run without a DA): Save, Copy and Report refuse
+     10 test: KIT-212 E4: lipid Q2 (one Revert) and Q3 (Apply again): Save refuses
+     10 test: KIT-212 E4: metab Q2 (one Revert) and Q3 (Apply again): Save refuses
+      8 test: KIT-212 E5: transcriptomics, a second run without a DA: Save and Copy refuse
+      7 test: KIT-212 E6: proteomics Q6 (a QC Revert after the DA): Copy, Save and Report refuse
+      3 test: KIT-212 E7: lipid, the DA, then Quality Control reverted to QC complete: Copy refuses
+      3 test: KIT-212 E8: lipid, the tab's results are cleared when a second run moves the head after its DA
+      4 test: KIT-212 E9, E9b, E9c: replay refuses a record whose DA was run on another table than its final one
+     10 test: KIT-212 G11, G12: after a Revert past the DA's source (and an identical re-apply) Save refuses; the DA re-run saves and replays
+      1 test: KIT-212 G8, G9: lipid the owner's own export reopened saves; the managed Save after Q1 queues nothing
+      1 test: KIT-212 G8, G9: metab the owner's own export reopened saves; the managed Save after Q1 queues nothing

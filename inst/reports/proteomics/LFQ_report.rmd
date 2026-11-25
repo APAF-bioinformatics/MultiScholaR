@@ -842,7 +842,24 @@ FormatGOEnrichment <- function(numbers) {
     enrichment_tool_text <- glue::glue("The enrichment analysis was performed with g:Profiler (Kolberg et al., 2023) ",
       "through the gprofiler2 R package (Kolberg et al., 2020). Gene Ontology biological process, molecular function ",
       "and cellular component terms, KEGG pathways and Reactome pathways were tested, each data source as its own ",
-      "family, {correction_text}.")
+      "family, {correction_text}. On g:Profiler, a list for which no term is significant cannot be told apart from ",
+      "a list in which the service recognised none of the gene names.") # KIT-215 (VAL-170 (6))
+  }
+  # KIT-215 (VAL-170): the lists the run recorded as not tested, with the route's reason (each route has one); printed
+  # only when the record holds the outcome (the report map turns an absent outcome into "not recorded").
+  not_tested_val <- numbers$enrichment_lists_not_tested
+  if ((is_clusterprofiler || is_gprofiler) && is.character(not_tested_val) && length(not_tested_val) == 1L &&
+    !is.na(not_tested_val) && nzchar(not_tested_val) && !identical(not_tested_val, "not recorded")) {
+    not_tested_lists <- sub("^(.*): (up|down)$", "\\1 (\\2-regulated)",
+      strsplit(not_tested_val, "; ", fixed = TRUE)[[1L]])
+    not_tested_reason <- if (is_clusterprofiler) {
+      "none of its proteins has a Gene Ontology annotation that this analysis tests"
+    } else {
+      "none of its proteins has a gene name, and g:Profiler tests gene names"
+    }
+    parameter_bullets <- paste0(parameter_bullets, "\n", "• Not tested: ", paste(not_tested_lists, collapse = "; "),
+      ": ", not_tested_reason, ". A list that was not tested has no result; its absence from the results does not ",
+      "mean that no term is enriched.")
   }
   
   glue::glue("

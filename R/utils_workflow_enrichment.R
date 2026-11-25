@@ -882,7 +882,10 @@ workflowEnrichmentUnnamedProteins <- function(da_results, contrasts_tbl, id_colu
 #'   KIT-208: a g:Profiler comparison without a named protein refuses the run (class
 #'   `workflow_enrichment_no_identifiers`, from the kernel) before anything is saved; the step's outcomes gain
 #'   `enrichment_lists_not_tested` when a list was not tested and `enrichment_unnamed_proteins` when a comparison has
-#'   proteins without a gene name.
+#'   proteins without a gene name. KIT-215 (VAL-170): on both routes; a GO comparison with lists and no annotated
+#'   tested protein or no term of 10 to 500 of them, and a test that raised an error, refuse the run (classes
+#'   `workflow_enrichment_no_identifiers`, `workflow_enrichment_test_error`); the list also carries `not_tested` and
+#'   `no_list` (`diaEnrichmentNoIdentifiers`) when there are some, and the state's config commits them.
 #' @noRd
 runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths, process_fn = NULL, notify = NULL,
     progress = NULL, refuse_missing_da = FALSE) {
@@ -1069,9 +1072,15 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
     # KIT-208 (VAL-147 (1), SD-1 (a)): a g:Profiler list whose proteins all lack a gene name was not sent; the run says
     # so once and records it, so that its empty result is not read as "no term enriched". Absent otherwise.
+    # KIT-215 (VAL-170): a GO list none of whose proteins has an annotation the analysis tests likewise, in its own
+    # sentence; each route has one reason, so the route names it.
     not_tested <- declared$not_tested
     if (NROW(not_tested) > 0L) {
-        notify(paste(sprintf(paste("Comparison %s, %s: none of its %d proteins has a gene name, so this list was not",
+        go <- identical(method$method, "clusterprofiler")
+        notify(paste(if (go) sprintf(paste("Comparison %s, %s: none of its %d proteins has a Gene Ontology annotation",
+            "that this analysis tests, so this list was not tested (its empty result does not mean that no term is",
+            "enriched)."), not_tested$comparison, not_tested$direction, not_tested$proteins) else
+            sprintf(paste("Comparison %s, %s: none of its %d proteins has a gene name, so this list was not",
             "sent to g:Profiler and was not tested (its empty result does not mean that no term is enriched)."),
             not_tested$comparison, not_tested$direction, not_tested$proteins), collapse = " "), "warning", NULL)
         outcomes$enrichment_lists_not_tested <- paste(not_tested$comparison, not_tested$direction, sep = ": ",
@@ -1109,7 +1118,7 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid)
     updateProtEnrichStateManagerUiParams(workflowData = workflow, storedUiParams = ui_parameters$storedUiParams)
     saved <- saveWorkflowEnrichmentState(workflow, config, stamped, declared$parameters, method, parameters,
-        directories$pathwayDir, outcomes = outcomes)
+        directories$pathwayDir, outcomes = outcomes, not_tested = declared$not_tested, no_list = declared$no_list)
     if (isTRUE(saved$saved)) {
         status <- workflow$tab_status
         status[[config$status_key]] <- "complete"
@@ -1120,10 +1129,14 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
             saved$warning %||% "unknown error"), "warning", 10)
     }
     progress(1.0, "Complete!")
-    list(results = results, method = method, contrasts = contrast_results, selected = shown,
+    out <- list(results = results, method = method, contrasts = contrast_results, selected = shown,
         raw_contrast = selection$rawContrastName, contrasts_tbl = contrasts_tbl, pathway_dir = directories$pathwayDir,
         annotation_match = matching$annotationMatchResults, organism_filter = organism_filter, service = declared$service,
         reference = declared$reference, parameters = declared$parameters, saved = saved)
+    # KIT-215: the lists not tested and the directions with no list, for the tab; absent when there are none.
+    out$not_tested <- declared$not_tested
+    out$no_list <- declared$no_list
+    out
 }
 
 #' The GO parent-term outcomes of a propagated clusterProfiler run (KIT-173)
@@ -1179,10 +1192,13 @@ workflowEnrichmentGoOutcomes <- function(annotations, go_propagation, da_results
 #' @param outcomes Named list of provenance-only values of the run (the organism filter's applied flag and row
 #'   counts; the selected correction when the backend applied another, A107-03; the sha256 of the annotation table and
 #'   of each contrast's DA table the run read, KIT-119 A107-06), or NULL for none.
+#' @param not_tested,no_list KIT-215: the lists not tested and the directions with no list
+#'   (`diaEnrichmentNoIdentifiers`), committed in the config beside `outcomes` only when they have rows (display
+#'   only: neither identity nor record).
 #' @return `list(attempted, saved, warning)`.
 #' @noRd
 saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,
-    outcomes = NULL) {
+    outcomes = NULL, not_tested = NULL, no_list = NULL) {
     manager <- workflow$state_manager
     warning_message <- NULL
     saved <- FALSE
@@ -1206,7 +1222,9 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
                 q_cutoff = parameters$q_cutoff,
                 organism_taxid = parameters$organism_taxid,
                 pathway_dir = pathway_dir),
-                if (length(outcomes)) list(outcomes = outcomes)),
+                if (length(outcomes)) list(outcomes = outcomes),
+                if (NROW(not_tested) > 0L) list(not_tested = not_tested),
+                if (NROW(no_list) > 0L) list(no_list = no_list)),
             description = paste("Enrichment analysis completed using", method$method, "for contrast:",
                 parameters$selected_contrast))
         saved <- TRUE
@@ -1297,7 +1315,8 @@ portableWorkflowEnrichmentResults <- function(results) {
 #' @param manager The session owner.
 #' @param config The omic's `enrichment` group (`state_name`).
 #' @return NULL when the state is not in the history or is not an `EnrichmentResults`; otherwise
-#'   `list(all_enrichment_results, enrichment_results_full, method)`.
+#'   `list(all_enrichment_results, enrichment_results_full, method)`, with KIT-215's `not_tested` and `no_list` from the
+#'   state's config when it carries them.
 #' @noRd
 restoreWorkflowEnrichment <- function(manager, config) {
     if (is.null(manager) || !config$state_name %in% unlist(diaStateHistory(manager))) return(NULL)
@@ -1311,7 +1330,18 @@ restoreWorkflowEnrichment <- function(manager, config) {
         contrast_results[[contrast]]$clusterprofiler_results_table <- saveDIADisplayTable(manager,
             contrast_results[[contrast]]$clusterprofiler_results)
     }
-    list(all_enrichment_results = contrast_results, enrichment_results_full = results, method = method)
+    out <- list(all_enrichment_results = contrast_results, enrichment_results_full = results, method = method)
+    # KIT-215: the record's lists not tested and directions with no list (absent from a record without them).
+    # A state stored as a whole legacy object has no component metadata and carries neither (as the record writer
+    # reads it, `buildWorkflowAnalysisRecord`).
+    reference <- getWorkflowStateReference(manager, config$state_name)
+    if (!is.null(reference)) {
+        recorded <- tryCatch(readComponentMetadata(manager, reference)$config,
+            saved_entity_unsupported = function(e) NULL)
+        out$not_tested <- recorded$not_tested
+        out$no_list <- recorded$no_list
+    }
+    out
 }
 
 #' Replay a recorded enrichment step after the replayed DA (KIT-107 D5; F-16)
