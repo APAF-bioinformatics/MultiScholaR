@@ -100,4 +100,36 @@ in limpa or mixOmics files may read differently from those records; the verdict 
 
 ## Result
 
-(filled after the run)
+Run 45676428221 (request `merge-train-20261126g-d1018f6b`, dispatched normally; `meta.txt` names the request file,
+package_commit d1018f6b, base_commit f8c871f3; its request_commit reads 3b2fc169, another agent's later request commit
+on `run-tests`, which contains this request file unchanged), sent once; conclusion success; 809.1 job-minutes of the
+1,460 ceiling (tests 778.1, check 30.3, plan and results 0.8). Library: limpa 1.4.2, mixOmics 6.36.0 installed. Tables
+in `merge-train-20261126g/` (`compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`).
+
+Observed, 81 files: 77 `same`, 4 not `same`:
+
+| file | base p/f/e/s | head p/f/e/s | verdict | prediction |
+|---|---|---|---|---|
+| test-kit248-correlation-skip-record.R | absent | 206/0/0/0 | only-on-head | held (0 skipped) |
+| test-prot-norm-core.R | 1548/306/0/0 | 1548/306/0/0 | message-changed | held: exactly the 12 labels (below) |
+| test-workflow-operation-registry.R | 1095/2/0/0 | 1099/2/0/0 | count-changed | held: the 2 failures identical on both sides, each the `integration_mofa_model` difference |
+| test-workflow-partitions.R | 439/0/0/2 | 440/0/0/2 | count-changed | held (base read from the run: 439, as R2) |
+
+`test-prot-norm-core.R`, parsed from both failure files (keyed by test and leaf; 282 keys on each side, none only on
+one side): 12 changed messages, exactly the provenance and record leaves of dia_correlation_skip,
+dia_normalization_refused and dia_normalization_retry in W1 (a) and W2 (for example dia_correlation_skip provenance:
+actual `4aac9383…` on base, `dcfdf833…` on head). Nothing else in the file moved.
+
+Every other file `same` at the base counts on record (0 differences, script over `compare.tsv` against
+`merge-train-20261126g-predictions.tsv`), including `test-workflow-saved-da.R` 755/196, `test-kit257-norm-own-files.R`
+133/0, `test-kit244-limpa-pass-through.R` 204/0 with 0 skipped, `test-omics-norm-state-guards.R` 651/0. Read from the
+run: `test-kit172-log2-rule.R` 212/0, `test-module-ci-trx-qc.R` 38/0/1 error (KIT-248 R2 had 34/1/1 without these
+packages), `test-workflow-omics-owner.R` 78/1, all `same`.
+
+R CMD check: 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides; all 6 findings identical, none only on head or only on base.
+
+Verdict: every prediction held. TRAIN GREEN, landing only after trains 12 and 13 land with their code unchanged.
+
+Not checked: trains 12 and 13 at landing; any file outside the 81; the full suite (KIT-248's A4 at the next
+checkpoint).
