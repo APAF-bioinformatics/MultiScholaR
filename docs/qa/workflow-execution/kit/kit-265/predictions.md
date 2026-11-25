@@ -114,3 +114,38 @@ changes; the ticket's ceiling is unchanged):
 
 4 of 4 sessions attached; 0 differ, 0 not observed. About 13.0 job-minutes (0.87 core-hours). H1 in all: 26.5
 job-minutes (1.77 core-hours) against 15 expected and the 60 ceiling.
+
+## Correction pass (AUDIT-KIT-265-impl I01; coordinator's ruling 2026-11-26): declared before it is sent
+
+The ticket's one correction pass. Staging 15d86bd4 was merged first (a14f956c4; NEWS and ledger kept both sides,
+staging's first; no conflict under R/, tests/ or inst/; the ticket's scope grep still gives 9 files, 10 with the new
+file). The notice follows the form's Taxonomy ID, which alone sets the UniProt query and the enrichment organism:
+name and taxon present: as before; taxon present and the name empty: "This analysis will use the Taxonomy ID entered
+in the form: <id> (the form gives no organism name). "; taxon NULL or NA: "The form has no Taxonomy ID, so UniProt
+annotation will have no organism to use. " (the register's suggestion; the enrichment clause is dropped because
+enrichment's behaviour is not checked). Session A's notice (both present) does not change, so no H1.
+
+Tests first, commit 6eb7dd239 (tests only, nothing under R/): row E1e; the new blank-form text in E1b, E1c and in the
+two declared edits (KIT-250 G3, the 01c test). The fix is the next commit.
+
+### Comparison run (R2's form): base = 6eb7dd239 (tests only), head = the fix on it
+
+- **Purpose:** E1e and the moved texts fail on c40435ef's code (the base side) for the stated reason and pass on the
+  fix; no regression. Stop rule: a result that misses its prediction stops the work (no second correction).
+- **Files (the 10, recounted on the merged tree):** `test-kit265-organism-routes.R`, `test-e2e-test-mode-integration.R`,
+  `test-kit250-organism-dialog.R`, `test-module-ci-prot-import.R`, `test-prot-01c-import-module-contracts.R`,
+  `test-prot-01d-import-module-characterization.R`, `test-prot-import-core.R`, `test-workflow-gui-memory-lifetimes.R`,
+  `test-workflow-server-shared.R`, `test-workflow-ui-shared.R`. One shard per side, `check: true`, reference BLAS.
+- **Expected:** about 60 job-minutes (R2 took 56.6) = 4.0 core-hours. **Ceiling:** 120 job-minutes (8.0 core-hours),
+  inside the ticket's correction line of 385.
+
+| File | Base (c40435ef's code, new tests) | Head (fix) | Verdict |
+|---|---|---|---|
+| `test-kit265-organism-routes.R` | 126 passed, 3 failed (E1b, E1c, E1e: one assertion each, the message: the old blank-form sentence, and for E1e the same sentence instead of the Taxonomy ID's) | 129 / 0 | `fixed` |
+| `test-kit250-organism-dialog.R` | 118 / 1 (G3, the message) | 119 / 0 | `fixed` |
+| `test-prot-01c-import-module-contracts.R` | 437 / 1 ("warns when no valid organism choices can be built", the message) | 438 / 0 | `fixed` |
+| the seven other files | their R2 counts | the same | `same` |
+| R CMD check | | | findings identical (0 errors, 3 warnings, 3 notes both sides) |
+
+The failures on the base side are by assertion at the stated values and only the message differs (the notice's
+`duration`, `id`, type and the rest already hold on that code). Counts are derived by hand from the assertions.
