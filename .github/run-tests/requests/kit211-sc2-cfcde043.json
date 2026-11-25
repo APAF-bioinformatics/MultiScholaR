@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-211 counted job S-C2: cell C, r 301 to 400, declared (declaration.md at bffa7859/15829c8f); expected ~54 job-min, timeout 120, ceiling 130; a result is never re-run",
+  "label": "KIT-211 counted sc2 cell C r 301-400 at cfcde043",
+  "package_commit": "cfcde043d1daadb44e18b18f8e6ce83cf7914662",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-211/sim-k211.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-211/rows/C-301-400",
+        "301",
+        "400"
+      ],
+      "env": {
+        "K211_CELLS": "C"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-211/rows/C-301-400",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 120
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
