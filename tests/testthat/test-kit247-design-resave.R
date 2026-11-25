@@ -189,6 +189,7 @@ kit247Lane <- function(lane_id, until, actions) {
             modals = function() length(log$modals),
             notices = function() notices$count,
             bus = function(name) shiny::isolate(workflow_data[[name]]),
+            steps = stats::setNames(standard, ids), tabs = spec$tabs,
             manager = manager, flush = function() session$flushReact())
         holder$result <- actions(api, probe)
         shiny::isolate(closeDIAStateAdapter(workflow_data$state_manager))
@@ -414,4 +415,217 @@ test_that("KIT-247 E23 (VAL-239 (iv), VAL-148's rule completed): a refused Summa
         testthat::expect_true(any(grepl("could not be saved", out$notes, fixed = TRUE)), info = lane_id)
         testthat::expect_identical(out$after, character(), info = lane_id)
     }
+})
+
+# ---------------------------------------------------------------------------------------------------------------------
+# The second correction (owner's VAL-277; AUDIT-KIT-247-impl-20261126 I01, I02, I07, G3).
+# ---------------------------------------------------------------------------------------------------------------------
+
+#' The lane's exported design folder (the project's source_dir after its design save), copied, with `edit` applied to
+#' its design_matrix.tab.
+kit247ExportedDesign <- function(probe, edit) {
+    source <- probe$paths$source_dir
+    target <- file.path(tempfile("k247-export-"))
+    dir.create(target)
+    files <- list.files(source, pattern = "^(design_matrix|data_cln.*|contrast_strings|assay_manifest|column_mapping|config)\\.(tab|txt|json|ini)$")
+    file.copy(file.path(source, files), target)
+    design <- utils::read.delim(file.path(target, "design_matrix.tab"), stringsAsFactors = FALSE, check.names = FALSE)
+    design <- edit(design)
+    utils::write.table(design, file.path(target, "design_matrix.tab"), sep = "\t", row.names = FALSE, quote = FALSE)
+    target
+}
+
+#' One run moved to the other group (a new replicate number after the group's last).
+kit247MoveRun <- function(design, run, to) {
+    row <- which(apply(design, 1L, function(r) any(as.character(r) == run)))[[1L]]
+    design$group[[row]] <- to
+    if ("factor1" %in% names(design)) design$factor1[[row]] <- to
+    design$replicates[[row]] <- max(design$replicates[design$group == to], na.rm = TRUE) + 1L
+    if ("tech_rep_group" %in% names(design)) design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
+    design
+}
+
+#' A KIT-222 refusal: one run given the replicate number of another of its group, neither marked.
+kit247Collide <- function(design, run) {
+    row <- which(apply(design, 1L, function(r) any(as.character(r) == run)))[[1L]]
+    other <- which(design$group == design$group[[row]] & seq_len(nrow(design)) != row)[[1L]]
+    design$replicates[[row]] <- design$replicates[[other]]
+    if (!"tech_reps" %in% names(design)) design$tech_reps <- NA_integer_
+    design$tech_reps[c(row, other)] <- NA_integer_
+    if ("tech_rep_group" %in% names(design)) design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
+    design
+}
+
+kit247Import <- function(api, lane, folder) {
+    api$set(stats::setNames(list("design"), api$tabs))
+    if (identical(lane$omic_type, "proteomics")) {
+        api$set(list(`design_matrix-import_dir_text` = folder, `design_matrix-import_taxon_id` = 9606L,
+            `design_matrix-import_organism_name` = "Homo sapiens"))
+        kit247Click(api, "design_matrix-confirm_import")
+    } else {
+        api$set(list(`design-import_dir` = folder))
+        kit247Click(api, "design-confirm_import")
+    }
+}
+
+kit247MovedRun <- function(api, lane) {
+    spec <- kit247LaneSpec(lane$lane_id)
+    if (identical(lane$omic_type, "proteomics")) {
+        e2e_match_available_values(spec$moved, api$choices("design_matrix-builder-selected_runs"))
+    } else spec$moved[[1L]]
+}
+
+for (lane_id in c("prot_lfq", "lipid_canonical")) {
+    test_that(paste("KIT-247 E7 (VAL-277, AUDIT I01):", lane_id, "Import Existing Design of a changed design asks; Save cuts; Cancel changes nothing"), {
+        state <- if (identical(lane_id, "prot_lfq")) "protein_s4_initial" else "lipid_raw_data_s4"
+        out <- kit247Lane(lane_id, "correlation", function(api, probe) {
+            run <- kit247MovedRun(api, probe$lane)
+            to <- kit247LaneSpec(lane_id)$new
+            folder <- kit247ExportedDesign(probe, function(d) kit247MoveRun(d, run, to))
+            before <- list(history = probe$history(), head = probe$head(), design = probe$bus("design_matrix"),
+                config = probe$bus("config_list"), modals = probe$modals())
+            kit247Import(api, probe$lane, folder)
+            cancelled <- list(history = probe$history(), head = probe$head(), design = probe$bus("design_matrix"),
+                config = probe$bus("config_list"), modals = probe$modals())
+            kit247Import(api, probe$lane, folder)
+            if (identical(probe$lane$omic_type, "proteomics")) kit247Click(api, "design_matrix-confirm_design_resave") else
+                kit247Click(api, "design-confirm_design_resave")
+            probe$flush()
+            list(before = before, cancelled = cancelled, history = probe$history(), head = probe$head(),
+                status = probe$status(), notes = probe$notes())
+        })
+        expect_gt(out$cancelled$modals, out$before$modals)
+        expect_identical(out$cancelled$history, out$before$history)
+        expect_identical(out$cancelled$head, out$before$head)
+        expect_identical(out$cancelled$design, out$before$design)
+        expect_identical(out$cancelled$config, out$before$config)
+        expect_identical(out$head, state)
+        expect_identical(utils::tail(out$history, 1L), state)
+        expect_identical(out$status$quality_control, "pending")
+        expect_true(any(grepl("The design was saved again", out$notes, fixed = TRUE)))
+    })
+
+    test_that(paste("KIT-247 E7 error (VAL-277, AUDIT I01):", lane_id, "an import refused after the confirmation is shown, the session lives on, nothing changes"), {
+        out <- kit247Lane(lane_id, "correlation", function(api, probe) {
+            run <- kit247MovedRun(api, probe$lane)
+            folder <- kit247ExportedDesign(probe, function(d) kit247Collide(d, run))
+            before <- list(history = probe$history(), head = probe$head(), design = probe$bus("design_matrix"))
+            kit247Import(api, probe$lane, folder)
+            if (identical(probe$lane$omic_type, "proteomics")) kit247Click(api, "design_matrix-confirm_design_resave") else
+                kit247Click(api, "design-confirm_design_resave")
+            probe$flush()
+            list(before = before, history = probe$history(), head = probe$head(), design = probe$bus("design_matrix"),
+                notes = probe$notes(), alive = TRUE)
+        })
+        expect_true(isTRUE(out$alive))
+        expect_true(any(grepl("Error during import", out$notes, fixed = TRUE)))
+        expect_identical(out$history, out$before$history)
+        expect_identical(out$head, out$before$head)
+        expect_identical(out$design, out$before$design)
+    })
+}
+
+test_that("KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged", {
+    out <- kit247Lane("lipid_canonical", "correlation", function(api, probe) {
+        planted <- new.env()
+        testthat::local_mocked_bindings(writeOmicsDesignArtifacts = function(...) stop("KIT-247 planted failure after the bus write"),
+            .package = "MultiScholaR", .env = planted)
+        kit247Resave(api, probe$lane, "move")
+        kit247Click(api, "design-confirm_design_resave")
+        withr::deferred_run(planted)
+        failed <- list(history = probe$history(), notes = probe$notes())
+        probe$clear_notes()
+        kit247Resave(api, probe$lane, "move")
+        kit247Click(api, "design-confirm_design_resave")
+        probe$flush()
+        list(failed = failed, history = probe$history(), head = probe$head(), notes = probe$notes())
+    })
+    expect_true(any(grepl("Error saving design matrix results", out$failed$notes, fixed = TRUE)))
+    expect_false(any(grepl("nothing changed|Comparisons saved", out$notes)))
+    expect_identical(out$head, "lipid_raw_data_s4")
+    expect_identical(utils::tail(out$history, 1L), "lipid_raw_data_s4")
+})
+
+#' The group of `runs` in the design of the DA the store holds (its source table's design component).
+kit247DaGroup <- function(manager, runs) {
+    withWorkflowStateScope(manager, function() {
+        reference <- manager$.context$snapshot$da_results
+        if (!isSavedWorkflowReference(reference)) return("<no DA>")
+        source <- resolveWorkflowStateValue(manager$.context, reference)$source
+        component <- readComponentMetadata(manager, source)$data$components$design_matrix
+        design <- as.data.frame(materializeWorkflowTable(manager$.context, component), stringsAsFactors = FALSE)
+        hit <- which(apply(design, 1L, function(r) any(as.character(r) %in% runs)))
+        paste(unique(as.character(design$group[hit])), collapse = "|")
+    })
+}
+
+for (lane_id in c("prot_lfq", "lipid_canonical")) {
+    test_that(paste("KIT-247 I07 (VAL-277):", lane_id, "after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself"), {
+        out <- kit247Lane(lane_id, "correlation", function(api, probe) {
+            lane <- probe$lane
+            run <- kit247MovedRun(api, lane)
+            kit247Resave(api, lane, "move")
+            kit247Click(api, if (identical(lane$omic_type, "proteomics")) "design_matrix-confirm_design_resave" else "design-confirm_design_resave")
+            kit247Reset(api, lane)
+            kit247Run(api, lane)
+            prot <- identical(lane$omic_type, "proteomics")
+            api$set(stats::setNames(list(if (prot) "normalization" else "norm"), api$tabs))
+            if (prot) {
+                api$set(list(`normalization-norm_qc_tabs` = "Correlation Filtering", `normalization-min_pearson_correlation_threshold` = 0.5))
+                kit247Click(api, "normalization-apply_correlation_filter")
+                kit247Click(api, "normalization-export_filtered_session")
+                api$set(stats::setNames(list("da"), api$tabs))
+                kit247Click(api, "differential_expression-load_filtered_session")
+                api$set(list(`differential_expression-formula_string` = "~ 0 + group", `differential_expression-da_q_val_thresh` = 0.05,
+                    `differential_expression-treat_lfc_cutoff` = 0))
+                modals <- probe$modals()
+                kit247Click(api, "differential_expression-run_da_analysis")
+                if (probe$modals() > modals) kit247Click(api, "differential_expression-acknowledge_qvalue_warning")
+            } else {
+                api$set(list(`norm-min_pearson_correlation_threshold` = 0.5))
+                kit247Click(api, "norm-apply_correlation_filter")
+                kit247Click(api, "norm-export_session")
+                api$set(stats::setNames(list("de"), api$tabs))
+                kit247Click(api, "de-load_filtered_session")
+                api$set(list(`de-formula_string` = "~ 0 + group", `de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 0))
+                kit247Click(api, "de-run_da_analysis")
+            }
+            probe$flush()
+            record <- buildWorkflowAnalysisRecord(probe$manager())
+            rows <- as.data.frame(record$design$rows, stringsAsFactors = FALSE)
+            hit <- which(apply(rows, 1L, function(r) any(as.character(r) == run)))
+            builder <- Filter(function(step) identical(step$operation, "design_builder"), record$steps)
+            list(da = kit247DaGroup(probe$manager(), run), record_group = unique(as.character(rows$group[hit])),
+                builder_entity = if (length(builder)) builder[[1L]]$result_entity_id else NA_character_,
+                design_entity = probe$entity(kit247DesignState(lane)))
+        })
+        new <- kit247LaneSpec(lane_id)$new
+        expect_identical(out$da, new)
+        expect_identical(out$record_group, new)
+        expect_identical(out$builder_entity, out$design_entity)
+    })
+}
+
+test_that("KIT-247 G3 (VAL-277): after the cut, Quality Control re-applied and a run give the numbers of a project designed that way from the start", {
+    qc <- c("qc_intensity", "qc_duplicates", "qc_finalize")
+    normalised <- function(probe) guiEntryDigest(withWorkflowStateScope(probe$manager(), function() probe$manager()$getState("lipid_normalized")))
+    redone <- kit247Lane("lipid_canonical", "correlation", function(api, probe) {
+        kit247Resave(api, probe$lane, "move")
+        kit247Click(api, "design-confirm_design_resave")
+        for (id in qc) {
+            api$set(stats::setNames(list(probe$steps[[id]]$tab), probe$tabs))
+            probe$steps[[id]]$run(api)
+        }
+        kit247Run(api, probe$lane)
+        normalised(probe)
+    })
+    fresh <- kit247Lane("lipid_canonical", "design_refusal", function(api, probe) {
+        kit247Resave(api, probe$lane, "move")
+        for (id in c(qc, "norm")) {
+            api$set(stats::setNames(list(probe$steps[[id]]$tab), probe$tabs))
+            probe$steps[[id]]$run(api)
+        }
+        normalised(probe)
+    })
+    expect_identical(redone, fresh)
 })
