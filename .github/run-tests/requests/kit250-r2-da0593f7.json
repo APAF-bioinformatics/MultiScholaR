@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-250 R2: fix da0593f7 against tests-only d6bbcafb; every file same except the new file and the declared edit (fixed); R CMD check both sides; ceiling 600 job-minutes",
+  "label": "KIT-250 R2 base d6bbcafb head da0593f7",
+  "package_commit": "da0593f75b527c3a74772044e4ebf03853328974",
+  "base_commit": "d6bbcafb0d5501eb0b2ca727e0a1c286c89bb144",
+  "tools_ref": "",
+  "tests": ["test-kit250-organism-dialog.R", "test-prot-01c-import-module-contracts.R", "test-prot-01d-import-module-characterization.R", "test-module-ci-prot-import.R", "test-module-ci-trx-app.R", "test-workflow-gui-memory-lifetimes.R", "test-workflow-server-shared.R"],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
