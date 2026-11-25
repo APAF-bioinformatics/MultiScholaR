@@ -70,6 +70,12 @@
 
 ### Fixes
 
+ * Design builder, every omic: the technical-replicate list is emptied after each successful 'Assign Technical
+   Replicates'. Before, in this and every earlier release, it kept the runs just marked; adding the next sample's runs
+   and pressing Assign made two biological samples one, with no warning. To add runs to a sample already marked, select
+   all of its runs again together with the new ones; runs selected on their own become a separate sample. A refused
+   Assign keeps the selection. (KIT-256)
+
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a
