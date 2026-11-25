@@ -244,3 +244,12 @@ E16 for I02, `*` and `?` in a contrast name), a27a1c7c (the fix: the register's 
     three values.)
   - Every other file `same`; R CMD check: nothing only on head.
 - Decides: whether the correction pass is accepted, so the branch is ready for a train.
+
+**The run's verdict (run 45611244476; `corr-compare.tsv`, `corr-check-compare.txt`).** Every prediction held:
+- 77 files `same`, including `test-workflow-saved-da.R` (780 passed, 171 failed on both sides).
+- `test-kit243-summary-current-outputs.R` `fixed`: on base 244/2, the two failures being E15's "planted heatmaps left"
+  (three heatmaps left) and E16's "siblings the pattern matches" (both siblings deleted by the glob), by assertion; on
+  head 246/0 (E15 `left=`; E16 own files removed, both siblings kept). E4 reads `left=` on both sides: with KIT-220
+  under it, DA2 at q 1e-300 draws no barplot and the removal deletes the planted one (I05).
+- R CMD check identical (0 errors, 3 warnings, 3 notes), nothing only on head.
+The correction pass is accepted by its run; the branch is ready for the coordinator's train.
