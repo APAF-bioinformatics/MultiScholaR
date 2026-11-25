@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-258 R2 and S1f: final fix (VAL-284) e337e72b against tests-only base 5dfe2bc8 (staging 12701142 + KIT-258 tests), 32 files, check; control S1f vs 63143aa3",
+  "label": "KIT-258 R2 + S1f; 3+3 shards, 2 check jobs, 1 scripts job; ceiling 660 job-minutes",
+  "package_commit": "e337e72b98837e8fb5df73b16d3f6da2251b57eb",
+  "base_commit": "5dfe2bc8814b5090d947d029be02d0abcf3b7c28",
+  "tools_ref": "",
+  "tests": ["test-kit258-duplicate-completeness.R", "test-kit214-sample-columns.R", "test-kit202-intensity-filter-samples.R", "test-kit201-treat-moderation.R", "test-kit224-ruv-feature-levels.R", "test-kit252-managed-failure-text.R", "test-lipid-01c-qc-duplicate-module-seams.R", "test-lipid-01g-qc-duplicates-module-characterization.R", "test-lipid-01-qc-filtering-helpers.R", "test-lipid-03-s4-duplicate-helpers.R", "test-metab-01b-qc-filtering-helpers-characterization.R", "test-metab-01m-s4-resolve-duplicate-intensity-characterization.R", "test-metab-01p-qc-duplicates-module-characterization.R", "test-metab-01u-qc-duplicates-module-characterization.R", "test-metab-02u-resolve-duplicate-features-characterization.R", "test-metab-s4-qc-shared.R", "test-module-ci-lipid-qc.R", "test-module-ci-metab-qc.R", "test-omics-audit-carry-overs.R", "test-omics-norm-state-guards.R", "test-omics-qc-core.R", "test-workflow-lipid-declarations.R", "test-workflow-metab-declarations.R", "test-workflow-omics-application-reads.R", "test-workflow-omics-declarations.R", "test-workflow-omics-worker.R", "test-workflow-operation-registry.R", "test-workflow-partitions.R", "test-workflow-omics-binding-steps.R", "test-workflow-omics-residency.R", "test-gui-entry-lipidomics.R", "test-gui-entry-metabolomics.R"],
+  "shards": 3,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-258/dup-rank-control.R",
+      "args": ["63143aa3618eae2729c6864ab10903928bec5071", "docs/qa/workflow-execution/kit/kit-258/s1f"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-258/s1f",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
