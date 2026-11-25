@@ -1,3 +1,4 @@
 run_id	commit	purpose	job_minutes	result
 45698567707	2269d03a (tests only; R/ = 82a5df02)	R1 failing-first: new file, test-kit250-organism-dialog.R, test-prot-01c	13.0	as predicted: new file 67 passed / 52 failed / 0 errors, kit250 118/1 (G3), 01c 436/2 (the two declared edits); G3 and G4 pass; stop rules 1 and 2 not fired
 45700788798	base 2269d03a, head 4a8915ac	R2 base against head, 10 files, 1 shard per side, R CMD check both sides	56.5	as predicted: new file 67/52 -> 119/0, kit250 118/1 -> 119/0, 01c 436/2 -> 438/0 (fixed); 7 other files same; check findings identical (0 E, 3 W, 3 N both sides, 6 findings, none only on one side)
+45703724770	records 01485d52 (commit under test 4a8915ac)	H1 browser, run 1	13.5	4 of 4 sessions attached; 37 as predicted, 2 differ, 2 not observed: two instrument defects in the driver (a missing helper; a wait that returned on the refusal's earlier error toast); every judged value of the fix as predicted; rerun 1 of 3

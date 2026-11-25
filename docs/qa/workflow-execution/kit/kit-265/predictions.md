@@ -90,3 +90,22 @@ minutes) and the 340 ceiling.
 - **Instrument risk named now:** an empty (0-byte) FASTA upload, and the error-toast count, are new mechanics. If the
   upload or the toast reading fails before a judged value is read it is an instrument defect (VAL-54); an empty file
   that does not fail the FASTA step (the import then continues on route (i)) is a result, not a defect.
+
+## H1 run 1 (run 45703724770, 2026-11-26): 4 of 4 sessions attached; 37 as predicted, 2 differ, 2 not observed
+
+About 13.5 job-minutes (0.90 core-hours). Every judged value of the fix was as predicted: session A's notice names
+"Mus musculus (taxon 10090)" and the import completes (setup_import complete, design_matrix pending, one notice under
+the fixed id, still there after 12 s); B's refusal (the (iv) text, window closed, `setup_import` incomplete, Design tab
+disabled, the 10 s toast on the page, no success notice); C unticked completes as before; D's (c) refusal text.
+
+Two instrument defects, no result produced for them (VAL-54, rerun 1 of 3; no expected value, threshold or stop rule
+changes; the ticket's ceiling is unchanged):
+1. Session A's Design-tab readings (`design_tab_active`, `data_available`, "not observed"): the driver stopped with
+   "could not find function k250DataAvailable" (a helper that lives in KIT-250's `h1.R`, not in `g0.R`). Fix: the
+   helper is defined in this `h1.R`.
+2. Session B after the advised untick (`import_completed` FALSE and `design_data_available` "(not completed)",
+   recorded as DIFFERS): the driver's wait returned at once because the refusal's 10 s error toast was still on the
+   page, so it did not wait for the second import's completion line. The same session's other readings show that the
+   second import completed (`setup_import` complete, `design_matrix` pending, "Data import successful!", no error).
+   Fix: a refusal is an error toast that is new since the press. The values are re-observed in the rerun, against the
+   same predictions.

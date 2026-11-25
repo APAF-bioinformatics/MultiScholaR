@@ -138,6 +138,13 @@ k265Fasta <- function(R, kind, dir) {
     path
 }
 
+# From KIT-250's h1.R (not part of g0.R): the design builder's `data_available` output value.
+k250DataAvailable <- function(S) {
+    v <- k233Js(S, sprintf("(window.Shiny&&Shiny.shinyapp&&Shiny.shinyapp.$values)?Shiny.shinyapp.$values[%s]:null",
+        k233Json(K250_DATA_AVAILABLE)))
+    if (is.null(v)) "(no value)" else v
+}
+
 k265ErrorToasts <- function(S) {
     as.character(k233Js(S, "document.querySelectorAll('.shiny-notification-error').length") %||% "(no answer)")
 }
@@ -168,13 +175,16 @@ k265Import <- function(S, R, case, fasta, first = TRUE, tick = TRUE) {
     k233Set(S, case, paste0(K250_NS, "mixed_species_fasta"), tick)
     k233Idle(S, 10)
     done0 <- k250LogCount(S)
+    # A refusal is an error toast NEW since the press: an earlier one (10 s) may still be on the page.
+    toasts0 <- suppressWarnings(as.integer(k265ErrorToasts(S)))
     since <- as.numeric(k233Js(S, "Date.now()") %||% 0)
     p <- k233Press(S, case, "prot-import-process", "testid")
     if (!isTRUE(p$ok)) return(list(ok = FALSE, how = paste("Process Imported Data:", p$reason), since = since))
     started <- Sys.time()
     repeat {
         completed <- k250LogCount(S) > done0
-        refused <- !identical(k265ErrorToasts(S), "0") && !identical(k265ErrorToasts(S), "(no answer)")
+        toasts <- suppressWarnings(as.integer(k265ErrorToasts(S)))
+        refused <- !is.na(toasts) && !is.na(toasts0) && toasts > toasts0
         if (completed || refused || k233Seconds(started) > 300 || !S$proc$is_alive()) break
         Sys.sleep(0.5)
     }
