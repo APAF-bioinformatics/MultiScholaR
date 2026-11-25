@@ -193,3 +193,11 @@ process, NA3, E11c, the row of ruling (7), G4, G5, G8, G9; seeds 242000 + k with
   absent from the RUV state), E11c (no `ruv_fallback` marker).
 - G4, G5, G8 and G9 pass (8 tests).
 - Stop rule 1: a Part B E, NA, E11c or ruling (7) row passing on base, or a guard failing, stops before the fix.
+
+### R1b-B (run 45714743051, fb5eee2b; 23.3 job-minutes, 1.55 core-hours): observed
+
+- As predicted: each of the 17 Part B tests per class fails at its base value (82 failed expectations, 4 errors; the
+  errors are `expect_match` on the base's absent `ruv_not_applied_text` in E24 and E25e). E18, E22, E23: A2 absent; E19
+  and E20: the step stops; E22 records A2 `dropped`; E15: no classed warning.
+- G4, G5, G8, G9 and every row written before Part B pass (370 passed). Stop rule 1 not triggered. Tables in
+  `r1b-b-45714743051/`.

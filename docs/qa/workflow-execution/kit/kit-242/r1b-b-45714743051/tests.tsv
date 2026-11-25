@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit242-normalisation-fallback.R	370	82	4	0	0	739.9	failed
