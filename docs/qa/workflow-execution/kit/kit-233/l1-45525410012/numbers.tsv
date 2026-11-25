@@ -1,0 +1,3 @@
+session	id	contrast	shown	saved	rule	result	where	planted
+L1	N1	proteins	314	314	equal	equal	normalization-correlation_filter_summary vs scripts/proteomics/filtered_session_summary.txt	FALSE
+L1	N1	samples	8	8	equal	equal	normalization-correlation_filter_summary vs scripts/proteomics/filtered_session_summary.txt	FALSE

@@ -1,0 +1,59 @@
+session	step	output	pane_height	image	covered
+L0	S1	proteomics_workflow-workflow_progress	1134	1165x1134	own element image
+L1	S1	proteomics_workflow-workflow_progress	1134	1165x1134	own element image
+L1	S2	proteomics_workflow-setup_import-format_detection	1598	1150x1426	pane image
+L1	S2	proteomics_workflow-setup_import-import_status	1598	1150x1426	pane image
+L1	S2	proteomics_workflow-setup_import-data_summary	1598	1150x1426	own element image
+L1	S3	proteomics_workflow-design_matrix-design_matrix_preview	1971	1135x1801	own element image
+L1	S3	proteomics_workflow-design_matrix-contrasts_preview	1971	1135x1801	own element image
+L1	S4.1	proteomics_workflow-quality_control-peptide_qc-qvalue_filter-qvalue_results	1296	1135x1085	pane image
+L1	S4.1	proteomics_workflow-quality_control-peptide_qc-qvalue_filter-qvalue_plot	1296	1135x1085	own element image
+L1	S4.2	proteomics_workflow-quality_control-peptide_qc-protein_peptide_filter-protein_peptida_results	1203	1135x1085	pane image
+L1	S4.2	proteomics_workflow-quality_control-peptide_qc-protein_peptide_filter-protein_peptide_plot	1203	1135x1085	own element image
+L1	S4.3	proteomics_workflow-quality_control-peptide_qc-rollup-rollup_results	1351	1135x1351	pane image
+L1	S4.3	proteomics_workflow-quality_control-peptide_qc-rollup-rollup_plot	1351	1135x1351	pane image
+L1	S4.4	proteomics_workflow-quality_control-peptide_qc-intensity_filter-intensity_results	1277	1135x1106	pane image
+L1	S4.4	proteomics_workflow-quality_control-peptide_qc-intensity_filter-intensity_plot	1277	1135x1106	own element image
+L1	S4.5	proteomics_workflow-quality_control-peptide_qc-sample_filter-sample_results	1221	1135x1221	pane image
+L1	S4.5	proteomics_workflow-quality_control-peptide_qc-sample_filter-sample_plot	1221	1135x1221	pane image
+L1	S4.6	proteomics_workflow-quality_control-peptide_qc-replicate_filter-replicate_results	1255	1135x1255	pane image
+L1	S4.6	proteomics_workflow-quality_control-peptide_qc-replicate_filter-replicate_plot	1255	1135x1255	pane image
+L1	S4.7	proteomics_workflow-quality_control-peptide_qc-imputation-imputation_results	1333	1135x1333	pane image
+L1	S4.7	proteomics_workflow-quality_control-peptide_qc-imputation-imputation_plot	1333	1135x1333	pane image
+L1	S5.1	proteomics_workflow-quality_control-protein_qc-rollup-iq_rollup_results	1329	1135x1329	pane image
+L1	S5.1	proteomics_workflow-quality_control-protein_qc-rollup-iq_rollup_plot	1329	1135x1329	pane image
+L1	S5.2	proteomics_workflow-quality_control-protein_qc-cleanup-accession_cleanup_results	1221	1135x1221	pane image
+L1	S5.2	proteomics_workflow-quality_control-protein_qc-cleanup-accession_cleanup_plot	1221	1135x1221	pane image
+L1	S5.3	proteomics_workflow-quality_control-protein_qc-intensity_filter-protein_intensity_filter_results	1277	1135x1106	pane image
+L1	S5.3	proteomics_workflow-quality_control-protein_qc-intensity_filter-protein_intensity_filter_plot	1277	1135x1106	own element image
+L1	S5.4	proteomics_workflow-quality_control-protein_qc-duplicate_removal-duplicate_removal_results	1203	1135x1203	pane image
+L1	S5.4	proteomics_workflow-quality_control-protein_qc-duplicate_removal-duplicate_removal_plot	1203	1135x1203	pane image
+L1	S5.5	proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_results	1258	1135x1258	pane image
+L1	S5.5	proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_plot	1258	1135x1258	pane image
+L1	S6.1	proteomics_workflow-normalization-norm_log	2294	1135x1065	not covered
+L1	S6.1	proteomics_workflow-normalization-ruv_optimization_summary	2294	1135x1065	pane image
+L1	S6.2	proteomics_workflow-normalization-correlation_filter_summary	2294	1135x2294	pane image
+L1	S6.2	proteomics_workflow-normalization-final_qc_plot	2294	1135x2294	pane image
+L1	S8.1	proteomics_workflow-differential_expression-contrasts_display	1120	1135x1065	pane image
+L1	S8.2	proteomics_workflow-differential_expression-da_status	1105	1135x1065	pane image
+L2	S1	proteomics_workflow-workflow_progress	NA	1440x1100	not covered
+L3	S1	proteomics_workflow-workflow_progress	1134	1165x1134	own element image
+L3	S2	proteomics_workflow-setup_import-format_detection	1256	1165x1085	pane image
+L3	S2	proteomics_workflow-setup_import-import_status	1256	1165x1085	zero size (nothing drawn)
+L3	S2	proteomics_workflow-setup_import-data_summary	1256	1165x1085	zero size (nothing drawn)
+L2o	S1	proteomics_workflow-workflow_progress	1134	1165x1134	own element image
+L2o	S2	proteomics_workflow-setup_import-format_detection	1256	1165x1085	pane image
+L2o	S2	proteomics_workflow-setup_import-import_status	1256	1165x1085	zero size (nothing drawn)
+L2o	S2	proteomics_workflow-setup_import-data_summary	1256	1165x1085	zero size (nothing drawn)
+L3w	S1	proteomics_workflow-workflow_progress	1134	1165x1134	own element image
+L3w	S2	proteomics_workflow-setup_import-format_detection	1598	1150x1426	pane image
+L3w	S2	proteomics_workflow-setup_import-import_status	1598	1150x1426	pane image
+L3w	S2	proteomics_workflow-setup_import-data_summary	1598	1150x1426	own element image
+L3w	S3	proteomics_workflow-design_matrix-design_matrix_preview	1971	1135x1801	own element image
+L3w	S3	proteomics_workflow-design_matrix-contrasts_preview	1971	1135x1801	own element image
+L3w	S4.1	proteomics_workflow-quality_control-peptide_qc-qvalue_filter-qvalue_results	1296	1135x1085	pane image
+L3w	S4.1	proteomics_workflow-quality_control-peptide_qc-qvalue_filter-qvalue_plot	1296	1135x1085	own element image
+L3w	S4.2	proteomics_workflow-quality_control-peptide_qc-protein_peptide_filter-protein_peptida_results	1203	1135x1085	pane image
+L3w	S4.2	proteomics_workflow-quality_control-peptide_qc-protein_peptide_filter-protein_peptide_plot	1203	1135x1085	own element image
+L3w	S4.3	proteomics_workflow-quality_control-peptide_qc-rollup-rollup_results	1060	1135x1060	pane image
+L3w	S4.3	proteomics_workflow-quality_control-peptide_qc-rollup-rollup_plot	1060	1135x1060	pane image

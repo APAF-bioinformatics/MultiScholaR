@@ -1,0 +1,14 @@
+session	what	text	utc
+L0	format detection after the 20 MB upload	Detected format: DIA-NN | Confidence: 100%	2026-11-25T01:36:25Z
+L1	S2 detected format	Detected format: DIA-NN | Confidence: 100%	2026-11-25T01:36:36Z
+L1	S4 rendered sub-tabs	Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation (titles from live omicGuiConfig; expected Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation)	2026-11-25T01:36:55Z
+L1	S5 rendered sub-tabs	IQ Protein Rollup > Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter (titles from live omicGuiConfig; expected IQ Protein Rollup > Accession Cleanup > Protein Intensity Filter > Duplicate Removal > Protein Replicate Filter)	2026-11-25T01:38:49Z
+L1	S6 rendered defaults	ruv_mode=automatic method=cyclicloess ruv_design_panel_present=FALSE	2026-11-25T01:40:08Z
+L1	S6.2 rendered threshold	0.5	2026-11-25T01:41:29Z
+L1	S8 rendered defaults	formula=~ 0 + group q=0.05 lfc=0	2026-11-25T01:42:48Z
+L3	S2 detected format	Detected format: DIA-NN | Confidence: 100%	2026-11-25T01:44:42Z
+L2o	S2 detected format	Detected format: Unknown format | Confidence: 0%	2026-11-25T01:44:55Z
+L2o	design.tsv given as the search results (L-2 observation)	S1 complete  | S2 refused Error: Failed to import data: Missing required DIA-NN columns: Protein.Group, Stripped.Sequence, Run | S3 not_reached  | S4 not_reached  | S5 not_reached  | S6 not_reached  | S7 not_reached  | S8 not_reached  | S9 not_reached  | S10 not_reached 	2026-11-25T01:45:58Z
+L3w	S2 detected format	Detected format: DIA-NN | Confidence: 100%	2026-11-25T01:46:09Z
+L3w	S4 rendered sub-tabs	Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation (titles from live omicGuiConfig; expected Q-Value Filter > Protein Evidence > Precursor Rollup > Intensity Filter > Sample Quality > Replicate Filter > Imputation)	2026-11-25T01:46:27Z
+L3w	worker killed during S4.3 (Precursor Rollup, the longest QC step of L-1, 17.9 s)	worker killed: TRUE at 1.6 s; the step: refused Error applying precursor rollup: managed action ended: worker_failed	2026-11-25T01:48:01Z

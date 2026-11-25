@@ -1,0 +1,5 @@
+run_id	commit	purpose	job_minutes	result
+45523435786	1809c51f	L (lifecycle), first send	12.1	instrument defect: AppDriver skipped (NOT_CRAN unset in the inner phase); no step outcome
+45525410012	4793c9e8	L, instrument rerun 1 of 3	24.2	instrument defects: S2 dialog not answered, S6.1 digest signal early, S8.2 press misreported; L-2, L-3 passed
+45573306268	0260ac73	L, instrument rerun 2 of 3	22.6	instrument defects: S8.2 target looked up by element id, declared output norm_log absent; L-5 passed
+45577106977	628545be	L, instrument rerun 3 of 3	25.5	instrument not proven: N2 not computed (driver maps the tab contrast KO_vs_WT to no file; the file is da_proteins_groupKO-groupWT_long_annot.tsv), so L-4 (b) not run; all else passed; stop rule 1: J not sent

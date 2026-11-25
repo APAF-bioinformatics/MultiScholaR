@@ -1,0 +1,7 @@
+session	id	contrast	shown	saved	rule	result	where	planted
+L1	N1	proteins	314	314	equal	equal	normalization-correlation_filter_summary vs scripts/proteomics/filtered_session_summary.txt	FALSE
+L1	N1	samples	8	8	equal	equal	normalization-correlation_filter_summary vs scripts/proteomics/filtered_session_summary.txt	FALSE
+L1	N2	KO_vs_WT	16	NA	equal	not_computed	da_summary_stats vs no file (no saved DA table)	FALSE
+L1	N3	label	k233_lifecycle	k233_lifecycle	equal	equal	session_summary inputs vs scripts/proteomics/study_parameters.txt	FALSE
+L1	N3	description	KIT-233 lifecycle on the prot_dia fixture	KIT-233 lifecycle on the prot_dia fixture	equal	equal	session_summary inputs vs scripts/proteomics/study_parameters.txt	FALSE
+L1	N4	KO_vs_WT	16	16	equal	equal	report sentence (docx) vs N2 shown count	FALSE

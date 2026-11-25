@@ -1,0 +1,30 @@
+key	value
+run_mode	lifecycle
+mode	test
+commit_under_test	6756995954684128d617ab92dab983bdcaa05394
+records_commit	1809c51f9150220d49b4efdf66fcdf74c6708476
+diff_commit_under_test_vs_records	docs/qa/workflow-execution/kit/kit-233/journey.R docs/qa/workflow-execution/kit/kit-233/known.tsv
+diff_only_records_folder	TRUE
+launch_form	tree
+launch_e_form	e
+network_requested	namespace
+r_version	R version 4.6.1 (2026-06-24)
+effective_user_outer	runner
+blas	/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+lapack	/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0
+threads_outer	OMP_NUM_THREADS= OPENBLAS_NUM_THREADS=
+threads_application	OMP/OPENBLAS/MKL_NUM_THREADS=1 (5.1); workers set 1 themselves
+chrome	/usr/bin/google-chrome
+chrome_version	Google Chrome 157.0.8103.78 
+shinytest2	0.5.1
+chromote	0.5.1
+processx	3.9.0
+MultiScholaR	0.9.0
+cpu	AMD EPYC 7763 64-Core Processor
+cores	4
+memory	MemTotal:       16372448 kB
+github_run_id	45523435786
+started_utc	2026-11-25T01:20:17Z
+effective_user_inner	runner
+effective_user_equal	TRUE
+pandoc	runner pandoc 2.9.2.1 

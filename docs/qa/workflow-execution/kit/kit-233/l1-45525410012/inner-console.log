@@ -1,0 +1,26 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+Warning in callback(...) :
+  An error occurred: Error in callback(...): code: -32000
+  message: Cannot take screenshot with 0 height.
+
+Warning in callback(...) :
+  An error occurred: Error in callback(...): code: -32000
+  message: Cannot take screenshot with 0 height.
+
+Warning in callback(...) :
+  An error occurred: Error in callback(...): code: -32000
+  message: Cannot take screenshot with 0 height.
+
+Warning in callback(...) :
+  An error occurred: Error in callback(...): code: -32000
+  message: Cannot take screenshot with 0 height.
+

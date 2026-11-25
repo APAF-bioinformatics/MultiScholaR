@@ -1,0 +1,3 @@
+criterion	item	result	evidence
+L-0	Chrome found	pass	/usr/bin/google-chrome
+L-0	shinytest2 loads	pass	0.5.1
