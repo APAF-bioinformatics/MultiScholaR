@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-248 G0: observe the proteomics correlation Skip in the record, study parameters and replay at base (staging 16112917 + script only, branch kit-248-g0); 1 job, ceiling 90 job-minutes; decides stop rules 1 and 2",
+  "label": "KIT-248 G0 base observation bfc76de9 (staging 16112917 + docs/qa/workflow-execution/kit/kit-248/g0-base-values.R)",
+  "package_commit": "bfc76de99bf09943302151b46f2590b9c971754e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-248/g0-base-values.R",
+      "args": [
+        "kit248-g0"
+      ],
+      "env": {},
+      "out": "kit248-g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
