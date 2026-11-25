@@ -316,7 +316,7 @@ test_that("E8: the Cancel observer clears the import; a re-import and Confirm co
     local_data <- createProtImportLocalData()
     registerProtImportObservers(input, output, session, workflow, local_data,
       list(source_dir = root), FALSE, function() "fixture.tsv", function() "fixture.fasta", function() "diann",
-      startProcessingFn = function(...) k250Call(startProtImportProcessing, c(list(...), list(
+      startProcessingFn = function(...) k250Call(startProtImportProcessing, utils::modifyList(list(...), list(
         announceStart = function(...) NULL,
         showModal = function(modal) ev$log <- c(ev$log, "showModal:processing"),
         removeNotification = function(id, ...) ev$log <- c(ev$log, paste0("removeNotification:", id))))),
@@ -339,13 +339,14 @@ test_that("E8: the Cancel observer clears the import; a re-import and Confirm co
       showModalFn = function(modal) ev$log <- c(ev$log, "showModal:organism"),
       updateStatusFn = function(...) NULL,
       showNotificationFn = note,
-      completeSuccessStateFn = function(...) completeProtImportSuccessState(...,
-        removeModal = function() ev$log <- c(ev$log, "removeModal:import"), showNotification = note,
-        messageFn = function(...) NULL),
-      confirmOrganismSelectionFn = function(...) confirmProtImportOrganismSelection(...,
-        removeModal = function() ev$log <- c(ev$log, "removeModal:confirm"), showNotification = note,
-        logInfo = function(...) NULL),
-      cancelOrganismSelectionFn = function(...) k250Call(cancelProtImportOrganismSelection, c(list(...), list(
+      # The seams replace any argument of the same name the caller passes (utils::modifyList).
+      completeSuccessStateFn = function(...) do.call(completeProtImportSuccessState, utils::modifyList(list(...),
+        list(removeModal = function() ev$log <- c(ev$log, "removeModal:import"), showNotification = note,
+          messageFn = function(...) NULL))),
+      confirmOrganismSelectionFn = function(...) do.call(confirmProtImportOrganismSelection, utils::modifyList(list(...),
+        list(removeModal = function() ev$log <- c(ev$log, "removeModal:confirm"), showNotification = note,
+          logInfo = function(...) NULL))),
+      cancelOrganismSelectionFn = function(...) k250Call(cancelProtImportOrganismSelection, utils::modifyList(list(...), list(
         removeModal = function() ev$log <- c(ev$log, "removeModal:cancel"), showNotification = note,
         logInfo = function(...) NULL))),
       logInfo = function(...) NULL, logWarn = function(...) NULL, messageFn = function(...) NULL)
