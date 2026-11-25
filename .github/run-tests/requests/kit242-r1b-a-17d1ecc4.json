@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-242 R1b-A (ticket r1.5): Part A's failing-first run on tests-only commit 17d1ecc4 (staging 7327607f + the test file, nothing under R/); every E and NA row must fail at its base value, the guards pass; decides stop rule 1; 1 job, ceiling 60 minutes",
+  "label": "KIT-242 R1b-A tests-only 17d1ecc4",
+  "package_commit": "17d1ecc4cd615ba93f3d3c45915b234941a78405",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit242-normalisation-fallback.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
