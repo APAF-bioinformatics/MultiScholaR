@@ -38,3 +38,35 @@ test_that("KIT-245 G1: outside the installed application the Summary UI is uncha
         expect_false(grepl("Pushing to GitHub is not available", unset, fixed = TRUE), info = omic)
     }
 })
+
+# Correction pass (AUDIT-KIT-245-impl-20261125, I04): the push observer itself refuses in the installed application.
+#   E2  with MSR_BUNDLE set, a client that sends the five inputs and the press reaches no push (base: one push);
+#   G2  without MSR_BUNDLE the same press reaches the push once (passes on the base too).
+k245PanelPresses <- function() {
+    pressed <- 0L
+    testthat::local_mocked_bindings(omicSummaryGithub = function(...) {
+        pressed <<- pressed + 1L
+        invisible(TRUE)
+    }, .package = "MultiScholaR")
+    root <- withr::local_tempdir("kit245-panel-")
+    dirs <- list(lipidomics = list(base_dir = root, source_dir = file.path(root, "scripts", "lipidomics")))
+    shiny::testServer(mod_omic_summary_server, args = list(project_dirs = dirs, omic_type = "lipidomics",
+        experiment_label = NULL, workflow_data = NULL, config = omicGuiConfig("lipidomics")$summary), {
+        values <- session$getReturned()
+        values$report_generated <- TRUE
+        session$setInputs(enable_github = TRUE, github_org = "kit245-org", github_email = "kit245@example.invalid",
+            github_username = "kit245", project_id = "kit245-panel")
+        session$setInputs(push_to_github = 1)
+    })
+    pressed
+}
+
+test_that("KIT-245 E2: in the installed application the push observer refuses inputs a client sends itself", {
+    withr::local_envvar(MSR_BUNDLE = withr::local_tempdir("kit245-bundle-"))
+    expect_identical(k245PanelPresses(), 0L)
+})
+
+test_that("KIT-245 G2: outside the installed application the push observer still pushes", {
+    withr::local_envvar(MSR_BUNDLE = NA)
+    expect_identical(k245PanelPresses(), 1L)
+})

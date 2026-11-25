@@ -16,9 +16,21 @@
 #   S5  git older than 2.31: classed multischolar_github_git_too_old, nothing created (base: POST, then success);
 #   G1  no .Rproj: "R project file does not exist", nothing created (passes on the base too);
 #   G2  two R Markdown files in a non-interactive R: the menu() error, nothing created (passes on the base too).
+# Correction pass (AUDIT-KIT-245-impl-20261125, I01 to I03; base = 41171e21, the audited head):
+#   S1  (revised, I01) at the push the credential helper is on git's command line, `-c credential.helper=` first and
+#       the helper single-quoted (Unix) with the variable's name, never the token; MSR_GITHUB_PUSH_TOKEN holds the
+#       token; no GIT_CONFIG_COUNT is set by the function (base: no -c options; GIT_CONFIG_COUNT "2");
+#   S6  (I02, N01) a real `git credential fill` with no network, through the function's own git options, under a
+#       global configuration holding two decoy helpers: the token answers for https://github.com, the decoy never
+#       does; `git credential approve` leaves the decoy store's file unwritten; for https://example.com the token is
+#       not given (base: the token given for example.com too; the github.com and store checks pass on Linux);
+#   S7  (I03) refused Project IDs, with unlink and dir.create stood in so that no base can delete or create anything:
+#       each gets classed multischolar_github_project_id_invalid with no unlink, dir.create or GitHub call; "-x" and
+#       "a.b" are accepted (base: '...', 'a.', 'nul', 'NUL.txt' accepted and reach unlink or dir.create).
 # No row reaches GitHub or runs a real git push: gh::gh is a recorder that never calls the original, gh::gh_token is
 # stood in (gh 1.6.1 does not return a token-variable value that is not shaped like a token: KIT-245 G0), and
-# system() is replaced in every row. The token is the plainly fake string below.
+# system() is replaced in every row (S6's stand-in runs `git credential`, never `push`). The token is the plainly fake
+# string below.
 
 K245_DUMMY <- "kit245-dummy-not-a-token"
 K245_ORG <- "kit245-test-org"
@@ -118,11 +130,14 @@ test_that("KIT-245 S1: a push GitHub refuses leaves no token on disk and names t
         system = function(command, intern = TRUE, ignore.stderr = FALSE) {
             config <- file.path(tempdir(), id, ".git", "config")
             seen$config_holds_dummy <- file.exists(config) && k245HoldsDummy(config)
+            seen$command <- command
             seen$count <- Sys.getenv("GIT_CONFIG_COUNT", unset = NA)
-            seen$helper <- Sys.getenv("GIT_CONFIG_VALUE_1", unset = NA)
+            seen$token_variable_is_dummy <- identical(Sys.getenv("MSR_GITHUB_PUSH_TOKEN", unset = NA), K245_DUMMY)
             structure(character(), status = 128L)
         }))
-    before <- Sys.getenv(c("GIT_CONFIG_COUNT", "GIT_CONFIG_VALUE_1", "MSR_GITHUB_PUSH_TOKEN"), unset = NA)
+    variables <- c("GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0", "GIT_CONFIG_VALUE_1",
+        "MSR_GITHUB_PUSH_TOKEN")
+    before <- Sys.getenv(variables, unset = NA)
 
     err <- k245Push(push, fx, id)
 
@@ -130,11 +145,17 @@ test_that("KIT-245 S1: a push GitHub refuses leaves no token on disk and names t
     expect_match(k245Text(err), paste0(K245_ORG, "/", id, " was created on GitHub"), fixed = TRUE)
     expect_false(dir.exists(file.path(tempdir(), id)))
     expect_false(isTRUE(seen$config_holds_dummy))
-    expect_identical(seen$count, "2")
-    expect_false(is.na(seen$helper))
-    expect_false(grepl(K245_DUMMY, seen$helper, fixed = TRUE))
-    expect_identical(Sys.getenv(c("GIT_CONFIG_COUNT", "GIT_CONFIG_VALUE_1", "MSR_GITHUB_PUSH_TOKEN"), unset = NA),
-        before)
+    # I01: the helper settings are on git's command line, the empty reset first; the token never is.
+    expect_match(seen$command, "^git -c credential\\.helper= -c ")
+    expect_match(seen$command, " push origin refs/heads/main$")
+    if (.Platform$OS.type == "unix") {
+        expect_match(seen$command, "-c 'credential.helper=!f() {", fixed = TRUE)
+    }
+    expect_match(seen$command, "$MSR_GITHUB_PUSH_TOKEN", fixed = TRUE)
+    expect_false(grepl(K245_DUMMY, seen$command, fixed = TRUE))
+    expect_true(isTRUE(seen$token_variable_is_dummy))
+    expect_identical(seen$count, before[["GIT_CONFIG_COUNT"]])
+    expect_identical(Sys.getenv(variables, unset = NA), before)
     expect_identical(k245FilesHoldingDummy(tempdir()), character())
     expect_identical(rec$calls, "POST /orgs/{org}/repos")
 })
@@ -240,4 +261,77 @@ test_that("KIT-245 G2: two R Markdown files in a non-interactive R stop before a
     expect_s3_class(err, "error")
     expect_match(conditionMessage(err), "menu() cannot be used non-interactively", fixed = TRUE)
     expect_length(rec$calls, 0L)
+})
+
+test_that("KIT-245 S6: the function's git options give the token to github.com only, past the user's own helpers", {
+    testthat::skip_if_not_installed("git2r")
+    testthat::skip_if(!nzchar(Sys.which("git")), "no git program")
+    rec <- k245Recorder()
+    id <- "k245-s6"
+    fx <- k245Project(id)
+    home <- withr::local_tempdir("kit245-home-")
+    store <- file.path(home, "decoy-store")
+    global <- file.path(home, "gitconfig")
+    # Two decoy helpers in the user's global configuration: one that answers every request, one that stores.
+    writeLines(c("[credential]",
+        "\thelper = \"!f() { echo username=decoy; echo password=decoy; }; f\"",
+        sprintf("\thelper = \"store --file %s\"", store)), global)
+    withr::local_envvar(HOME = home, GIT_CONFIG_GLOBAL = global, GIT_CONFIG_NOSYSTEM = "1", GIT_TERMINAL_PROMPT = "0",
+        GIT_ASKPASS = NA, SSH_ASKPASS = NA, GIT_CONFIG_COUNT = NA, GIT_CONFIG_PARAMETERS = NA)
+    seen <- new.env(parent = emptyenv())
+    # The function's own command, with `push origin refs/heads/main` replaced by a credential operation: no network.
+    credential <- function(command, operation, input) {
+        stopifnot(grepl(" push origin refs/heads/main$", command))
+        suppressWarnings(base::system(sub("push origin refs/heads/main$", paste("credential", operation), command),
+            intern = TRUE, input = input, ignore.stderr = TRUE))
+    }
+    push <- k245WithOverrides(pushProjectToGithub, list(
+        system = function(command, intern = TRUE, ignore.stderr = FALSE) {
+            seen$github <- credential(command, "fill", c("protocol=https", "host=github.com", ""))
+            seen$other <- credential(command, "fill", c("protocol=https", "host=example.com", ""))
+            credential(command, "approve", c("protocol=https", "host=github.com", "username=x-access-token",
+                paste0("password=", K245_DUMMY), ""))
+            structure(character(), status = 128L)
+        }))
+
+    k245Push(push, fx, id)
+
+    expect_true(paste0("password=", K245_DUMMY) %in% seen$github)
+    expect_false("password=decoy" %in% seen$github)
+    expect_false(any(grepl(K245_DUMMY, seen$other, fixed = TRUE)))
+    expect_false(file.exists(store))
+    expect_identical(rec$calls, "POST /orgs/{org}/repos")
+})
+
+test_that("KIT-245 S7: Project IDs that name no plain folder are refused before anything is deleted or created", {
+    testthat::skip_if_not_installed("git2r")
+    rec <- k245Recorder()
+    fx <- k245Project("k245-s7", rproj = FALSE)
+    calls <- new.env(parent = emptyenv())
+    calls$n <- 0L
+    # unlink and dir.create stood in: on a base without the check nothing can be deleted or created.
+    push <- k245WithOverrides(pushProjectToGithub, list(Sys.which = k245GitPath, system = k245PushOk,
+        unlink = function(x, recursive = FALSE, force = FALSE, expand = TRUE) {
+            calls$n <- calls$n + 1L
+            0L
+        },
+        dir.create = function(path, showWarnings = TRUE, recursive = FALSE, mode = "0777") {
+            calls$n <- calls$n + 1L
+            TRUE
+        }))
+    refused <- list("..", ".", "...", "a.", "nul", "NUL.txt", "con", "COM1", "lpt9.log", "a/b", "a\\b", "/x", "C:x", "",
+        NA_character_, c("a", "b"), strrep("a", 101), "é", "а", "a b", "a*")
+    for (project_id in refused) {
+        calls$n <- 0L
+        label <- paste(deparse(project_id), collapse = "")
+        err <- k245Push(push, fx, project_id)
+        expect_true(inherits(err, "multischolar_github_project_id_invalid"), info = label)
+        expect_identical(calls$n, 0L, info = label)
+    }
+    expect_length(rec$calls, 0L)
+    for (project_id in c("-x", "a.b")) {
+        err <- k245Push(push, fx, project_id)
+        expect_false(inherits(err, "multischolar_github_project_id_invalid"), info = project_id)
+        expect_match(k245Text(err), "R project file does not exist", fixed = TRUE, info = project_id)
+    }
 })
