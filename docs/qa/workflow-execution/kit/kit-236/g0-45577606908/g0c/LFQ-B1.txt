@@ -1,0 +1,10 @@
+template: inst/reports/proteomics/LFQ_report.rmd
+check: with no technical replicates
+observed: present
+== text
+
+SAMPLE DETAILS  
+
+There are 6 samples in total which consists of:  
+• 6 biological samples with no technical replicates.  
+• Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]  

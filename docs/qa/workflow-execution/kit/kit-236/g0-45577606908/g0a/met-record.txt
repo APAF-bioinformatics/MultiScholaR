@@ -1,0 +1,29 @@
+report docx: metabolomics_report_metabolomics_metab_lc.docx
+project paths outside base_dir: metabolomics, metabolomics, 20261125_084426
+schema: multischolar.analysis_record.v1
+normalisation method (record): "cyclicloess"
+log2 offset (record): 0
+ruv step present: FALSE
+itsd step outcomes: [{"rows":6,"columns":7,"itsd_applied":true}]
+DA operation: metab_da_contrast
+DA parameters (decoded): {"formula":"~ 0 + group","qvalue":0.05,"lfc":0}
+DA contrasts: [{"contrasts":"groupKO-groupWT","friendly_names":"KO_vs_WT","full_format":"KO_vs_WT=groupKO-groupWT"}]
+DA model (verbatim): {"model":"limma","formula_used":"~ 0 + group","eBayes_trend":true,"eBayes_robust":true,"treat_applied":false,"block_reason":"no_duplicates","uses_duplicate_correlation":false}
+DA results: [{"contrast":"groupKO-groupWT","assay":"LCMS_Pos","entity_id":"5596b89f856df0bc81453b2f111025be31e3245a55bef6373ac23ac77aa4ee82","rows":3},{"contrast":"groupKO-groupWT","assay":"LCMS_Neg","entity_id":"ed461c72f1908e6361c405f90cc0416ab814c3a7b4fd84a902634f8048dc326f","rows":3}]
+DA failures: []
+software version: "0.9.0" ; build: "2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4" ; sha: null
+design: sample_id = "Run" ; group_id = "group" ; technical_replicate_id = "tech_rep_group"
+record design rows (k): 6 ; distinct technical_replicate_id values: 6 ; values: KO_1,KO_2,KO_3,WT_1,WT_2,WT_3
+design_matrix.tab rows (n): 6 ; columns: Run,group,factor1,factor2,factor3,batch,replicates,tech_reps,tech_rep_group
+pearson step: metab_pearson_selection present = TRUE ; threshold = 0.5
+n of k: n = 6 ; k = 6
+== step dimensions
+1 initial import: dimensions {"rows":null,"columns":null}
+2 metab_raw_data_s4 design_builder: dimensions {"rows":6,"columns":7}
+3 metab_intensity_filtered metab_intensity_filter: dimensions {"rows":6,"columns":7}
+4 metab_duplicates_resolved metab_duplicate_resolution: dimensions {"rows":6,"columns":7}
+5 metab_qc_complete metab_qc_finalize: dimensions {"rows":6,"columns":7}
+6 metab_itsd_norm metab_itsd_normalisation: dimensions {"rows":6,"columns":7}
+7 metab_log2 metab_log2: dimensions {"rows":6,"columns":7}
+8 metab_normalized metab_between_sample_normalisation: dimensions {"rows":6,"columns":7}
+9 metab_correlation_filtered metab_pearson_selection: dimensions {"rows":6,"columns":7}

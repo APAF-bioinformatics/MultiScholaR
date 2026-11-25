@@ -99,6 +99,35 @@
    step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
    releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
    figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
+ * Reports (lipidomics, metabolomics; the same corrections in the proteomics reports): the report no longer prints
+   conclusions it did not compute (KIT-236; the owner's decision VAL-245; wording drafts for the owner's pass). The
+   quality-control figure text describes the four views and the stages that were run, without panel letters, and draws
+   no conclusion; Comments and Opinions are fields for the analyst instead of fixed statements such as 'All samples
+   passed initial QC criteria', with, where the analysis record holds them, the features remaining after each step and
+   how many of the samples given to the sample-correlation filter it kept. The Methods no longer describe an integration
+   step or a cross-assay check that do not exist; they describe zeros as they were handled, name the comparisons of the
+   contrast table instead of 'each pair of experimental groups' and any comparison whose test could not be computed,
+   name the matrix and model that were tested (under the declared RUV design, the uncorrected values with each assay's
+   RUV factors in the model), state the Benjamini-Hochberg fallback of the q-values (per comparison where the record
+   names it), say when a fold-change threshold was tested with TREAT, that its p-values are TREAT's, and include it in
+   the definition of a significant feature and in the count and volcano sentences, say when technical replicates were
+   modelled as a block, say 'No between-sample normalisation was applied.' or that the method is not recorded instead
+   of naming a method, and name the MultiScholaR version. The DA settings block the application writes ('Differential
+   Expression UI Parameters', the only name any writer has used) is now read: the report looked for a block under a
+   name that is never written, so the TREAT sentence never printed, and a DIA report (DIA-NN, DIA with limpa) without an
+   analysis record now prints the q-value threshold the user set instead of a fixed 0.05. 'SOP xxx' and the sample-identification
+   placeholders are fields for the analyst. The sample details count the analysed samples and the technical
+   replicates the design declares (before, 'no technical replicates' was printed whatever the design). The report names
+   the results table the application writes (`DA_results_<omic>.xlsx`), and the quality-control, count and volcano
+   figures only when they exist (no 'Warning: ... not found' line for these figures); the count sentence reads the table
+   Copy writes (`da_<omic>_num_sig_de_molecules.tab`) and states the counts per comparison and assay. Proteomics: the
+   technical-replicate sentence, the Benjamini-Hochberg fallback, the TREAT sentence and its p-values, the block clause
+   and 'none' as above; the DIA-with-limpa report no longer says technical replicates were averaged (the application
+   never averages them). Not yet changed (they wait for KIT-242): the sentence naming the between-sample normalisation
+   method applied, the internal-standard sentence and the method named in the Figure 1 caption. A project keeps the
+   copy of the report template made at its first report; projects that generated a report before this version keep the
+   earlier text unless that copy (`scripts/<omic>/<template>.rmd`) is removed.
+
  * Proteomics, Protein Replicate Filter: one click is handled once. Before, the installed application showed 'A
    protein replicate filter action is already running' at every Apply although the step ran once, and a refusal was
    shown twice (KIT-251).
@@ -167,6 +196,20 @@
    the normalisation again for the figures, before Copy. On DIA with limpa, pressing "Run Normalization & RUV" again
    on the correlation's or the RUV covariates' result keeps that result's files. Projects normalised before this
    release keep such files until the normalisation is run again. (KIT-257)
+ * Proteomics differential analysis (DIA, label-free and TMT on the default route, the scripted wrappers, and the
+   older `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects): when Storey's q-value cannot be
+   computed for a comparison, the q-value column now holds the Benjamini-Hochberg adjusted p-values, as the warning and
+   the analysis record already said. Before, the column was left empty for every protein of that comparison, so nothing
+   was reported significant, the volcano plot showed no protein and the interactive volcano was replaced by a 'not
+   available' note, and the comparison had no proteins for enrichment. This happens when no p-value in the comparison
+   reaches 0.95. That is likely when only a few tens of proteins or fewer are unchanged, for example in a small protein
+   table or in a comparison in which nearly every protein changes strongly; it can also happen in a larger table when
+   the unchanged proteins' p-values are not spread evenly between 0 and 1 (for example after an uncorrected shift
+   between the groups).
+   Comparisons whose q-values could be computed are unchanged. DIA with limpa, lipidomics and metabolomics in the
+   application, and transcriptomics were not affected. Analyses recorded before this change now replay with the
+   Benjamini-Hochberg values their record names, so for those comparisons a replay differs from the results saved
+   before this change (significant counts, plots, enrichment and report numbers included) (KIT-249).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

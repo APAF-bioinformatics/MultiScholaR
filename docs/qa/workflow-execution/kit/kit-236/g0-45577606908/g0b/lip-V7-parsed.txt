@@ -1,0 +1,39 @@
+definition errors: none
+parse error: none
+sections: 'Basic Information', 'Version Information', 'Assay Information', 'Lipids per Assay', 'ITSD Normalization', 'Log Transformation', 'Between-Sample Normalization', 'Lipidomics Metadata', 'RUV-III Batch Correction', 'Workflow Parameters', 'Additional Configuration Parameters', 'deAnalysisParameters', 'lipidIntensityFilteringFn', 'ITSDNormalization', 'Analysis Record', 'Contrasts'
+== section 'ITSD Normalization' as parsed
+List of 6
+ $ Applied                         : chr "Yes"
+ $ Method Type                     : chr "average_centered"
+ $ Aggregation                     : chr "median"
+ $ Pattern Columns                 : chr "LipidClass"
+ $ ITSD Removed After Normalization: chr "Yes"
+ $ Timestamp                       : chr "2026-11-25 08:43:44"
+== section 'Log Transformation' as parsed
+List of 2
+ $ Applied  : chr "Yes"
+ $ Transform: chr "log2"
+== section 'Between-Sample Normalization' as parsed
+List of 1
+ $ Method: chr "cyclicloess"
+== section 'Version Information' as parsed
+List of 5
+ $ Repository      : chr "MultiScholaR"
+ $ Branch          : chr "N/A"
+ $ Commit          : chr "10198a0"
+ $ Commit Timestamp: chr "2026-11-25T19:34:52+11:00"
+ $ Source          : chr "Local Git Repository"
+== 'Workflow Parameters' names
+ chr "Parameters from Final S4 Object"
+== 'Parameters from Final S4 Object' $deAnalysisParameters
+List of 2
+ $ treat_lfc_cutoff: chr "0.5"
+ $ formula_string  : chr "~ 0 + group"
+== 'User Interface Parameters' as parsed
+ NULL
+extractor: ExtractLipidStudyParameters ; error: none ; length: 41
+== extractor fields (no record overlay)
+{"num_assays":"2","assay_names":"LCMS_Pos, LCMS_Neg","itsd_applied":true,"itsd_method_type":"average_centered","itsd_aggregation":"median","itsd_removed":true,"itsd_features_per_assay":"NA","log_transform_applied":true,"log_transform_offset":0,"normalisation_method":"cyclicloess","ruv_applied":false,"s4_de_q_val_thresh":0.05,"s4_de_treat_lfc_cutoff":0.5,"ui_de_q_value_threshold":0.05,"ui_de_log_fold_change_cutoff":0,"ui_de_treat_enabled":false,"s4_formula_string":"~ 0 + group","da_block_reason":"<absent>","da_model":"<absent>","software_version":"<absent>","build":"<absent>","source_commit":"<absent>","repository":"MultiScholaR","branch":"N/A","commit":"10198a0","git_timestamp":"2026-11-25T19:34:52+11:00","technical_replicates":"<absent>","biological_samples":"<absent>","total_samples":"<absent>","contrasts":"KO_vs_WT=groupKO-groupWT","record_present":"<absent>","record_defaults_note":"<absent>"}
+AnalyzeSamples numbers length: 84
+== AnalyzeSamples fields (record overlay when the record is present)
+{"num_assays":"2","assay_names":"LCMS_Pos, LCMS_Neg","itsd_applied":true,"itsd_method_type":"average_centered","itsd_aggregation":"median","itsd_removed":true,"itsd_features_per_assay":"NA","log_transform_applied":true,"log_transform_offset":0,"normalisation_method":"cyclicloess","ruv_applied":false,"s4_de_q_val_thresh":0.05,"s4_de_treat_lfc_cutoff":0.5,"ui_de_q_value_threshold":0.05,"ui_de_log_fold_change_cutoff":0.5,"ui_de_treat_enabled":false,"s4_formula_string":"~ 0 + group","da_block_reason":"no_duplicates","da_model":"limma","software_version":"0.9.0","build":"2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4","source_commit":"not recorded","repository":"MultiScholaR","branch":"N/A","commit":"10198a0","git_timestamp":"2026-11-25T19:34:52+11:00","technical_replicates":0,"biological_samples":6,"total_samples":6,"contrasts":"KO_vs_WT=groupKO-groupWT","record_present":true,"record_defaults_note":" Parameter not recorded; default shown: s4_ebayes_trend = TRUE; s4_ebayes_robust = TRUE."}
