@@ -6,7 +6,10 @@
 #         strings of the same keys and head's "(<mark_decided>)" (the mark every Model and Results setting carries at
 #         head). The pairs are read from the two wording tables, never typed here; each is compared in its HTML-escaped
 #         form; each old string must occur at least once in base's render and never in head's (counts printed and
-#         checked; a pair that finds nothing is an instrument failure). `app_ui(NULL)` takes no substitution;
+#         checked; a pair that finds nothing is an instrument failure). KIT-240 r1.3 (R1-04): one insertion is allowed
+#         too, the Enrichment tab's mark " (<head's mark_provisional>)" after the labels of its eight defaults not yet
+#         confirmed: it must occur exactly 8 times in head's module render and never in base's, and is removed from
+#         head's render before the comparison (count printed and checked). `app_ui(NULL)` takes no substitution;
 #   (ii)  head with the option FALSE renders exactly what base renders with it unset (no substitution), and the head's
 #         module is then the "not yet implemented" panel;
 #   (iii) the head renders the same twice, in two R processes.
@@ -101,6 +104,8 @@ pairs <- data.frame(pair = c("settings_provisional", "results_provisional", "mar
     stringsAsFactors = FALSE)
 pairs$old <- htmltools::htmlEscape(pairs$old)
 pairs$new <- htmltools::htmlEscape(pairs$new)
+# KIT-240 r1.3 (R1-04): the inserted Enrichment mark, from head's wording table.
+insertion <- htmltools::htmlEscape(sprintf(" (%s)", head_texts$mark_provisional))
 
 checks <- character()
 check <- function(name, ok) {
@@ -124,6 +129,13 @@ for (mode in c("production", "test")) {
             in_base >= 1L && in_head == 0L)
         base_module <- gsub(pairs$old[[k]], pairs$new[[k]], base_module, fixed = TRUE)
     }
+    inserted_head <- count(head_module, insertion)
+    inserted_base <- count(page("base", "true", mode, "module"), insertion)
+    substitutions[[length(substitutions) + 1L]] <- data.frame(mode = mode, pair = "enrichment_mark_insertion",
+        old = "", new = insertion, count_in_base = inserted_base, count_in_head = inserted_head, stringsAsFactors = FALSE)
+    check(sprintf("(i) module, %s: the Enrichment mark inserted 8 times in head (%d) and absent from base (%d)", mode,
+        inserted_head, inserted_base), inserted_head == 8L && inserted_base == 0L)
+    head_module <- gsub(insertion, "", head_module, fixed = TRUE)
     check(sprintf("(i) module, %s: head unset = base TRUE after the substitutions", mode),
         identical(sha(head_module), sha(base_module)))
     if (!identical(head_module, base_module)) {

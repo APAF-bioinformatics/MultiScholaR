@@ -226,7 +226,8 @@ integrationGuiTexts <- function() {
         # KIT-240 (VAL-221 (4)): every default is a recorded decision; the mark below is for a default that still waits.
         settings_provisional = paste("Each default below is a decision recorded in the methods ledger, named in the analysis",
             "record. A value you change is recorded as set by you."),
-        mark_provisional = "default awaiting the owner's decision",
+        # KIT-240 (R1-04, R1-07): shown beside each Enrichment setting whose default is not yet confirmed.
+        mark_provisional = "default not yet confirmed",
         mark_decided = "decided",
         # %s: the label, then the value in words.
         setting_fixed = "%s: %s",

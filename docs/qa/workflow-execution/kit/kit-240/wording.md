@@ -57,7 +57,7 @@ The other marks (`input_matrix`, `feature_selection`, `features_per_view`, `min_
 |---|---|---|
 | `align_provisional` | Sample Matching, under the rules | These rules are decided defaults (methods ledger INT-2, INT-3 and INT-010); the analysis record names the decision behind each. |
 | `settings_provisional` | above the Model settings | Each default below is a decision recorded in the methods ledger, named in the analysis record. A value you change is recorded as set by you. |
-| `mark_provisional` | beside a setting whose default still waits (none of the Model or Results settings) | default awaiting the owner's decision |
+| `mark_provisional` | in brackets after the label of each Enrichment setting whose default is not yet confirmed (the eight above: correlation, smallest number of samples, STRING species, KEGG organism, Reactome organism, smallest and largest pathway, seed); none of the Model or Results settings (r1.3, coordinator's ruling on R1-04) | default not yet confirmed |
 | `results_provisional` | Results tab, above its settings and above Save | These defaults are decisions recorded in the methods ledger (VAL-221); a value you change is recorded as set by you. |
 | `legend_provisional_default` (record) | the report's status legend (always printed) | a default that still awaits the owner's decision |
 
