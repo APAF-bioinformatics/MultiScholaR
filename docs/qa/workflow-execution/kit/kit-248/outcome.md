@@ -1,4 +1,4 @@
-# KIT-248 G0: outcome (base observation only)
+# KIT-248 G0 and G0b: outcome (base observation only)
 
 Gate G0 of KIT-248 r1.2 (section 10), the first part of the ticket. It is an observation of base and runs no package code
 change. Branch `kit-248-g0` is scripts-only: it carries this directory and nothing under `R/`, and it is never merged.
@@ -103,27 +103,67 @@ triggered.**
 - Replay re-runs the selection: its committed config is `min_pearson_correlation_threshold=0.5`, not the Skip's.
 - At t = 0.5 the selection's table happens to hold every sample.
 
-**Stop rule 2: triggered.**
-- (A)'s numbers rows (E3, and the numbers part of E6) keep their record assertions only.
-- The change report must say "numbers not shown to differ on the fixture".
+**Stop rule 2: triggered by G0's listed thresholds; resolved by G0b** (coordinator's ruling, ticket r1.3). E3 and E6's numbers rows take their base values from G0b (below), not from G0.
+
+## G0b (run 45597013061): the (A) cases at t_hi
+
+**Binding.** Staging 16112917 plus the script at ad0622df (mode `g0b`). Scripts job 20.2 job-minutes. No instrument errors.
+Predictions were written in the script header and `g0b-predictions.tsv` before any G0b value was read; observed values
+are in `g0b-base-values.tsv`.
+
+**Rule** (coordinator's ruling; KIT-244's audited G0 rule): per route, t_hi = (m + m2) / 2 over G0's best-partner table.
+
+| Route | m (sample) | m2 | t_hi |
+|---|---|---|---|
+| LFQ, TMT, DIA (iq) | 0.97371953882200679 (run_0008) | 0.97431187393916308 | 0.97401570638058499 |
+| DIA with limpa | 0.96257597326065381 (run_0001) | 0.96464941373759827 | 0.96361269349912604 |
+
+**Observed against predicted.** Every prediction held, on every cell.
+
+| Case, routes | Observable | Predicted | Observed |
+|---|---|---|---|
+| all | Apply at t_hi keeps | 11 of 12 (classic: run_0008 out; limpa: run_0001 out) | 11; classic without run_0008, limpa without run_0001 (all 12 cells). **Held** |
+| A in process and worker; A2 classic (9 + 2 limpa A cells) | live `correlation_filtered` | 12 samples; config threshold 0, skipped TRUE | 12; `min_pearson_correlation_threshold=0;skipped=TRUE`. **Held** |
+| same | provenance and record step | `pearson-selection`, threshold t_hi, `preceded_by` `pearson-pairs`; outcomes skipped TRUE | `pearson-selection`, values threshold = t_hi, outcomes `{"rows":64,"columns":13,"skipped":true}`. **Held** |
+| same | study parameters | a pearson-selection block with threshold = t_hi; nothing about the skip | `[4. correlation_filtered: pearson-selection] ... threshold [no_shipped_default] = 0.97401570638058499` (limpa: step 5, 0.96361269349912604). **Held** |
+| same | replay | completes; selection at t_hi; 11 samples | completed; replayed provenance `pearson-selection`; config threshold t_hi; 11 samples; `replay_removed_vs_live` = run_0008 (classic) / run_0001 (limpa). **Held** |
+| same | DA, live against replay | differ (numeric difference predicted) | `da_equal` FALSE on all 11 cells. Classic: live 2f75288ca73ae1a2, replay 98a76f0e9f445f3b. Limpa: live 14c0a413ec587404, replay c29d808643a24874. **Held** |
+| A limpa, in process and worker | RUV covariates design, live against replay | differs | `ruv_design_equal` FALSE. **Held** |
+| A2 limpa (KIT-244's base sequence) | live, record, replay | live 11 (C_hi, run_0001 absent); record `pearson-selection` at t_hi; replay 11, equal to live; DA and RUV design equal; no numeric difference | live 11; record `pearson-selection` at t_hi, outcomes `{"rows":64,"columns":12,"skipped":true}`; replay 11, `replay_removed_vs_live` none; `da_equal` TRUE (c29d808643a24874 both); `ruv_design_equal` TRUE. **Held** |
+
+**What it shows.** At base, on every proteomics route, in process and managed, a user who applies the filter (removing
+one sample) and then skips it gets results on all 12 samples. The analysis record and the study parameters state the
+filter at t_hi, and a replay of that record removes the sample again, so the replayed DA table differs from the one
+the user reported (and on limpa the RUV covariates differ too). On limpa's "Apply, press again, Skip" the live run
+keeps the filtered table (KIT-244's defect, not this ticket's), its config says skipped, and the replay agrees with it.
+
+**Base values for the implementation's tests.** E3 (and the numbers part of E6): base = the replayed DA table differs
+from the live one at t_hi (digests above; limpa RUV design differs). E2's base = 11 samples (run_0008 / run_0001
+absent). E1, E7, E8, E12 base = `pearson-selection` at t_hi with the study-parameters threshold line.
 
 ## Inferred (not observed)
 
-- (A)'s numeric consequence, that a replay removes samples the live run kept, is not shown on this fixture. The
-  mechanism is shown: the replayed state is the selection at t, not the skip, so its config differs from the live one.
-  It would show with a t that removes a sample.
-- The best-partner table suggests such thresholds exist: between 0.9737 and 0.9836 on the classic routes, and between
-  0.9626 and 0.9721 on limpa. The ticket's threshold list does not include one, and G0 chose none (stop rule 2 as
-  written).
+- G0 alone could not show (A)'s numeric consequence (its listed thresholds removed no sample or every sample); G0b
+  shows it at t_hi on every route (above). Only one sample removed was observed; larger removals are inferred to
+  behave the same way (the replay re-runs the selection at the recorded threshold).
 - The classic routes give identical values on LFQ, TMT and DIA (iq). On this fixture the workflow type does not enter
   the correlation step or the DA.
 
+## Unrelated discovery (for the coordinator; not fixed)
+
+At 0.99 the Apply fails with "Samples in protein data and design matrix must be the same". By reading, this is the
+all-samples-removed case: the helper keeps only samples in a within-group pair with r >= threshold
+(`R/func_prot_qc_correlation_helpers.R:389` onward); with no sample column left `cleanDesignMatrix` returns the object
+unchanged (`R/func_prot_s4_qc_filter_methods.R:460`), and the ProteinQuantitativeData validity check then fails
+(`R/func_prot_s4_core.R:108`). The user sees a technical error rather than "this threshold removes every sample".
+
 ## Verdict
 
-**G0 passed as an observation.**
-- Every prediction held. There were no instrument errors.
+**G0 and G0b passed as observations.**
+- Every prediction held in both runs. There were no instrument errors.
 - The readings of (B) and (A) are confirmed on all four routes, in process and managed.
-- Stop rule 1 is not triggered; stop rule 2 is triggered.
+- Stop rule 1 is not triggered. Stop rule 2 was triggered by G0's listed thresholds and is resolved by G0b: (A)'s
+  numeric difference between live and replay is shown on every route.
 - (B) stays in scope, because it is not replayable at base.
 
 Code waits for the owner's OD-1 and OD-3 and for KIT-244's merge.
@@ -131,7 +171,7 @@ Code waits for the owner's OD-1 and OD-3 and for KIT-244's merge.
 ## Not checked
 
 - E10's base (KIT-244's sequence on a tree holding KIT-244).
-- Any threshold outside the ticket's list.
+- Any threshold other than G0's list and G0b's t_hi.
 - The rendering of the supplement (`analysis_record_SI.rmd`).
 - The GUI observers themselves: the runners were called directly, as the tests call them.
 - FragPipe and Spectronaut imports: their label-free route was represented by the LFQ type.
