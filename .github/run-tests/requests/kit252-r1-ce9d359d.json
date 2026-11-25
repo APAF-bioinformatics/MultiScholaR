@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-252 R1: tests-only commit ce9d359d, failing-first (E rows and the five declared edits fail at the base values; G1-G3 pass); head only, base counts from run 45573711299; 1 job, ceiling 75 job-minutes",
+  "label": "KIT-252 R1 tests-only ce9d359d failing-first",
+  "package_commit": "ce9d359d908974b8199febc35ce6b16d6f6a71ca",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit252-managed-failure-text.R",
+    "test-workflow-execution.R",
+    "test-workflow-omics-application-reads.R",
+    "test-omic-da-module.R",
+    "test-prot-norm-core.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
