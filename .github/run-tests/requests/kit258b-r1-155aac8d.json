@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-258 texts (VAL-306) R1: tests first, new text tests and the declared pin edit on staging's R/, head 155aac8d vs base 75acd421; predictions in docs/qa/workflow-execution/kit/kit-258/texts-step0.md",
+  "label": "KIT-258b R1 tests-first 155aac8d vs staging 75acd421",
+  "package_commit": "155aac8d5376f8a6cb14ee12799cb774e8c51f32",
+  "base_commit": "75acd4219cd2d2db9cab9a470147c0e8a479ef73",
+  "tools_ref": "",
+  "tests": [
+    "test-kit258b-duplicate-texts.R",
+    "test-lipid-01-qc-filtering-helpers.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
