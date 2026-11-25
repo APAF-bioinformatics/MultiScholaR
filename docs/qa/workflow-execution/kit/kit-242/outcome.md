@@ -91,3 +91,32 @@ recorded and noticed). Not checked: the RUV methods (Part B).
   limpa route's step outcomes and text; the `normalization-ruv` route's warning is not captured into its record).
 - The study-parameters writer's per-assay ITSD lines (in the file list; not written in Part A).
 - The note OD-4 (c) asks for wherever an older record is read (not written in Part A).
+
+## Part A's correction pass (the coordinator's rulings of 2026-11-26; one pass, no second)
+
+Rulings: item 4, the protein normalisation text byte-identical to base when nothing is removed; item 3, "samples"
+instead of "sample(s)" (the KIT-025 scan untouched); item 1, the ITSD step's per-assay record under a replay marker
+(`itsd_outcome`), correcting N05; item 2, an assay with duplicate feature ids at between-sample normalisation is a
+malformed assay and stops, naming the cause and the remedy (draft `wording.md`).
+
+Commits: a5a87d7a (tests-only: E3b, E11b, the text pin, E8's wording, and the declared edit of
+`tests/testthat/test-workflow-omics-worker.R:15-23`, which pinned the earlier skip on the raw fixture's duplicate ids).
+
+### Predictions, written before any run of this pass
+
+**R1c** (the new rows, on a5a87d7a = dc75de69's fix without the correction; files `test-kit242-normalisation-fallback.R`
+and `test-workflow-omics-worker.R`): fail: E8 (4 tests, the wording "samples"), E3b (2: the refusal's message does not
+name duplicated identifiers or 'Resolve Duplicates'), E11b (2: no `itsd_outcome` marker), the text pin (1: no
+`diaProteinNormalisationText`); the worker test's between-sample check (2 expectations: the message); every other
+test of both files passes as in R2a's head.
+
+**R2a-2** (R2a's scope again, base 17d1ecc4, head = the correction commit, 138 files, 9 shards per side, check): the
+four unpredicted verdicts of R2a gone: `test-kit172-reopen.R` same; `test-workflow-omics-worker.R` same (base passes
+the old loop, head the edited loop); `test-workflow-operation-registry.R` same; `test-gui-entry-proteomics.R`
+prot_dia_limpa back to same (if the provenance marker moves no capture of that lane; if it does, that is a stored
+reference of 8.1's KIT-073/094 class, listed, not a new verdict). `test-kit242-normalisation-fallback.R` fixed (every
+row passes at head). Everything else as R2a: the predicted moves (`test-gui-entry-lipidomics.R`,
+`test-gui-entry-metabolomics.R` with metab_lc, metab_gc and metab_combined, `test-kit172-downstream.R` T10,
+`test-metab-02w-…`, `test-omic-norm-module.R`, the two declarations files, and the message-changed
+`test-prot-norm-core.R`, `test-workflow-omics-binding-steps.R`, `test-workflow-omics-declarations.R`), the rest same;
+check identical. A verdict outside this: stop and report, no second correction.
