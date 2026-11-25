@@ -31,3 +31,10 @@ No product code and no test expectation is written in this work; owner questions
   summary 7 (sum 39). Runner: ubuntu-22.04, reference BLAS, extra packages sva, limpa, mixOmics (as checkpoint-20261126, whose
   per-file times are the basis).
 - Decision it feeds: the scope and predictions of R1/R2, the O-3 table, and stop rule 3 of the ticket (mapping).
+
+## Ruling of 2026-11-26 (coordinator)
+Attempt 1 (run 45705978519) was an instrument defect (the trace could not write its file; no observation), fixed under the four
+conditions of the brief (VAL-54), instrument rerun 1 of at most 3. "The ticket's total ceiling is unchanged" refers to the
+ticket's TOTAL ceiling, 825 job-minutes (55.00 core-hours), not touched; G0's 45 job-minutes is that row's allowance per attempt.
+No ceiling is raised. Attempt 2 is sent with the fixed script (commit after 67da4b72); if the positive control prints NONE
+again, stop and report.
