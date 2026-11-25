@@ -345,9 +345,11 @@
 
  * study_parameters.txt: in the analysis-record section, a parameter that names an earlier result of the same analysis
    (the correlation filter's sample pairs; the transcriptomics logCPM and RUV choice; the proteomics enrichment's input
-   tables) now names the step that produced it. Before, it showed an identifier of the session's internal store, which
-   differs between sessions and projects, so two runs of the same analysis gave different files and the value looked
-   like a checksum when it was not. Limit: analysis_record.json still names each result by its identifier in the
+   tables) now says which earlier result it is (for the correlation pairs and the transcriptomics inputs, the step
+   number that produced it; for the enrichment, each contrast's differential abundance results). Before, it showed an
+   identifier of the session's internal store, which differs between sessions and projects, so two runs of the same
+   analysis gave different files and the value looked like a checksum when it was not. The identifier is still in
+   analysis_record.json. No result changes. Limit: analysis_record.json still names each result by its identifier in the
    project's internal store, and its identity_sha256 values are computed over those identifiers, so two projects that
    run the same analysis write different records; a record replays inside a copy of the project that made it. The
    integration's study parameters likewise print a 'Checksum of the model's identity' that is specific to the project

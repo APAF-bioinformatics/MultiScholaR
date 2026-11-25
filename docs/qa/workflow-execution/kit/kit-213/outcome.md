@@ -15,7 +15,7 @@ the laptop; every run below is a GitHub-hosted `run-tests` run (`runs.tsv`).
 | ed4e227f | records (this directory), ledger row names control C's run |
 | fa335eb6 | the re-freeze (VAL-169 (1), the owner's exception by file; ledger row `VAL-<merge>`): three `study_parameters` leaves of `omicSummaryW1Frozen` (lines 2700, 2786, 3227) |
 | 36a8eccc | merge of staging e6791275 (KIT-167, ledger VAL-178 to VAL-188); ledger conflict resolved by placing KIT-213's row after VAL-188 |
-| 6cff8354 | merge of staging 4d588ba3; NEWS and ledger: staging's entries first, then KIT-213's; `R/`, `tests/` merged without conflict; against staging the test file differs only at the three re-frozen leaves (now lines 2532, 2618, 3059) |
+| 6cff8354 | merge of staging 4d588ba3; NEWS and ledger: staging's entries first, then KIT-213's; `R/`, `tests/` merged without conflict; against staging the test file differs only at the three re-frozen leaves (now lines 2532, 2618, 3059 at 6cff8354; 2533, 2619, 3060 on the merge with staging 176f9d3f) |
 
 Branch `run-k213-g0c` (9695502a) holds 00583734 plus b0bb6aca's `g0.R` only, so that G0's last instrument rerun ran
 on the base's package code.
@@ -35,8 +35,11 @@ filter, the DA, its publication and the enrichment; every save `done`, study par
   omic), proteomics' `  timestamp = ` (line 51) and its `Timestamp:` twin (line 92), and the L lines. Nothing else;
   no line holds the project root (root-mask count 0 on every line). **Stop rule 5 not fired.**
 - L2 and L5 reached through reference states without a package change. **Stop rule 4 not fired.**
-- L4 (`trx_ruviii_export`'s `logcpm`, `grid`) was **not** observed: the analysis block printed only
-  `ruviii_m_source` in this journey. The helper still labels it from the source state's step (code read, not executed).
+- L4 (`trx_ruviii_export`'s `logcpm`, `grid`) cannot occur: the export records only `ruviii_m_source`
+  (`acceptTrxRuviiiExport`, R/utils_workflow_trx_declarations.R:668-669, the only code that records the transcriptomics
+  RUVIII export, has stored only that parameter since KIT-095), and G0 shows the export block printing
+  `ruviii_m_source` only. The analysis-level label code (and its "computed in this analysis" wording) is unreachable on
+  every current route (implementation audit I01).
 
 **G0 W1 part** (instrument reruns 1 and 3, runs 45473660748 and 45479163619; `g0/g0-w1-run*.tsv`). Cases whose saved
 study parameters hold an L line: `trx_main` (writes at `save_before_export` and `save`) and `trx_managed` (`save`),
@@ -102,9 +105,9 @@ object and is not edited. KIT-212's re-freeze (VAL-172, VAL-186; now on staging)
 
 ## Cost
 
-G0 and its three instrument reruns 51.0 job-minutes (3.40 core-hours; G row 6.00, instrument row 18.00); R1 13.15
+G0 and its three instrument reruns 50.91 job-minutes (3.39 core-hours; G row 6.00, instrument row 18.00); R1 13.15
 (0.88; 4.00); R2 with control C 248.65 (16.58; R2 36.00 + C 4.00); R3a 1,219.45 (81.30) and R3 1,423.87 (94.92;
-together 176.22 of the R3 row's 186.67). Total 2,956.55 job-minutes = 197.10 core-hours against the ticket's expected
+together 176.22 of the R3 row's 186.67). Total 2,956.03 job-minutes = 197.07 core-hours against the ticket's expected
 103.5 and ceiling 481.33. The excess over the expectation is the second full suite, sent on the coordinator's
 instruction after staging moved by 553 commits.
 
@@ -112,8 +115,8 @@ instruction after staging moved by 553 commits.
 
 - Two projects on the same build and platform now write the same file apart from the run-bound lines G0 listed:
   executed for one journey per omic on one runner image, not across machines or builds.
-- The analysis-level label (L4) and the `NA` source-state wording ("in this analysis") are read from the code; E4
-  executes only the `results` `NA` element through the helper directly.
+- The analysis-level label (L4) and the `NA` source-state wording ("in this analysis") are unreachable today (I01);
+  E4 executes only the `results` `NA` element through the helper directly.
 
 ## Deviations from the ticket text
 
@@ -131,15 +134,21 @@ instruction after staging moved by 553 commits.
 
 ## Not checked
 
-- L4 (`trx_ruviii_export` analysis lines) on any executed path.
+- L4 (`trx_ruviii_export` analysis lines): unreachable on every current route (I01), so not executable.
 - Windows; other runner images; two different builds.
 - The other five report templates' parsers (as the ticket).
-- KIT-215, KIT-216, KIT-217 and KIT-263 branches (not on staging; their merge checks are the second merger's). By
+- KIT-215 and KIT-212 are on staging 4d588ba3; R3 (45700894419) is the run on the tree holding KIT-212's re-freeze and
+  KIT-215's new file, which discharges the ticket's section 6 and 8 rules for them (R3 ran
+  `test-kit215-not-tested-lists.R`, `same`). KIT-216, KIT-217 and KIT-263 are not on 4d588ba3. By
   `git merge-tree` only: kit-213 (6cff8354) merges against origin/merge-train-20261126k (KIT-263) and
   origin/merge-train-20261126h (KIT-217) with a conflict in `docs/methods-decision-ledger.md` only; the writer and
   `test-omic-summary-module.R` auto-merge. Not executed.
 
 ## For the change report
+
+**New to 0.9.** The analysis-record section of study_parameters.txt exists only on the 0.9 line (KIT-033; `main` has
+none), so no released version printed these lines; only 0.9 development builds, including the v0.9.0 staging tag,
+were affected (implementation audit I05).
 
 **What was wrong.** In `study_parameters.txt`, the analysis-record section printed four kinds of parameter that
 point to an earlier result of the same analysis (the correlation filter's sample pairs in lipidomics, metabolomics
