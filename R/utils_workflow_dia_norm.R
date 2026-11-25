@@ -332,9 +332,11 @@ saveProtNormQcPlotArtifact <- function(
 
 #' A normalisation QC figure's name for the user, from its file name.
 #' @param filename The figure's file name (`<stage>_<kind>.png`).
+#' @param adjusted Whether the RUV figures show the RUV-III-adjusted matrix drawn for quality control only (the DIA
+#'   with limpa RUV covariates step; KIT-259 third pass, VAL-307, W11), not a corrected one.
 #' @return The name, or the file name when it is not a stage figure.
 #' @noRd
-protNormFigureTitle <- function(filename) {
+protNormFigureTitle <- function(filename, adjusted = FALSE) {
   stages <- c(pre_norm = "Pre-normalisation", post_norm = "Post-normalisation", ruv_corrected = "RUV-corrected",
     ruv_covariates = "RUV-III covariates")
   kinds <- c(pca = "PCA", rle = "RLE", density = "PCA density", correlation = "Pearson correlation",
@@ -342,6 +344,7 @@ protNormFigureTitle <- function(filename) {
   parts <- regmatches(filename, regexec("^(pre_norm|post_norm|ruv_corrected|ruv_covariates)_(pca|rle|density|correlation|cancor)[.]png$",
     filename))[[1L]]
   if (length(parts) != 3L) return(filename)
+  if (adjusted && identical(parts[[2L]], "ruv_corrected")) stages[["ruv_corrected"]] <- "RUV-III-adjusted (for quality control)"
   paste(stages[[parts[[2L]]]], kinds[[parts[[3L]]]])
 }
 
@@ -408,6 +411,28 @@ drawProtNormQcFigure <- function(qcDir, filename, width, height, draw, dpi = 150
   drawn
 }
 
+#' KIT-259 third pass (VAL-307; closure check C01): the panels of the combined QC figure that are placeholders, written
+#' beside the figure when the publication builds it (`<omic>_composite_QC_figure.placeholders`, one line per panel: its
+#' letter and its figure, tab-separated), so that the report names exactly the panels its Figure 1 shows as notes. The
+#' panels are read from the markers beside the figure's inputs in `qcDir` (the publication's staging, where the
+#' pre-normalisation markers are copied with their images). No placeholder, or no combined figure: no file.
+#' @param ruvMode The run's RUV mode (the figure's layout).
+#' @param qcDir The folder holding the combined figure and its inputs.
+#' @param omicType The omic (the figure's file name).
+#' @return The file written, or NULL, invisibly.
+#' @noRd
+writeProtNormCompositePlaceholders <- function(ruvMode, qcDir, omicType) {
+  if (!file.exists(file.path(qcDir, paste0(omicType, "_composite_QC_figure.png")))) return(invisible(NULL))
+  inputs <- resolveProtNormCompositeFigureInputs(ruvMode, qcDir)
+  panels <- sub("[)]$", "", unlist(inputs$rowLabels, use.names = FALSE))
+  figures <- basename(inputs$plotFiles)
+  marked <- !is.na(inputs$plotFiles) & file.exists(paste0(inputs$plotFiles, ".placeholder"))
+  if (!any(marked)) return(invisible(NULL))
+  path <- file.path(qcDir, paste0(omicType, "_composite_QC_figure.placeholders"))
+  writeLines(paste(panels[marked], sub("[.]png$", "", figures[marked]), sep = "\t"), path, useBytes = TRUE)
+  invisible(path)
+}
+
 #' The warning notice naming the figures that could not be drawn.
 #' @param figures A list of `list(figure, reason)`.
 #' @param step The step that finished (`"normalisation"`, `"RUV-III covariates step"`), or NULL when the figures were
@@ -415,7 +440,8 @@ drawProtNormQcFigure <- function(qcDir, filename, width, height, draw, dpi = 150
 #' @return The notice's text.
 #' @noRd
 buildProtNormFigureUnavailableNotice <- function(figures, step = "normalisation") {
-  named <- vapply(figures, function(item) paste0("'", protNormFigureTitle(item$figure), "'"), "")
+  adjusted <- identical(step, "RUV-III covariates step")
+  named <- vapply(figures, function(item) paste0("'", protNormFigureTitle(item$figure, adjusted), "'"), "")
   reasons <- vapply(figures, function(item) item$reason, "")
   lead <- if (is.null(step)) "The " else paste0("The ", step, " finished, but the ")
   if (length(figures) == 1L) {
@@ -798,7 +824,9 @@ removeProtNormOwnFiles <- function(paths, stage = c("normalization", "correlatio
   # placeholders, which the report reads.
   names <- if (identical(stage, "normalization")) c(paste0("ruv_corrected_", c("pca", "rle", "density", "correlation", "cancor"),
     ".png"), tables, paste0(rep(c("post_norm_", "ruv_corrected_"), each = 5L),
-      c("pca", "rle", "density", "correlation", "cancor"), ".png.placeholder")) else tables
+      c("pca", "rle", "density", "correlation", "cancor"), ".png.placeholder"),
+    # KIT-259 third pass (VAL-307, C01): the combined figure's list of replaced panels.
+    "proteomics_composite_QC_figure.placeholders") else tables
   texts <- omicNormGuardTexts()
   removeWorkflowOwnFiles(file.path(paths$protein_qc_dir, names),
     if (identical(stage, "normalization")) texts$norm_unremoved else texts$correlation_unremoved)

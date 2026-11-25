@@ -1072,7 +1072,8 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
         paths[c("source_dir", "protein_qc_dir", "time_dir")], function(staging) withWorkflowShortStaging(staging, function(staged) {
             norm_data$publication_paths <- staged
             on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
-            pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png$", full.names = TRUE)
+            # KIT-259 third pass (VAL-307, C01): with their placeholders' markers, which the combined figure's list reads.
+            pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png([.]placeholder)?$", full.names = TRUE)
             if (length(pre_files) && !all(file.copy(pre_files, staged$protein_qc_dir))) {
                 cli::cli_abort("cannot stage pre-normalization display inputs")
             }
@@ -1105,6 +1106,8 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
             # images than the worker read), the figure is built here, as before.
             if (!writeDIACompositeFigureFiles(manager, product, settings$ruv_mode, staged$protein_qc_dir, omic_type))
                 generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
+            # KIT-259 third pass (VAL-307, C01): the combined figure's replaced panels, written with it.
+            writeProtNormCompositePlaceholders(settings$ruv_mode, staged$protein_qc_dir, omic_type)
             list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
                 filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
         }, "the normalisation's files could not be copied into the project's staging folder"), identity = list(product = product$entity_id, color = settings$color_variable,
