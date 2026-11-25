@@ -1,0 +1,31 @@
+{
+  "requested_by": "Full-suite checkpoint 2 on staging 15d86bd4 after trains 15 to 18: every test file, base 828dd105 (previous checkpoint head) vs head, check; no scripts; ceiling 1,692.4 job-minutes",
+  "label": "Checkpoint 20261126b full suite 15d86bd4 vs 828dd105",
+  "package_commit": "15d86bd4e3bb2438d7f198b18742439176b49079",
+  "base_commit": "828dd1051d2acab075d6d04f887b7c9e9ccaa48e",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT105_W3_DUMP": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
