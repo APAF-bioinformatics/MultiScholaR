@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-269 R1: tests-only commit, failing first on the base (stop rule 1); ceiling 45 min",
+  "label": "KIT-269 R1 new test file on tests-only commit 79680e76",
+  "package_commit": "79680e763fe5eb017e9e9da7276e261199972815",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit269-config-vector-values.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
