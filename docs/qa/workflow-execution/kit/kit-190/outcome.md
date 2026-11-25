@@ -342,3 +342,23 @@ record outcomes `k_sweep_per_assay`, `k_cap_per_assay`, `ruv_k_notice_per_assay`
 Inferred (for the implementation auditor): no cell of the rule-(d) evidence changes. The measured path (the untouched
 sweep, its percentage and controls, k = min(k_sweep, 2), RUV-III-C, limma) is the shipped route at n = 12, where
 `calculateAdaptiveMaxK` gives 2. Not covered: caps 3 to 5 at larger n (KIT-188).
+
+## Merge of staging c4505c7f (1cae0c3e, d3318820): the two resolved code hunks (coordinator's word)
+
+`R/utils_workflow_omics_declarations.R`, `omicsRuvOperation`: staging's comment line kept; `fixed` becomes
+`list(ruv_feature_levels = "restored", ruv_control_grouping = "kept", ruv_k_bound = "sample_size")` (staging's marker
+first), with one added comment line; KIT-190's return fields (`k_sweep`, `k_cap`, `k_notice`, `ruv_status`) and its two
+functions (`omicsRuvKBound`, `omicsRuvAssayStatus`) kept; no other line of staging's version of the function changed.
+
+`R/utils_workflow_analysis_record.R`, `workflowReplayRuleMarkers`: staging's rows in staging's order
+(missing_value_comparison, enrichment_background, intensity_filter_samples, duplicate_resolution_samples,
+ruv_feature_levels), then `ruv_control_grouping`, then `ruv_k_bound`, each with its own comment; nothing else changed.
+NEWS and the ledger merged as text; the ledger row `VAL-<merge>` follows VAL-261 and cites VAL-235.
+
+**Stated limit (for the implementation auditor).** The counted evidence behind rule (d) and the bound ran on the
+RUV-III-C correction as it was before KIT-224 (features shifted by a constant). By reading, the sweep's k, percentage and
+controls do not use the correction (it is applied after the sweep). KIT-224's audit found its change moves paired FDP and
+power by at most 0.00068; every decided cell's bound is far from its margin. Whether this suffices is for the auditor.
+
+**R3: departure by the coordinator.** The next full-suite checkpoint on staging stands in for R3 after this merge (as for
+KIT-201, KIT-204, KIT-243).
