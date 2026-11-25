@@ -179,12 +179,15 @@ See `runs.tsv`.
   are new in `R/utils_workflow_dia_da.R` (`workflowDaResultStatus` `:125`, `workflowDaFilesUnmade` `:227` at the fix); the
   DA tab `R/mod_omic_da.R:104-135` at base (the observer and `omicDaFollowHead` `:145` at the fix); replay
   `R/utils_workflow_analysis_record.R:890-917` at base (`assertWorkflowReplayDaSource` `:718`, called at `:918`, at the
-  fix); the record's `source_state` rule unchanged (`:504-507` at base).
+  fix); the record's `source_state` rule unchanged (`:504-507` at base); the Summary tab `R/mod_omic_summary.R:190-207`,
+  `:278` at base (the Report gated only by any earlier Copy) and `:178-180`, `:193-202`, `:240-248` at aae142c5 (the DA
+  the last Copy was made under; the Report asks for Copy again after a later DA).
 - **What changed in results.** Nothing computed. Refusals with a message (Save, Report, Copy; Save also removes the omic's
   earlier integration input), a cleared DA display, a DA after a load and a head move taken on the head, and replay
-  refusing records whose DA ran on another table (narrowing VAL-99 (3), VAL-139, VAL-154).
+  refusing records whose DA ran on another table (narrowing VAL-99 (3), VAL-139, VAL-154); 'Generate Report' after a DA
+  run since the last Copy asks for Copy again (F-11's notice).
 - **Evidence.** R1 45475673660 (base values), R1h 45475680286, R2 45479681505, control C 45491596893, R3 45494383196
-  (stopped: the core file's eight Report notes), E16 and the train run that closed it (runs.tsv); E17 (failing first by
+  (stopped: the core file's eight Report notes), R4 45512259372 (E16, E17; the core file label-only), and the train run at merge; E17 (failing first by
   `e17-first.R` on 606b11d2, passing on the repair). Declared test edits: E14 (`test-kit207-summary-head-guard.R`), E16
   (`test-omics-summary-core.R`, `omicsSummaryCoreExpected`). The fixtures are F172 (KIT-172), the module-CI W1 fixtures,
   the KIT-206 proteomics owner and the MCI-032 trx project.
