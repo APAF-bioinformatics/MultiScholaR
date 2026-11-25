@@ -262,3 +262,18 @@ host (recorder, `insteadOf` of https://github.com/ to a local bare repository, `
   "anything else conflicting: stop". The merge was aborted; nothing committed. Staging does not touch
   `R/func_github_management.R`, `R/mod_omic_summary.R`, their tests, `packaging/` or the workflow since e0747fc1, so
   W1'-fix holds for the merged tree.
+
+### R2c (declared before the request; coordinator's authorisation of 2026-11-26)
+
+- Staging merged as it stood (42846c0e, train 7 landed: KIT-252 = VAL-262, KIT-250 = VAL-263): NEWS and the ledger
+  were append collisions only (resolved as authorised: staging's bullets first, then KIT-245's two; staging's rows
+  through VAL-263, then KIT-245's two placeholder rows); no other file conflicted. Train 7 (c4505c7f to 42846c0e)
+  touched none of KIT-245's files nor any of the 13 regression files. Since e0747fc1, earlier trains changed
+  `R/utils_omic_gui_config.R` and `test-module-ci-trx-summary.R` (KIT-214, KIT-224); both sides carry them.
+- Base: abe0705d on `run-k245-r2c-base` (never merged) = the tests-only commit f76429cc with staging merged. Head: the
+  fix with staging merged (the head of `kit-245`, this commit). Base and head differ only by the fix's files
+  (`R/func_github_management.R`, `R/mod_omic_summary.R`, `man/pushProjectToGithub.Rd`, NEWS, ledger) and records.
+- Purpose: the two KIT-245 files pass on head (S1, S6 to S7, E2 and every guard), failing on the base exactly where
+  R1c showed (with S7's accepted rows passing on both: the R1c instrument correction's observation); the eleven
+  other files `same`; `R CMD check` nothing only on head. Ceiling 300 job-minutes (Part S's correction, unspent).
+  Decides AS2 and A2 after the correction; stop rule 4.
