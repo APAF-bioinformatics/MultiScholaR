@@ -4,6 +4,15 @@
 
 ### New features
 
+ * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
+   analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
+   could not find with 20 and 60 samples; how missing values are treated; which data sets averaged several runs per
+   sample, and why such averages can be too high for low-abundance features; that the model treats all samples as one
+   group with normally distributed variation and takes one input per omic; what the check against the original
+   analysis script covered; and which external enrichment services the analysis used, with their releases. The Model
+   tab points to them after training, and its help for per-feature scaling now states the simulated pattern's size in
+   numbers (KIT-239).
+
  * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
    `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
    be called but are not yet validated): `mapStrainToReference()` maps a

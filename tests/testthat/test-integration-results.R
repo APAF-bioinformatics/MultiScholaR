@@ -567,3 +567,20 @@ test_that("KIT-239 (L3): the limitations are computed from the sample table, eac
         expect_false(has(lines, texts[["limits_averaged_none"]]))
     }
 })
+
+# KIT-239 (L7): INT-28's content sits on the decided table entries (owner's decision of 2026-11-25, OD-2, with the
+# corrections R1-01, R1-03 and R1-04 told to the owner); no "weak" for a pattern whose size is stated in numbers.
+test_that("KIT-239 (L7): INT-28's content terms sit on the wording table's entries; the strength is in numbers", {
+    texts <- integrationGuiTexts()
+    has <- function(key, terms) for (term in terms) expect_match(texts[[key]], term, fixed = TRUE, info = key)
+    has("limits_fixed_samples", c("20", "60", "15", "descriptive", "at most 2 of 10", "slow training"))
+    has("limits_fixed_missing", "missing at random")
+    has("limits_fixed_averaged", "too high")
+    has("limits_fixed_model", c("one group", "Gaussian", "one input per omic", "estimated before saving"))
+    has("limits_fixed_check", c("simulated", "one design"))
+    has("limits_fixed_services", c("STRING", "KEGG", "Reactome"))
+    has("help_scaling", c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30"))
+    for (key in c("limits_fixed_samples", "help_scaling")) {
+        expect_false(grepl("weak", texts[[key]], ignore.case = TRUE), info = key)
+    }
+})
