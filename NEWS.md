@@ -104,17 +104,27 @@
  * Lipidomics and metabolomics with two or more assays (for example positive and negative mode): the sample-correlation
    filter now judges each sample within each assay. A sample whose correlation with its replicates is below the threshold
    in one assay only has its values in that assay set to missing; it stays in the analysis of the other assays and leaves
-   the study only when no assay keeps a value for it. Before, such a sample left the study but its values stayed in the
-   other assays, so the lipidomics differential analysis stopped with a message naming the other assay, the metabolomics
-   one stopped on Windows, macOS and when the application runs without its background worker, and otherwise ran without
-   the sample in every assay. The version on `main` analysed every assay without the sample; results in the assays where
-   the sample passed now include it. The normalisation tab, the analysis record, the study parameters and the report name
-   each sample set missing, with the assay. Older analysis records replay as they were computed. The differential-analysis
-   heatmaps leave out a sample with no value in the assay. Limits: in an RUV-corrected data set holding a sample set
-   missing in it, the integration's removed RUV factors cannot be determined, so the optional adjustment for them is
-   unavailable there; and the integration model still counts such a sample as measured in that data set when the option to
-   keep only complete samples is chosen. Where a sample's values were missing altogether in one assay, that assay may not
-   have been normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
+   the study only when no assay keeps a value for it. Features of that assay that met the minimum number of values per
+   group may then have fewer; they are tested on the values that remain. Before, such a sample left the study but its
+   values stayed in the other assays, so the lipidomics differential analysis stopped with a message naming the other
+   assay, the metabolomics one stopped on Windows, macOS and when the application runs without its background worker, and
+   otherwise ran without the sample in every assay. The version on `main` analysed every assay without the sample;
+   results in the assays where the sample passed now include it. The normalisation tab, the analysis record, the study
+   parameters and the report name each sample set missing, with the assay, and each sample removed because no assay kept
+   a value for it. When every sample of a group is set missing in one assay, the same places say that comparisons with
+   that group were not tested in that assay. Older analysis records replay as they were computed. The
+   differential-analysis heatmaps leave out a sample with no value in the assays shown; in the view that combines assays,
+   the cells of a sample set missing in one assay are drawn at the feature's average. Limits: in an RUV-corrected data
+   set holding a sample set missing in it, the integration's removed RUV factors cannot be determined, so the optional
+   adjustment for them is unavailable there; the integration model still counts such a sample as measured in that data
+   set (in the data set's sample count, and it is kept when the option to keep only samples measured in every data set
+   is chosen). After RUV, the sample-correlation filter rarely fails a single anomalous sample, because RUV-III absorbs
+   a one-sample anomaly into one of its factors; it can still act when RUV is skipped or removes no factor, when more
+   samples deviate than there are factors, or when the deviation does not show in the control features; on the legacy
+   RUV-III-C route such a sample's corrected values resemble its replicates' average, which makes standard errors too
+   small (derived factors 0.775, 0.845 and 0.905 at 3, 4 and 6 samples per group; to be measured before the release,
+   KIT-275; VAL-330). Where a sample's values were missing altogether in one assay, that assay may not have been
+   normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

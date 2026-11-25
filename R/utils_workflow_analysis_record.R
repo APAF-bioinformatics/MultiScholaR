@@ -138,6 +138,8 @@ workflowRecordCorrelationOutcomes <- function(outcomes, operation, args, record,
                 threshold = omicsCorrelationExclusionThreshold(excluded, assay, sample))
         }), names(best))
     }), names(excluded$excluded))
+    # KIT-255 (I01): the groups left without a value in an assay: their comparisons there are recorded as not tested.
+    if (length(excluded$not_tested)) outcomes$correlation_not_tested_per_assay <- lapply(excluded$not_tested, as.list)
     outcomes$correlation_removed_from_design <- as.list(removed)
     outcomes
 }
