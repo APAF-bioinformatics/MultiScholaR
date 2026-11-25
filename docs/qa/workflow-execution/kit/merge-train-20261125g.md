@@ -100,4 +100,56 @@ prefix (`kit-250/h1-45611275368/g0-h1a-reimport_dialog_open.json`). None exceeds
 
 ## Result
 
-(filled after the run)
+Run 45618814127 (request `merge-train-20261125g-fbf42a9c`) bound head fbf42a9c against base c4505c7f.
+
+- It was sent once and concluded success.
+- It used 240.2 job-minutes of the 1,200 ceiling, 30.4 of them for the check.
+- The watch ended on the GitHub API rate limit, not on the run. Results were fetched once after the reset, and nothing
+  was re-sent.
+- Tables are in `merge-train-20261125g/`: `compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`,
+  `check-summary.txt` and `meta.txt`.
+
+Of the 22 files, 20 are `same` and 2 are `only-on-head`. Every prediction held:
+
+| File | Base p/f/s | Head p/f/s | Verdict | Prediction |
+|---|---|---|---|---|
+| test-kit252-managed-failure-text.R | absent | 72/0/0 | only-on-head | 72/0: held |
+| test-prot-norm-core.R | 1548/306/0 | 1548/306/0 | same | the base's failures exactly: held |
+| test-omic-da-module.R | 1316/53/0 | 1316/53/0 | same | the base's failures exactly: held |
+| test-workflow-execution.R | 114/0/10 | 114/0/10 | same | 114/0 (10 skipped): held |
+| test-workflow-omics-application-reads.R | 230/0/0 | 230/0/0 | same | 230/0: held |
+| test-workflow-kit-harness.R | 734/1/0 | 734/1/0 | same | 734/1: held |
+| test-perf107-audit.R | 191/0/1 | 191/0/1 | same | KIT-251's numbers: held |
+| test-kit251-replicate-filter-one-click.R | 9/0/0 | 9/0/0 | same | 9/0: held |
+| test-prot-norm-input-current.R | 321/0/0 | 321/0/0 | same | held |
+| test-workflow-execution-process.R | 191/0/0 | 191/0/0 | same | held |
+| test-perf-107.R | 21/0/0 | 21/0/0 | same | held |
+| test-perf-003.R | 137/0/1 | 137/0/1 | same | held |
+| test-prot-07b-da-handlers-compat.R | 35/0/2 | 35/0/2 | same | held |
+| test-workflow-core-harness.R | 131/0/0 | 131/0/0 | same | held |
+| test-workflow-execution-adapters.R | 0/0/6 | 0/0/6 | same | held |
+| test-kit250-organism-dialog.R | absent | 119/0/0 | only-on-head | 119/0: held |
+| test-prot-01c-import-module-contracts.R | 437/0/0 | 437/0/0 | same | held |
+| test-prot-01d-import-module-characterization.R | 79/0/0 | 79/0/0 | same | held |
+| test-module-ci-prot-import.R | 107/0/0 | 107/0/0 | same | held |
+| test-module-ci-trx-app.R | 50/0/0 | 50/0/0 | same | held |
+| test-workflow-gui-memory-lifetimes.R | 81/0/11 | 81/0/11 | same | held |
+| test-workflow-server-shared.R | 226/0/0 | 226/0/0 | same | held |
+
+`same` means the failure messages are identical base against head, with temporary paths masked (the run-tests rule).
+So `test-prot-norm-core.R` and `test-omic-da-module.R` keep exactly the base's failures.
+
+R CMD check was the same on both sides:
+- 0 ERRORs, 3 WARNINGs and 3 NOTEs on each side.
+- All 6 findings are identical, and none appears only on head.
+- The portable-file-names NOTE lists 238 paths on each side, none of them from `kit-250` or `kit-252`.
+
+**Verdict.** Every prediction of KIT-252 and KIT-250 held, and the check is identical. TRAIN GREEN.
+
+Staging was still at c4505c7f when the result was read. The rows `VAL-<train7-1>` (KIT-252) and `VAL-<train7-2>`
+(KIT-250) are numbered by the coordinator at landing.
+
+Not checked:
+- the trees after the run's head (docs only);
+- files outside the 22;
+- the members' full suites (at the next checkpoint).
