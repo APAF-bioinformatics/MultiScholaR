@@ -1,0 +1,11 @@
+counts.tsv identical
+diagnostic.tsv identical
+errors.tsv identical
+factors.tsv identical
+familywise.tsv identical
+formed.tsv identical
+losses.tsv identical
+orientation.tsv identical
+power.tsv identical
+status.tsv identical
+tables 10 and 10; completed 3 and 3; parity true

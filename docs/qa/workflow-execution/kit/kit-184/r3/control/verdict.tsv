@@ -1,0 +1,8 @@
+check	value
+base_equals_stored	TRUE
+head_dumps_identical	TRUE
+head_differs_in_four_only	TRUE
+frozen_file_steps_equal_head	TRUE
+frozen_file_names_this_commit	TRUE
+checkout_reference_untouched	TRUE
+differing_leaves	4

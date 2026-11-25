@@ -94,8 +94,9 @@ lipidomicsDeclarationBinding <- list(
     da_format = function(...) formatLipidDaContrastTable(...),
     da_count = function(...) countLipidDaSignificant(...),
     # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
-    filter_intensity_page = function(page, threshold, proportion, id_column) lipidIntensityFilteringHelper(assay_table = page,
-        min_lipid_intensity_threshold = threshold, lipids_proportion_of_samples_below_cutoff = proportion, lipid_id_column = id_column),
+    filter_intensity_page = function(page, threshold, proportion, id_column, sample_columns) lipidIntensityFilteringHelper(assay_table = page,
+        min_lipid_intensity_threshold = threshold, lipids_proportion_of_samples_below_cutoff = proportion, lipid_id_column = id_column,
+        sample_columns = sample_columns),
     resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveLipidDuplicateFeaturesByIntensity(assay_tibble = batch,
         id_col = id_column, sample_cols = sample_columns),
     duplicate_value = function(before, after, without_samples) list(counts = list(before = before, after = after)),

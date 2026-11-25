@@ -67,8 +67,10 @@ intRecRewrite <- function(dir, rename = FALSE, correction = NULL) {
     if (rename) samples[[manifest$biological_sample_column]] <- paste0("S-", samples[[manifest$biological_sample_column]])
     # KIT-153: a correction comes with its corrected matrix (here the same values), beside the normalised one.
     matrices <- lapply(input$views, `[[`, "matrix")
-    writeIntegrationInput(dir, manifest, samples, matrices, lapply(input$views, `[[`, "features"),
-        corrected = if (is.null(correction)) list() else matrices)
+    # KIT-184: the corrected matrix equals the normalised one here, so no removed factor can be determined; the writer's
+    # classed warning is expected and silenced (test-integration-removed-factors.R, K3, asserts it).
+    suppressWarnings(writeIntegrationInput(dir, manifest, samples, matrices, lapply(input$views, `[[`, "features"),
+        corrected = if (is.null(correction)) list() else matrices), classes = "integration_input_removed_factors_undetermined")
 }
 
 intRecProject <- function(.local_envir = parent.frame()) {
