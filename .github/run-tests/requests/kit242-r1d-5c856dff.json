@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-242 R1d (ticket r1.6, Part B): the new test file on the fix 5c856dff (tests-only fb5eee2b plus the fix), the smallest falsifying test before P0; ceiling per VAL-329; 1 job, ceiling 60 minutes",
+  "label": "KIT-242 R1d fix 5c856dff",
+  "package_commit": "5c856dff5b77dee8355decae6b7577276dd234e8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit242-normalisation-fallback.R"],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
