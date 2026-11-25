@@ -102,6 +102,26 @@ code. 5978ce97 was pushed under the instrument-fix title while carrying the whol
 force-pushes with lease on `kit-220` (5978ce97 -> bb092685; 0adde685 -> c788f04a) followed. `git stash list` was run
 once (read-only; the stash log was last written before the branch existed).
 
+## Control C and run D (coordinator's word, 2026-11-25; staging 185ebf75 merged as 437e1d9a)
+
+Script `redump.R` (each file in its own process with the dump switches and the GUI-entry record directory). First send
+(six runs) wrote no dump (relative directory; VAL-54 instrument fix 1, four runs cancelled); re-run 1: base 2db79d20
+(staging + script), head da5dc27b twice. Leaf tables: `control-cd.tsv`, `control-c-preexisting.tsv`.
+- **Control C** (45522656187 base; 45522658880, 45522663108 heads): every key that differs base/head is an allowed
+  NumSig key: `prot_dia.json` 13, `prot_dia_limpa.json`, `prot_lfq.json`, `prot_lfq_fragpipe.json`, `prot_tmt.json`
+  12 each (VAL-191 (2)), `lipid_canonical.json` 12 (owner, (i)); the metabolomics lanes do not move. Head 1 = head 2 in
+  every lane. At every changed key the base record equals the stored oracle. Pre-existing: `prot_dia.json` differs
+  base/stored at 24 other keys (integration files; left untouched).
+- **Run D, module captures** (45522667790 base; 45522671732, 45522675562 heads; head 1 = head 2 byte for byte):
+  `test-omic-da-module.R` KIT-106 dump: only the 10 proteomics and 14 lipid/metab NumSig `files` values change, and each
+  base value equals the stored one; `test-omic-enrich-module.R` KIT-107 dump: only the 18 NumSig values, base = stored.
+  `test-omics-da-core.R` (no dump hook): base passes with the stored `a36fe768…`; head gives `8f71c903…` (R2b).
+- **Run D, W1** (`test-workflow-saved-da.R` KIT-112 dump): exactly the 19 allowed leaves change (dia_qvalue_only 6,
+  dia_refused 5, the eight other `files`); head 1 = head 2. **But at every one of the 19 the base dump differs from
+  the stored value**: the W1 object holds laptop-recorded values, and 88 W1 leaves differ base/stored on the runner
+  (the 171 known failures). Under the coordinator's rule ("a changed leaf whose base dump differs from the stored value
+  stops the ticket") this is a stop. No re-freeze commit was made, and R3 was not sent.
+
 ## For the change report
 - **What was wrong.** Proteomics (every workflow and route): the published count table (`.tab`/`.xlsx`), its NumSig
   bar chart (the report's Figure 2), the `Publication_tables` copy and the report's per-comparison count sentence
