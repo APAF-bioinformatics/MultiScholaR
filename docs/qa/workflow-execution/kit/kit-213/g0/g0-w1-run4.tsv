@@ -1,0 +1,8 @@
+case	write	lines	l_lines	steps_changed	captures	l_text
+source	1	157	0			
+source	2	157	0			
+source	3	157	0			
+source	4	126	0			
+source	5	126	0			
+source	6	126	0			
+transcriptomics	7	53	3			  trx_ruv_grid.logcpm [input] = <HEX> ||   logcpm [input] = <HEX> ||   grid [input] = <HEX>
