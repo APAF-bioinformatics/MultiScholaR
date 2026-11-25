@@ -130,4 +130,86 @@ prefix, so none exceeds 100.
 
 ## Result
 
-(filled after the run)
+Run 45608483144 (request `merge-train-20261125f-e48254be`, run-tests commit 734367e9) bound head e48254be against base
+63143aa3. It was sent once, concluded success, and used 494.8 job-minutes of the 1,340 ceiling (check 28.9). Tables are in
+`merge-train-20261125f/`: `compare.tsv`, `tests.tsv`, `tests-base.tsv`, `check-compare.txt`, `check-summary.txt`,
+`meta.txt`.
+
+Of the 79 files, 65 are `same` and 14 are not. Every one of the 14 is predicted:
+
+| File | Base p/f/e/s | Head p/f/e/s | Verdict | Prediction |
+|---|---|---|---|---|
+| test-kit224-ruv-feature-levels.R | absent | 69/0/0/0 | only-on-head | 69/0: held |
+| test-lipid-12c-ruv-s4-characterization.R | 59/0/0/0 | 67/0/0/0 | count-changed | +8: held |
+| test-metab-03a-ruviii-c-varying-characterization.R | 32/0/0/0 | 40/0/0/0 | count-changed | +8: held |
+| test-kit127-omics-ruv-factors.R | 421/1/0/0 | 425/1/0/0 | count-changed | +4, its one failure identical: held |
+| test-integration-input-transcriptomics.R | 78/0/0/0 | 79/0/0/0 | count-changed | +1: held |
+| test-workflow-trx-declarations.R | 309/33/0/0 | 313/31/0/0 | message-changed | the two normalized_data.tsv leaves base-only: held |
+| test-module-ci-trx-summary.R | 86/2/0/0 | 87/1/0/0 | message-changed | export digest base-only: held |
+| test-prot-norm-core.R | 1548/306/0/0 | 1548/306/0/0 | message-changed | only the two RUV digests: held |
+| test-omics-summary-core.R | 676/25/0/2 | 676/25/0/2 | message-changed | only the one leaf: held |
+| test-omic-summary-module.R | 1675/28/0/0 | 1675/28/0/0 | message-changed | only the one leaf: held |
+| test-workflow-omics-declarations.R | 45/23/0/0 | 45/23/0/0 | message-changed | KIT-224's lines only: held |
+| test-workflow-omics-binding-steps.R | 58/1/0/0 | 58/1/0/0 | message-changed | `steps[[9]]` only: held |
+| test-gui-entry-transcriptomics.R | 16/13/0/0 | 16/13/0/0 | message-changed | the four `summary_*` lines: held |
+| test-kit251-replicate-filter-one-click.R | absent | 9/0/0/0 | only-on-head | 9/0: held |
+
+### Message-level check
+
+Failure records were compared base against head, with temporary paths masked.
+
+| File | Base-only | Head-only | What moved |
+|---|---|---|---|
+| `test-prot-norm-core.R` | 2 | 2 | The two RUV result digests: 4ed0ad71… to 9ada5791… and 5065333a… to cc4276ca…. |
+| `test-omics-summary-core.R` | 4 | 4 | Only the leaf `integration/transcriptomics_normalized_data.tsv` (trx_main and trx_managed). |
+| `test-omic-summary-module.R` | 4 | 4 | Same leaf as above. |
+| `test-workflow-trx-declarations.R` | the two `results/transcriptomics/transcriptomics_normalized_data.tsv` SHA-256 failures (actual be38d286…, stored a7045982…) | none | Nothing else. |
+| `test-module-ci-trx-summary.R` | the MCI-032.1 export-file digest failure, with the same digests | none | Nothing else. |
+| `test-gui-entry-transcriptomics.R` | 4 | 4 | Only the `integration/transcriptomics_normalized_data.tsv` line, base 4645738d… to head 7b1698df…, in the four summary steps. |
+| `test-workflow-omics-declarations.R` | 9 | 9 | 14 records identical. See the breakdown below. |
+| `test-workflow-omics-binding-steps.R` | (one record each side) | | The head adds only `steps[[9]]$parameters` length 10 against 9, and its `[[10]]` a list against absent, in lipidomics and metabolomics. KIT-214's `steps[[4]]` lines are unchanged on both sides. |
+
+On the two summary files, the register's parenthesis needs a correction: on base the actual equals the stored 7b9d35db…, and
+on head it is e0e8d896…. The register gave them the other way round. Its substance holds: only that one leaf moves.
+
+On `test-workflow-omics-declarations.R`, the 14 identical records are every earlier state. The 9 that differ are exactly
+KIT-224's:
+- The registry, where the head adds only `lipid_ruv` and `metab_ruv` `declaration$fixed` as a list against NULL. KIT-214's
+  `duplicate_resolution` lines are present on both sides.
+- `lipid_ruv_corrected`, `lipid_correlation_filtered`, `metab_ruv_corrected` and `metab_correlation_filtered`.
+- The two correlations records and the two DA-results records.
+
+### Predicted `same`, observed `same`
+
+| File | Passed/failed/skipped on both sides |
+|---|---|
+| `test-kit129-run-path.R` | 711/0/1 |
+| `test-omic-norm-module.R` | 639/0 |
+| `test-prot-missing-value-counts.R` | 67/0 |
+| `test-kit202-intensity-filter-samples.R` | 163/0 |
+| `test-kit205-enrichment-background.R` | 228/0 |
+| `test-kit214-sample-columns.R` | 176/0 |
+| `test-perf107-audit.R` | 191/0/1 |
+
+The four KIT-251 files that run nothing skipped on both sides: 5, 6, 6 and 13 skips.
+
+So every marker's replay behaviour is unchanged.
+
+### R CMD check
+
+- 0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides.
+- All 6 findings identical, none only on head.
+- The portable-file-names NOTE lists 238 paths on each side.
+
+### Verdict
+
+Every prediction of KIT-224 and KIT-251 held, and no other file differs. TRAIN GREEN.
+
+Staging was still at 63143aa3 when the result was read. The two rows `VAL-<train6-1>` and `VAL-<train6-2>` are numbered by
+the coordinator at landing.
+
+### Not checked
+
+- The trees after the run's head (docs only).
+- Files outside the 79.
+- The members' full suites (KIT-224's R3 on the merged tree; KIT-251's A4 at the next checkpoint).
