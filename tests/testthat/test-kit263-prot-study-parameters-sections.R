@@ -100,3 +100,66 @@ test_that("(KIT-263 T5) saveWorkflowSummaryParameters passes the omic type to th
         createWorkflowArgsFn = args, writeAnalysisRecordFn = function(manager, path) invisible(path))
     expect_identical(seen$omic_type, "transcriptomics")
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-263 declared diagnostic (coordinator's ruling after R1): printing only, no expectation. (A) the T1 fixture's whole
+# written text; (B) the text the application's own path writes for a proteomics project: `saveWorkflowSummaryParameters`
+# (the Summary tab's core, default writer) on the module-ci proteomics bus (`helper-module-ci-prot-summary.R`'s bus, as `omicSummaryW1ProtSetup` builds it), B1 as that fixture is, B2 with the shipped
+# configuration as the bus's config_list and the state object's @args, as the design import makes them.
+# ------------------------------------------------------------------------------------------------
+
+kit263PrintFile <- function(label, lines) {
+    cat(sprintf("\n==== KIT-263 DIAG %s: %d lines ====\n", label, length(lines)))
+    cat(sprintf("%3d| %s", seq_along(lines), lines), sep = "\n")
+    cat(sprintf("==== end %s ====\n", label))
+}
+
+kit263PrintSections <- function(label, args, config_list) {
+    cat(sprintf("\n---- KIT-263 DIAG %s: objects handed to the writer ----\n", label))
+    cat("class(@args): ", paste(class(args), collapse = ","), "; length ", length(args), "\n")
+    cat("names(@args): ", paste(names(args), collapse = " "), "\n")
+    cat("class(config_list): ", paste(class(config_list), collapse = ","), "; length ", length(config_list), "\n")
+    cat("names(config_list): ", paste(names(config_list), collapse = " "), "\n")
+    cat("S4 block iterates over (names(@args)): ", paste(names(args), collapse = " "), "\n")
+    cat("Additional block iterates over (names(config_list) then the @args names): ",
+        paste(union(names(config_list), names(args)), collapse = " "), "\n")
+    direct <- tryCatch(formatConfigList(config_list), error = function(e) paste("formatConfigList error:", conditionMessage(e)))
+    cat("formatConfigList(config_list) alone returns ", length(direct), " elements; first lines:\n")
+    cat(utils::head(unlist(strsplit(direct, "\n")), 12), sep = "\n")
+}
+
+test_that("(KIT-263 DIAG A) the T1 fixture's whole written file", {
+    config <- kit263Config()
+    kit263PrintSections("A", kit263Protein(config)@args, config)
+    kit263PrintFile("A", kit263Lines("proteomics", config))
+    succeed()
+})
+
+test_that("(KIT-263 DIAG B) the Summary save's own file for a proteomics project", {
+    config <- omicGuiConfig("proteomics")$summary
+    shipped <- kit263Config()
+    for (variant in c("B1", "B2")) {
+        # The construction of `omicSummaryW1ProtSetup` (test-omic-summary-module.R:812-858), without its tab server.
+        bus <- module_ci_prot_summary_workflow(module_ci_prot_summary_branch_config("DIA"))
+        project_dirs <- module_ci_prot_summary_paths()
+        withr::defer(unlink(project_dirs$proteomics$base_dir, recursive = TRUE))
+        if (identical(variant, "B2")) {
+            object <- module_ci_prot_summary_object(module_ci_prot_summary_branch_config("DIA"))
+            object@args <- shipped
+            bus$state_manager <- module_ci_prot_summary_state_manager(object)
+            bus$config_list <- shipped
+        }
+        final <- tryCatch(workflowSummaryFinalState(config, bus, "proteomics", function(...) NULL)$finalS4Object,
+            error = function(e) NULL)
+        kit263PrintSections(variant, if (isS4(final)) final@args else NULL, bus$config_list)
+        err <- NULL
+        saveWorkflowSummaryParameters(config, bus, project_dirs, "proteomics", "kit263", "d",
+            notify = function(message, type, duration) cat("notify:", type, message, "\n"), done = function(value) NULL,
+            failed = function(error) err <<- error, writeAnalysisRecordFn = function(manager, path) invisible(path),
+            catFn = function(...) NULL)
+        if (!is.null(err)) cat("save failed: ", conditionMessage(err), "\n")
+        file <- file.path(project_dirs$proteomics$source_dir, "study_parameters.txt")
+        kit263PrintFile(variant, if (file.exists(file)) readLines(file, warn = FALSE) else "<no study_parameters.txt>")
+    }
+    succeed()
+})

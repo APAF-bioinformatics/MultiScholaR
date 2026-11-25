@@ -24,3 +24,20 @@ R2 (fix against tests-only commit; 43 files + R CMD check; env MULTISCHOLAR_TRX_
 - `test-omic-summary-module.R`: `same`, its failures identical on both sides (merge train 11: 1675 passed, 28 failed);
 - `test-gui-entry-proteomics.R`: `same` (failures, if any, identical on both sides);
 - R CMD check: identical on both sides (the Rd matches the roxygen).
+
+## Diagnostic run D1 (declared 2026-11-26, after R1 run 45676487966; printing only, no expectation, no file under R/)
+
+R1's result stands: T1 3 foreign lines (predicted 6), T2 3 against a computed 6, T3's second assertion absent. The
+diagnostic prints (A) the T1 fixture's whole file and the sections each block iterates over, and (B) the file the
+Summary save writes for a proteomics project on the module-ci bus (B1 as the fixture is; B2 with the shipped
+configuration as `config_list` and `@args`, as the design import makes them). Classification, committed before the run:
+
+1. (B2) shows the foreign block ONCE, in "Parameters from Final S4 Object" only: the ticket's "printed twice, six lines
+   today, ten after KIT-217" was a wrong reading of the base. The ticket is amended to the observed counts (T1's base
+   value, T2's computed count, T3's second assertion, "twice" in sections 2, 5 and 11, NEWS, the change-report counts),
+   recorded as a declared-comparison correction from a diagnostic observation; the fix is unchanged (it filters both
+   sources); the coordinator corrects VAL-279's "twice" by a correction row.
+2. (B2) shows it TWICE while (A) shows it once: the T1/T2/T3 fixture does not represent the application. Instrument
+   defect: the fixture is rebuilt on (B)'s construction with the expectations unchanged, and R1 is re-sent once
+   (instrument rule, 1 of 3).
+3. Any other pattern: stop and report it as it is.
