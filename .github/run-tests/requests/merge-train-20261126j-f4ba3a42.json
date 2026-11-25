@@ -1,0 +1,32 @@
+{
+  "requested_by": "Merge train 17 of 2026-11-26 (KIT-246), stacked on train 16 tip 0fd29a6b: head f4ba3a42 vs base 0fd29a6b; 11 files, check; ceiling 280 job-minutes",
+  "label": "Merge train 20261126j f4ba3a42 vs train 16 tip 0fd29a6b",
+  "package_commit": "f4ba3a42efd629e8d2b607cb8395de8cb60fe2ee",
+  "base_commit": "0fd29a6bd65f509483151492a916c7f6f895249a",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-record.R",
+    "test-integration-removed-factors.R",
+    "test-integration-model.R",
+    "test-integration-gui.R",
+    "test-integration-enrichment.R",
+    "test-integration-results.R",
+    "test-integration-outputs.R",
+    "test-integration-workbook-api.R",
+    "test-kit240-integration-default.R",
+    "test-integration-input-matrix.R",
+    "test-integration-enrichment-mofa.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
