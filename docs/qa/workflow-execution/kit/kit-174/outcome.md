@@ -39,6 +39,11 @@ See `runs.tsv` for ids, commits, minutes and core-hours.
   `test-gui-entry-proteomics.R`, `-lipidomics.R`, `-metabolomics.R` are `same`. The longest job took 76.8 minutes
   (head shard 11), above the 70-minute per-job ceiling of ticket section 11; the step's total, 80.56 core-hours, is
   inside its ceiling of 186.7. Recorded as a departure; the result is valid and was not re-run.
+  The overrun is the runner's speed: head shard 11 ran on an AMD EPYC 7763 host (library install 597 s) and base shard
+  11, the same files, on an EPYC 9V74 host (497 s; 64.8 min); files this change does not touch ran 1.1 to 1.3 times
+  longer on the head side (test-prot-norm-core.R 1,222 to 1,441 s; test-integration-record.R 436 to 558 s), and R2a
+  shows no systematic slowdown of the touched files (head/base ratios 0.73 to 1.24). R2a's longest job, 63.4 min
+  (tests base 1), was likewise above its 60-minute ceiling and is recorded in runs.tsv.
 
 ## Budget
 
@@ -78,12 +83,35 @@ real session managers with `group` (no warning expected, none raised: `test-prot
 - The managed (worker) path of the classic route with a spanning column: the warning is raised in the controller before
   dispatch, on both paths, by reading the code; the test uses the in-process path.
 - Part (b): not started (held).
+- Known limit (inferred): on the classic routes a re-run pressed while the head is one of the tab's own states reads
+  the previous run's source table, while the warning reads the head's design; after the correlation filter removed
+  samples, the counts in the warning describe the filtered design (audit I09).
+- Known limit (as decided in VAL-29): scripted calls of the exported kernels (`ruvIII_C_Varying`, `getNegCtrlProtAnova`)
+  and the replay of a record never warn; the warning is the tab's. UVR-021's evidence cell and DAS-003 still describe
+  the old help as current; not edited (audit I12).
+
+## Divergence from the conventions
+
+Divergence from `conventions/R.md` (errors are logged before recovery): `omicNormRuvHeadDesign` returns NULL on any
+error without a log line, as the existing `omicNormRuvHeadTechnicalReplicates` does; kept to the existing idiom; the
+fallback then reads the bus's design table (audit I08).
+
+## Hand-off
+
+Hand-off (ticket section 12; rows are added by their owners, not by this ticket): (1) plan section 11, the KIT-174 row:
+also name the help's sentences on the number of factors and on technical replicates (under `groups_all_features` and
+`supplied_controls` the classic routes use the column even when technical replicates are declared; C01). (2) Plan
+section 13, the D3 row (lipidomics and metabolomics help aligned): its trigger is met (KIT-172 merged first,
+2308f3f8); its control-feature clause is true only after KIT-190 merges (until then their Automatic and Manual controls
+are the first rows of each table, KIT-190 section 2.1), so the row's condition becomes "after KIT-190 merges". (3) D6:
+KIT-227 is its ticket; a pool row only if the coordinator wants one.
 
 ## For the change report
 
 - **What was wrong.** The proteomics normalisation tab's help for the RUV grouping variable called it the factor "to
-  preserve" and advised "For TMT workflows with batches, select 'batch' to remove batch effects". In every RUV design
-  the package offers, choosing `batch` makes the samples of one batch replicates of each other, so RUV-III builds its
+  preserve" and advised "For TMT workflows with batches, select 'batch' to remove batch effects". In the legacy pipeline,
+  and in every RUV design of this version unless declared technical replicates take the column's place, choosing
+  `batch` makes the samples of one batch replicates of each other, so RUV-III builds its
   correction from the differences between the groups and keeps the batch differences; the controls, the automatic
   search and the sample-correlation filter also follow the batches. Users of proteomics (any route; the advice named
   TMT) who followed the advice were affected; nothing warned (lipidomics and metabolomics have the same selector with a
@@ -98,9 +126,12 @@ real session managers with `group` (no warning expected, none raised: `test-prot
   `runOmicNormPipeline` `:355-361`. Fix 2b89963c: help `R/utils_omic_gui_config.R:2039-2058`; new functions
   `omicNormRuvGroupingSpansGroups`, `omicNormRuvGroupingWarningText`, `omicNormRuvGroupingIsReplicateSets`,
   `omicNormRuvHeadDesign`, `omicNormWarnRuvGrouping` in `R/mod_omic_norm.R` (before `runOmicNormPipeline`); calls at
-  the three sites.
-- **Evidence.** T2's simulation (seed 174; 2 groups x 2 batches x 3 runs; 300 proteins; batch loadings N(0, 1); group
-  effect 1 log2 with random sign; noise sd 0.2; k = 1; controls from the ANOVA at 10 %): with `group` as replicate sets
+  the three sites. Legacy pipeline (`main` 436cdbe8): help `R/mod_prot_norm.R:100` (choices `:96`); replicate sets from
+  the grouping column `R/func_prot_s4_objects.R:3476-3480`; correlation filter grouped by it
+  `R/mod_prot_norm.R:1981-1985`; lipidomics and metabolomics: same choices, neutral help, `R/mod_lipid_norm.R:160`,
+  `R/mod_metab_norm.R:160`; no warning on any omic.
+- **Evidence.** T2's simulation (seed 174; 2 groups x 2 batches x 3 runs; 300 proteins; batch loadings N(0, 1); a group
+  difference of 1 log2 on every protein, with random sign (so that the control proteins carry it); noise sd 0.2; k = 1; controls from the ANOVA at 10 %): with `group` as replicate sets
   the median batch coefficient fell from 0.689 to 0.0015 and the group effect stayed 0.977; with `batch` the batch
   coefficient stayed 0.689 and the group effect fell to 0.0013 (run 45494891087). Limits: one simulated design, k = 1,
   complete data; it demonstrates the help's sentence and does not validate RUV. T9 shows the classic route's

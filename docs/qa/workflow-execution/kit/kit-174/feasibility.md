@@ -21,4 +21,4 @@ Checked in the full text of Poulos et al. 2020 (Nat Commun 11:3793, doi:10.1038/
 PMC's full-text XML (PMC7393074; the publisher's page asked for a sign-in). The paper names it: "we developed a
 normalisation strategy Remove Unwanted Variation III Complete (RUV-III-C) to remove unwanted variation", "RUV-III-C is
 thus a variant of RUV-III", and "We have named the modification made to RUV-III as RUV-III-C (Remove Unwanted Variation
-III Complete)". These are fragments quoted through a summarising fetch tool, not the whole sentences.
+III Complete)". These are fragments quoted through a summarising fetch tool, not the whole sentences. (record checked 2026-11-25: PMC7393074 = PMID 32732981 = doi:10.1038/s41467-020-17641-3; the phrase "Remove Unwanted Variation III Complete" is in its full text; section: the name is introduced in "Results" > "Development of a method for data normalisation" and defined in "Methods" > "Normalisation to remove unwanted variation"; full text read from Europe PMC on 2026-11-25; the fragments are not for reuse as verbatim sentences.)
