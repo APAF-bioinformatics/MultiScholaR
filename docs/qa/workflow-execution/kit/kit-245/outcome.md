@@ -168,8 +168,8 @@ Step 0: ticket r1.3 records the decision and the (b) budget line. Detection as t
 
 ## Observed and inferred
 
-Observed: every value in the tables above and in the result files. Inferred, not run: that Windows R users with git
-2.31 or later can push (no Windows run of the R function with git exists; see "Not checked"); that "private" means
+Observed: every value in the tables above and in the result files. Observed in W1'-fix (run 45619494004): on Windows with git 2.56.1 the R function pushes to a local bare repository,
+and its credential helper answers only for github.com. Inferred, not run: an authenticated push to github.com; that "private" means
 visible to the organisation's owners and to the members its settings allow (GitHub's model, not re-read).
 
 ## Not checked
@@ -178,11 +178,11 @@ visible to the organisation's owners and to the members its settings allow (GitH
 - (Closed by the correction: the R function on Windows with git present was observed in W1'-head, failing as I01
   said, and in W1'-fix, pushing.) Still not checked on Windows: the user's real helpers (Git Credential Manager),
   and the process list during a push.
-- R2c (the correction's base against head with check) and the staging merge: stopped at the NEWS conflict.
 - N02: the organisation name is not validated (legacy; no rule given).
 - The Linux systemd launcher (the probe runs the installed Rscript directly; `MSR_BUNDLE` is passed to its units per
   `R/utils_workflow_execution.R:1441-1445`, read, not run).
-- A user's own credential helper being bypassed (no helper existed on the runners).
+- A user's real credential helper (Git Credential Manager, a keychain) being bypassed; decoy helpers were bypassed in
+  S6 (Linux) and W1'-fix P6 (Windows).
 - The full suite (rides the merge train, A4).
 
 ## For the change report
@@ -215,16 +215,24 @@ visible to the organisation's owners and to the members its settings allow (GitH
   the git program and git 2.31 or later checked before anything is staged or created (`..._git_missing`,
   `..._git_too_old`); every staged file within 100 MiB before the repository is created (`..._file_too_large`,
   naming the project path); the remote URL without the token, the credential passed to git through
-  environment-borne configuration for the push alone with the user's helpers cleared; a failure after the creation
+  environment-borne configuration for the push alone with the user's helpers cleared (at 37af31e4; replaced at 7718350f, below); a failure after the creation
   names `<org>/<id>` (`..._push_failed`). Help and NEWS state what is sent, where and what private means.
 - `R/mod_omic_summary.R` (`mod_omic_summary_ui`): with `MSR_BUNDLE` set (the installed application), the panel shows
   one sentence instead of the push controls; elsewhere unchanged.
+- At the correction fix 7718350f (AUDIT-KIT-245-impl-20261125): the credential helper is given on git's command line
+  (`-c credential.helper=`, then a helper that answers only `get` for https://github.com and reads the token from
+  `MSR_GITHUB_PUSH_TOKEN`, the only variable set around the one `system()` call), in place of the `GIT_CONFIG_COUNT`
+  configuration, which R on Windows could not carry: R unsets a variable set to "" there and git refuses a missing
+  value, so every Windows push failed after the repository was created (observed in W1'-head, run 45617907710). A final
+  '.', `...` and Windows device names are refused as Project IDs, and the push observer refuses in the installed
+  application.
 - No computed result changes.
 
 **Evidence.** G0 runs 45587834788 and 45593577523 (base behaviour in the installed bundles, dummy token, no network
 path to GitHub); R1s 45598693322 and R2s 45600718143 (Part S); R1p 45604664357 and R2p 45606131371 (product (b));
-W1 45606206919 (the fix in the installed bundles). Limits: Linux test runners only; no real GitHub call; Windows
-only as the installed application (no git).
+W1 45606206919 (the fix in the installed bundles); the correction: R1c 45617558634, W1'-head 45617907710, W1'-fix
+45619494004, R2c 45626340616. Limits: run-tests on Linux only; no real GitHub call; Windows with git only in the probe
+(W1', the runner image's Git for Windows, a local bare repository).
 
 ## Correction pass (AUDIT-KIT-245-impl-20261125; the ticket's one correction)
 
@@ -283,3 +291,53 @@ host (recorder, `insteadOf` of https://github.com/ to a local bare repository, `
   (base 41/1, E2; head 42/0); the eleven other files `same` (the pre-existing stored-reference failures identical:
   `test-omic-summary-module.R` 28, `test-module-ci-trx-summary.R` 2 after KIT-214/KIT-224, `test-optional-packages.R`
   1); `R CMD check` six findings identical, none only on head. 79.8 job-minutes. AS2 and A2 hold after the correction.
+
+## Closure check (AUDIT-KIT-245-impl-20261125, 2026-11-26): READY FOR A MERGE TRAIN
+
+C01 applied above with the register's exact texts. Notes, recorded and left as they are:
+
+- **C02.** The Project ID rule accepts `COM0` and `LPT0`. Their effect would be a harmless failure inside `tempdir()`,
+  not a deletion. Microsoft's list of reserved names was not read (not verified). Adding `0` to both digit classes can
+  ride any later edit.
+- **C03.** The helper writes the token with `echo "password=$MSR_GITHUB_PUSH_TOKEN"`: a token holding a newline would
+  add lines to git's credential answer, and `dash`'s `echo` interprets backslashes. gh's token-shaped values contain
+  neither (G0); `printf '%s\n'` would remove even that.
+- **C04.** Windows' credential check in P6 rebuilds `git -c credential.helper= -c <shQuote(helper)>` from the same
+  expressions the function uses; S6 (Linux) uses the function's own string. The Windows push itself used the
+  function's own string.
+- **C05.** W1'-head was dispatched at 12:52Z, before the fix was committed (13:01Z), on the audited product tree; its
+  result arrived at 13:20Z. The Windows failure was predicted from R's and git's documentation and confirmed after the
+  fix was written, not used to write it; the run is bound to the audited tree.
+- **C06.** withr's restore of `MSR_GITHUB_PUSH_TOKEN` on an error raised inside `system()` itself is by design, not
+  observed (S1 observes the environment as before after the function's error exit).
+- **Limit of the credential mechanism (closure answer (b)).** During the push, `MSR_GITHUB_PUSH_TOKEN` is inherited by
+  git's own process tree, and so by anything the user's own git configuration starts during the push: a `pre-push`
+  hook (`core.hooksPath`), `gpg` for push signing, or `ssh` after an `insteadOf` rewrite to SSH (which gets the variable
+  but no use for it). It is gone when the call returns; heap copies may remain until overwritten.
+- **Real credential helpers** (Git Credential Manager, a keychain): not checked; decoys only.
+- **N02, open for a separate ticket.** The organisation name is not validated (legacy; not reachable from the installed
+  application). It reaches no shell and cannot move the token off github.com, but can retarget the API call within
+  api.github.com if gh does not percent-encode `{org}` (not checked). The auditor's repair text: "Refuse an
+  organisation name that is not GitHub's login form (letters, digits and single hyphens, not starting or ending with a
+  hyphen, at most 39 characters) before anything is staged, with its own error class and one table test row.
+  Optionally take the repository's URL and name from the API's answer (N04)."
+
+### The train (the auditor's predictions; base = staging, head = the train)
+
+Scope (run-tests, `check: true`), the 13 files of the ticket's grep: `test-kit245-github-push-safety.R`,
+`test-kit245-github-panel.R`, `test-github-management-direct-shared.R`, `test-kit234-workbooks-withdrawn.R`,
+`test-omic-summary-module.R`, `test-omic-gui-config.R`, `test-module-ui-wrapper-direct-shared.R`,
+`test-module-ci-trx-summary.R`, `test-optional-packages.R`, and the four quarantined summary files. Predicted:
+- the two KIT-245 files absent on the base, 87/0 and 42/0 on head, with S6 run, not skipped (git on the runner);
+- `test-github-management-direct-shared.R` 21/0 and `test-kit234-workbooks-withdrawn.R` 29/0 on both sides;
+- `test-omic-summary-module.R` 1675/28 on both, the 28 (b) failures identical and the (a) identity block passing;
+- `test-module-ci-trx-summary.R` 83/2, `test-optional-packages.R` 11/1, `test-omic-gui-config.R` 1911/0 and
+  `test-module-ui-wrapper-direct-shared.R` 45/0 on both;
+- the quarantined files 0/0;
+- R CMD check: the six findings on both sides, none only on head;
+- if staging moves before the train, append collisions in NEWS and the ledger only; the other eleven files `same` as
+  their base.
+W1 after the merge: not needed (the KIT-245 code is byte-identical to W1'-fix's product 7718350f). Full suite (A4): at
+the next checkpoint; N09's prediction (no lane difference under `MSR_BUNDLE`) at the next stage-full run. At the train
+the ledger rows are numbered and "correction <runs>" filled with R1c 45617558634, W1'-head 45617907710, W1'-fix
+45619494004, R2c 45626340616.
