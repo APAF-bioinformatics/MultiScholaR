@@ -88,8 +88,41 @@ k247Main <- function() {
     e2e_wait_for_step_status(driver, "proteomics", "design_matrix", "complete", timeout = 120000L)
     e2e_run_prot_protein_qc(driver, timeout = 120000L)
     e2e_wait_for_step_status(driver, "proteomics", "quality_control", "complete", timeout = 120000L)
-    e2e_run_prot_normalization_export(driver, timeout = 240000L)
-    e2e_wait_for_step_status(driver, "proteomics", "normalization", "complete", timeout = 240000L)
+    # VAL-54 instrument fix 1 (run 45594085728 timed out waiting for the normalisation STATUS after
+    # e2e_run_prot_normalization_export, which presses Skip right after Run with no wait for the run to finish): the same
+    # presses, each waited for by the head state (digest) and the export by its notice. The status is recorded, not waited on.
+    k247WaitHead <- function(states, what, timeout = 300000L) {
+        deadline <- Sys.time() + timeout / 1000
+        repeat {
+            digest <- tryCatch(e2e_state_digest(driver, timeout = 60000L), error = function(e) NULL)
+            head <- if (is.null(digest)) NULL else e2e_digest_r6_current_state(digest, "proteomics")
+            if (isTRUE(head %in% states)) return(invisible(digest))
+            if (Sys.time() >= deadline) {
+                k247Put(paste0(what, ".timeout_head"), head %||% "<NULL>")
+                k247Put(paste0(what, ".timeout_notes"), vapply(e2e_collect_notifications(driver), function(n) as.character(n$text %||% ""), ""))
+                stop(sprintf("Timed out waiting for the head to be one of %s after %s; last head %s", paste(states, collapse = ", "),
+                    what, head %||% "<NULL>"))
+            }
+            Sys.sleep(1)
+        }
+    }
+    e2e_switch_workflow_tab(driver, "proteomics", "normalization")
+    e2e_wait_for_selector(driver, "prot-tab-normalization", timeout = 60000L)
+    e2e_set_input_and_idle(driver, e2e_input_id("proteomics", "norm", "ruv_mode"), "skip", timeout = 60000L)
+    e2e_click_testid(driver, "prot-norm-run", timeout = 60000L)
+    k247WaitHead(c("normalized", "ruv_corrected"), "norm_run")
+    digest <- e2e_state_digest(driver, timeout = 60000L)
+    k247Put("norm_run.status", k247Status(digest))
+    e2e_set_input_and_idle(driver, e2e_input_id("proteomics", "norm", "norm_qc_tabs"), "Correlation Filtering", timeout = 60000L)
+    e2e_click_input_id(driver, e2e_input_id("proteomics", "norm", "skip_correlation_filter"), timeout = 60000L)
+    digest <- k247WaitHead("correlation_filtered", "corr_skip")
+    k247Put("corr_skip.status", k247Status(digest))
+    k247Put("corr_skip.notes", vapply(e2e_collect_notifications(driver), function(n) as.character(n$text %||% ""), ""))
+    e2e_click_norm_export(driver, "proteomics")
+    e2e_wait_for_js(driver, sprintf(
+        "Array.from(document.querySelectorAll('.shiny-notification')).some(function(n){return (n.textContent||'').indexOf(%s)!==-1;})",
+        jsonlite::toJSON("Filtered session data exported successfully!", auto_unbox = TRUE)), timeout = 240000L)
+    e2e_wait_for_idle(driver, timeout = 120000L)
     k247Log("lane reached the normalisation export")
 
     before <- e2e_state_digest(driver, timeout = 60000L)
