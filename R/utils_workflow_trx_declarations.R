@@ -900,9 +900,10 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
             results <- hydrateSavedWorkflowEntity(context$store, entry$products$da_contrast)$value$assays[[1L]]$results
             name <- entry$comparison
             de <- trxAnnotateDe(results$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column)
-            utils::write.csv(de$de_annotated, file.path(da_dir, paste0("de_results_", name, ".csv")), row.names = FALSE)
-            trxSaveFigure(trxVolcano(de$de_annotated, name)$plot, file.path(graphs, "Volcano_Plots"), paste0("volcano_plot_", name), 8, 7)
-            trxSaveFigure(trxSignificanceBar(de$de_annotated, name)$plot, file.path(graphs, "NumSigDeMolecules"), paste0("summary_barplot_", name), 7, 5)
+            files <- trxDaPublicationNames(name)
+            utils::write.csv(de$de_annotated, file.path(da_dir, files$table), row.names = FALSE)
+            trxSaveFigure(trxVolcano(de$de_annotated, name)$plot, file.path(graphs, "Volcano_Plots"), files$volcano, 8, 7)
+            trxSaveFigure(trxSignificanceBar(de$de_annotated, name)$plot, file.path(graphs, "NumSigDeMolecules"), files$bar, 7, 5)
             annotated[[contrast]] <- de
         }
         if (!length(annotated)) cli::cli_abort("no contrast has a result", class = "workflow_execution_invalid")
@@ -916,6 +917,16 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
         }
         list(saved = TRUE)
     })
+}
+
+#' The names the DE publication writes for one contrast (KIT-212: made callable so the Summary can list the files a DA
+#' made; the names are unchanged): the DE CSV in the DA folder, and the bases of the volcano (`Volcano_Plots`) and the
+#' significance bar (`NumSigDeMolecules`), each written as `.png` and `.pdf`.
+#' @param name The contrast's comparison name (the manifest entry's `comparison`).
+#' @return `list(table, volcano, bar)`.
+#' @noRd
+trxDaPublicationNames <- function(name) {
+    list(table = paste0("de_results_", name, ".csv"), volcano = paste0("volcano_plot_", name), bar = paste0("summary_barplot_", name))
 }
 
 #' Write the summary text as the notebook does (rmd:756-775), the dataset line the project's.

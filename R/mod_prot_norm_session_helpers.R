@@ -349,44 +349,52 @@ resolveProtNormPreNormalizationState <- function(
   matching_states[[1]]
 }
 
+#' The proteomics Reset's state change (KIT-225; KIT-182 F-b): the table the last normalisation started from becomes
+#' current again. With no state manager nothing is reverted, as before. When the active history holds no
+#' normalisation-tab state there is nothing to undo: no state is selected and Quality Control is left as it is.
+#' Otherwise the recorded source (`normalization_input_reference`, else the pre-normalisation figures' source
+#' `qc_sources$pre_normalization`) is found by its saved identity among the active history's states (the last such
+#' position) and selected; when no state holds it, the reset is refused before anything changes.
+#' @param workflowData The workflow bus (`state_manager`).
+#' @param normData The tab's state, which holds the recorded normalisation source.
+#' @param messageFn Logger.
+#' @return `list(previousState, revertedS4)`: the selected state's name and reference, or NULL for both. An error of
+#'   class `prot_norm_reset_source_unknown` when the recorded source is in no state of the active history.
+#' @noRd
 revertProtNormStateManagerToPreNormalization <- function(
   workflowData,
-  preNormalizationStates = c(
-    "protein_replicate_filtered",
-    "imputed",
-    "replicate_filtered",
-    "sample_filtered",
-    "protein_peptide_filtered",
-    "intensity_filtered",
-    "precursor_rollup",
-    "qvalue_filtered",
-    "raw_data_s4",
-    "protein_s4_initial"
-  ),
+  normData = NULL,
   messageFn = message
 ) {
-  previous_state <- NULL
-  reverted_s4 <- NULL
-
-  if (!is.null(workflowData$state_manager)) {
-    history <- diaStateHistory(workflowData$state_manager)
-    previous_state <- resolveProtNormPreNormalizationState(
-      history = history,
-      preNormalizationStates = preNormalizationStates
-    )
-
-    if (!is.null(previous_state)) {
-      reverted_s4 <- selectDIAStateReference(workflowData$state_manager, previous_state)
-      messageFn(sprintf(
-        "*** RESET: Reverted R6 state manager to '%s' (actual previous state) ***",
-        previous_state
-      ))
-    } else {
-      messageFn("*** WARNING: No valid pre-normalization state found in history ***")
-    }
-  } else {
+  manager <- workflowData$state_manager
+  if (is.null(manager)) {
     messageFn("*** WARNING: workflow_data$state_manager is NULL - cannot revert state ***")
+    return(list(previousState = NULL, revertedS4 = NULL))
   }
+
+  history <- diaStateHistory(manager)
+  if (!any(history %in% c("normalized", "ruv_corrected", "ruv_covariates", "correlation_filtered"))) {
+    messageFn("*** RESET: no normalisation state in the active history; quality control left as it is ***")
+    return(list(previousState = NULL, revertedS4 = NULL))
+  }
+
+  source <- normData$normalization_input_reference %||% manager$.context$snapshot$qc_sources$pre_normalization
+  held <- vapply(history, function(state) {
+    !is.null(source$entity_id) && identical(getDIAStateReference(manager, state)$entity_id, source$entity_id)
+  }, logical(1), USE.NAMES = FALSE)
+  if (!any(held)) {
+    rlang::abort(paste0("the table this normalisation started from can no longer be found in this session (for ",
+      "example, the design was saved again after the normalisation, or the project was saved without that table), so ",
+      "nothing was reset. In the Quality Control tab press Revert until the step you want is current, then press ",
+      "\"Run Normalization & RUV\" again."), class = "prot_norm_reset_source_unknown")
+  }
+
+  previous_state <- history[[max(which(held))]]
+  reverted_s4 <- selectDIAStateReference(manager, previous_state)
+  messageFn(sprintf(
+    "*** RESET: Reverted R6 state manager to '%s' (the normalisation's recorded source) ***",
+    previous_state
+  ))
 
   list(previousState = previous_state, revertedS4 = reverted_s4)
 }
@@ -440,17 +448,28 @@ resetProtNormOutputs <- function(
   invisible(NULL)
 }
 
+#' The Reset's notice (KIT-225; drafts, VAL-41): the step returned to as the Quality Control tab names it
+#' (`DIA_QC_STEP_TITLES`; an untitled state by the fallback of `diaPreNormalisationStepName`), or, with no state
+#' selected, that Quality Control was left as it is.
+#' @param previousState The selected state's name, or NULL.
+#' @return The notice text.
+#' @noRd
 buildProtNormResetNotificationMessage <- function(
   previousState
 ) {
-  if (!is.null(previousState)) {
-    return(sprintf(
-      "Normalization has been reset to pre-normalization state (%s)",
-      previousState
+  if (is.null(previousState)) {
+    return(paste(
+      "Normalisation reset: no normalisation result was current, so the Quality Control steps were left",
+      "as they are."
     ))
   }
 
-  "Normalization has been reset (no valid previous state found)"
+  title <- if (previousState %in% names(DIA_QC_STEP_TITLES)) {
+    DIA_QC_STEP_TITLES[[previousState]]
+  } else {
+    "the peptide quality-control steps"
+  }
+  sprintf("Normalisation reset: the current table is again the one the normalisation started from (%s).", title)
 }
 
 runProtNormResetWorkflow <- function(
@@ -466,6 +485,7 @@ runProtNormResetWorkflow <- function(
 ) {
   reset_result <- revertStateManagerFn(
     workflowData = workflowData,
+    normData = normData,
     messageFn = messageFn
   )
 
