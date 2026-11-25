@@ -1,8 +1,13 @@
 {
-  "label": "k239-r3-l8",
-  "package_commit": "09286c2d6c252cf2a73517d2ed3fcc98b25e2d4e",
+  "label": "k240-m-bded5eb2",
+  "package_commit": "bded5eb2183dc29a13ad9506f45ce57997cc0b59",
   "tests": [
-    "test-integration-record-mofa.R"
+    "test-integration-mofa-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-kit240-integration-default.R",
+    "test-integration-workbook-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R"
   ],
   "record": false,
   "runs": 1
