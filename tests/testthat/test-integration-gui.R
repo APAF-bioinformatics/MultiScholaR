@@ -443,6 +443,8 @@ test_that("KIT-139: internal standards, features seen once and few samples are s
         expect_identical(facts, c(sprintf(texts[["fact_samples"]], 5L, 4L), sprintf(texts[["fact_missing_keep_missing"]], 1L),
             sprintf(texts[["fact_replicates_average"]], "lipidomics_LCMS_Pos", 8L, 4L, 4L),
             sprintf(texts[["fact_standards_drop"]], "lipidomics_LCMS_Pos", 1L),
+            # KIT-260 (VAL-241, OD-4 (a); stored expectation approved by file): the marked rows named per data set.
+            "lipidomics_LCMS_Pos: internal standards marked: itsd1 (ITSD1).",
             sprintf(texts[["fact_replicates_single"]], "proteomics", 5L),
             sprintf(texts[["fact_sparse"]], "proteomics", 1L)))
         expect_true(preview$few_samples)

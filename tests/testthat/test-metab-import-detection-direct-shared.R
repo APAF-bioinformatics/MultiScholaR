@@ -44,7 +44,7 @@ test_that("metabolomics import detection helpers preserve vendor scoring and def
   expect_identical(findMetabMatchingColumn(progenesis_headers, progenesis_defaults$rt), "Retention time (min)")
   expect_identical(findMetabMatchingColumn(xcms_headers, xcms_defaults$mz), "mz")
   expect_identical(findMetabMatchingColumn(cd_headers, cd_defaults$annotation), "Compound Name")
-  expect_identical(msdial_defaults$is_pattern, "^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:")
+  expect_identical(msdial_defaults$is_pattern, "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)")
   expect_true(is.null(custom_defaults$metabolite_id))
   expect_true(is.na(custom_defaults$is_pattern))
   expect_true(is.null(unknown_defaults$annotation))
