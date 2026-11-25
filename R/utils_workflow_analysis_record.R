@@ -435,6 +435,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             for (name in names(args)) parameters[[length(parameters) + 1L]] <- list(name = name, source = "args",
                 value = encodeWorkflowRecordValue(args[[name]]), provenance = "unknown")
         }
+        parameters <- workflowRecordIntensityFilterEarlier(operation, parameters)
         previous <- record$previous_state
         input <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) snapshot$states[[previous]]$entity_id else NULL
         products <- lapply(unname(record$data$products %||% list()), function(product) {
@@ -641,7 +642,7 @@ validateWorkflowAnalysisRecord <- function(record) {
 }
 
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row; KIT-205, VAL-129 (2), adds `enrichment_background`; KIT-202
-#' adds `intensity_filter_samples`): for
+#' adds `intensity_filter_samples`; KIT-217 adds `intensity_filter_missing`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -657,7 +658,33 @@ workflowReplayRuleMarkers <- list(
     # KIT-202 (VAL-118 (1)): the lipid and metabolite intensity filter counts the design's samples ("design"); records
     # made before counted every numeric column of the assay ("numeric_columns").
     intensity_filter_samples = list(option = "MultiScholaR.intensity_filter_samples", current = "design",
-        earlier = "numeric_columns"))
+        earlier = "numeric_columns"),
+    # KIT-217 (VAL-173 (2); owner 2026-11-25): the lipid and metabolite intensity filter counts present values per
+    # group (default: 2 values in at least 1 group; pool groups not counted) and so removes a feature with no value
+    # ("group_counts"); records made before did not count missing values ("not_counted").
+    intensity_filter_missing = list(option = "MultiScholaR.intensity_filter_missing", current = "group_counts",
+        earlier = "not_counted"))
+
+#' The settings the lipid and metabolite intensity filter declares for its per-group count (KIT-217, SD-17): a step
+#' made under the earlier rule (no marker `intensity_filter_missing`) lists them with the value "not applicable:
+#' earlier rule" and a note, in place of any value (the earlier rule read neither), so they are neither missing nor
+#' replayed.
+#' @param operation The step's operation.
+#' @param parameters The step's record parameters.
+#' @return The parameters.
+#' @noRd
+workflowRecordIntensityFilterEarlier <- function(operation, parameters) {
+    names <- switch(operation, lipid_intensity_filter = c("lipids_min_values_per_group", "lipids_min_groups"),
+        metab_intensity_filter = c("metabolites_min_values_per_group", "metabolites_min_groups"), NULL)
+    if (is.null(names) || identical(workflowReplayRule(list(parameters = parameters), "intensity_filter_missing"),
+        workflowReplayRuleMarkers$intensity_filter_missing$current)) return(parameters)
+    parameters <- Filter(function(parameter) identical(parameter$source, "fixed") || !isTRUE(parameter$name %in% names),
+        parameters)
+    c(parameters, lapply(names, function(name) list(name = name, source = "not_applicable",
+        value = encodeWorkflowRecordValue("not applicable: earlier rule"), provenance = "unknown",
+        note = paste("This step was run before the filter counted missing values per group. It is replayed with the rule",
+            "it was run under, which had neither setting."))))
+}
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).
@@ -706,7 +733,9 @@ workflowFixedInForce <- function(fixed) {
 workflowReplayParameters <- function(parameters, declared) {
     out <- list()
     for (parameter in parameters) {
-        if (identical(parameter$source, "fixed") || !parameter$name %in% declared) next
+        # KIT-217: a setting shown as not applicable to a step made before (`workflowRecordIntensityFilterEarlier`).
+        if (identical(parameter$source, "fixed") || identical(parameter$source, "not_applicable") ||
+            !parameter$name %in% declared) next
         out[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
     }
     out
@@ -1085,6 +1114,11 @@ workflowRecordReportSources <- list(
     proportion_samples_below_cutoff = list(record = list(c("lipid_intensity_filter", "lipids_proportion_of_samples_below_cutoff"),
         c("metab_intensity_filter", "metabolites_proportion_of_samples_below_cutoff")),
         file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
+    # KIT-217: the lipid and metabolite intensity filter's per-group count (values required per group, groups required).
+    intensity_min_values_per_group = list(record = list(c("lipid_intensity_filter", "lipids_min_values_per_group"),
+        c("metab_intensity_filter", "metabolites_min_values_per_group"))),
+    intensity_min_groups = list(record = list(c("lipid_intensity_filter", "lipids_min_groups"),
+        c("metab_intensity_filter", "metabolites_min_groups"))),
     missing_values_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
     max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
     min_peptidoforms_per_protein = list(record = c("peptide_protein_evidence_filter", "num_peptidoforms_per_protein_thresh"), file = c("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
