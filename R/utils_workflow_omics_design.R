@@ -375,7 +375,9 @@ omicsDesignSameData <- function(a, b, manager) {
 #' @noRd
 compareOmicsDesignResult <- function(manager, results, stateName, current) {
     if (!inherits(manager, "DIAStateAdapter") || !isTRUE(stateName %in% diaStateHistory(manager))) return("first")
-    if (is.null(current$design_matrix)) return("changed")
+    # A re-save is a design saved over an earlier saved design: with none on the bus there is nothing to compare
+    # (correction pass after R2 45612382879; coordinator's ruling).
+    if (is.null(current$design_matrix)) return("first")
     if (!identical(omicsDesignCanonicalTable(results$design_matrix), omicsDesignCanonicalTable(current$design_matrix))) {
         return("changed")
     }
@@ -457,6 +459,13 @@ omicsDesignCutText <- function(removed = FALSE) {
 }
 
 #' @noRd
+omicsDesignResaveUnconfirmedText <- function() {
+    paste0("The design was not saved: it differs from the saved design and later results (Quality Control, ",
+        "normalisation and after) exist, and there is no application session to ask whether to set them aside. ",
+        "Revert the Quality Control to the design state first, or save the design in the application, which asks.")
+}
+
+#' @noRd
 omicsDesignResaveConfirmText <- function() {
     paste0("This design changes the samples, groups, technical replicates, factors or batch. Saving it sets aside the ",
         "Quality Control, normalisation and later results made with the previous design; you will apply them again.")
@@ -522,6 +531,11 @@ runOmicsDesignResaveGate <- function(session, verdict, later, commit, unchanged,
     if (identical(verdict, "unchanged")) {
         unchanged()
         return(invisible(verdict))
+    }
+    # No session to ask (a scripted call): a changed design over later results cannot be confirmed, so it is refused and
+    # nothing is committed (coordinator's ruling; ticket r1.4 section 19).
+    if (is.null(session) || !is.function(session$ns)) {
+        rlang::abort(omicsDesignResaveUnconfirmedText(), class = c("omics_design_resave_unconfirmed", "omics_design_refused"))
     }
     registerOmicsDesignResaveConfirmation(session)
     assign(omicsDesignResaveKey(session), function() commit(cut = TRUE), envir = session$userData)
