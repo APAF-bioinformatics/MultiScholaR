@@ -11,7 +11,8 @@ printCountDaGenesTable(
   facet_column = analysis_type,
   comparison_column = "comparison",
   expression_column = "expression",
-  q_val_thresh = 0.05
+  q_val_thresh = 0.05,
+  p_value_column = NULL
 )
 }
 \arguments{
@@ -29,6 +30,9 @@ printCountDaGenesTable(
 
 \item{q_val_thresh}{The q-value threshold the counts are made at (KIT-220: the analysis's threshold; the default
 0.05 keeps scripted callers as before).}
+
+\item{p_value_column}{The name of the raw p-value column (tidyverse style), or NULL (the default); when given, rows
+without a p-value are counted as Not tested (\code{countStatDaGenes}).}
 }
 \description{
 Format results table for use in volcano plots, counting number of significant proteins, p-values distribution histogram.
