@@ -13,6 +13,7 @@ E7 (b) for `daAnalysisWrapperFunction` was added as a tests-only commit (db30cf7
 | G0 45590869970 | dcbce79f (16112917 + `tools/kit249/g0.R`) | scripts job, installed package, no package change | 10.2 |
 | R1 45592793437 | 5f072f85 (tests-only: `tests/testthat/test-kit249-prot-da-qvalue-fallback.R`) | the new file alone | 12.1 |
 | R2 45601895895 | head 82470db1 (fix) vs base db30cf75 (tests-only + E7 (b) on staging e0747fc1) | 77 files, 6 shards per side, R CMD check | 394.0 |
+| Correction 45614191837 | head 144d2c5d (fix + G1b, staging 63143aa3) vs base 968804de (same without the fix) | the same 77 files, 6 shards per side, R CMD check | 417.4 |
 
 Runner: ubuntu-22.04, R 4.6.1, qvalue 2.44.0, limma 3.68.4, reference BLAS (`g0-45590869970/provenance.txt`).
 
@@ -75,6 +76,19 @@ significant) in E1, E2, E4 (three owners) and E5.
   - **The stored captures encode the defect's result for the six fallback cases** (no q-value, no page).
 - R CMD check: identical on both sides (6 findings; none only on head).
 - Longest job 45.3 minutes (projected 45.7).
+
+**Correction pass 45614191837** (declared in `r3-declared.md` before it was sent; `r3-45614191837/`): head 144d2c5d (the
+fix, G1b, staging 63143aa3 merged), base 968804de (the same tree without the fix), the same 77 files (the grep at
+144d2c5d gives the same 70; KIT-239's, KIT-214's, KIT-226's and KIT-241's new files do not match it), 6 shards per side,
+R CMD check; 417.4 job-minutes, longest job 47.0.
+- The new file `fixed`: base 90 passed / 54 failed, head 144 / 0. G1b passes on both sides. Declared 88/54 and
+  142/0: my count of G1b's expectations was wrong (8, not 6: each branch's completion guard was not counted); the
+  failing set (54) and the head's zero failures are as declared.
+- `test-workflow-saved-da.R` `message-changed`, 171 -> 192: the same 21 newly failing and the same 87 changed leaves as
+  R2 (I01), every failure message identical to R2's on each side; `limpa_one_contrast` unchanged.
+- 75 files `same`; R CMD check identical (6 findings, none only on head).
+- So R2's verdict stands on staging 63143aa3: the fix moves nothing but the fallback comparisons; the ticket waits for
+  the owner's word on parked row 36. The ticket's one correction pass is now used.
 
 ## Inferred
 
