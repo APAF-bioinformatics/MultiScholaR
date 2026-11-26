@@ -278,8 +278,12 @@ test_that("KIT-227 E7: the limpa route's Results caption claims covariates only 
         "after RUV-III correction (the corrected matrix entered the differential abundance model)"))
     skipped <- k227Case("DIANN_limpa", character(), list(dpc))
     expect_false(k227Has(skipped$results, "carried the RUV-III factors as covariates"))
-    expect_true(k227Has(skipped$results, paste("Figure 1 shows four quality-control views at each stage of processing drawn",
-        "for this analysis. RUV-III correction was not applied to this dataset.")))
+    # KIT-266 (VAL-316 (4), declared edit): a limpa project with no covariates step has the two-column Figure 1, so its Results
+    # paragraph names the two stages and their panel letters.
+    expect_true(k227Has(skipped$results, paste0("Figure 1 shows four quality-control views at two stages of processing: ",
+        "DPC-Quant's protein estimates (a complete log2 matrix; model-based where peptides were not detected) ",
+        "(left column: panels a, c, e, g) and after the peptide count filter, with no between-sample normalisation applied, ",
+        "before the sample-correlation filter (right column: b, d, f, h). RUV-III correction was not applied to this dataset.")))
     # The covariates mode keeps its caption.
     covariates <- k227Case("DIANN_limpa", character(), list(dpc, k227Step("protein_ruv_covariates",
         outcomes = list(k = 2, ruv_mode = "covariates", percentage_as_neg_ctrl = 10, control_count = 100,
