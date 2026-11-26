@@ -741,5 +741,5 @@ test_that("KIT-260 VAL-276 (mirror of I05): a record made at this version replay
   withr::defer(closeDIAStateAdapter(again))
   spec <- readWorkflowStateMetadata(again, again$.context$snapshot$states$metab_itsd_norm)$data
   product <- hydrateSavedWorkflowEntity(again$.context$store, spec$products$metab_itsd_normalisation_science)$value
-  expect_identical(product$itsd_used$A1$annotation, KIT260_STANDARDS_HEAD)
+  expect_identical(product$itsd$rows_used$A1$annotation, KIT260_STANDARDS_HEAD)
 })
