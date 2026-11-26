@@ -314,15 +314,23 @@ m3RunJourney <- function(root, object, omic, ruv, itsd) {
 
 m3Pick <- function(x, assay = "LCMS_Pos") {
   if (is.null(x)) return(NULL)
-  if (is.list(x) && assay %in% names(x)) x[[assay]] else if (is.list(x)) NULL else x
+  if (assay %in% names(x)) x[[assay]] else if (is.list(x)) NULL else x  # a list or a named vector holding the assay
 }
 m3Num <- function(x) { v <- m3Pick(x); if (is.null(v) || !length(v)) NA_real_ else suppressWarnings(as.numeric(v[[1L]])) }
 
 # The endpoints of one journey (the P journey or a Manual one): the RUV outcome by the step's own fields, the DA calls and the
 # calibration counts by abundance third.
 m3Endpoints <- function(run, data, runs, n_samples) {
-  step <- run[["ruv"]]
-  opt <- step[["optimisation"]][["LCMS_Pos"]]
+  # L3r: the step's per-assay fields are in `run$ruv$value` (`runWorkflowOmicsReferenceRuv` lifts only `optimisation` to the top level,
+  # utils_workflow_omics_declarations.R:2624-2629). A missing field or assay is an instrument stop with a named message, never a silent NULL.
+  step <- run[["ruv"]][["value"]]
+  if (!is.list(step)) stop("M3 instrument: the RUV step result has no `value` list")
+  for (fld in c("ruv_applied", "ruv_not_applied_reason", "best_k", "k_sweep", "k_cap")) {
+    if (!fld %in% names(step)) stop(sprintf("M3 instrument: the RUV step's value has no field '%s'", fld))
+    if (!(is.list(step[[fld]]) || is.atomic(step[[fld]])) || !"LCMS_Pos" %in% names(step[[fld]])) stop(sprintf("M3 instrument: the RUV step's field '%s' has no assay LCMS_Pos", fld))
+  }
+  opt <- run[["ruv"]][["optimisation"]][["LCMS_Pos"]]
+  if (!is.list(opt)) stop("M3 instrument: the RUV step result has no optimisation for assay LCMS_Pos")
   applied <- m3Pick(step[["ruv_applied"]])
   reason <- m3Pick(step[["ruv_not_applied_reason"]])
   da <- kit172DaTable(run)
@@ -707,10 +715,14 @@ checks <- rbind(checks, data.frame(check = "SEED_RANGE", units = length(stress_s
   failed = if (disjoint) 0L else length(stress_seeds), stringsAsFactors = FALSE))
 if (fault_on) {
   by_cell <- function(i) final[final$cell == tasks$cell[[i]] & final$r == as.character(tasks$r[[i]]) & final$purpose == tasks$purpose[[i]], , drop = FALSE]
+  task_tag_of <- function(i) tasks$tag[[i]]
   fr <- lapply(1:5, by_cell)
   want <- list(c("error", ""), c("instrument", "partial_match_guard"), c("instrument", "partial_match_guard"), c("instrument", "partial_match_guard_absorbed"), c("instrument", "no_row"))
   hit <- vapply(1:5, function(i) nrow(fr[[i]]) == 1L && identical(fr[[i]]$status, want[[i]][[1L]]) && (!nzchar(want[[i]][[2L]]) || identical(fr[[i]]$class, want[[i]][[2L]])), logical(1L))
   others_ok <- sum(final$status == "ok") == nrow(final) - 5L
+  # L3r: per planted unit its id, the expected and the observed status and class (aggregate: no data value), so a failing unit is seen in the log
+  for (i in 1:5) cat(sprintf("FAULT unit %d (%s, r %s): expected %s / %s, observed %s / %s -> %s\n", i, task_tag_of(i), tasks$r[[i]], want[[i]][[1L]], if (nzchar(want[[i]][[2L]])) want[[i]][[2L]] else "(any)",
+    if (nrow(fr[[i]]) == 1L) fr[[i]]$status else "no row", if (nrow(fr[[i]]) == 1L) fr[[i]]$class else "", if (hit[[i]]) "ok" else "MISMATCH"))
   checks <- rbind(checks, data.frame(check = "FAULT_ROWS", units = 6L, passed = sum(hit) + as.integer(others_ok), failed = 6L - sum(hit) - as.integer(others_ok), stringsAsFactors = FALSE))
 }
 # ---- the lifecycle's scorer rehearsal (blind: counts only): the blind scorer twice (E6, byte-identical files, every estimand NA) and the full

@@ -146,7 +146,8 @@ tangoBound <- function(b, c, n, side) {
   est <- (b - c) / n
   f <- if (identical(side, "upper")) function(m) tangoZb(b, c, n, m) + Z else function(m) tangoZb(b, c, n, m) - Z
   lims <- if (identical(side, "upper")) c(est + 1e-9, 0.99) else c(-0.99, est - 1e-9)
-  if (!all(is.finite(f(lims))) || f(lims[[1L]]) * f(lims[[2L]]) > 0) return(NA_real_)
+  f_lo <- f(lims[[1L]]); f_hi <- f(lims[[2L]])  # L3r: `f` is scalar (a vector argument made `if (score(hi) > 0)` fail in L3)
+  if (!is.finite(f_lo) || !is.finite(f_hi) || f_lo * f_hi > 0) return(NA_real_)
   stats::uniroot(f, lims, tol = 1e-12)$root
 }
 
@@ -483,6 +484,11 @@ selfTest <- function(out_dir, expected_path) {
   # --- statistics against the Python hand values
   add("tango_b0c0", near(tangoZ(b = 0, c = 0, n = 100), ev("tango_z.b0_c0_n100_m0.10")), sprintf("%.6f", tangoZ(b = 0, c = 0, n = 100)))
   add("tango_b40c0", near(tangoZ(b = 40, c = 0, n = 100), ev("tango_z.b40_c0_n100_m0.10")), sprintf("%.6f", tangoZ(b = 40, c = 0, n = 100)))
+  # L3r: a known 2 x 2 table (b = 10, c = 5, n = 100, difference 0.05): each bound is a single finite number that solves Tango's equation
+  # (Z(m) = -1.6449 at the upper bound, +1.6449 at the lower, the definition of the inverted test), the lower below and the upper above 0.05
+  bu <- tangoBound(b = 10, c = 5, n = 100, side = "upper"); bl <- tangoBound(b = 10, c = 5, n = 100, side = "lower")
+  add("tangoBound_scalar_on_known_table", length(bu) == 1L && length(bl) == 1L && is.finite(bu) && is.finite(bl) && bl < 0.05 && 0.05 < bu &&
+    near(tangoZb(10, 5, 100, bu) + Z, 0, 1e-6) && near(tangoZb(10, 5, 100, bl) - Z, 0, 1e-6), sprintf("lower %.6f, upper %.6f", bl, bu))
   add("bound_upper", near(tangoBound(b = 10, c = 5, n = 100, side = "upper"), ev("bound_upper.b10_c5_n100")), sprintf("%.6f", tangoBound(b = 10, c = 5, n = 100, side = "upper")))
   add("bound_lower", near(tangoBound(b = 10, c = 5, n = 100, side = "lower"), ev("bound_lower.b10_c5_n100")), sprintf("%.6f", tangoBound(b = 10, c = 5, n = 100, side = "lower")))
   nc <- newcombePaired(a = 10, b = 5, c = 3, d = 82)
