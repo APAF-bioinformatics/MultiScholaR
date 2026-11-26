@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-281 scoring, once, counted data complete (declaration-counted.md; no env var, B 10000; rows hashes in rows-sha256.tsv; ceiling 74.67, VAL-371)",
+  "label": "KIT-281 score 3b9e6288",
+  "package_commit": "3b9e628876b3298ce08c252972049e085ba72d73",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/score-k281.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-281/rows",
+        "k281-score"
+      ],
+      "env": {},
+      "out": "k281-score",
+      "out_pattern": "\\.(tsv|json|txt|md)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
