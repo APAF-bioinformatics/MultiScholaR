@@ -33,7 +33,7 @@ Exactly the two members' changes, and nothing else:
 - `tests/testthat/test-omics-module-globals.R` (KIT-278)
 - `NEWS.md`, `docs/methods-decision-ledger.md` (the two merges' text), and files under `docs/qa/workflow-execution/kit/kit-269/` and `kit-278/`.
 
-No file under `inst/`, `man/`, `DESCRIPTION` or `NAMESPACE` differs. Code line counts against the base: `R/` +14/-4 over two files, tests +130/-2.
+No file under `inst/`, `man/`, `DESCRIPTION` or `NAMESPACE` differs. Code line counts against the base (`git diff --numstat`): `R/` +9/-5 over two files, tests +129/-1 over two files.
 
 **The merged vector branch of `formatConfigList`** (`R/func_general_filemgmt_config_io_helpers.R:482-487`):
 ```
@@ -155,3 +155,46 @@ base run of this train is its reference, and the prediction is `same` with ident
 
 - Ledger: `VAL-<train28-1>` (KIT-278) and `VAL-<train28-2>` (KIT-269) take their numbers (`docs/methods-decision-ledger.md`, the two lines after VAL-344); status cells "merged (<commit>), train 28".
 - Placeholders in the members' own records are not edited here (listed in the hand-back).
+
+## Results (run 45730995940, head 9bfe6c4f, base 623f7550; request commit e399a132)
+
+Run success; every file ran to completion (no timeout, no crash). `compare.tsv` and `check-compare.txt` are committed beside this file
+(`merge-train-20261126u-compare.tsv`, `merge-train-20261126u-check-compare.txt`). Base versus head: same 47, new-failure 0, message-changed 0,
+count-changed 0, fixed 1, only-on-head 1. **Clean under the rule.** Head: passed 7411, failed 160; base: passed 7376, failed 161.
+
+### Verdict table against the predictions (passed/failed/errors/skipped)
+
+| File | Base | Head | Verdict | Predicted |
+|---|---|---|---|---|
+| test-kit269-config-vector-values.R | absent | 34/0/0/0 | only-on-head | held |
+| test-omics-module-globals.R | 13/1/0/0 | 14/0/0/0 | fixed | held (base failure `"mod_omic_norm.R"`) |
+| test-kit213-study-parameters-labels.R | 56/0/0/0 | 56/0/0/0 | same | held |
+| test-integration-record.R | 200/0/0/0 | 200/0/0/0 | same | held |
+| test-workflow-figure-paths.R | 181/0/0/0 | 181/0/0/0 | same | held; no 259-folder flake appeared |
+| test-gui-entry-proteomics.R | 92/101/0/0 | 92/101/0/0 | same, failures identical | held (also at the carried count) |
+| test-omic-summary-module.R | 1675/28/0/0 | same | same | held |
+| test-omics-summary-core.R | 676/25/0/2 | same | same | held |
+| test-module-ci-trx-summary.R | **83/2/0/0** | 83/2/0/0 | same | verdict held; **base count missed** (predicted 87/1) |
+| test-integration-input-transcriptomics.R | **67/3/0/0** | 67/3/0/0 | same | verdict held; **base count missed** (predicted 79/0, status ok) |
+| test-kit224-ruv-feature-levels.R | **65/1/0/0** | 65/1/0/0 | same | verdict held; **base count missed** (predicted 69/0, status ok) |
+| every other file in scope (43 files) | as predicted | as base | same | held |
+
+Missed predictions (recorded, not repaired, not re-run): the three base counts above. They are identical on both sides, so they are not caused by
+the two members. Their failures are one cause: `trxDeclReference("trx_edge_12")` in `tests/testthat/helper-workflow-trx-declarations.R:34`, expected
+manifest digest `e17d1ed5...4fc4344`, actual `faa19db7...a914fa797f` (the `corpus_manifest_sha256` check), and in
+`test-module-ci-trx-summary.R` also the `ruviii_newY` product digest (`1c02bfdd...` against `a1f43e2d...`). Train q's committed tables hold the same three
+files passing (79/0, 69/0, 87/1), so the stored trx reference digest changed between those runs and this one on the same base code or the runner's
+snapshot library; this run did not investigate. Belongs to the transcriptomics declarations (helper-workflow-trx-declarations), not to KIT-269 or KIT-278.
+
+### R CMD check
+
+Base and head both 0 ERROR, 3 WARNING, 3 NOTE; findings identical (6); only on head: none; only on base: none. Prediction held.
+
+### Budget
+
+Job-minutes (jobs API, summed): 301.9 (tests head 46.08 + 60.63 + 27.82; tests base 35.25 + 41.85 + 66.30; check base 13.28, head 9.53; plan 0.37; results 0.78).
+Core-hours = 301.9 x 4 / 60 = **20.13**. Ceiling 600 job-minutes (40.0 core-hours); expected about 315 (21.0).
+
+### Decision
+
+Every prediction about the two members holds: TRAIN GREEN for KIT-278 and KIT-269. The three base-count misses are a recorded result outside the members.
