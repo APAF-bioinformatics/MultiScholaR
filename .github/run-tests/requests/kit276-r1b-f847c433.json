@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-276 R1b: instrument repair 1 of 3 (T8b and T14 errored on test mechanics in R1 45776354953, no result judged; the repair changes no expectation); declared before sending; ceiling 30 min; running total before this request 1.4 of 172.00 core-hours",
+  "label": "KIT-276 R1b tests only f847c433 (T8b, T14 mechanics)",
+  "package_commit": "f847c433f6a94da4948b63714e113a519a438255",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit276-ruv-superseded.R"],
+  "shards": 1,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
