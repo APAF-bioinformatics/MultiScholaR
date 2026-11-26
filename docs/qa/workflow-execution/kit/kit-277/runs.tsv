@@ -1,3 +1,5 @@
 run_id	request	commit	purpose	job_minutes	core_hours	result
 45777669520	kit277-r1-6aeb21e6	6aeb21e6	R1 tests-only, new file + edited KIT-247 file	116	7.73	valid result for 47+93 failures at stated values; 10 instrument defects (see outcome.md)
 45789773919	kit277-r1i1-55aab0cc	55aab0cc	R1 instrument re-send 1: new file only	43	2.87	0 errors; 70 passed 154 failed, every previously erroring row (F4, P1-P6, R1b, P8) fails by value on the old code
+45797066259	kit277-r1c-f16edb13	f16edb13	R1c new lines on old code	(pending)		in flight
+45797086832	kit277-sg1-53e4c745	53e4c745	SG1 stage 1 (S1 rows + G2 + globals)	(pending)		in flight
