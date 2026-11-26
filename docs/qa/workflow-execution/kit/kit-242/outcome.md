@@ -322,3 +322,37 @@ runner-library files: `lobstr` (`test-workflow-checkpoint-harness.R:187`) is not
 no `extra_packages` entry can supply it; `test-tech-reps-limma.R:6` calls `devtools::load_all(".")` (devtools is in the
 lock). No train request of 2026-11-26 lists either file. R2 and R3 leave both out, as the trains do, with this reason;
 neither touches a KIT-242 path.
+
+## The owner's answers (VAL-352, origin/v0.9-staging 91713498) and R2's predictions, written before R2
+
+Tests-only commit 51b77bb2 (nothing under `R/`): `test-metab-02w-…` all-NA case re-pinned to OD-1 (c) (VAL-352 (1));
+the declared edits of `test-workflow-omics-worker.R` (RUV branch) and `test-module-ci-metab-norm.R` MCI-015.3 (VAL-352
+(5)). Answers (2) to (4): nothing edited.
+
+**R2's shape (sent only on the coordinator's word, after the one merge of staging once train 25 has landed).** Base: every
+Part B test change (fb5eee2b, the E25m row of 4c8e3d87, 51b77bb2) on the code before Part B's fix (staging merge plus
+Part A); head: kit-242's head after the merge. Files: `r2-files.txt` recounted at the merge, without
+`test-workflow-checkpoint-harness.R` (lobstr is not in the lock) and `test-tech-reps-limma.R` (`devtools::load_all`), as
+the trains; `env` `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`; `extra_packages` `limpa`, `mixOmics`, `sva`; `file_timeouts` 120
+for the GUI-entry files and `test-prot-norm-core.R`; check on both sides. Rows fixed at the branch point: 59.33 / 120.0.
+
+**Predictions by file (verdicts of `compare.tsv`).**
+
+| File | Base | Head | Verdict |
+|---|---|---|---|
+| `test-kit242-normalisation-fallback.R` | the Part B tests fail (17 per class as R1b-B) and E25m errors (no `omicsRuvSearchOutcomes`) | all pass | fixed |
+| `test-workflow-omics-worker.R` | the new RUV branch fails for lipid_ruv and metab_ruv (the step completes on the code before the fix) | all pass | fixed |
+| `test-module-ci-metab-norm.R` | MCI-015.3's edited block fails (the run completes with LCMS_Pos dropped) | all pass | fixed |
+| `test-metab-02w-normalise-between-samples-characterization.R` | passes (Part A's code is on the base) | passes | same |
+| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | `:138`, `:188` fail (Part A, re-record list); `:47` passes (VAL-303 re-pin) | the same two | same |
+| `test-omic-norm-module.R` | the 56 fail (Part A) | the same 56; the 12 provenance digests of the manual and automatic sessions with other values (`ruv_fallback`) | same or message-changed (VAL-352 (4)) |
+| `test-workflow-omics-declarations.R` (KIT-073), `test-workflow-omics-binding-steps.R` (KIT-094) | fail as on staging | the same, plus the `ruv_fallback` row inside the same expectations | same or message-changed (VAL-352 (3)) |
+| `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R` | fail as on staging | the same expectations | same or message-changed (VAL-352 (2)) |
+| `test-workflow-operation-registry.R` | staging's 2 failures | the same 2 (the KIT-025 scan passes after correction 1) | same |
+| `test-kit172-downstream.R` | 14 (Part A) | 14 | same |
+| the transcriptomics files (`test-kit129-run-path.R`, `test-kit224-…`, `test-module-ci-trx-norm.R`, `test-trx-da-without-ruv.R`, `test-trx-ruv-designs.R`, `test-workflow-trx-declarations.R`) | with the trains' `env` the 22 manifest digests pass; any staging failures stay | the same | same |
+| every other file | as on staging after the merge | the same | same |
+| check | | | identical findings on both sides |
+
+Any other verdict (a new failure, a file fixed that is not listed, a count change in a file not listed) is outside the
+prediction: stop and report.
