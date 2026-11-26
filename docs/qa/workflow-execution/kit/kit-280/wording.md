@@ -14,3 +14,11 @@ Each text is implemented and tested as written; the owner edits the wording. Whe
 | NEWS bullet (Scientific changes), the replaced clause of KIT-187's bullet, the ledger rows `VAL-<merge>` and `VAL-<merge+1>`, the KIT-197 correction notes | `NEWS.md`, `docs/methods-decision-ledger.md`, `docs/qa/workflow-execution/kit/kit-197/` | diff |
 
 The figure 1.89 [1.83, 1.96] is KIT-211's R-c under rule B: unchanged proteins kept with a low value in one of the two groups compared, against the other kept proteins, simulated data, ten settings pooled, measured at the 1st percentile only. Every text that quotes it carries "simulated data" and "1st percentile".
+
+## Draft added by the second pass (VAL-394 (2): rule B after RUV is kept as built and stated at the wording pass)
+
+Not implemented here (the second pass changes nothing under `R/`, `inst/` or `man/`; the sentence belongs in NEWS, the tab's help and the three proteomics reports, which move UI digests and the rendered Methods text, so the wording pass declares its own predictions and run):
+
+"After RUV the clean-up also counts only absent values as missing: proteins whose corrected values are at or below the percentile are kept there and are not marked (marks are set at the filter, before RUV), so the number of proteins after RUV filtering can be higher than before this version."
+
+The count rising from 63 to 64 on the "small" fixture is INFERRED (kit-182/feasibility.md:49); no run measured it.
