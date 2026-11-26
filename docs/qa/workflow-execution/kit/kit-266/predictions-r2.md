@@ -42,3 +42,12 @@ Limpa V0: the new caption line ("first two columns ... a third column, when the 
 none) with KIT-272's two bullets, no "Density plots", QC_figures holds the composite PNG and PDF, PNG 1950x3900. V1: one added sentence, panels
 a, f, m with limpa words. V2: PNG 1500x3300 and the two-stage sentence. Decision: any difference outside the limpa lane, or a letter or caption that
 contradicts the figure, is a defect; a title clipped in the PNG (R3 opens it) is shortened (cyclic loess title not rendered by this lane).
+
+# Correction pass (declared before the sends): R2 repair and R3b
+
+R2c: test-kit272-prot-box-panel-text.R only, base ec6e282b (the R2 base plus the declared edit of T7's limpa expectation), head 0daa4812 (the
+fix; same tree as 41035e75 plus the edit and records). Prediction: `fixed`: base 372 passed / 1 failed (T7 DIANN_limpa, the old stage words), head 373 / 0. 2 test jobs
+(1 shard per side), ceiling 45 job-minutes each (6.00 core-hours), expected 24 (1.60). Decision: closes the unpredicted verdict.
+R3b: render.R on the head 0daa4812 with the two limpa figure PNGs uploaded (out_pattern now includes png), to open them and record the image titles as printed and
+whether each fits its panel (at most 3 lines, no clipping); same 19 checks as R3 predicted. Ceiling 60 job-minutes (4.00), expected 25 (1.67).
+Running total 51.10; worst case after these two: 61.10; remaining ceiling headroom to 163.46 unaffected.
