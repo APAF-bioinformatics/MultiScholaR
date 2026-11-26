@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-277 diagnostic 2 of O4's miss (coordinator-allowed, outside the correction pass, nothing judged): full notes, DA press trace and console; base 376c2bfe vs head fc8df559; ceiling 4.0 core-hours; running total about 74 + 4.0 of 200.00",
+  "label": "KIT-277 O4 diagnostic 2 fc8df559",
+  "package_commit": "fc8df55998d034ff22d57bf9f43823ae73f1e09a",
+  "base_commit": "376c2bfe730aaefa974451aae9621c630f812302",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 20,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 20
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT277_STAGE": "2",
+    "MULTISCHOLAR_KIT277_DIAG": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
