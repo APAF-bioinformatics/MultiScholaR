@@ -1,0 +1,275 @@
+file	line	text
+test-e2e-proteomics-enrichment.R	38	"Pathway_enrichment_results_proteomics.xlsx"
+test-e2e-proteomics-enrichment.R	43	index <- openxlsx::read.xlsx(workbook, sheet = "Enrichment_Index")
+test-e2e-proteomics-enrichment.R	111	pattern = "_enrichment_results\\.tsv$",
+test-e2e-proteomics-enrichment.R	121	e2e_input_id("proteomics", "enrich", "download_enrichment_results"),
+test-enrichment-significance.R	49	tsv = file.path(pathway_dir, "effect_up_enrichment_results.tsv"))
+test-enrichment-significance.R	171	check(results[[direction]], file.path(dir, paste0("t7_", direction, "_enrichment_results.tsv")),
+test-enrichment-significance.R	516	tab <- shiny::reactiveValues(analysis_complete = FALSE, all_enrichment_results = NULL)
+test-general-enrichment-shared.R	513	expect_true(file.exists(file.path(pathway_dir, "contrast_a_up_enrichment_results.tsv")))
+test-general-enrichment-shared.R	978	expect_identical(names(readr::read_tsv(file.path(pathway_dir, "short_gamma_up_enrichment_results.tsv"),
+test-general-enrichment-shared.R	987	expect_identical(names(readr::read_tsv(file.path(pathway_dir, "short_gamma_up_enrichment_results.tsv"),
+test-general-filemgmt-report-helpers-shared.R	170	writeLines("pathway\tvalue\nset1\t0.1", file.path(paths$pathway_dir, "contrast_up_enrichment_results.tsv"))
+test-general-filemgmt-report-helpers-shared.R	227	expect_true(file.exists(file.path(paths$results_summary_dir, "Publication_tables", "Pathway_enrichment_results_proteomics.xlsx")))
+test-go-propagation.R	360	saved <- do.call(rbind, lapply(list.files(fresh$paths$pathway_dir, "_enrichment_results\\.tsv$", full.names = TRUE),
+test-kit205-enrichment-background.R	189	tsv <- paste0("k205_", direction, "_enrichment_results.tsv")
+test-kit215-not-tested-lists.R	163	holder <- shiny::reactiveValues(all_enrichment_results = NULL, enrichment_results_full = NULL,
+test-kit215-not-tested-lists.R	564	tab <- shiny::reactiveValues(analysis_complete = FALSE, all_enrichment_results = list())
+test-kit216-prot-session-after-enrichment.R	389	k216Text(reopened$fixture$manager$current_state), k216Text(names(restored$all_enrichment_results))))
+test-kit216-prot-session-after-enrichment.R	393	expect_true(length(restored$all_enrichment_results) > 0L)
+test-kit216-prot-session-after-enrichment.R	983	cat(sprintf("KIT-216 E9 %s restored_contrasts=%s\n", name, k216Text(names(restored$all_enrichment_results))))
+test-kit216-prot-session-after-enrichment.R	984	expect_true(length(restored$all_enrichment_results) > 0L, info = paste(name, "restore"))
+test-kit226-gprofiler-columns.R	66	restored <- out$all_enrichment_results[["groupB-groupA"]]$gprofiler_results
+test-module-ci-metab-summary.R	92	expect_true(file.exists(file.path(complete_dirs$metabolomics$results_summary_dir, "Publication_tables", "Pathway_enrichment_results_metabolomics.xlsx")))
+test-module-ci-prot-enrich.R	235	expect_true(file.exists(file.path(gprofiler_dir, "groupB-groupA_up_enrichment_results.tsv")))
+test-module-ci-prot-enrich.R	254	expect_true(file.exists(file.path(cluster_dir, "groupB-groupA_down_enrichment_results.tsv")))
+test-module-ci-prot-enrich.R	334	"Pathway_enrichment_results_proteomics.xlsx"
+test-module-ci-prot-enrich.R	337	index <- openxlsx::read.xlsx(workbook, sheet = "Enrichment_Index")
+test-module-ci-prot-enrich.R	338	index <- index[grepl("^Enrich_Sheet", index$Sheet), , drop = FALSE]
+test-module-ci-prot-summary.R	81	expect_true(file.exists(file.path(complete_dirs$proteomics$results_summary_dir, "Publication_tables", "Pathway_enrichment_results_proteomics.xlsx")))
+test-module-ci-prot-summary.R	108	expect_true(file.exists(file.path(missing_optional_dirs$proteomics$results_summary_dir, "Publication_tables", "Pathway_enrichment_results_proteomics.xlsx")))
+test-multiomics-enrich-shared.R	704	expect_true(file.exists(file.path(fixture_dir, "string_db", "contrast_a_string_enrichment_results.tab")))
+test-multiomics-enrich-shared.R	844	expect_true(file.exists(file.path(pathway_dir, "string_db", "all_enrichment_results.rds")))
+test-multiomics-enrich-shared.R	1007	expect_true(file.exists(file.path(results_dir, "metabolome_lc_enrichment_results.tab")))
+test-multiomics-enrich-shared.R	1050	expect_true(file.exists(file.path(results_dir, "combined_metabolomics_enrichment_results.tab")))
+test-omic-design-module.R	601	expect_identical(sort(names(session$returned)), c("all_enrichment_results", "analysis_complete", "analysis_method",
+test-omic-enrich-module.R	142	"enrichment_analysis-down_cutoff", "enrichment_analysis-download_enrichment_results",
+test-omic-enrich-module.R	581	display = omicEnrichW1Display(shiny::isolate(returned$all_enrichment_results), manager),
+test-omic-enrich-module.R	667	path <- ctx$read("download_enrichment_results")
+test-omic-enrich-module.R	759	holder <- shiny::reactiveValues(all_enrichment_results = NULL, enrichment_results_full = NULL,
+test-omic-enrich-module.R	767	omicEnrichW1Display(shiny::isolate(holder$all_enrichment_results), manager)))
+test-omic-enrich-module.R	840	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	849	download_enrichment_results = "<download>",
+test-omic-enrich-module.R	876	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	886	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	894	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	947	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	957	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	965	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	991	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	999	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1025	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1033	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1067	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
+test-omic-enrich-module.R	1105	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
+test-omic-enrich-module.R	1106	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
+test-omic-enrich-module.R	1108	all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
+test-omic-enrich-module.R	1122	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1130	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1156	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1164	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1190	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1198	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1224	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1232	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1264	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1273	download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1300	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	1310	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1318	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1370	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	1380	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1388	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1414	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1422	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1444	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	1454	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1462	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1496	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 54dc05374647be6e",
+test-omic-enrich-module.R	1535	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "cb1c7be929956b9c2cfb8932d8136fcf92e6abd76b42c2a89c5b57d12b1ed8b0",
+test-omic-enrich-module.R	1536	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "077ca85b815eecc33439f47e14ff20ceb7fb4d0ee1bd79a44d27a2f13f7d3dad"),
+test-omic-enrich-module.R	1538	all_enrichment_results = "<list> f3e983fdeac04383", analysis_complete = "TRUE",
+test-omic-enrich-module.R	1551	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1559	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1585	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1593	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1619	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1627	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1653	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1661	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1693	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1701	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1755	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	1765	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1773	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1799	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1807	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1833	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1841	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	1877	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e262161c5371ef44",
+test-omic-enrich-module.R	1917	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "a7a539d1e18d74657e648cb01e7a16014218b1d6a43c5b69fb2e284d6bf77df8",
+test-omic-enrich-module.R	1920	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "a7a539d1e18d74657e648cb01e7a16014218b1d6a43c5b69fb2e284d6bf77df8"),
+test-omic-enrich-module.R	1922	all_enrichment_results = "<list> f49c6bf6d7f341f5", analysis_complete = "TRUE",
+test-omic-enrich-module.R	1938	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	1946	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2000	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	2010	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2018	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2044	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2052	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2074	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	2084	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2092	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2130	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e",
+test-omic-enrich-module.R	2171	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a",
+test-omic-enrich-module.R	2174	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"),
+test-omic-enrich-module.R	2176	all_enrichment_results = "<list> 6961aaa3fc9d92d9", analysis_complete = "TRUE",
+test-omic-enrich-module.R	2191	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2199	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2253	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	2263	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2271	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2297	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2305	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2331	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2339	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2375	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
+test-omic-enrich-module.R	2413	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
+test-omic-enrich-module.R	2414	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
+test-omic-enrich-module.R	2416	all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
+test-omic-enrich-module.R	2430	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2438	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2492	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	2502	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2510	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2536	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2544	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2570	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2578	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2604	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2612	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2647	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
+test-omic-enrich-module.R	2685	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
+test-omic-enrich-module.R	2686	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
+test-omic-enrich-module.R	2688	all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
+test-omic-enrich-module.R	2704	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2713	download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2740	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	2750	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2759	download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2785	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2793	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2846	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	2856	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2864	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2890	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2898	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2924	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2932	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	2971	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	2979	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3034	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	3044	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3052	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3078	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3086	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3125	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3133	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3188	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	3198	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3206	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3232	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3240	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3290	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3298	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3353	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	3363	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3371	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3397	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3405	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3431	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3439	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3473	enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters dcc3ee2f940bd0fa",
+test-omic-enrich-module.R	3511	`results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv` = "511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7",
+test-omic-enrich-module.R	3512	`results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv` = "b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"),
+test-omic-enrich-module.R	3514	all_enrichment_results = "<list> 37aa971ecab5066f", analysis_complete = "TRUE",
+test-omic-enrich-module.R	3528	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3536	contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3570	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3579	download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3606	all_enrichment_results = "<list> 28df520b992b4a4b", analysis_complete = "FALSE",
+test-omic-enrich-module.R	3616	"clusterprofiler_summary_stats", "contrasts_display", "download_enrichment_results",
+test-omic-enrich-module.R	3625	download_enrichment_results = "<download>",
+test-omic-enrich-module.R	3732	before <- length(shiny::isolate(tab$all_enrichment_results))
+test-omic-enrich-module.R	3739	display = omicEnrichW1Display(shiny::isolate(tab$all_enrichment_results), manager), shown = shown))
+test-omic-summary-module.R	1482	`results_summary/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx` = "<present>",
+test-omic-summary-module.R	1747	`pathway_enrichment/KO_vs_WT_down_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	1748	`pathway_enrichment/KO_vs_WT_up_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	1906	`pathway_enrichment/KO_vs_WT_down_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	1907	`pathway_enrichment/KO_vs_WT_up_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2079	`pathway_enrichment/KO_vs_WT_down_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2080	`pathway_enrichment/KO_vs_WT_up_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2194	`results_summary/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx` = "<present>",
+test-omic-summary-module.R	2251	`pathway_enrichment/KO_vs_WT_down_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2252	`pathway_enrichment/KO_vs_WT_up_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2316	`pathway_enrichment/KO_vs_WT_down_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2317	`pathway_enrichment/KO_vs_WT_up_enrichment_results.tsv` = "278827ebf4745b50520d3714c4389fd9c0a3c817e116638b4227257b9ed2a07a",
+test-omic-summary-module.R	2653	`results_summary/transcriptomics/Publication_tables/Pathway_enrichment_results_transcriptomics.xlsx` = "<present>",
+test-omic-summary-module.R	3087	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3088	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3238	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3239	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3292	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3293	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3299	`results_summary/Publication_tables/Pathway_enrichment_results_proteomics.xlsx` = "<present>",
+test-omic-summary-module.R	3392	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3393	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3446	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3447	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3453	`results_summary/Publication_tables/Pathway_enrichment_results_proteomics.xlsx` = "<present>",
+test-omic-summary-module.R	3546	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3547	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3600	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3601	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3607	`results_summary/Publication_tables/Pathway_enrichment_results_proteomics.xlsx` = "<present>",
+test-omic-summary-module.R	3700	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3701	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3754	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3755	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3761	`results_summary/Publication_tables/Pathway_enrichment_results_proteomics.xlsx` = "<present>",
+test-omic-summary-module.R	3857	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3858	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3863	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3864	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	3870	`results_summary/Publication_tables/Pathway_enrichment_results_proteomics.xlsx` = "<present>",
+test-omic-summary-module.R	3969	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	3970	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	4148	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	4149	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	4277	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	4278	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	4347	`pathway_enrichment/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	4348	`pathway_enrichment/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	4353	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_down_enrichment_results.tsv` = "4e168310ff617aba595f1605046a7d4782d44f232692d559db1bf56bf3e71568",
+test-omic-summary-module.R	4354	`results_summary/Publication_figures/Enrichment_Plots/B_vs_A_up_enrichment_results.tsv` = "b56e92aa35bf8f4fbd3dd96a2e0de7f4ceb9235d00eef687ce41204bf398ad68",
+test-omic-summary-module.R	4360	`results_summary/Publication_tables/Pathway_enrichment_results_proteomics.xlsx` = "<present>",
+test-omics-enrich-core.R	183	ctx$keep("run_display", omicEnrichW1Display(tab$all_enrichment_results, bus$state_manager))
+test-omics-enrich-core.R	200	omicEnrichW1Display(out$all_enrichment_results, manager)))
+test-omics-summary-core.R	431	c("DA_results_metabolomics.xlsx", "Pathway_enrichment_results_metabolomics.xlsx"))
+test-omics-summary-core.R	433	c("cannot write DA_results_metabolomics.xlsx", "cannot write Pathway_enrichment_results_metabolomics.xlsx"))
+test-prot-11-enrichment-module-contracts.R	200	expect_equal(shiny::isolate(enrichment_data$all_enrichment_results), list())
+test-prot-11-enrichment-module-contracts.R	233	expect_true(file.exists(file.path(gprofiler_dir, "KO_vs_WT=groupKO-groupWT_up_enrichment_results.tsv")))
+test-prot-11-enrichment-module-contracts.R	253	expect_true(file.exists(file.path(cluster_dir, "KO_vs_WT=groupKO-groupWT_down_enrichment_results.tsv")))
+test-prot-11-enrichment-module-contracts.R	512	all_enrichment_results <- list(
+test-prot-11-enrichment-module-contracts.R	522	all_enrichment_results,
+test-prot-11-enrichment-module-contracts.R	536	all_enrichment_results <- list(
+test-prot-11-enrichment-module-contracts.R	546	all_enrichment_results
+test-prot-11-enrichment-module-contracts.R	1763	full_enrichment_results <- methods::new(
+test-prot-11-enrichment-module-contracts.R	1772	fullEnrichmentResults = full_enrichment_results,
+test-prot-11-enrichment-module-contracts.R	1784	expect_identical(payload$full_enrichment_results, full_enrichment_results)
+test-prot-11-enrichment-module-contracts.R	4042	enrichment_data$all_enrichment_results <- list(
+test-prot-11-enrichment-module-contracts.R	4096	enrichment_data$all_enrichment_results <- list(
+test-prot-11-enrichment-module-contracts.R	4139	enrichment_data$all_enrichment_results <- list()
+test-prot-11-enrichment-module-contracts.R	4435	enrichmentData$all_enrichment_results <- all_contrast_results
+test-prot-11-enrichment-module-contracts.R	4508	expect_identical(enrichment_data$all_enrichment_results, all_contrast_results)
+test-prot-11-enrichment-module-contracts.R	4542	enrichment_data$all_enrichment_results <- NULL
+test-prot-11-enrichment-module-contracts.R	4601	expect_identical(enrichment_data$all_enrichment_results, all_contrast_results)
+test-prot-11-enrichment-module-contracts.R	4613	enrichment_data$all_enrichment_results <- list(existing = TRUE)
+test-prot-11-enrichment-module-contracts.R	4638	expect_identical(enrichment_data$all_enrichment_results, list(existing = TRUE))
+test-prot-11-enrichment-module-contracts.R	6072	expect_identical(output$download_enrichment_results, download_handler)
+test-prot-11a-enrichment-module-characterization.R	196	"all_enrichment_results",
+test-prot-11a-enrichment-module-characterization.R	298	expect_equal(state$all_enrichment_results, list())
+test-prot-11a-enrichment-module-characterization.R	350	enrichment_data$all_enrichment_results <- list(
+test-prot-11a-enrichment-module-characterization.R	409	enrichment_data$all_enrichment_results <- list(
+test-workflow-dia-products.R	503	enrichment_data <- shiny::reactiveValues(all_enrichment_results = NULL, enrichment_results_full = NULL, analysis_complete = FALSE)
+test-workflow-dia-products.R	506	restored <- shiny::isolate(enrichment_data$all_enrichment_results)
