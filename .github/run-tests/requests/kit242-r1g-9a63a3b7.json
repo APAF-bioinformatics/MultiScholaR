@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-242 R1g (VAL-383 option (a)): head-only on 9a63a3b7, 9 files; predictions in outcome.md at d5662d81; ceiling 90 job-minutes (6.0 core-hours) per VAL-329",
+  "label": "KIT-242 R1g head 9a63a3b7",
+  "package_commit": "9a63a3b71e1a0476373537762595ed6e430eb35a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-kit242-normalisation-fallback.R",
+    "test-workflow-omics-worker.R",
+    "test-prot-05b-norm-module-contracts.R",
+    "test-prot-05d-norm-module-characterization.R",
+    "test-prot-norm-input-current.R",
+    "test-kit257-norm-own-files.R",
+    "test-kit206-prot-norm-export-guard.R",
+    "test-kit225-prot-norm-reset-source.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "limpa",
+    "mixOmics",
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
