@@ -1,6 +1,6 @@
 # KIT-247 outcome: a design saved again after Quality Control or normalisation
 
-**State: done and ready for the auditor's closure check.** VAL-277 (I01, I02) merges; VAL-288 is withdrawn from this ticket (the owner's VAL-331); the withdrawal run (45722093901) held every prediction. Budget: 190.8 core-hours used against the 190 ceiling (VAL-309): exceeded by 0.8 (the withdrawal run took 148.8 job-minutes against about 130 declared). Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
+**State: done and ready for the auditor's closure check.** VAL-277 (I01, I02) merges; VAL-288 is withdrawn from this ticket (the owner's VAL-331); the withdrawal run (45722093901) held every prediction. Budget: 190.8 core-hours used against the 190 ceiling (VAL-309): exceeded by 0.8 (the withdrawal run took 148.8 job-minutes against about 130 declared). Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. I01 and I02 were repaired by the second correction (VAL-277); see 'Defects of the implementation audit, repaired'.
 
 - Ticket r1.4 (owner's decisions VAL-239: OD-1 (D) on the whole design table, OD-2 (a), OD-3 (a), OD-4 (a) including the
   top-level integration file). E-5 stays open for the coordinator.
@@ -132,11 +132,13 @@ head). G3: row added; passes in R1'''b and the final run (vacuous in R1'' and R2
 R2's 69 files plus `test-module-ci-trx-design.R`, `test-module-ci-trx-qc.R`, `test-module-ci-lipid-norm.R`,
 `test-module-ci-metab-norm.R` (helper-mediated: never run in R2/R2'), `test-kit243-summary-current-outputs.R`,
 `test-kit244-limpa-pass-through.R`, `test-kit256-tech-rep-selection-cleared.R` (plus any file the I01/I02 pass adds);
-and the closure check's C09 files (`test-kit254-omics-correlation-skip.R`, `test-kit257-norm-own-files.R`,
+the closure check's C09 files and the recount on the merged tree (closure check 2, D.2 (7)): `test-kit213-study-parameters-labels.R`,
+`test-kit254-omics-correlation-skip.R`, `test-kit259b-second-correction.R`,
+`test-kit263-prot-study-parameters-sections.R`, `test-kit264-trx-export-current.R`, `test-kit257-norm-own-files.R`,
 `test-kit259-pearson-histogram-figure-failure.R`, `test-kit248-correlation-skip-record.R`,
-`test-kit261-norm-run-button.R`, `test-kit263-prot-study-parameters-sections.R`, and `test-kit264-trx-export-current.R` if
-the train stacks on train 19); `check: true`; base the staging head at the train. Predictions: every file present on base `same` (identical failure
-messages where it fails on base); the three kit247 files only on head and passing (188, 2, 7 at the final run; the withdrawal run gives the counts after W288 and C05);
+`test-kit261-norm-run-button.R`, `test-omics-module-globals.R` (13/1 on staging until KIT-278 lands),
+`test-omics-cyclic-loess-minimum.R`: 88 files; `check: true`; base the staging head at the train. Predictions: every file present on base `same` (identical failure
+messages where it fails on base); the three kit247 files only on head and passing (188, 2, 7);
 check findings identical, nothing only on head.
 
 ## Not checked
@@ -144,8 +146,9 @@ check findings identical, nothing only on head.
 - The confirmation in a browser (I08); the unchanged re-save on DIA, DIA with limpa, TMT, metabolomics and
   transcriptomics (only label-free "same" and lipid "contrast" are tested).
 - The RDS copies (`aa_seq_tbl_final.RDS`, `fasta_metadata.RDS`, `uniprot_dat_cln.RDS`) the import's sidecars write into
-  `source_dir` before the checkpoint stay after an import refused there (C05's remaining part: a stated limit and a
-  candidate ticket).
+  `source_dir` before the checkpoint stay after an import refused there (C05's remaining part: a stated limit, a candidate ticket). After a refused import the installed application's
+  Accession Cleanup, run on the managed worker, and a later Import Existing Design from a folder without its own
+  tables read these copies.
 - The trx moved-sample groups (G0: not observed).
 - G0-4's browser click (the browser normalisation fails first; another ticket's).
 - TMT and DIA (iq) base values were not observed in G0 (R1 shows them).
@@ -240,3 +243,6 @@ check findings identical, nothing only on head.
   `test-kit247-import-config.R` 2, `test-kit247-resave-no-session.R` 7.
 - **Budget.** 180.9 core-hours before the run (job times) + 9.9 = **190.8 of 190 (VAL-309): exceeded by 0.8**. The full
   comparison and R CMD check ride the merge train (the coordinator's ruling).
+
+- **Ceiling and the full comparison.** The ticket stands at 190.82 of its 190.00 core-hour ceiling (VAL-309), an overrun of
+  0.82 told to the owner. The merge train's run (train 29) is the full comparison the ticket never ran on its final head.

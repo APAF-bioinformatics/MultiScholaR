@@ -29,6 +29,8 @@ Owner's questions:
 1. Should a formula-only change set the differential analysis to pending (as a change of comparisons does)?
 2. Should an organism, taxonomy or FASTA change on Import Existing Design count as a change?
 
+Answered: VAL-288, then withdrawn from this ticket by VAL-331 and decided for KIT-277 by VAL-345.
+
 ## After the withdrawal of VAL-288 (VAL-331)
 
 - A formula-only Save, and on proteomics Import Existing Design an organism, taxonomy id or FASTA-only Save, show
@@ -36,4 +38,7 @@ Owner's questions:
   and its notices (the closure check's C04) do not exist on this branch; VAL-288 is its own ticket, where its wording is
   set.
 - A confirmed Import Existing Design that is refused shows "Error during import: <reason>" (VAL-277; I01).
+- The sentence is not literally true in these cases (the formula is written to the configuration; the import dialog's
+  organism and the folder's FASTA table are ignored): KIT-277's wording. That holds for a formula-only, organism-only or
+  FASTA-only Save until KIT-277.
 - I09 (a), (c), (d) stay with the owner.
