@@ -1,0 +1,60 @@
+    dge_filtered_samples = logcpm$samples, log_cpm_tmm = table(logcpm$log_cpm),
+    ordered_features_idx = grid$prelim_order, max_acceptable_k = grid$max_acceptable_k, grid_members = trxDeclGridMembers(grid),
+    grid_cancor_data = stats::setNames(lapply(members, `[[`, "cancor_data"), pct),
+    grid_control_genes = stats::setNames(lapply(members, `[[`, "control_genes"), pct), df_summary = grid$grid_summary,
+    best_res = grid$best[c("percentage", "n_controls", "best_k", "separation_score", "k_penalty", "composite_score", "ctl_idx", "control_genes")],
+    best_control_genes = grid$control_genes, w_matrix = ruvs$W, ruvs_counts = read("trx_ruvs")$counts,
+    log_cpm_corrected = table(ruvs$corrected), design_final = fit$fit$design, design_formula_str = out$da$manifest$parameters$formula,
+    contrast_entry = names(out$da$manifest$results)[[1L]], contrasts_matrix = applied$contrasts_matrix, fit_final = fit$fit,
+    qlf = applied$qlf, qlf_table = applied$qlf$table, top_genes = applied$top_table,
+    ruviii_newY = ruviii$newY, ruviii_M = ruviii$M, ruviii_ctl_mask = ruviii$ctl_mask, best_k = ruviii$k)
+}
+  state <- capture_binding_state(env, names)
+  teardown_env <- environment()
+  testthat:::teardown(
+    restore_binding_state(env, state),
+    env = teardown_env
+  )
+  invisible(NULL)
+}
+M3: 6 units planned (6 main) in 1 cells; workers 4; lifecycle TRUE; stage1 FALSE; continuation FALSE
+unit c01-r9101: error (0 s)
+unit c01-r9102: instrument (0 s)
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+unit c01-r9103: instrument (27 s)
+unit c01-r9104: instrument (27 s)
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+unit c01-r9106: ok (34 s)
+Warning message:
+In parallel::mclapply(seq_len(nrow(tasks)), function(i) tryCatch(m3UnitSafe(as.list(tasks[i,  :
+  1 parallel function call did not deliver a result
+FAULT unit 1 (c01-r9101, r 9101): expected error / (any), observed error / simpleError -> ok
+FAULT unit 2 (c01-r9102, r 9102): expected instrument / partial_match_guard, observed instrument / partial_match_guard -> ok
+FAULT unit 3 (c01-r9103, r 9103): expected instrument / partial_match_guard, observed instrument / partial_match_guard -> ok
+FAULT unit 4 (c01-r9104, r 9104): expected instrument / partial_match_guard, observed instrument / partial_match_guard -> ok
+FAULT unit 5 (c01-r9105, r 9105): expected instrument / no_row, observed instrument / no_row -> ok
+                 check units passed failed status
+1                   E1     1      1      0   pass
+2                   E7     1      1      0   pass
+3                   E9     0      0      0   pass
+4                  E10     0      0      0   pass
+5                  E11     0      0      0   pass
+6                   E8     0      0      0   pass
+7                   F2     1      1      0   pass
+8            F2_STRESS     0      0      0   pass
+9           COMPLETION     6      6      0   pass
+10     INSTRUMENT_ROWS     6      2      4   FAIL
+11 ERROR_ROWS_REPORTED     6      5      1   FAIL
+12               SEEDS     6      6      0   pass
+13  FLOOR_ORDER_STRESS     1      1      0   pass
+14          SEED_RANGE     0      0      0   pass
+15          FAULT_ROWS     6      6      0   pass
+  cell purpose seconds_total seconds_p
+1  N-r    main        34.149    22.943
+units: 6; ok: 1; error rows: 1; instrument rows: 4

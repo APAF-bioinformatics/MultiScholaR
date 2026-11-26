@@ -1,0 +1,60 @@
+46                       blind_all_estimands_NA TRUE
+47                    blind_stops_on_instrument TRUE
+48                          E9_unit_false_stops TRUE
+49                      lifecycle_reps_override TRUE
+50       full_scorer_runs_on_two_pairs_per_cell TRUE
+51                            E6_byte_identical TRUE
+52                            m2_verdict_a_read TRUE
+                                                                                                                                                                                 detail
+1                                                                                                                                                                             -3.333333
+2                                                                                                                                                                              5.222330
+3                                                                                                                                                       lower -0.014756, upper 0.118596
+4                                                                                                                                                                              0.118596
+5                                                                                                                                                                             -0.014756
+6                                                                                                                                                                 -0.042425 to 0.084416
+7                                                                                                                                                                  0.288943 to 0.892209
+8                                                                                                                                                                  0.054595 to 0.261121
+9                                                                                                                                                                         half 0.110066
+10                                                                                                                                                                          t -3.211958
+11                                                                                                                                                                             p 0.2497
+12                                                                                                                                                              type 7; all-NA gives NA
+13                                                                                                                                                        NW,NW,NW,NW,NW,NW,NW,NW,NW,NW
+14                                                                                     C1 is NW in every cell but M2 showed no gain (a is FALSE): keep the present rule with M2's limit
+15                                                                                                                                                                          shown worse
+16                                                                                                                                                                                     
+17                                                                                                                                                                          shown worse
+18                                                                                                                                                                         inconclusive
+19 not NW: N-r (not determined (did not complete)); E-p (not determined (no valid pair)). Inconclusive and not-determined cells are named; they are not shown worse unless labelled so.
+20                                                                                                                                                         E-p: 0 valid, 100 error rows
+21                                                                                                                                                              95 + 5 units, 100 valid
+22                                                                                                                                                                      unit 95 in both
+23                                                                                                                                                                                     
+24                                                                                                                                                                     99 + 1 truncated
+25                                                                            one interrupted unit; none after the continuation; five units of a short cell; error rows are not missing
+26                                                                                                                                                                                     
+27                                                                                                                                                            r = 9001 in a plan of 100
+28                                                                                                                                                                                     
+29                                                                                                                                                                                     
+30                                                                                                                                                                                     
+31                                                                                                                                                                                     
+32                                                                                                                                                                                     
+33                                                                                                                                                                                     
+34                                                                                                                                                                                     
+35                                                                                                                                                                                     
+36                                                                                                                  E8 false: outcome unchanged (reported in the blind and unit tables)
+37                                                                                                                                                                                     
+38                                                                                                                                                                     -0.0875,-0.2,0.1
+39                                                                                                                                                                                     
+40                                                                                                                                                                                     
+41                                                                                                                                                                                     
+42                                                                                                                                                                                     
+43                                                                                                                                                           lo < point < hi, in [0, 1]
+44                                                                                                                                                                                     
+45                                                                                                                                                                                     
+46                                                                                                                                                                                     
+47                                                                                                                                                                                     
+48                                                                                                                                                                                     
+49                                                                                                                                                                                     
+50                                                                                                                               K4 on two equal pairs: the null cells are inconclusive
+51                                                                                                                                                                              9 files
+52                                                                                                                                                                                     

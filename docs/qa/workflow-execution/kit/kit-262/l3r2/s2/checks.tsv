@@ -1,0 +1,53 @@
+check	pass	detail
+tango_b0c0	TRUE	-3.333333
+tango_b40c0	TRUE	5.222330
+tangoBound_scalar_on_known_table	TRUE	lower -0.014756, upper 0.118596
+bound_upper	TRUE	0.118596
+bound_lower	TRUE	-0.014756
+newcombe_10_5_3_82	TRUE	-0.042425 to 0.084416
+newcombe_zero_marginal	TRUE	0.288943 to 0.892209
+wilson_5_of_40	TRUE	0.054595 to 0.261121
+t_interval_and_bounds	TRUE	half 0.110066
+johnson_used_and_t	TRUE	t -3.211958
+signflip_exact_two_pairs	TRUE	p 0.2497
+pct_interval_quantile7	TRUE	type 7; all-NA gives NA
+identical_arms_NW_K1	TRUE	NW,NW,NW,NW,NW,NW,NW,NW,NW,NW
+all_NW_but_a_false_K4	TRUE	C1 is NW in every cell but M2 showed no gain (a is FALSE): keep the present rule with M2's limit
+shift_not_NW_shown_worse	TRUE	shown worse
+shift_null_statistic_matches_hand	TRUE	
+zero_spread_rule_on_old_degenerate_input	TRUE	shown worse
+inconclusive_label	TRUE	inconclusive
+missing_unit_not_determined	TRUE	not NW: N-r (not determined (did not complete)); E-p (not determined (no valid pair)). Inconclusive and not-determined cells are named; they are not shown worse unless labelled so.
+error_rows_never_a_denominator	TRUE	E-p: 0 valid, 100 error rows
+continuation_union_scored_once	TRUE	95 + 5 units, 100 valid
+unit_in_two_sources_stops	TRUE	unit 95 in both
+unit_twice_in_one_source_stops	TRUE	
+interrupted_unit_dropped_then_continued	TRUE	99 + 1 truncated
+missing_tags_for_continuation	TRUE	one interrupted unit; none after the continuation; five units of a short cell; error rows are not missing
+instrument_row_stops	TRUE	
+row_outside_range_stops	TRUE	r = 9001 in a plan of 100
+unknown_cell_stops	TRUE	
+wrong_seed_stops	TRUE	
+header_mismatch_stops	TRUE	
+E1_false_stops	TRUE	
+E7_false_stops	TRUE	
+E9_false_stops	TRUE	
+F2_false_stops	TRUE	
+E11_false_own_stop	TRUE	
+E8_false_reported_only	TRUE	E8 false: outcome unchanged (reported in the blind and unit tables)
+E10_false_reported_only	TRUE	
+changed_split_counts_and_means	TRUE	-0.0875,-0.2,0.1
+changed_null_newcombe_matches_hand	TRUE	
+changed_subset_with_no_units_is_NA	TRUE	
+calibration_degenerate_interval_equals_point	TRUE	
+calibration_ratio_matches_hand	TRUE	
+calibration_nondegenerate_interval	TRUE	lo < point < hi, in [0, 1]
+resid_df_table	TRUE	
+e10_mcnemar_counts	TRUE	
+blind_all_estimands_NA	TRUE	
+blind_stops_on_instrument	TRUE	
+E9_unit_false_stops	TRUE	
+lifecycle_reps_override	TRUE	
+full_scorer_runs_on_two_pairs_per_cell	TRUE	K4 on two equal pairs: the null cells are inconclusive
+E6_byte_identical	TRUE	9 files
+m2_verdict_a_read	TRUE	
