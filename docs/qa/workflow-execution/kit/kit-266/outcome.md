@@ -37,3 +37,16 @@ Nothing contradicts the ticket's design. Ticket predictions restated on top of K
   base (they gain the composite and `pre_norm_*` keys), compared with the four file-name key lines masked, as merge train 26 did.
 - `test-prot-norm-core.R` stays 1547/307 on base (stored values already failing); its declared edits add base-only failures
   (section 8 item 6) and no head-only failure.
+
+## Coordinator's notice (KIT-272 on merge train 31; staging ec27f69e)
+
+KIT-266 is the second to merge. To apply when R2's predictions are restated, after KIT-272 has landed on staging (merge staging
+once then, and record what conflicted in `DIANN_limpa_report.rmd`; this branch edits `FormatResults`, the Main results call, the
+`QC_metrics` caption and the placeholder chunk; KIT-272 edits the density/PCA bullet lines):
+1. G3 (`test-kit266-limpa-combined-qc-figure.R`, declared edit, AUDIT-KIT-272-impl I07): base-side substitution of the bullet and the
+   PCA bullet, 2 x 3 states per template, each with an exactly-one-match assertion, before the comparison with `kit236/base`.
+2. R2 also runs `test-kit272-prot-box-panel-text.R`.
+3. R3's V0 reference text (kit-236 render) holds the old bullets: restated from KIT-272's text; KIT-266's text keeps "the same
+   scores that panels a-c plot as points" true for the figure it builds.
+Budget: one more test file per side in R2 (about one test-minute); the declared figures (expected 48.03, ceiling 163.46
+core-hours) are unchanged. No current run is disturbed.
