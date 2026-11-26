@@ -495,7 +495,7 @@ implemented, the evidence runs, the precedents, the classification and what is n
 | A1 | G0 observes C1 to C14 as predicted (or the ticket is revised) | `g0-*` on `kit-242-g0`; r1.3 | met (C4 revised the ticket, r1.3) |
 | A2 | Every E row fails at base, G rows pass, all pass on the fix | R1a, R1b-A, R1c, R1b-B, R1d; R2 base/head | met (R2: the new file fixed, 526/0 on the head) |
 | A3 | No warning followed by an unhandled skip in the four S4 methods | the A3 sections above | met on the application's path, with the two logged-only removals named; except the script path of audit I07: `omicsRuvCorrectByCause` hands a k or control list that does not name every assay to the earlier rule, which drops that assay silently |
-| A4 | P0 lists the moving expectations; R2 as 8.2 | P0 45723354055 (`moved.tsv`); R2 45738934354 | not met for the 18 expectations of audit I01, which move outside the owner-approved files (awaiting the owner, asked 2026-11-26); otherwise met, with one message-level prediction error (KIT-073 `registry`), verdict unaffected |
+| A4 | P0 lists the moving expectations; R2 as 8.2 | P0 45723354055 (`moved.tsv`); R2 45738934354; R1e 45759484108 | met: the 18 expectations of audit I01 edited per VAL-373 (Q-B) and shown passing on this code (R1e); one message-level prediction error (KIT-073 `registry`), verdict unaffected; the final comparison is the merge train's |
 | A5 | R3 full suite: no difference other than A4's | by the merge train's run, coordinator's ruling | owed to the train |
 | A6 | NEWS, ledger row, `outcome.md` with "For the change report"; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged | NEWS (two KIT-242 bullets), ledger `VAL-<merge>`, this file | met except that OD-4 (c)'s note wherever an older record is read is not implemented (audit I03), and `VAL-<merge>` now says so; `git diff aa119308 -- man NAMESPACE DESCRIPTION` empty |
 | A7 | Hand-offs recorded by the coordinator | `DISPATCH-STATE.md` | the coordinator's |
@@ -518,9 +518,8 @@ re-record (VAL-303, VAL-352 (2) to (4)):
 - GUI-entry lanes (`tests/testdata/gui-entry/lipid_canonical.json`, `metab_lc.json`, `metab_gc.json`,
   `metab_combined.json`; `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R`): the internal-standard log and
   record captures (Part A); no RUV in these lanes; VAL-352 (2).
-Awaiting the owner (asked 2026-11-26; audit I01): 18 expectations in three files that pass on staging and that Part A
-turns red; no owner row covers them (not VAL-303, not VAL-352, not the standing re-record rule, which covers only
-references already failing):
+Edited to the decided behaviour by the owner's answer VAL-373 (Q-B) in tests-only commit a8c299c2 (audit I01; asked
+2026-11-26, answered 2026-11-27): 18 expectations in three files that pass on staging and that Part A turned red:
 - `tests/testthat/test-workflow-lipid-declarations.R:138`, `:188` and `test-workflow-metab-declarations.R:138`, `:188`
   (2 each): `itsd_applied` TRUE on a fixture whose ITSD matches no standard, and in the report overlay.
 - `tests/testthat/test-kit172-downstream.R` T10 (`:189-238`, 14): the tab's warning and notification counts and the
@@ -534,10 +533,12 @@ Edited, with authority: `test-workflow-lipid-declarations.R:47`, `test-workflow-
 - The full suite on the merged tree (A5): by the merge train's run.
 - OD-4 (c)'s note wherever an older record is read (record viewer, report overlay, KIT-236's sentences): not implemented
   here; the markers are (audit I03; the owner told).
-- Audit I04: on the proteomics `normalization-ruv` route an empty sample leaves the design with no notice and no record
-  (the warning `omics_normalisation_sample_removed` is not captured by `diaNormalizationOperation`); owed by r1.6, not
-  done; awaiting the owner's decision (asked 2026-11-26).
-- Audit I05: the study-parameters file's ITSD lines are not per assay (owed by r1.6 "with Part B"; not done).
+- Audit I04: repaired by the correction VAL-373 (Q-C) allowed (39e02a9d): `diaNormalizationOperation` captures the
+  removal; the value, the record's outcomes and a tab warning name the sample (E17). The in-process twin
+  `runProtNormBetweenSamplesStep` is no longer reached by the application and is left as it is.
+- Audit I05: the study-parameters file's ITSD lines are not per assay (owed by r1.6 "with Part B"; not done; VAL-373
+  records it as information).
+- OD-4 (c)'s note: a follow-up, not this ticket (VAL-373 Q-D).
 - Audit I06: the declared design records the excluded sample only in its factor records (no record outcome, no notice;
   its warnings escape uncaptured); the gate is off.
 - Audit I11: no test for `protein_normalisation_fallback` in the two proteomics declarations, its earlier-token scale
@@ -711,3 +712,50 @@ shape (lipid, metab) stop with "invalid 'type' (list) of argument" from `sum()`;
 "the control-feature search found no control features for assay A2, because it could not read the assay". Every
 earlier row passes. `test-kit172-downstream.R` 84/0, `test-workflow-lipid-declarations.R` and
 `test-workflow-metab-declarations.R` 259/0 each. Used: 221.80 + 1.93 = 223.73 of 901.33 core-hours.
+
+### The correction allowed by VAL-373 (Q-C): commit 39e02a9d
+
+One commit beyond the spent correction passes, for the two things VAL-373 (Q-C) names and nothing else under `R/`;
+`omicsItsdReportResult(value, addLog, warn)` and the marker order unchanged.
+1. **Proteomics, the DIA normalisation step** (audit I04): `diaNormalizationOperation` captures
+   `omics_normalisation_sample_removed` (`R/utils_workflow_dia_products.R`, the kernel's call), carries `samples_removed`
+   in its value (only when a sample was removed), `diaNormalizationCommit` writes it into the record's outcomes,
+   `publishDIAReferenceNormalization` hands it to the tab, and `finishProtNormNormalization`
+   (`R/mod_prot_norm_workflow_helpers.R`) shows "Warning: samples <s> have no value and were removed from the design."
+   (log and warning notification). Test E17 (through the kernel, the commit and the tab's finish).
+2. **VAL-373 (Q-A) option (b)** (audit I02): the control selection (`getNegCtrlMetabAnova`, lipid and metab) keeps why it
+   skipped an assay (a group with fewer than two samples holding values, an assay it could not read, too little data) as
+   an attribute of its list under the current rule; the Automatic search records such an assay as
+   `skipped_no_controls_selected` at each percentage instead of taking the whole list (where `sum()` failed), the Manual
+   search fails it with the reason; `omicsRuvSearchOutcomes` keeps an assay skipped for its groups without RUV as
+   `no_usable_controls`, naming the groups (value `ruv_not_applied_groups`, record
+   `ruv_not_applied_groups_per_assay`, the notice), and stops every other skip as before (duplicated feature ids keep
+   their stop and message). Tests E27 (lipid and metab, Automatic and Manual) and KIT-275's VE shape.
+NEWS: the two known-limit clauses replaced by what the code now does; texts as drafts in wording.md. Its evidence is
+R1e (failing first) and the merge train's full-suite run (VAL-373); no further comparison of KIT-242's own.
+
+## Prediction list for the merge train, from KIT-242's side against today's staging
+
+Base: staging when the train starts; head: staging + kit-242 (39e02a9d and records) + kit-260. KIT-260's own files and
+the combined `test-omic-norm-module.R` count are KIT-260's to predict. Request as R2 (the trains' `env`,
+`extra_packages`, `file_timeouts`; without `test-workflow-checkpoint-harness.R` and `test-tech-reps-limma.R`).
+
+| File | Verdict | Base -> head (passed/failed) | Reason |
+|---|---|---|---|
+| `test-kit242-normalisation-fallback.R` | only-on-head | - -> 571/0 | R1e's 537 expectations plus the 34 that E27 (4 x 6) and the VE shape (2 x 5) reach once they no longer stop at their first expectation |
+| `test-workflow-omics-worker.R` | count-changed, all pass | 289/0 -> 265/0 | Part A's and Part B's declared branches (r1.6, VAL-352 (5)); the RUV step on the raw fixture still stops (the Manual search's skip for duplicated ids keeps its stop and text) |
+| `test-module-ci-metab-norm.R` | count-changed, all pass | 156/0 -> 158/0 | MCI-015.3's edited block (VAL-352 (5)); its stub carries no skip reason, so it still stops |
+| `test-metab-02w-normalise-between-samples-characterization.R` | count-changed, all pass | 16/0 -> 18/0 | VAL-352 (1) |
+| `test-kit172-downstream.R` | same | 84/0 -> 84/0 | the edited T10 (VAL-373 Q-B) passes on staging's code and on the head (R1e: 84/0 on Part A's code) |
+| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | count-changed? no: see reason | 259/0 -> 259/0, but `:47`, `:138`, `:188` fail on the base | on staging's code the edited `:138`/`:188` (FALSE) and the `:47` pin fail, on the head they pass: verdict **fixed** for each file (base 256/3, head 259/0) |
+| `test-omic-norm-module.R` | new-failure for KIT-242 alone | 631/8 -> 583/56 | VAL-303 (1), VAL-352 (4); the combined count with KIT-260's re-pins is KIT-260's |
+| `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R` | message-changed | 19/16, 57/48 | the ITSD log and record captures inside steps already failing (VAL-352 (2)); the lanes skip RUV |
+| `test-workflow-omics-declarations.R` (KIT-073) | message-changed | 43/25 | `values` (the RUV and ITSD per-assay fields); `registry` message unchanged (VAL-338's situation) (VAL-352 (3)) |
+| `test-workflow-omics-binding-steps.R` (KIT-094) | message-changed | 57/2 | the `records` part (VAL-352 (3)) |
+| `test-prot-norm-core.R` | message-changed | 1547/307 | three KIT-111 tests (the protein marker in provenance); the DIA step's new `samples_removed` appears only when a sample is removed, and no fixture has one |
+| `test-gui-entry-proteomics.R`, `test-workflow-operation-registry.R`, `test-kit172-reopen.R`, `test-kit236-report-sentences.R`, `test-kit235-…`, `test-omics-module-globals.R`, the RUV and control-selection characterisation files (`test-metab-03a-…`, `test-lipid-12b/12c-…`, `test-metab-02y-…`, `test-metab-04-…`, `test-ruv-control-anova-grouping.R`), `test-kit224-ruv-feature-levels.R`, `test-kit255-omics-correlation-assays.R` | same | as on the base | no value moves where a correction acted before; the control selection's new attribute is set only when it skips an assay under the current rule |
+| every other file | same | as on the base | |
+| check | identical findings | | |
+
+Correction to the table's declarations row: the two declarations files are **fixed** (base 256/3 with the three
+expectations `:47`, `:138`, `:188` failing on staging's code; head 259/0).
