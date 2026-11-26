@@ -105,3 +105,42 @@ UNPREDICTED: test-kit272-prot-box-panel-text.R, 373/0 on base, 372/1 on head (ne
 (principal component scores by group after log2 transformation)...", while this ticket's design (item 8c, D4) gives the limpa template its own stage words ("of DPC-Quant's
 protein estimates"). A consequence of the two tickets' merge, not a defect of the figure. Stop rule 3 applies; the one correction pass is used for it: a declared edit of
 that single expectation (limpa: the stage words of this ticket; the other three templates unchanged), re-run on that file only, base and head.
+
+## R2c (run 45759491318) and R3b (run 45759493931): the correction pass
+
+R2c: test-kit272-prot-box-panel-text.R, base ec6e282b (R2 base plus the declared T7 limpa edit) against head 0daa4812: `fixed`, base 372 passed / 1 failed (T7 DIANN_limpa, the old
+words "after log2 transformation"), head 373 / 0; as predicted. 39.9 job-minutes (2.66 core-hours).
+R3b: the same 19 checks as R3 (run 45750234015), all as predicted, now with the two limpa PNGs uploaded and opened. Three-column figure (1950 x 3900): titles "DPC-Quant estimates (log2)" (2 lines),
+"After the peptide count filter (no between-sample normalisation applied)" (3 lines) and "RUV-III-adjusted (for quality control only; not the data analysed)" (3 lines) all fit their columns, none clipped (the
+three-line titles come close to the top edge of the strip but are whole); panels a to l and m) present, m) centred. Two-column figure (1500 x 3300): the first two titles fit, panels a to h.
+The cyclic loess title (first line 32 characters) is not rendered by this lane and is unobserved. The panel d to f box plots match KIT-272's description. 30.5 job-minutes (2.03).
+
+## Budget (core-hours = job-minutes x 4 / 60)
+
+G0 1.79; R1 1.85; R1b 1.38; M1 0.89; R1c 2.83; M1b 0.75; R3 1.64; M1c 1.45; R2 38.52; R2c 2.66; R3b 2.03 = 55.79 against the ceiling 163.46 (expected 48.03; over the expected
+by the extra declared runs: R1c 2.83, M1 sends 3.09 instead of 2.0, R3b 2.03, R2c 2.66, because R2's expected 40.57 came in at 38.52).
+
+## Acceptance criteria
+
+A1 met (R1, R1b). A2 met (G0). A3 met: every E and G row passes on the head (R1c 183/2 with the E12 (c) premise corrected, R2 head 210/0). A4 met with one unpredicted verdict (kit272 T7), repaired by a declared edit (R2c).
+A5a met (M1c). A5 met (R3, R3b: 19 of 19; drawings 3, 3, 3 and 2; caption; sizes; titles fit). A6 met (E13 and R3 V0/V1/V2). A7: NEWS, ledger row VAL-<merge>, this file; section 8's lines below.
+
+## Stored values that move (not edited; for the end-of-project re-record)
+
+tests/testdata/gui-entry/prot_dia_limpa.json: the limpa lane's artifacts gain proteomics_composite_QC_figure.{pdf,png,rds} at 11 steps (norm, correlation, ruv_covariates, session_export, da_load, da,
+summary_refusal, summary_save, summary_copy, summary_report, summary_export) and the two Copy files at the three Copy steps; pre_norm_* appear at norm; the eight *_post_filter_assay1 outputs at norm and
+correlation turn from <table> to <plot>; the dia-qc-image/product/state store counts move; the nine ruv_covariates_summary lines change (D5); observed by R2 (45750231427) in test-gui-entry-proteomics.R
+(92/101 both sides, messages only). Declared test-literal edits (not stored values): see the ledger row.
+
+## For the change report
+
+Wrong: on DIA with limpa (0.9.0 and staging) the report's Results paragraph described the combined quality-control figure (panels a to l) and the report contained no figure; Copy said the files were copied while its log listed
+the figure as missing; the Normalisation tab's first column of QC figures was drawn from a later table, the RUV-III-corrected matrix, or not at all, labelled "Pre-normalisation". Affected: every user of the limpa route.
+Code: the builder was called at v0.9.0:R/utils_workflow_dia_products.R:867 and :1900 only (classic); the pre figures' source rule at v0.9.0:R/mod_prot_norm_qc_generation_helpers.R:8-11; now the limpa closures call the builder
+(R/mod_prot_norm_workflow_helpers.R: pass_through closure, runProtNormRuvCovariatesObserver finish, runProtNormApplyCorrelationObserver, runProtNormSkipCorrelationObserver; R/utils_workflow_dia_norm.R: buildDiaLimpaCombinedQcFigure; worker:
+R/utils_workflow_dia_products.R saveWorkflowDiaLimpaCompositeFigure). Results unchanged. Evidence: runs in runs.tsv; PNG sizes 1500x3300 and 1950x3900; M1 rises 0.007 and 0.010 GiB. On main the single normalisation module built the figure for limpa projects.
+
+## Not checked
+
+The cyclic loess image title (32-character first line); a real worker on Windows or with systemd (M1 used a child Rscript, the production command shape without the unit); sessions saved before this change beyond the labelled-note path; the DA tab at a re-applied correlation_filtered head (VAL-334); the
+G2b fallback beyond the shape tested; Copy's log text beyond the assertion on 'Source file not found'; test-omics-module-globals.R (not in scope); R CMD check beyond the identical findings; the real-data behaviour.
