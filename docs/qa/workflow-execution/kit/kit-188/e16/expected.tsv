@@ -1,4 +1,8 @@
 case	file	key	column	value
+main	partm-repair.tsv	L12|N0|none|S1|LA|LP	n	80
+main	partm-repair.tsv	L12|N0|none|S1|LA|LP	mean_diff	-0.04
+main	partm-levels.tsv	L12|N0|vd20|S1|LAs|LA	n	99
+main	partm-levels.tsv	L12|N0|vd20|S1|LAs|LA	mean_diff	0.02
 main	conditions.tsv	L12|deciding|N0|none|LA|S1	n_gate	20
 main	conditions.tsv	L12|deciding|N0|none|LA|S1	r_used	380
 main	conditions.tsv	L12|deciding|N0|none|LA|S1	r_out	20
@@ -128,3 +132,27 @@ k2phi	phi.tsv	L12|deciding|N0|none|LA	phi_upper	0.10533763861384532
 k1	phi.tsv	L12|deciding|N0|none|LA	events	0
 tf	statuses.tsv	L|L12|deciding|LA|1|ok|T	n	7200
 tf	outcome.txt	line	startswith	lipid_metab: K1 
+k2la	outcome.txt	line	startswith	lipid_metab: K2 
+k2la	verdicts.tsv	lipid_metab|LA	verdict	unsafe
+k2la	verdicts.tsv	lipid_metab|GA	verdict	safe
+k2la	verdicts.tsv	lipid_metab|NO	verdict	safe
+k1eff	outcome.txt	line	startswith	lipid_metab: K2 
+k1eff	outcome.txt	line	contains	K1's efficiency clause failed
+k1eff	conditions.tsv	L12|deciding|E0|none|LA|F1	classification	much lower
+k1eff	conditions.tsv	L12|deciding|E1|none|LA|F1	classification	lower
+k1eff	conditions.tsv	L12|deciding|E0|vd5|LA|F1	classification	comparable
+k1eff	conditions.tsv	L12|deciding|N0|vd5|LA|F2	classification	less precise
+k1eff	conditions.tsv	L12|deciding|N1|vd5|LA|F2	classification	much less precise
+k1eff	conditions.tsv	L12|deciding|N0|none|LA|F2	classification	comparable
+k1eff	verdicts.tsv	lipid_metab|LA	verdict	safe
+k1eff	verdicts.tsv	lipid_metab|GA	verdict	safe
+nss	outcome.txt	line	startswith	lipid_metab: K2 
+nss	conditions.tsv	L12|deciding|N0|none|LA|S1	classification	not determined
+nss	verdicts.tsv	lipid_metab|LA	verdict	not shown safe
+s5fail	outcome.txt	line	startswith	lipid_metab: K2 
+s5fail	conditions.tsv	L12|deciding|N0|vd20|LA|S5	classification	fails
+s5fail	verdicts.tsv	lipid_metab|LA	verdict	unsafe
+excess	outcome.txt	line	startswith	lipid_metab: K2 
+excess	conditions.tsv	L12|deciding|N1|vd20|NO|S1	classification	meets (excess over OR)
+excess	conditions.tsv	L12|deciding|N1|vd20|GA|S1	classification	meets (excess over OR)
+excess	conditions.tsv	L12|deciding|N1|vd20|LA|S1	classification	fails (excess over OR)

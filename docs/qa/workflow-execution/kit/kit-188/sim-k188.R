@@ -43,7 +43,7 @@
 # that warning is an error here, in every process of every run (lifecycle, L1r, L1c and counted runs). A stop from it is an instrument defect.
 options(warnPartialMatchDollar = TRUE)
 globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })
 args <- commandArgs(TRUE)
 child <- length(args) >= 1L && identical(args[[1L]], "--unit")
@@ -96,7 +96,7 @@ BLIND <- c("n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls
     "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share",
     "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa", "tie_share", "tie_block", "tie_block_onegroup", "perm_jaccard",
     "mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev",
-    "mu_t_dev", "mu_call_changes", "mu_t_dev_notrend", "logfc_max")
+    "mu_t_dev", "mu_call_changes", "mu_t_dev_notrend", "logfc_max", "mamp_slope")
 
 warning_count <- new.env()
 warning_count$n <- 0L
@@ -112,7 +112,7 @@ quiet <- function(expr) {
         warning_count$log <- c(warning_count$log, paste(class(cond)[[1L]], if (length(hit)) hit[[1L]] else "", sep = "@"))
     }
     invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
-        if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+        if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
         warning_count$n <- warning_count$n + 1L
         noteOf(w)
         invokeRestart("muffleWarning")
@@ -438,6 +438,8 @@ EXPECTED_DEFAULTS <- list(
 EXPECTED_DEFAULTS$metab <- EXPECTED_DEFAULTS$lipid
 # 5.2 (r1.20; VAL-241 OD-1 (c)), the import's default pattern as KIT-260 ships it, read at the bound commit by E3 (a difference
 # stops: the route under test changed)
+BOUND_MARKERS <- c("duplicate_resolution_rank", "correlation_exclusion", # on staging (KIT-255 at aa119308)
+    "normalisation_fallback", "protein_normalisation_fallback", "itsd_outcome", "ruv_fallback") # waiting: KIT-242 (itsd_outcome: also KIT-260)
 ITSD_DEFAULT_PATTERN <- "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
 checkE3 <- function(omic) {
     got <- routeDefaults(omic)
@@ -457,9 +459,14 @@ checkE3 <- function(omic) {
     pattern_ok <- identical(omic, "prot") || identical(imported, ITSD_DEFAULT_PATTERN)
     got$cyclic_loess_minimum <- loess_minimum
     got$itsd_import_pattern <- imported
-    list(pass = !length(differ) && !length(matched) && !length(leaked) && pattern_ok, got = got,
-        note = sprintf("differ: %s; labelled names matching an ITSD pattern: %s; markers off their current token: %s; import pattern as shipped %s",
-            paste(differ, collapse = ",") %||% "", paste(matched, collapse = ","), paste(leaked, collapse = ","), pattern_ok))
+    # BIND-1: the replay markers the bound commit must hold, so that a run on the wrong base stops here. KIT-255's `correlation_exclusion` and the
+    # duplicate-resolution rank marker are on staging (aa119308); KIT-242's and KIT-260's names are as their branches define them
+    # (origin/kit-242: `normalisation_fallback`, `protein_normalisation_fallback`, `itsd_outcome`, `ruv_fallback`; origin/kit-260: `itsd_outcome`)
+    # and WAIT for the bound commit (re-read there; a name that differs is written into lifecycle.md and edited here before L1r).
+    missing_markers <- setdiff(BOUND_MARKERS, names(workflowReplayRuleMarkers))
+    list(pass = !length(differ) && !length(matched) && !length(leaked) && pattern_ok && !length(missing_markers), got = got,
+        note = sprintf("differ: %s; labelled names matching an ITSD pattern: %s; markers off their current token: %s; import pattern as shipped %s; replay markers missing at this commit: %s",
+            paste(differ, collapse = ",") %||% "", paste(matched, collapse = ","), paste(leaked, collapse = ","), pattern_ok, paste(missing_markers, collapse = ",")))
 }
 
 # ---- Part L journeys (5.3) ------------------------------------------------------------------------------------------
@@ -766,8 +773,12 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
     }, error = function(e) {
         cls <- intersect(class(e), REFUSALS)
         text <- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
-        # r1.17 (R16-P07): a journey already `instrument` keeps its status; the later error goes to `class`
-        if (identical(out$status, "instrument")) {
+        # a partial-match guard stop is an INSTRUMENT defect (VAL-54), never a route failure: it must not enter the 5 % gate
+        if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) {
+            out$status <<- "instrument"
+            out$class <<- oneLine(paste("partial_match_guard:", conditionMessage(e)))
+        } else if (identical(out$status, "instrument")) {
+            # r1.17 (R16-P07): a journey already `instrument` keeps its status; the later error goes to `class`
             out$class <<- paste(out$class, text, sep = " | ")
         } else {
             out$status <<- if (length(cls)) "refused" else "crashed"
@@ -808,7 +819,7 @@ legacyChoice <- function(journey) {
         x <- o[[a]]
         ctl <- x$control_genes_index
         k_sweep <- if (isTRUE(x$success)) as.integer(x$best_k) else NA_integer_
-        k_used <- suppressWarnings(as.integer(unlist(journey$ruv_value$best_k[[a]])[1L]))
+        k_used <- suppressWarnings(as.integer(unlist(journey[["ruv_value"]][["best_k"]][[a]])[1L]))
         list(k = if (length(k_used) && !is.na(k_used)) k_used else k_sweep, k_sweep = k_sweep, pct = x$best_percentage %||% NA_real_,
             controls = if (is.logical(ctl)) names(ctl)[which(ctl)] else character(), trace = x$optimization_results)
     })
@@ -1375,7 +1386,7 @@ checkE11 <- function(sim, la, las, condition) {
     dev <- NA_real_
     if (!is.null(la$da) && !is.null(las$da) && identical(la$runs_final, las$runs_final)) {
         at <- match(paste(las$da$assay, las$da$comparison, las$da$feature), paste(la$da$assay, la$da$comparison, la$da$feature))
-        dev <- suppressWarnings(max(abs(las$da$logFC - la$da$logFC[at]), na.rm = TRUE))
+        dev <- suppressWarnings(max(abs(las[["da"]][["logFC"]] - la[["da"]][["logFC"]][at]), na.rm = TRUE))
         pass <- pass && is.finite(dev) && dev <= 1e-10
     }
     addCheck("E11", sim$cell, sim$r, condition, signif(dev, 4), "constant per feature at most 1e-9; logFC 1e-10", pass, paste(notes, collapse = "; "))
@@ -1414,7 +1425,17 @@ checkE8 <- function(sim, journey, choice, condition) {
         tolerance <- if (length(sim$runs) > 20L) 1e-6 else 1e-8
         addCheck("E8", sim$cell, sim$r, paste(condition, a), signif(worst, 4), tolerance, worst <= tolerance,
             sprintf("k %d, controls %d (reported, never re-run)", ch$k, sum(ctl)))
-        out[[a]] <- list(mamp_sigma_min = min(svd(ac)$d), mamp_e_max = e_max,
+        # P13-1 (REPORTED ONLY, decides nothing; the coordinator's ruling (a) on KIT-275 P13): the slope of LA's corrected contrast on its uncorrected
+        # contrast across features, per contrast from the matrices above (mask none: no missing values), averaged over the contrasts; about 1 means the
+        # fold changes are unchanged by the correction
+        slopes <- vapply(sim$groups[-1L], function(g) {
+            r_ix <- group[match(runs, rownames(Y))]
+            lambda <- (r_ix == g) / sum(r_ix == g) - (r_ix == "A") / sum(r_ix == "A")
+            u <- drop(crossprod(lambda, Y[runs, common, drop = FALSE]))
+            cc <- drop(crossprod(lambda, t(Yout[common, runs, drop = FALSE])))
+            if (stats::var(u) > 0) unname(stats::coef(stats::lm(cc ~ u))[[2L]]) else NA_real_
+        }, numeric(1L))
+        out[[a]] <- list(mamp_slope = mean(slopes, na.rm = TRUE), mamp_sigma_min = min(svd(ac)$d), mamp_e_max = e_max,
             mamp_planted_share = mean(sim$planted[intersect(ch$controls, names(sim$planted))]))
     }
     out
@@ -1795,7 +1816,7 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
         }
         j <- journeyP(sim, values, arm, requests[[if (identical(arm, "NOn")) "NOnone" else arm]], d, tempfile("k188-p-"), config, fault = fault)
         v <- j$ruv_value
-        ch <- list(proteins = list(k = suppressWarnings(as.integer(v$best_k %||% NA)), pct = suppressWarnings(as.numeric(v$percentage %||% NA)),
+        ch <- list(proteins = list(k = suppressWarnings(as.integer(v[["best_k"]] %||% NA)), pct = suppressWarnings(as.numeric(v[["percentage"]] %||% NA)),
             controls = if (is.logical(v$controls)) names(v$controls)[which(v$controls)] else character()))
         if (!is.null(j$m_in)) {
             m <- j$m_in$proteins
@@ -1807,7 +1828,7 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
         # 18.4a (VAL-126): ties and row order, per legacy journey (LA with qvalue, LM with BH)
         tie <- NULL
         if (arm %in% c("LA", "LP", "LM") && identical(j$status, "ok")) {
-            tie <- tryCatch(tieCount(sim, j, suppressWarnings(as.numeric(v$percentage %||% d$manual_pct)), if (arm == "LM") "BH" else "qvalue"),
+            tie <- tryCatch(tieCount(sim, j, suppressWarnings(as.numeric(v[["percentage"]] %||% d$manual_pct)), if (arm == "LM") "BH" else "qvalue"),
                 error = function(e) list(error = oneLine(conditionMessage(e))))
             if (!is.null(tie$error)) {
                 addCheck("TIE", sim$cell, sim$r, paste(condition, arm), NA, "computed", FALSE, tie$error)
@@ -2258,7 +2279,8 @@ runChild <- function(i) {
     if (!is.null(res$stack)) writeLines(res$stack, file.path(out_dir, "rows", sprintf("unit-trace-%s.txt", tag)))
     if (is.null(rows) || !nrow(rows)) {
         rows <- as.data.frame(do.call(newRow, list(part = part, cell = u$cell, job = u$job, scenario = u$scenario, mask = u$mask, rep = u$r,
-            arm = "unit", status = "crashed", class = res$error %||% "no rows")), stringsAsFactors = FALSE)
+            arm = "unit", status = if (grepl("partial-match guard", res$error %||% "", fixed = TRUE)) "instrument" else "crashed",
+            class = res$error %||% "no rows")), stringsAsFactors = FALSE)
     }
     rows$smoke <- if (smoke) "1" else NA_character_
     numeric_columns <- vapply(rows, is.numeric, logical(1L))

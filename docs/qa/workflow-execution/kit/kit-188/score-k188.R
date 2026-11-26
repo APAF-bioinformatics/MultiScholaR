@@ -21,7 +21,7 @@
 # that warning is an error here, in every process of every run (lifecycle, L1r, L1c and counted runs). A stop from it is an instrument defect.
 options(warnPartialMatchDollar = TRUE)
 globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })
 args <- commandArgs(TRUE)
 stopifnot(length(args) >= 2L)
@@ -60,7 +60,7 @@ if ("smoke" %in% names(rows) && any(rows$smoke %in% "1")) stop("KIT-188 scoring 
 num <- function(x) suppressWarnings(as.numeric(x))
 # rows written before r1.16 carry none of the per-assay columns
 for (column in c("itsd_ok", "norm_ok", "ruv_status", "da_status", "corr_removed_one_assay", "ruv_k_found", "ruv_k_sweep", "ruv_k_used", "ruv_k_cap",
-    "n_controls", "complete_controls", "k_estimate", "logfc_max")) if (!column %in% names(rows)) rows[[column]] <- NA
+    "n_controls", "complete_controls", "k_estimate", "logfc_max", "mamp_slope")) if (!column %in% names(rows)) rows[[column]] <- NA
 for (column in c("rep", "n_T", "n_tested", "lost", "n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls", "any_call",
     "fdp", "power", "n_planted", "bh_calls", "bh_false", "bh_any", "bh_fdp", "bh_power", "gross1", "n_common", "s5", "or_s5",
     "gross1_common", "or_gross1_common", "err_max", "k", "samples_removed", "n_controls", "complete_controls", "k_estimate", "logfc_max",
@@ -68,6 +68,8 @@ for (column in c("rep", "n_T", "n_tested", "lost", "n_null", "null_p05", "null_p
 rows$arm_scale[is.na(rows$arm_scale)] <- "1"
 isFalse <- function(x) as.character(x) %in% "FALSE"
 
+# GUARD-2: a stop of the partial-match guard (a `$` prefix match, sim-k188.R) is an instrument defect, never a route failure
+if (any(grepl("partial-match guard", rows$class, fixed = TRUE))) stop("KIT-188 scoring stops: a partial-match guard stop (an instrument defect, VAL-54)")
 # ---- (i) a counted run holds no instrument failure (38.3 (i); 35.2, 7.4: the columns, not only the status) ----------------
 instrument <- isFalse(rows$itsd_ok) | isFalse(rows$norm_ok) | rows$status %in% "instrument"
 if (any(instrument)) stop(sprintf("KIT-188 scoring stops: %d row(s) have itsd_ok or norm_ok FALSE or status instrument (an instrument defect, VAL-54, or the bound commit's own behaviour, reported before scoring: 7.4); first: %s",
@@ -76,6 +78,43 @@ if (any(instrument)) stop(sprintf("KIT-188 scoring stops: %d row(s) have itsd_ok
 # ---- (ii) unit rows expanded to every arm and condition of their job, as `crashed`; the declared range checked (38.3 (ii)) ----
 unit_rows <- rows[rows$arm %in% "unit" & rows$job %in% SCORED_JOBS, , drop = FALSE]
 rows <- rows[!rows$arm %in% "unit", , drop = FALSE]
+# RANGE-1: every scored row's data set lies inside the declared range, so a counted scoring run cannot silently use E16's ranges
+scored_sets <- unique(rows[rows$part == "L" & rows$job %in% SCORED_JOBS & rows$arm_scale == "1", c("cell", "job", "rep")])
+outside <- scored_sets[if (nrow(scored_sets)) !mapply(function(cell, job, rep) rep %in% declaredRange(job, cell), scored_sets$cell, scored_sets$job, scored_sets$rep) else logical(0), , drop = FALSE]
+if (nrow(outside)) stop(sprintf("KIT-188 scoring stops: %d (cell, job, data set) lie outside the declared range, first %s %s %d", nrow(outside), outside$cell[[1L]], outside$job[[1L]], outside$rep[[1L]]))
+# E5-1 (7.4 E5; the jobs of S are separate counted jobs): for every cell and data set 1 to 100 the deciding job's OR rows (written columns; `seconds`
+# and the Part M columns removed) equal the reported, lp and las jobs' OR rows, and the deciding job's LA rows equal the reported job's LA rows. A
+# difference is reported (checks-e5.tsv) and stops scoring before the classifications; nothing is scored around it.
+E5_DROP <- c("job", "seconds", "warnings", "n_common", "s5", "gross1_common", "or_gross1_common", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share",
+    "mamp_slope", "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa", "mdf_null05", "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested", "smoke")
+e5Rows <- function(job, cell, arm) {
+    x <- rows[rows$job %in% job & rows$cell == cell & rows$arm == arm & rows$scenario %in% SCENARIOS[1:4] & rows$scoreset %in% "T" &
+        rows$arm_scale == "1" & rows$rep <= ranges[[2L]], setdiff(names(rows), E5_DROP), drop = FALSE]
+    x[do.call(order, x[c("scenario", "mask", "rep", "assay", "contrast")]), , drop = FALSE]
+}
+e5 <- list()
+for (cell in unique(rows$cell[rows$part == "L" & rows$job %in% SCORED_JOBS])) {
+    pairs <- c(lapply(c("reported", "lp", "las"), function(j) list("OR", j)), list(list("LA", "reported")))
+    for (pr in pairs) {
+        a <- e5Rows("deciding", cell, pr[[1L]])
+        b <- e5Rows(pr[[2L]], cell, pr[[1L]])
+        if (!nrow(a) || !nrow(b)) next
+        ka <- do.call(paste, a[c("scenario", "mask", "rep", "assay", "contrast")])
+        kb <- do.call(paste, b[c("scenario", "mask", "rep", "assay", "contrast")])
+        common <- intersect(ka, kb)
+        a <- a[ka %in% common, , drop = FALSE]
+        b <- b[kb %in% common, , drop = FALSE]
+        rownames(a) <- rownames(b) <- NULL
+        e5[[length(e5) + 1L]] <- data.frame(check = "E5", cell = cell, arm = pr[[1L]], compared = paste("deciding against", pr[[2L]]), rows = nrow(a),
+            pass = identical(a, b), stringsAsFactors = FALSE)
+    }
+}
+if (length(e5)) {
+    e5 <- do.call(rbind, e5)
+    utils::write.table(e5, file.path(out_dir, "checks-e5.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+    if (any(!e5$pass)) stop(sprintf("KIT-188 scoring stops: E5 differs (%s); reported before the classifications, nothing is scored around it",
+        paste(unique(paste(e5$cell, e5$arm, e5$compared)[!e5$pass]), collapse = "; ")))
+}
 condsOf <- function(part, cell, job, u_scenario = NA, u_mask = NA) {
     if (identical(part, "P")) return(data.frame(scenario = u_scenario, mask = u_mask, stringsAsFactors = FALSE))
     scenarios <- if (identical(job, "deciding") && cell %in% c("L12", "M12")) SCENARIOS else SCENARIOS[1:4]
@@ -141,18 +180,18 @@ dataset <- do.call(rbind, lapply(groups, function(x) {
         S1_01 = pooled(x$null_p01 * x$n_null, x$n_null),
         S2 = mean(x$any_call, na.rm = TRUE), S2_pooled = as.numeric(any(x$any_call > 0, na.rm = TRUE)),
         S3 = if (sum(x$calls, na.rm = TRUE) > 0) sum(x$false_calls, na.rm = TRUE) / sum(x$calls, na.rm = TRUE) else 0,
-        S5 = if (identical(arm, "OR")) suppressWarnings(max(x$or_s5, na.rm = TRUE)) else suppressWarnings(max(x$s5, na.rm = TRUE)),
+        S5 = if (identical(arm, "OR")) suppressWarnings(max(x[["or_s5"]], na.rm = TRUE)) else suppressWarnings(max(x[["s5"]], na.rm = TRUE)),
         power = pooled(x$true_calls, x$n_planted), calls = sum(x$calls, na.rm = TRUE), false_calls = sum(x$false_calls, na.rm = TRUE),
         gross_common = pooled(x$gross1_common * x$n_common, x$n_common),
         or_gross_common = pooled(x$or_gross1_common * x$n_common, x$n_common),
         S1_bh = NA_real_, S2_bh = mean(x$bh_any, na.rm = TRUE),
         S3_bh = if (sum(x$bh_calls, na.rm = TRUE) > 0) sum(x$bh_false, na.rm = TRUE) / sum(x$bh_calls, na.rm = TRUE) else 0,
-        lost = sum(x$lost, na.rm = TRUE), err_max = suppressWarnings(max(x$err_max, na.rm = TRUE)), logfc_max = suppressWarnings(max(x$logfc_max, na.rm = TRUE)),
+        lost = sum(x$lost, na.rm = TRUE), err_max = suppressWarnings(max(x[["err_max"]], na.rm = TRUE)), logfc_max = suppressWarnings(max(x[["logfc_max"]], na.rm = TRUE)),
         k = paste(unique(x$k), collapse = ";"), k_sweep = paste(unique(x$ruv_k_sweep), collapse = ";"), k_cap = paste(unique(x$ruv_k_cap), collapse = ";"),
-        k_num = suppressWarnings(mean(x$k, na.rm = TRUE)), n_controls_mean = suppressWarnings(mean(x$n_controls, na.rm = TRUE)),
-        complete_min = suppressWarnings(min(x$complete_controls, na.rm = TRUE)), n_controls_min = suppressWarnings(min(x$n_controls, na.rm = TRUE)),
-        k_est_min = suppressWarnings(min(x$k_estimate, na.rm = TRUE)),
-        samples_removed = suppressWarnings(max(x$samples_removed, na.rm = TRUE)), corr_one_assay = paste(unique(stats::na.omit(x$corr_removed_one_assay[nzchar(x$corr_removed_one_assay)])), collapse = ";"),
+        k_num = suppressWarnings(mean(x[["k"]], na.rm = TRUE)), n_controls_mean = suppressWarnings(mean(x[["n_controls"]], na.rm = TRUE)),
+        complete_min = suppressWarnings(min(x[["complete_controls"]], na.rm = TRUE)), n_controls_min = suppressWarnings(min(x[["n_controls"]], na.rm = TRUE)),
+        k_est_min = suppressWarnings(min(x[["k_estimate"]], na.rm = TRUE)),
+        samples_removed = suppressWarnings(max(x[["samples_removed"]], na.rm = TRUE)), corr_one_assay = paste(unique(stats::na.omit(x$corr_removed_one_assay[nzchar(x$corr_removed_one_assay)])), collapse = ";"),
         crashed = any(x$status == "crashed"), no_da = any(x$status == "no_da"), dropped = any(x$status == "dropped"), refused = any(x$status == "refused"),
         stringsAsFactors = FALSE)
 }))
@@ -392,7 +431,8 @@ partm <- function(columns, filter, name) {
     utils::write.table(x, file.path(out_dir, name), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 }
 partm(c("k", "mdf_null05", "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested"), !is.na(num(rows$mdf_null05)), "partm-df.tsv")
-partm(c("k", "n_controls", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share", "s5", "null_p05"), !is.na(num(rows$mamp_e_max)), "partm-amp.tsv")
+# mamp_slope (P13-1) is REPORTED ONLY: the slope of LA's corrected contrasts on its uncorrected ones; it decides nothing
+partm(c("k", "n_controls", "mamp_sigma_min", "mamp_e_max", "mamp_slope", "mamp_planted_share", "s5", "null_p05"), !is.na(num(rows$mamp_e_max)), "partm-amp.tsv")
 partm(c("k", "n_controls", "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa", "s5", "err_max"), !is.na(num(rows$mamp_cf_n)),
     "partm-closed-form.tsv")
 partm(c("mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev", "mu_t_dev",

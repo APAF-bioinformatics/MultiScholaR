@@ -1,0 +1,2 @@
+key	expected
+emptysample/corr_removed_one_assay.LCMS_Pos	re:^(?!.*LCMS_Pos:R001)

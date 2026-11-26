@@ -3,7 +3,8 @@
 import csv, os, sys
 
 KEYS = {"conditions.tsv": ["cell", "job", "scenario", "mask", "arm", "estimand"], "phi.tsv": ["cell", "job", "scenario", "mask", "arm"],
-        "verdicts.tsv": ["group", "arm"], "statuses.tsv": ["part", "cell", "job", "arm", "arm_scale", "status", "class"]}
+        "verdicts.tsv": ["group", "arm"], "statuses.tsv": ["part", "cell", "job", "arm", "arm_scale", "status", "class"],
+        "partm-repair.tsv": ["cell", "scenario", "mask", "metric", "arm_a", "arm_b"], "partm-levels.tsv": ["cell", "scenario", "mask", "metric", "arm_a", "arm_b"]}
 here, scored = sys.argv[1], sys.argv[2]
 def table(case, name):
     path = os.path.join(scored, case, name)

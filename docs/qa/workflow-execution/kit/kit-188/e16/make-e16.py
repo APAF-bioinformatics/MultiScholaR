@@ -146,6 +146,7 @@ out = sys.argv[1]
 expected = []   # (case, file, key, column, value)
 def expect(case, file, key, column, value):
     expected.append((case, file, key, column, str(value)))
+def pk(*a): return "|".join(a)
 def cond_key(cell, job, scen, mask, arm, est): return "|".join([cell, job, scen, mask, arm, est])
 
 # ---- case main: L12 (R = 400) and L24 (R = 100), unit row at data set 5 -----------------------------------------------------
@@ -176,7 +177,29 @@ mk("N1", "vd20", "GA", lambda rep, s, m: row("L12", "deciding", s, m, rep, "GA",
     row("L12", "deciding", s, m, rep, "GA", status="not_run", **{"class": "planted not_run"}))
 rows = build("L12", R, plants, unit_rep=5) + [unit_row("L12", 5)]
 rows += build("L24", 100)
+def block(job, arm, n, over=None, or_over=None):
+    """The lp or las job of L12 (base scenarios, all masks) at data sets 1..n: the arm and the oracle. Its oracle rows are the deciding job's."""
+    out_rows = []
+    for s_, m_ in conds("L12"):
+        if s_ not in SCEN[:4]: continue
+        for rep in range(1, n + 1):
+            f = (over or {}).get((s_, m_))
+            out_rows.append(f(rep) if f else row("L12", job, s_, m_, rep, arm))
+            g = plants.get((s_, m_, "OR")); r = g(rep) if g else row("L12", "deciding", s_, m_, rep, "OR")
+            r["job"] = job
+            if or_over and (s_, m_) in or_over: r.update(or_over[(s_, m_)])
+            out_rows.append(r)
+    return out_rows
+rows += block("lp", "LP", 100, {("N0", "none"): lambda rep: row("L12", "lp", "N0", "none", rep, "LP", null_p05=0.04)})
+rows += block("las", "LAs", 100, {("N0", "vd20"): lambda rep: row("L12", "las", "N0", "vd20", rep, "LAs", null_p05=0.02)})
 write(os.path.join(out, "cases", "main", "rows.tsv.gz"), rows)
+# M-repair (LA against LP) and the LAs-LA table: paired per data set on the data sets where both returned a DA table
+# LA (N0, none): crashed at 19 data sets and the unit row at 5 -> 100 - 20 = 80 paired; LP's S1 is 0.04 and LA's 0: mean difference -0.04
+expect("main", "partm-repair.tsv", pk("L12", "N0", "none", "S1", "LA", "LP"), "n", 80)
+expect("main", "partm-repair.tsv", pk("L12", "N0", "none", "S1", "LA", "LP"), "mean_diff", -0.04)
+# LAs (N0, vd20): LA unplanted there, the unit row removes data set 5 -> 99 paired; LAs' S1 is 0.02: mean difference +0.02
+expect("main", "partm-levels.tsv", pk("L12", "N0", "vd20", "S1", "LAs", "LA"), "n", 99)
+expect("main", "partm-levels.tsv", pk("L12", "N0", "vd20", "S1", "LAs", "LA"), "mean_diff", 0.02)
 
 def exp_gate(case, cell, scen, mask, arm, n_gate, r_out, estims, nres, r=400):
     for e in estims:
@@ -201,7 +224,6 @@ for e in ("S1", "S2", "S5"):
     k = cond_key("L12", "deciding", "N0", "vd5", "LA", e)
     expect("main", "conditions.tsv", k, "class_best", "no result"); expect("main", "conditions.tsv", k, "class_worst", "no result")
     expect("main", "conditions.tsv", k, "sensitive", "FALSE")
-def pk(*a): return "|".join(a)
 for e in ("S3", "S5"):
     k = cond_key("L12", "deciding", "E1", "vd20", "LA", e)
     expect("main", "conditions.tsv", k, "n_gate", 20); expect("main", "conditions.tsv", k, "r_out", 1)
@@ -285,14 +307,70 @@ write(os.path.join(out, "cases", "tf", "rows.tsv.gz"), build("L12", R, {}, tweak
 expect("tf", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "ok", "T"), "n", 18 * R)
 expect("tf", "outcome.txt", "line", "startswith", "lipid_metab: K1 ")
 write(os.path.join(out, "cases", "smokeflag", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", smoke="1")])
+# ---- E16-1 (script audit 2): the cases the first set did not exercise --------------------------------------------------------
+def over(arm, scen, mask, **kw):
+    return {(scen, mask, arm): (lambda rep: row("L12", "deciding", scen, mask, rep, arm, **kw))}
+# k2la: the canonical K2 row, LA not safe (S1 0.5), GA and NO safe
+outcome_case("k2la", bad_s1("LA"), "lipid_metab: K2 ")
+for arm, v in (("LA", "unsafe"), ("GA", "safe"), ("NO", "safe")): expect("k2la", "verdicts.tsv", "lipid_metab|" + arm, "verdict", v)
+# k1eff: LA and GA safe, LA much lower than GA in one E condition (power 0.7 against 1: F1 0.3 >= 0.20) -> K2 with the efficiency clause failed;
+# the F1 and F2 words: F1 0.3 "much lower", 0.1 "lower", 0 "comparable"; F2 0.01 "less precise", 0.06 "much less precise", 0 "comparable"
+p = {}
+p.update(over("LA", "E0", "none", true_calls=7)); p.update(over("LA", "E1", "none", true_calls=9))
+p.update(over("LA", "N0", "vd5", gross1_common=0.01)); p.update(over("LA", "N1", "vd5", gross1_common=0.06))
+outcome_case("k1eff", p, "lipid_metab: K2 ", ["K1's efficiency clause failed"])
+for (sc, mk, e), word in ((("E0", "none", "F1"), "much lower"), (("E1", "none", "F1"), "lower"), (("E0", "vd5", "F1"), "comparable"),
+                          (("N0", "vd5", "F2"), "less precise"), (("N1", "vd5", "F2"), "much less precise"), (("N0", "none", "F2"), "comparable")):
+    expect("k1eff", "conditions.tsv", cond_key("L12", "deciding", sc, mk, "LA", e), "classification", word)
+expect("k1eff", "verdicts.tsv", "lipid_metab|LA", "verdict", "safe"); expect("k1eff", "verdicts.tsv", "lipid_metab|GA", "verdict", "safe")
+# nss: one LA condition "not determined" (140 of 400 data sets at 0.2: mean 0.07, upper limit above 0.075, Bonferroni lower limit below it)
+vals = [0.2] * 140 + [0.0] * 260
+assert classify(vals, "S1", .075) == "not determined"
+p = {("N0", "none", "LA"): (lambda rep: row("L12", "deciding", "N0", "none", rep, "LA", null_p05=0.2 if rep <= 140 else 0))}
+outcome_case("nss", p, "lipid_metab: K2 ")
+expect("nss", "conditions.tsv", cond_key("L12", "deciding", "N0", "none", "LA", "S1"), "classification", "not determined")
+expect("nss", "verdicts.tsv", "lipid_metab|LA", "verdict", "not shown safe")
+# s5fail: 15 of 400 data sets with an attributable extreme error (N0, vd20): S5 fails
+ev = [1.0] * 15 + [0.0] * 385
+assert classify(ev, "S5", .01) == "fails"
+p = {("N0", "vd20", "LA"): (lambda rep: row("L12", "deciding", "N0", "vd20", rep, "LA", s5=1 if 201 <= rep <= 215 else 0))}
+outcome_case("s5fail", p, "lipid_metab: K2 ")
+expect("s5fail", "conditions.tsv", cond_key("L12", "deciding", "N0", "vd20", "LA", "S5"), "classification", "fails")
+expect("s5fail", "verdicts.tsv", "lipid_metab|LA", "verdict", "unsafe")
+# excess: the oracle fails S1 (0.2) in (N1, vd20); NO and GA at 0 have an excess of -0.2 (meets), LA at 0.5 an excess of +0.3 (fails)
+p = {("N1", "vd20", "OR"): (lambda rep: row("L12", "deciding", "N1", "vd20", rep, "OR", null_p05=0.2)),
+     ("N1", "vd20", "LA"): (lambda rep: row("L12", "deciding", "N1", "vd20", rep, "LA", null_p05=0.5))}
+outcome_case("excess", p, "lipid_metab: K2 ")
+for arm, want in (("NO", excess_class([-0.2] * 400)), ("GA", excess_class([-0.2] * 400)), ("LA", excess_class([0.3] * 400))):
+    expect("excess", "conditions.tsv", cond_key("L12", "deciding", "N1", "vd20", arm, "S1"), "classification", want)
+assert excess_class([-0.2] * 400) == "meets (excess over OR)" and excess_class([0.3] * 400) == "fails (excess over OR)"
+# tiny stop cases at the ranges 2,2 (K188_SCORE_R): a norm_ok FALSE row; a partial-match guard row; a data set outside the declared range;
+# an oracle row of the lp job that differs from the deciding job's (E5)
+write(os.path.join(out, "cases", "normstop", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", norm_ok="FALSE")])
+write(os.path.join(out, "cases", "guardstop", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", status="instrument",
+    **{"class": "partial_match_guard: partial-match guard: partial match of 'da' to 'da_reached'"})])
+write(os.path.join(out, "cases", "rangestop", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 3, "LA")])
+tiny = build("L12", 2)
+for s_, m_ in conds("L12"):
+    if s_ in SCEN[:4]:
+        for rep in (1, 2):
+            tiny.append(row("L12", "lp", s_, m_, rep, "LP"))
+            tiny.append(row("L12", "lp", s_, m_, rep, "OR", null_p05=0.5 if (s_, m_, rep) == ("N0", "none", 1) else 0))
+write(os.path.join(out, "cases", "e5diff", "rows.tsv.gz"), tiny)
 # ---- stop cases (tiny) --------------------------------------------------------------------------------------------------------
 write(os.path.join(out, "cases", "itsd", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", itsd_ok="FALSE")])
 write(os.path.join(out, "cases", "gap", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA")])
 with open(os.path.join(out, "cases.tsv"), "w") as f:
     f.write("case\trowsdir\tcells\tranges\texpect\n")
-    f.write("main\tmain\tL12:deciding,L24:deciding\t400,100\tok\n")
+    f.write("main\tmain\tL12:deciding,L24:deciding,L12:lp,L12:las\t400,100\tok\n")
     for case in ("k1", "k2phi", "val248", "k3", "k4"):
         f.write("%s\t%s\tL12:deciding\t400,100\tok\n" % (case, case))
+    for case in ("k2la", "k1eff", "nss", "s5fail", "excess"):
+        f.write("%s\t%s\tL12:deciding\t400,100\tok\n" % (case, case))
+    f.write("normstop\tnormstop\tL12:deciding\t2,2\tstop:norm_ok\n")
+    f.write("guardstop\tguardstop\tL12:deciding\t2,2\tstop:partial-match guard\n")
+    f.write("rangestop\trangestop\tL12:deciding\t2,2\tstop:outside the declared range\n")
+    f.write("e5diff\te5diff\tL12:deciding,L12:lp\t2,2\tstop:E5 differs\n")
     f.write("tf\ttf\tL12:deciding\t400,100\tok\n")
     f.write("smokeflag\tsmokeflag\tL12:deciding\t400,100\tstop:smoke flag\n")
     f.write("itsd\titsd\tL12:deciding\t400,100\tstop:itsd_ok\n")

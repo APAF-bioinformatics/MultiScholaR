@@ -1,10 +1,19 @@
 case	rowsdir	cells	ranges	expect
-main	main	L12:deciding,L24:deciding	400,100	ok
+main	main	L12:deciding,L24:deciding,L12:lp,L12:las	400,100	ok
 k1	k1	L12:deciding	400,100	ok
 k2phi	k2phi	L12:deciding	400,100	ok
 val248	val248	L12:deciding	400,100	ok
 k3	k3	L12:deciding	400,100	ok
 k4	k4	L12:deciding	400,100	ok
+k2la	k2la	L12:deciding	400,100	ok
+k1eff	k1eff	L12:deciding	400,100	ok
+nss	nss	L12:deciding	400,100	ok
+s5fail	s5fail	L12:deciding	400,100	ok
+excess	excess	L12:deciding	400,100	ok
+normstop	normstop	L12:deciding	2,2	stop:norm_ok
+guardstop	guardstop	L12:deciding	2,2	stop:partial-match guard
+rangestop	rangestop	L12:deciding	2,2	stop:outside the declared range
+e5diff	e5diff	L12:deciding,L12:lp	2,2	stop:E5 differs
 tf	tf	L12:deciding	400,100	ok
 smokeflag	smokeflag	L12:deciding	400,100	stop:smoke flag
 itsd	itsd	L12:deciding	400,100	stop:itsd_ok
