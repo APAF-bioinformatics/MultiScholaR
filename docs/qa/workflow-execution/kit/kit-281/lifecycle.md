@@ -17,57 +17,58 @@ Branch `kit-281` from `origin/v0.9-staging` a5de1c2e; no change under `R/`, `tes
 | `make-script-diff.py`, `script-diff.md` | the list of every changed line range against KIT-211's files |
 | `lifecycle.md` | this file |
 
-SHA-256: `sim-k281.R` 16d67e46e65ccbbd606c25cfbe4f7f59f0f0f4aaefec8aaada42ee2e545d6b27; `score-k281.R` 4e543a78318f6f65e7d9fae50bb8c72301bfd029a87e76ba4bc3a49f08730898; `l1-k281.R` 9a899c6112bb91d463ca935ed2b6012444135d568c609ed1e0d3aec200979251 (at this commit; the declaration records the final ones).
+SHA-256: `sim-k281.R` 10fa5bfda5cb05c3ee84def2fd528b64a2bb84b4c51ce242731f5eb0b8b4a236; `score-k281.R` 0f838f47e3eb21bf4fe389e6e776c0639fba751f73880d0e589e4b3ddf6d8628; `l1-k281.R` 47a065cfce6e0239e326e38b3c092d5b458a8f1fc1bb3cfa098f54d89c6df2e3 (at this commit; the declaration records the final ones).
 
 ## 2. Requirement table (ticket requirement to script lines)
 
 | Ticket | Requirement | Where |
 |---|---|---|
 | 4, 6 | arms S, B, B1, N | sim-k281.R:296 |
-| 4, 6 | twelve settings: A to D at vd5, vd10, vd25 (no mcar, no Av, no Ag) | sim-k281.R:290; score-k281.R:32; score-k281.R:36 |
+| 4, 6 | twelve settings: A to D at vd5, vd10, vd25 (no mcar, no Av, no Ag) | sim-k281.R:290; score-k281.R:44; score-k281.R:48 |
 | 6 | `g_added` subset (H_B1 without H_B, arm B1 only); `kept_b`/`in_b` | sim-k281.R:299; sim-k281.R:368; sim-k281.R:397; sim-k281.R:427 |
 | 6 | `kept$B1` unconditional; `kept$A`, `kept$Bp` removed | sim-k281.R:463 |
-| 6, 7 | E2 at 2 and 1 group, unconditional; E9 removed; four checks in the summary | sim-k281.R:517; sim-k281.R:687 |
+| 6, 7 | E2 at 2 and 1 group, unconditional; E9 removed; four checks in the summary | sim-k281.R:517; sim-k281.R:694 |
 | 7 | E3-type identity: B1's DA input is `masked[H_B1, ]` (not in the ticket's list of changed lines: see section 9) | sim-k281.R:494 |
-| 6 (a) | provenance written before the first task | sim-k281.R:647 |
-| 6 (b), lesson 3 | one line per completed task (cell, r, seconds) in `progress.tsv` | sim-k281.R:639; sim-k281.R:659 |
-| 6 (c), K281-P05, lesson 2 | the partial-match guard around the script's own table handling only (never package, limma or qvalue calls); `options(warn = 2)` not used | sim-k281.R:571; used at sim-k281.R:683, sim-k281.R:700, sim-k281.R:711, sim-k281.R:728 |
-| 3 (commit rule) | the bound tree carries no code of KIT-280: `threshold_values_in_filter` absent from the replay marker table | sim-k281.R:589; sim-k281.R:652 |
-| 8 (G3) | a counted job is refused unless its range lies inside the G3 table's r = 401 to 400 + R | sim-k281.R:615 |
-| scorer | a smoke flag has a producer (`K281_SMOKE=1`) and the scorer refuses it | sim-k281.R:611; score-k281.R:159 |
-| 5, 6 | new atoms `n0_gadd`, `p05_gadd`, `*_l0`, `*_l1`, `bhV_whole`, `bhT_whole` | score-k281.R:297-304 |
-| 5, 6 | new stats `alpha_gadd`, `alpha_gadd_l0/l1`, `alpha_whole`, `fdr_bh` | score-k281.R:324 |
-| 5, 6 | `rhog.B1`, `rhog_l0.B1`, `rhog_l1.B1`, `dfdrbh.B1`, `dpowbh.B1`, `rhoratio.B1`, `Phi.S`, `Phi.B`, `Phi.B1` | score-k281.R:362-386 |
-| 5 | the deciding limit = the bootstrap 0.975 quantile (type 7) of `rhog.B1` over the twelve settings' pool; state `pass` iff upper <= 1.10 as written; jackknife-normal beside, deciding nothing | score-k281.R:480; score-k281.R:621 |
+| 6 (a) | provenance written before the first task | sim-k281.R:654 |
+| 6 (b), lesson 3 | one line per completed task (cell, r, seconds) in `progress.tsv` | sim-k281.R:646; sim-k281.R:666 |
+| 6 (c), K281-P05, lesson 2 | the partial-match guard around the script's own table handling only (never package, limma or qvalue calls); `options(warn = 2)` not used | sim-k281.R:571; used at sim-k281.R:690, sim-k281.R:707, sim-k281.R:718, sim-k281.R:735 |
+| 3 (commit rule) | the bound tree carries no code of KIT-280: `threshold_values_in_filter` absent from the replay marker table | sim-k281.R:589; sim-k281.R:659 |
+| 8 (G3) | a counted job is refused unless its range lies inside the G3 table's r = 401 to 400 + R | sim-k281.R:622 |
+| scorer | a smoke flag has a producer (`K281_SMOKE=1`) and the scorer refuses it | sim-k281.R:618; score-k281.R:171 |
+| 5, 6 | new atoms `n0_gadd`, `p05_gadd`, `*_l0`, `*_l1`, `bhV_whole`, `bhT_whole` | score-k281.R:309-316 |
+| 5, 6 | new stats `alpha_gadd`, `alpha_gadd_l0/l1`, `alpha_whole`, `fdr_bh` | score-k281.R:336 |
+| 5, 6 | `rhog.B1`, `rhog_l0.B1`, `rhog_l1.B1`, `dfdrbh.B1`, `dpowbh.B1`, `rhoratio.B1`, `Phi.S`, `Phi.B`, `Phi.B1` | score-k281.R:374-398 |
+| 5 | the deciding limit = the bootstrap 0.975 quantile (type 7) of `rhog.B1` over the twelve settings' pool; state `pass` iff upper <= 1.10 as written; jackknife-normal beside, deciding nothing | score-k281.R:492; score-k281.R:633 |
 | 5 | non-finite resamples dropped and counted (`boot_nonfinite`) | resampleStats (identical to KIT-211's, E0) and the `boot_nonfinite` column of `decision.tsv` |
-| 5 | guards G1a (FDP_BH(B1) <= 0.05), G1b (paired <= 0.0025), G2 (power cost <= 0.005) | score-k281.R:622-624 |
-| 5, 9 | F5': pooled two-sided 95 % interval of `B1.m6_l_H` excludes 0 | score-k281.R:491 |
-| 5 | positive control reported (Phi_S lower limit against 1.20), decides nothing | score-k281.R:632 |
-| 5 | per design, per setting (labels at one-sided 0.05/12), by flag, Phi: reported | score-k281.R:637; score-k281.R:475; `designs.tsv`, `settings.tsv`, `pooled.tsv`, `decision-table.md` at score-k281.R:699 |
-| 10 | outcome rule: Stop, Withheld, Calibrated, Not calibrated (the first row that holds) | score-k281.R:647 |
-| 10 | Stop: F1, F2, instrument statuses (a stop writes `outcome.tsv` and exits 1) | score-k281.R:464; score-k281.R:713 |
-| coordinator S02 | a NON-FINITE ESTIMATE of rho_g or of a guard is an instrument Stop ("could not be formed"); resample-level non-finite values stay dropped and counted | score-k281.R:628 |
-| coordinator S03 | the count of rows whose recorded q-method is not qvalue is reported (per cell, mask, arm; checks; outcome notes), never a stop | score-k281.R:559 |
-| 7, 8 | G3 as code: the one count (`g_added`, arm B1, null, `n_tested`, mean over L1's two replicates), N-hat = 200 x the sum, R by the rule, one R for all cells; `g3-count.tsv`, `g3-rule.tsv` | l1-k281.R:274; l1-k281.R:282; tables written after it |
-| 8 | the rule function against Python's Fraction table (24 values, both edges of every branch) | l1-k281.R:281; `selftest/g3-cases.tsv` |
-| 8 | a check refusing a counted request whose R differs from the rule's (and one that does not cite the table's hash); the scorer's declared range | `check-request-k281.py`; score-k281.R:127; sim-k281.R:615 |
-| 7 | E1': S and B filter-dependent columns at r = 201 to 205, cells A to D, twelve vd settings = KIT-211's committed rows exactly (120 units) | l1-k281.R:182 |
-| 7 | E2, E3, E7, E10 (F1 identities, logFC identity); E8 determinism; E5 scorer twice; E6 kill and continue (three masks); G0; G2 (<= 75 minutes) | l1-k281.R:118; l1-k281.R:132; l1-k281.R:207; l1-k281.R:247; l1-k281.R:100; l1-k281.R:268 |
-| 6 | the scorer self-test runs inside L1 (a defect: fix, re-hash, re-declare before any counted job) | l1-k281.R:194 |
+| 5 | guards G1a (FDP_BH(B1) <= 0.05), G1b (paired <= 0.0025), G2 (power cost <= 0.005) | score-k281.R:634-636 |
+| 5, 9 | F5': pooled two-sided 95 % interval of `B1.m6_l_H` excludes 0 | score-k281.R:503 |
+| 5 | positive control reported (Phi_S lower limit against 1.20), decides nothing | score-k281.R:644 |
+| 5 | per design, per setting (labels at one-sided 0.05/12), by flag, Phi: reported | score-k281.R:649; score-k281.R:487; `designs.tsv`, `settings.tsv`, `pooled.tsv`, `decision-table.md` at score-k281.R:711 |
+| 10 | outcome rule: Stop, Withheld, Calibrated, Not calibrated (the first row that holds) | score-k281.R:659 |
+| 10 | Stop: F1, F2, instrument statuses (a stop writes `outcome.tsv` and exits 1) | score-k281.R:476; score-k281.R:725 |
+| coordinator S02 | a NON-FINITE ESTIMATE of rho_g or of a guard is an instrument Stop ("could not be formed"); resample-level non-finite values stay dropped and counted | score-k281.R:640 |
+| coordinator S03 | the count of rows whose recorded q-method is not qvalue is reported (per cell, mask, arm; checks; outcome notes), never a stop | score-k281.R:571 |
+| 7, 8 | G3 as code: the one count (`g_added`, arm B1, null, `n_tested`, mean over L1's two replicates), N-hat = 200 x the sum, R by the rule, one R for all cells; `g3-count.tsv`, `g3-rule.tsv` | l1-k281.R:286; l1-k281.R:294; tables written after it |
+| 8 | the rule function against Python's Fraction table (24 values, both edges of every branch) | l1-k281.R:293; `selftest/g3-cases.tsv` |
+| 8 | a check refusing a counted request whose R differs from the rule's (and one that does not cite the table's hash); the scorer's declared range | `check-request-k281.py`; score-k281.R:139; sim-k281.R:622 |
+| 7 | E1': S and B filter-dependent columns at r = 201 to 205, cells A to D, twelve vd settings = KIT-211's committed rows exactly (120 units) | l1-k281.R:194 |
+| 7 | E2, E3, E7, E10 (F1 identities, logFC identity); E8 determinism; E5 scorer twice; E6 kill and continue (three masks); G0; G2 (<= 75 minutes) | l1-k281.R:130; l1-k281.R:144; l1-k281.R:219; l1-k281.R:259; l1-k281.R:112; l1-k281.R:280 |
+| 6 | the scorer self-test runs inside L1 (a defect: fix, re-hash, re-declare before any counted job) | l1-k281.R:206 |
 
 ## 3. The script lessons (KIT-188 script audit 2), each with its lines
 
 | Lesson | Implemented at |
 |---|---|
-| 1. every table read as text (`colClasses = "character"`, `na.strings` empty) and converted by name; no value turns into NA | scorer: score-k281.R:88, score-k281.R:93, score-k281.R:104 (logical), score-k281.R:120 (labels); the same in `l1-k281.R` (`readText`, `asNum`); the simulation's `readPart` was already text-only (unchanged) |
-| 2. `options(warnPartialMatchDollar = TRUE)`; the warning is an error only around the scripts' own table handling; text matched case-insensitively (`tolower`) | scorer (no package code: global): score-k281.R:27, handler score-k281.R:713, guard-stop = instrument status via `stopRecord` score-k281.R:464, probe score-k281.R:509; simulation (scoped, K281-P05): sim-k281.R:571; `l1-k281.R`: l1-k281.R:28 |
+| 1. every table read as text (`colClasses = "character"`, `na.strings` empty) and converted by name; no value turns into NA | scorer: score-k281.R:100, score-k281.R:105, score-k281.R:116 (logical), score-k281.R:132 (labels); the same in `l1-k281.R` (`readText`, `asNum`); the simulation's `readPart` was already text-only (unchanged) |
+| 2. `options(warnPartialMatchDollar = TRUE)`; the warning is an error only around the scripts' own table handling; text matched case-insensitively (`tolower`) | scorer (no package code; the guard is a LOCAL calling handler inside the driver's tryCatch, not a global one): score-k281.R:27, handler score-k281.R:725, guard-stop = instrument status via `stopRecord` score-k281.R:476, probe score-k281.R:521; simulation (scoped, K281-P05): sim-k281.R:571; `l1-k281.R`: l1-k281.R:40 |
+| **Guard topology (coordinator's check after KIT-275's defect: a stop() raised from a GLOBAL calling handler reaches no tryCatch)** | simulation: `partialGuard` is a LOCAL `withCallingHandlers` (sim-k281.R:574) that writes `instrument-stop.txt` BEFORE it raises, so the record exists whatever happens next; no global handler; last net `options(error = )` (sim-k281.R:612). Scorer: LOCAL `withCallingHandlers` inside `tryCatch` (score-k281.R:725), so `stopRecord` runs and `outcome.tsv` says Stop/instrument; no global handler; last net `options(error = )` (score-k281.R:30). L1 and `smoke/smoke-k281.R`: sequential top-level code with a GLOBAL handler as the last net only; its stop() ends the process at top level, so `options(error = )` (l1-k281.R:31) writes the checks so far and `l1-stop.txt` (`smoke-stop.txt`) before the non-zero exit. The probe case therefore observes the local path: Stop/instrument with the guard text in `outcome.tsv` and the log. |
 | no `$` inside `suppressWarnings` | none of the three scripts calls `suppressWarnings` (the scorer converts with a regex check, then `as.numeric`) |
-| guard stop in the simulation is an instrument status that stops the scorer | the simulation writes `instrument-stop.txt` before aborting (sim-k281.R:577); the scorer refuses any job directory holding it or `errors.txt` (score-k281.R:157) |
-| `qmethod == "qvalue"` in every metrics row: COORDINATOR'S RULING S03: counted and REPORTED, not a stop (a BH fallback of `qMethod` is deterministic and the decision reads no q-value) | score-k281.R:558 (`qmethod-fallback.tsv` per cell, mask and arm; the `qmethod` check; `n_qmethod_fallback` and `notes` in `outcome.tsv`); the guard stays out of package code (K281-P05), the way a silent switch could arise |
-| stop on rows outside the declared replicate range (RANGE-1) | score-k281.R:127 (`declaredRange`: the G3 table, or `K281_RANGE` for mechanics runs); score-k281.R:206 |
-| stop on any input carrying a smoke flag (E16's `smokeflag`) | score-k281.R:159 |
-| progress files and provenance before any unit runs | simulation: sim-k281.R:647, sim-k281.R:639; scorer: score-k281.R:522, `progress-score.tsv` (score-k281.R:461); L1: l1-k281.R:71 |
-| bound to a tree WITHOUT KIT-280 (BIND-1 in the ticket's form): `threshold_values_in_filter` absent from `workflowReplayRuleMarkers` | sim-k281.R:652 (every simulation process, hence every L1 child and every counted job) |
+| guard stop in the simulation is an instrument status that stops the scorer | the simulation writes `instrument-stop.txt` before aborting (sim-k281.R:577); the scorer refuses any job directory holding it or `errors.txt` (score-k281.R:169) |
+| `qmethod == "qvalue"` in every metrics row: COORDINATOR'S RULING S03: counted and REPORTED, not a stop (a BH fallback of `qMethod` is deterministic and the decision reads no q-value) | score-k281.R:570 (`qmethod-fallback.tsv` per cell, mask and arm; the `qmethod` check; `n_qmethod_fallback` and `notes` in `outcome.tsv`); the guard stays out of package code (K281-P05), the way a silent switch could arise |
+| stop on rows outside the declared replicate range (RANGE-1) | score-k281.R:139 (`declaredRange`: the G3 table, or `K281_RANGE` for mechanics runs); score-k281.R:218 |
+| stop on any input carrying a smoke flag (E16's `smokeflag`) | score-k281.R:171 |
+| progress files and provenance before any unit runs | simulation: sim-k281.R:654, sim-k281.R:646; scorer: score-k281.R:534, `progress-score.tsv` (score-k281.R:473); L1: l1-k281.R:83 |
+| bound to a tree WITHOUT KIT-280 (BIND-1 in the ticket's form): `threshold_values_in_filter` absent from `workflowReplayRuleMarkers` | sim-k281.R:659 (every simulation process, hence every L1 child and every counted job) |
 | positional arguments landing in the wrong field (KIT-275's scorer) | S08: every call of `addCheck`, `stopRecord`, `progress` (scorer), `addCheck`, `run`, `failureNote` (L1), `decisionRow`, `summariseStats` and every `data.frame(...)` in the three scripts' new code names its arguments (a mechanical pass: 16 scorer calls and 20 L1 calls were converted); the two-argument condition raiser `k211Abort(class, message)` and KIT-211's verbatim functions are the declared exceptions; the `fields` case plants a distinct value in every field of every table (section 4) |
 
 ## 4. The scorer self-test (E16 manner): 2007 checks (64 cases, 1936 predicted values, 7 request cases)
