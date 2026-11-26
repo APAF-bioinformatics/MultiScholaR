@@ -1,0 +1,5 @@
+cell	r_cell	first_r	last_r	n_hat	branch
+A	315	401	715	175600	R = ceiling(200 x 276220 / N-hat)
+B	315	401	715	175600	R = ceiling(200 x 276220 / N-hat)
+C	315	401	715	175600	R = ceiling(200 x 276220 / N-hat)
+D	315	401	715	175600	R = ceiling(200 x 276220 / N-hat)
