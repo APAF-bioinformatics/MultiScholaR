@@ -85,3 +85,60 @@ and absent on the other mentions `stringdb_plot`, in that block; the count diffe
 
 **Decision and attempts.** Every prediction holds: TRAIN GREEN and A3 met for KIT-216. A miss, a new failure, a message change outside the four rows, or a base count that differs from its recorded one is a result, recorded and not re-run.
 No test or expectation is removed, weakened or edited. A shard timeout or an instrument failure with no result: hand back with the evidence; no re-send on my own. An HTTP 500/502 at dispatch with no run created is started once by hand.
+
+## Note of 2026-11-27 (before the results): the coordinator's list and this declaration
+
+The coordinator's message of 2026-11-27 (after the run was sent) gave the KIT-216 auditor's expected non-`same` files (AUDIT-KIT-216-impl-20261126, "Re-check, 2026-11-27", part (5)). Both lists, and their sources:
+- This declaration (derived from the member's own records: `kit-216/r2c-compare.tsv`, `r2d-compare.tsv`, `r2e-compare.tsv`, `r2e-predictions.md`, and the audit's section 3.8): `test-kit216-prot-session-after-enrichment.R` absent to 152/0/0/1 only-on-head; `test-omic-enrich-module.R` 1011/59 both, message-changed; `test-omics-enrich-core.R` 221/20/0/1 to 222/20/0/1 message-changed; `test-workflow-integration-input.R` 241/0 to 240/0 count-changed; check identical 0/3/3; every other file same.
+- The auditor's re-check (5): the same four files with the same counts and verdicts; check identical 0/3/3; every other file same.
+The two lists agree in every file. They differ only in named `same` base counts: the re-check names `test-omic-norm-module.R` 631/8 (the declaration took the newest recorded 639/0, see its "Known differences" paragraph). Nothing was rewritten.
+
+## Results (run 45762830948, head 761b43017, base a855e1f0; request file kit216-r3-full-761b4301.json)
+
+Run success; every file ran to completion (535 files per side; no timeout, no crash; `scripts` skipped). Tables beside this file: `merge-train-20261127b-compare.tsv`,
+`merge-train-20261127b-check-compare.txt`, `merge-train-20261127b-compare-failures.txt`. The four files named in the declaration (`test-kit213-study-parameters-labels.R`, `test-kit247-design-resave.R`,
+`-import-config.R`, `-resave-no-session.R`) ran on both sides (a log of each is in `logs/` and `logs-base/` of the artifact).
+Base versus head: **same 531, only-on-head 1, message-changed 2, count-changed 1, new-failure 0, fixed 0, compare-error 0.** Tests head: passed 56114, failed 1202, errors 13, skipped 586 (ok 497, failed-status 38);
+base: passed 55962, failed 1202, errors 13, skipped 585 (ok 496, failed-status 38, absent 1).
+**Every prediction held: TRAIN GREEN, and A3 (R3) of KIT-216 is met** (no difference other than the declared four).
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit216-prot-session-after-enrichment.R | absent / 152/0/0/1, only-on-head | absent | 152/0/0/1 | only-on-head: HELD |
+| test-omic-enrich-module.R | 1011/59 both, message-changed at W1 `kernel_clusterprofiler` run `states` | 1011/59/0/0 | 1011/59/0/0 | message-changed: HELD (the tool's note: identical without the actual digest value, in "(b) in process: kernel_clusterprofiler"; no `stringdb_plot` record on either side: the flake did not occur) |
+| test-omics-enrich-core.R | 221/20/0/1 to 222/20/0/1, message-changed | 221/20/0/1 | 222/20/0/1 | message-changed: HELD (F-16 test 4 14 to 15 passes; the base's `kernel_clusterprofiler` run `states` digest d8f57c99312ad90c against the stored 1167a2b0dbbd17a5) |
+| test-workflow-integration-input.R | 241/0 to 240/0, count-changed | 241/0/0/0 | 240/0/0/0 | count-changed: HELD (the SD-1 rename) |
+| R CMD check | identical 0/3/3 | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none; only on base: none): HELD |
+| the other 531 files | same | as listed | equal to base | same: HELD |
+
+Named `same` as predicted, with the counts observed on both sides: `test-prot-norm-core.R` 1547/307, `test-workflow-saved-da.R` 755/196, `test-omic-da-module.R` 1288/81, `test-gui-entry-proteomics.R` 92/101, `test-kit213-study-parameters-labels.R` 56/0,
+`test-omic-summary-module.R` 1675/28, `test-omics-summary-core.R` 676/25/0/2 (each unchanged against its recorded count).
+
+### Findings: base-side counts that differ from the last recorded count (reported, not explained away)
+
+Seven files read on the base side (staging a855e1f0) a count that differs from the newest recorded count used in the declaration. Each is `same` on head against base (the head equals the observed base), so none is a KIT-216 effect; they are findings of the checkpoint.
+
+| File | Recorded (source) | Observed base and head |
+|---|---|---|
+| test-integration-record.R | 200/0/0/0 (train 26u) | 209/0/0/0 |
+| test-kit227-report-ruv-sentences.R | 162/0/0/0 (train 26z) | 186/0/0/0 |
+| test-metab-qc-shared.R | 20/0/0/0 (checkpoint-20261126) | 23/0/0/0 |
+| test-metab-s4-qc-shared.R | 32/0/0/0 (train 26w) | 35/0/0/0 |
+| test-module-ci-trx-qc.R | 34/1/1/0 (train 26v) | 38/0/1/0 |
+| test-omic-norm-module.R | 639/0/0/0 (train 26v; the coordinator's and the audit's figure was 631/8) | 631/8/0/0 |
+| test-trx-da-without-ruv.R | 95/2/0/0 (train 26v) | 103/0/0/0 |
+
+Facts only: five files gained passes (more expectations than recorded), `test-module-ci-trx-qc.R` and `test-trx-da-without-ruv.R` lost recorded failures, and `test-omic-norm-module.R` now fails 8 where train v recorded 0 (631/8 is the count train r recorded as a head, and the audit appendix's figure). The causes were not investigated here; the trains of 2026-11-26 and 27a changed these areas after the recorded tables (the run is the checkpoint over them), and the other 528 files equal their recorded counts. Each differing file's base and head are identical, so the stored table of this run is the new reference for them.
+
+### Budget
+
+Jobs API, summed, skipped jobs 0: **1,678.76 job-minutes = 111.92 core-hours** (core-hours = job-minutes x 4 / 60; 45 jobs: tests head 20 shards 21.65 to 79.72 minutes each, tests base 20 shards 19.63 to 91.52 minutes, check head 14.10, check base 14.92, plan 0.33, results 0.63).
+Ceiling 2,800 job-minutes (186.67 core-hours); expected about 1,625 (108.3): 3.3 percent above the expected figure and 60 percent of the ceiling. The longest shard (base 3, 91.5 minutes) was inside the 300-minute job limit; no file hit its file timeout.
+
+Decision: KIT-216 is green on the merged tree; the checkpoint over the trains of 2026-11-26 and 27a is clean for the declared four differences and reports the seven base-side count differences above.
+
+## What the coordinator resolves at landing
+
+- Ledger (`docs/methods-decision-ledger.md` on this branch): the member's row `VAL-<train35-1>` at `:2549` (next free number VAL-377); status cells of VAL-175 at `:2347`, VAL-179 at `:2351` and VAL-372 at `:2544`.
+- Placeholders: none in `NEWS.md` or in `kit-216/` records (the member's `VAL-<merge>` appeared only in the ledger row, renamed `VAL-<train35-1>` here).
+- Stored reference in the member's change: `tests/testdata/gui-entry/prot_dia.json` (re-frozen by the member under VAL-179 SD-3, not by this train); F16's W1 `kernel_clusterprofiler` `states` stays for the end-of-project re-record (VAL-372 (2)).
