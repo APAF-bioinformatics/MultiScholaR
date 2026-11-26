@@ -29,3 +29,19 @@ block (not a failed expectation) is an instrument defect, recorded as such (VAL-
 The declared edits of test-kit227-report-ruv-sentences.R (G1), test-kit236-report-sentences.R (G1) and
 test-kit235-lipid-metab-report-parser.R (T6) are NOT in this commit: edited against the old templates they cannot pass
 (they substitute the new text on the base side). They go in the fix commit (see outcome.md, deviation 1).
+
+## R1 observed (run 45726305082, commit 84ee54db, 20.5 job-minutes, 1.37 core-hours)
+
+116 passed, 281 failed, 0 errors. Every predicted row failed by value at the predicted count (T1 to T3 and T10: 51;
+T5: 192; T6: 10; T7: 4; T4: 8; T11: 4; T9 passed). Twelve failures were not predicted: T8 (1 per template) and G1'
+(2 per template), all in the `unrecorded` variant. Cause (mechanics of my guard, no result about the templates): the
+frozen KIT-227 base copies predate the "RUV not recorded" wording, so `ruv_applied = NA` prints their two-stage text
+and the old unrecorded bullets are not there. Instrument defect 1 of at most 3 (VAL-54): the two guards now cover the
+three-stage and two-stage variants only (`k272BaseVariants`); no expected value, threshold or comparison of a result
+row changes; the ceiling is unchanged.
+
+## R1b: the same tests with the guard fix (instrument defect 1)
+
+Binds the commit that carries the fix of the two guards (tests only; nothing under R/ or inst/). Base = staging
+7f17547f9. Ceiling 45 job-minutes; expected 21. Prediction: the same as R1 for every failing row; T8 and G1' now pass.
+Totals: 269 failed, 104 passed, 0 errors.

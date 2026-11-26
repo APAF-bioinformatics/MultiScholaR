@@ -112,6 +112,9 @@ k272Results <- function(name, ruv, side = "head", stages_known = TRUE) {
 }
 
 k272RuvOf <- c(three = TRUE, two = FALSE, unrecorded = NA)
+# The frozen base copies (KIT-227, cf8af245) predate the RUV-not-recorded wording: they have no such variant (NA prints
+# the two-stage text there), so the guards against them cover the three-stage and two-stage variants only.
+k272BaseVariants <- c("three", "two")
 
 #' The Methods text of the template's own function from the numbers AnalyzeSamples gives an empty study; `limpa_route`
 #' sets the two numbers that select the limpa route's own paragraph
@@ -228,7 +231,7 @@ for (name in k272Names) {
 
     # --- T8, G1': guards ------------------------------------------------------------------------------------------
     test_that(sprintf("KIT-272 T8 (%s): nothing else of the Results text changed (head, the new bullets put back, equals the base)", name), {
-        for (variant in names(k272Variants)) {
+        for (variant in k272BaseVariants) {
             head <- k272Results(name, k272RuvOf[[variant]])
             base <- k272Results(name, k272RuvOf[[variant]], side = "base")
             back <- sub(k272NewBullet[[variant]], k272OldBullet[[variant]], head, fixed = TRUE)
@@ -242,7 +245,7 @@ for (name in k272Names) {
     })
 
     test_that(sprintf("KIT-272 G1' (%s): the frozen base copy holds each old element exactly once (the declared edits' match assertions)", name), {
-        for (variant in names(k272Variants)) {
+        for (variant in k272BaseVariants) {
             base <- k272Results(name, k272RuvOf[[variant]], side = "base")
             expect_identical(k272Count(base, k272OldBullet[[variant]]), 1L, info = paste(name, variant, "bullet"))
             expect_identical(k272Count(base, k272OldPca[[variant]]), 1L, info = paste(name, variant, "PCA"))
