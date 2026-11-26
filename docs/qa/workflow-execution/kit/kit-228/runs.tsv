@@ -4,3 +4,4 @@ run_id	commit	purpose	minutes	result
 45794764741	a7e3a582	R2b attempt 1: setup failed (apt 404), no test ran	16 (1.1 core-h)	infrastructure; rerun
 45794764741	a7e3a582	R2b rerun (attempt 2): test-kit247-design-resave.R head only, 188/0 ok in 3560 s (E21, E23 pass)	68 (4.5 core-h)	pass
 45812278778	7e9fadcc	C1 correction pass tests-only on a7e3a582 R/: 145 passed, 9 failed = the 9 predicted (E4 1, I06 prot 2, lipid 3, metab 3); I07 passes on both as predicted	10.9 job-min (0.73 core-h)	failed as predicted
+45814381840	67e51e68	C2 comparison base 7e9fadcc (tests-only) vs code 67e51e68, 54 files + check: 53 same, new file fixed 145/9 -> 154/0, 0 new failures, check identical; kit247 file ok both sides	615 job-min (41.0 core-h; ceiling 675 / 45.0)	clean

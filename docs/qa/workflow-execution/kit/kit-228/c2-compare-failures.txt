@@ -1,0 +1,69 @@
+== test-kit228-integration-input-refused-save.R | fixed | KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the earlier input; a removal that fails is named
+-- base:
+  Expected `paste0("[warning] ", k228Texts$not_removed(folder)) %in% rec$notes` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  I06 prot | notes: [warning] injected: cannot remove | [warning] The earlier integration input at <tmp>/file<id>/e4/integration/proteomics could not be removed. The integration may still read it, although this save did not write it: delete that folder, or save again once it can be removed. | [message] Study parameters saved successfully
+  Expected `sum(rec$notes == paste0("[warning] ", k228Texts$no_table("proteomics")))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  I06 prot | notes: [warning] injected: cannot remove | [warning] The earlier integration input at <tmp>/file<id>/e4/integration/proteomics could not be removed. The integration may still read it, although this save did not write it: delete that folder, or save again once it can be removed. | [message] Study parameters saved successfully
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E4 | notes: [warning] Study parameters saved with warnings | [warning] This omic's earlier integration input (integration/proteomics/) was removed because this save did not write a new one (the reason is in the message above). The integration cannot use proteomics until this Summary is saved without errors.
+-- head:
+  <passes>
+
+== test-kit228-integration-input-refused-save.R | fixed | KIT-228 E3, E5, E6, G1, G2, G4: lipid a Save that writes no new input removes the earlier one
+-- base:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  I05 lipid | first notes: [warning] Study parameters saved with warnings | [message] Saved Integration S4 Object | [warning] This omic's earlier integration input (integration/lipidomics/) was removed, and this save did not write a new one. Save this Summary again before integrating; if this message returns, finish the analysis first (the integration input is written from the final normalised table). | [message] Study parameters saved successfully | second notes: 
+  Expected `file.exists(k228Manifest(folder))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  I05 lipid | first notes: [warning] Study parameters saved with warnings | [message] Saved Integration S4 Object | [warning] This omic's earlier integration input (integration/lipidomics/) was removed, and this save did not write a new one. Save this Summary again before integrating; if this message returns, finish the analysis first (the integration input is written from the final normalised table). | [message] Study parameters saved successfully | second notes: 
+  Expected `sum(rec$notes == paste0("[warning] ", k228Texts$no_table(omic)))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  I06 lipid | notes: [warning] injected: cannot remove | [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+-- head:
+  <passes>
+
+== test-kit228-integration-input-refused-save.R | fixed | KIT-228 E3, E5, E6, G1, G2, G4: metab a Save that writes no new input removes the earlier one
+-- base:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  I05 metab | first notes: [warning] Study parameters saved with warnings | [message] Saved Integration S4 Object | [warning] This omic's earlier integration input (integration/metabolomics/) was removed, and this save did not write a new one. Save this Summary again before integrating; if this message returns, finish the analysis first (the integration input is written from the final normalised table). | [message] Study parameters saved successfully | second notes: 
+  Expected `file.exists(k228Manifest(folder))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  I05 metab | first notes: [warning] Study parameters saved with warnings | [message] Saved Integration S4 Object | [warning] This omic's earlier integration input (integration/metabolomics/) was removed, and this save did not write a new one. Save this Summary again before integrating; if this message returns, finish the analysis first (the integration input is written from the final normalised table). | [message] Study parameters saved successfully | second notes: 
+  Expected `sum(rec$notes == paste0("[warning] ", k228Texts$no_table(omic)))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  I06 metab | notes: [warning] injected: cannot remove | [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+-- head:
+  <passes>
+
