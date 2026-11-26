@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-274 R1b (VAL-54 instrument re-send 1 of 3, T10 mechanics: shared nd and new-entity precondition): tests-only 60565dd4, new file alone, no base; ceiling 45 job-minutes, expected 12",
+  "label": "KIT-274 R1b tests-only 60565dd4",
+  "package_commit": "60565dd4af18474e9b69fb09b95a2cd11b4377ae",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit274-trx-no-ruv-export.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
