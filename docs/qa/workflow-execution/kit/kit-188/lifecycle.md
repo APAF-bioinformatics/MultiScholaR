@@ -303,3 +303,39 @@ Raw: `smoke/3a-raw.tar.gz`, `smoke/3b-raw.tar.gz`; tables and consoles in `smoke
 | 6 everything send 2 showed | met: M12 lp/las/k172c: E9 12, E10 16, E11 12, E14 9, E1 11, E15_silence pass; M12 deciding (1,204 s alone): E10 18, E10u 1, `E3_itsd_identity` 8, E14, E1, E2, E6, E8, E15_silence pass; l1c: itsd, itsdpos, ruvskip, daerror, normplant, exitplant as predicted; E3 (import pattern) and `ruvdrop` (`dropped`) differ as this base requires; `SMOKE_counted_refusal` exited 1 after 3 s before any unit |
 
 Running total on L1r's line (core-hours, (job minutes + 10) x 4 / 60, indicative): send 1 2.13, send 2 4.10 (A 2.05, B 2.05), send 3 3.63 (A 1.63, B 2.00): **9.86** against the 3.33 declared; the excess is inside Part L's accepted 2,611.55.
+
+## Script audit 2: repairs (written; checked only by send 4's E16 and by the smoke sends already on record)
+
+| Id | Where | What |
+|---|---|---|
+| GUARD-1 | S top of the script, `quiet()`; C top | the match is `grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)`, so R's "Partial match of ... in data frame" is caught too |
+| GUARD-2 | S `journeyL`'s error handler; S `runChild` (the unit row); C after the rows are read | a guard stop sets status `instrument`, class `partial_match_guard: ...`, in a journey and in a unit row (never `crashed`); the scorer stops on any row whose class contains `partial-match guard` |
+| GUARD-3 | S `legacyChoice` and the other `suppressWarnings` calls; C `dataset` | `[[` inside `suppressWarnings(...)`, so the guard cannot be muffled there |
+| E5-1 | C before the classifications | for every cell and data set 1 to 100: deciding OR rows equal the reported, lp and las jobs' OR rows, and deciding LA rows equal the reported LA rows (written columns, `seconds` and the Part M columns removed); `checks-e5.tsv`; a difference stops scoring. For L1r's split run the scorer's E5 over the downloaded job directories |
+| E16-1 | e16/ | nine new cases (`k2la`, `k1eff`, `nss`, `s5fail`, `excess`, `normstop`, `guardstop`, `rangestop`, `e5diff`) and `main`'s lp and las blocks; predictions derived in Python from the planted rows (asserted there: `nss` is "not determined", `s5fail` "fails", the excess path "meets" and "fails") |
+| BIND-1 | S `checkE3`, `BOUND_MARKERS` | E3 fails when a replay marker the bound commit must hold is missing. On staging now: `duplicate_resolution_rank`, `correlation_exclusion` (KIT-255). **Waiting for the bound commit** (names as origin/kit-242 defines them, re-read there): `normalisation_fallback`, `protein_normalisation_fallback`, `itsd_outcome`, `ruv_fallback`; KIT-260's branch carries `itsd_outcome` (its own marker, if any, is read at the bound commit). So E3 fails on today's base by design |
+| RANGE-1 | C after the unit rows | a scored row outside `declaredRange(job, cell)` stops scoring |
+| P13-1 | S `checkE8` (`mamp_slope`), C `partm-amp.tsv` | **REPORTED ONLY, decides nothing**: per data set, on mask `none`, the slope of LA's corrected contrast on its uncorrected contrast across features (OLS with intercept, per contrast, averaged over the contrasts; about 1 means the correction leaves fold changes unchanged), from the E8 and M-amp matrices |
+
+**The guard stays on in L1r, L1c and the counted runs; a stop from it is an instrument defect by definition** (a journey and a unit row become `instrument`; the scorer stops).
+
+**P13-1 sentence for the ticket's 2.4 and 5.9 (DERIVED; the coordinator puts it in the ticket; `tickets/` was not edited):**
+"Under rule (d) the controls are the features with the largest group-ANOVA p-values, so their group differences d_C are approximately zero by selection; by the identity e_j = -d_C' A_j a_j (2.4 item 1) the legacy correction then leaves fold changes approximately unchanged, so LA's and LM's fold changes approximately equal those of RUV off, and LA differs from RUV off through the residual variances that RUV-III-C changes (larger t statistics, the residual degrees of freedom not reduced, VAL-53 (1)); where an unwanted factor is aligned with the groups (N2, E2) LA keeps that factor's bias in its fold changes. Part M reports, from the E8 and M-amp matrices on mask none, the slope of LA's corrected contrast on its uncorrected contrast across features (about 1: fold changes unchanged); it decides nothing."
+
+**predictions-l1c.tsv (committed now, quoted here).** Only the row that depends on KIT-255 alone (on staging, aa119308): `emptysample/corr_removed_one_assay.LCMS_Pos` is `re:^(?!.*LCMS_Pos:R001)`: KIT-255's filter excludes a sample with no finite value in an assay from that assay's comparison (`empty`, `omicsCorrelationFilterWithinAssay`), so the empty sample (the first run, R001) is never listed as removed in `LCMS_Pos`.
+Rows **waiting for the bound commit** (KIT-242 and KIT-260, written after the auditor has read their code): every other R item of 35.6 (r1.20): the ITSD and normalisation records and notices of `itsd`, `itsdpos`, `emptysample` (status, E13 silent, the notice class), the trace status string and the per-assay `ruv_applied` reason of `ruvskip` and `ruvdrop`, Q6.2 (c)'s classification, and E7's two stops (`E7_refusal/*`, `E7_invalid_k/*`).
+
+## L1r's job plan (the audit's table; awaiting the owner: Part L's ceiling; L1r is NOT sent)
+
+Data set 401 for every cell and job type, 402 and 403 for L12 and M12 deciding only (the script has no arm filter; "LA and LM on 401 to 403" would run whole units). Plan and timeout by section 10's rule (timeout 1.5 times the plan rounded up to 5), core-hours = (minutes + 10 set-up) x 4 / 60:
+
+| Job | Plan (min) | Timeout (min) | Expected | Ceiling |
+|---|---|---|---|---|
+| L (L12 401-403 deciding; L12 and L64 every job type on 401; L24 401; K172c) | 115 | 175 | 8.33 | 12.33 |
+| M12 (deciding 401-403; reported, lp, las on 401) | 30 | 45 | 2.67 | 3.67 |
+| M168 deciding | 80 | 120 | 6.00 | 8.67 |
+| M168 reported, lp, las, BA | 110 | 165 | 8.00 | 11.67 |
+| **L1r** | | | **25.00** | **36.33** |
+
+L1r's line: lc2 2.29 and the smoke series 9.86 already spent (12.15); line total 37.15 expected and 48.48 ceiling against the line's 13.96 / 19.29. Send 4 adds about 1.2 (ceiling 2.67) (below).
+**Measured** (smoke, M12 data set 401, one unit per job type, 4 cores): deciding 1,204 to 1,243 s, lp 372 s, las 596 s, K172c 229 s, L1c 119 s wall for eight units. **Scaled, not measured:** every other unit time, from M12's 1,243 s and L1's per-data-set ratios (pre-KIT-190, shortened by the DA stops); reported times are L1's multiplied by the like-for-like factor 1,243 / 705 = 1.76; L12 deciding 34, L12 reported 45, L64 deciding 61, L64 reported 89, L24 deciding 51 (L12 x 1.5), M168 deciding 76, M168 reported 108, M168 lp 23, las 36, BA 23 (minutes). With these the lifecycle alone takes Part L above the accepted 2,611.55 (the audit: 1,435.82 expected / 2,640.74 ceiling); the formal figure is G3's. **Awaiting the owner: Part L's ceiling.**
