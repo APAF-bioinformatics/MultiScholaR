@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit276-ruv-superseded.R	202	5	0	0	0	820.5	failed
+test-kit216-prot-session-after-enrichment.R	152	0	0	1	6	563.3	ok

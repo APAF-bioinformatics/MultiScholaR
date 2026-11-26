@@ -2,7 +2,7 @@
 
 State: done and ready for its implementation audit. Branch tip is the last commit of `kit-276` (fix 79e77621; tests-only
 base for the comparisons: branch `kit-276-tests` e6f83d43 = e77f096c + two mechanics repairs of the new file, no change
-under `R/`). Staging branch point 38443af8. Nothing merged. Running total 83.15 of 172.00 core-hours (restated expected 84.2).
+under `R/`). Staging branch point 38443af8. Nothing merged. Running total 87.64 of 172.00 core-hours (83.15 before R4) (restated expected 84.2).
 
 ## What changed (by file)
 
@@ -116,23 +116,24 @@ the non-native (legacy) export path, which still writes the tab's `input$ruv_mod
 `test-module-ci-trx-qc.R` errors identically on base and head in R2 (`filtered[, design_order]`, subscript out of bounds);
 left untouched.
 
-## Prepared, NOT applied (waits for the owner's word on a further correction; AUDIT-KIT-276-impl I01)
+## Further bounded correction (VAL-389, owner-allowed): R4 45863987179 is a MISS; stopped, no repair
 
-The I01 line (`R/utils_workflow_dia_sessions.R`, `refreshDIANativeSummaryArchive`, in the branch that sets `ruv_mode` "none"
-when `run$ruv_mode` is NULL), beside `metadata["ruv_k"] <- list(NULL)`:
-
-    metadata["ruv_optimization_result"] <- list(NULL)
-
-so that `saveProtNormExportMetadataFiles` writes nothing, the archive lists no such member and a reopen restores no sweep.
-
-Row T8d (in process), in `tests/testthat/test-kit276-ruv-superseded.R`: after P, C, K, export through the native export
-(`collectDIANativeSessionMetadata` and `runDIANativeSessionExport`, as KIT-216's E3 rows do), then "Skip RUV", then
-`protSummaryRefreshArchive`; assert the archive's metadata `ruv_mode` "none", `ruv_applied` FALSE, `ruv_k` NULL and
-`ruv_optimization_result` NULL; `source_dir/ruv_optimization_results.RDS` absent; `createWorkflowArgsFromConfig` prints no
-"Automatic RUV Optimization Results".
-Predictions: base (tests-only commit with T8d, without the line): fails by value (the file is back; the metadata still holds
-the sweep); head (with the line): passes. Every other row and the whole of `test-kit216-prot-session-after-enrichment.R`
-(its refresh rows take the `run$ruv_mode` branch): `same`.
-Small run: `test-kit276-ruv-superseded.R` and `test-kit216-prot-session-after-enrichment.R`, base against head, one job per
-side, `blas` reference, file timeouts 60; about 91 job-minutes expected, ceiling 8.0 core-hours (480 job-minutes); running
-total before it 83.15 of 172.00.
+Done as prepared: tests-only commit 7649808b (row T8d), predictions committed before the run, then the one line
+`metadata["ruv_optimization_result"] <- list(NULL)` in the `run$ruv_mode`-is-NULL branch of `refreshDIANativeSummaryArchive`
+(head 3e4cb94d), then one run (new file and `test-kit216-prot-session-after-enrichment.R`, base against head). Result: the
+new file is 202 passed / 5 failed on BOTH sides (verdict `same`), `test-kit216-...` same 152/0/1. T8d fails identically on the
+base and the head at its first non-precondition expectation: `protSummaryRefreshArchive` returns the text "The session file
+was not updated: the current table is not the one the last session export saved ..." instead of NULL. That is the KIT-206
+head guard (`assertProtNormExportHeadCurrent`) refusing the refresh: after the export at the RUV head the export's stored
+correlation reference is the RUV state (the RUV publication sets `correlation_filtered_obj` to it,
+`R/utils_workflow_dia_products.R:1824`), and after the Skip the head is `correlation_filtered`, whose table components (the
+design with its W columns, or the corrected matrix) differ; the guard's exemption for RUV heads does not apply (the head is
+no longer one). So in the sequence AUDIT-KIT-276-impl I01 describes, the refresh is refused (the user is told the session file
+was not updated) and does not write the sweep back; the audit's step that the guard passes did not hold in this run. The
+remaining expectations (archive fields, absent file) then ran on the unrefreshed export and failed on both sides for that
+reason; no result for the line itself was produced. Per the instruction a miss is not repaired: the I01 line stays in the code
+as written (harmless: it only clears a value in the branch that is reached when a refresh happens with no RUV description),
+T8d stays as written and failing on both sides, and the case returns to the owner. A re-apply at the same threshold was not
+examined. Cost R4: 67.3 job-minutes = 4.49 core-hours; total 87.64 of 172.00.
+Note: KIT-277 (branch kit-277, not merged) also edits `refreshDIANativeSummaryArchive` a few lines away (it takes the
+annotation and FASTA tables from the current bus); whichever lands second resolves by hand. I did not merge it.
