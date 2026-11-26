@@ -702,7 +702,10 @@ test_that("KIT-061 (K061-1): DIA_LIMPA switched covariates -> correction -> cova
     manager <- fixture$manager
     withr::defer(closeDIAStateAdapter(manager))
     expect_identical(manager$current_state, "ruv_covariates")
-    expect_true("ruv_corrected" %in% diaStateHistory(manager))
+    # KIT-276 (VAL-346, VAL-359; declared edit): a commit of one RUV mode removes the other from the history; its record
+    # stays in the store.
+    expect_false("ruv_corrected" %in% diaStateHistory(manager))
+    expect_false(is.null(getDIAStateReference(manager, "ruv_corrected")))
     input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
     expect_identical(manifest$source_state$name, "ruv_covariates")
