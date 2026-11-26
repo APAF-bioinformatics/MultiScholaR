@@ -32,3 +32,19 @@ none; now `grep("cleanup")`. (c) P8: on the old code the call raised an "unused 
 reported as an error, not a failure; the call is captured with `tryCatch` and `expect_s3_class(condition,
 "omics_design_resave_unconfirmed")` asserts the same class. The 47+93 failures of the file and the 16 of the KIT-247 file
 (W288a x2 = 10, W288b = 6) were each at the stated value; they are not re-run. Re-send: the new file only.
+
+## Rulings of 2026-11-26 (coordinator): new test lines, tests-only commit before the code commit
+Departures recorded (step0/outcome): F2b (no real reopen) and P5 (worker path not drivable under testServer) accepted as
+written, listed under "Not checked" with the lines read (`R/mod_omic_da.R` registerOmicDaDesignFormula;
+`R/utils_workflow_execution.R:2842-2859` for the worker's project-copy read).
+New lines and their predictions on the OLD code (R1c, new file only):
+- Copy press itself (`kit277CopyClick`: Save Workflow Arguments then Copy through the Summary tab): F1/F2 (3 lanes), O4: after
+  the Save "Copy error" is expected; on the old code Copy succeeds, so these expectations FAIL by value. After the re-run no
+  "Copy error" and at least one note: passes on both sides (a guard).
+- P4: the head rule `assertWorkflowSummaryHeadFinal` (the function the Summary Save :297, the Report :524 and Export Session
+  State :622 call) must refuse with class `omic_norm_correlation_input_stale` and a text, per lane; on the old code the head is
+  the final table, "allowed": FAILS by value (4 lanes). P4 prot_lfq also presses Copy: "Copy error" expected; old code fails.
+  The Export Session State button itself is not pressed: its guard is the same function (listed under "Not checked").
+- G4 (new, guard): an import with taxon 9606 and the name "Homo sapiens (human)" asks nothing and says "nothing changed":
+  passes on both sides. (It found a defect in the code stage before any run: the organism rule asked on a name difference
+  with an equal taxonomy id; the rule now decides by taxonomy id when the bus holds one.)

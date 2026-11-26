@@ -246,6 +246,27 @@ kit277Box <- function(api, lane) {
     api$input(kit277BoxId(lane))
 }
 
+#' The Summary's Save Workflow Arguments then Copy, through the tab's own inputs; returns the notifications Copy raised.
+kit277CopyClick <- function(api, probe) {
+    lane <- probe$lane
+    prefix <- if (identical(lane$omic_type, "proteomics")) "session_summary" else "summary"
+    api$set(stats::setNames(list(prefix), api$tabs))
+    api$set(stats::setNames(list(lane$lane_id, "KIT-277 copy check"), paste0(prefix, c("-experiment_label", "-description"))))
+    kit277Click(api, paste0(prefix, "-save_workflow_args"))
+    probe$clear_notes()
+    kit277Click(api, paste0(prefix, "-copy_to_publication"))
+    probe$notes()
+}
+
+#' The head rule the Summary's Save (R/utils_workflow_summary.R:297), Report (:524) and Export Session State (:622) all call.
+kit277HeadRule <- function(api, probe) {
+    tryCatch({
+        shiny::isolate(assertWorkflowSummaryHeadFinal(api$workflow_data, probe$lane$omic_type))
+        "allowed"
+    }, omic_norm_correlation_input_stale = function(e) paste("refused:", conditionMessage(e)),
+    error = function(e) paste("<error>", conditionMessage(e)))
+}
+
 kit277State <- function(api, probe) {
     lane <- probe$lane
     list(history = probe$history(), head = probe$head(), entity = probe$entity(), status = probe$status(),
@@ -309,6 +330,7 @@ kit277FormulaScenario <- function(lane_id) {
         out$design_formula <- kit277Try(omicDaDesignFormula(shiny::isolate(api$workflow_data)))
         out$record_da <- kit277RecordHasDa(probe)
         out$export_da <- if (prot) kit277ExportHasDa(probe)
+        out$copy_notes_after <- kit277CopyClick(api, probe)
         probe$clear_notes()
         modals <- probe$modals()
         kit277Resave(api, lane, "formula")
@@ -318,6 +340,7 @@ kit277FormulaScenario <- function(lane_id) {
         probe$flush()
         out$rerun_formula <- kit277DaFormula(probe$manager())
         out$rerun_copy <- kit277Gate(api, probe, TRUE)
+        out$rerun_copy_notes <- kit277CopyClick(api, probe)
         out$rerun_design_formula <- kit277Try(omicDaDesignFormula(shiny::isolate(api$workflow_data)))
         out
     }))
@@ -342,6 +365,8 @@ for (lane_id in c("prot_lfq", "lipid_canonical", "metab_lc")) {
         expect_identical(out$after$copy, "refused", info = lane_id)
         expect_identical(out$after$summary, "allowed", info = lane_id)
         expect_false(out$record_da, info = lane_id)
+        # The Copy press itself: refused after the Save, working after the DA ran again.
+        expect_true(any(grepl("Copy error", out$copy_notes_after, fixed = TRUE)), info = lane_id)
         if (identical(lane_id, "prot_lfq")) {
             expect_identical(out$head_formulas$design, kit277NewFormula)
             expect_identical(out$head_formulas$da_ui, kit277NewFormula)
@@ -354,6 +379,8 @@ for (lane_id in c("prot_lfq", "lipid_canonical", "metab_lc")) {
         # The next run fits the new formula; Copy works again; the head's marker ends with the run.
         expect_identical(out$rerun_formula, kit277NewFormula, info = lane_id)
         expect_identical(out$rerun_copy, "allowed", info = lane_id)
+        expect_false(any(grepl("Copy error", out$rerun_copy_notes, fixed = TRUE)), info = lane_id)
+        expect_gt(length(out$rerun_copy_notes), 0L)
         if (!identical(lane_id, "prot_lfq")) expect_null(out$rerun_design_formula, info = lane_id)
     })
 
@@ -548,6 +575,7 @@ kit277OrganismScenario <- function() {
         out$record_da <- kit277RecordHasDa(probe)
         out$export_da <- kit277ExportHasDa(probe)
         out$status_enrichment <- probe$status()$enrichment_analysis
+        out$copy_notes_after <- kit277CopyClick(api, probe)
         # The enrichment Run is refused until the DA runs again.
         kit277Enrich(api, probe, "10090")
         out$enrichment_before_da <- !is.null(probe$manager()$.context$snapshot$enrichment_results)
@@ -560,6 +588,7 @@ kit277OrganismScenario <- function() {
         probe$flush()
         out$enrich_organisms <- kit277Organisms(probe$bus("uniprot_dat_cln"))
         out$copy_after <- kit277Gate(api, probe, TRUE)
+        out$copy_notes_rerun <- kit277CopyClick(api, probe)
         out
     }))
 }
@@ -594,6 +623,9 @@ test_that("KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment
     expect_false(out$export_da)
     expect_false(out$enrichment_before_da)
     expect_identical(out$copy_after, "allowed")
+    expect_true(any(grepl("Copy error", out$copy_notes_after, fixed = TRUE)))
+    expect_false(any(grepl("Copy error", out$copy_notes_rerun, fixed = TRUE)))
+    expect_gt(length(out$copy_notes_rerun), 0L)
 })
 
 test_that("KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enrichment run use the new organism's annotation", {
@@ -601,6 +633,22 @@ test_that("KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enric
     out <- kit277OrganismScenario()
     expect_identical(out$da_organisms, "Synthetic test organism")
     expect_identical(out$enrich_organisms, "Synthetic test organism")
+})
+
+test_that("KIT-277 G4 (S2, guard): an import whose organism name differs only textually, with the same taxonomy id, asks nothing", {
+    kit277Skip("S2")
+    out <- kit277Lane("prot_lfq", "correlation", function(api, probe) {
+        folder <- kit277ExportedDesign(probe, identity)
+        modals <- probe$modals()
+        probe$clear_notes()
+        kit277Import(api, probe$lane, folder, 9606L, "Homo sapiens (human)")
+        probe$flush()
+        list(modals = probe$modals() - modals, notes = probe$notes(), taxon = probe$bus("taxon_id"),
+            organism = probe$bus("organism_name"))
+    })
+    expect_identical(out$modals, 0L)
+    expect_true(any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE)))
+    expect_equal(as.numeric(out$taxon), 9606)
 })
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -747,7 +795,9 @@ kit277FastaCut <- function(lane_id, until, rerun) {
         out$project_after <- kit277Try(kit277TableText(readRDS(file.path(probe$paths$source_dir, "aa_seq_tbl_final.RDS"))))
         out$da_status <- kit277Try(workflowDaResultStatus(probe$manager()))
         out$copy <- kit277Gate(api, probe, TRUE)
+        out$head_rule <- kit277HeadRule(api, probe)
         out$record_da <- kit277RecordHasDa(probe)
+        if (identical(lane_id, "prot_lfq")) out$copy_notes <- kit277CopyClick(api, probe)
         if (isTRUE(rerun)) {
             id <- kit277CleanupStepId(lane_id)
             api$set(stats::setNames(list(probe$steps[[id]]$tab), probe$tabs))
@@ -806,7 +856,11 @@ for (lane_id in names(kit277FastaRoutes)) {
             expect_identical(out$da_status, "stale")
             expect_identical(out$copy, "refused")
             expect_false(out$record_da)
+            expect_true(any(grepl("Copy error", out$copy_notes, fixed = TRUE)))
         }
+        # R15: the head is not one of the DA's four states, so the Summary Save, Report and Export Session State (which
+        # call this rule) are refused, with the class and a text.
+        expect_match(out$head_rule, "^refused: .+", info = lane_id)
     })
 }
 
