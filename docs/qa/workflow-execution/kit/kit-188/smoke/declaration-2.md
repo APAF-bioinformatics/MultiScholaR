@@ -5,7 +5,7 @@ nothing is a result. Binding: these scripts' commit on the `v0.9-staging` head o
 
 What the re-send must show (otherwise it is a defect list, not a pass):
 1. both scripts parse (`parse: both scripts parse`);
-2. every E16 prediction met (`E16: 142 checks, 0 differ`: the 11 cases as predicted, including the `tf` case that reads a column of the letters T
+2. every E16 prediction met (`E16: 140 checks, 0 differ`: the 11 cases as predicted, including the `tf` case that reads a column of the letters T
    and F as text, the stand-alone `dropped` condition at 20 of 400, and `smokeflag`, where the scorer refuses an input carrying the smoke flag);
 3. the six plants and `exitplant` as predicted (E15 rows `itsd`, `itsdpos`, `emptysample`, `ruvskip`, `ruvdrop`, `daerror`, `normplant`, `exitplant`), where
    `ruvdrop` and E3 differ from 35.6 only as this base requires (`dropped` for the restricted assay, E3's import pattern); if `emptysample` or `daerror` crash again, the call
