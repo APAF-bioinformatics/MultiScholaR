@@ -339,3 +339,10 @@ Data set 401 for every cell and job type, 402 and 403 for L12 and M12 deciding o
 
 L1r's line: lc2 2.29 and the smoke series 9.86 already spent (12.15); line total 37.15 expected and 48.48 ceiling against the line's 13.96 / 19.29. Send 4 adds about 1.2 (ceiling 2.67) (below).
 **Measured** (smoke, M12 data set 401, one unit per job type, 4 cores): deciding 1,204 to 1,243 s, lp 372 s, las 596 s, K172c 229 s, L1c 119 s wall for eight units. **Scaled, not measured:** every other unit time, from M12's 1,243 s and L1's per-data-set ratios (pre-KIT-190, shortened by the DA stops); reported times are L1's multiplied by the like-for-like factor 1,243 / 705 = 1.76; L12 deciding 34, L12 reported 45, L64 deciding 61, L64 reported 89, L24 deciding 51 (L12 x 1.5), M168 deciding 76, M168 reported 108, M168 lp 23, las 36, BA 23 (minutes). With these the lifecycle alone takes Part L above the accepted 2,611.55 (the audit: 1,435.82 expected / 2,640.74 ceiling); the formal figure is G3's. **Awaiting the owner: Part L's ceiling.**
+
+## Smoke series, send 4 (parse and E16 only): result against smoke/declaration-4.md (run 45739974494, scripts at f4ae9344)
+
+Raw: `smoke/4-raw.tar.gz`, `smoke/4/`. Nothing is a result. Observed: exit 0 after 464 s. (1) both scripts parse; (2) `E16: 177 checks, 0 differ`: all 20 cases finished and every prediction was met, including
+`k2la`, `k1eff`, `nss`, `s5fail`, `excess`, `main`'s lp and las blocks (the LP-LA and LAs-LA tables and E5 passing); (3) `guardstop` stopped the scorer on an `instrument` row whose class contains `partial-match guard`
+(the child's and the journey's mapping to `instrument` is by reading only: no journey ran); (4) `normstop`, `rangestop` and `e5diff` stopped as predicted.
+**Running total on L1r's line** (core-hours, (job minutes + 10) x 4 / 60, indicative): sends 1 to 3 9.86, send 4 1.18: **11.04** (the line's spent figure with lc2 2.29 is 13.33).
