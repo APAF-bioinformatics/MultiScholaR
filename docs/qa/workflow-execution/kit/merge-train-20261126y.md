@@ -145,3 +145,63 @@ without any deletion, and `metab_*` files have no non-identical message.
   ledger's `VAL-<train32-1>` and `VAL-<train32-2>` rows, and this record's `VAL-<train32-n>` mentions (train 31's
   `kit-272/outcome.md:65` is train 31's to resolve).
 - `tickets/kit/KIT-268.md` status line still reads "R2 next" (closure check C03, coordinator bookkeeping).
+
+## Results (run 45741255942, request `train32-compare-c0f4b3f7`, base B `92205ca93`, head `c0f4b3f76`)
+
+The run is green (tests success, check success). Tables: `merge-train-20261126y-compare.tsv` and
+`merge-train-20261126y-check-compare.txt` (copies of the run's `compare.tsv` and `check-compare.txt`). One run, no re-send.
+`meta.txt` confirms the request as sent: 44 files, 6 shards, `check` true, `env` `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`.
+
+**Verdicts: 44 files: 41 `same`, 1 `count-changed`, 1 `message-changed`, 1 `only-on-head`; no `new-failure`, no `fixed`. One
+base count was missed (below), identically on both sides. R CMD check identical.**
+
+| File | Predicted (base / head) | Observed (base / head) | Verdict |
+|---|---|---|---|
+| `test-kit268-bh-fallback-notice.R` | absent / 30/0/0/0 | absent / 30/0/0/0 | only-on-head: HELD |
+| `test-kit236-report-sentences.R` | 297 / 321 (0 failed) | 297/0/0/0 / 321/0/0/0 | count-changed: HELD (+24 = T4) |
+| `test-omic-da-module.R` | 1288/81 same | 1288/81/0/0 both sides, identical failures | same: HELD |
+| `test-gui-entry-lipidomics.R` | 19/16 both, message-changed at `da` only | 19/16/0/0 both | message-changed: HELD (masked comparison below) |
+| `test-gui-entry-metabolomics.R` | 57/48 same | 57/48/0/0 both | same: HELD |
+| `test-omic-enrich-module.R` | 1011/59 same | 1011/59/0/0 both | same: HELD (no `stringdb_plot` difference appeared; I06 not seen) |
+| `test-omics-module-globals.R` | 14/0 same | 14/0/0/0 both | same: HELD |
+| `test-kit196-da-no-value-features.R` | 540/0 same | 540/0/0/0 both | same: HELD |
+| `test-omic-summary-module.R` | 1675/28 same | 1675/28/0/0 both | same: HELD |
+| `test-workflow-analysis-record.R` | 351/0 same | 351/0/0/0 both | same: HELD |
+| `test-workflow-saved-da.R` | 755/196 same | 755/196/0/0 both | same: HELD |
+| `test-kit272-prot-box-panel-text.R` | 373/0 both | 373/0/0/0 both | same: HELD |
+| `test-kit227-report-ruv-sentences.R` | 186/0 both | 186/0/0/0 both | same: HELD |
+| `test-kit235-lipid-metab-report-parser.R` | 58/0 both | 58/0/0/0 both | same: HELD |
+| `test-kit220-da-threshold-consumers.R` | 71/2/0/0 both | **79/0/0/0 both** | same, but the BASE COUNT WAS MISSED: MISSED prediction (identical on both sides; fewer failures than the committed 71/2) |
+| the other 29 files | as base counts of the closure check | as predicted, each `same` | HELD |
+| R CMD check | 0/3/3 identical | base 0 ERRORs, 3 WARNINGs, 3 NOTEs; head the same; 6 findings identical, 0 only on head, 0 only on base | identical: HELD |
+
+**The one miss: `test-kit220-da-threshold-consumers.R` reads 79 passed, 0 failed on BOTH sides, against the declared
+71/2/0/0.** Observed fact: the counts are identical on B and on the head, so KIT-268 changes nothing in this file. Inferred,
+not shown: the committed 71/2 comes from requests without `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`; the file uses the
+transcriptomics declaration reference (`trxDeclReference`, `:204`), whose corpus-manifest digest check the variable turns into
+a note (the same effect train 32 saw in train 28's three files, `merge-train-20261126u.md`). My declaration took the base
+counts from tables that were run without the variable while setting the variable in this request; I did not catch that the
+two diverge for this file. A prediction miss, recorded; no re-run.
+
+**Masked comparison, `test-gui-entry-lipidomics.R`** (`compare-failures.txt`, one block, base side and head side of the 16
+failing steps; performed offline with Python on the fetched file, no R). Method: split each side into its 16 step blocks
+(`lipid_canonical at step '<id>'`), delete from the head's `da` block the 12 lines of the added notification's difference
+(from "`actual$notifications` is length 4" through "`expected$notifications[[4]]` is absent": the length 4 against 3, the
+type `warning` against `message` at position 3, the message "Storey's q-values could not be computed for these comparisons,
+so Benjamini-Hochberg adjusted p-values are shown in the q-value column instead: KO_vs_WT in LCMS_Pos; KO_vs_WT in
+LCMS_Neg." against "DA results saved to disk (tables, volcano plots, heatmaps)", and the extra fourth notification), then
+compare block by block. Result: both sides have the same 16 steps; **all 16 blocks are identical after that one deletion**
+(15 identical without any deletion; the `da` block's remaining lines, the state-digest differences, are identical). The
+only other difference is the position of the `da` block in the concatenated message (first on the head, third on the base),
+not its content; the text before the first block is identical. The head side has 8 mentions of `notifications` against 0 on
+the base, all inside the deleted chunk. The notification text is the one stored in the closure check's text for
+`VAL-<train32-2>`: it matches exactly. `metab_*` of `test-gui-entry-metabolomics.R`: verdict `same`, no non-identical
+message.
+
+**Cost (jobs API).** 276.07 job-minutes = 18.40 core-hours, against the declared expected 310 and ceiling 420 (28.0). Longest
+job 24.7 minutes (tests base 3), far under 75. Shard timings are in the run; no job passed 25 minutes.
+
+**Decision.** Every declared prediction held except the one base count of `test-kit220-da-threshold-consumers.R`
+(identical on both sides, favourable). By the declaration's rule that is a result, recorded, not re-run. KIT-268 on the
+stacked tree (staging 5ab4e01b + train 31 + KIT-268): no regression; the stacked combination of KIT-272 and KIT-268 in
+`test-kit236-report-sentences.R` passes 321/0; the lipid GUI-entry oracle moves at step `da` by the one added warning only.
