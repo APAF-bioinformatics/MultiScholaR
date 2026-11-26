@@ -852,3 +852,30 @@ Outside the prediction:
    field names; inferred).
 Used: 223.73 + 3.45 = 227.18 of 901.33 core-hours. Per the ruling, no repair: the correction is spent and this returns to
 the coordinator.
+
+## VAL-383 (option (a)): the normData field only when a sample was removed; R1g declared
+
+VAL-383 (origin/v0.9-staging a67c4161): one more code line so that the tab's `samples_removed` field exists only when a
+sample was removed. Commit 9a63a3b7: `R/utils_workflow_dia_products.R:1074-1078`
+(`publishDIAReferenceNormalization`), the only unconditional write of the field; it is now written when the run removed
+a sample, or to clear a value an earlier run set (so a later notice never repeats a stale sample). The kernel's value
+(`:522`) and the commit's config (`:1045-1048`) were already conditional. No test edited; E17 pins the field when a sample
+is removed and hands `normData` to the finish directly, so it holds as written.
+
+### R1g, declared before the run (head-only, 1 job, ceiling 6.0 core-hours)
+
+| File | Prediction (passed/failed/errors) | Reason |
+|---|---|---|
+| `test-prot-norm-core.R` | 1547/307/0, failure messages identical to staging's: no `samples_removed` in any `norm_fields` message | the field no longer exists on runs that remove no sample |
+| `test-kit242-normalisation-fallback.R` | 571/0/0 | as R1f |
+| `test-workflow-omics-worker.R` | 265/0/0 | as R1f |
+| `test-prot-05b-norm-module-contracts.R` | 440/0/0 | same as R2's head (afb27738); not in R1f |
+| `test-prot-05d-norm-module-characterization.R` | 82/0/0 | same as R2's head |
+| `test-prot-norm-input-current.R` | 321/0/0 | same as R2's head |
+| `test-kit257-norm-own-files.R` | 133/0/0 | same as R2's head |
+| `test-kit206-prot-norm-export-guard.R` | 116/0/0 | same as R2's head |
+| `test-kit225-prot-norm-reset-source.R` | 56/0/0 | same as R2's head |
+
+`test-omics-module-globals.R` is not in R1g: on this branch it reads 13/1 for the reason recorded at R1f (the branch's
+older copy of the test lacks KIT-278's allow for staging's `shown_idle <<- idle`); 14/0 is predicted on the merged tree.
+A miss: stop and hand back, no repair (it returns to the owner).
