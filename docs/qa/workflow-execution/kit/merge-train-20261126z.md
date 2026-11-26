@@ -131,3 +131,31 @@ New failures: none. A head that differs from its base is a result.
 - Ledger: `VAL-<train33-1>` (`docs/methods-decision-ledger.md:2535`) takes its number. Status cells: VAL-318 (`:2490`) "implemented by KIT-274 (VAL-n), merged by train 33";
   VAL-332 (`:2504`) "KIT-274 part implemented (VAL-n)"; VAL-336 (`:2508`) append "the k = 0 export (X1) and its replay closed by KIT-274 (VAL-n)" (AUDIT-KIT-274 I04).
 - Placeholders in the member's own records (not edited here): `docs/qa/workflow-execution/kit/kit-274/outcome.md:63` and `:88` read `VAL-<merge>`.
+
+## Results (run 45741997862, head b6a3f6b7, base 221af09e; request file kit274-train33-b6a3f6b7.json)
+
+Run success; every file ran to completion. Tables beside this file: `merge-train-20261126z-compare.tsv`, `merge-train-20261126z-check-compare.txt`.
+Base versus head: same 36, only-on-head 1, new-failure 0, message-changed 0, count-changed 0, fixed 0. **Every prediction held: TRAIN GREEN for KIT-274.**
+
+| File | Base | Head | Verdict | Predicted |
+|---|---|---|---|---|
+| test-kit274-trx-no-ruv-export.R | absent | 84/0/0/0 | only-on-head | held (T11 restored) |
+| test-kit264-trx-export-current.R | 85/0 | 85/0 | same | held |
+| test-omics-module-globals.R | 14/0 | 14/0 | same | held |
+| test-omic-summary-module.R | 1675/28 | same | same | held |
+| test-omics-summary-core.R | 676/25/0/2 | same | same | held |
+| test-workflow-trx-declarations.R | 313/31 | same | same | held |
+| test-module-ci-trx-summary.R | 87/1 | same | same | held |
+| test-workflow-kit-harness.R | 734/1 | same | same | held |
+| test-workflow-omics-binding-steps.R | 57/2 | same | same (no message change) | held |
+| test-workflow-operation-registry.R | 1107/2 | same | same | held |
+| test-kit129-run-path.R | 711/0/0/1 | same | same | held (the 711 variant) |
+| test-integration-input-transcriptomics.R 79/0; test-kit224-ruv-feature-levels.R 69/0 | as listed | same | same | held |
+| the other 24 files (the declaration's "21" miscounted them) | R2's base counts | same | same | held |
+
+R CMD check: base and head both 0 ERROR, 3 WARNING, 3 NOTE; findings identical (6); only on head none. Held.
+
+Budget (jobs API, summed, skipped jobs 0): **339.98 job-minutes = 22.67 core-hours** (tests head 60.42 + 71.03 + 41.10; tests base 45.25 + 64.63 + 37.30; check head 9.13, base 10.23; plan 0.38; results 0.50). Ceiling 660 (44.0); expected about 350.
+R2b (run 45739818528, which the branch did not read): 23.52 job-minutes = 1.57 core-hours.
+
+Decision: KIT-274 is green on the merged tree.
