@@ -1,0 +1,109 @@
+{
+  "requested_by": "KIT-275 smoke send (one, instrument check, nothing judged, blind lifecycle shape; charged to L1's line; declaration smoke/declaration.md on branch kit-275)",
+  "label": "KIT-275 smoke 1e381cab",
+  "package_commit": "1e381cab29e7d13e68f059c02ed6c26040cd19e1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-smoke-selftest"
+      },
+      "out": "k275-smoke-selftest",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/fixture-k275.R",
+      "args": [
+        "D3",
+        "9101",
+        "9102",
+        "k275-smoke-g1"
+      ],
+      "env": {
+        "K275_SMOKE": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k275-smoke-g1",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 4
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D,K,S,E,T",
+        "D3",
+        "9101",
+        "9101",
+        "k275-smoke-a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_SMOKE": "1",
+        "K275_FAULT": "1",
+        "K275_REPEAT": "S",
+        "K275_JOB": "smoke-a",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/smoke/declaration.md"
+      },
+      "out": "k275-smoke-a",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 22
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D,ID",
+        "D4",
+        "9101",
+        "9101",
+        "k275-smoke-b"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_SMOKE": "1",
+        "K275_JOB": "smoke-b",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/smoke/declaration.md"
+      },
+      "out": "k275-smoke-b",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D",
+        "D3",
+        "9101",
+        "9101",
+        "k275-smoke-c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_SMOKE": "1",
+        "K275_JOB": "smoke-c"
+      },
+      "out": "k275-smoke-c",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 2
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
