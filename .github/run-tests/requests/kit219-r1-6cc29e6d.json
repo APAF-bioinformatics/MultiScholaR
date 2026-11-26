@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-219: run R1, the new tests on the tests-only commit: each E row fails at its stated value, G rows pass; ceiling 4.0 core-h",
+  "label": "KIT-219 R1 tests-only 6cc29e6d",
+  "package_commit": "6cc29e6dd3ed42ccfab8b7c4d38fab0bcfea6dd6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit219-enrichment-files-current.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

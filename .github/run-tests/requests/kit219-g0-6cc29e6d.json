@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-219: run G, G0 on the base (R/ = 0bdf7213): files written by the real kernel on both routes against the derived names; ceiling 4.0 core-h",
+  "label": "KIT-219 G0 on tests-only 6cc29e6d",
+  "package_commit": "6cc29e6dd3ed42ccfab8b7c4d38fab0bcfea6dd6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-219/g0.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-219/g0-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
