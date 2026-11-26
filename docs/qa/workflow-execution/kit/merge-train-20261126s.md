@@ -147,3 +147,48 @@ equal the rest of the head record. Any residue is reported as a missed predictio
 - `NEWS.md`: KIT-271's bullet in landing order (it stands after the bullets of staging's `### Fixes` that
   the conflict held, before "Proteomics, normalisation QC"); the wording is the owner's (VAL-41).
 - Plan and ticket records of the audit's section 6 (rows `:126`, `:121`, `:128`, I03 and I04 candidates).
+
+## Result
+
+Run 45728201286 (request `train26-compare-2c3a9c20`, request commit facbdfb3), dispatched by the dispatcher without error
+(no hand dispatch); green (infrastructure). Head 2c3a9c20 vs base 31a4d684. Tables:
+`merge-train-20261126s-compare.tsv`, `merge-train-20261126s-check-compare.txt`,
+`merge-train-20261126s-masked-comparison.txt` (same directory).
+
+**Job-minutes 392.5 = 26.17 core-hours** (job-minutes x 4 / 60) against the ceiling of 820 job-minutes (54.67
+core-hours); expected 420 to 450 (so under it): tests head 26.9/57.1/31.3/53.1, tests base 56.2/53.0/53.4/30.5, check head
+15.3, check base 14.7, plan 0.4, results 0.7 (job start to end from the jobs API).
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit271-limpa-table-name.R | only-on-head, 78/0/0/0 | absent | 78/0/0/0 | only-on-head: HELD |
+| test-prot-norm-core.R | 1547/307 both, message-changed in exactly the 12 limpa `files` records | 1547/307 | 1547/307 | message-changed: HELD (12 records on each side; only the `actual` digest differs: 926838a9 -> fe6b0c95 for the two correlation captures and the two W2 repeats, 19bc6774 -> 6c52f9ea for the eight RUV captures; expected 34e64dc1 and b1817922 unchanged; after masking the digest, 0 records differ) |
+| test-workflow-saved-da.R | 755/196 both, message-changed in the 2 `limpa_one_contrast files` records | 755/196 | 755/196 | message-changed: HELD (8fc2b731 -> d9db4b79; expected 2ce30818 unchanged; 0 other differences) |
+| test-gui-entry-proteomics.R | 92/101 both, message-changed only in prot_dia_limpa's ten steps, key lines only | 92/101 | 92/101 | message-changed: HELD (see the masked comparison) |
+| test-kit259b-second-correction.R | 90/0 same | 90/0 | 90/0 | same: HELD |
+| the other 28 files | same (counts as the committed tables, or read from the run) | as listed | as listed | same: HELD |
+| R CMD check | identical | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none; only on base: none): HELD |
+
+Totals: 33 files, 29 `same`, 3 `message-changed`, 1 `only-on-head`; no `new-failure`, no `count-changed`, no `fixed`.
+Tests head: passed 10938, failed 738, errors 3, skipped 82; base: passed 10860, failed 738, errors 3, skipped 82 (the 78
+are the new file). Counts read from the run for the two files without a committed count: test-omic-da-module.R 1288/81
+and test-workflow-ruv-pearson-diagnostic.R 301/0 with 2 errors and 5 skipped, both the same on both sides.
+
+**Masked comparison** (script: Python `-I`, kept outside the downloaded folder; output in
+`merge-train-20261126s-masked-comparison.txt`). 741 failure records on each side; 717 identical after temporary-path
+masking; 24 only on base and 24 only on head, all in the three message-changed files: 12 + 2 + 10. Test-gui-entry file:
+every record outside prot_dia_limpa's ten steps is identical on both sides; for the ten steps (correlation,
+ruv_covariates, session_export, da_load, da, summary_refusal, summary_save, summary_copy, summary_report,
+summary_export) the head records contain 6 key lines (12 at summary_copy, summary_report, summary_export) and the base
+records 0; with the key lines, the chunk headers and the quoted path lines removed, **10 of 10 steps are equal to their
+base records, no residue**. So the change is the four file-name keys and nothing else, as predicted.
+
+**Decision.** Every prediction held. TRAIN GREEN for KIT-271: the new file passes 78/0 on head; the declared limpa
+messages changed in exactly the declared records and by the declared digests; no count and no other file moved; check
+identical.
+
+## Rule slips
+
+None found. The run-tests worktree held other agents' untracked folders, untouched. One `fetch.sh` per run (45714327005
+for the I08 record, 45728201286 for this result), one `gh run watch`; no polling of the API. The first `gh run list` calls
+after the push (three) found the run not yet created, then found it: the dispatcher needs about a minute.
