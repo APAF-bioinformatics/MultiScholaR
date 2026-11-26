@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-277 SG1: stage-1 gate on the code commit 53e4c745: S1 rows and G2 plus test-omics-module-globals.R (stage filter 1); worst case 6.67 core-hours; running total 10.60 + R1c 6.67 + 6.67 of 200.00",
+  "label": "KIT-277 SG1 stage 1 53e4c745",
+  "package_commit": "53e4c74548d6276e298f5dcf2a033c0ec4fc9d98",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R",
+    "test-omics-module-globals.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 90
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT277_STAGE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
