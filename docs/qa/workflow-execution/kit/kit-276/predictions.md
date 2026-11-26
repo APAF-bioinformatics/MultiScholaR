@@ -46,3 +46,16 @@ on the base for the same reason). The repair gives the report chunks the DPC ste
 or text changes. Predicted with it: T2 on the base (tests-only e6f83d43) fails all three expectations by value (covariates
 Methods paragraph, covariates Results caption, the two-stage text absent); on the head (fix 79e77621) it passes. R3 runs the
 new file only, base against head.
+
+## Addendum: the further bounded correction (VAL-389), committed before the small run
+
+Base = 7649808b (the branch with row T8d and without the one line); head = the branch with
+`metadata["ruv_optimization_result"] <- list(NULL)` in the `run$ruv_mode`-is-NULL branch of `refreshDIANativeSummaryArchive`.
+- T8d on the base: the sweep is kept: `metadata$ruv_optimization_result` is not NULL, `ruv_optimization_results.RDS` is back and
+  the study parameters print the section: FAILS by value (the fields `ruv_mode` "none", `ruv_applied` FALSE and `ruv_k` NULL pass).
+  On the head: passes.
+- The precondition rows of T8d (the export wrote the file; the Skip removed it) pass on both; `protSummaryRefreshArchive`
+  returns NULL (refreshed) on both. If it returns the stale text instead (the KIT-206 guard comparing the head with the
+  export's RUV reference), T8d fails on both sides at that expectation: that is a miss, and I stop and hand back.
+- Every other row of the new file: as in R3 (195/0 on the head). `test-kit216-prot-session-after-enrichment.R`: `same`
+  (its refresh rows take the `run$ruv_mode` branch).

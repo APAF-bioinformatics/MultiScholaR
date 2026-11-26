@@ -1822,6 +1822,8 @@ refreshDIANativeSummaryArchive <- function(workflow, source_dir) {
         metadata$ruv_mode <- "none"
         metadata$ruv_applied <- FALSE
         metadata["ruv_k"] <- list(NULL)
+        # KIT-276 (VAL-389): the exported sweep goes with it, so that its project file is not written back.
+        metadata["ruv_optimization_result"] <- list(NULL)
     }
     metadata$normalization_method <- resolveDIANormalisationMethod(manager, run, metadata$normalization_method)
     metadata$r6_current_state_name <- manager$current_state
