@@ -19,7 +19,7 @@ commit) 307 passed / 6 failed = 289 existing + 18 passing T4 expectations, 6 fai
 
 Correction pass, step (a) (local search of the committed records, no run): the head hash of element 11 in R2, `<text> a3f2703c...`, appears
 in no earlier record; the same element (`stringdb_plot`) showed a different hash, `<text> 62479f92...`, in kit-201 r3's compare-failures (on
-base and head both, the "refusals table_removed" steps), while the frozen value is `b54fa6cb...`. So that element has varied between
+the base side only, the "refusals table_removed" steps), while the frozen value is `b54fa6cb...`. So that element has varied between
 runs before. By reading: the renderer (R/mod_omic_enrich_panels.R:596) is `plotly::plot_ly() |> add_text(...)` with a constant text;
 whether the widget's JSON carries anything that varies between processes (plotly gives each `plot_ly()` call generated ids) was not read
 in plotly's source in this session and stays inferred. R2's 1011/59 to 1005/65 stays on record as observed and unexplained.
