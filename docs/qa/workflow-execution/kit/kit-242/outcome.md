@@ -753,7 +753,8 @@ the combined `test-omic-norm-module.R` count are KIT-260's to predict. Request a
 | `test-workflow-omics-declarations.R` (KIT-073) | message-changed | 43/25 | `values` (the RUV and ITSD per-assay fields); `registry` message unchanged (VAL-338's situation) (VAL-352 (3)) |
 | `test-workflow-omics-binding-steps.R` (KIT-094) | message-changed | 57/2 | the `records` part (VAL-352 (3)) |
 | `test-prot-norm-core.R` | message-changed | 1547/307 | three KIT-111 tests (the protein marker in provenance); the DIA step's new `samples_removed` appears only when a sample is removed, and no fixture has one |
-| `test-gui-entry-proteomics.R`, `test-workflow-operation-registry.R`, `test-kit172-reopen.R`, `test-kit236-report-sentences.R`, `test-kit235-…`, `test-omics-module-globals.R`, the RUV and control-selection characterisation files (`test-metab-03a-…`, `test-lipid-12b/12c-…`, `test-metab-02y-…`, `test-metab-04-…`, `test-ruv-control-anova-grouping.R`), `test-kit224-ruv-feature-levels.R`, `test-kit255-omics-correlation-assays.R` | same | as on the base | no value moves where a correction acted before; the control selection's new attribute is set only when it skips an assay under the current rule |
+| `test-omics-module-globals.R` | same | 14/0 -> 14/0 | after RC-1's repair (5be656b2) the two control-selection files hold no `<<-`; the other `<<-` KIT-242 adds are in `utils_*` files, outside the scan |
+| `test-gui-entry-proteomics.R`, `test-workflow-operation-registry.R`, `test-kit172-reopen.R`, `test-kit236-report-sentences.R`, `test-kit235-…`, the RUV and control-selection characterisation files (`test-metab-03a-…`, `test-lipid-12b/12c-…`, `test-metab-02y-…`, `test-metab-04-…`, `test-ruv-control-anova-grouping.R`), `test-kit224-ruv-feature-levels.R`, `test-kit255-omics-correlation-assays.R` | same | as on the base | no value moves where a correction acted before; the control selection's new attribute is set only when it skips an assay under the current rule |
 | every other file | same | as on the base | |
 | check | identical findings | | |
 
@@ -791,3 +792,38 @@ globals file. No transcriptomics file, so no `env`. Predictions (passed/failed/e
 | `test-metab-03a-ruviii-c-varying-characterization.R` | 40/0/0 | as R2's head |
 
 Any miss: stop and hand back, no repair (the correction is then spent).
+
+### RC-2 (records), RC-3 and RC-4 (known limits, not in scope)
+
+- `VAL-<merge>`: the list of stops in the auditor's wording ("a failed search (Automatic or Manual) or correction, an
+  assay the control selection cannot read or that holds too little data, and an invalid k stop").
+- NEWS Part B: "before, the RUV step stopped (Automatic mode) or the assay was left out while the record said RUV had
+  been applied (Manual mode)".
+- NEWS Part A, established by reading: the label-free and TMT tabs reach the same declaration. The proteomics
+  normalisation tab branches only on the DIA-with-limpa route (`runProtNormNormalizationWorkflow`,
+  `R/mod_prot_norm_workflow_helpers.R`); every other route calls `runDIAReferenceNormalization`, which runs the
+  `normalization-ruv` declaration (`computeDIAReferenceNormalization`, `R/utils_workflow_dia_products.R:1016-1020`); the
+  GUI-entry lanes `prot_lfq`, `prot_lfq_fragpipe` and `prot_tmt` drive that same tab and button
+  (`tests/testthat/helper-gui-entry.R:706-716`). NEWS now names DIA without limpa, label-free and TMT.
+- The train's prediction list: the globals row corrected (14/0 same after RC-1's repair).
+- **Notes for the dependants** (the auditor's RC.4):
+  - KIT-188: the legacy arm can now see the status `skipped_no_controls_selected`, `skip_reason` on a per-assay result,
+    `ruv_not_applied_groups` (value) and `ruv_not_applied_groups_per_assay` (record), and a kept assay where the step
+    used to stop; every control-selection skip is a keep (`group_counts`) or `omics_ruv_failed` (`search_error`), no
+    longer an untyped R error. Its "ruvskip" cell is unchanged.
+  - KIT-275 tier V: the VE shape now completes RUV with every assay kept (`ruv_applied` FALSE, `no_usable_controls`,
+    groups "B") and goes on to the DA: classify it as RUV not applied (PEL2 uncorrected), not a stop.
+  - KIT-280: `diaNormalizationCommit` now sets `config$outcomes <- list(samples_removed = ...)` when a sample was
+    removed; if KIT-280 also writes `config$outcomes` there, it must merge (e.g. `config$outcomes$samples_removed <- ...`),
+    not overwrite. Its `fixed` line moved to `R/utils_workflow_dia_products.R:536`, content unchanged.
+  - KIT-262 M3: `rules-k262.R` must count `skipped_no_controls_selected` as a rejected percentage, not a usable one.
+- **Known limits, candidates for a follow-up (not in scope; they change user-facing text or behaviour beyond VAL-373):**
+  - RC-3: for control-selection skips other than duplicated ids (too little data, most `not_selected` causes) the stop
+    says "because it could not read the assay", which is not the cause; a grouping with a single level in the design
+    falls under `group_counts` with an empty group list and is kept with "the groups  have fewer than two samples ...".
+  - RC-4: a Manual search that succeeds with a control vector selecting no feature reaches `omicsRuvCorrectByCause`'s
+    keep; its `omics_ruv_not_applied` warning is muffled in the kernel and not carried into the value, so the assay is
+    recorded `ruv_applied` FALSE with reason NA, no notice, `k_per_assay` the Manual k, and a closing line pointing to
+    warnings that are not shown. Whether the ANOVA helper returns an all-FALSE vector at 0 controls is not checked.
+- Not checked (RC-5): E17 skips the publish wiring (`norm_data$samples_removed`); no Manual VE row; no row for the
+  Automatic duplicate, `too_little_data` or `not_selected` mappings.
