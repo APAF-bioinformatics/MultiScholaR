@@ -346,3 +346,18 @@ Raw: `smoke/4-raw.tar.gz`, `smoke/4/`. Nothing is a result. Observed: exit 0 aft
 `k2la`, `k1eff`, `nss`, `s5fail`, `excess`, `main`'s lp and las blocks (the LP-LA and LAs-LA tables and E5 passing); (3) `guardstop` stopped the scorer on an `instrument` row whose class contains `partial-match guard`
 (the child's and the journey's mapping to `instrument` is by reading only: no journey ran); (4) `normstop`, `rangestop` and `e5diff` stopped as predicted.
 **Running total on L1r's line** (core-hours, (job minutes + 10) x 4 / 60, indicative): sends 1 to 3 9.86, send 4 1.18: **11.04** (the line's spent figure with lc2 2.29 is 13.33).
+
+## The guard's stop and where it is raised (the coordinator's finding on KIT-275's mechanics; written, not run)
+
+**(1) Where the guard's `stop()` was raised, before this repair (by reading).** In `sim-k188.R` the guard was a GLOBAL calling handler (`globalCallingHandlers`, script header) and, inside `quiet()`, a local one. A `stop()` from a global calling handler
+runs with every local handler disabled and reaches no `tryCatch`. So: *inside a journey, in code run under `quiet()`* the local handler raised it and `journeyL`'s `tryCatch` caught it (the GUARD-2 mapping was reachable there);
+*inside a journey but outside `quiet()`* (for example `checkItsdActed`, `stateMatrices`, `journeyAssayColumns`, `armRows`) only the global handler saw it: the child ended at top level, exit 1, no row, no check, no trace; *inside a unit outside any journey* the same;
+*in the parent* the same (the parent ends with its start files only); *in the scorer* the global handler only, which is the intended behaviour there (it stops with its message). The parent's mapping of a unit row to `instrument` needed the guard's text in the child's error, which the dead child never wrote.
+GUARD-2 had therefore never been shown and was reachable only for guard stops raised under `quiet()`.
+
+**(2) Repair** (as KIT-275's `sim-k275.R`): one function `guardWarning`, installed as a LOCAL calling handler around the body of every journey (`journeyL`), around every unit (the child's `withCallingHandlers`) and inside `quiet()`; the global handler is kept as a last net; an
+`options(error=)` writer leaves a trace file (`unit-...-trace.txt` next to the unit's result, `parent-trace.txt` in the output directory) before the non-zero exit; the parent reads the child's trace when no result file exists and records an `instrument` unit row when it carries the guard's text;
+the scorer stops on an instrument row (and on any row whose class contains `partial-match guard`, as before); a lifecycle check `unit_completed` (FALSE for a unit that ended with an error, except the planted `exitplant` and `guardunit`) is in the end-of-run stop list, as `GUARD_planted`.
+Planted variants: job `guard` on M12 (`K188_GUARD`; `guardjourney`: a deliberate `$` prefix match inside a journey; `guardunit`: inside the unit outside any journey; `guardcontrol`: an ordinary journey) and the E16 case `guardunit`.
+**One difference from KIT-275, for the coordinator:** the scorer does not stop on a crashed unit row. Under VAL-243 (38.2 (2)) a unit crash counts in the 5 % gate, so stopping on it would contradict the declared rule; an instrument unit row stops it, a crashed one is counted. The path left with no trace is a failure of the options(error) writer itself (the `try` around it), untested.
+The prepared declaration for one further send is `smoke/declaration-5.md` (not sent).

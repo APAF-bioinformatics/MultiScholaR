@@ -349,6 +349,9 @@ assert excess_class([-0.2] * 400) == "meets (excess over OR)" and excess_class([
 write(os.path.join(out, "cases", "normstop", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", norm_ok="FALSE")])
 write(os.path.join(out, "cases", "guardstop", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", status="instrument",
     **{"class": "partial_match_guard: partial-match guard: partial match of 'da' to 'da_reached'"})])
+# a unit-level guard stop: the child ended outside any journey; the parent's unit row is `instrument` with the guard's text
+write(os.path.join(out, "cases", "guardunit", "rows.tsv.gz"), [{**row("L12", "deciding", "N0", "none", 1, "unit"), "scenario": "N0", "status": "instrument", "scoreset": "NA", "arm": "unit",
+    "class": "child process exit 1, no result Error: partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'"}])
 write(os.path.join(out, "cases", "rangestop", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 3, "LA")])
 tiny = build("L12", 2)
 for s_, m_ in conds("L12"):
@@ -369,6 +372,7 @@ with open(os.path.join(out, "cases.tsv"), "w") as f:
         f.write("%s\t%s\tL12:deciding\t400,100\tok\n" % (case, case))
     f.write("normstop\tnormstop\tL12:deciding\t2,2\tstop:norm_ok\n")
     f.write("guardstop\tguardstop\tL12:deciding\t2,2\tstop:partial-match guard\n")
+    f.write("guardunit\tguardunit\tL12:deciding\t2,2\tstop:partial-match guard\n")
     f.write("rangestop\trangestop\tL12:deciding\t2,2\tstop:outside the declared range\n")
     f.write("e5diff\te5diff\tL12:deciding,L12:lp\t2,2\tstop:E5 differs\n")
     f.write("tf\ttf\tL12:deciding\t400,100\tok\n")

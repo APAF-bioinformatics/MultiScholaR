@@ -39,11 +39,28 @@
 # draw their levels and variances as features (the variance scaled by the features' median); every draw is made in
 # every scenario (a scenario without unwanted variation multiplies it by 0).
 
-# Partial-match guard (smoke check send 3, the coordinator's ruling): `$` on a list or data frame matches a name by its prefix when none is exact;
-# that warning is an error here, in every process of every run (lifecycle, L1r, L1c and counted runs). A stop from it is an instrument defect.
+# Partial-match guard (smoke check send 3, the coordinator's ruling; repaired as KIT-275's): `$` on a list or data frame matches a name by its prefix when
+# none is exact; that warning becomes an error (`stop`). A `stop()` raised from a GLOBAL calling handler runs with every local handler disabled, so it
+# reaches no `tryCatch` and ends the process with nothing written. The guard is therefore a function (`guardWarning`) installed as a LOCAL calling
+# handler around every journey, every unit and inside `quiet()`, where its stop reaches the enclosing `tryCatch`; the global handler stays only as a
+# last net, with an `options(error=)` writer that leaves a trace file before the non-zero exit (the parent reads it and records an instrument unit row).
+# Where each path stands: a partial match inside a journey (inside `quiet()` or the journey's own `tryCatch`) -> local handler -> the journey becomes
+# `instrument`; inside a unit outside any journey -> the child's local handler -> the unit row is `instrument`; in the parent or the scorer -> the global
+# net only: the process ends with the message and the trace. A stop from the guard is an instrument defect by definition (VAL-54).
 options(warnPartialMatchDollar = TRUE)
-globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+guardWarning <- function(w) {
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {
+        options(k188.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L]], collapse = ""), 1L, 80L), ""), collapse = " <- "))
+        stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    }
+}
+globalCallingHandlers(warning = guardWarning)
+options(error = function() { # an error that escaped every handler: write what is known, then end non-zero
+    cl <- commandArgs(TRUE)
+    path <- if (identical(cl[1L], "--unit")) sub("\\.rds$", "-trace.txt", cl[8L]) else file.path(cl[5L], "parent-trace.txt")
+    try(dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE), silent = TRUE)
+    try(writeLines(c(geterrmessage(), getOption("k188.guard_trace", "")), path), silent = TRUE)
+    quit(save = "no", status = 1L)
 })
 args <- commandArgs(TRUE)
 child <- length(args) >= 1L && identical(args[[1L]], "--unit")
@@ -112,7 +129,7 @@ quiet <- function(expr) {
         warning_count$log <- c(warning_count$log, paste(class(cond)[[1L]], if (length(hit)) hit[[1L]] else "", sep = "@"))
     }
     invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
-        if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+        guardWarning(w)
         warning_count$n <- warning_count$n + 1L
         noteOf(w)
         invokeRestart("muffleWarning")
@@ -650,13 +667,18 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
     fixture <- NULL
     step <- "owner"
     omic_plant <- if (!is.null(plant) && plant %in% c("itsd", "itsdpos")) plant else NULL
-    result <- tryCatch({
+    result <- tryCatch(withCallingHandlers({
         object <- omicObject(sim, log2_values, ids = ids, scale = scale, plant = omic_plant)
         fixture <- quiet(if (identical(sim$p$omic, "lipid")) lipidDeclarationsOwner(root, object) else metabDeclarationsOwner(root, object))
         fixture$workflow$contrasts_tbl <- contrastsOf(sim)
         owner <- fixture$owner
         config <- fixture$workflow$config_list
         if (fault) stop("K188 deliberate fault (E7)")
+        # the planted guard (journey level): a deliberate `$` prefix match inside the journey; its stop must end the journey as `instrument`
+        if (identical(plant, "guardjourney")) {
+            probe <- list(partial_probe_value = 1)
+            probe$partial_probe
+        }
         if (filter) {
             step <- "intensity_filter"
             # 40.3 (3): KIT-217's two settings are passed from E3's read values, not left to the function's defaults
@@ -770,7 +792,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         out$e1 <- list(pass = identical(unname(got_ops), unname(want)) && identical(unname(got_variant), unname(want_variant)),
             note = oneLine(sprintf("ops %s; variants %s", paste(got_ops, collapse = ","), paste(got_variant, collapse = ","))))
         NULL
-    }, error = function(e) {
+    }, warning = guardWarning), error = function(e) {
         cls <- intersect(class(e), REFUSALS)
         text <- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
         # a partial-match guard stop is an INSTRUMENT defect (VAL-54), never a route failure: it must not enter the 5 % gate
@@ -1545,12 +1567,14 @@ conditionsOf <- function(part, cellname, job) {
         munit = expand.grid(mask = c("none", "vd20"), scenario = c("N0", "E1"), stringsAsFactors = FALSE),
         ba = expand.grid(mask = "ba", scenario = SCENARIOS[1:4], stringsAsFactors = FALSE),
         k172c = data.frame(mask = "none", scenario = "N0", stringsAsFactors = FALSE),
-        l1c = data.frame(mask = "none", scenario = "N1", stringsAsFactors = FALSE))
+        l1c = data.frame(mask = "none", scenario = "N1", stringsAsFactors = FALSE),
+        guard = data.frame(mask = "none", scenario = "N0", stringsAsFactors = FALSE))
 }
 jobApplies <- function(cellname, job) {
     if (identical(cellname, "K172c") || identical(job, "k172c")) return(identical(cellname, "K172c") && identical(job, "k172c"))
     # 35.6: L1c is one job on L12; 38.5: L24 is a reported cell with its deciding-type job only (LA, GA, NO, OR; R = 100); LP
     # (5.3) and LAs (34) run in the four shapes of the base table
+    if (identical(job, "guard")) return(identical(cellname, "M12"))
     if (identical(job, "l1c")) return(identical(cellname, "L12"))
     if (identical(cellname, "L24")) return(identical(job, "deciding"))
     switch(job, munit = cellname %in% c("L12", "M12"), ba = cellname %in% c("L64", "M168", "P4b"),
@@ -2082,10 +2106,28 @@ runPlantUnit <- function(plant, cellname, r, d) {
         seconds = NA_real_)
 }
 
+#' The guard's planted units (the metabolomics cell, one ordinary journey each): `guardjourney` raises a `$` prefix match inside the journey, `guardunit`
+#' inside the unit outside any journey, `guardcontrol` is an ordinary journey. The journey and the unit must end as `instrument` and the control as `ok`.
+runGuardUnit <- function(variant, cellname, r, d) {
+    if (identical(variant, "guardunit")) {
+        probe <- list(partial_probe_value = 1)
+        probe$partial_probe
+    }
+    sim <- generate(cellname, "N0", r)
+    values <- maskedValues(sim, "none")
+    j <- journeyL(sim, values, "NO", REQUESTS_L(d)[["NO"]], d, tempfile("k188-guard-"), plant = variant)
+    common <- list(part = "L", cell = sim$cell, job = "guard", scenario = sim$scenario, mask = "none", rep = sim$r)
+    rows <- armRows(sim, j, setdiff(j[["kept"]], sim$is_ids), common, NULL)$rows
+    guarded <- identical(variant, "guardjourney")
+    ok <- if (guarded) identical(j[["status"]], "instrument") && startsWith(as.character(j[["class"]]), "partial_match_guard:") else identical(j[["status"]], "ok")
+    addCheck("GUARD_planted", sim$cell, r, variant, j[["status"]], if (guarded) "instrument" else "ok", ok, as.character(j[["class"]]))
+    list(rows = do.call(rbind, lapply(rows, function(x) as.data.frame(x[ROW_COLUMNS], stringsAsFactors = FALSE))), checks = do.call(rbind, checks_env$rows), seconds = NA_real_)
+}
 runUnit <- function(part, cellname, r, job, scenario, mask, lifecycle, fault_now, plant = "") {
     t_unit <- proc.time()[[3L]]
     omic <- CELLS[[cellname]]$omic
     d <- routeDefaults(omic)
+    if (identical(job, "guard")) return(runGuardUnit(plant, cellname, r, d))
     if (identical(job, "l1c")) {
         # 35.6 `exitplant` (R20-P10): this unit's child ends its process before writing rows; the parent writes the unit row
         if (identical(plant, "exitplant")) quit(save = "no", status = 3L)
@@ -2142,7 +2184,7 @@ if (child) {
     # failing line is located (coordinator's ruling, defect 2)
     stack <- NULL
     result <- tryCatch(withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now,
-        Sys.getenv("K188_PLANT_UNIT")), error = function(e) {
+        Sys.getenv("K188_PLANT_UNIT")), warning = guardWarning, error = function(e) {
         stack <<- vapply(sys.calls(), function(cl) substr(oneLine(paste(deparse(cl, width.cutoff = 200L), collapse = " "), 200L), 1L, 200L), "")
     }),
         error = function(e) list(error = oneLine(paste(class(e)[[1L]], conditionMessage(e))), stack = stack,
@@ -2179,6 +2221,9 @@ p_last <- {
 }
 # 35.6: K188_PLANT (comma list, default all eight) names the planted cases of the L1c job (K188_JOBS = l1c)
 plants_wanted <- strsplit(Sys.getenv("K188_PLANT", paste(PLANTS, collapse = ",")), ",", fixed = TRUE)[[1L]]
+# K188_GUARD (comma list, default all three): the planted guard units of the job `guard` (the metabolomics cell M12)
+guards_wanted <- strsplit(Sys.getenv("K188_GUARD", "guardjourney,guardunit,guardcontrol"), ",", fixed = TRUE)[[1L]]
+if ("guard" %in% jobs) stopifnot(lifecycle, identical(part, "L"), all(guards_wanted %in% c("guardjourney", "guardunit", "guardcontrol")))
 if ("l1c" %in% jobs) {
     stopifnot(lifecycle, identical(part, "L"), all(plants_wanted %in% PLANTS))
     # 40.3 (8), 35.6 (r1.20): the R-marked predictions are read at the bound commit and written into lifecycle.md before the
@@ -2190,6 +2235,10 @@ if ("l1c" %in% jobs) {
 units <- list()
 for (cellname in cells_wanted) for (job in jobs) {
     if (!jobApplies(cellname, job)) next
+    if (identical(job, "guard")) {
+        for (plant in guards_wanted) units[[length(units) + 1L]] <- list(cell = cellname, r = first_rep, job = job, scenario = "N0", mask = "none", plant = plant)
+        next
+    }
     if (identical(job, "l1c")) {
         for (plant in plants_wanted) units[[length(units) + 1L]] <- list(cell = cellname, r = first_rep, job = job, scenario = "N1",
             mask = "none", plant = plant)
@@ -2208,7 +2257,7 @@ for (cellname in cells_wanted) for (job in jobs) {
 units <- do.call(rbind, lapply(units, as.data.frame, stringsAsFactors = FALSE))
 # largest first (the four-way packing), the deliberate fault and the refusal check in fixed units
 weight <- c(L12 = 1, L24 = 1.5, L64 = 2.5, M12 = 0.5, M168 = 3, P0 = 1, P1 = 1.3, P16 = 2, P2 = 0.5, P3 = 2.6, P4b = 5)[units$cell] *
-    c(deciding = 1, reported = 1.8, munit = 1.1, ba = 0.8, lp = 0.7, las = 0.7, l1c = 0.3)[units$job]
+    c(deciding = 1, reported = 1.8, munit = 1.1, ba = 0.8, lp = 0.7, las = 0.7, l1c = 0.3, guard = 0.1)[units$job]
 units <- units[order(-weight), , drop = FALSE]
 units$fault <- FALSE
 units$e7 <- FALSE
@@ -2269,7 +2318,9 @@ runChild <- function(i) {
     code <- system2("Rscript", c(shQuote(script_file), "--unit", part, u$cell, u$r, u$job, u$scenario, u$mask, shQuote(rds)),
         env = env, stdout = FALSE, stderr = FALSE)
     seconds <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    res <- if (file.exists(rds)) readRDS(rds) else list(error = sprintf("child process exit %d, no result", code))
+    trace_file <- sub("\\.rds$", "-trace.txt", rds)
+    res <- if (file.exists(rds)) readRDS(rds) else list(error = paste(sprintf("child process exit %d, no result", code),
+        if (file.exists(trace_file)) oneLine(paste(readLines(trace_file, n = 1L), collapse = " "), 200L) else ""))
     unlink(rds)
     res$wall <- seconds
     res$exit <- code
@@ -2311,7 +2362,13 @@ runChild <- function(i) {
                 identical(as.character(rows$arm), "unit") && identical(as.character(rows$status), "crashed"),
             note = sprintf("exit %s; %d row(s)", code, nrow(rows)), stringsAsFactors = FALSE)
     }
-    silence <- if (!identical(u$job, "l1c") && !is.null(rows$status)) data.frame(n_instrument = sum(rows$status %in% "instrument"),
+    # the planted unit-level guard: the unit ended outside any journey; its row must be `instrument` with the guard's text
+    if (identical(u$plant, "guardunit")) {
+        res$checks <- data.frame(check = "GUARD_planted", cell = u$cell, rep = u$r, condition = "guardunit", value = as.character(rows$status[[1L]]),
+            threshold = "instrument", pass = nrow(rows) == 1L && identical(as.character(rows$arm), "unit") && identical(as.character(rows$status), "instrument") &&
+                grepl("partial-match guard", as.character(rows$class), fixed = TRUE), note = oneLine(as.character(rows$class)), stringsAsFactors = FALSE)
+    }
+    silence <- if (!identical(u$job, "l1c") && !identical(u$job, "guard") && !is.null(rows$status)) data.frame(n_instrument = sum(rows$status %in% "instrument"),
         n_itsd_false = sum(as.character(rows$itsd_ok) %in% "FALSE"), n_norm_false = sum(as.character(rows$norm_ok) %in% "FALSE"))
     list(timing = timing, checks = res$checks, status = status, plant = res$plant, silence = silence)
 }
@@ -2335,6 +2392,10 @@ for (i in seq_len(nrow(units))) {
 }
 unlink(list.files(file.path(out_dir, "rows"), pattern = "^unit-(timing|checks)-", full.names = TRUE))
 timing <- do.call(rbind, timing)
+# a unit that ended with an error is a failed check in a lifecycle run (the planted exit and guard units end so by design)
+for (i in which(nzchar(timing$error))) checks <- rbind(checks, data.frame(check = "unit_completed", cell = timing$cell[[i]], rep = timing$rep[[i]],
+    condition = paste(timing$job[[i]], units$plant[[i]]), value = NA, threshold = "ran to the end", pass = units$plant[[i]] %in% c("exitplant", "guardunit"),
+    note = timing$error[[i]], stringsAsFactors = FALSE))
 statuses <- do.call(rbind, status_rows)
 statuses <- stats::aggregate(statuses["n"], statuses[c("cell", "job", "arm", "arm_scale", "scenario", "mask", "status", "class")], sum)
 # E7 (crash): the deliberate fault was recorded crashed and the job went on
@@ -2428,7 +2489,7 @@ cat(sprintf("KIT-188 %s finished: %d units (%d with an error), wall %.1f min\n",
 # 35.6 (r1.20): a prediction not met (E15, E15R, or the R-marked E7 observations) stops the lifecycle run; everything is written first
 # K188_SMOKE=1 (an instrument check with no expectation, declared before it is sent): the checks are written, none is judged
 if (!is.null(checks) && !identical(Sys.getenv("K188_SMOKE"), "1") &&
-    any(!checks$pass[checks$check %in% c("E15", "E15R", "E7_invalid_k", "E7_refusal", "E15_silence")])) {
+    any(!checks$pass[checks$check %in% c("E15", "E15R", "E7_invalid_k", "E7_refusal", "E15_silence", "GUARD_planted", "unit_completed")])) {
     cat("KIT-188: a prediction of 35.6 or 7.4 was not met; the lifecycle run stops here (reported, 35.6 r1.20)\n")
     quit(save = "no", status = 2L)
 }
