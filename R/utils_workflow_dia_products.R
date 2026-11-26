@@ -1071,8 +1071,11 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
     norm_data$normalized_protein_obj <- saved$normalized
     norm_data$ruv_normalized_obj <- saved$final
     norm_data$best_k <- saved$best_k
-    # KIT-242 Part C (VAL-373 Q-C): the samples removed from the design, for the tab's notice (NULL when none).
-    norm_data$samples_removed <- saved$samples_removed
+    # KIT-242 Part C (VAL-373 Q-C; VAL-383): the samples removed from the design, for the tab's notice. The field exists
+    # only once a run removed a sample (then cleared by a later run that removes none), so other runs' data are as before.
+    if (length(saved$samples_removed) || !is.null(shiny::isolate(norm_data$samples_removed))) {
+        norm_data$samples_removed <- saved$samples_removed
+    }
     norm_data$control_genes_index <- saved$controls
     norm_data$ruv_optimization_result <- saved$ruv_result
     workflow$ruv_optimization_result <- saved$ruv_result
