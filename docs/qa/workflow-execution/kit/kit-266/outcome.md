@@ -91,3 +91,17 @@ in-process build in a fresh process reads 0.540 and 0.914 GiB (positive control)
 clear_refs), path (files written from the store at both points, no fallback logged, PNGs 1500 x 3300 and 1950 x 3900). Cause of the first
 failed path control (inferred from the third send): the controller and the child ran different code (a `load_all` tree against the
 installed package); with the same source tree in both the worker's files are found saved. Instrument re-sends used: 3 of 3 (R1b, M1b, M1c).
+
+## R2 (run 45750231427): base 5e3de9c0 (staging 36e3180b + the branch's tests) against head 41035e75, 57 files, check on both sides
+
+Verdicts: 50 same; fixed: test-kit266 (base 71 passed / 101 failed / 5 skipped, head 210 / 0), test-kit259b (base 5 failed, head 0), test-kit227 (base 1,
+head 0), test-prot-norm-worker-figures (base 3, head 0): each as predicted. test-prot-norm-core.R message-changed (base 1531 passed / 327 failed / 1 error, head 1555 / 307 / 0):
+head 307 = the staging stored-value failures; the 20 failures and 1 error that are base-only are all in the two declared blocks (W3 limpa: 34 on base, 16 on
+head; A111-01 limpa: 2 failures and 1 error, the index [[14]] on base); no other test differs. test-gui-entry-proteomics.R message-changed, 92/101 on both: every head-only line is
+a declared leaf of the ticket's section 8 (composite artifact keys at 11 steps and in the Copy steps, pre_norm_* at norm, the eight post_filter outputs at norm and
+correlation, dia-qc store counts, the nine ruv_covariates_summary lines); the four file-name key lines are KIT-271's and equal on both sides. Check: identical (3 WARNINGs, 3 NOTEs, 0 ERRORs on
+both). test-omic-norm-module.R same; every other file same.
+UNPREDICTED: test-kit272-prot-box-panel-text.R, 373/0 on base, 372/1 on head (new-failure): T7 (DIANN_limpa) pins the limpa placeholder sentence "...panel d
+(principal component scores by group after log2 transformation)...", while this ticket's design (item 8c, D4) gives the limpa template its own stage words ("of DPC-Quant's
+protein estimates"). A consequence of the two tickets' merge, not a defect of the figure. Stop rule 3 applies; the one correction pass is used for it: a declared edit of
+that single expectation (limpa: the stage words of this ticket; the other three templates unchanged), re-run on that file only, base and head.
