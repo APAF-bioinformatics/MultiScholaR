@@ -2344,7 +2344,8 @@ runChild <- function(i) {
         env = env, stdout = FALSE, stderr = FALSE)
     seconds <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
     trace_file <- sub("\\.rds$", "-trace.txt", rds)
-    res <- if (file.exists(rds)) readRDS(rds) else list(error = paste(sprintf("child process exit %d, no result", code),
+    had_result <- file.exists(rds) # recorded before the result file is removed (instrument repair 1 of 3 for L1c)
+    res <- if (had_result) readRDS(rds) else list(error = paste(sprintf("child process exit %d, no result", code),
         if (file.exists(trace_file)) oneLine(paste(readLines(trace_file, n = 1L), collapse = " "), 200L) else ""))
     unlink(rds)
     res$wall <- seconds
@@ -2355,7 +2356,7 @@ runChild <- function(i) {
     # the analysis route: it is recorded as an `instrument` unit row, never `crashed` (the coordinator's ruling; the scorer stops on it, and
     # whether it is re-sent or reclassified `crashed` with its cause is decided on the evidence, never by this script). The planted `exitplant`
     # ends so by design and stays `crashed`.
-    no_result_no_trace <- !file.exists(rds) && !file.exists(trace_file) && !identical(u$plant, "exitplant")
+    no_result_no_trace <- !had_result && !file.exists(trace_file) && !identical(u$plant, "exitplant")
     if (no_result_no_trace) res$error <- sprintf("no_result_no_trace: child exit %d%s", code, if (code > 128L) sprintf(" (signal %d)", code - 128L) else "")
     rows <- res$rows
     if (!is.null(res$stack)) writeLines(res$stack, file.path(out_dir, "rows", sprintf("unit-trace-%s.txt", tag)))
