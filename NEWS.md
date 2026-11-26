@@ -202,8 +202,7 @@
    RUV factors in the model (the declared RUV design), such a sample is in effect left out of that assay's test. On
    the legacy RUV-III-C route it stays in the test as if it were a genuine replicate, and the differential analysis
    can then report differences that are not there; how often is not yet known (derived, not measured; to be measured
-   before the release, KIT-275; VAL-330). Where a sample's values were missing altogether in one assay, that assay may not have been
-   normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
+   before the release, KIT-275; VAL-330). (KIT-255)
  * The list of additional settings in the study-parameters file (`study_parameters.txt`) was empty, without any message,
    whenever the file was written without an analysis record, because a setting with several numbers (the shipped
    `plotRle yaxis_limit = -3,3`, or the RUV control features of lipidomics and metabolomics) could not be listed; the
@@ -843,6 +842,42 @@
    warning. Known limit until a follow-up change: a new proteomics project's study parameters also list these two
    metabolomics settings (proteomics projects copy every omic's default settings, and already list two older
    metabolomics ones); no proteomics result changes. (KIT-217, VAL-173, VAL-279)
+
+ * Lipidomics and metabolomics normalisation (KIT-242, first part; draft wording): a normalisation that cannot be
+   carried out for an assay is no longer reported as done. When a sample has no value in an assay, that assay is
+   normalised between samples on its other samples and the sample is left empty in that assay only, with a notice
+   naming both; a sample with no value in any assay is removed from the design, with a notice. When internal-standard
+   normalisation is selected and no internal standard is found in an assay, that assay is not normalised to internal
+   standards (it is still normalised between samples); the normalisation tab shows the number of standards used per
+   assay, and the analysis record and the session summary say, per assay, whether it was applied. A sample without
+   internal-standard signal in an assay is set missing in that assay only, and the assay is normalised without it. An
+   error in the normalisation method (for example quantile normalisation of a sample with fewer than two values) or an
+   invalid assay now stops the step with a message naming the assay. Before, the assay was left unnormalised with a
+   warning the application did not show, the tab said 'complete', the record said the step had been applied, and the
+   differential analysis was run on those values. The analysis record now states, for each comparison and assay,
+   whether q-values or Benjamini-Hochberg adjusted p-values were used, as it already did for proteomics. In
+   proteomics, a sample with no value is removed from the protein table and the design before between-sample
+   normalisation; before, Scale normalisation then made every value missing, which made a later step stop with an
+   unrelated message. On the proteomics routes whose normalisation step also applies RUV
+   (DIA without limpa, label-free and TMT), the removed sample is named in a warning on the tab and recorded in the
+   analysis record, as on the DIA-with-limpa route.
+   Analyses recorded before this change replay as they were made.
+
+ * Lipidomics and metabolomics RUV-III (KIT-242, second part; draft wording): no assay is dropped any more. A sample or
+   a feature with no value in an assay is left out of that assay's control search and correction and stays empty
+   there, with a notice naming the samples; the number of samples behind the limit on k counts only the samples with
+   values. A feature that the control list does not name is no longer a reason to skip the assay: it is simply not a
+   control. When an assay has too few control features observed in every sample, or when the automatic search finds
+   no number of unwanted factors supported by the data, that assay keeps its values without RUV, and the tab, the
+   analysis record and the RUV summary say so per assay. An error in the search or the correction, or an invalid k,
+   now stops the step with a message naming the assay. Before, such an assay was removed from the data (or, when every
+   assay failed, the data were returned uncorrected) while the record said RUV had been applied. With RUV factors in
+   the model, a sample with no value in an assay is left out of that assay's factors and its differential analysis.
+   Analyses recorded before this change replay as they were made. When a group is left with fewer than two samples
+   holding values in an assay (for example one sample with no value in a group of two), control features cannot be
+   chosen there: that assay keeps its values without RUV, the tab and the record name the groups, and the other assays
+   are corrected, in Automatic and Manual mode alike; before, the RUV step stopped (Automatic mode) or the assay was
+   left out while the record said RUV had been applied (Manual mode).
 
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when

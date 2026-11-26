@@ -222,21 +222,25 @@ test_that("metabolomics S4 between-sample normalization preserves all-NA sample 
     args = list(normalisation_method = "quantile")
   )
 
-  normalized <- NULL
-  suppressMessages(
-    expect_warning(
-      normalized <- normaliseBetweenSamples(
-        original,
-        normalisation_method = "quantile"
-      ),
-      "At least one sample column contains only NA values. Skipping normalization.",
-      fixed = TRUE
-    )
+  # KIT-242 (VAL-242 OD-1 (c); re-pinned by the owner's answer of 2026-11-26, VAL-352 (1)): a sample with no value in
+  # the only assay leaves the assay and the design, with a classed warning; the earlier skip of the whole assay with
+  # "Skipping normalization." no longer holds.
+  removed <- list()
+  normalized <- withCallingHandlers(
+    suppressMessages(normaliseBetweenSamples(original, normalisation_method = "quantile")),
+    omics_normalisation_sample_removed = function(w) {
+      removed[[length(removed) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    },
+    omics_normalisation_sample_excluded = function(w) invokeRestart("muffleWarning")
   )
 
-  expect_equal(normalized@metabolite_data$LCMS_Pos, assay_tbl)
+  expect_length(removed, 1L)
+  expect_identical(removed[[1L]]$sample, "Sample_2")
+  expect_false("Sample_2" %in% names(normalized@metabolite_data$LCMS_Pos))
+  expect_identical(normalized@metabolite_data$LCMS_Pos$Name, c("M1", "M2"))
   expect_identical(normalized@args$normalisation_method, "quantile")
-  expect_identical(normalized@design_matrix$Run, c("Sample_1", "Sample_2"))
+  expect_identical(normalized@design_matrix$Run, "Sample_1")
 })
 
 test_that("metabolomics S4 between-sample normalization source retains method dispatch and design cleanup", {

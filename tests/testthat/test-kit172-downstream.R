@@ -204,7 +204,9 @@ for (class in c("lipid", "metab")) {
       expect_gt(below, 0L)
       text <- sprintf(omicGuiLog2Texts()[["scale_warning"]], omicsLog2CountWords(list(LCMS_Pos = below)))
       expect_identical(sum(grepl(text, run$log, fixed = TRUE)), 1L, info = route)
-      warnings <- Filter(function(note) identical(note$type, "warning"), run$notes)
+      # KIT-242 (VAL-242 OD-2 (b); owner 2026-11-27, VAL-373 (Q-B)): the fixture matches no internal standard, so the tab
+      # also warns that ITSD was not applied; T10 counts the scale warning by its own text.
+      warnings <- Filter(function(note) identical(note$type, "warning") && identical(note$message, text), run$notes)
       expect_length(warnings, 1L)
       expect_identical(warnings[[1L]]$message, text, info = route)
       # `scale` itself is unchanged: the state is normaliseBetweenSamples(scale) of the log2 state.
@@ -233,7 +235,9 @@ for (class in c("lipid", "metab")) {
       run <- kit172TabRun(fixture, class, "in_process", cases[[i]][[1L]], offset = cases[[i]][[3L]])
       expect_false(any(startsWith(run$log, "ERROR")), info = paste(i, paste(run$log, collapse = " | ")))
       expect_false(any(grepl("Scale normalisation rescales", run$log, fixed = TRUE)), info = i)
-      expect_length(Filter(function(note) identical(note$type, "warning"), run$notes), 0L)
+      # KIT-242 (owner 2026-11-27, VAL-373 (Q-B)): no scale warning; the ITSD notice for this fixture is not counted here.
+      expect_length(Filter(function(note) identical(note$type, "warning") &&
+        grepl("Scale normalisation rescales", note$message, fixed = TRUE), run$notes), 0L)
     }
   })
 }
