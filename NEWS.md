@@ -92,8 +92,9 @@
    says "box plots of the principal component scores". The lipidomics and metabolomics reports describe their own box
    plots (a separate analysis of every lipid or metabolite with at least two values). The figure itself is unchanged.
    A project that has already generated a report keeps the report template it copied then, with the earlier wording:
-   delete `scripts/proteomics/<template>.rmd` in the project folder to receive the corrected text at the next report.
-   This wording is new to 0.9 (it replaced a correct paragraph of the earlier version). (KIT-272)
+   delete `scripts/<omic>/<template>.rmd` (`proteomics`, `lipidomics` or `metabolomics`) in the project folder to
+   receive the corrected text at the next report. The proteomics wording is new to 0.9 (it replaced a correct
+   paragraph of the earlier version); the lipidomics and metabolomics bullet dates from earlier versions. (KIT-272)
  * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
    greyed out and says a step is still running while another step of the same analysis runs, for example the
    quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those

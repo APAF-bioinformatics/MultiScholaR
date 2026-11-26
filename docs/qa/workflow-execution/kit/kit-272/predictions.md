@@ -80,11 +80,14 @@ Any other verdict stops the work (stop rule 2).
 
 All 18 other files: verdict as predicted (`same`, or `fixed`/count change only where the file's own expectations were
 added: test-kit227 162 -> 186, test-kit235 54 -> 58, test-kit236 289 -> 293 passed, 0 failed on both sides: the
-substitution assertions added by the declared edits, all passing). Standing failures identical on both sides:
+substitution assertions added by the declared edits, all passing). test-kit227/235/236: verdict `count-changed`, not the
+predicted `same`; the counts (+24/+4/+4) are exactly the declared edits' match assertions (AUDIT-KIT-272-impl-20261126
+I05). Standing failures identical on both sides:
 test-kit220 (2), test-omic-summary-module (28), test-omics-summary-core (25). R CMD check identical (0 ERRORs, 3
 WARNINGs, 3 NOTEs on both sides; none only on head). New file on head: 369 passed, 4 failed (predicted 373/0): the four
 T7 rows. The sentence is the right one; my comparison forgot that the placeholder chunk prints it between blank lines
-(`cat("\n\n", text, "\n\n")`), so `expect_identical` against the bare sentence failed. A mechanics defect of the new test
+(`cat("\n\n", text, "\n\n")`), so `expect_identical` against the bare sentence failed. (Correction, AUDIT-KIT-272-impl-20261126 I09: the chunk prints
+`cat("\n\n", text, "\n\n", sep = "")`, `DIANN_report.rmd:1576`.) A mechanics defect of the new test
 (no template defect, no expected value changed): instrument defect 2 of at most 3 (VAL-54). Fix: compare `trimws()` of
 the chunk's output with the same sentence constant.
 
