@@ -1549,9 +1549,9 @@ runParentMain <- function() {
         hit <- which(units$tier == "D" & !units$repeat_run)
         if (length(hit)) units$guard[[hit[[1L]]]] <- TRUE
     }
-    if (lifecycle && identical(Sys.getenv("K275_FAULT_GUARD_UNIT"), "1")) {   # the planted unit-level variant, on the first unit of the first tier after the journey-level one
-        hit <- which(!units$guard & !units$fault & !units$repeat_run)
-        if (length(hit)) units$guard_unit[[hit[[length(hit)]]]] <- TRUE
+    if (lifecycle && nzchar(Sys.getenv("K275_FAULT_GUARD_UNIT"))) {   # the planted unit-level variant: on the first unit of the tier named (not the journey-level one)
+        hit <- which(units$tier == Sys.getenv("K275_FAULT_GUARD_UNIT") & !units$guard & !units$repeat_run)
+        if (length(hit)) units$guard_unit[[hit[[1L]]]] <- TRUE
     }
     if (lifecycle && fault) {
         units$fault[[1L]] <- TRUE

@@ -10,7 +10,7 @@ Repair (only that path): `guardWarning`, one function, is now a LOCAL calling ha
 1. All scripts parse; E0 reports 0 unmarked hunks.
 2. The self-test: 37 cases, 2,751 predictions, 0 differ (the three new cases: instrument unit row, crashed unit row, false `unit_completed`).
 3. Planted journey-level guard (`K275_FAULT_GUARD=1`, unit `D-D3-9101`): its journey row has status `instrument` and class `partial_match_guard: ...`, the check `GUARD_planted` passes, a trace file `progress/unit-trace-D-D3-9101-journey.txt` exists, the unit continues; the blind scorer writes `instrument_stop` false and exits 3.
-4. Planted unit-level guard (`K275_FAULT_GUARD_UNIT=1`, unit `T-D3-9101`): the unit ends with a unit row `instrument` (class contains `partial_match_guard`), a trace file `progress/unit-trace-T-D3-9101.txt`, a failed `unit_completed` check, and exit non-zero only after those are written; the blind scorer stops on it.
+4. Planted unit-level guard (`K275_FAULT_GUARD_UNIT=T`, unit `T-D3-9101`): the unit ends with a unit row `instrument` (class contains `partial_match_guard`), a trace file `progress/unit-trace-T-D3-9101.txt`, a failed `unit_completed` check, and exit non-zero only after those are written; the blind scorer stops on it.
 5. The control unit (`S-D3-9101`, ordinary, tier S) completes with every check passing.
 6. No other failed check.
 
@@ -18,6 +18,6 @@ Repair (only that path): `guardWarning`, one function, is now a LOCAL calling ha
 | # | Script | Arguments and environment | Limit (min) |
 |---|---|---|---|
 | 1 | `selftest/run-selftest.R` | `K275_SELFTEST_OUT=k275-smoke3-selftest` | 6 |
-| 2 | `sim-k275.R` | `D,T,S D3 9101 9101 k275-smoke3-a`; `K275_LIFECYCLE=1 K275_SMOKE=1 K275_FAULT_GUARD=1 K275_FAULT_GUARD_UNIT=1 K275_JOB=smoke3-a` | 12 |
+| 2 | `sim-k275.R` | `D,T,S D3 9101 9101 k275-smoke3-a`; `K275_LIFECYCLE=1 K275_SMOKE=1 K275_FAULT_GUARD=1 K275_FAULT_GUARD_UNIT=T K275_JOB=smoke3-a` | 12 |
 
 Ceiling 6 + 12 + 10 set-up = 28 job-minutes x 4 / 60 = **1.87 core-hours** (expected about 18 minutes = 1.2). Running ceiling: used 1.67 + 1.53 + this 1.87 + planned 339.27 (the re-plan accepted by the coordinator) = 344.34, at most 350.73: met (`runs.tsv`). Decision: send L1 only after the coordinator's word.
