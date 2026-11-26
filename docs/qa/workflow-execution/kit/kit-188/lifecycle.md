@@ -436,3 +436,8 @@ Raw: `l1c/raw.tar.gz`, tables in `l1c/`. **Observed:** E16 `179 checks, 0 differ
 
 The no-result-no-trace rule's completed-unit path had never been exercised before L1c: the rule was written after the last smoke send, whose units were never tested against it, so L1c was its first run on units that finished. The defect: `runChild` removed the result file before testing for it. Repair (the whole script diff, `sim-k188.R`): `had_result <- file.exists(rds)` is recorded before `unlink(rds)` and the test reads `!had_result`. No expected value, gate, threshold or rule is involved; the unit rows were right throughout.
 What the re-send will show if it is right: `unit_completed` TRUE for the seven completed plants (itsd, itsdpos, emptysample, ruvskip, ruvdrop, daerror, normplant), the timing's `error` empty for them, exactly one `crashed` unit row for `exitplant` with exit 3 and no trace (its `unit_completed` TRUE by design, as before) and the run's exit code 0. Predictions unchanged except the two things the defect made unobservable: `unit_completed` per unit and the run's exit code.
+
+## Reading the run's exit code (RS-3; no script change)
+
+The provenance's `exit_status` (0) is written before the end-of-run stop, so it does not say how the job ended. The run's exit code is read from the runner's `scripts.tsv` / `summary.md` (the Rscript's own exit status). E16's per-case outputs are declared under the directory `run-e16.R` writes (`k188-smoke-e16`), so they upload (the bound `run-e16.R` is not edited).
+RS-1 (for the ticket's text, after the re-send): the R items of `predictions-l1c.tsv` are "40 rows: 35 plant R items and E7's 5".
