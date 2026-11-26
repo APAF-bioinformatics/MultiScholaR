@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-281 S09 parse-and-self-test send (owner-accepted ceiling 74.67, VAL-371; instrument check, nothing judged; declaration smoke/declaration.md on branch kit-281)",
+  "label": "KIT-281 smoke a352632a",
+  "package_commit": "a352632a85dcc7b2cd7d74752f1249ab1c448324",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/smoke/smoke-k281.R",
+      "args": [
+        "smoke-out"
+      ],
+      "env": {},
+      "out": "smoke-out",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
