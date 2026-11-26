@@ -1,0 +1,46 @@
+cells 12 to 12 done: 40 data sets, 0 errors, 1285.5 s of sweeps
+cells 16 to 16 done: 40 data sets, 0 errors, 1196.7 s of sweeps
+cells 53 to 53 done: 40 data sets, 0 errors, 418.3 s of sweeps
+cells 65 to 65 done: 40 data sets, 0 errors, 470.9 s of sweeps
+cells 68 to 68 done: 40 data sets, 0 errors, 1305.9 s of sweeps
+cells 70 to 70 done: 40 data sets, 0 errors, 1252.2 s of sweeps
+cells 71 to 71 done: 40 data sets, 0 errors, 422.6 s of sweeps
+cells 90 to 90 done: 40 data sets, 0 errors, 1217.4 s of sweeps
+cells 107 to 107 done: 40 data sets, 0 errors, 443.5 s of sweeps
+cells 120 to 120 done: 40 data sets, 0 errors, 1407.6 s of sweeps
+cells 123 to 123 done: 40 data sets, 0 errors, 511.7 s of sweeps
+cells 124 to 124 done: 40 data sets, 0 errors, 1414.0 s of sweeps
+cells 137 to 137 done: 40 data sets, 0 errors, 514.3 s of sweeps
+cells 138 to 138 done: 40 data sets, 0 errors, 1405.2 s of sweeps
+cells 139 to 139 done: 40 data sets, 0 errors, 513.9 s of sweeps
+cells 140 to 140 done: 40 data sets, 0 errors, 1415.7 s of sweeps
+cells 155 to 155 done: 40 data sets, 0 errors, 638.9 s of sweeps
+cells 159 to 159 done: 40 data sets, 0 errors, 647.0 s of sweeps
+cells 161 to 161 done: 40 data sets, 0 errors, 627.6 s of sweeps
+cells 174 to 174 done: 40 data sets, 0 errors, 1619.9 s of sweeps
+cells 191 to 191 done: 40 data sets, 0 errors, 465.6 s of sweeps
+cells 194 to 194 done: 40 data sets, 0 errors, 1219.0 s of sweeps
+        check units passed failed status
+1          E1   880    880      0   pass
+2     E1PRIME    44     44      0   pass
+3          E2   880    880      0   pass
+4          E3   880    880      0   pass
+5          E4   880    880      0   pass
+6          E7   880    880      0   pass
+7          E8     0      0      0   pass
+8  COMPLETION   880    880      0   pass
+9       SEEDS   880    880      0   pass
+10   ORDERCOL   880    880      0   pass
+    n    f seconds_sweep seconds_total
+1   4  300      11.63940      13.75267
+2  12  300      10.93203      13.27322
+3  24  300      11.08750      13.27047
+4  48  300      12.83167      15.18893
+5  96  300      15.94584      18.59869
+6   4 1000      30.47410      34.36280
+7   6 1000      31.02761      35.54144
+8  12 1000      31.97615      35.99855
+9  24 1000      30.43575      34.41653
+10 48 1000      35.26520      39.67411
+11 96 1000      40.49787      45.55477
+data sets: 880; errors: 0
