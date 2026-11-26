@@ -55,7 +55,8 @@ runProtDesignBuilderSaveFlow <- function(
     workflowData,
     experimentPaths,
     session,
-    qcTrigger = NULL
+    qcTrigger = NULL,
+    cut = FALSE
 ) {
   sourceDir <- experimentPaths$source_dir
   if (is.null(sourceDir) || !dir.exists(sourceDir)) {
@@ -90,11 +91,14 @@ runProtDesignBuilderSaveFlow <- function(
 
     workflowType <- shiny::isolate(workflowData$state_manager$workflow_type)
     workflowData$prot_design_log2_counts <- NULL
-    buildProtDesignStateCheckpoint(
+    stateName <- buildProtDesignStateCheckpoint(
       workflowData = workflowData,
       workflowType = workflowType,
       actionLabel = "Save Design"
     )
+    # KIT-247 (VAL-239, OD-1 (D)): a changed design confirmed over later steps sets them aside.
+    rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
+    didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
     # KIT-177: the values the design step set to missing, named and counted.
     notifyProtDesignLog2Counts(workflowData)
     completeProtDesignPostCheckpoint(
@@ -105,6 +109,7 @@ runProtDesignBuilderSaveFlow <- function(
       successMessage = "Design matrix and contrasts saved successfully!",
       debugQcTrigger = TRUE
     )
+    if (didCut) completeOmicsDesignCut(workflowData, "proteomics", experimentPaths)
 
     manager <- workflowData$state_manager
     reference <- getDIAStateReference(manager)
@@ -147,21 +152,51 @@ runProtDesignBuilderObserverShell <- function(
     }
   }
 
-  showProcessingModal()
-  logInfo("Received results from design matrix builder module. Now saving to workflow and disk.")
+  commit <- function(cut) {
+    showProcessingModal()
+    logInfo("Received results from design matrix builder module. Now saving to workflow and disk.")
 
-  hydrateBuilderResults(
-    results = results,
-    workflowData = workflowData
-  )
+    hydrateBuilderResults(
+      results = results,
+      workflowData = workflowData
+    )
 
-  runBuilderSaveFlow(
-    results = results,
-    workflowData = workflowData,
-    experimentPaths = experimentPaths,
-    session = session,
-    qcTrigger = qcTrigger
-  )
+    if (isTRUE(cut)) {
+      runBuilderSaveFlow(results = results, workflowData = workflowData, experimentPaths = experimentPaths,
+        session = session, qcTrigger = qcTrigger, cut = TRUE)
+    } else {
+      runBuilderSaveFlow(
+        results = results,
+        workflowData = workflowData,
+        experimentPaths = experimentPaths,
+        session = session,
+        qcTrigger = qcTrigger
+      )
+    }
+  }
+  # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
+  manager <- workflowData$state_manager
+  if (!inherits(manager, "DIAStateAdapter")) return(commit(FALSE))
+  stateName <- protDesignStateName(manager)
+  verdict <- compareOmicsDesignResult(manager,
+    list(design_matrix = results$design_matrix, data = results$data_reference %||% results$data_cln), stateName,
+    omicsDesignCompared(manager, workflowData))
+  later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
+  if (!later || !verdict %in% c("unchanged", "changed")) return(commit(FALSE))
+  runOmicsDesignResaveGate(session, verdict, later, commit = commit, unchanged = function() {
+    applyOmicsDesignUnchanged(workflowData, results, "differential_expression")
+    sourceDir <- experimentPaths$source_dir
+    if (!is.null(sourceDir) && dir.exists(sourceDir)) {
+      tryCatch(persistProtDesignBuilderArtifacts(results = results, workflowData = workflowData, sourceDir = sourceDir),
+        error = function(e) logger::log_warn(paste("Design files not written:", e$message)))
+    }
+  })
+}
+
+#' KIT-247. The proteomics design state of the owner's route (`buildProtDesignStateCheckpoint`).
+#' @noRd
+protDesignStateName <- function(manager) {
+  if (isTRUE(shiny::isolate(manager$workflow_type) %in% c("DIA", "DIA_LIMPA"))) "raw_data_s4" else "protein_s4_initial"
 }
 
 # KIT-103 W6: the saved-results previews are the shared design tab's (the status outputs are the
