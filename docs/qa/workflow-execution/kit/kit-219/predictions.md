@@ -84,3 +84,18 @@ enrichment table; the metab fixtures with DA files are refused by KIT-212 first;
 proteomics owner is refused by KIT-212's unmade DA files; the `none` metab case has no files). (iv): every line is reviewed by
 hand; a line asserting the contents of `Enrichment_Plots` or the workbook's sheets for a case where this change omits files is a
 leaf (OD-3, stop). The GUI-entry lanes are decided by R2.
+
+## Run R2b (the ticket's one correction pass; declared before the request)
+
+R2 (run 45785931266, 50 files) showed two files moved by this change: `test-omics-summary-core.R` (25 to 34 failures) and
+`test-omic-summary-module.R` (28 to 54): the W1 harness's recording `copyToResultsSummary` has fixed formals, and
+`copyWorkflowSummaryResults` passed `enrichment_files = character()` to it for the reference-state lipid and metab owners even
+when the enrichment folder held nothing to leave out ("unused argument", the Copy notice changed). Correction: the argument is
+passed only when the folder holds a file outside the current list (otherwise the copy is the unchanged one: same files, same
+workbook). G0b's mechanics (the working directory under `test_file`) repaired as instrument repair 1 of 3 for that item.
+Rerun, base and head, of the files that can reach the Copy call (26: the 22 files that name the copy or the W1/summary harness,
+`r2b-predictions.tsv`, plus the four GUI-entry lanes), `check: true`, and `g0b.R`. Plan: 3 shards per side (45.1, 40.0, 39.7
+min), 6 x (shard + 10) = 310, check 2 x 90 = 180, g0b 20: 510 job-minutes; ceiling 1.6 x 510 = **816 job-minutes (54.4 core-h)**.
+Predictions: every file `same` (the two moved files return to their base failure lists: 25 and 28 failures on both sides) except
+`test-kit219-enrichment-files-current.R` `fixed`; check findings identical; G0b: no listed leaf, as declared for R2.
+Files not rerun keep the R2 evidence (they do not reach the changed line): the other 24.

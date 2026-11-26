@@ -2,7 +2,8 @@
 out_dir <- Sys.getenv("KIT219_G0B_OUT")
 
 # The W1 setup functions of test-omic-summary-module.R, evaluated here without the rest of that file.
-w1 <- parse(file.path("tests", "testthat", "test-omic-summary-module.R"))
+root <- Sys.getenv("KIT219_ROOT")
+w1 <- parse(file.path(root, "tests", "testthat", "test-omic-summary-module.R"))
 wanted <- c("omicSummaryW1Roots", "omicSummaryW1FeatureSetup", "omicSummaryW1ProtSetup")
 for (expr in w1) {
     if (is.call(expr) && identical(expr[[1L]], as.name("<-")) && as.character(expr[[2L]]) %in% wanted) eval(expr)
@@ -65,11 +66,11 @@ test_that("G0 (iii): the W1 fixtures", {
 
 test_that("G0 (iv): the assertions of the R2 files on the enrichment outputs", {
     pattern <- "Enrichment_Plots|Pathway_enrichment_results|Enrich_Sheet|Enrichment_Index|_enrichment_results"
-    files <- sort(list.files(file.path("tests", "testthat"), pattern = "^test-.*[.]R$"))
+    files <- sort(list.files(file.path(root, "tests", "testthat"), pattern = "^test-.*[.]R$"))
     files <- setdiff(files, "test-kit219-enrichment-files-current.R")
     found <- list()
     for (file in files) {
-        lines <- readLines(file.path("tests", "testthat", file), warn = FALSE)
+        lines <- readLines(file.path(root, "tests", "testthat", file), warn = FALSE)
         hit <- grep(pattern, lines)
         if (length(hit)) found[[file]] <- data.frame(file = file, line = hit, text = trimws(substr(lines[hit], 1L, 200L)),
             stringsAsFactors = FALSE)

@@ -10,7 +10,7 @@
 out_dir <- file.path("docs", "qa", "workflow-execution", "kit", "kit-219", "g0b-out")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 pkgload::load_all(".", export_all = TRUE, helpers = TRUE, quiet = TRUE)
-Sys.setenv(KIT219_G0B_OUT = normalizePath(out_dir))
+Sys.setenv(KIT219_G0B_OUT = normalizePath(out_dir), KIT219_ROOT = getwd())
 Sys.setenv(MULTISCHOLAR_TRX_MANIFEST_NOTE = "1")
 result <- testthat::test_file(file.path("docs", "qa", "workflow-execution", "kit", "kit-219", "g0b-survey.R"),
     stop_on_failure = FALSE, reporter = "summary")

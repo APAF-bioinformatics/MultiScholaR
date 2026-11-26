@@ -527,6 +527,12 @@ copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicTy
         # KIT-219 (VAL-187): only the files the current enrichment made are copied; NULL (a manager that is not a
         # reference-state session owner) leaves the copy as it was.
         enrichmentFiles <- workflowEnrichmentCurrentFiles(workflowData, omicType)
+        # The list changes the copy only when the folder holds a file outside it; with none, the argument is left out and
+        # the copy is the unchanged one (R2: the recorded copy calls of the W1 fixtures carry the argument list).
+        if (!is.null(enrichmentFiles)) {
+            onDisk <- if (isTRUE(dir.exists(paths$pathway_dir %||% ""))) list.files(paths$pathway_dir, recursive = TRUE)
+            if (!length(setdiff(onDisk, enrichmentFiles))) enrichmentFiles <- NULL
+        }
         failures <- tryCatch(if (is.null(enrichmentFiles)) copyFn(omic_type = omicType, experiment_label = label,
             contrasts_tbl = contrastsTbl, design_matrix = designMatrix, force = TRUE) else copyFn(omic_type = omicType,
             experiment_label = label, contrasts_tbl = contrastsTbl, design_matrix = designMatrix, force = TRUE,
