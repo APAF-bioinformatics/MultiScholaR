@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-280 R1b (the ticket's one correction pass, tests only): new file on the old R/ code after the fixture and T5 (c) count corrections; ceiling 30 job-min = 2.00 core-h",
+  "label": "KIT-280 R1b new test file on kit-280 bb320e7e (old code, no base)",
+  "package_commit": "bb320e7ee827843b4cd5a6a95127ab2bcaf3a39d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit280-prot-threshold-values.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
