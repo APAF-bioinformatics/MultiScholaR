@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-274 R2b (coordinator's ruling, impl audit I01): T11 restored verbatim; new file only, head e4335b58 against base 7ca71057 (fix reverted), 1 shard per side, no check; ceiling 40 job-minutes",
+  "label": "KIT-274 R2b T11 restored e4335b58 vs 7ca71057",
+  "package_commit": "e4335b58531fdbef2b542d415780d4f724c8e5e2",
+  "base_commit": "7ca7105749add098aacca44fe6a50005b622fa94",
+  "tools_ref": "",
+  "tests": [
+    "test-kit274-trx-no-ruv-export.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
