@@ -1,0 +1,16 @@
+run	45712506511
+attempt	1
+request_commit	d2599e58a6aa9b85cef7c24510e3b3583080d2c8
+request	.github/run-tests/requests/kit246c-wording-10df1d31.json
+requested_by	KIT-246c (VAL-305): the shared scaling passage regains four phrases; head 10df1d31 against tests-only bfc57ce7; 4 files, one shard per side, no check; ceiling 60 job-minutes; decides the record file fixed and the other three same
+label	KIT-246c wording 10df1d31 vs bfc57ce7
+package_commit	10df1d312c7a7d8b32d7c8f986dac4e6e9869887
+base_commit	bfc57ce721079219f6003580dd797c5f5349bfa9
+tools_ref	10df1d312c7a7d8b32d7c8f986dac4e6e9869887
+runner	ubuntu-22.04 (GitHub-hosted)
+R	R version 4.6.1 (2026-06-24) 
+jobs	tests success; check skipped; scripts skipped
+shard-base-1	library install: 512 s since job start; cpu AMD EPYC 9V74 80-Core Processor 4; BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 LAPACK /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0 3.10.0 
+shard-head-1	library install: 443 s since job start; cpu Intel(R) Xeon(R) 6973P-C 4; BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 LAPACK /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0 3.10.0 
+env	{"MULTISCHOLAR_TRX_MANIFEST_NOTE":"1"}
+
