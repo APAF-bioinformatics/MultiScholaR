@@ -17,6 +17,11 @@ def lookup(case, key):
     if kind == "exit":
         p = os.path.join(out, "exit.txt")
         return open(p).read().strip() if os.path.exists(p) else None
+    if kind == "stdout":
+        p = os.path.join(out, "stdout.txt")
+        return open(p).read() if os.path.exists(p) else None
+    if kind in ("absent", "present"):
+        return "yes" if os.path.exists(os.path.join(out, parts[1])) else "no"
     if kind == "stderr":
         p = os.path.join(out, "stderr.txt")
         return open(p).read() if os.path.exists(p) else None
@@ -69,6 +74,12 @@ for e in expected:
                 ok = abs(g - w) <= t * max(1.0, abs(w))
             except ValueError:
                 ok = False
+    elif kind == "nosubstr":
+        ok = got is not None and want not in got
+    elif kind == "absent":
+        ok = got == "no"
+    elif kind == "present":
+        ok = got == "yes"
     elif kind == "between":
         lo_, hi_ = (float(x) for x in want.split(":"))
         try: ok = lo_ - 1e-9 <= float(got) <= hi_ + 1e-9

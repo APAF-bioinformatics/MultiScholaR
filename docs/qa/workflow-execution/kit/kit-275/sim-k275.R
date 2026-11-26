@@ -16,6 +16,7 @@
 #   K275_FAULT     1: E7: one deliberate error in the first journey of the first unit, and the refused journey of E7 (GK3 at D3 on VD)
 #   K275_SMOKE     1: the smoke send's flag; written to the provenance and to every row; the scorer refuses any input carrying it for an
 #                  outcome line; a counted request that sets it (without K275_LIFECYCLE=1) is refused here (SMOKE_counted_refusal)
+#   K275_ONLY_UNITS counted mode: the unit tags (<tier>-<design>-<r>) a continuation runs; refused in the lifecycle; the job name gains -cont
 #   K275_JOB       a name for the job's files (default from the tiers, design and range)
 # One data set per child process, all its versions and arms; no session owner (duckdb) is forked. Every random draw of a data set is
 # made in generate() before any package function is called; seeds in section 5.3 of the ticket.
@@ -608,6 +609,7 @@ journeyAssayColumns <- function(out, request, assays) {
             itsd_max_change = field(e12, "itsd_max_change"), itsd_ok = field(e12, "itsd_ok"),
             norm_max_change = field(e13, "norm_max_change"), norm_ok = field(e13, "norm_ok"),
             ruv_status = status, ruv_status_product = product_status,
+            ruv_not_applied_reason = if (requested && !declared) as.character(pickAssay(product[["ruv_not_applied_reason"]], a)) else NA_character_, # K275-assaycols
             ruv_status_agree = if (legacy_return && !is.na(product_status)) identical(status, product_status) else NA,
             ruv_changed = if (legacy_return) identical(status, "corrected") else NA,
             ruv_k_found = if (requested && !declared && !is.null(trace)) (if (isTRUE(trace$success)) as.integer(trace$best_k) else NA_integer_) else NA_integer_,
@@ -1100,7 +1102,7 @@ unmoderatedReading <- function(M, design, features, W = NULL) {
 # ---- the row of a journey (section 6.1; the columns are all the scorer reads) --------------------------------------------
 DONE <- c("ok", "refused_after_exclusion", "dropped", "uncorrected", "no_da")
 ROW_COLUMNS <- c("tier", "design", "cell", "omic", "r", "version", "arm", "smoke", "status", "class", "step", "seconds", "warnings",
-    "k_used", "k_found", "k_cap", "pct", "n_controls", "ruv_status_y", "ruv_status_x", "n_runs", "n_runs_final", "ruv_status_product_y",
+    "k_used", "k_found", "k_cap", "pct", "n_controls", "ruv_status_y", "ruv_status_x", "n_runs", "n_runs_final", "ruv_not_applied_reason_y",
     "corr_removed_y", "corr_removed_x", "e5_y", "e5_x",
     "cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post",
     paste0("fa_pre_", TAGS), paste0("fa_post_", TAGS), paste0("ff_pre_", TAGS), paste0("ff_post_", TAGS), "ffx_pre_05", "ffx_post_05",
@@ -1176,7 +1178,7 @@ journeyRow <- function(ctx, j, sim, version, arm, ruv, filter_read = TRUE, extra
     row[["pct"]] <- if (is.null(cy)) NA_real_ else (cy[["pct"]] %||% NA_real_)
     row[["n_controls"]] <- if (is.null(cy)) NA_integer_ else length(cy[["controls"]])
     row[["ruv_status_y"]] <- if (is.null(cols[[Y_ASSAY]])) NA_character_ else as.character(cols[[Y_ASSAY]][["ruv_status"]])
-    row[["ruv_status_product_y"]] <- if (is.null(cols[[Y_ASSAY]])) NA_character_ else as.character(cols[[Y_ASSAY]][["ruv_status_product"]])
+    row[["ruv_not_applied_reason_y"]] <- if (is.null(cols[[Y_ASSAY]])) NA_character_ else as.character(cols[[Y_ASSAY]][["ruv_not_applied_reason"]])
     row[["ruv_status_x"]] <- if (is.null(cols[[X_ASSAY]])) NA_character_ else as.character(cols[[X_ASSAY]][["ruv_status"]])
     # E5: the fail list the pairs table the filter read gives, against the package filter's own removed set (per assay)
     removed <- j[["corr_removed"]]
@@ -1296,7 +1298,7 @@ l1Accepts <- function(row, sim, arm) {
     class <- as.character(row[["class"]])
     identical(status, "ok") || (identical(status, "no_da") && !is.na(class) && startsWith(class, "filter_removed_group:")) ||
         (arm %in% c("PEL2", "PEG2") && status %in% c("refused_after_exclusion", "dropped", "uncorrected") && tooFewLeft(sim)) ||
-        (identical(row[["tier"]], "V") && status %in% c("uncorrected", "dropped"))   # RG6: KIT-242 keeps an assay without RUV (a result)
+        (identical(row[["tier"]], "V") && identical(status, "uncorrected"))   # H04: KIT-242 keeps an assay without RUV (a result); a tier V "dropped" is a defect for L1-V to catch
 }
 #' One journey: the request of the arm, the journey, its row (written at once), its lifecycle checks.
 runArm <- function(ctx, v, version, arm, lifecycle, write, correlation = TRUE, fault = FALSE, extra = list(), note_refusal = NULL) {
@@ -1527,15 +1529,16 @@ runParentMain <- function() {
     progress_dir <- file.path(out_dir, "progress")
     dir.create(rows_dir, recursive = TRUE, showWarnings = FALSE)
     dir.create(progress_dir, recursive = TRUE, showWarnings = FALSE)
-    only_r <- Sys.getenv("K275_ONLY_R")   # counted mode: the continuation of a timed-out job runs exactly its missing data sets, once
-    if (nzchar(only_r) && lifecycle) stop("K275_ONLY_R is a counted-mode setting (the continuation); it is refused in the lifecycle")
+    only <- Sys.getenv("K275_ONLY_UNITS")   # counted mode: the continuation runs exactly the units named (<tier>-<design>-<r>, as the part files), once
+    if (nzchar(only) && lifecycle) stop("K275_ONLY_UNITS is a counted-mode setting (the continuation); it is refused in the lifecycle")
     units <- do.call(rbind, lapply(tiers, function(tier) do.call(rbind, lapply(intersect(designs, tierDesigns(tier)), function(design)
         data.frame(tier = tier, design = design, r = seq(first_rep, last_rep), repeat_run = FALSE, stringsAsFactors = FALSE)))))
     if (is.null(units) || !nrow(units)) stop("K275: no unit: the tiers and designs given have no common cell")
-    if (nzchar(only_r)) {
-        keep_r <- as.integer(strsplit(only_r, ",", fixed = TRUE)[[1L]])
-        units <- units[units$r %in% keep_r, , drop = FALSE]
-        if (!nrow(units)) stop("K275: K275_ONLY_R names no data set of the range")
+    if (nzchar(only)) {
+        keep <- trimws(strsplit(only, ",", fixed = TRUE)[[1L]])
+        tags <- sprintf("%s-%s-%d", units$tier, units$design, units$r)
+        if (!length(keep) || !all(keep %in% tags)) stop("K275: K275_ONLY_UNITS names a unit outside this job: ", paste(setdiff(keep, tags), collapse = ", "))
+        units <- units[tags %in% keep, , drop = FALSE]
         if (!grepl("-cont$", job_name)) job_name <- paste0(job_name, "-cont")
     }
     if (lifecycle) {

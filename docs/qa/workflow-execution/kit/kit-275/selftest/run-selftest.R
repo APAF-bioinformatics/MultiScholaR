@@ -45,6 +45,7 @@ runCase <- function(i) {
         `score-nog1` = c(shQuote(scorer), shQuote(file.path(folder, "rows")), shQuote(out)),
         blind = c(shQuote(scorer), "--blind", shQuote(file.path(folder, "rows")), shQuote(out), name),
         labels = c(shQuote(scorer), "--labels", shQuote(file.path(folder, "table.tsv")), shQuote(out)),
+        controls = c(shQuote(scorer), shQuote(file.path(folder, "rows")), shQuote(out)),
         g1 = c(shQuote(scorer), "--g1", shQuote(file.path(folder, "g1.tsv")), shQuote(out)))
     if (identical(mode, "score")) env <- c(env, sprintf("K275_G1=%s", file.path(folder, "g1.tsv")))
     code <- system2("Rscript", command, env = env, stdout = file.path(out, "stdout.txt"), stderr = file.path(out, "stderr.txt"))

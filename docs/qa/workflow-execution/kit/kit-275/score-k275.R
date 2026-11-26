@@ -89,7 +89,7 @@ labelsOf <- function(table) {
     do.call(rbind, out)
 }
 TEXT_COLUMNS <- c("tier", "design", "cell", "omic", "version", "arm", "smoke", "status", "class", "step", "ruv_status_y", "ruv_status_x",
-    "ruv_status_product_y", "source", "corr_removed_y", "corr_removed_x", "tested_sig_y", "e5_y", "e5_x", "pe_a_excluded")
+    "ruv_not_applied_reason_y", "source", "corr_removed_y", "corr_removed_x", "tested_sig_y", "e5_y", "e5_x", "pe_a_excluded")
 
 # ---- reading: every table as text ---------------------------------------------------------------------------------------------
 readText <- function(path) utils::read.delim(path, stringsAsFactors = FALSE, colClasses = "character", na.strings = "NA")
@@ -151,7 +151,7 @@ armClassOf <- function(arm) {
 e8Compare <- function(rows) {
     a <- rows[rows[["tier"]] %in% "D" & rows[["design"]] %in% "D4" & rows[["version"]] %in% "V1g" & rows[["arm"]] %in% c("NO", "LM2", "GK2", "LA", "GA"), , drop = FALSE]
     b <- rows[rows[["tier"]] %in% "ID", , drop = FALSE]
-    skip <- c("tier", "cell", "omic", "seconds", "warnings", "smoke", "class", "step")
+    skip <- c("tier", "cell", "omic", "seconds", "warnings", "smoke", "class", "step", "source")
     key <- function(x) paste(x[["r"]], x[["version"]], x[["arm"]])
     common <- intersect(key(a), key(b))
     worst <- 0
@@ -259,12 +259,12 @@ if (g1_mode) {
 tierVShare <- function(sub, tier, design, version, arm, R) {
     ok <- sub[sub[["valid"]], , drop = FALSE]
     if (!nrow(ok)) return(invisible(NULL))
-    not_applied <- ok[["ruv_status_y"]] %in% c("uncorrected", "dropped")
+    not_applied <- ok[["ruv_status_y"]] %in% c("uncorrected", "dropped", "none")   # "none": the declared design applied no factor
     emit("reported", "V_ruv_not_applied", tier, design, version, arm, "share of journeys in which RUV was not applied in Y", nrow(ok), R, mean(not_applied),
         cpLower(sum(not_applied), nrow(ok), 0.025), cpUpper(sum(not_applied), nrow(ok), 0.025), 0.95, "two", note = "exact Clopper-Pearson")
-    for (p in sort(unique(ok[["ruv_status_product_y"]][not_applied]))) {
-        hit <- not_applied & ok[["ruv_status_product_y"]] %in% p
-        emit("reported", paste0("V_ruv_not_applied_", p), tier, design, version, arm, sprintf("share with KIT-242 status %s", p), nrow(ok), R, mean(hit),
+    for (p in sort(unique(stats::na.omit(ok[["ruv_not_applied_reason_y"]][not_applied])))) {
+        hit <- not_applied & ok[["ruv_not_applied_reason_y"]] %in% p
+        emit("reported", paste0("V_ruv_not_applied_", p), tier, design, version, arm, sprintf("share with KIT-242 reason %s", p), nrow(ok), R, mean(hit),
             cpLower(sum(hit), nrow(ok), 0.025), cpUpper(sum(hit), nrow(ok), 0.025), 0.95, "two", note = "exact Clopper-Pearson")
     }
 }
@@ -299,6 +299,27 @@ refVec <- function(tier, design, arm, column, R) {
 }
 
 # ---- descriptive and reported estimands, every (tier, design, version, arm) ----------------------------------------------------
+# H05 (ruling): the interim tier-D read. Controls only: PC1 and NC1 (the same rules as the labelled cells below); it computes, writes and prints nothing else, no outcome row, no tier D cell
+if (nzchar(Sys.getenv("K275_CONTROLS_ONLY"))) {
+    ctl <- list()
+    for (design in DESIGNS) {
+        R <- declaredR("D")
+        x <- vec("D", design, "V1g", "NO", "fa_pre_05", R)
+        x <- x[is.finite(x)]
+        lo <- cpLower(sum(x), length(x), 0.01 / 3)
+        ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "PC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = lo,
+            hi = cpUpper(sum(x), length(x), 0.01 / 3), label = if (covered(length(x), R) && gt(lo, 0.90)) "passes" else "FAILS", stringsAsFactors = FALSE)
+        x <- vec("D", design, "V0", "GK2", "fa_post_05", R)
+        x <- x[is.finite(x)]
+        up <- cpUpper(sum(x), length(x), 0.01 / 3)
+        ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "NC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = cpLower(sum(x), length(x), 0.01 / 3),
+            hi = up, label = if (covered(length(x), R) && le(up, M_ABS)) "passes" else "FAILS", stringsAsFactors = FALSE)
+    }
+    ctl <- do.call(rbind, ctl)
+    utils::write.table(ctl, file.path(out_dir, "controls-judged.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+    cat(sprintf("K275 controls: %s\n", paste(sprintf("%s %s %s", ctl$id, ctl$design, ctl$label), collapse = "; ")))
+    quit(save = "no", status = if (all(ctl$label == "passes")) 0L else 1L)   # F1 or F2: stop, the owner is told
+}
 combos <- unique(rows[rows[["version"]] %in% c("V0", "V1g", "V1p", "V1s", "V1t", "V2", "VD"), c("tier", "design", "version", "arm")])
 for (i in seq_len(nrow(combos))) {
     tier <- combos[["tier"]][[i]]
@@ -516,7 +537,7 @@ idcheck_bad <- if (is.null(checks)) 0L else sum(checks[["check"]] %in% c("E1", "
 # S11 (R-3): E8 (a finding) and the cross-job identity of tier E's pass-1 NO journeys with tier D's NO journeys (a mismatch STOPS, as F4 does)
 e8 <- e8Compare(rows)
 crossNO <- function() {
-    skip <- c("tier", "seconds", "warnings", grep("^pe_", names(rows), value = TRUE), "valid")
+    skip <- c("tier", "seconds", "warnings", grep("^pe_", names(rows), value = TRUE), "valid", "source")
     e <- rows[rows[["tier"]] %in% "E" & rows[["arm"]] %in% "NO" & rows[["r"]] <= 100, , drop = FALSE]
     d <- rows[rows[["tier"]] %in% "D" & rows[["arm"]] %in% "NO", , drop = FALSE]
     bad <- 0L

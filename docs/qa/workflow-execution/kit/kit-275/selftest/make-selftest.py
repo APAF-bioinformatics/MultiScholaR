@@ -407,7 +407,15 @@ for r_ in rows:
         ids.append(c)
 ids[0]["se2_mod_y"] = "0.5" if ids[0]["se2_mod_y"] != "0.5" else "0.25"
 dev = abs(float(ids[0]["se2_mod_y"]) - float(sel(rows, tier="D", design="D4", version="V1g", arm=ids[0]["arm"], r=ids[0]["r"])[0]["se2_mod_y"]))
-E = new_case("e8score", rows + ids)
+def write_sub(name, parts, g1=None):
+    folder = os.path.join(OUT, "cases", name)
+    for sub_, rows_ in parts.items():
+        os.makedirs(os.path.join(folder, "rows", sub_), exist_ok=True)
+        write_rows(os.path.join(folder, "rows", sub_, "d.tsv.gz"), rows_, pad=False)
+    write_g1(os.path.join(folder, "g1.tsv"), g1_rows({}))
+    index.append((name, "score", "K275_SCORE_R=200,100,20;K275_BOOT_B=200"))
+    return lambda key, kind, value, tol="1e-8": expected.append((name, key, kind, str(value), tol))
+E = write_sub("e8score", {"j1": complete(rows), "j2": complete(ids)})   # H01: the two sides come from different sources
 predict("e8score", {}, expected)
 E("decision|E8", "str", "15 compared, 14 equal, max deviation %s" % ("%g" % dev))
 
@@ -419,7 +427,7 @@ for name, change in (("crossno_ok", False), ("crossno_bad", True)):
         if r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "NO" and int(r_["r"]) <= 5:
             c = dict(r_); c["tier"] = "E"; es.append(c)
     if change: es[0]["cy_post_a"] = "0.123"
-    E = new_case(name, rows + es)
+    E = write_sub(name, {"j1": complete(rows), "j2": complete(es)})   # H01: tier D and tier E from different sources
     predict(name, {}, expected)
     if change:
         expected[:] = [e for e in expected if not (e[0] == name and e[1] == "decision|outcome")]
@@ -494,14 +502,6 @@ E = new_case("unit_crashed", rows + [u2]); expected += [("unit_crashed", "exit|u
 E = new_case("unit_completed_false", rows, files={"checks-x.tsv": hdr + "unit_completed\tD\t1\tD3\tNA\tran to the end\tFALSE\tchild process exit 1, no result\n"})
 expected += [("unit_completed_false", "exit|unit_completed_false", "exit", "nonzero", ""), ("unit_completed_false", "stderr|unit_completed_false", "substr", "did not complete", "")]
 # ---- the continuation rule (RG4) and tier V's share (RG6) ---------------------------------------------------------------------------------------------------
-def write_sub(name, parts, g1=None):
-    folder = os.path.join(OUT, "cases", name)
-    for sub_, rows_ in parts.items():
-        os.makedirs(os.path.join(folder, "rows", sub_), exist_ok=True)
-        write_rows(os.path.join(folder, "rows", sub_, "d.tsv.gz"), rows_, pad=False)
-    write_g1(os.path.join(folder, "g1.tsv"), g1_rows({}))
-    index.append((name, "score", "K275_SCORE_R=200,100,20;K275_BOOT_B=200"))
-    return lambda key, kind, value, tol="1e-8": expected.append((name, key, kind, str(value), tol))
 # (1) an interrupted data set: D3 r = 7 lost three rows (V1g LM2, V0 LM2, VD LM1); it is dropped whole and listed; coverage counts it missing
 rows = complete(d_rows({}))
 drop = [r_ for r_ in rows if r_["tier"] == "D" and r_["design"] == "D3" and r_["r"] == "7" and ((r_["version"], r_["arm"]) in (("V1g", "LM2"), ("V0", "LM2"), ("VD", "LM1")))]
@@ -526,21 +526,34 @@ E = write_sub("continuation", {"j1": j1, "j2": j2})
 predict("continuation", {}, expected)
 E("decision|interrupted data sets", "str", "D|D3|151|j1")
 E("cell|A|D|D3|V1g|LM2|n_valid", "num", 200)
-# (4) tier V: the share of journeys with RUV not applied in Y, by KIT-242's own status (5 not applied of 10: 3 no_usable_controls, 2 skipped_no_controls_selected)
+# (4) tier V (H04): the share of journeys with RUV not applied in Y, by KIT-242's reason (legacy: ruv_not_applied_reason; declared: factor status none)
 rows = d_rows({})
 vs = []
 for r in range(1, 11):
-    kind = "corrected" if r <= 5 else ("nuc" if r <= 8 else "snc")
+    kind = "corrected" if r <= 5 else ("nuc" if r <= 8 else "nfs")
     vs.append(blank(tier="V", design="D3", cell="D3", omic="lipid", r=r, version="V1g", arm="LM2", smoke="FALSE", seconds=1,
                     status="uncorrected" if kind == "nuc" else "ok", ruv_status_y="corrected" if kind == "corrected" else "uncorrected",
-                    ruv_status_product_y={"corrected": "corrected", "nuc": "no_usable_controls", "snc": "skipped_no_controls_selected"}[kind]))
+                    ruv_not_applied_reason_y={"corrected": "NA", "nuc": "no_usable_controls", "nfs": "no_factor_supported"}[kind]))
+    vs.append(blank(tier="V", design="D3", cell="D3", omic="lipid", r=r, version="V1g", arm="GK2", smoke="FALSE", seconds=1, status="ok", ruv_status_y="none" if r <= 4 else "ok"))
 E = new_case("tier_v", rows + vs)
 predict("tier_v", {}, expected)
 E("cell|V_ruv_not_applied|V|D3|V1g|LM2|estimate", "num", 0.5)
 E("cell|V_ruv_not_applied|V|D3|V1g|LM2|hi", "num", cp_upper(5, 10, 0.025))
 E("cell|V_ruv_not_applied_no_usable_controls|V|D3|V1g|LM2|estimate", "num", 0.3)
-E("cell|V_ruv_not_applied_skipped_no_controls_selected|V|D3|V1g|LM2|estimate", "num", 0.2)
-E("cell|V_ruv_not_applied_skipped_no_controls_selected|V|D3|V1g|LM2|lo", "num", cp_lower(2, 10, 0.025))
+E("cell|V_ruv_not_applied_no_factor_supported|V|D3|V1g|LM2|estimate", "num", 0.2)
+E("cell|V_ruv_not_applied_no_factor_supported|V|D3|V1g|LM2|lo", "num", cp_lower(2, 10, 0.025))
+E("cell|V_ruv_not_applied|V|D3|V1g|GK2|estimate", "num", 0.4)   # the declared arm: factor status none counts as not applied
+E("cell|V_ruv_not_applied|V|D3|V1g|GK2|lo", "num", cp_lower(4, 10, 0.025))
+
+# (H05) the controls-only mode: PC1 and NC1 only; no outcome row, no cell file, no 'outcome' in the console
+for name, spec in (("controls_ok", {}), ("controls_f1", {"pc1_nonfail": {"D3": 9}})):
+    folder = os.path.join(OUT, "cases", name)
+    os.makedirs(os.path.join(folder, "rows"), exist_ok=True)
+    write_rows(os.path.join(folder, "rows", "d.tsv.gz"), d_rows(spec))
+    index.append((name, "controls", "K275_CONTROLS_ONLY=1;K275_SCORE_R=200,100,20;K275_BOOT_B=200"))
+    expected += [(name, f"exit|{name}", "exit", "0" if name == "controls_ok" else "1", ""), (name, f"stdout|{name}", "nosubstr", "outcome", ""),
+                 (name, f"stdout|{name}", "substr", "PC1 D3 " + ("passes" if name == "controls_ok" else "FAILS"), ""),
+                 (name, "absent|cells.tsv", "absent", "", ""), (name, "absent|decision.tsv", "absent", "", ""), (name, "present|controls-judged.tsv", "present", "", "")]
 
 # ---- C02: the --g1 mode judges the G1 controls alone (exit 1 on F3); C05 (c): pi with a reference present and no matching pair -> coverage -----------------------
 for name, spec in (("g1_pass", {}), ("g1_fail", {"g1": {("D3", "PC2"): 1.0}})):
