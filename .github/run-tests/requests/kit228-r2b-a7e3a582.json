@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-228 R2b: instrument repair of R2 (test-kit247-design-resave.R timed out at my 3600 s limit on both sides, no result); head only; ceiling 160 job-min = 10.7 core-h; running total 37.0 of 92.0",
+  "label": "KIT-228 R2b kit247 file, head a7e3a582, 150 min file limit",
+  "package_commit": "a7e3a582426e4fd6810cbe4553397a4aad568970",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit247-design-resave.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 150,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
