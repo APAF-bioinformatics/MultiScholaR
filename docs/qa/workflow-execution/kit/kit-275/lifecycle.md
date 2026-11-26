@@ -155,3 +155,20 @@ ticket sections, the bound commit and the script hashes as placeholders, the job
 ## 9. Rule slips
 
 None known. (The smoke declaration's 321.21 is a rounding slip, corrected in `runs.tsv`; recorded in section 4.)
+
+
+## 10. After the script audit (AUDIT-KIT-275-scripts-20261126): repairs S01 to S16 and the coordinator's rulings
+
+Applied exactly as the audit's section 9 writes them (marks K275-assaycols and K275-nogroup added to E0 and `generator-diff.md`; K275-REFUSALS moved to the end of its statement): S01 (list-safe control count), S02 (`refused_after_exclusion` only
+when too few samples are left and the class says so), S03 (a lost group is `no_da`, class `filter_removed_group:<groups>`), S04 (L1 status accepts `ok`, a lost group, and the emulation's results after an exclusion), S05, S06 (named `emit` arguments at :279-280 and :284 as corrected; :290 was right),
+S07 (guard stop is `instrument`, the scorer stops on instrument rows, rows outside the declared range and duplicate rows; G2 timing over completed journeys only with a `G2_coverage` check), S08 (case-insensitive guard), S09, S10 (E3 asserts the marker names and
+`correlation_exclusion` at `within_assay`; `K275_REQUIRED_MARKERS` for tier V), S11 (E8 and tier E's pass-1 NO against tier D's NO in scoring mode), S12 (H2 and H3 cells), S13 (pi coverage and missing reference; the dropped-pair count in every paired cell's note),
+S14 (tier V's mask clauses of E1), S15, S16 (34 self-test cases, 2,745 predictions: the twelve of the audit's list plus the existing ones; non-degenerate data with exact jackknife limits and bounded bootstrap limits). The declaration's count is 1,859 (send 1); `runs.tsv` has the smoke's 25 job-minutes = 1.67 core-hours and run id 45742592872.
+
+**Rulings.**
+- **R-1.** A journey in which the filter removes a whole group is a RESULT: `no_da`, class `filter_removed_group:<groups>`, accepted by L1's status check and counted in the denominators (7.1). The tier E statuses (`uncorrected`/`dropped` for PEL2; `refused_after_exclusion` for PEG2 only when too few samples are left and the class says so) are results; any other refusal after an exclusion is an instrument defect (E11). The product finding (the DA stops with a technical message when the filter removes a whole group; with three or more groups the other comparisons are lost too; pre-existing) is filed by the coordinator; the scripts do not work round it.
+- **R-2 (coordinator's ruling, told to the owner).** The emulation arms are compared with VD at the SAME k: PEL2 with VD LM2, PEG2 with VD GK2, both from tier K at r up to 100 (`REF_ARM` in `score-k275.R`), not at k - 1, because in VE the anomalous sample is excluded before RUV, so no factor is spent on it (the k - 1 rule of section 4 exists because one factor is spent on a). This changes H3's rho and the emulation's pi. **Sentence for the ticket (sections 4 and 6.1), not edited here:** "The reference arm for the emulation arms PEL2 and PEG2 is VD at the same k (PEL2 against VD LM2, PEG2 against VD GK2, both in tier K), not k - 1: in VE the anomalous sample is excluded before RUV, so no factor is spent on it; H3's rho_mod and the emulation's pi are read against that reference." (Section 4's list of k - 1 pairs ends with this exception; 6.1 H3 gains "against VD at the same k".)
+- **R-3.** A cross-job identity mismatch (tier E's pass-1 NO rows against tier D's NO rows, r up to 100) STOPS scoring as F4 does (`crossNO`); E8 stays a finding.
+- **R-4.** G1's bootstrap stream is t = 10; the scorer emits no bootstrap cell for tier ID (E8 only).
+- **Routed to KIT-242, not ours:** on the route where the legacy control method skips an assay (a group with fewer than two samples), the package's record says RUV succeeded with k = 2 for an assay that got no controls.
+- Interpretation 9 (pairing by per-data-set scalars and a tested-set signature) is accepted with the dropped-pair count printed in every paired cell; in tier V pi's denominator runs over all 250 features while its numerator runs over the tested ones: a stated limit.
