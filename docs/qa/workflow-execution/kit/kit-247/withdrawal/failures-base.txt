@@ -1,0 +1,81 @@
+file: test-kit247-design-resave.R
+test: KIT-247 W288a (VAL-331): prot_lfq a formula-only re-save asks nothing, resets nothing and says nothing changed
+kind: failure
+message:
+  Expected `out$modals` to be identical to `out$before$modals`.
+  Differences:
+    `actual`: 4
+  `expected`: 3
+
+file: test-kit247-design-resave.R
+test: KIT-247 W288a (VAL-331): prot_lfq a formula-only re-save asks nothing, resets nothing and says nothing changed
+kind: failure
+message:
+  Expected `any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit247-design-resave.R
+test: KIT-247 W288a (VAL-331): lipid_canonical a formula-only re-save asks nothing, resets nothing and says nothing changed
+kind: failure
+message:
+  Expected `out$modals` to be identical to `out$before$modals`.
+  Differences:
+    `actual`: 2
+  `expected`: 1
+
+file: test-kit247-design-resave.R
+test: KIT-247 W288a (VAL-331): lipid_canonical a formula-only re-save asks nothing, resets nothing and says nothing changed
+kind: failure
+message:
+  Expected `any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit247-design-resave.R
+test: KIT-247 W288b (VAL-331): a proteomics Import Existing Design with only the organism changed asks nothing, applies nothing and says nothing changed
+kind: failure
+message:
+  Expected `out$modals` to be identical to `out$before$modals`.
+  Differences:
+    `actual`: 4
+  `expected`: 3
+
+file: test-kit247-design-resave.R
+test: KIT-247 W288b (VAL-331): a proteomics Import Existing Design with only the organism changed asks nothing, applies nothing and says nothing changed
+kind: failure
+message:
+  Expected `any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit247-design-resave.R
+test: KIT-247 C05 (AUDIT closure check): a confirmed proteomics import refused at the checkpoint puts back the FASTA and UniProt tables and records no input
+kind: failure
+message:
+  Expected `out$aa` to be identical to `out$before$aa`.
+  Differences:
+  `actual`:   "ce46e045c76deb6a5d90514c723f3816"
+  `expected`: "32a8c2c80d7e828afc6461beb546bb1a"
+
+file: test-kit247-design-resave.R
+test: KIT-247 C05 (AUDIT closure check): a confirmed proteomics import refused at the checkpoint puts back the FASTA and UniProt tables and records no input
+kind: failure
+message:
+  Expected `out$uniprot` to be identical to `out$before$uniprot`.
+  Differences:
+  `actual`:   "66071fca322929512906e6fca5fad4cd"
+  `expected`: "d36dff2c766aa70487acf1dc59731186"
+
+file: test-kit247-design-resave.R
+test: KIT-247 C05 (AUDIT closure check): a confirmed proteomics import refused at the checkpoint puts back the FASTA and UniProt tables and records no input
+kind: failure
+message:
+  Expected `out$design_file` to be identical to `out$before$design_file`.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+

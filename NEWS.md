@@ -170,8 +170,8 @@
  * Every omic: saving the design again (Save Design or Import Existing Design) after Quality Control or normalisation
    now compares it with the design it replaces. When the design table changes (samples, groups, technical replicates,
    factors or batch) or the data table the user is asked first; on Save the earlier Quality Control, normalisation and later results are set aside, the omic's earlier
-   integration input (its folder and the file beside it) is removed, and a notice says so. A change of comparisons or
-   formula only keeps every later step (the differential analysis is to be run again). 'Run Normalization' pressed
+   integration input (its folder and the file beside it) is removed, and a notice says so. A change of the
+   comparisons only keeps every later step (the differential analysis is to be run again). 'Run Normalization' pressed
    after that and before Quality Control is applied again still runs, as on a new project, but no longer silently:
    Quality Control shows as not done, proteomics warns on entering Normalisation and no longer says the run uses the
    current quality-control result, and the analysis record lists only what was run. Before, saving the design again

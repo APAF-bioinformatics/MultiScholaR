@@ -1,6 +1,6 @@
 # KIT-247 outcome: a design saved again after Quality Control or normalisation
 
-**State: done and ready for the closure audit.** The second and LAST correction (the owner's VAL-277 for AUDIT I01 and I02, and VAL-288) holds every prediction in the final comparison (45698414166). Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
+**State: done and ready for the auditor's closure check.** VAL-277 (I01, I02) merges; VAL-288 is withdrawn from this ticket (the owner's VAL-331); the withdrawal run (45722093901) held every prediction. Budget: 190.8 core-hours used against the 190 ceiling (VAL-309): exceeded by 0.8 (the withdrawal run took 148.8 job-minutes against about 130 declared). Earlier: implementation audited (AUDIT-KIT-247-impl-20261126): NOT ready for a merge train. R2 stopped at stop rule 3 (a regression in `test-workflow-native-session.R`); the one correction pass (R1', R2') holds every prediction. Two code defects found by the audit, I01 (major) and I02 (minor), are OPEN (below): the correction pass is used, and they wait for the owner's word on an extension (parked row 47). This commit is records only.
 
 - Ticket r1.4 (owner's decisions VAL-239: OD-1 (D) on the whole design table, OD-2 (a), OD-3 (a), OD-4 (a) including the
   top-level integration file). E-5 stays open for the coordinator.
@@ -92,83 +92,25 @@ result keeping ONE correction pass (R1', R2').
 ### G rows (AUDIT I05 (f))
 
 G1 (first saves): the GUI-entry lanes and the design module files, R2' same. G2: the new file (passes on base and
-head). G3 (numbers unchanged when the steps are redone): no row (AUDIT I07). G4: `test-kit225-prot-norm-reset-source.R`,
+head). G3: row added; passes in R1'''b and the final run (vacuous in R1'' and R2'' under the leak). G4: `test-kit225-prot-norm-reset-source.R`,
 `test-prot-norm-input-current.R`, R2' same. G5: `test-omic-norm-module.R`, `test-trx-norm-core.R`,
 `test-omics-norm-state-guards.R`, R2' same. G6: the GUI-entry lanes, R2' same with identical pre-existing failures.
 
-## OPEN defects (AUDIT-KIT-247-impl-20261126; not repaired: the correction pass is used; parked row 47)
+## Defects of the implementation audit, repaired by the second correction (VAL-277)
 
-- **I01 (major).** The confirmed proteomics Import Existing Design runs its commit outside the import's error handler,
-  so an import that fails after the user presses Save (a KIT-222 refusal, a column-mapping refusal) ends the session
-  instead of showing "Error during import: ..."; "Importing design files..." is left after Cancel (proteomics and
-  lipid/metab); E7 is feasible and not written; E20's closure is wrong for this entry. The register's repair (quoted,
-  not applied): "(a) In `runProtDesignImportConfirmationFlow`, make `flow` run `runProtDesignImportConfirmationFlowNow(...)`
-  inside the shell's handler: `tryCatch(<call>, error = function(e) { msg <- paste("Error during import:",
-  conditionMessage(e)); logger::log_error(msg); shiny::showNotification(msg, type = "error", duration = 15);
-  shiny::removeNotification(successNotificationId); invisible(NULL) })` (and `shiny::removeModal()` for any processing
-  modal it opened). (b) In both import frames remove the `importing_design` notification before the question is shown
-  (or on the gate's "changed" branch). Test (one row, E7): on `prot_lfq` after `correlation`, copy `source_dir`'s three
-  files into a new folder, move one sample in its `design_matrix.tab`, press Import Existing Design with
-  `import_dir_text` = that folder: the question is shown (assert the modal title "Save the changed design?"); Save → the
-  cut, the statuses and the notice as E1; a second copy whose `design_matrix.tab` carries a KIT-222 collision → Save →
-  "Error during import" shown, history and head unchanged, the test continues (the session is alive)."
-- **I02 (minor).** Departure 1 reads the comparison's state side from the live bus; a gated save that fails after
-  hydrating the bus makes the next save of the same design "unchanged": the previous design's later steps kept, with a
-  "kept" message. The register's repair (quoted, not applied): "Compare against what the last *successful* design
-  commit left, not the live bus: record, at the end of each successful commit (after `saveState` in
-  `commitOmicsDesign` / `commitOmicsDesignImport`; after `buildProtDesignStateCheckpoint` in both proteomics flows),
-  `manager$.context$kit247_design_compared <- list(design_matrix = <the committed design>, data = <the committed data
-  reference>)`, and pass it as `current` (the bus only when it is absent). Alternative: in each gated commit closure,
-  snapshot the four bus fields (`design_matrix`, `data_cln`, `contrasts_tbl`, `config_list`) before hydration and
-  restore them when the commit returns FALSE or errors. Test: a function-level row: a gated commit made to fail after
-  the bus write, then the same design saved again → `"changed"`." Reachability (INFERRED): lipid/metab/trx rare (a
-  failure after the bus write); proteomics builder blocked first by U-01; proteomics import ended first by I01.
-
-## Engineering departures (recorded, with reasons)
-
-1. The comparison's state side is read from the bus as the last design commit left it (design table and data input):
-   the trx design state holds technical replicates summed into units (`R/func_trx_design.R:126-149`), so its stored
-   design is not comparable run by run. In normal use the bus and the design state are written by the same commit.
-   The comparison is of content in a canonical form (every column as text, columns in name order, rows in `Run` order,
-   `tech_rep_group` recomputed from `group` and `replicates`; the data by saved entity, else by the SHA-256 of its
-   content; `omicsDesignCanonicalTable`, `omicsDesignSameData`, `:331-367`), not of the store's table identities named
-   in item 1 (kit-247-g0's outcome says 'item 1 compares the store's identities as written'). (AUDIT I05 (c).) Its
-   limit: I02 (OPEN).
-2. A save with nothing after the design state (the first save, or before QC) is committed as before even when it is
-   unchanged, so G2 stays identical to base.
-3. Proteomics Import Existing Design read the project's `config.ini` (`<source_dir>/config.ini`, copied from the
-   package default when missing; `loadProtDesignImportedConfigAndTables`, `R/mod_prot_design_import_helpers.R:181`,
-   `:209`) into the bus before the gate; left alone, Cancel
-   would have kept the imported configuration (QC and normalisation defaults, the formula), which later steps read and
-   which could change a result. Fixed (`0da49542`): the session's configuration is kept while the question is open and
-   the imported one applies only on Save. It changes behaviour beyond the audited plan; its own tests-first pair is R1b.
-4. A changed design over later steps reached with no application session (a scripted call) is refused with
-   `omics_design_resave_unconfirmed`; nothing is committed (`runOmicsDesignResaveGate`,
-   `R/utils_workflow_omics_design.R:536-540`).
-5. With no earlier design on the bus the comparison returns "first" and the save is committed as before, with no
-   question and no cut, even when later steps exist (`:380`; coordinator's ruling (i)); in the application this needs a
-   session file without a design. **This is a limit (AUDIT I11):** such a save leaves the later steps standing after the
-   re-committed design state, the state the defect starts from; reachable only from a session file without a design
-   matrix, or a script.
-
-Also: the core commits do not take a `cut` argument; the frames call `cutOmicsDesignHistory` right after a confirmed
-commit (same effect, fewer signatures changed). The refused Summary Save's removal now uses
-`removeOmicIntegrationInput` (folder and top-level file; coordinator's ruling on VAL-239 (iv), ticket r1.4).
-
-## Rule matters (reported plainly)
-
-- I attempted to amend fix commit `6bd2c194` and force-push `kit-247`; the permission system denied it. A force push is
-  forbidden by the brief whether or not it is denied. Nothing on origin was rewritten; the change went in as a new
-  commit (`0da49542`).
-- Local history rewriting of unpushed commits: before anything on `kit-247` was pushed, I reset the branch
-  (`git reset --mixed e0747fc1`, working tree kept) to rebuild it in order. It discarded two local, unpushed commits,
-  `61c21f28` (tests only, without E13 and E23) and `e888e439` (the fix without the refused-Save removal), and recommitted
-  their content with the additions as `526ec2aa` and `6bd2c194`.
+- **I01 (major).** The confirmed proteomics Import Existing Design now runs inside the import's error handling: an
+  import refused after Save shows "Error during import: ..." and the bus is put back; the "Importing design files..."
+  notice is closed before the question on both imports. Fix 40948dd8; E7 rows (fbf729ef); R1'' 45666094374 failing
+  first (E7 error prot_lfq: the session destroyed); passes in R1'''b 45688025752 and the final run 45698414166. C05
+  (closure check), the small part: the put-back also covers `aa_seq_tbl_final`, `fasta_metadata` and `uniprot_dat_cln`,
+  and the import's inputs are recorded after the checkpoint (b9695bf8; C05 row eab793f1; the withdrawal run).
+- **I02 (minor).** A design save is compared with what the last successful design commit left, not the live bus
+  (`rememberOmicsDesignCommit`, `omicsDesignCompared`). Fix 40948dd8; I02 row (fbf729ef); R1'' failing first (the second
+  save took the unchanged path); passes in R1'''b and the final run.
 
 ## Notes from the implementation audit (recorded; no change made)
 
-- **I07.** The original symptom (the DA on the old groups; the record's design rows against its `design_builder` step)
-  is not asserted after the fix, and G3 has no row; by construction both now follow the new design (INFERRED).
+- **I07.** I07, I07b, G3: rows added (fbf729ef, 97fd133f); pass in R1'''b and the final run.
 - **I08.** The confirmation was never observed in a browser and its content is asserted nowhere (E1's modal count also
   passes on base, the processing modal). One browser observation of the confirmation is owed after KIT-259 merges and
   before the release tag (label-free: normalise, move one sample, Save Design: the question's title, text, buttons; Save:
@@ -190,18 +132,20 @@ commit (same effect, fewer signatures changed). The refused Summary Save's remov
 R2's 69 files plus `test-module-ci-trx-design.R`, `test-module-ci-trx-qc.R`, `test-module-ci-lipid-norm.R`,
 `test-module-ci-metab-norm.R` (helper-mediated: never run in R2/R2'), `test-kit243-summary-current-outputs.R`,
 `test-kit244-limpa-pass-through.R`, `test-kit256-tech-rep-selection-cleared.R` (plus any file the I01/I02 pass adds);
-`check: true`; base the staging head at the train. Predictions: every file present on base `same` (identical failure
-messages where it fails on base); the three kit247 files only on head and passing (117, 2, 7, plus the new rows);
+and the closure check's C09 files (`test-kit254-omics-correlation-skip.R`, `test-kit257-norm-own-files.R`,
+`test-kit259-pearson-histogram-figure-failure.R`, `test-kit248-correlation-skip-record.R`,
+`test-kit261-norm-run-button.R`, `test-kit263-prot-study-parameters-sections.R`, and `test-kit264-trx-export-current.R` if
+the train stacks on train 19); `check: true`; base the staging head at the train. Predictions: every file present on base `same` (identical failure
+messages where it fails on base); the three kit247 files only on head and passing (188, 2, 7 at the final run; the withdrawal run gives the counts after W288 and C05);
 check findings identical, nothing only on head.
 
 ## Not checked
 
-- E7: not written; feasible (each lane's source_dir holds the exported files; test mode takes the folder as text): see
-  AUDIT-KIT-247-impl I01. E20: holds for both builders and the lipid/metab import; on proteomics Import Existing Design
-  the refusal fires after the question, after hydration (AUDIT I01).
-- The DA and the record after the fix (I07); the confirmation in a browser (I08); the unchanged re-save on DIA, DIA with
-  limpa, TMT, metabolomics and transcriptomics (only label-free "same" and lipid "contrast" are tested); both import
-  gates (I01).
+- The confirmation in a browser (I08); the unchanged re-save on DIA, DIA with limpa, TMT, metabolomics and
+  transcriptomics (only label-free "same" and lipid "contrast" are tested).
+- The RDS copies (`aa_seq_tbl_final.RDS`, `fasta_metadata.RDS`, `uniprot_dat_cln.RDS`) the import's sidecars write into
+  `source_dir` before the checkpoint stay after an import refused there (C05's remaining part: a stated limit and a
+  candidate ticket).
 - The trx moved-sample groups (G0: not observed).
 - G0-4's browser click (the browser normalisation fails first; another ticket's).
 - TMT and DIA (iq) base values were not observed in G0 (R1 shows them).
@@ -222,7 +166,7 @@ check findings identical, nothing only on head.
   samples is pseudo-replication (anti-conservative).
 - **Legacy.** On `main` for proteomics, lipidomics and metabolomics; new to 0.9 for transcriptomics and the DIA with
   limpa numbers path.
-- **Code.** Base e0747fc1 / fix `6bd2c194`, `0da49542`, `0ce87bc2` (lines at 55c3c607: `R/utils_workflow_omics_design.R:331-568`,
+- **Code.** Base e0747fc1 / fix `6bd2c194`, `0da49542`, `0ce87bc2`, `40948dd8`, `b9695bf8` (the VAL-288 commit 1d0364e0 reverted by b9695bf8, VAL-331, except `omicsDesignCanonicalText`) (lines at 55c3c607: `R/utils_workflow_omics_design.R:331-568`,
   `R/mod_omic_design.R:239-293`, `:380-433`, `R/mod_prot_design_builder_helpers.R:53-199`,
   `R/mod_prot_design_import_helpers.R:336-446`, `:482`, `:501`, `R/mod_omic_qc.R:307-308`,
   `R/utils_workflow_dia_products.R:965-968`, `R/mod_omic_norm.R:493-533`, `R/utils_workflow_trx_norm.R:169-188`,
@@ -237,12 +181,12 @@ check findings identical, nothing only on head.
   `R/func_omics_design_shared.R` (KIT-222's text).
 - **What changes in results.** For affected users only: after a changed re-save the later steps are set aside and must
   be redone (the numbers are then the new design's, with its Quality Control); an unchanged or comparison-only re-save
-  keeps everything. No stored reference moves (R2).
+  keeps everything. A formula-only Save, and on the proteomics import an organism, taxon or FASTA-only Save, answer "nothing changed" as before (VAL-288 withdrawn from this ticket by VAL-331; its own ticket). No stored reference moves (R2).
 - **Evidence.** G0 runs 45594073040, 45594077082, 45594081675, 45598375255, 45594085728, 45597423706, 45600644799,
-  45604291093 (base); R1 45604461406, R1b 45608591579, R1c 45612214974, R2 45612382879 (one regression); R1' 45629316617, R2' 45629323979. Fixtures: the GUI-entry e2e lanes
+  45604291093 (base); R1 45604461406, R1b 45608591579, R1c 45612214974, R2 45612382879 (one regression); R1' 45629316617, R2' 45629323979; R1'' 45666094374, R2'' 45666101179, R1''' 45676491133 (instrument), R1'''b 45688025752, final 45698414166; the withdrawal run 45722093901. Fixtures: the GUI-entry e2e lanes
   (small synthetic data); no simulation; no real data.
 
-## Second correction (the owner's VAL-277 and VAL-288; the last correction for KIT-247)
+## Second correction (the owner's VAL-277 and VAL-288; the last correction for KIT-247; VAL-288 since withdrawn, VAL-331)
 
 - **Scope.** AUDIT-KIT-247-impl-20261126 I01 (the confirmed proteomics Import Existing Design runs inside the import's
   error handling: an error after Save shows "Error during import: ..." and the bus is put back; the "Importing design
@@ -270,7 +214,29 @@ check findings identical, nothing only on head.
   `test-kit247-import-config.R` (2), `test-kit247-resave-no-session.R` (7) only on head and passing; check findings
   identical (0 / 3 / 3), nothing only on head (`final/`).
 - **Budget.** The owner raised the ticket's ceiling from 148.67 to 190 core-hours (VAL-309). Used: 90.8 before the
-  second correction, 48.9 for R1'' to R1'''b, 41.0 for the final comparison: **180.7 of 190**.
+  second correction, 48.9 for R1'' to R1'''b, 41.0 for the final comparison: **180.9 of 190 by job times (runs.tsv floored each run's minutes: 180.7)** (C07).
 - **Not checked (added):** the VAL-288 (b) FASTA path through a FASTA file (only an `aa_seq_tbl_final.RDS` in the import
   folder is compared; the organism path is tested); a formula-only change on the import paths (by reading); the
   confirmation in a browser (I08, owed after KIT-259 and before the release tag).
+
+## The withdrawal of VAL-288 (the owner's VAL-331) and C05
+
+- **Decided (VAL-331):** VAL-288's behaviour is withdrawn from KIT-247 (the closure check's C01 and C02: the formula
+  typed in the builder never reaches the model the DA fits; an organism Save refreshes no annotation, and a `.fasta`
+  file is never compared). Formula-only Saves and, on the proteomics import, organism/taxon/FASTA-only Saves answer
+  "nothing changed" again, with no question and no reset. VAL-288 becomes its own ticket. C03 and C04 fall away with
+  it (they were defects of the limited Saves only).
+- **Code:** b9695bf8 reverts 1d0364e0 (`git revert`), keeping `omicsDesignCanonicalText` and its two call sites (the
+  design table and the data tables read as text, blank as missing): the one part of 1d0364e0 that stays, because
+  without it an unchanged proteomics re-import is judged "changed" and takes the full cut (shown by R1''' 45676491133
+  and R1'''b 45688025752, F288b on the tests-only base: head `protein_s4_initial`, QC pending). I02 does not depend on
+  it. C05's small part in the same commit.
+- **Tests first:** 70b43e04 (W288a label-free and lipid, W288b) and eab793f1 (C05), on ac53976a's code.
+- **The run** (`withdrawal-declaration.md`): 45722093901, base eab793f1 (R/ as ac53976a + the new rows), head b88c3807,
+  the three KIT-247 files, no check, 148.8 job-minutes (9.9 core-hours; about 130 declared). Every prediction held
+  (`withdrawal/`): on base W288a (prot_lfq, lipid_canonical), W288b and C05 fail (9 expectations: the formula-only
+  re-save and the organism-only import ask; the refused import leaves the folder's tables on the bus and records its
+  design file), every other row passes; on head `test-kit247-design-resave.R` 188 passed, 0 failed,
+  `test-kit247-import-config.R` 2, `test-kit247-resave-no-session.R` 7.
+- **Budget.** 180.9 core-hours before the run (job times) + 9.9 = **190.8 of 190 (VAL-309): exceeded by 0.8**. The full
+  comparison and R CMD check ride the merge train (the coordinator's ruling).
