@@ -29,4 +29,4 @@ E9 (16 units) and F2 (eight cells and the stress cells) are **not yet observed**
 
 ## Running-ceiling line
 
-Used 87.24 of 250.32 plus about 1.3 for the first L3 send = about 88.6; L3r at the L3 line's remaining 2.7 (expected 2.57, 3.91 at spread 1.93 against the 4.00 line: any excess is charged to the instrument reserve, the second of at most three instrument re-sends). No counted job and no counted stage 1.
+Used 87.24 of 250.32 plus about 1.3 for the first L3 send = about 88.6; L3r at the L3 line's remaining 2.7 (expected 2.57, 3.91 at spread 1.93 against the 4.00 line: any excess is charged to the instrument reserve, re-send 1 of at most 3 (correction note: the earlier text said "the second", which was wrong)). No counted job and no counted stage 1.
