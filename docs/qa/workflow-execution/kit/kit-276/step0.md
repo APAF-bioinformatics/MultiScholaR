@@ -76,3 +76,34 @@ counted; recount with the new file at the request), so the budget table needs re
 the newest timing).
 Note 1.5 (cancor): `removeDiaLimpaRuvMarkers` is called before both RUV runs (`:117` in process, `:395` managed);
 the file is written by the covariates publication (`R/utils_workflow_dia_products.R:1843-1845`).
+
+## Rulings of 2026-11-27 (coordinator) on the stop above; departures from the ticket's text
+
+Each is a departure from, or an addition to, the ticket's text, and is listed again in outcome.md.
+
+- T18 (ruling of 2026-11-27): assert BOTH (i) over the history's states only (`kitReproduceMismatches` called in the
+  test, `tools/profiling/*` not edited): empty on the fixed code, and on the base the replay is refused with the class
+  captured by value; (ii) over the full origin map as `kitReplayJourney` reports it: EXACTLY `"ruv_corrected/missing"`.
+  The test's comment says why (ii) is not empty (the store keeps the superseded record by design, 4.1 / VAL-346).
+  Both predicted on base and head before the run. Same reading for T17: the explicit mismatch assertion
+  (`"ruv_covariates/missing"` on the head) is added.
+- S-2 (ruling of 2026-11-27): flag passed only when TRUE; the stubs at `test-prot-05b-norm-module-contracts.R:2302`,
+  `:2369` untouched.
+- S-3 (ruling of 2026-11-27): `ruv_covariates_summary` cleared in `runProtNormResetWorkflow`, limpa route only; a row
+  shows it cleared on the limpa route and not touched on the other three routes.
+- S-4 (ruling of 2026-11-27): one helper beside `removeDiaLimpaRuvMarkers`, called at the three call sites and the
+  Skip; a row per call site shows the leftover file gone.
+- S-5 (ruling of 2026-11-27): T1 asserts the record's steps, T2 the report-level text.
+- S-6 (ruling of 2026-11-27): a focused row with a recording runner asserting that the dispatched action carries
+  `held$rebuild` into `finish`, by value; the full managed chain stays "by reading" in "Not checked".
+- S-7 (ruling of 2026-11-27): T6 PRODUCES an enrichment first (the recipe of `test-kit213-study-parameters-labels.R`
+  `k213ProtJourney`: DA, `produceDIADaPublication`, `runWorkflowEnrichment` in test mode) and asserts
+  `diaEnrichmentProduct` non-NULL before and NULL after the Skip.
+- Budget restated (ruling item 7), `python3 -I`, newest committed per-file timing over the 185 tracked `tests*.tsv`
+  (not `tests-base`) at 38443af8: the grep gives 96 files, 97 with the new file; 92 are timed, sum 449.2 min per side;
+  untimed `test-kit213-study-parameters-labels.R` (1.84), `test-kit216-...` (15), `test-kit273-...` (15),
+  `test-kit274-...` (3) are priced by me; the new file 15: about 499 min per side. Eight shards (descending timing,
+  `test-kit247-design-resave.R` takes 60.2 and `test-kit266-...` 44.0, so per-file timeouts 90 and 60). Expected R2
+  2 x (499 + 80) + 80 = 1,238 min; R1 25: total about 1,263 min = 84.2 core-hours expected (the ticket's 61.26 rested
+  on a smaller timing set). Ceiling stays 172.00 (2,580 min): R1 60 + R2 ceiling 16 x 80 + 2 x 90 = 1,460 leaves 1,060
+  min for a correction or instrument runs.
