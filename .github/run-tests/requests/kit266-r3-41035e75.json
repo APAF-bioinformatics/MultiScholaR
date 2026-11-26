@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-266 R3 render check on the head 41035e75 (four proteomics lanes, V0 against staging 36e3180b templates, V1, V2); predictions in predictions-r2.md and render.R; ceiling 60 job-minutes",
+  "label": "KIT-266 R3 render on kit-266 41035e75",
+  "package_commit": "41035e756c4c03ff4d65a5c7e979245f6f855082",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-266/render.R",
+      "args": [],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit266-render",
+      "out_pattern": "\\.(txt|tsv)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
