@@ -1,7 +1,7 @@
-# KIT-275 proving send: DRAFT declaration (the auditor's design, RH5). NOT SENT: it waits for the owner's figure (running-ceiling rule) and the auditor's closure of the changed scripts.
+# KIT-275 proving send: declaration, committed alone before the request
 
-**Purpose.** Show the continuation paths on real counted-mode directories before any counted job: counted mode, a job killed by its timeout, the part files, `K275_ONLY_UNITS`, source tagging, the interrupted-data-set path and the double-source stop of the scorer. It measures nothing and its timings are never used for any timeout or ceiling (L1 is the basis). Seeds 9201 and 9202 lie outside every counted range (1 to 200, 1 to 100, 1 to 20), L1's (9101 to 9103) and the smokes'; under the default `K275_SCORE_R` the scorer's RANGE-1 stop means these rows can never enter counted scoring. `cells.tsv` is not uploaded.
-**Binding.** The kit-275 tip after the auditor's closure `<commit>`; scripts' SHA-256 `<hashes>`; `K275_G1` = the path of `g1/g1.tsv` from the package root.
+**Status.** Sent once after the owner's decision of the ceiling (VAL-382: 406.90 core-hours; the 1.5 x timeout rule with the continuation rule and the controls-only interim read). The scripts are the ones audited at d6b95a05: `git diff d6b95a05 HEAD` over `sim-k275.R`, `score-k275.R`, `fixture-k275.R`, `e0-diff.py` and `selftest/` is empty (verified at the declaration commit). SHA-256 (first 16 hex): `sim-k275.R` 2cc87ea569eef7fd, `score-k275.R` a43a2c10c9a41ec2, `fixture-k275.R` 407949a9a6c0f90f. `<commit>` in the request is this declaration's own commit; `K275_G1` = `docs/qa/workflow-execution/kit/kit-275/g1/g1.tsv`.
+**Binding.** The package commit named in the request (the declaration's own commit, on staging ec27f69e0 as L1).
 
 **One request, scripts in order (each its own explicit `timeout_minutes`):**
 1. `selftest/run-selftest.R` (10): all cases (46), 0 differ; E0 0 unmarked.
@@ -19,7 +19,7 @@ The scorers' output directories lie outside `<p>`. Scorer 1 runs before C writes
 - **Declared alternative branch** (a runner more than about 1.5 times faster, so that any T unit finishes in A): scorer 1 stops "complete in two sources"; the interrupted path on real rows is then not shown; the send is reported as such and not re-run.
 - **C:** exit 0; 6 rows. **Scorer 2:** exit non-zero; stderr contains "two sources".
 
-**Ceiling.** Set-up 10 + self-test 10 + A (2 + 1 kill-after) 3 + B 8 + scorer 1 5 + C 8 + scorer 2 5 = **49 job-minutes = 3.27 core-hours** (36 = 2.40 without C and scorer 2; expected about 25 = 1.67). Running ceiling: used 12.43 + 3.27 + planned 391.20 = 406.90 (the owner's figure under the 1.5 x ruling); written in `runs.tsv` before sending.
+**Ceiling.** Set-up 10 + self-test 10 + A (2 + 1 kill-after) 3 + B 8 + scorer 1 5 + C 8 + scorer 2 5 = **49 job-minutes = 3.27 core-hours** (36 = 2.40 without C and scorer 2; expected about 25 = 1.67). Running ceiling: used 12.43 + 3.27 + planned 391.20 = 406.90 (the owner's figure under the 1.5 x ruling); written in `runs.tsv` before sending: **12.43 used + 3.27 this request + 391.20 remaining = 406.90, equal to the owner's ceiling (VAL-382).**
 **What it cannot inform.** R, seeds, margins, levels, the outcome table, the jobs and their timeouts are fixed before it; the ceiling is decided on L1's figures; it exposes S and T rows of two non-counted data sets, used for line-count checks only.
 
 **Also predicted (J03).** The self-test step reports 46 cases and 3,128 predictions, 0 differences; E0 reports 41 hunks, 0 unmarked. The scripts table reads: script 1 ok, script 2 (A) timeout, scripts 3 to 5 ok, script 6 (scorer 2) failed; so **the run's overall outcome is "failure" by prediction** (a failed script). A, B and C are uploaded in full; scorer 2 writes no file.
