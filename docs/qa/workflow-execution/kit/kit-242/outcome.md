@@ -379,3 +379,41 @@ prediction: stop and report.
 **Change to E25m (c93c4848), on the base only.** On the code before Part B `omicsRuvSearchOutcomes` does not exist, so the
 row now fails by value there (`expect_true(is.function(...))`) instead of erroring; what it asserts on the head is
 unchanged.
+
+## Merge of staging aa119308 (afb27738) and R2 restated, written before R2
+
+**Merge (once, on the coordinator's word).** Two files conflicted, nothing else:
+- `R/utils_workflow_analysis_record.R`, the marker list. Merged order: missing_value_comparison, enrichment_background,
+  intensity_filter_samples, duplicate_resolution_samples, ruv_feature_levels, treat_moderation, ruv_control_grouping,
+  ruv_k_bound, intensity_filter_missing, duplicate_resolution_rank, correlation_exclusion, normalisation_fallback,
+  protein_normalisation_fallback, itsd_outcome, ruv_fallback.
+- `R/utils_workflow_saved_exports.R`, the session list: staging (KIT-255) made the list a variable and adds
+  `correlation_exclusions` when the state carries any; KIT-242 adds `itsd_outcome_per_assay` when the state records the
+  ITSD outcome. Both kept, KIT-242's inside the list, KIT-255's after it.
+- NEWS auto-merged, staging's bullets first. KIT-255's interim sentence ("Where a sample's values were missing altogether
+  in one assay, that assay may not have been normalised between samples (see KIT-242; until KIT-242's first part is
+  merged).") is removed: with Part A such an assay is normalised on its other samples, so the sentence is now untrue.
+- Ledger: kit-242 adds no ledger row, so staging's rows stand as they are.
+
+**R2's base.** Branch `kit-242-r2base` = 9bb5ef0d: afb27738 with Part B's code commits (5c856dff, the R part of
+4c8e3d87) reverted; tests identical to the head's (`git diff` lists only `R/` and `NEWS.md`). Head: afb27738.
+
+**Files: 190** (`r2-files.txt`, recounted on the merged tree): the 186 of P0, plus the 6 that the scope's grep now finds
+(test-kit213-study-parameters-labels.R, test-kit221-da-several-comparisons.R, test-kit255-omics-correlation-assays.R,
+test-kit259b-second-correction.R, test-kit264-trx-export-current.R, test-kit271-limpa-table-name.R), minus the two
+runner-library files. 12 shards per side, check on both sides; `env` `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` and
+`MULTISCHOLAR_KIT105_W3_DUMP=1`, `extra_packages` limpa, mixOmics, sva, `file_timeouts` 120 for test-prot-norm-core.R
+and the GUI-entry files (as train 19). Line: 59.33 expected / 120.0 ceiling core-hours.
+
+**Predictions, restated on the merged tree** (the table and the `test-omic-norm-module.R` keys above stand, with):
+- `test-omic-norm-module.R`: on staging 631/8 (KIT-255's eight). Base fails the union of those 8 and Part A's 56 (the
+  count is observed on base: 56 if the 8 are among Part A's keys, up to 64 otherwise); head fails the same set. Verdict
+  message-changed, on exactly the log, provenance and outputs keys listed above (and the two `reset outputs` keys not
+  predicted); every other failing key, KIT-255's included, has the identical message on both sides.
+- `test-prot-norm-core.R`: 1547/307 on staging; base and head identical (Part C is on both sides). Same.
+- `test-kit236-report-sentences.R` (293/0) and `test-metab-s4-qc-shared.R` (35/0): pass on both sides. Same.
+- New files: `test-kit255-omics-correlation-assays.R` (360/0: its legacy RUV is Manual on complete objects, every assay
+  corrected, so the head's result equals the base's), `test-kit271-limpa-table-name.R` (78/0), `test-kit221-…` (124/0),
+  `test-kit259b-…` (90/0; its `ruv_applied` is a stub report value), `test-kit213-…` (56/0; transcriptomics),
+  `test-kit264-trx-export-current.R` (transcriptomics; no lipid or metab RUV): same on both sides.
+- Any other verdict stops the run.
