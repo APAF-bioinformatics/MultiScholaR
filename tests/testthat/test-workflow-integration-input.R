@@ -554,17 +554,17 @@ test_that("KIT-061 (K061-1): after a classic re-run with RUV skipped the head's 
     expect_identical(after$matrix_role, "normalised")
 })
 
-test_that("KIT-061: a session with no final matrix writes nothing and says so", {
+test_that("KIT-061: a session with no final matrix writes nothing and says so (KIT-216 SD-1: refused, the input removed)", {
     root <- withr::local_tempdir()
     manager <- integrationProteinOwner(root, "DIA")
     withr::defer(closeDIAStateAdapter(manager))
     manager$saveState("imputed", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), list(), "imputed")
     # K061-3: an earlier save's input is removed, so a stale input cannot validate.
     writeIntegrationInputFixture(file.path(root, "integration", "proteomics"))
-    run <- integrationSummarySave(manager, root)
-    expect_false(any(grepl("Saved Integration", run$shown)))
-    expect_identical(run$saved$integrationFile, "not written (no final proteomics matrix yet)")
-    expect_false(dir.exists(run$dir))
+    # KIT-216 (SD-1, VAL-179): a store with no normalisation is refused before anything is written, the earlier input
+    # removed (KIT-207's branch); `integrationSummarySave` raises the refusal.
+    expect_error(integrationSummarySave(manager, root), class = "omic_norm_correlation_input_stale")
+    expect_false(dir.exists(file.path(root, "integration", "proteomics")))
 })
 
 # DIA_LIMPA (D14): the route's runner on the KIT-053/056 fixture (test-workflow-analysis-record.R), in both modes.

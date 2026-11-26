@@ -1,0 +1,58 @@
+KIT-216 R1 archive runs=1 head=enrichment_completed bytes=1812480 sha256=03ea8cc5d1574ceef87fb49df8d613eb26902139382a15c52e72f58747c02716 da_source=b384889e8eb841800df4414203746982480d3e6928f7372d10d9db41e279155a
+KIT-216 R1 archive runs=2 head=enrichment_completed bytes=1812480 sha256=e9bcf254b85aa4169935e9aa18e8d31ac50f01ad047bdd902f57279c7b3fddcf da_source=47d3e4e95d1d9d15e4b6b208a35ddb4e9c8d1ca06f8c4dd8aa69e256ce91d412
+KIT-216 R1 archive file base-enrichment-1-run.msdia.tar bytes=1812480 sha256=03ea8cc5d1574ceef87fb49df8d613eb26902139382a15c52e72f58747c02716
+KIT-216 R1 archive file base-enrichment-2-runs.msdia.tar bytes=1812480 sha256=e9bcf254b85aa4169935e9aa18e8d31ac50f01ad047bdd902f57279c7b3fddcf
+KIT-216 E1 head=enrichment_completed notes=[error 10] Error exporting session: native export needs component metadata; explicitly convert the legacy session first errors=saved_entity_unsupported new_archives=0 archive_state=<none> stored=<none> marker=FALSE
+KIT-216 E2 head=enrichment_completed notes=Study parameters saved with warnings types=warning done=0 failed=rlang_error args=1 records=1 input=TRUE planted_kept=TRUE new_archives=0
+KIT-216 E3 save head=enrichment_completed notes=Saved Integration input | Study parameters saved successfully types=message,message done=1 failed=none args=1 records=1 input=TRUE new_archives=1
+KIT-216 E3 reopen stage=open error=saved_entity_corrupt component checkpoint is incomplete head=<none> restored_contrasts=<none>
+KIT-216 E4 export_notes=[message 10] Filtered session data exported successfully!
+KIT-216 E11 feasibility export_notes=[message 10] Filtered session data exported successfully!
+KIT-216 E11 head=ruv_corrected refresh_error=none new_archives=1 ruv_mode=covariates ruv_applied=TRUE
+KIT-216 E7 normalization_method=cyclicloess reopen_error=none selector=norm_method=cyclicloess
+KIT-216 E7b history=ruv_corrected       ,normalized          ,correlation_filtered
+KIT-216 E7b normalization_method=quantile
+KIT-216 E8 head=enrichment_completed notes=Study parameters saved successfully types=message done=1 failed=none args=1 records=1 input=FALSE enrichment_steps=1 step_input=6c43bfc7abf3f2875a49df7315208f9d160fcae3daeab387db088094d4624b8f own_entity=6c43bfc7abf3f2875a49df7315208f9d160fcae3daeab387db088094d4624b8f table=99f6daf4310079aaa2cc4560197e0268695db5cf4ee49a14eff015923e11621d
+KIT-216 E9 head=protein_replicate_filtered guard=pass report_render=1 report_notes=[message] DIANN_report.rmd template copied from package | [message] Report generated successfully! state_files=1 state_notes=[message] Session state exported to: /tmp/RtmpvzWWOD/file4cdb6b78d8f3/scripts/proteomics/session_state_2026-11-25.RDS
+KIT-216 E10 head=protein_replicate_filtered notes=The session could not be saved: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press "Run Normalization & RUV" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export. | Study parameters saved with warnings types=error,warning done=0 failed=prot_norm_correlation_input_stale args=1 records=1 input=FALSE written=TRUE,TRUE
+KIT-216 E5 head=enrichment_completed second_da=component checkpoint is incomplete enrichment_steps=1 marker=FALSE
+KIT-216 E5b head=enrichment_completed enrichment_steps=1
+KIT-216 E6 revert=ran head=normalized marker=FALSE
+KIT-216 E10c head=protein_replicate_filtered notes=Study parameters saved with warnings types=warning done=0 failed=rlang_error args=1 records=1 input=FALSE guard=pass report_render=1 state_files=1
+KIT-216 E14 head=normalized notes=Study parameters saved with warnings types=warning done=0 failed=rlang_error args=1 records=1 input=FALSE final=0060712b448b37a5fd9ade7827af1f6b33ebffb6d35a35c44832f632043bfead normalized=6f55f8dd2fb063942057ba6c1bb89b765644dc75b3dc120fc104ad82f12bc36d protein_replicate_filtered=0060712b448b37a5fd9ade7827af1f6b33ebffb6d35a35c44832f632043bfead
+KIT-216 E9b reopen stage=open error=saved_entity_corrupt component checkpoint is incomplete head=<none> marker=FALSE
+KIT-216 G15 da head=correlation_filtered notes=Saved Integration input | Study parameters saved successfully types=message,message done=1 failed=none args=1 records=1 input=TRUE
+KIT-216 G15 enrichment head=enrichment_completed notes=Saved Integration input | Study parameters saved successfully types=message,message done=1 failed=none args=1 records=1 input=TRUE
+KIT-216 G15 limpa head=ruv_covariates notes=Saved Integration input | Study parameters saved successfully types=message,message done=1 failed=none args=1 records=1 input=TRUE
+KIT-216 G16 enrichment_steps=1 q_cutoff=double,0.01,1
+KIT-216 G18 head=correlation_filtered notes=The session could not be saved: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press "Run Normalization & RUV" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export. | Study parameters saved with warnings types=error,warning done=0 failed=prot_norm_correlation_input_stale args=1 records=1 input=FALSE report_render=1 new_archives=0
+KIT-216 G19 head=normalized notes=Saved Integration input | Study parameters saved successfully types=message,message done=1 failed=none args=1 records=1 input=TRUE
+KIT-216 G20 head=normalized notes=The session could not be saved: the current table is not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was made, so the exported session would not describe the current table. Press "Run Normalization & RUV" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export. | Study parameters saved with warnings types=error,warning done=0 failed=prot_norm_correlation_input_stale args=1 records=1 input=FALSE
+KIT-216 E15 head=normalized bus_cleared=FALSE run_calls=1 error=none notes=[default] Running enrichment analysis... | [message] Enrichment analysis completed successfully for contrast: treated_vs_control
+KIT-216 E7c export_notes=[message 10] Filtered session data exported successfully!
+KIT-216 G11 step 1 import initial fields=order,state,operation,variant,preceded_by,step_label,committed_at,seed,result_entity_id,input_entity_ids,software,defaults_sha256,dimensions,outcomes,description,parameters,products,stored_as_object sha=fff16169d854bc112253d18945ae4b5a327ebd40281dff3f11c4c5d66cfaf05d
+KIT-216 G11 step 2 legacy protein_replicate_filtered fields=order,state,operation,variant,preceded_by,step_label,committed_at,seed,result_entity_id,input_entity_ids,software,defaults_sha256,dimensions,outcomes,description,parameters,products,stored_as_object sha=e5c933613079e9cad9d3294423af3cf0926049bf9874a3b79f551282fdff43af
+KIT-216 G11 step 3 normalization-ruv normalized fields=order,state,operation,variant,preceded_by,step_label,committed_at,seed,result_entity_id,input_entity_ids,software,defaults_sha256,dimensions,outcomes,description,parameters,products,stored_as_object sha=44803e80e468781a9d958591382cef74510ae1ce2d5a887539cdb33425e40ce6
+KIT-216 G11 step 4 pearson-selection correlation_filtered fields=order,state,operation,variant,preceded_by,step_label,committed_at,seed,result_entity_id,input_entity_ids,software,defaults_sha256,dimensions,outcomes,description,parameters,products,stored_as_object sha=04b126433875a4020de3eb47fff10b71e73de2dfa4b1d6d1282563cdece9cafe
+KIT-216 G11 step 5 enrichment enrichment_completed fields=order,state,operation,variant,preceded_by,step_label,committed_at,seed,result_entity_id,input_entity_ids,software,defaults_sha256,dimensions,outcomes,description,parameters,products,stored_as_object sha=d1fe12dfd8bc769e1b43abfbae8791c6f2288ca860e1c475ba0d1e7ddaa740de
+KIT-216 G11 top-level fields=schema,generated_at,workflow,omic_type,store_identity,software,defaults_sha256,defaults_changed,inputs,design,steps,analyses,external_resources,limits design_state=<none>
+KIT-216 G13b runs=1 enrichment_steps=1 replay=completed product=<function absent>
+KIT-216 G13b runs=2 enrichment_steps=1 replay=completed product=<function absent>
+KIT-216 R1 archives (section 4): the latest archive the Summary writes after one and two enrichment runs ('test-kit216-prot-session-after-enrichment.R:918:5') - Reason: made only in R1, with KIT216_ARCHIVE_OUT set
+KIT-216 E11 (G6, I05): DIA with limpa, the refreshed archive states the RUV mode of the last covariates run (fails before) ('test-kit216-prot-session-after-enrichment.R:418:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-216 E11 (G6, I05): DIA with limpa, the refreshed archive states the RUV mode of the last covariates run (fails before) ('test-kit216-prot-session-after-enrichment.R:418:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-216 G15: the Summary saves after the DA, after an enrichment, and on DIA with limpa after the covariates (guard) ('test-kit216-prot-session-after-enrichment.R:676:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-216 G15: the Summary saves after the DA, after an enrichment, and on DIA with limpa after the covariates (guard) ('test-kit216-prot-session-after-enrichment.R:676:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-216 G16: a second enrichment run with other cut-offs replaces the first; the record lists one step with the second run's parameters (guard) ('test-kit216-prot-session-after-enrichment.R:698:5') - NAs introduced by coercion
+KIT-216 E7c (I04, P08): DIA with limpa, the archive states the protein normalisation step's method (fails before) ('test-kit216-prot-session-after-enrichment.R:798:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-216 E7c (I04, P08): DIA with limpa, the archive states the protein normalisation step's method (fails before) ('test-kit216-prot-session-after-enrichment.R:798:5') - Unknown or uninitialised column: `core_utilisation`.
+KIT-216 E1 
+KIT-216 E1 
+KIT-216 E1 
+KIT-216 E1 
+KIT-216 E1 
+KIT-216 E1 
+KIT-216 E2 
+KIT-216 E2 
+KIT-216 E2 
+KIT-216 E2

@@ -1,0 +1,6 @@
+lane	base_vs_stored	head1_vs_head2	base_vs_head
+prot_dia	states digests and artifacts differ (pre-existing; see leaves.tsv)	identical	24 leaves: head, history, states (enrichment_completed), da_status at the six steps
+prot_dia_limpa	not compared	identical	identical
+prot_lfq	not compared	identical	identical
+prot_lfq_fragpipe	not compared	identical	identical
+prot_tmt	not compared	identical	identical

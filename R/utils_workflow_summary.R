@@ -85,6 +85,8 @@ workflowSummaryFinalState <- function(config, workflowData, omicType, catFn = ca
 #' @noRd
 assertWorkflowSummaryHeadFinal <- function(workflowData, omicType) {
     manager <- workflowData$state_manager
+    # KIT-216 (I10, VAL-158 parity): the proteomics rule by name, for a reference-state owner only.
+    if (identical(omicType, "proteomics")) return(assertProtSummaryHeadFinal(manager))
     if (!isTRUE(omicType %in% c("lipidomics", "metabolomics", "transcriptomics")) || !inherits(manager, "DIAStateAdapter")) {
         return(invisible(TRUE))
     }
@@ -102,6 +104,38 @@ assertWorkflowSummaryHeadFinal <- function(workflowData, omicType) {
         if (omicDaFallbackHeadNormalised(workflowData, binding)) return(NULL)
         if (is.null(getWorkflowStateReference(manager, paste0(binding$prefix, "_normalized")))) texts$summary_none else
             texts$summary
+    })
+    if (is.null(refusal)) return(invisible(TRUE))
+    rlang::abort(refusal, class = "omic_norm_correlation_input_stale")
+}
+
+#' KIT-216 (I10; P05, P11; VAL-158, VAL-179 SD-1): the proteomics Summary's head rule, KIT-207's in proteomics words.
+#' The head's table (the head; a result head, which only an unconverted store holds, by KIT-212's
+#' `workflowDaTableState`) must be one of the proteomics DA's states, by name; no comparison with an export (KIT-206's
+#' guard stays in the archive refresh). Refused with `summary_none` when no normalisation state is in the store,
+#' otherwise with the proteomics text. Other owners (in-memory, test fakes, another omic's owner) pass.
+#' @param manager The bus's state manager.
+#' @return TRUE, invisibly; otherwise a condition of class `omic_norm_correlation_input_stale`.
+#' @noRd
+assertProtSummaryHeadFinal <- function(manager) {
+    if (!usesDIAReferenceStates(manager)) return(invisible(TRUE))
+    # r1.4 (audit F04): fail-safe; only an owner of another omic's binding (lipidomics, metabolomics, transcriptomics)
+    # is skipped, so every proteomics owner of any route stays guarded.
+    if (isTRUE(toupper(manager$workflow_type) %in% toupper(omicsWorkflowTypes()))) return(invisible(TRUE))
+    texts <- omicNormGuardTexts()
+    refusal <- withWorkflowStateScope(manager, function() {
+        head <- manager$current_state
+        table <- tryCatch({
+            reference <- workflowDaTableState(manager)$reference
+            snapshot <- manager$.context$snapshot
+            found <- names(snapshot$states)[vapply(snapshot$states, function(state) identical(state$entity_id,
+                reference$entity_id), logical(1))]
+            if (head %in% found) head else utils::tail(intersect(diaStateHistory(manager), found), 1L)
+        }, error = function(e) head)
+        if (isTRUE(table %in% protSummaryDaStates)) return(NULL)
+        normalised <- any(vapply(c("normalized", "ruv_corrected", "ruv_covariates"), function(state)
+            !is.null(getDIAStateReference(manager, state)), logical(1)))
+        if (normalised) texts$summary_prot else texts$summary_prot_none
     })
     if (is.null(refusal)) return(invisible(TRUE))
     rlang::abort(refusal, class = "omic_norm_correlation_input_stale")
@@ -293,6 +327,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
                         workflowSummaryText(config, "integration_saved", "Saved Integration S4 Object"), "message", 5)
                 }
                 notify("Study parameters saved successfully", "message", 5)
+                # KIT-216 (SD-2, SD-4): a route writer's reason the session file was not refreshed, after the success.
+                if (!is.null(attr(written, "notice_after"))) notify(attr(written, "notice_after"), "warning", NULL)
                 done(list(studyParamsFile = studyParamsFile, integrationFile = if (!isFALSE(written)) filename else
                     workflowSummaryText(config, "integration_not_written", filename)))
             })

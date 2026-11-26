@@ -1,0 +1,1205 @@
+== test-omic-enrich-module.R | message-changed | (b) in process: kernel_clusterprofiler
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       actual                    | expected                      
+   [5] "B_vs_A"                  | "B_vs_A"                  [5] 
+   [6] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [6] 
+   [7] "<ref>"                   | "<ref>"                   [7] 
+   [8] "<list> 936933ed6c63989a" - "<list> 00c45cf144cf6614" [8] 
+   [9] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [9] 
+  [10] "<NULL>"                  | "<NULL>"                  [10]
+  [11] "<NULL>"                  | "<NULL>"                  [11]
+  
+  kernel_clusterprofiler da returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       actual                    | expected                      
+   [5] "B_vs_A"                  | "B_vs_A"                  [5] 
+   [6] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [6] 
+   [7] "<ref>"                   | "<ref>"                   [7] 
+   [8] "<list> 936933ed6c63989a" - "<list> 00c45cf144cf6614" [8] 
+   [9] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [9] 
+  [10] "<NULL>"                  | "<NULL>"                  [10]
+  [11] "<NULL>"                  | "<NULL>"                  [11]
+  
+  kernel_clusterprofiler select returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  kernel_clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  + "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  
+  kernel_clusterprofiler run kernel
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:16] vs expected[1:16]
+  - all_enrichment_results"<list> d626c0d8d1169c12"
+  + all_enrichment_results"<list> 6961aaa3fc9d92d9"
+    analysis_complete"TRUE"
+    analysis_method"clusterprofiler"
+  - clusterprofiler_results"<data.frame> bacf7b29d4777485"
+  + clusterprofiler_results"<data.frame> 3fbdfddf484f8372"
+    clusterprofiler_results_table"<ref>"
+    contrasts_available"B_vs_A"
+    current_contrast_results"<list> 28df520b992b4a4b"
+    current_s4_object"<ref>"
+  - da_results_data"<list> 936933ed6c63989a"
+  + da_results_data"<list> 00c45cf144cf6614"
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> d8f57c99312ad90c"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[14:18] vs expected[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  kernel_clusterprofiler da files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[15:25] vs expected[15:25]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[3]]) vs lines(expected[[3]])
+  - "<text> df4429afb7198599ba09e7101d22eb4a422dd839e3db2f8fce6ebece1b157aa4"
+  + "<text> 4cde847cac7e9c4ab85a093c84e945c7ddf8dfa3f4810877838ac40faaca1db2"
+  
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       actual                    | expected                      
+   [5] "B_vs_A"                  | "B_vs_A"                  [5] 
+   [6] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [6] 
+   [7] "<ref>"                   | "<ref>"                   [7] 
+   [8] "<list> 936933ed6c63989a" - "<list> 00c45cf144cf6614" [8] 
+   [9] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [9] 
+  [10] "<NULL>"                  | "<NULL>"                  [10]
+  [11] "<NULL>"                  | "<NULL>"                  [11]
+  
+  kernel_clusterprofiler da returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       actual                    | expected                      
+   [5] "B_vs_A"                  | "B_vs_A"                  [5] 
+   [6] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [6] 
+   [7] "<ref>"                   | "<ref>"                   [7] 
+   [8] "<list> 936933ed6c63989a" - "<list> 00c45cf144cf6614" [8] 
+   [9] "<list> 28df520b992b4a4b" | "<list> 28df520b992b4a4b" [9] 
+  [10] "<NULL>"                  | "<NULL>"                  [10]
+  [11] "<NULL>"                  | "<NULL>"                  [11]
+  
+  kernel_clusterprofiler select returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    "[default NULL enrichment_working] Running enrichment analysis..."
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+    "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A"
+    "remove enrichment_working"
+  
+  kernel_clusterprofiler run notes
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  + "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  
+  kernel_clusterprofiler run kernel
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:16] vs expected[1:16]
+  - all_enrichment_results"<list> d626c0d8d1169c12"
+  + all_enrichment_results"<list> 6961aaa3fc9d92d9"
+    analysis_complete"TRUE"
+    analysis_method"clusterprofiler"
+  - clusterprofiler_results"<data.frame> bacf7b29d4777485"
+  + clusterprofiler_results"<data.frame> 3fbdfddf484f8372"
+    clusterprofiler_results_table"<ref>"
+    contrasts_available"B_vs_A"
+    current_contrast_results"<list> 28df520b992b4a4b"
+    current_s4_object"<ref>"
+  - da_results_data"<list> 936933ed6c63989a"
+  + da_results_data"<list> 00c45cf144cf6614"
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> d8f57c99312ad90c"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[14:18] vs expected[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  kernel_clusterprofiler da files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[15:25] vs expected[15:25]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[3]]) vs lines(expected[[3]])
+  - "<text> df4429afb7198599ba09e7101d22eb4a422dd839e3db2f8fce6ebece1b157aa4"
+  + "<text> 4cde847cac7e9c4ab85a093c84e945c7ddf8dfa3f4810877838ac40faaca1db2"
+  
+  lines(actual[[7]])[10:17] vs lines(expected[[7]])[10:15]
+    ""
+    "Q-value cutoff: 0.050"
+    ""
+  - "Significance: Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)"
+  - ""
+    "Organism: Taxon ID 999999"
+    ""
+    ""
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 2825c92f301db45a95d71909556546f8c6ebd8881fa407a4cf7c1752dbbb1aed"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s gprofiler run step
+-- base:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  + "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  
+  gprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:21] vs expected[15:21]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"
+  
+  gprofiler run files
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  gprofiler da
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  + "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  
+  gprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:21] vs expected[15:21]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"511024ccd86710326a8c45231c97c82595eabf1732e3bab43fd98c53f3b289d7"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"b9b76ea1cdcd7200ad5ca6ab181e831781c08df2df93f223d26cda697738397a"
+  
+  gprofiler run files
+  Expected `run$result[["saved"]]` to be identical to `if (identical(frozen$run$history, "<unchanged>")) "FALSE" else "TRUE"`.
+  Differences:
+  `actual`:   "TRUE" 
+  `expected`: "FALSE"
+  
+  gprofiler 
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  gprofiler da
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step
+-- base:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  + "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  
+  clusterprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:21] vs expected[15:21]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"cb1c7be929956b9c2cfb8932d8136fcf92e6abd76b42c2a89c5b57d12b1ed8b0"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"077ca85b815eecc33439f47e14ff20ceb7fb4d0ee1bd79a44d27a2f13f7d3dad"
+  
+  clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  clusterprofiler da
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  + "kernel=runProtEnrichDeterministicProcessEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  
+  clusterprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:21] vs expected[15:21]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"cb1c7be929956b9c2cfb8932d8136fcf92e6abd76b42c2a89c5b57d12b1ed8b0"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"077ca85b815eecc33439f47e14ff20ceb7fb4d0ee1bd79a44d27a2f13f7d3dad"
+  
+  clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  clusterprofiler
+  Expected `run$result[["saved"]]` to be identical to `if (identical(frozen$run$history, "<unchanged>")) "FALSE" else "TRUE"`.
+  Differences:
+  `actual`:   "TRUE" 
+  `expected`: "FALSE"
+  
+  clusterprofiler 
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  clusterprofiler da
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_gprofiler run step
+-- base:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=processEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  + "kernel=processEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  
+  kernel_gprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:21] vs expected[15:21]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  
+  kernel_gprofiler run files
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  kernel_gprofiler da
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=processEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  + "kernel=processEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc"
+  
+  kernel_gprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:21] vs expected[15:21]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  
+  kernel_gprofiler run files
+  Expected `run$result[["saved"]]` to be identical to `if (identical(frozen$run$history, "<unchanged>")) "FALSE" else "TRUE"`.
+  Differences:
+  `actual`:   "TRUE" 
+  `expected`: "FALSE"
+  
+  kernel_gprofiler 
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  kernel_gprofiler da
+
+== test-omics-enrich-core.R | message-changed | (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+-- base:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "d8f57c99312ad90c"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  + "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  
+  kernel_clusterprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:25] vs expected[15:25]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  kernel_clusterprofiler
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  kernel_clusterprofiler da
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('initial', 'correlation_filtered', 'enrichment_completed')
+  
+  `actual`:   "<unchanged>"                                           
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=8098947f47d56aea ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  + "kernel=processEnrichments ; taxon_id=999999 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=uniprot_acc ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=0218200d5d349843"
+  
+  kernel_clusterprofiler run kernel
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e3a76a4e6fdc8e7a"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual[15:25] vs expected[15:25]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"aeb9a7ffbf606a999c63e181919c61d92f171d35ac5b97960a15ac88cab510ba"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+  Expected `run$notes` to be identical to `if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else frozen$run$notes[[2L]]`.
+  Differences:
+  actual vs expected
+  - "[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  
+  kernel_clusterprofiler
+  Expected `run$result[["saved"]]` to be identical to `if (identical(frozen$run$history, "<unchanged>")) "FALSE" else "TRUE"`.
+  Differences:
+  `actual`:   "TRUE" 
+  `expected`: "FALSE"
+  
+  kernel_clusterprofiler 
+  Expected `run$run_display` to be identical to `frozen$run$display`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x13 bacf7b29d4777485"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 bacf7b29d4777485" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "parameters$significance_rule" -                                    
+  [13] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [14] "contrasts"                    | "contrasts"                    [12]
+  [15] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "bh_whole_family"             -                                   
+  [13] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [14] "groupB-groupA"               | "groupB-groupA"               [12]
+  [15] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+  Expected `seen[[step]][omicsEnrichCoreFields]` to be identical to `frozen[[step]][omicsEnrichCoreFields]`.
+  Differences:
+  actual$files[14:18] vs expected$files[14:18]
+    publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.pdf"<present>"
+    publication_graphs/Volcano_Plots/groupB-groupA.png"<present>"
+  - results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"67bdf8428b9da6e6dd2b023fc57091f731b87210d0c35c8052893aba62008a65"
+  + results/da_proteins/da_proteins_groupB-groupA_long_annot.tsv"fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6"
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+  
+  kernel_clusterprofiler da
+
+== test-kit213-study-parameters-labels.R | new-failure | KIT-213 E4: proteomics, two projects of one analysis write the same study parameters; pairs and results labelled
+-- base:
+  <passes>
+-- head:
+  Expected `manager$current_state` to be identical to "enrichment_completed".
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "enrichment_completed"
+  
+  enrichment precondition
+  Expected `manager$current_state` to be identical to "enrichment_completed".
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "enrichment_completed"
+  
+  enrichment precondition
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+-- base:
+  Expected `"enrichment_completed" %in% archive$stored` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `added` to have length 1.
+  Actual length: 0.
+  Expected `archive$state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  Expected `fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual`:   "enrichment_completed"
+  `expected`: "correlation_filtered"
+  Expected `is.null(archive$marker)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `log$errors` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+-- base:
+  Expected `"Study parameters saved with warnings" %in% seen$notes` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `planted` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+-- base:
+  Expected `is.null(restored)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `length(restored$all_enrichment_results) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  Expected `restored$not_tested` to be identical to `k216NotTested`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S3 object of class <data.frame>, a list
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E4 (G4, D1 (e)): an archive exported after a Revert from an enrichment opens (fails before)
+-- base:
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E11 (G6, I05): DIA with limpa, the refreshed archive states the RUV mode of the last covariates run (fails before)
+-- base:
+  Expected `archive$ruv_mode` to be identical to "correction".
+  Differences:
+  `actual`:   "covariates"
+  `expected`: "correction"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E7 (G7, I04): the archive and the reopened tab state the normalisation method that was run (fails before)
+-- base:
+  Expected `"norm_method=cyclicloess" %in% reopened$selected` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `"norm_method=quantile" %in% reopened$selected` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `archive$normalization_method` to be identical to "quantile".
+  Differences:
+  `actual`:   "cyclicloess"
+  `expected`: "quantile"   
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E7b (I04, P08): after two runs the archive states the later run's method (fails before)
+-- base:
+  Expected `archive$normalization_method` to be identical to "cyclicloess".
+  Differences:
+  `actual`:   "quantile"   
+  `expected`: "cyclicloess"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E8 (G8, D2): after a second enrichment run the Save writes the integration input and the record's input is the table (fails before)
+-- base:
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `unlist(inputs)` to be identical to `manifest$source$entity_id`.
+  Differences:
+  `actual`:   "30e48e9f7984b7e48c5b909dc740803fb68af353b0cbe458c376c360ce5488ea"
+  `expected`: "1dc4a262115e0ba89f1eaf4ae5f6f697927a4035ce042b090763a8bcc597b765"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E9 (G9, I10): at a stale head Generate Report and Export Session State are refused before anything is written (fails before)
+-- base:
+  Expected `guard` to be an S3 object.
+  Actual OO type: none.
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `state$files` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E10 (G10, I10): at a stale head the Save is refused before the parameters and the record are written (fails before)
+-- base:
+  Expected `seen$args` to have length 0.
+  Actual length: 1.
+  Expected `seen$failed[[1L]]` to inherit from "omic_norm_correlation_input_stale".
+  Actual class: "prot_norm_correlation_input_stale"/"rlang_error"/"error"/"condition".
+  Expected `seen$records` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+  Expected `written` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E5: a DA run again with other arguments ends the product (head only; base printed)
+-- base:
+  Expected `again` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `steps` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E5b (P03): an enrichment of an earlier table's DA after a Revert is not a product of the head (fails before)
+-- base:
+  Expected `fixture$manager$current_state` to be identical to "normalized".
+  Differences:
+  `actual`:   "enrichment_completed"
+  `expected`: "normalized"          
+  Expected `steps` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E10c (SD-1): a project never normalised is refused Save, Report and Session State (fails before)
+-- base:
+  Expected `guard` to be an S3 object.
+  Actual OO type: none.
+  Expected `seen$args` to have length 0.
+  Actual length: 1.
+  Expected `state$files` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E14 (P06): at `normalized` the Save names the `normalized` table as final (fails before)
+-- base:
+  Expected `final` to be identical to `getDIAStateReference(fixture$manager, "normalized")$entity_id`.
+  Differences:
+  `actual`:   "a64453be006d73e7fc792ac028688d1d35a42300a9c1150d233c36c6f70a8f1c"
+  `expected`: "1daa31b1be47fe821c4e1955db6c5afebaf25e256d53981b59a1a2307bc61506"
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E9b: an old-shape archive whose current state is the enrichment opens at the DA's table (fails before)
+-- base:
+  Expected `is.null(reopened$fixture$manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)
+-- base:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)
+-- base:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab has cleared its result (fails before)
+-- base:
+  Expected `any(startsWith(notes, "[warning]"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `calls` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E7c (I04, P08): DIA with limpa, the archive states the protein normalisation step's method (fails before)
+-- base:
+  Expected `archive$normalization_method` to be identical to "none".
+  Differences:
+  `actual`:   "quantile"
+  `expected`: "none"    
+-- head:
+  <passes>
+
+== test-kit216-prot-session-after-enrichment.R | fixed | KIT-216 E9 (P07): archives written before the fix with the enrichment as current state open at the DA's table (fails before)
+-- base:
+  Expected `is.character(reopened$view$enrichment_conversion)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  base-enrichment-1-run.msdia.tar T1
+  Expected `is.character(reopened$view$enrichment_conversion)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  base-enrichment-2-runs.msdia.tar T1
+  Expected `is.null(manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  base-enrichment-1-run.msdia.tar
+  Expected `is.null(manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  base-enrichment-2-runs.msdia.tar
+  Expected `manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  
+  base-enrichment-1-run.msdia.tar
+  Expected `manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+  
+  base-enrichment-2-runs.msdia.tar
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  
+  base-enrichment-1-run.msdia.tar
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+  
+  base-enrichment-2-runs.msdia.tar
+  Expected `steps` to have length 1.
+  Actual length: 0.
+  Expected `steps` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
