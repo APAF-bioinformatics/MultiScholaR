@@ -383,8 +383,20 @@ copyToResultsSummary <- function(omic_type,
         ruv_rds_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS")
         norm_rds_path <- file.path(current_paths$feature_qc_dir, "normalised_results_cln_with_replicates.RDS")
 
+        # KIT-271 (VAL-317): on DIA with limpa the correlation filter's table precedes any RUV step, so it is delivered as
+        # the normalised table; a project written by an earlier build holds the `ruv_` file only, delivered the same
+        # way (the new name first when both exist).
+        limpa_tsv_paths <- Filter(file.exists, c(norm_tsv_path, ruv_tsv_path))
+
         # Determine which files exist and use appropriate naming
-        if (file.exists(ruv_tsv_path)) {
+        if (identical(getDIAActiveManager()$workflow_type, "DIA_LIMPA") && length(limpa_tsv_paths) > 0L) {
+            limpa_rds_path <- if (identical(limpa_tsv_paths[[1L]], norm_tsv_path)) norm_rds_path else ruv_rds_path
+            files_to_copy <- c(files_to_copy, list(
+                list(source = limpa_tsv_paths[[1L]], dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results TSV", new_name = "normalised_results.tsv"),
+                list(source = limpa_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS", new_name = "normalised_results.RDS")
+            ))
+            cat("COPY: Using normalized file names (DIA with limpa: the table precedes any RUV step)\n")
+        } else if (file.exists(ruv_tsv_path)) {
             # RUV was applied - use RUV filenames
             files_to_copy <- c(files_to_copy, list(
                 list(source = ruv_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV", new_name = "RUV_normalised_results.tsv"),

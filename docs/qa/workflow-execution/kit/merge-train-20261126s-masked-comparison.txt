@@ -1,0 +1,50 @@
+records 741 741
+identical after path masking: 717
+only on base 24 only on head 24
+base {'test-prot-norm-core.R': 12, 'test-gui-entry-proteomics.R': 10, 'test-workflow-saved-da.R': 2}
+head {'test-prot-norm-core.R': 12, 'test-gui-entry-proteomics.R': 10, 'test-workflow-saved-da.R': 2}
+gui steps only-base ["('prot_dia_limpa', 'correlation')", "('prot_dia_limpa', 'da')", "('prot_dia_limpa', 'da_load')", "('prot_dia_limpa', 'ruv_covariates')", "('prot_dia_limpa', 'session_export')", "('prot_dia_limpa', 'summary_copy')", "('prot_dia_limpa', 'summary_export')", "('prot_dia_limpa', 'summary_refusal')", "('prot_dia_limpa', 'summary_report')", "('prot_dia_limpa', 'summary_save')"] 
+only-head ["('prot_dia_limpa', 'correlation')", "('prot_dia_limpa', 'da')", "('prot_dia_limpa', 'da_load')", "('prot_dia_limpa', 'ruv_covariates')", "('prot_dia_limpa', 'session_export')", "('prot_dia_limpa', 'summary_copy')", "('prot_dia_limpa', 'summary_export')", "('prot_dia_limpa', 'summary_refusal')", "('prot_dia_limpa', 'summary_report')", "('prot_dia_limpa', 'summary_save')"]
+gui steps equal after masking: 10 of 10
+('prot_dia_limpa', 'correlation') key lines head 6 base 0
+('prot_dia_limpa', 'da') key lines head 6 base 0
+('prot_dia_limpa', 'da_load') key lines head 6 base 0
+('prot_dia_limpa', 'ruv_covariates') key lines head 6 base 0
+('prot_dia_limpa', 'session_export') key lines head 6 base 0
+('prot_dia_limpa', 'summary_copy') key lines head 12 base 0
+('prot_dia_limpa', 'summary_export') key lines head 12 base 0
+('prot_dia_limpa', 'summary_refusal') key lines head 6 base 0
+('prot_dia_limpa', 'summary_report') key lines head 12 base 0
+('prot_dia_limpa', 'summary_save') key lines head 6 base 0
+test-prot-norm-core.R only base 12 only head 12
+ B (['926838a9'], ['34e64dc1'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ B (['926838a9'], ['34e64dc1'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ B (['926838a9'], ['34e64dc1'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ B (['926838a9'], ['34e64dc1'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ B (['19bc6774'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ H (['fe6b0c95'], ['34e64dc1'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ H (['fe6b0c95'], ['34e64dc1'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and ')
+ H (['fe6b0c95'], ['34e64dc1'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ H (['fe6b0c95'], ['34e64dc1'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+ H (['6c52f9ea'], ['b1817922'], [], 'KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covar')
+test-workflow-saved-da.R only base 2 only head 2
+ B (['8fc2b731'], ['2ce30818'], ['limpa_one_contrast files'], 'KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) ')
+ B (['8fc2b731'], ['2ce30818'], [], 'KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the work')
+ H (['d9db4b79'], ['2ce30818'], ['limpa_one_contrast files'], 'KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) ')
+ H (['d9db4b79'], ['2ce30818'], [], 'KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the work')
+test-prot-norm-core.R records differing beyond the actual digest: base 0 head 0
+test-workflow-saved-da.R records differing beyond the actual digest: base 0 head 0

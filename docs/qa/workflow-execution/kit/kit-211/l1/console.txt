@@ -1,0 +1,15 @@
+KIT-211 L1: start 22:38:25 
+KIT-211 L1: checks
+  id units passed pass
+  E2    60     60 TRUE
+  E3    60     60 TRUE
+  E7    60     60 TRUE
+  E9    60     60 TRUE
+ E10    60     60 TRUE
+  E8     2      2 TRUE
+  E1   120    120 TRUE
+  E4    56     56 TRUE
+  E5     2      2 TRUE
+  E6     1      1 TRUE
+  G2     2      2 TRUE
+KIT-211 L1: end 22:52:17 
