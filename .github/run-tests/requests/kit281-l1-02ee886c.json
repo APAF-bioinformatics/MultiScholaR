@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-281 L1 blind lifecycle, once (owner-accepted ceiling 74.67, VAL-371; instrument check, decides nothing; declaration declaration.md on branch kit-281)",
+  "label": "KIT-281 L1 02ee886c",
+  "package_commit": "02ee886c7e69e218479fbf272dbf4929f2ed5c7a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/l1-k281.R",
+      "args": [
+        "l1-out"
+      ],
+      "env": {},
+      "out": "l1-out",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
