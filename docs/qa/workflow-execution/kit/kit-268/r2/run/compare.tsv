@@ -1,0 +1,40 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-dia-limpa-ruv-rules.R	333	1	0	0	failed	333	1	0	0	failed	same		
+test-enrichment-significance.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-go-propagation.R	321	0	0	1	ok	321	0	0	1	ok	same		
+test-gui-entry-lipidomics.R	19	16	0	0	failed	19	16	0	0	failed	message-changed	message-changed: KIT-101 entry lane lipid_canonical: two LipidSearch assays	
+test-gui-entry-metabolomics.R	57	48	0	0	failed	57	48	0	0	failed	same		
+test-kit127-omics-ruv-factors.R	425	1	0	0	failed	425	1	0	0	failed	same		
+test-kit174-ruv-grouping.R	77	0	0	0	ok	77	0	0	0	ok	same		
+test-kit220-da-threshold-consumers.R	71	2	0	0	failed	71	2	0	0	failed	same		
+test-kit236-report-sentences.R	307	6	0	0	failed	313	0	0	0	ok	fixed	fixed: KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons; counts: KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons (passed 18 -> 24, skipped 0 -> 0)	
+test-kit243-summary-current-outputs.R	246	0	0	0	ok	246	0	0	0	ok	same		
+test-kit249-prot-da-qvalue-fallback.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-kit268-bh-fallback-notice.R	12	11	0	0	failed	29	1	0	0	failed	message-changed	message-changed: KIT-268 T1: the proteomics notice names the comparisons that fell back and none that did not; fixed: KIT-268 T2: the mapping of a fallback key to the comparison's friendly name; fixed: KIT-268 T3: the lipidomics and metabolomics tab names each comparison that fell back, with its assay; fixed: KIT-268 T5: the record's reason for a fallback carries the existing text and the added sentence; counts: KIT-268 T1: the proteomics notice names the comparisons that fell back and none that did not (passed 0 -> 5, skipped 0 -> 0); counts: KIT-268 T2: the mapping of a fallback key to the comparison's friendly name (passed 0 -> 3, skipped 0 -> 0); counts: KIT-268 T3: the lipidomics and metabolomics tab names each comparison that fell back, with its assay (passed 2 -> 8, skipped 0 -> 0); counts: KIT-268 T5: the record's reason for a fallback carries the existing text and the added sentence (passed 3 -> 6, skipped 0 -> 0)	
+test-lipid-02-da-core-helpers.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-lipid-12c-ruv-s4-characterization.R	67	0	0	0	ok	67	0	0	0	ok	same		
+test-metab-02h-da-orchestration-characterization.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-metab-02y-get-neg-ctrl-metab-anova-characterization.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-metab-da-core-engine-direct-shared.R	10	0	0	0	ok	10	0	0	0	ok	same		
+test-metab-da-orchestration-direct-shared.R	31	0	0	0	ok	31	0	0	0	ok	same		
+test-module-ci-lipid-da.R	140	0	0	0	ok	140	0	0	0	ok	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-omic-da-module.R	1286	83	0	0	failed	1286	83	0	0	failed	same		
+test-omic-enrich-module.R	1011	59	0	0	failed	1005	65	0	0	failed	message-changed	message-changed: (b) in process: refusals; counts: (b) in process: refusals (passed 200 -> 194, skipped 0 -> 0)	identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-prot-04-design.R	488	0	0	118	ok	488	0	0	118	ok	same		
+test-prot-04d-peptide-s4-normalization-characterization.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-prot-06-ruv.R	35	0	0	1	ok	35	0	0	1	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	ok	60	0	0	1	ok	same		
+test-prot-norm-optimization-direct-shared.R	93	0	0	0	ok	93	0	0	0	ok	same		
+test-prot-ruv-sweep-imputation.R	25	0	0	0	ok	25	0	0	0	ok	same		
+test-ruv-control-anova-grouping.R	139	0	0	0	ok	139	0	0	0	ok	same		
+test-tech-reps-limma.R	0	0	1	0	failed	0	0	1	0	failed	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-workflow-omics-da-contrasts.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-workflow-operation-registry.R	1107	2	0	0	failed	1107	2	0	0	failed	same		
+test-workflow-prot-declarations.R	303	0	0	2	ok	303	0	0	2	ok	same		
+test-workflow-saved-da.R	755	196	0	0	failed	755	196	0	0	failed	same		

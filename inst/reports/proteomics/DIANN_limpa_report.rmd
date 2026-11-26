@@ -1225,7 +1225,12 @@ ReportFdrSentence <- function(numbers) {
     if (is.na(rows$assay[[1L]])) comparisons else paste0(comparisons, " in ", rows$assay[[1L]])
   }, "")
   paste0("False discovery rates were estimated as q-values (Storey, 2002), except for ", paste(parts, collapse = "; "),
-    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead.")
+    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead. ",
+    # KIT-268 (VAL-312, wording VAL-314): the scale of those values, once, after the named comparisons.
+    "For these comparisons the q-value column holds Benjamini-Hochberg adjusted p-values, which equal Storey's q-values ",
+    "with the proportion of unchanged features (pi0) set to 1; because pi0 could not be estimated for these comparisons, ",
+    "the values are larger than Storey's q-values would be by a factor of 1/pi0 of unknown size (1 or more), so they are ",
+    "more conservative than, and not on the same scale as, the q-values of the other comparisons.")
 }
 
 #' The comparisons named after "the contrast table" (D10): " (1 comparison: A_vs_B)", or nothing when unknown

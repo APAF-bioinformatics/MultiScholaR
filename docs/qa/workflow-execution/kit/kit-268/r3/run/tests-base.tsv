@@ -1,0 +1,7 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit268-bh-fallback-notice.R	0	0	0	0	0	0	absent
+test-omic-da-module.R	1288	81	0	0	0	655.7	failed
+test-omic-enrich-module.R	1011	59	0	0	0	543.4	failed
+test-kit236-report-sentences.R	289	0	0	0	0	13.8	ok
+test-gui-entry-lipidomics.R	19	16	0	0	0	117.7	failed
+test-gui-entry-metabolomics.R	57	48	0	0	0	300.8	failed

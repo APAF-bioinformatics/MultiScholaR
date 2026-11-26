@@ -1,0 +1,56 @@
+file	test	nb	passed	failed	skipped	error	real
+test-omic-da-module.R	(a) the lipid, metab, trx-profile and proteomics DA UIs keep their HTML, ids, test ids, tab titles, labels, choices and defaults	37	36	1	FALSE	FALSE	0.867999999999999
+test-omic-da-module.R	(b) in process: lipid_refusals	28	28	0	FALSE	FALSE	0.464
+test-omic-da-module.R	(b) in process: lipid_mismatch	15	14	1	FALSE	FALSE	4.084
+test-omic-da-module.R	(b) in process: lipid_reordered	15	14	1	FALSE	FALSE	1.412
+test-omic-da-module.R	(b) in process: lipid_no_contrasts	15	14	1	FALSE	FALSE	0.847999999999999
+test-omic-da-module.R	(b) in process: lipid_invalid_preflight	15	14	1	FALSE	FALSE	0.83
+test-omic-da-module.R	(b) in process: lipid_main	159	147	12	FALSE	FALSE	18.584
+test-omic-da-module.R	(b) in process: lipid_no_friendly	28	27	1	FALSE	FALSE	13.95
+test-omic-da-module.R	(b) in process: metab_refusals	28	28	0	FALSE	FALSE	0.218999999999994
+test-omic-da-module.R	(b) in process: metab_mismatch	15	14	1	FALSE	FALSE	1.238
+test-omic-da-module.R	(b) in process: metab_reordered	15	14	1	FALSE	FALSE	1.191
+test-omic-da-module.R	(b) in process: metab_no_contrasts	15	14	1	FALSE	FALSE	1.178
+test-omic-da-module.R	(b) in process: metab_invalid_preflight	15	14	1	FALSE	FALSE	1.227
+test-omic-da-module.R	(b) in process: metab_main	159	147	12	FALSE	FALSE	15.653
+test-omic-da-module.R	(b) in process: metab_no_friendly	28	25	3	FALSE	FALSE	10.611
+test-omic-da-module.R	(b) in process: trx_refusals	54	54	0	FALSE	FALSE	12.709
+test-omic-da-module.R	(b) in process: trx_main	94	90	4	FALSE	FALSE	17.001
+test-omic-da-module.R	(b) in process: prot_refusals	28	28	0	FALSE	FALSE	0.353999999999999
+test-omic-da-module.R	(b) in process: prot_load	28	26	2	FALSE	FALSE	8.74799999999999
+test-omic-da-module.R	(b) in process: prot_main	211	189	22	FALSE	FALSE	12.173
+test-omic-da-module.R	(b) in process: prot_invalid_preflight	28	28	0	FALSE	FALSE	0.943999999999988
+test-omic-da-module.R	(b) in process: prot_no_contrasts	28	26	2	FALSE	FALSE	4.86099999999999
+test-omic-da-module.R	(b-managed) lipid_managed: the worker's operations in order, the notifications, tab_status and the rows	28	25	3	FALSE	FALSE	11.422
+test-omic-da-module.R	(b-managed) metab_managed: the worker's operations in order, the notifications, tab_status and the rows	28	25	3	FALSE	FALSE	12.346
+test-omic-da-module.R	(b-managed) trx_managed: the worker's operations in order, the notifications, tab_status and the rows	41	39	2	FALSE	FALSE	16.287
+test-omic-da-module.R	(c) the refusal order: metab refuses an invalid preflight before the running notice, lipid after it; no data and no contrasts come first for lipid, metab and trx	13	13	0	FALSE	FALSE	0.0190000000000055
+test-omic-da-module.R	(c) the assay check: lipid compares the session's assay names as a set, metab in order; each with its own text	6	6	0	FALSE	FALSE	0.00800000000000978
+test-omic-da-module.R	(c) the table filter: "Combined" selects every assay for metab and none for lipid and trx; a long table without friendly_name	5	2	3	FALSE	FALSE	0.0339999999999918
+test-omic-da-module.R	(c, D2) the value each DA server returns today: lipid its outputs, metab its registrations, trx and proteomics their reactive values	4	4	0	FALSE	FALSE	0.00699999999997658
+test-omic-da-module.R	(W3, D3; R5 item 1) lipid's and trx's DA UIs have the interactive volcano ticked	6	6	0	FALSE	FALSE	0.0930000000000177
+test-omic-da-module.R	(W3) the shared frame's trx UI is W1 (a)'s trx UI	10	9	1	FALSE	FALSE	0.061000000000007
+test-omic-da-module.R	(W3, D3) lipid in process: the volcano is <req> until ticked, then the lipid_volcano_page iframe; the tab holds no state, widget or page	5	5	0	FALSE	FALSE	12.342
+test-omic-da-module.R	(W3, D3) lipid managed: the volcano is <req> until ticked, then the worker's lipid_volcano_page iframe; the tab holds no state, widget or page	5	5	0	FALSE	FALSE	11.807
+test-omic-da-module.R	(W3, D3) trx in process: the volcano is <req> until ticked, then the trx_volcano_page iframe of the contrast's entry; the tab holds no state, widget or page	6	6	0	FALSE	FALSE	12.247
+test-omic-da-module.R	(W3, F106-05) lipid: Run DA on an owner whose head is its initial state is refused as no data	3	3	0	FALSE	FALSE	0.294000000000011
+test-omic-da-module.R	(W4, D3; R5 item 1) metab's DA UI has the interactive volcano ticked	3	3	0	FALSE	FALSE	0.0519999999999925
+test-omic-da-module.R	(W4, D3) metab in process: the volcano is <req> until ticked, then the metab_volcano_page iframe; the tab holds no state, widget or page	5	5	0	FALSE	FALSE	11.25
+test-omic-da-module.R	(W4, D3) metab managed: the volcano is <req> until ticked, then the worker's metab_volcano_page iframe; the tab holds no state, widget or page	5	5	0	FALSE	FALSE	11.987
+test-omic-da-module.R	(W4, F106-05) metab: Run DA on an owner whose head is its initial state is refused as no data	3	3	0	FALSE	FALSE	0.320999999999998
+test-omic-da-module.R	(W5, D3; R5 item 1) proteomics' DA UI has the interactive volcano ticked	3	3	0	FALSE	FALSE	0.0629999999999882
+test-omic-da-module.R	(W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI	9	9	0	FALSE	FALSE	0.0939999999999941
+test-omic-da-module.R	(W5, D3) proteomics: after a run with a contrast selected, the volcano is <req> until ticked, then its DA-time page	4	4	0	FALSE	FALSE	5.68700000000001
+test-omic-da-module.R	(KIT-106 correction, F106-06) the volcano page's iframe opens no dialog: sandboxed without allow-modals, managed and in process	10	10	0	FALSE	FALSE	24.836
+test-omic-da-module.R	KIT-112 W3 (D3): a managed run with one contrast dispatches DA-contrast-output then da_publication and gives the in-process run's manifest, tab and bus	8	7	1	FALSE	FALSE	5.197
+test-omic-da-module.R	KIT-112 W3 (D3): a managed run with two contrasts dispatches DA-contrast-output twice then da_publication, each with the route on the head, and equals the run in process	16	16	0	FALSE	FALSE	18.513
+test-omic-da-module.R	KIT-112 W3 (D3): a worker failure shows the DA error, removes da_working and leaves no manifest; a later click completes	16	16	0	FALSE	FALSE	5.38
+test-omic-da-module.R	KIT-112 W3 (F112-02): a click while the runner's action runs is refused before the request half; the held run then completes	12	12	0	FALSE	FALSE	5.31299999999999
+test-omic-da-module.R	KIT-112 W3 (F112-02): a click while the publication runs is refused before the request half	8	8	0	FALSE	FALSE	5.19900000000001
+test-omic-da-module.R	KIT-112 W3 (F112-02): a click while the publication holds a pending retry retries it without recomputing the contrasts	9	9	0	FALSE	FALSE	5.10600000000005
+test-omic-da-module.R	GUI audit A112-05 (a): a DA click while the shared runner holds another tab's pending publication is refused before the request half	8	8	0	FALSE	FALSE	1.17700000000002
+test-omic-da-module.R	GUI audit A112-05 (a): a DA click while the runner holds this tab's own pending contrast retries it with the earlier request	7	7	0	FALSE	FALSE	5.15600000000001
+test-omic-da-module.R	GUI audit A112-05 (c): a pending publication is retried with its own parameters when the annotations changed since	4	4	0	FALSE	FALSE	5.28900000000004
+test-omic-da-module.R	GUI audit A112-05 (c): a pending publication whose state was superseded is dropped, and the next click runs afresh	6	6	0	FALSE	FALSE	6.90699999999998
+test-omic-da-module.R	KIT-112 W3 (D3): the plugin mounted alone on a managed session installs one runner; on a full session it reuses the normalisation's; unmanaged none	10	10	0	FALSE	FALSE	15.482
+test-omic-da-module.R	GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning	5	5	0	FALSE	FALSE	20.57

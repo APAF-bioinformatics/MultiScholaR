@@ -1,0 +1,175 @@
+kit268-bh-fallback-notice: 12::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 3 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+34::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 3 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+.::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+56::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+.::notice title=INFO::=== Starting runLipidsDA ===
+::notice title=INFO::   Processing 3 assays: LCMS_Pos, LCMS_Neg, GCMS
+::notice title=INFO::   Contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::--- Processing assay: LCMS_Pos ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay LCMS_Pos: 12 total results
+::notice title=INFO::--- Processing assay: LCMS_Neg ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay LCMS_Neg: 12 total results
+::notice title=INFO::--- Processing assay: GCMS ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay GCMS: 12 total results
+::notice title=INFO::   Combined results: 36 total rows
+::notice title=INFO::=== Completed runLipidsDA ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 3 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+7::notice title=INFO::=== Starting runMetabolitesDA ===
+::notice title=INFO::   Processing 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::--- Processing assay: LCMS_Pos ---
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Completed assay LCMS_Pos: 12 total results
+::notice title=INFO::--- Processing assay: GCMS ---
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Completed assay GCMS: 12 total results
+::notice title=INFO::   Combined results: 24 total rows
+::notice title=INFO::=== Completed runMetabolitesDA ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+8..9ab........
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit268-bh-fallback-notice.R:16:5'): KIT-268 T1: the proteom
+Expected `is.function(notify)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 2. Failure ('test-kit268-bh-fallback-notice.R:39:5'): KIT-268 T2: the mapping
+Expected `is.function(names_of)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 3. Failure ('test-kit268-bh-fallback-notice.R:83:9'): KIT-268 T3: the lipidom
+Expected `hit` to have length 1.
+Actual length: 0.
+
+── 4. Failure ('test-kit268-bh-fallback-notice.R:84:9'): KIT-268 T3: the lipidom
+Expected `got$type[hit]` to be identical to "warning".
+Differences:
+`actual`:            
+`expected`: "warning"
+
+
+── 5. Failure ('test-kit268-bh-fallback-notice.R:83:9'): KIT-268 T3: the lipidom
+Expected `hit` to have length 1.
+Actual length: 0.
+
+── 6. Failure ('test-kit268-bh-fallback-notice.R:84:9'): KIT-268 T3: the lipidom
+Expected `got$type[hit]` to be identical to "warning".
+Differences:
+`actual`:            
+`expected`: "warning"
+
+
+── 7. Failure ('test-kit268-bh-fallback-notice.R:96:5'): KIT-268 T3: the lipidom
+Expected `any(grepl("KO_vs_WT, RES_vs_WT in LCMS_Pos", got$text, fixed = TRUE))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 8. Failure ('test-kit268-bh-fallback-notice.R:102:5'): KIT-268 T3: the lipido
+Expected `any(grepl("KO_vs_WT, RES_vs_WT in LCMS_Pos", got$text, fixed = TRUE))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 9. Failure ('test-kit268-bh-fallback-notice.R:109:5'): KIT-268 T5: the record
+Expected `fallback$fdr_fallback_reason` to match string "1/pi0".
+Actual text:
+x | qvalue() could not be used for this contrast (it failed, or fewer than 3 p-values were valid, or every p-value was 0 or 1); fdr_qvalue holds Benjamini-Hochberg adjusted p-values
+
+── 10. Failure ('test-kit268-bh-fallback-notice.R:110:5'): KIT-268 T5: the recor
+Expected `fallback$fdr_fallback_reason` to match string "unknown size".
+Actual text:
+x | qvalue() could not be used for this contrast (it failed, or fewer than 3 p-values were valid, or every p-value was 0 or 1); fdr_qvalue holds Benjamini-Hochberg adjusted p-values
+  ... and 1 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit268-bh-fallback-notice.R pass 12 fail 11 error 0 skip 0 warn 0

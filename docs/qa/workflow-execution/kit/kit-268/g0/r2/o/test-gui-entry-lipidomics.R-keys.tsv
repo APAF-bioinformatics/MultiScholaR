@@ -1,0 +1,3 @@
+seq	file	test	lane	step	assay	key	exact_match	exact_friendly	text_before_eq	rule_result	rule_result_in_friendly
+1	test-gui-entry-lipidomics.R	KIT-101 entry lane lipid_canonical: two LipidSearch assays	lipid_canonical	NA	LCMS_Pos	groupKO-groupWT	TRUE	KO_vs_WT	groupKO-groupWT	KO_vs_WT	TRUE
+1	test-gui-entry-lipidomics.R	KIT-101 entry lane lipid_canonical: two LipidSearch assays	lipid_canonical	NA	LCMS_Neg	groupKO-groupWT	TRUE	KO_vs_WT	groupKO-groupWT	KO_vs_WT	TRUE

@@ -1,0 +1,96 @@
+traced in MultiScholaR : TRUE 
+traced in package:MultiScholaR : TRUE 
+g0-control: ::notice title=INFO::=== Starting runLipidsDA ===
+::notice title=INFO::   Processing 3 assays: LCMS_Pos, LCMS_Neg, GCMS
+::notice title=INFO::   Contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::--- Processing assay: LCMS_Pos ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay LCMS_Pos: 12 total results
+::notice title=INFO::--- Processing assay: LCMS_Neg ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay LCMS_Neg: 12 total results
+::notice title=INFO::--- Processing assay: GCMS ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay GCMS: 12 total results
+::notice title=INFO::   Combined results: 36 total rows
+::notice title=INFO::=== Completed runLipidsDA ===
+WW1
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. G0 positive control: tied_pvalues lipid DA through completeOmicDaRun ('g0-control.R:19:3') - cannot open file 'kit268-g0/control-calls.tsv': No such file or directory
+
+2. G0 positive control: tied_pvalues lipid DA through completeOmicDaRun ('g0-control.R:19:3') - cannot open file 'kit268-g0/control-errors.tsv': No such file or directory
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('g0-control.R:19:3'): G0 positive control: tied_pvalues lipid DA th
+Error in `file(file, ifelse(append, "a", "w"))`: cannot open the connection
+Backtrace:
+     ▆
+  1. ├─base::suppressMessages(...) at g0-control.R:19:3
+  2. │ └─base::withCallingHandlers(...)
+  3. └─MultiScholaR:::completeOmicDaRun(...)
+  4.   ├─base::.doTrace(g0_record(results, workflowData, sys.frames()))
+  5.   │ └─base::eval.parent(exprObj)
+  6.   │   └─base::eval(expr, p)
+  7.   │     └─base::eval(expr, p)
+  8.   └─global g0_record(results, workflowData, sys.frames())
+  9.     └─base::tryCatch(...)
+ 10.       └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 11.         └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 12.           └─value[[3L]](cond)
+ 13.             └─base::cat(...)
+ 14.               └─base::file(file, ifelse(append, "a", "w"))
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one is perfect!
+
+=== G0 control : completeOmicDaRun calls: 0 ; fallback keys: 0 
+POSITIVE CONTROL fallback comparisons: NONE 

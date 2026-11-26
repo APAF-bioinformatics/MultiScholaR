@@ -1,0 +1,7 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit268-bh-fallback-notice.R	0	0	0	0	absent	30	0	0	0	ok	only-on-head		
+test-omic-da-module.R	1288	81	0	0	failed	1286	83	0	0	failed	new-failure	new-failure: GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning; counts: GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning (passed 5 -> 3, skipped 0 -> 0)	
+test-omic-enrich-module.R	1011	59	0	0	failed	1011	59	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-kit236-report-sentences.R	289	0	0	0	ok	313	0	0	0	ok	count-changed	counts: KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons (passed NA -> 24, skipped NA -> 0)	
+test-gui-entry-lipidomics.R	19	16	0	0	failed	19	16	0	0	failed	message-changed	message-changed: KIT-101 entry lane lipid_canonical: two LipidSearch assays	
+test-gui-entry-metabolomics.R	57	48	0	0	failed	57	48	0	0	failed	same		
