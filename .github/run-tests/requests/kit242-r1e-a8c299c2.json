@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-242 R1e (VAL-373 Q-C): the correction's tests failing first on tests-only commit a8c299c2 (the code of 11d3150a plus E17, E27 and the 18 Q-B edits); predictions in outcome.md at fd81fa11; ceiling per VAL-329; 1 job, ceiling 60 minutes",
+  "label": "KIT-242 R1e tests-only a8c299c2",
+  "package_commit": "a8c299c229874cc58fb4c4a6e503389a6d210879",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit242-normalisation-fallback.R",
+    "test-kit172-downstream.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
