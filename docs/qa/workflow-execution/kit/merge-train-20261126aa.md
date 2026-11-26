@@ -77,3 +77,41 @@ This run is also the checkpoint after trains 35 and 36.
 ### Decision and attempts
 
 One run. A shard that times out or an instrument failure with no result: handed back, not re-sent. An HTTP 500/502 at dispatch with no run created is started once by hand.
+
+## Results (run 45801695192, request train37-kit242-kit260-b65f6770, head b65f67706, base 918174732)
+
+The first `gh run watch` ended early on an HTTP 502 from the annotations endpoint (not a run failure); I re-attached once, as allowed. Run success; all 45 jobs ran, every file ran to completion (no timeout, no crash, no withheld file).
+Tables beside this file: `merge-train-20261126aa-compare.tsv`, `-check-compare.txt`, `-tests-head.tsv`, `-tests-base.tsv`, `-omic-norm-module-new-keys.txt` (the 48 head-only failing keys, one per line).
+Base versus head, 538 files: same 526, only-on-head 2, count-changed 4, message-changed 5, new-failure 1, fixed 0. Tests head: passed 56993, failed 1250, errors 13, skipped 586; base: 56332, 1202, 13, 586.
+**Every prediction held: TRAIN GREEN for KIT-242 and KIT-260 on the merged tree, and the checkpoint after trains 35 and 36 shows no unpredicted file.**
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit242-normalisation-fallback.R | absent / 571/0 | absent | 571/0/0/0 | only-on-head: HELD |
+| test-kit260-itsd-default-pattern.R | absent / 157/0 | absent | 157/0/0/0 | only-on-head: HELD |
+| test-workflow-omics-worker.R | 289/0 / 265/0 | 289/0 | 265/0 | count-changed: HELD |
+| test-module-ci-metab-norm.R | 156/0 / 158/0 | 156/0 | 158/0 | count-changed: HELD |
+| test-metab-02w-normalise-between-samples-characterization.R | 16/0 / 18/0 | 16/0 | 18/0 | count-changed: HELD |
+| test-omics-norm-core.R | 62/0 (14 skipped) / 63/0 (14) | 62/0/0/14 | 63/0/0/14 | count-changed: HELD |
+| test-omic-norm-module.R | 631/8 / 583/56 | 631/8 | 583/56 | new-failure by declaration: HELD (key-by-key below) |
+| test-prot-norm-core.R | 1555/307 both, message-changed | 1555/307 | 1555/307 | message-changed: HELD; no `samples_removed` in any of its messages (0 occurrences) |
+| test-gui-entry-lipidomics.R 19/16; test-gui-entry-metabolomics.R 57/48; test-workflow-omics-declarations.R 43/25; test-workflow-omics-binding-steps.R 57/2 | counts unchanged, message-changed | as stated | as stated | message-changed: HELD |
+| the two declarations files 259/0; test-omics-module-globals.R 14/0; test-kit172-downstream.R 84/0 | same | as stated | as stated | same: HELD |
+| every other file (526 same) | same | equal to the predictions table | same | HELD; 0 base-side counts differed from the recorded ones (the predictions table, all 536 base files); the `stringdb_plot` flake did not appear (0 mentions in `compare-failures.txt`) |
+| R CMD check | identical 0/3/3 | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical, 6 findings on both, only on head none, only on base none: HELD |
+
+**Key-by-key check of `test-omic-norm-module.R`** (Python `-I`; each failure record's last message line names the key, e.g. "lipid skip run provenance"). 56 failing keys on the head, 8 on the base; the 8 are the base's (all `skip ... provenance`, identical keys). The 48 head-only keys:
+log 4, outputs 12 (the sixteen of VAL-376), states 12 and final_pca 6 (the eighteen of KIT-242 Part A, VAL-352), provenance 14 (VAL-303 (1); with the 8 on both sides the 22 declared). By scenario: manual lipid and metab 12 each (log, states x3, provenance x3, outputs x3, final_pca x2), automatic 11 each (log, states x3, provenance x3, outputs x3, final_pca x1), skip 5 each (provenance of run, correlation, final_plot, export, reset; 4 already failing on the base, the `run` one new).
+That is exactly the declared list, and no key outside it.
+
+**Budget** (jobs API, summed, skipped jobs 0): **1,750.15 job-minutes = 116.68 core-hours** (core-hours = job-minutes x 4 / 60); ceiling 2,800 (186.67), expected about 1,725 (115): 1.5 % above the expectation, 62.5 % of the ceiling.
+Tests shards 16.0 to 108.0 minutes (longest `tests head 4`, 48 % of 300, under the 75 % bound); check head 15.32, base 15.58; plan 0.43; results 0.68. Heavy files: `test-kit247-design-resave.R` 4,119.5 s (68.7 min, limit 120), `test-kit266-limpa-combined-qc-figure.R` 1,714.9 s (limit 90), `test-prot-norm-core.R` 1,899.4 s, `test-gui-entry-proteomics.R` 1,114 s.
+
+Decision: KIT-242 and KIT-260 are green on the merged tree; the staging test files from KIT-266, KIT-273 and KIT-216 ran with KIT-242's code for the first time and are `same`.
+
+## What the coordinator resolves at landing
+
+- Land in this order; the ledger rows are KIT-242's `VAL-<train37-1>` (`docs/methods-decision-ledger.md:2556`), KIT-260's `VAL-<train37-2>` (`:2557`) and the stored-reference row `VAL-<train37-3>` (`:2558`); next free number VAL-384 (so 384, 385, 386 if staging has not moved).
+  The rows cite VAL-242, VAL-290, VAL-352, VAL-373, VAL-383 (KIT-242) and VAL-241, VAL-275, VAL-303, VAL-352 (4), VAL-376, VAL-181, VAL-189, VAL-259 (KIT-260 and the stored-reference row); fill their status cells where they wait for this merge ("implemented by KIT-242/KIT-260 (VAL-n), merged by train 37").
+- The stored-reference row cites this record for the run id (45801695192): replace the pointer by the id if wished.
+- Placeholders in the members' records: see the hand-back (grep of `VAL-<` in `kit-242/` and `kit-260/` and `NEWS.md`).
