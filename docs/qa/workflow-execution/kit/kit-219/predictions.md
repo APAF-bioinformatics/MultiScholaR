@@ -62,3 +62,25 @@ result is an instrument defect (VAL-54).
 The ticket's regression scope formula gives 49 files at the branch point (39 by the grep, helpers dropped, with the new
 file, +4 GUI-entry lane files, +1 `test-prot-summary-report-templates.R`, +5 template-naming tests): above the ticket's 40,
 so the coordinator re-prices R2 before it is sent (ticket 10). Not sent by this implementer.
+
+## Run R2 (declared before the request; coordinator's rulings 1 to 3 of 2026-11-27)
+
+Merge: `origin/v0.9-staging` a67c4161 merged into kit-219 once (conflict only in the ledger: both sides kept, staging's rows first).
+Base commit `a70b352c5` = staging a67c4161 plus the tests-only commit (branch `kit-219-base`); head = the tip of kit-219 named in
+the request. Scope by the ticket's formula on the merged tree: 50 files (`r2-predictions.tsv`: the grep's files, the four GUI-entry
+lanes, the templates test, the template-naming tests, the e2e and go-propagation files; `test-kit266-limpa-combined-qc-figure.R`
+enters by the grep since the merge, `test-kit219` and `test-kit216` run on both sides). `check: true` on both sides.
+Plan: 4 shards per side from per-file seconds (train 35's full-suite tables, `run-tests-45762830948`, base side; kit216 585 s and
+kit219 121 s from head records; the planned load per shard 45.3, 38.5, 38.2, 38.3 minutes, the list ordered so the heavy files
+fall in different shards). Only `test-kit266-limpa-combined-qc-figure.R` is above 20 minutes (2,638 s = 44 min): explicit timeout
+66 minutes (1.5 x). Planned job-minutes: 8 test jobs x (shard + 10 set-up) = 401, check 2 x 90 = 180, the G0 (iii)/(iv) scripts job
+20: **601**. Ceiling **1.6 x 601 = 962 job-minutes = 64.1 core-hours** (not above 1,400). Env `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`
+(a transcriptomics file is in scope); no file of the diff matches `^(mod|func)_(lipid|metab|omic|omics)...R$`, so
+`test-omics-module-globals.R` is not added.
+Predictions per file: `r2-predictions.tsv` (verdict `same` for every file except `test-kit219-enrichment-files-current.R`: `fixed`).
+Check: no finding only on head. Failures identical on both sides are "unchanged".
+G0 (iii) and (iv) (`g0b.R`, scripts job, fix commit): prediction: no W1 fixture is a listed leaf (the lipid and trx fixtures hold no
+enrichment table; the metab fixtures with DA files are refused by KIT-212 first; the in-memory proteomics fakes get NULL and the
+proteomics owner is refused by KIT-212's unmade DA files; the `none` metab case has no files). (iv): every line is reviewed by
+hand; a line asserting the contents of `Enrichment_Plots` or the workbook's sheets for a case where this change omits files is a
+leaf (OD-3, stop). The GUI-entry lanes are decided by R2.
