@@ -1,1 +1,2 @@
 run	commit	purpose	job_minutes	core_hours	result
+45736368781	a5c66eb7 (tests only)	R1 failing-first, 1 job	17.8	1.19	98 expectations: 84 passed, 13 failed, 1 error; 11 failures are the predicted rows (T1, T7 covariates and correction both paths, T2 both paths, T6, T11, T12) at the stated values; 2 failures (T9 listing compared before and after the DA, which differ by the DA's own files) and 1 error (T10: Copy on a native-session fixture reads an archive pointer none was exported) are instrument defects of the test, no result produced: fixed, re-sent as instrument run 1 of 3

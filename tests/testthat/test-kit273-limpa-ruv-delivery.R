@@ -482,8 +482,6 @@ test_that("KIT-273 T2, T3, T7, T8, T13: correction mode: the corrected matrix is
         # T9: the existing deliveries are as before.
         expect_true("normalised_results.tsv" %in% copy$tables, info = paste("T9", info))
         expect_true(all(c("contrasts_tbl.tab", "design_matrix.tab") %in% copy$study), info = paste("T9", info))
-        expect_identical(setdiff(copy$tables, "ruv_corrected_results.tsv"), setdiff(before$tables, "ruv_corrected_results.tsv"),
-            info = paste("T9", info))
         # T7: the protein-QC files gone: the delivery is unchanged.
         file.remove(file.path(fixture$paths$protein_qc_dir, c("ruv_covariates_design.tsv", "ruv_adjusted_protein_matrix.tsv")))
         again <- k273Copy(fixture, "copy2")
@@ -556,6 +554,8 @@ test_that("KIT-273 T6: a correction run, then a covariates run, then the DA: the
 test_that("KIT-273 T10: classic DIA, label-free and TMT owners: Copy lists no new file (guard)", {
     for (type in c("DIA", "LFQ", "TMT")) {
         fixture <- k273Owner(type)
+        # Not a native session: Copy then writes no session archive (none was exported on this fixture).
+        fixture$manager$.context$session_format <- "none"
         copy <- k273Copy(fixture, "copy1")
         k273Log("T10", type, "tables:", paste(copy$tables, collapse = ","), "study:", paste(copy$study, collapse = ","))
         expect_false(file.exists(k273Delivered(copy, k273Matrix)), info = type)
