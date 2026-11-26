@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-280 second tests-only pass (VAL-394 (1)): head bf680889 = 1eff9c5c code plus the edited tests, the five files; predictions in kit-280/predictions.md; ceiling 75 job-min = 5.00 core-h",
+  "label": "KIT-280 T2 head five edited files bf680889",
+  "package_commit": "bf6808898ef0ef57abd691bb8e07aebaecca7022",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-input-current.R",
+    "test-kit206-prot-norm-export-guard.R",
+    "test-prot-norm-worker-figures.R",
+    "test-prot-ruv-factors-in-model.R",
+    "test-kit280-prot-threshold-values.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-prot-norm-input-current.R": 45
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

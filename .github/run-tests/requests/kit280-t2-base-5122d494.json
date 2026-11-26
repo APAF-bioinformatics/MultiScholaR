@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-280 second pass, base side: staging e4a6d4ae with the edited test-prot-ruv-factors-in-model.R only (to show the declared edit fails on the old code); ceiling 30 job-min = 2.00 core-h",
+  "label": "KIT-280 T2 base edited ruv test on old code 5122d494",
+  "package_commit": "5122d4942b121159bb5f26d6d7d57bf820b8b37f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-ruv-factors-in-model.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
