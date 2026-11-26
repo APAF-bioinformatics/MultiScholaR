@@ -100,6 +100,14 @@
    names the comparisons, and the report and the analysis record say these values are more conservative than Storey's
    q-values and not on the same scale as the other comparisons (for lipidomics and metabolomics once their analysis record
    names the method per comparison, KIT-242) (KIT-268). No q-value, p-value or significance call changes.
+ * Transcriptomics: 'Run RUVIII Export' is refused when no correction for unwanted variation was applied to the analysis
+   (the RUV design none, or a design whose number of factors is 0). Until now the export was accepted with k = 0: the
+   analysis record and the study parameters listed it, and the report said that RUVIII had been applied with the RUVs
+   inferred negative controls, beside its statement that no correction was applied. In that state the integration export
+   is the TMM logCPM, and it still is. Such an export is no longer listed in the record or the report. A project saved
+   by an earlier build that holds one reads as never exported: press Save again so that the record is rewritten (a
+   report that was generated before keeps its older template text). Replaying a record that lists such an export skips
+   it and says so. The differential expression results and the integration files are unchanged. (KIT-274)
  * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
    greyed out and says a step is still running while another step of the same analysis runs, for example the
    quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those

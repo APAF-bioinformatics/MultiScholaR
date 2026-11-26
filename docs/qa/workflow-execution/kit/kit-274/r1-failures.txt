@@ -1,0 +1,241 @@
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T1: the design none, then the export in process: refused, nothing accepted
+kind: failure
+message:
+  Expected `attempt$error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T1: the design none, then the export in process: refused, nothing accepted
+kind: failure
+message:
+  Expected `attempt$message` to be identical to `K274Refusal(K274Reason)`.
+  Differences:
+  actual vs expected
+  - "<no error>"
+  + "no RUVIII export is made: this analysis applied no correction for unwanted variation (k = 0; the design none: no correction for unwanted variation), so RUVIII would return the TMM logCPM unchanged; the integration uses the TMM logCPM."
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T1: the design none, then the export in process: refused, nothing accepted
+kind: failure
+message:
+  Expected `k274Snapshot(owner)$exports$trx_ruviii_export` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T2: a declared design whose estimated k is forced to 0, then the export in process: the same refusal
+kind: failure
+message:
+  Expected `attempt$error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T2: a declared design whose estimated k is forced to 0, then the export in process: the same refusal
+kind: failure
+message:
+  Expected `attempt$message` to be identical to `K274Refusal(reason)`.
+  Differences:
+  actual vs expected
+  - "<no error>"
+  + "no RUVIII export is made: this analysis applied no correction for unwanted variation (k = 0; the estimated count found no unwanted factor (no component above the permutation null)), so RUVIII would return the TMM logCPM unchanged; the integration uses the TMM logCPM."
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T2: a declared design whose estimated k is forced to 0, then the export in process: the same refusal
+kind: failure
+message:
+  Expected `k274Snapshot(owner)$exports$trx_ruviii_export` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T3: the design none through the mounted tabs, in process: the refusal is shown, nothing is run or drawn
+kind: failure
+message:
+  Expected `notes` to have length 1.
+  Actual length: 0.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T3: the design none through the mounted tabs, in process: the refusal is shown, nothing is run or drawn
+kind: failure
+message:
+  Expected `out$ruviii_status` to be identical to "Not run yet.".
+  Differences:
+  lines(actual) vs lines(expected)
+  - "RUVIII export complete (integration only; DA results unchanged)."
+  - "M = group"
+  - "k = 0, 0 inferred negative controls"
+  + "Not run yet."
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T3: the design none through the mounted tabs, in process: the refusal is shown, nothing is run or drawn
+kind: failure
+message:
+  Expected `k274Files(fixture)` to have length 0.
+  Actual length: 2.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T3: the design none through the mounted tabs, in process: the refusal is shown, nothing is run or drawn
+kind: failure
+message:
+  Expected `k274Snapshot(fixture$owner)$exports$trx_ruviii_export` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T4: the same, managed (the journey's runner on the chain mocks): one notification, nothing escaped, nothing accepted
+kind: failure
+message:
+  Expected `notes` to have length 1.
+  Actual length: 0.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T4: the same, managed (the journey's runner on the chain mocks): one notification, nothing escaped, nothing accepted
+kind: failure
+message:
+  Expected `out$status` to be identical to "Not run yet.".
+  Differences:
+  lines(actual) vs lines(expected)
+  - "RUVIII export complete (integration only; DA results unchanged)."
+  - "M = group"
+  - "k = 0, 0 inferred negative controls"
+  + "Not run yet."
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T4: the same, managed (the journey's runner on the chain mocks): one notification, nothing escaped, nothing accepted
+kind: failure
+message:
+  Expected `k274Snapshot(fixture$owner)$exports$trx_ruviii_export` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T4: the same, managed (the journey's runner on the chain mocks): one notification, nothing escaped, nothing accepted
+kind: failure
+message:
+  Expected `out$products_after` to be identical to `out$products_before`.
+  Differences:
+  actual[4:7] vs expected[4:6]
+    "1f1989826a88922a1edc7e6c5561f2ef0b8ae428f3cf96fb276e2d21970f9a46"
+    "09ace7e2cf494df47f7b5858f678bcc6d97ed1ad762958472ee2fcbe90ca5704"
+    "1451bc679ef830a0dad8aa32deaa7c949250e8a8b0d1fabcdf39018f1eae7040"
+  - "ddade9a112e0a39b05a53c92ce8ba3b9fb0e04edcc7ede6115ee58a23bf29578"
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T5: a planted older export is not listed in the analysis record
+kind: failure
+message:
+  Expected `k274Listed(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T6: the report of the record an older build wrote says that no RUVIII export was recorded
+kind: failure
+message:
+  Expected `text` to be identical to `K274None`.
+  Differences:
+  actual vs expected
+  - "RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = 0, for the integration export only, with the replicate structure M taken from the group. The differential expression results do not use it."
+  + "No RUVIII integration export was recorded for this analysis."
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T6: the report of the record an older build wrote says that no RUVIII export was recorded
+kind: failure
+message:
+  Expected `grepl("was applied", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T6: the report of the record an older build wrote says that no RUVIII export was recorded
+kind: failure
+message:
+  Expected `shown$out` to be identical to `K274Missing`.
+  Differences:
+  `actual`:   ""                                                  
+  `expected`: "Figure not available: ruviii_before_and_after.png "
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T6: the report of the record an older build wrote says that no RUVIII export was recorded
+kind: failure
+message:
+  Expected `inherits(shown$value, "knit_image_paths")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T7: the replay of a record that lists such an export skips it, says so and warns
+kind: failure
+message:
+  Expected `replayed$export_statement` to be identical to `K274Statement`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('This record lists a RUVIII export made when no correction for unwanted variation had been applied (k = 0). The replay does not repeat it: such an export is no longer made, and in this state the integration uses the TMM logCPM, which the replay writes as before.')
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T7: the replay of a record that lists such an export skips it, says so and warns
+kind: failure
+message:
+  Expected `"workflow_replay_export_skipped" %in% classes` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T7: the replay of a record that lists such an export skips it, says so and warns
+kind: failure
+message:
+  Expected `again$.context$snapshot$exports$trx_ruviii_export` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T10 (guard): KIT-264's routes still list no earlier export (run k = 2, export, run k = 1; and with the design none)
+kind: failure
+message:
+  Expected `a` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T10 (guard): KIT-264's routes still list no earlier export (run k = 2, export, run k = 1; and with the design none)
+kind: failure
+message:
+  Expected `b` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T12: the parameters of the managed request and the acceptance each refuse a head that applied no RUV
+kind: failure
+message:
+  Expected `parameters` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T12: the parameters of the managed request and the acceptance each refuse a head that applied no RUV
+kind: failure
+message:
+  Expected `accepted` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit274-trx-no-ruv-export.R
+test: KIT-274 T12: the parameters of the managed request and the acceptance each refuse a head that applied no RUV
+kind: failure
+message:
+  Expected `k274Snapshot(owner)$exports$trx_ruviii_export` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+
