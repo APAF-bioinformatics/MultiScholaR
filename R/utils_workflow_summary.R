@@ -620,22 +620,14 @@ runWorkflowSummaryExportStep <- function(step, workflowData, experimentPaths, ch
     runner <- workflowOmicsManagedActions(binding$omic_type)
     if (!is.null(runner)) {
         held <- new.env(parent = emptyenv())
-        # KIT-274: the request's setup (the head's reference and the step's parameters, which may refuse) runs inside the
-        # failure handler, as the in-process branch's run does.
-        actions <- tryCatch({
-            source <- getWorkflowStateReference(manager)
-            export <- omicsManagedProduct(step$operation, step$parameters(manager, source, choice), function(result) {
-                step$accept(manager, source, list(reference = result$reference, value = result$value))
-                held$value <- result$value
-            })
-            c(list(export), lapply(step$publications, function(publication) {
-                omicsManagedProduct(publication$operation, publication$parameters, function(result) invisible(NULL))
-            }))
-        }, error = function(error) {
-            failed(error)
-            NULL
+        source <- getWorkflowStateReference(manager)
+        export <- omicsManagedProduct(step$operation, step$parameters(manager, source, choice), function(result) {
+            step$accept(manager, source, list(reference = result$reference, value = result$value))
+            held$value <- result$value
         })
-        if (is.null(actions)) return(invisible(FALSE))
+        actions <- c(list(export), lapply(step$publications, function(publication) {
+            omicsManagedProduct(publication$operation, publication$parameters, function(result) invisible(NULL))
+        }))
         runner$run(actions, done = function() done(list(text = step$status$text(held$value), at = Sys.time())),
             failed = failed)
         return(invisible(TRUE))
@@ -720,11 +712,7 @@ trxSummaryIntegrationRequires <- function(workflowData) {
 #' @param source The head's reference.
 #' @noRd
 trxRuviiiExportParameters <- function(manager, source, m_source) {
-    ruvs <- withWorkflowStateScope(manager, function() {
-        # KIT-274: a head that applied no RUV refuses the managed request before anything is sent to the worker.
-        trxAssertRuviiiExportApplied(manager)
-        trxStateRuvs(manager, source)
-    })
+    ruvs <- withWorkflowStateScope(manager, function() trxStateRuvs(manager, source))
     list(logcpm = ruvs$logcpm$entity_id, grid = ruvs$grid$entity_id, ruviii_m_source = m_source)
 }
 
