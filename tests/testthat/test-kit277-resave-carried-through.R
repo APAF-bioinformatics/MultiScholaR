@@ -334,6 +334,7 @@ kit277CopyClick <- function(api, probe, diag = NULL) {
     api$set(stats::setNames(list(prefix), api$tabs))
     api$set(stats::setNames(list(lane$lane_id, "KIT-277 copy check"), paste0(prefix, c("-experiment_label", "-description"))))
     press_save <- function() kit277Click(api, paste0(prefix, "-save_workflow_args"))
+    probe$clear_notes()
     if (is.null(diag)) {
         press_save()
     } else {
@@ -371,9 +372,10 @@ kit277CopyClick <- function(api, probe, diag = NULL) {
         log("save_notes_full =", paste(probe$notes(), collapse = " || "))
         kit277ExportState(paste0(diag$label, "_after_save"), api, probe, diag$file)
     }
+    save_notes <- probe$notes()
     probe$clear_notes()
     kit277Click(api, paste0(prefix, "-copy_to_publication"))
-    probe$notes()
+    structure(probe$notes(), save_notes = save_notes)
 }
 
 #' The head rule the Summary's Save (R/utils_workflow_summary.R:297), Report (:524) and Export Session State (:622) all call.
@@ -699,6 +701,16 @@ kit277OrganismScenario <- function() {
         out$status_enrichment <- probe$status()$enrichment_analysis
         out$copy_notes_after <- kit277CopyClick(api, probe, if (nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG"))) list(label = "B3", file = diag_file))
         kit277Diag("B_after_first_save_and_copy", api, probe)
+        out$o5 <- kit277Try(withWorkflowStateScope(probe$manager(), function() {
+            context <- probe$manager()$.context
+            metadata <- if (!is.null(context$owned_export$metadata_reference)) resolveDIAStateValue(context, context$owned_export$metadata_reference)
+            list(pending_null = is.null(context$export_pending),
+                save_error = any(grepl("rror", attr(out$copy_notes_after, "save_notes"), fixed = TRUE)),
+                owned_equals_head = identical(context$owned_export$generation, context$head$entity_id),
+                annotation_in_metadata = !is.null(metadata$uniprot_dat_cln),
+                members = vapply(collectDIANativeGuiFiles(probe$manager(), metadata), function(spec) spec$destination, ""),
+                source_file_absent = !file.exists(file.path(paths$source_dir, "uniprot_dat_cln.RDS")))
+        }))
         # The enrichment Run is refused until the DA runs again.
         kit277Enrich(api, probe, "10090")
         out$enrichment_before_da <- !is.null(probe$manager()$.context$snapshot$enrichment_results)
@@ -783,6 +795,20 @@ test_that("KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment
     expect_true(any(grepl("Copy error", out$copy_notes_after, fixed = TRUE)))
     expect_false(any(grepl("Copy error", out$copy_notes_rerun, fixed = TRUE)))
     expect_gt(length(out$copy_notes_rerun), 0L)
+})
+
+test_that("KIT-277 O5 (S2): after an organism Save, Save Workflow Arguments completes the session refresh without the removed annotation", {
+    kit277Skip("S2")
+    out <- kit277OrganismScenario()
+    o5 <- out$o5
+    expect_type(o5, "list")
+    expect_true(isTRUE(o5$pending_null))
+    expect_false(isTRUE(o5$save_error))
+    expect_true(isTRUE(o5$owned_equals_head))
+    expect_false(isTRUE(o5$annotation_in_metadata))
+    expect_false(any(o5$members == "source/uniprot_dat_cln.RDS"))
+    expect_false(any(startsWith(o5$members, "da/")))
+    expect_true(isTRUE(o5$source_file_absent))
 })
 
 test_that("KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enrichment run use the new organism's annotation", {
@@ -954,7 +980,11 @@ kit277FastaCut <- function(lane_id, until, rerun) {
         out$copy <- kit277Gate(api, probe, TRUE)
         out$head_rule <- kit277HeadRule(api, probe)
         out$record_da <- kit277RecordHasDa(probe)
+        record_file <- file.path(probe$paths$source_dir, "analysis_record.json")
+        digest_record <- function() if (file.exists(record_file)) digest::digest(file = record_file, algo = "sha256") else "<none>"
+        out$record_digest_before <- digest_record()
         if (identical(lane_id, "prot_lfq")) out$copy_notes <- kit277CopyClick(api, probe)
+        out$record_digest_after <- digest_record()
         if (isTRUE(rerun)) {
             id <- kit277CleanupStepId(lane_id)
             api$set(stats::setNames(list(probe$steps[[id]]$tab), probe$tabs))
@@ -1009,10 +1039,11 @@ for (lane_id in names(kit277FastaRoutes)) {
         expect_identical(out$sha_after, out$new_sha, info = lane_id)
         expect_true(any(grepl("FASTA file saved", out$notes, fixed = TRUE)), info = lane_id)
         if (identical(lane_id, "prot_lfq")) {
-            # The DA's source left the history: Copy refused, the record lists no DA.
+            # The DA's source left the history: Copy refused; the Save press after the cut is refused (the head rule) and writes
+            # no analysis record: the file is as it was (coordinator's ruling K replaces the in-memory record's lines).
             expect_identical(out$da_status, "stale")
             expect_identical(out$copy, "refused")
-            expect_false(out$record_da)
+            expect_identical(out$record_digest_after, out$record_digest_before)
             expect_true(any(grepl("Copy error", out$copy_notes, fixed = TRUE)))
         }
         # R15: the head is not one of the DA's four states, so the Summary Save, Report and Export Session State (which
