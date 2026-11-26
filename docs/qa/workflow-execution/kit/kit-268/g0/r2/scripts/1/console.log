@@ -1,0 +1,89 @@
+traced in MultiScholaR : TRUE 
+traced in package:MultiScholaR : TRUE 
+g0-control: ::notice title=INFO::=== Starting runLipidsDA ===
+::notice title=INFO::   Processing 3 assays: LCMS_Pos, LCMS_Neg, GCMS
+::notice title=INFO::   Contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::--- Processing assay: LCMS_Pos ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay LCMS_Pos: 12 total results
+::notice title=INFO::--- Processing assay: LCMS_Neg ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay LCMS_Neg: 12 total results
+::notice title=INFO::--- Processing assay: GCMS ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 19 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Completed assay GCMS: 12 total results
+::notice title=INFO::   Combined results: 36 total rows
+::notice title=INFO::=== Completed runLipidsDA ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 3 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Output directories not configured, skipping file output
+.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Your tests are neat!
+
+=== G0 control : completeOmicDaRun calls: 1 ; fallback keys: 6 
+ seq                                                                 test lane
+   1 G0 positive control: tied_pvalues lipid DA through completeOmicDaRun   NA
+   1 G0 positive control: tied_pvalues lipid DA through completeOmicDaRun   NA
+   1 G0 positive control: tied_pvalues lipid DA through completeOmicDaRun   NA
+   1 G0 positive control: tied_pvalues lipid DA through completeOmicDaRun   NA
+   1 G0 positive control: tied_pvalues lipid DA through completeOmicDaRun   NA
+   1 G0 positive control: tied_pvalues lipid DA through completeOmicDaRun   NA
+ step    assay              key rule_result rule_result_in_friendly
+   NA LCMS_Pos  groupKO-groupWT    KO_vs_WT                    TRUE
+   NA LCMS_Pos groupRES-groupWT   RES_vs_WT                    TRUE
+   NA LCMS_Neg  groupKO-groupWT    KO_vs_WT                    TRUE
+   NA LCMS_Neg groupRES-groupWT   RES_vs_WT                    TRUE
+   NA     GCMS  groupKO-groupWT    KO_vs_WT                    TRUE
+   NA     GCMS groupRES-groupWT   RES_vs_WT                    TRUE
+POSITIVE CONTROL fallback comparisons: LCMS_Pos:groupKO-groupWT; LCMS_Pos:groupRES-groupWT; LCMS_Neg:groupKO-groupWT; LCMS_Neg:groupRES-groupWT; GCMS:groupKO-groupWT; GCMS:groupRES-groupWT 

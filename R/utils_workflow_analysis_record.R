@@ -417,7 +417,7 @@ workflowRecordDaFdrMethod <- function(operation, result) {
     if (!length(result$qvalue_warnings)) return(list(fdr_method = "qvalue"))
     list(fdr_method = "BH", fdr_fallback_reason = paste("qvalue() could not be used for this contrast (it failed, or",
         "fewer than 3 p-values were valid, or every p-value was 0 or 1); fdr_qvalue holds Benjamini-Hochberg adjusted",
-        "p-values"))
+        "p-values.", daQvalueFallbackSentence()))
 }
 
 #' Build the analysis record from head metadata (schema `multischolar.analysis_record.v1`).
