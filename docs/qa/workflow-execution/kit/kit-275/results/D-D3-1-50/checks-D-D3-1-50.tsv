@@ -1,0 +1,352 @@
+check	cell	rep	condition	value	threshold	pass	note
+E3	lipid	0	defaults	NA	equal to 5.2	TRUE	differ: ; markers off their current token: ; markers absent: ; correlation_exclusion within_assay: TRUE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=1
+E1	D3	1	determinism	NA	byte-identical	TRUE	
+E1	D3	1	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	1	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	1	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	1	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	1	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	1	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	10	determinism	NA	byte-identical	TRUE	
+E1	D3	10	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	10	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	10	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	10	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	10	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	10	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	11	determinism	NA	byte-identical	TRUE	
+E1	D3	11	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	11	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	11	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	11	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	11	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	11	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	12	determinism	NA	byte-identical	TRUE	
+E1	D3	12	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	12	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	12	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	12	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	12	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	12	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	13	determinism	NA	byte-identical	TRUE	
+E1	D3	13	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	13	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	13	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	13	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	13	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	13	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	14	determinism	NA	byte-identical	TRUE	
+E1	D3	14	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	14	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	14	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	14	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	14	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	14	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	15	determinism	NA	byte-identical	TRUE	
+E1	D3	15	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	15	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	15	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	15	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	15	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	15	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	16	determinism	NA	byte-identical	TRUE	
+E1	D3	16	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	16	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	16	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	16	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	16	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	16	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	17	determinism	NA	byte-identical	TRUE	
+E1	D3	17	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	17	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	17	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	17	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	17	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	17	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	18	determinism	NA	byte-identical	TRUE	
+E1	D3	18	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	18	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	18	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	18	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	18	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	18	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	19	determinism	NA	byte-identical	TRUE	
+E1	D3	19	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	19	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	19	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	19	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	19	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	19	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	2	determinism	NA	byte-identical	TRUE	
+E1	D3	2	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	2	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	2	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	2	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	2	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	2	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	20	determinism	NA	byte-identical	TRUE	
+E1	D3	20	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	20	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	20	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	20	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	20	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	20	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	21	determinism	NA	byte-identical	TRUE	
+E1	D3	21	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	21	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	21	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	21	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	21	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	21	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	22	determinism	NA	byte-identical	TRUE	
+E1	D3	22	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	22	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	22	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	22	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	22	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	22	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	23	determinism	NA	byte-identical	TRUE	
+E1	D3	23	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	23	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	23	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	23	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	23	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	23	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	24	determinism	NA	byte-identical	TRUE	
+E1	D3	24	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	24	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	24	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	24	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	24	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	24	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	25	determinism	NA	byte-identical	TRUE	
+E1	D3	25	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	25	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	25	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	25	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	25	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	25	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	26	determinism	NA	byte-identical	TRUE	
+E1	D3	26	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	26	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	26	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	26	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	26	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	26	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	27	determinism	NA	byte-identical	TRUE	
+E1	D3	27	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	27	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	27	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	27	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	27	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	27	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	28	determinism	NA	byte-identical	TRUE	
+E1	D3	28	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	28	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	28	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	28	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	28	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	28	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	29	determinism	NA	byte-identical	TRUE	
+E1	D3	29	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	29	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	29	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	29	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	29	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	29	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	3	determinism	NA	byte-identical	TRUE	
+E1	D3	3	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	3	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	3	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	3	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	3	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	3	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	30	determinism	NA	byte-identical	TRUE	
+E1	D3	30	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	30	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	30	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	30	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	30	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	30	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	31	determinism	NA	byte-identical	TRUE	
+E1	D3	31	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	31	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	31	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	31	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	31	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	31	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	32	determinism	NA	byte-identical	TRUE	
+E1	D3	32	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	32	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	32	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	32	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	32	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	32	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	33	determinism	NA	byte-identical	TRUE	
+E1	D3	33	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	33	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	33	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	33	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	33	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	33	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	34	determinism	NA	byte-identical	TRUE	
+E1	D3	34	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	34	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	34	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	34	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	34	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	34	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	35	determinism	NA	byte-identical	TRUE	
+E1	D3	35	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	35	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	35	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	35	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	35	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	35	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	36	determinism	NA	byte-identical	TRUE	
+E1	D3	36	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	36	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	36	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	36	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	36	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	36	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	37	determinism	NA	byte-identical	TRUE	
+E1	D3	37	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	37	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	37	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	37	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	37	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	37	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	38	determinism	NA	byte-identical	TRUE	
+E1	D3	38	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	38	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	38	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	38	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	38	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	38	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	39	determinism	NA	byte-identical	TRUE	
+E1	D3	39	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	39	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	39	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	39	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	39	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	39	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	4	determinism	NA	byte-identical	TRUE	
+E1	D3	4	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	4	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	4	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	4	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	4	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	4	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	40	determinism	NA	byte-identical	TRUE	
+E1	D3	40	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	40	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	40	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	40	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	40	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	40	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	41	determinism	NA	byte-identical	TRUE	
+E1	D3	41	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	41	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	41	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	41	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	41	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	41	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	42	determinism	NA	byte-identical	TRUE	
+E1	D3	42	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	42	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	42	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	42	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	42	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	42	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	43	determinism	NA	byte-identical	TRUE	
+E1	D3	43	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	43	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	43	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	43	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	43	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	43	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	44	determinism	NA	byte-identical	TRUE	
+E1	D3	44	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	44	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	44	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	44	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	44	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	44	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	45	determinism	NA	byte-identical	TRUE	
+E1	D3	45	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	45	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	45	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	45	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	45	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	45	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	46	determinism	NA	byte-identical	TRUE	
+E1	D3	46	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	46	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	46	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	46	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	46	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	46	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	47	determinism	NA	byte-identical	TRUE	
+E1	D3	47	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	47	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	47	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	47	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	47	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	47	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	48	determinism	NA	byte-identical	TRUE	
+E1	D3	48	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	48	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	48	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	48	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	48	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	48	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	49	determinism	NA	byte-identical	TRUE	
+E1	D3	49	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	49	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	49	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	49	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	49	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	49	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	5	determinism	NA	byte-identical	TRUE	
+E1	D3	5	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	5	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	5	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	5	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	5	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	5	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	50	determinism	NA	byte-identical	TRUE	
+E1	D3	50	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	50	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	50	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	50	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	50	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	50	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	6	determinism	NA	byte-identical	TRUE	
+E1	D3	6	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	6	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	6	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	6	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	6	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	6	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	7	determinism	NA	byte-identical	TRUE	
+E1	D3	7	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	7	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	7	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	7	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	7	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	7	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	8	determinism	NA	byte-identical	TRUE	
+E1	D3	8	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	8	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	8	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	8	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	8	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	8	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
+E1	D3	9	determinism	NA	byte-identical	TRUE	
+E1	D3	9	V1g equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D3	9	V1t is V1g on its 25 features and 0 elsewhere	25	25 features; equal to V1g	TRUE	
+E1	D3	9	V1s is V1g on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D3	9	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D3	9	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D3	9	NO: the DA of X is identical across V0 and V1g	NA	exact	TRUE	
