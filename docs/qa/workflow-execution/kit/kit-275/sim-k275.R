@@ -596,7 +596,7 @@ journeyAssayColumns <- function(out, request, assays) {
             reason <- paste(sprintf("%s:%d", names(counts), as.integer(counts)), collapse = ";")
             first <- res$error_reason[nzchar(as.character(res$error_reason))]
             if (length(first)) reason <- paste0(reason, " | ", substr(first[[1L]], 1L, 300L))
-            if (any(res$status == "skipped_k_exceeds_complete_controls")) reason <- paste0(reason, " | ", oneLine(trace$error))
+            if (any(res$status %in% c("skipped_k_exceeds_complete_controls", "skipped_no_controls_selected"))) reason <- paste0(reason, " | ", oneLine(trace$error))
         }
         record <- out$record_ruv
         legacy_return <- requested && !declared && status %in% c("corrected", "uncorrected", "dropped")
@@ -1100,7 +1100,7 @@ unmoderatedReading <- function(M, design, features, W = NULL) {
 # ---- the row of a journey (section 6.1; the columns are all the scorer reads) --------------------------------------------
 DONE <- c("ok", "refused_after_exclusion", "dropped", "uncorrected", "no_da")
 ROW_COLUMNS <- c("tier", "design", "cell", "omic", "r", "version", "arm", "smoke", "status", "class", "step", "seconds", "warnings",
-    "k_used", "k_found", "k_cap", "pct", "n_controls", "ruv_status_y", "ruv_status_x", "n_runs", "n_runs_final",
+    "k_used", "k_found", "k_cap", "pct", "n_controls", "ruv_status_y", "ruv_status_x", "n_runs", "n_runs_final", "ruv_status_product_y",
     "corr_removed_y", "corr_removed_x", "e5_y", "e5_x",
     "cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post",
     paste0("fa_pre_", TAGS), paste0("fa_post_", TAGS), paste0("ff_pre_", TAGS), paste0("ff_post_", TAGS), "ffx_pre_05", "ffx_post_05",
@@ -1176,6 +1176,7 @@ journeyRow <- function(ctx, j, sim, version, arm, ruv, filter_read = TRUE, extra
     row[["pct"]] <- if (is.null(cy)) NA_real_ else (cy[["pct"]] %||% NA_real_)
     row[["n_controls"]] <- if (is.null(cy)) NA_integer_ else length(cy[["controls"]])
     row[["ruv_status_y"]] <- if (is.null(cols[[Y_ASSAY]])) NA_character_ else as.character(cols[[Y_ASSAY]][["ruv_status"]])
+    row[["ruv_status_product_y"]] <- if (is.null(cols[[Y_ASSAY]])) NA_character_ else as.character(cols[[Y_ASSAY]][["ruv_status_product"]])
     row[["ruv_status_x"]] <- if (is.null(cols[[X_ASSAY]])) NA_character_ else as.character(cols[[X_ASSAY]][["ruv_status"]])
     # E5: the fail list the pairs table the filter read gives, against the package filter's own removed set (per assay)
     removed <- j[["corr_removed"]]
@@ -1294,7 +1295,8 @@ l1Accepts <- function(row, sim, arm) {
     status <- row[["status"]]
     class <- as.character(row[["class"]])
     identical(status, "ok") || (identical(status, "no_da") && !is.na(class) && startsWith(class, "filter_removed_group:")) ||
-        (arm %in% c("PEL2", "PEG2") && status %in% c("refused_after_exclusion", "dropped", "uncorrected") && tooFewLeft(sim))
+        (arm %in% c("PEL2", "PEG2") && status %in% c("refused_after_exclusion", "dropped", "uncorrected") && tooFewLeft(sim)) ||
+        (identical(row[["tier"]], "V") && status %in% c("uncorrected", "dropped"))   # RG6: KIT-242 keeps an assay without RUV (a result)
 }
 #' One journey: the request of the arm, the journey, its row (written at once), its lifecycle checks.
 runArm <- function(ctx, v, version, arm, lifecycle, write, correlation = TRUE, fault = FALSE, extra = list(), note_refusal = NULL) {
@@ -1525,9 +1527,17 @@ runParentMain <- function() {
     progress_dir <- file.path(out_dir, "progress")
     dir.create(rows_dir, recursive = TRUE, showWarnings = FALSE)
     dir.create(progress_dir, recursive = TRUE, showWarnings = FALSE)
+    only_r <- Sys.getenv("K275_ONLY_R")   # counted mode: the continuation of a timed-out job runs exactly its missing data sets, once
+    if (nzchar(only_r) && lifecycle) stop("K275_ONLY_R is a counted-mode setting (the continuation); it is refused in the lifecycle")
     units <- do.call(rbind, lapply(tiers, function(tier) do.call(rbind, lapply(intersect(designs, tierDesigns(tier)), function(design)
         data.frame(tier = tier, design = design, r = seq(first_rep, last_rep), repeat_run = FALSE, stringsAsFactors = FALSE)))))
     if (is.null(units) || !nrow(units)) stop("K275: no unit: the tiers and designs given have no common cell")
+    if (nzchar(only_r)) {
+        keep_r <- as.integer(strsplit(only_r, ",", fixed = TRUE)[[1L]])
+        units <- units[units$r %in% keep_r, , drop = FALSE]
+        if (!nrow(units)) stop("K275: K275_ONLY_R names no data set of the range")
+        if (!grepl("-cont$", job_name)) job_name <- paste0(job_name, "-cont")
+    }
     if (lifecycle) {
         # E9: the first data set of every (tier, design) run a second time end to end
         again <- units[!duplicated(units[c("tier", "design")]), , drop = FALSE]

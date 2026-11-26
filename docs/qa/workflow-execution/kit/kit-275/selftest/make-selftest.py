@@ -101,7 +101,20 @@ def g1_rows(spec):
                 rows.append(dict(design=design, kind=kind, r=r, rho=repr(value), smoke="FALSE"))
     return rows
 
-def write_rows(path, rows, gz=True):
+EXPECT_ROWS = {"D": 16, "K": 17, "F": 5, "S": 4, "V": 12, "M": 7, "T": 6, "E": 6, "ID": 5}
+def complete(rows):
+    """Pad every (tier, design, r) group to the rows a complete data set has (filler rows of arms FILLk), as the scorer's continuation rule counts them."""
+    groups = {}
+    for r_ in rows:
+        if r_["arm"] != "unit":
+            groups.setdefault((r_["tier"], r_["design"], r_["r"]), []).append(r_)
+    out = list(rows)
+    for (t, d, r), g in groups.items():
+        for k in range(len(g), EXPECT_ROWS[t]):
+            out.append(blank(tier=t, design=d, cell=g[0]["cell"], omic=g[0]["omic"], r=r, version="V0", arm="FILL%d" % k, smoke=g[0]["smoke"], status="ok"))
+    return out
+def write_rows(path, rows, gz=True, pad=True):
+    if pad: rows = complete(rows)
     opener = gzip.open if gz else open
     with opener(path, "wt", newline="") as f:
         w = csv.writer(f, delimiter="\t", lineterminator="\n")
@@ -480,6 +493,55 @@ u2 = blank(tier="D", design="D3", r=1, arm="unit", smoke="FALSE", status="crashe
 E = new_case("unit_crashed", rows + [u2]); expected += [("unit_crashed", "exit|unit_crashed", "exit", "nonzero", ""), ("unit_crashed", "stderr|unit_crashed", "substr", "left no journey rows", "")]
 E = new_case("unit_completed_false", rows, files={"checks-x.tsv": hdr + "unit_completed\tD\t1\tD3\tNA\tran to the end\tFALSE\tchild process exit 1, no result\n"})
 expected += [("unit_completed_false", "exit|unit_completed_false", "exit", "nonzero", ""), ("unit_completed_false", "stderr|unit_completed_false", "substr", "did not complete", "")]
+# ---- the continuation rule (RG4) and tier V's share (RG6) ---------------------------------------------------------------------------------------------------
+def write_sub(name, parts, g1=None):
+    folder = os.path.join(OUT, "cases", name)
+    for sub_, rows_ in parts.items():
+        os.makedirs(os.path.join(folder, "rows", sub_), exist_ok=True)
+        write_rows(os.path.join(folder, "rows", sub_, "d.tsv.gz"), rows_, pad=False)
+    write_g1(os.path.join(folder, "g1.tsv"), g1_rows({}))
+    index.append((name, "score", "K275_SCORE_R=200,100,20;K275_BOOT_B=200"))
+    return lambda key, kind, value, tol="1e-8": expected.append((name, key, kind, str(value), tol))
+# (1) an interrupted data set: D3 r = 7 lost three rows (V1g LM2, V0 LM2, VD LM1); it is dropped whole and listed; coverage counts it missing
+rows = complete(d_rows({}))
+drop = [r_ for r_ in rows if r_["tier"] == "D" and r_["design"] == "D3" and r_["r"] == "7" and ((r_["version"], r_["arm"]) in (("V1g", "LM2"), ("V0", "LM2"), ("VD", "LM1")))]
+rows = [r_ for r_ in rows if not any(r_ is x for x in drop)]
+E = write_sub("interrupted", {"": rows})
+predict("interrupted", {"valid": {}}, expected)
+expected[:] = [e for e in expected if not (e[0] == "interrupted" and e[1].startswith("cell|") and e[1].split("|")[3] == "D3")]
+E("decision|interrupted data sets", "str", "D|D3|7|")
+E("cell|A|D|D3|V1g|LM2|n_valid", "num", 199)
+E("cell|A|D|D3|V1g|LM2|label", "str", "absorbed")
+# (2) a data set complete in two sources stops scoring
+rows = complete(d_rows({}))
+write_sub("double_source", {"j1": rows, "j2": [r_ for r_ in rows if r_["design"] == "D3" and r_["r"] == "5"]})
+expected += [("double_source", "exit|double_source", "exit", "nonzero", ""), ("double_source", "stderr|double_source", "substr", "two sources", "")]
+# (3) a continuation that completes a job: j1 holds D3 r = 1..151 (r = 151 interrupted), j2 (the continuation) holds D3 r = 151..200
+rows = complete(d_rows({}))
+j1 = [r_ for r_ in rows if not (r_["design"] == "D3" and int(r_["r"]) >= 152)]
+cut = [r_ for r_ in j1 if r_["design"] == "D3" and r_["r"] == "151" and r_["tier"] == "D"][:3]
+j1 = [r_ for r_ in j1 if not any(r_ is x for x in cut)]
+j2 = [r_ for r_ in rows if r_["design"] == "D3" and int(r_["r"]) >= 151]
+E = write_sub("continuation", {"j1": j1, "j2": j2})
+predict("continuation", {}, expected)
+E("decision|interrupted data sets", "str", "D|D3|151|j1")
+E("cell|A|D|D3|V1g|LM2|n_valid", "num", 200)
+# (4) tier V: the share of journeys with RUV not applied in Y, by KIT-242's own status (5 not applied of 10: 3 no_usable_controls, 2 skipped_no_controls_selected)
+rows = d_rows({})
+vs = []
+for r in range(1, 11):
+    kind = "corrected" if r <= 5 else ("nuc" if r <= 8 else "snc")
+    vs.append(blank(tier="V", design="D3", cell="D3", omic="lipid", r=r, version="V1g", arm="LM2", smoke="FALSE", seconds=1,
+                    status="uncorrected" if kind == "nuc" else "ok", ruv_status_y="corrected" if kind == "corrected" else "uncorrected",
+                    ruv_status_product_y={"corrected": "corrected", "nuc": "no_usable_controls", "snc": "skipped_no_controls_selected"}[kind]))
+E = new_case("tier_v", rows + vs)
+predict("tier_v", {}, expected)
+E("cell|V_ruv_not_applied|V|D3|V1g|LM2|estimate", "num", 0.5)
+E("cell|V_ruv_not_applied|V|D3|V1g|LM2|hi", "num", cp_upper(5, 10, 0.025))
+E("cell|V_ruv_not_applied_no_usable_controls|V|D3|V1g|LM2|estimate", "num", 0.3)
+E("cell|V_ruv_not_applied_skipped_no_controls_selected|V|D3|V1g|LM2|estimate", "num", 0.2)
+E("cell|V_ruv_not_applied_skipped_no_controls_selected|V|D3|V1g|LM2|lo", "num", cp_lower(2, 10, 0.025))
+
 # ---- C02: the --g1 mode judges the G1 controls alone (exit 1 on F3); C05 (c): pi with a reference present and no matching pair -> coverage -----------------------
 for name, spec in (("g1_pass", {}), ("g1_fail", {"g1": {("D3", "PC2"): 1.0}})):
     folder = os.path.join(OUT, "cases", name)

@@ -253,7 +253,7 @@ E6 (moderated SE reading, unmoderated reading against the kernel, LX on the hand
 
 | Declared | Observed |
 |---|---|
-| E0 and E4 | met: 38 hunks... 0 unmarked; 40 cases, 2,779 predictions, 0 differ |
+| E0 and E4 | met: 39 hunks, 0 unmarked (the earlier text said 38; the L1 console shows 39, because C03's marks split the header hunk); 40 cases, 2,779 predictions, 0 differ |
 | E1, E2, E3 (with `correlation_exclusion`), E5 | met: E1 72 of 72, E2 12 of 12, E3 2 of 2, E5 1,246 of 1,246 |
 | E7 crash and refusal | met (1 and 1) |
 | E9, every repeat equal | met: 20 of 20 |
@@ -285,3 +285,42 @@ Counted jobs: expected 3,813.6 job-minutes, ceiling 6,621 (441.4 core-hours). Wi
 **The ceiling exceeds the owner's 350.73 by 139.9 core-hours; nothing is trimmed and R is unchanged: awaiting the owner: the ceiling.** The expected figure (265.7) is under it.
 What drives it: L1's measured times are 1.4 to 1.6 times those of smoke 2 (LA 48 to 54 s against 30 to 32; GA 31 to 37 against 20 to 22; four heavy units at once, the load a counted job also has), and the ceiling is 1.875 times the expected run (plan margin 1.25 times timeout margin 1.5); 18 of the counted jobs have a timeout above 120 minutes, all within the 280-minute limit of a script, and K's D6 plan (149.9) is just under the 150-minute split. Per request, each counted job is its own request (every plan is above half the 300-minute job limit).
 Running ceiling (`runs.tsv`): used 12.43 (smokes 4.35, G1 0.73, L1 7.35); no further request is sent. No counted job was sent.
+
+## 18. After the re-check (RG1 to RG7) and the coordinator's ruling on the margin rule: scripts, tier V lines, the 1.5 x plan. No run, no request.
+
+**Scripts changed after L1 (they need the auditor's closure and a proving send before any counted job).**
+- `score-k275.R`: every row is tagged with its source directory; rows are counted per (tier, design, r, source) against D 16, K 17, F 5, S 4, V 12, M 7, T 6, E 6, ID 5; an incomplete group is dropped whole before the duplicate check and listed in `decision.tsv` as "interrupted data sets" (coverage then counts it missing); a data set complete in two sources stops scoring. Tier V: a reported share "RUV not applied in Y" (`ruv_status_y` uncorrected or dropped, valid journeys), split by KIT-242's own status (`ruv_status_product_y`), Clopper-Pearson limits. `TEXT_COLUMNS` gains `ruv_status_product_y` and `source`.
+- `sim-k275.R`: `K275_ONLY_R` (counted mode only; refused in the lifecycle) restricts the units to the data sets named and appends `-cont` to the job name. Tier V (RG6, read at `origin/kit-242` commit **fa8dfdc81b33ed2b1eb65c3207428278c0af3257**): `l1Accepts` accepts a tier V journey ending `uncorrected` or `dropped`; the status set of the reason string includes `skipped_no_controls_selected` (`func_lipid_norm_ruv_optimization_helpers.R:204`, `func_metab_norm.R:727`); the row gains `ruv_status_product_y` (the product's own `ruv_status`, which KIT-242 sets from `omicsRuvSearchOutcomes`'s `keep` actions with reasons `no_usable_controls` and `no_factor_supported`, `R/utils_workflow_omics_declarations.R:797-860`). KIT-242's replay-marker names beyond the bound commit's eleven are `normalisation_fallback`, `protein_normalisation_fallback`, `itsd_outcome`, `ruv_fallback` (`R/utils_workflow_analysis_record.R`, same commit): **L1-V sets `K275_REQUIRED_MARKERS=normalisation_fallback,itsd_outcome,ruv_fallback`** (the proteomics one is not on this route). KIT-242's tip is still moving: tier V's G0 re-reads it at the commit it binds.
+- Self-test (local Python only): 44 cases, 3,114 predictions: the earlier 40 (their data sets padded to the rows a complete data set holds, so the new counting rule applies to them), and `interrupted`, `double_source`, `continuation`, `tier_v` (both product statuses), with the unlabelled cells of `unlabelled`, `sigdiff` and `tierk` kept. Predictions are derived in `make-selftest.py`, never from a run.
+- E0: 39 hunks expected, 0 unmarked (local `e0-diff.py`). Local checks only; nothing was run on a runner.
+
+**Continuation rule (verbatim, the coordinator's ruling).** A timed-out job's missing data sets are run ONCE; an interrupted data set is discarded whole; no partial re-run of a cell; a data set complete in two sources stops scoring; one continuation per job, inside the reserve and under the running-ceiling rule. (`K275_ONLY_R` and the scorer's source counts implement it.)
+
+**Re-plan at the 1.5 x rule** (`budget-replan-r15.py`; L1's own completed-journey means; timeout_minutes = ceil(1.5 x compute), compute = data sets x seconds / 4 / 60; every counted job its own request, `timeout_minutes` explicit; expected = compute + 13):
+
+| Job | Design | Jobs | Data sets | s per data set | Compute (min) | `timeout_minutes` | Ceiling (job-min) | Expected |
+|---|---|---|---|---|---|---|---|---|
+| D | D3 | 4 | 50 | 449.8 | 93.7 | 141 | 151 | 106.7 |
+| D | D4 | 4 | 50 | 483.2 | 100.7 | 151 | 161 | 113.7 |
+| D | D6 | 4 | 50 | 535.6 | 111.6 | 168 | 178 | 124.6 |
+| K | D3 | 2 | 50 | 464.3 | 96.7 | 146 | 156 | 109.7 |
+| K | D4 | 2 | 50 | 515.4 | 107.4 | 162 | 172 | 120.4 |
+| K | D6 | 2 | 50 | 575.5 | 119.9 | 180 | 190 | 132.9 |
+| F+S | D3 | 2 | 50 | 289.8 | 60.4 | 91 | 101 | 73.4 |
+| F+S | D4 | 2 | 50 | 309.7 | 64.5 | 97 | 107 | 77.5 |
+| F+S | D6 | 2 | 50 | 339.3 | 70.7 | 107 | 117 | 83.7 |
+| M | D6 | 1 | 100 | 235.7 | 98.2 | 148 | 158 | 111.2 |
+| ID | D4 | 1 | 20 | 168.8 | 14.1 | 22 | 32 | 27.1 |
+| T | D3 | 1 | 100 | 181.6 | 75.7 | 114 | 124 | 88.7 |
+| T | D4 | 1 | 100 | 197.2 | 82.2 | 124 | 134 | 95.2 |
+| T | D6 | 1 | 100 | 220.1 | 91.7 | 138 | 148 | 104.7 |
+| E | D3 | 1 | 100 | 121.0 | 50.4 | 76 | 86 | 63.4 |
+| E | D4 | 1 | 100 | 155.2 | 64.7 | 97 | 107 | 77.7 |
+| E | D6 | 1 | 100 | 175.2 | 73.0 | 110 | 120 | 86.0 |
+
+Counted jobs excluding tier V: ceiling 4,555 job-minutes, expected 3,228.9. Tier V's 6 jobs (held for L1-V at a KIT-242 commit): ceiling 822. Remaining rows: L1-V ceil(1.5 x 20.3) + 10 = 41; SC (final scoring, B = 10,000) 40; **the interim tier-D PC1/NC1 scoring request (its own row, ticket 8.5: F1 or F2 stops the rest): 20 job-minutes + 10 set-up = 30**; the reserve 150 (inside it: the one continuation per job); correction (largest job 190 + rescoring 40) = 230.
+Total remaining: 4,555 + 822 + 41 + 40 + 30 + 150 + 230 = **5,868 job-minutes = 391.20 core-hours; with used 12.43: 403.63** (401.63 without the interim row, the figure the coordinator proposed; 488.03 under the ticket's rule as written, 1.875 x). Expected: 3,228.9 + tier V (about 560) + L1-V (about 33) + the small rows, about 270 core-hours with used.
+
+**awaiting the owner: the ceiling (401.63 proposed, 403.63 with the interim row; 488.03 under the rule as written).** No counted request, and no request of any kind, is sent until the coordinator gives the owner's figure.
+
+**Smallest proving send (proposal, not sent).** One request after the auditor's closure: `selftest/run-selftest.R` (E0, E4: 44 cases; limit 10); then in counted mode `sim-k275.R S,T D3 1 2 k275-prove-a` (2 data sets of two small tiers: about 5 minutes; limit 12) and its continuation `K275_ONLY_R=2 K275_JOB=k275-prove-a-cont` run once (limit 8) so that `K275_ONLY_R`, the `-cont` name and the part files are shown on real rows; then `score-k275.R` over the two job directories with `K275_G1=g1/g1.tsv` (limit 5), which must write "interrupted data sets" and the tier-V-free cells and run to its end (its outcome line on two tiers is meaningless and is not read). Ceiling 10 + 12 + 8 + 5 + 10 = 45 job-minutes = 3.0 core-hours (expected about 25 = 1.7). It is blind to nothing that matters (counted-mode rows of two tiers on a scratch seed range 1 to 2: those data sets are then part of tier S and T's counted range, so the proving send uses seeds 9201 and 9202 instead, outside every counted range). **L1-V (after KIT-242 lands) cannot carry this proof**: it runs the lifecycle, where `K275_ONLY_R` is refused and the scorer's counted paths are not exercised; it carries the tier V items (`l1Accepts`, `ruv_status_product_y`, `K275_REQUIRED_MARKERS`) and should run before the first tier V counted job.

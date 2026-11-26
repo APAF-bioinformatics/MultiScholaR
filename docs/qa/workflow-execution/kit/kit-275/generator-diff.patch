@@ -63,19 +63,19 @@
 +# Partial-match guard (lesson of KIT-188's smoke checks 1 to 3): `$` on a list or data frame matches a name by its prefix when none is
 +# exact; that warning is an error here, in every process and inside `quiet()` (which would otherwise muffle it). A stop from it is an
 +# instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
-+options(warnPartialMatchDollar = TRUE)
++options(warnPartialMatchDollar = TRUE) # K275-guard
 +# A `stop()` raised from a GLOBAL calling handler runs with every local handler disabled (R's rule for the handler stack), so it cannot reach a
 +# `tryCatch`: it ends the process with nothing written (smoke 2's planted guard unit). The guard is therefore also installed as a LOCAL calling
 +# handler (`guardWarning`) around each journey and around each unit, where its stop reaches the enclosing `tryCatch`; the global handler stays as
 +# a last net, with an error writer that leaves a trace before the process ends.
-+guardWarning <- function(w) {
++guardWarning <- function(w) { # K275-guard
 +    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {
 +        options(k275.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L]], collapse = ""), 1L, 80L), ""), collapse = " <- "))
 +        stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 +    }
 +}
-+globalCallingHandlers(warning = guardWarning)
-+if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() {   # an error that escaped every handler: write what is known, then end non-zero
++globalCallingHandlers(warning = guardWarning) # K275-guard
++if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() { # K275-guard   # an error that escaped every handler: write what is known, then end non-zero
 +    dir <- dirname(Sys.getenv("K275_CHECKS_PATH"))
 +    tag <- sub("\\.tsv$", "", sub("^checks-", "", basename(Sys.getenv("K275_CHECKS_PATH"))))
 +    try(writeLines(c(geterrmessage(), getOption("k275.guard_trace", "")), file.path(dir, sprintf("unit-trace-%s.txt", tag))), silent = TRUE)
@@ -248,6 +248,13 @@
 +        e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE] # K275-prefix
          field <- function(x, column) if (!is.null(x) && nrow(x)) x[[column]][[1L]] else NA
          trace <- out$optimisation[[a]]
+@@ -566,5 +597,5 @@
+             first <- res$error_reason[nzchar(as.character(res$error_reason))]
+             if (length(first)) reason <- paste0(reason, " | ", substr(first[[1L]], 1L, 300L))
+-            if (any(res$status == "skipped_k_exceeds_complete_controls")) reason <- paste0(reason, " | ", oneLine(trace$error))
++            if (any(res$status %in% c("skipped_k_exceeds_complete_controls", "skipped_no_controls_selected"))) reason <- paste0(reason, " | ", oneLine(trace$error))
+         }
+         record <- out$record_ruv
 @@ -572,5 +603,5 @@
          da_failed <- identical(out$error_step, "da")
          failed_here <- if (!is.null(out$da_errors)) out$da_errors[out$da_errors$assay == a, , drop = FALSE]
@@ -309,7 +316,7 @@
 +                bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
                  text <- paste(sprintf("norm_not_applied:%s", bad$assay), collapse = " | ")
                  out$class <- if (identical(out$status, "instrument")) paste(out$class, text, sep = " | ") else text
-@@ -681,8 +720,11 @@
+@@ -681,10 +720,13 @@
              out$ruv_value <- run$value[setdiff(names(run$value), c("final", "optimisation", "factors", "separation_plots"))]
              out$ruv_factors <- lapply(run$value$factors, function(f) f[intersect(names(f), c("status", "reason", "k", "control_ids",
 -                "control_count", "ruv_k_estimate"))])
@@ -321,7 +328,10 @@
 +            out$pairs_post <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_ruv_corrected")), correlation_group = "group")) # K275-pairs
 +            step <- "ruv"
              # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
-             record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+-            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
++            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) stop(e) else NULL) # K275-guard
+             out$record_ruv <- recordOutcomes(record, paste0(prefix, "_ruv_corrected"))
+         }
 @@ -694,9 +736,21 @@
              out$corr_one_assay <- paste(oneAssayRemovals(out$m_out %||% out$m_in, stateMatrices(owner, binding, owner$current_state)),
                  collapse = ";")

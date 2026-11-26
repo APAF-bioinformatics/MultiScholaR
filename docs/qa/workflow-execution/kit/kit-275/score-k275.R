@@ -89,7 +89,7 @@ labelsOf <- function(table) {
     do.call(rbind, out)
 }
 TEXT_COLUMNS <- c("tier", "design", "cell", "omic", "version", "arm", "smoke", "status", "class", "step", "ruv_status_y", "ruv_status_x",
-    "corr_removed_y", "corr_removed_x", "tested_sig_y", "e5_y", "e5_x", "pe_a_excluded")
+    "ruv_status_product_y", "source", "corr_removed_y", "corr_removed_x", "tested_sig_y", "e5_y", "e5_x", "pe_a_excluded")
 
 # ---- reading: every table as text ---------------------------------------------------------------------------------------------
 readText <- function(path) utils::read.delim(path, stringsAsFactors = FALSE, colClasses = "character", na.strings = "NA")
@@ -104,7 +104,12 @@ if (g1_mode) {
 } else {
     row_files <- c(list.files(rows_dir, pattern = "\\.tsv\\.gz$", full.names = TRUE, recursive = TRUE),
         list.files(rows_dir, pattern = "^part-.*\\.tsv$", full.names = TRUE, recursive = TRUE))
-    rows <- do.call(rbind, lapply(row_files, function(f) readText(if (grepl("\\.gz$", f)) gzfile(f) else f)))
+    rows <- do.call(rbind, lapply(row_files, function(f) {
+        x <- readText(if (grepl("\\.gz$", f)) gzfile(f) else f)
+        rel <- sub("^/", "", sub(normalizePath(rows_dir), "", normalizePath(f), fixed = TRUE))
+        x[["source"]] <- if (grepl("/", rel, fixed = TRUE)) sub("/.*$", "", rel) else ""   # the job directory the row came from (continuations)
+        x
+    }))
     if (is.null(rows) || !nrow(rows)) stop("K275 scoring stops: no rows")
     for (column in setdiff(names(rows), TEXT_COLUMNS)) rows[[column]] <- num(rows[[column]])
 }
@@ -120,6 +125,16 @@ rows <- rows[!rows[["arm"]] %in% "unit", , drop = FALSE]
 if (!blind) {
     lim <- vapply(rows[["tier"]], function(t) if (t %in% c("D", "K", "F", "S", "V", "M", "T", "E", "ID")) declaredR(t) else NA_real_, numeric(1L))
     if (any(!is.finite(rows[["r"]]) | rows[["r"]] < 1 | !is.finite(lim) | rows[["r"]] > lim)) stop("K275 scoring stops: a row outside its tier's declared data sets (RANGE-1)")
+    # the continuation rule: a data set is complete when its source holds all its rows; an incomplete one (an interrupted data set) is dropped whole and listed;
+    # a data set complete in two sources is a double run and stops scoring
+    EXPECT_ROWS <- c(D = 16L, K = 17L, F = 5L, S = 4L, V = 12L, M = 7L, T = 6L, E = 6L, ID = 5L)
+    group <- paste(rows[["tier"]], rows[["design"]], rows[["r"]], rows[["source"]], sep = "|")
+    counts <- table(group)
+    need <- EXPECT_ROWS[sub("\\|.*$", "", names(counts))]
+    interrupted <- names(counts)[counts < need]
+    complete <- names(counts)[counts >= need]
+    if (anyDuplicated(sub("\\|[^|]*$", "", complete))) stop("K275 scoring stops: a data set is complete in two sources (a double run)")
+    rows <- rows[!group %in% interrupted, , drop = FALSE]
     key <- paste(rows[["tier"]], rows[["design"]], rows[["version"]], rows[["arm"]], rows[["r"]])
     if (anyDuplicated(key)) stop("K275 scoring stops: a journey row appears twice")
 }
@@ -240,6 +255,19 @@ if (g1_mode) {
     quit(save = "no", status = if (all(unlist(judged))) 0L else 1L)   # F3: a control fails: stop, the owner is told
 }
 
+# tier V (RG6): the share of journeys in which RUV was not applied in Y, by KIT-242's own status
+tierVShare <- function(sub, tier, design, version, arm, R) {
+    ok <- sub[sub[["valid"]], , drop = FALSE]
+    if (!nrow(ok)) return(invisible(NULL))
+    not_applied <- ok[["ruv_status_y"]] %in% c("uncorrected", "dropped")
+    emit("reported", "V_ruv_not_applied", tier, design, version, arm, "share of journeys in which RUV was not applied in Y", nrow(ok), R, mean(not_applied),
+        cpLower(sum(not_applied), nrow(ok), 0.025), cpUpper(sum(not_applied), nrow(ok), 0.025), 0.95, "two", note = "exact Clopper-Pearson")
+    for (p in sort(unique(ok[["ruv_status_product_y"]][not_applied]))) {
+        hit <- not_applied & ok[["ruv_status_product_y"]] %in% p
+        emit("reported", paste0("V_ruv_not_applied_", p), tier, design, version, arm, sprintf("share with KIT-242 status %s", p), nrow(ok), R, mean(hit),
+            cpLower(sum(hit), nrow(ok), 0.025), cpUpper(sum(hit), nrow(ok), 0.025), 0.95, "two", note = "exact Clopper-Pearson")
+    }
+}
 # the per-data-set vector of one column of one (tier, design, version, arm), indexed by data set 1..R (NA where the journey is not valid)
 vec <- function(tier, design, version, arm, column, R, need_valid = TRUE) {
     x <- rep(NA_real_, R)
@@ -299,6 +327,7 @@ for (i in seq_len(nrow(combos))) {
             emit("reported", column, tier, design, version, arm, sprintf("mean %s", column), st$n, R, st$est, st$lo, st$hi, 0.95, "two", jk_lo = st$jk_lo, jk_hi = st$jk_hi)
         }
     }
+    if (identical(tier, "V") && !arm %in% c("NO", "LX")) tierVShare(sub, tier, design, version, arm, R)
     # H2 and H3 (tier E): the share of data sets in which a is excluded, and the shares of the emulation's results after an exclusion
     if (identical(tier, "E")) {
         a_ex <- sub[["pe_a_excluded"]][sub[["valid"]] & sub[["pe_a_excluded"]] %in% c("TRUE", "FALSE")]
@@ -523,6 +552,7 @@ acts <- vapply(DESIGNS, function(d) identical(cellA(d, "LM2"), "acts") && identi
 outcome <- if (f1) "Stop (F1)" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else
     if (all(gk2) && !all(lm2)) "R2" else if (all(lm2) && !all(gk2)) "R3" else if (all(acts)) "R4" else "R5"
 decision <- data.frame(item = "outcome", value = outcome, stringsAsFactors = FALSE)
+decision <- rbind(decision, data.frame(item = "interrupted data sets", value = if (exists("interrupted") && length(interrupted)) paste(sort(interrupted), collapse = "; ") else "none", stringsAsFactors = FALSE))
 for (name in sort(names(lab))) if (grepl("^(A|B|B'|C|C'|pi) ", name)) decision <- rbind(decision, data.frame(item = name, value = as.character(lab[[name]]), stringsAsFactors = FALSE))
 decision <- rbind(decision, data.frame(item = c("F1", "F2", "F3", "F4"), value = as.character(c(f1, f2, f3, f4)), stringsAsFactors = FALSE),
     data.frame(item = c("E5 failing rows", "E1/E2 failing checks", "E12 failing checks", "E8", "crossNO"), value = c(as.character(c(e5_bad, idcheck_bad, e12_bad)),
