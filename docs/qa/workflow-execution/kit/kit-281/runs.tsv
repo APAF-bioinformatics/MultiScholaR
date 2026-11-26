@@ -1,0 +1,3 @@
+run_id	commit	purpose	minutes	core_hours	result
+pending	(package commit named in request kit281-smoke-*)	S09 parse-and-self-test send (smoke/declaration.md; expected 1.33, ceiling 2.00 core-h; timeout 30)			not yet run
+# running ceiling before this send: 0.00 used + 2.00 this request + 72.67 planned = 74.67 core-hours (ceiling accepted by the owner, VAL-371)

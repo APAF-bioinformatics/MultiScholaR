@@ -13,6 +13,12 @@ nothing about calibration and produces no result: the simulated rows stay in `te
 - Seed: r = 9301 (cell A, three masks), declared here: outside KIT-197 (1-200, 9001-9004), KIT-211 (201-400, 9101-9104), KIT-281's counted block (401-971) and L1 (9201-9204,
   201-205).
 
+## Authority and binding facts (added at send time)
+- Owner accepted the ceiling 74.67 core-hours with the replicate rule (ledger VAL-371 on origin/v0.9-staging 9586b2727). The coordinator allows THIS send only: no L1, no counted job.
+- `package_commit`: the commit of branch `kit-281` that carries this declaration and `runs.tsv` (named in the request). `git diff --stat a5de1c2eb <package_commit> -- R/ src/ inst/ tests/ DESCRIPTION NAMESPACE` is empty (checked locally), and `threshold_values_in_filter` is absent from `R/` there (grep: no hit): the bound tree carries no code of KIT-280, so arm S is the shipped filter. Current staging (9586b2727) qualifies as well.
+- Request `requested_by` under 300 characters; one script; `timeout_minutes` 30; only `smoke-checks.tsv`, `selftest-summary.txt`, `checks-sim.tsv`, `provenance-sim-start.json` are uploaded on success (a failure adds `smoke-stop.txt`).
+- Running ceiling before this send: 0 used + 2.00 (this request) + 72.67 planned (L1 3.67 + counted 44.00 + scoring 2.67 + reserve 6.33 + Part C 16.00) = 74.67.
+
 ## Ceiling
 About 20 job-minutes = 1.33 core-hours expected; `timeout_minutes` 30 = 2.00 core-hours at the ceiling. The ticket's ceiling becomes 72.67 + 2.00 = **74.67 core-hours**
 (not yet accepted by the owner; no request before it is).
