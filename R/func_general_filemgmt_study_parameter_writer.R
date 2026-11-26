@@ -988,7 +988,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             },
             error = function(e) {
                 cat(sprintf("WORKFLOW ARGS: formatConfigList failed: %s\n", e$message))
-                config_lines <- c(config_lines, paste("Error formatting config:", e$message))
+                # KIT-269: `<<-` so the line reaches the writer's own config_lines (a plain `<-` was discarded).
+                # DRAFT wording (owner's pass). For an rlang condition the message already holds its parents' causes.
+                reason <- trimws(gsub("[[:space:]]+", " ", cli::ansi_strip(conditionMessage(e))))
+                config_lines <<- c(config_lines, paste("The configuration settings could not be listed here:", reason))
             }
         )
     } else {

@@ -122,6 +122,15 @@
    form's organism (Homo sapiens by default), which then set the UniProt annotation, the Taxon ID in the study
    parameters and the enrichment organism. The organism window now says that only the selected organism is looked up
    in UniProt and tested for enrichment. No result of an import that completes changes (KIT-265).
+ * The list of additional settings in the study-parameters file (`study_parameters.txt`) was empty, without any message,
+   whenever the file was written without an analysis record, because a setting with several numbers (the shipped
+   `plotRle yaxis_limit = -3,3`, or the RUV control features of lipidomics and metabolomics) could not be listed; the
+   exported `createStudyParametersFile()` stopped on the shipped configuration for the same reason. Settings with
+   several values are now listed as comma-separated values in full (`Yaxis Limit: -3, 3`; a text setting of six or more
+   values is no longer cut after five; a named setting such as the RUV control features is printed as `name=value`, one
+   per feature, as in the analysis record), and a listing that still fails now says so in the file. Inside the application
+   the file is written from the analysis record and was not affected unless the record could not be built. This was so
+   in `main` and the published release 0.3.6.3. Only the printed file changes; analyses and results do not (KIT-269).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
