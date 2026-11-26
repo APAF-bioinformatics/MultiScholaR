@@ -160,3 +160,54 @@ Totals expected: 19 files; 15 `same`, 3 `count-changed` (the declared edits' mat
   "of the metabolites").
 - I07: KIT-266's G3 compares `tests/testdata/kit236/base` `FormatResults` with head byte for byte and fails once this
   lands: KIT-266 needs its declared G3 edit and restated R3 reference (not this train's).
+
+## Result
+
+Two runs, both dispatched without error (no HTTP 500/502). Request commit 30b5f74f on `run-tests`. Comparison
+`train31-compare-f211b667` = run **45740288812** (head f211b667, base ec27f69e; tables in
+`merge-train-20261126x-compare/`). Render `train31-render-ed941465` = run **45740292024** (head ed941465; tables and the
+rendered texts in `merge-train-20261126x-render/`). No re-send; no instrument defect.
+
+**Job-minutes (from the jobs API, per job completed minus started).** Comparison: plan 0.32, R CMD check base 13.28,
+head 14.90, tests base 40.62, head 31.62, results 0.53 = **101.27** (ceiling 340; expected about 112). Render: plan 0.28,
+scripts 24.62 (the script's four lanes: 145, 174, 338, 210 s), results 0.52 = **25.42** (ceiling 60; expected about 24).
+**Total 126.69 job-minutes = 8.45 core-hours** (ceilings 400 = 26.67; expected about 136).
+
+### Comparison, per file
+
+| File | Predicted base -> head | Observed base | Observed head | Verdict | Held |
+|---|---|---|---|---|---|
+| test-kit272-prot-box-panel-text.R | absent -> 373/0 | absent | 373/0/0/0 | only-on-head | HELD |
+| test-kit227-report-ruv-sentences.R | 162/0 -> 186/0 | 162/0/0/0 | 186/0/0/0 | count-changed | HELD |
+| test-kit235-lipid-metab-report-parser.R | 54/0 -> 58/0 | 54/0/0/0 | 58/0/0/0 | count-changed | HELD |
+| test-kit236-report-sentences.R | 293/0 -> 297/0 | 293/0/0/0 | 297/0/0/0 | count-changed | HELD |
+| test-kit220-da-threshold-consumers.R | 71/2 same | 71/2/0/0 | 71/2/0/0 | same, identical failures | HELD |
+| test-omic-summary-module.R | 1675/28 same | 1675/28/0/0 | 1675/28/0/0 | same, identical failures | HELD |
+| test-omics-summary-core.R | 676/25 (2 skipped) same | 676/25/0/2 | 676/25/0/2 | same, identical failures | HELD |
+| the other 12 files (181, 321/0/0/1, 81, 228, 112, 29, 87, 90, 85, 1911, 123, 351) | same | as predicted | as predicted | same | HELD |
+| R CMD check | identical, 0 E / 3 W / 3 N | 0 / 3 / 3 | 0 / 3 / 3 | 6 findings identical, none only on head, none only on base | HELD |
+
+Totals: 19 files, 15 `same`, 3 `count-changed`, 1 `only-on-head`; no `new-failure`, `message-changed` or `fixed`.
+`compare-failures.txt`: "no non-identical failures". The three standing failures (test-kit220 2, test-omic-summary-module
+28, test-omics-summary-core 25) are the same on both sides, as on train 26/27 and KIT-272's own R2.
+
+### Render, against the declaration
+
+`checks.tsv` (27 rows): 23 as predicted and **4 DIFFERS, the four "V0 text equal to staging's template" rows, which the
+declaration predicted DIFFERS by design** (the text changes): so every row is as declared. (The script prints TRUE/FALSE
+as 1/0.) Offline text check (Python on the returned `<lane>-V0-head.txt` and `-V0-base.txt`; no R):
+
+| Declared item | Observed | Held |
+|---|---|---|
+| 1. every template knits without error on the head | 4 lanes ran (145, 174, 338, 210 s); V0, V1, V2 rendered for each; no `render error` or `captured FALSE` row | HELD |
+| 2. new sentences exactly once each, none of the old | head text: "Principal component scores by group" 1, "box plots of the principal component scores" 1, "the same scores that" 1 (panels a-b on LFQ, TMT, DIA: bullet "(panels c-d)"; panels a-c on limpa: bullet "(panels d-f)", the three-stage variant), PCA bullet "of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins ..." 1; old ones ("Density plots", "distribution of protein intensities per sample", "density boxplots") 0 on every lane. Base text: the three old ones 1 each, the new 0 | HELD |
+| 3. placeholder sentence only in the placeholder case | V0 head none (4 lanes); V1 one on LFQ, TMT, DIA (letters a and h) and none on limpa; V2 none | HELD |
+| 4. text otherwise equal to the base's | word-level diff of V0 base against V0 head: on every lane exactly three replaced regions (the Methods phrase, the PCA bullet, the Results density bullet) and nothing else; V1 text equal to V0 plus the one sentence; limpa V1 equal to V0 | HELD |
+| drawings | 3, 3, 3, 1 | HELD |
+
+**Not shown by the render:** lipidomics and metabolomics (no lane in the script, new code needed: not written); the
+panel-d placeholder label (V1 injects the panels a and h only; T7 pins it); the proteomics lanes' RUV-applied three-stage
+Results text is shown only on DIA with limpa (the other lanes skip RUV and print the two-stage variant).
+
+**Decision.** Every prediction held, for both requests. TRAIN GREEN; landing needs the coordinator's ledger number and
+status cells (listed above).
