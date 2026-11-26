@@ -1171,6 +1171,23 @@ for (class in c("lipid", "metab")) {
     expect_identical(methods::slot(current$corrected, binding$data_slot), methods::slot(earlier$corrected, binding$data_slot))
   })
 
+  # ---- E25m (the coordinator's ruling 2 after P0): the Manual search finds no control set for an assay it cannot read --
+  test_that(paste("KIT-242 E25m:", class, "a Manual search with no control set for A2 (duplicated ids) stops, naming the cause"), {
+    object <- kit242Tibbles(kit242Object(lapply(kit242Draw(51L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
+    tables <- methods::slot(object, binding$data_slot)
+    tables$A2 <- rbind(tables$A2, tables$A2[c(3L, 7L), , drop = FALSE])
+    methods::slot(object, binding$data_slot, check = FALSE) <- tables
+    parameters <- kit242ManualRuv()
+    results <- kit172Quiet(binding$optimise_ruv(object, "manual", parameters[setdiff(names(parameters), "ruv_mode")]))
+    outcome <- omicsRuvSearchOutcomes(results, "manual", object)
+    expect_identical(outcome$A2$action, "stop")
+    expect_identical(outcome$A2$reason, "search_error")
+    expect_match(outcome$A2$text, "found no control features for assay A2", fixed = TRUE)
+    expect_match(outcome$A2$text, "2 duplicated feature identifiers (A2_F003, A2_F007)", fixed = TRUE)
+    expect_match(outcome$A2$text, "Run 'Resolve Duplicates' in the Quality Control tab", fixed = TRUE)
+    expect_identical(outcome$A1$action, "correct")
+  })
+
   # ---- G9: a feature with values that RUV-III-C returns all non-finite is still removed (`:713-715`), as today --------
   test_that(paste("KIT-242 G9:", class, "a feature with values returned all non-finite by RUV-III-C is removed, as today"), {
     object <- kit242Tibbles(kit242Object(lapply(kit242Draw(49L, n_is = c(A1 = 0L, A2 = 0L)), log2), class), binding)
