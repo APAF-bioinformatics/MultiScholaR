@@ -299,8 +299,11 @@ k276Step <- function(operation, outcomes = list()) list(operation = operation, p
 #' The report's Methods and Results text on the RUV outcomes of a record (the dpc and RUV steps' outcomes; the template's own
 #' parser, AnalyzeSamples and its Results call).
 k276ReportText <- function(record) {
-    kept <- Filter(function(step) step$operation %in% c("protein_dpc_quant", "protein_ruv_covariates"), record$steps)
-    steps <- lapply(kept, function(step) k276Step(step$operation, step$outcomes))
+    # The fixture's DPC state is saved without a step record, so the DPC step is given as test-kit227's E7 gives it (the
+    # template takes the limpa route from the DPC engine); the RUV steps are the real record's.
+    kept <- Filter(function(step) identical(step$operation, "protein_ruv_covariates"), record$steps)
+    steps <- c(list(k276Step("protein_dpc_quant", list(engine = "fastlimpadpc", engine_version = "0.1.0"))),
+        lapply(kept, function(step) k276Step(step$operation, step$outcomes)))
     env <- k276ReportEnv()
     dir <- withr::local_tempdir(pattern = "kit276-")
     env$report_source_dir <- dir
