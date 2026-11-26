@@ -81,3 +81,13 @@ argument): same actions as the ticket (three). (2) The wrapper deletes an earlie
 (3) D1 caption: the ticket's draft named left, centre and right columns; the pass-through figure has two, so the caption now says "the first two
 columns are before the sample-correlation filter, and a third column, when the figure has one, is after it" (test row: it names no left, centre
 or right column). (4) The cyclic loess centre title has a 32-character first line (ticket limit 30); R3's lane uses method none and does not render it.
+
+## M1 (A5a): the controller's memory at the limpa_composite delivery
+
+First send 45743367152 (path control failed), second 45750228451 (script died in helper sourcing, no measurement), third (valid) 45751962444, bound to 495af273
+(source tree in controller and child). Observed: the controller process's rise from the reset to the end of the delivery is 0.007 GiB at the
+two-column build and 0.010 GiB at the three-column build (VmRSS before 817,008 and 848,216 kB), against KIT-122's 0.3 GiB applied to the moved event; the
+in-process build in a fresh process reads 0.540 and 0.914 GiB (positive control). Controls: reset (VmHWM equals VmRSS after "5" to
+clear_refs), path (files written from the store at both points, no fallback logged, PNGs 1500 x 3300 and 1950 x 3900). Cause of the first
+failed path control (inferred from the third send): the controller and the child ran different code (a `load_all` tree against the
+installed package); with the same source tree in both the worker's files are found saved. Instrument re-sends used: 3 of 3 (R1b, M1b, M1c).
