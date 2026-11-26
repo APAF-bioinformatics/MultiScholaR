@@ -759,7 +759,7 @@ Batch Effect Correction
 Quality Control
 At each stage of data normalization, samples were checked for batch effects using:
 • Principal component analysis (PCA) to visualize sample clustering
-• Density boxplots to assess distribution consistency
+• Box plots of the samples' scores on the first two principal components of every lipid with at least two values, a separate analysis from the PCA panels, which use the tenth of the lipids with the largest ratio of standard deviation to mean
 • Relative log-expression (RLE) plots to detect systematic biases
 • Pearson correlation matrices to evaluate replicate consistency
 
@@ -809,7 +809,7 @@ Quality Control Analysis
 Figure 1 shows four quality-control views at each stage of processing drawn for this analysis. Whether RUV-III
 correction was applied is not recorded for this analysis.
 • Principal component analysis (PCA) to visualize sample clustering
-• Density boxplots to assess distribution consistency
+• Box plots of the samples' scores on the first two principal components of every lipid with at least two values, a separate analysis from the PCA panels, which use the tenth of the lipids with the largest ratio of standard deviation to mean
 • Relative log-expression (RLE) plots to detect systematic biases
 • Pearson correlation matrices to evaluate replicate consistency ",
       .trim = FALSE
