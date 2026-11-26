@@ -1,0 +1,9 @@
+cell	job	arm	arm_scale	scenario	mask	status	class	n
+L12	l1c	LA		N1	none	ok		1
+L12	l1c	NO		N1	none	ok		1
+L12	l1c	LA		N1	none	uncorrected		1
+L12	l1c	unit		N1	none	crashed	child process exit 3, no result 	1
+L12	l1c	LA		N1	none	instrument	itsd_not_applied:LCMS_Neg:a,b,c | itsd_not_applied:LCMS_Pos:a,b,c	1
+L12	l1c	LA		N1	none	instrument	itsd_not_applied:LCMS_Pos:a,b,c	1
+L12	l1c	LA		N1	none	instrument	norm_not_applied:LCMS_Pos	1
+L12	l1c	LA		N1	none	crashed	simpleError: K188 planted DA error (E15)	1

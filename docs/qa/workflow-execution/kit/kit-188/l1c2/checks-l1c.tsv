@@ -1,0 +1,28 @@
+check	cell	rep	condition	value	threshold	pass	note
+E12_patterns	lipid msdial	0	format default	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid lipidsearch	0	format default	^IS_|ISTD|Internal|_IS	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab msdial	0	format default	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E4b	constructed	0	ties	NA	exact	TRUE	share 1 block 3 jaccard 0.333333333333333; no-tie share 0
+E3	lipid	0	defaults	NA	equal to 2.1 and 18.4	TRUE	differ: ; labelled names matching an ITSD pattern: ; markers off their current token: ; import pattern as shipped TRUE; replay markers missing at this commit:  | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ru
+E15	L12	401	itsd	met	as 35.6 predicts	TRUE	
+E15R	L12	401	itsd	10	as written in lifecycle.md (R items)	TRUE	
+E15	L12	401	itsdpos	met	as 35.6 predicts	TRUE	
+E15R	L12	401	itsdpos	9	as written in lifecycle.md (R items)	TRUE	
+E15	L12	401	emptysample	met	as 35.6 predicts	TRUE	
+E15R	L12	401	emptysample	5	as written in lifecycle.md (R items)	TRUE	
+E15	L12	401	ruvskip	met	as 35.6 predicts	TRUE	
+E15R	L12	401	ruvskip	5	as written in lifecycle.md (R items)	TRUE	
+E15	L12	401	ruvdrop	met	as 35.6 predicts	TRUE	
+E15R	L12	401	ruvdrop	2	as written in lifecycle.md (R items)	TRUE	
+E15	L12	401	daerror	met	as 35.6 predicts	TRUE	
+E15R	L12	401	daerror	4	as written in lifecycle.md (R items)	TRUE	
+E15	L12	401	normplant	met	as 35.6 predicts	TRUE	
+E15	L12	401	exitplant	3	exit 3, one unit row, crashed	TRUE	exit 3; 1 row(s)
+unit_completed	L12	401	l1c exitplant	NA	ran to the end	TRUE	child process exit 3, no result 

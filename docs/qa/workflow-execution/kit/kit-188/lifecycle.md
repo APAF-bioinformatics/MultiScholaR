@@ -441,3 +441,7 @@ What the re-send will show if it is right: `unit_completed` TRUE for the seven c
 
 The provenance's `exit_status` (0) is written before the end-of-run stop, so it does not say how the job ended. The run's exit code is read from the runner's `scripts.tsv` / `summary.md` (the Rscript's own exit status). E16's per-case outputs are declared under the directory `run-e16.R` writes (`k188-smoke-e16`), so they upload (the bound `run-e16.R` is not edited).
 RS-1 (for the ticket's text, after the re-send): the R items of `predictions-l1c.tsv` are "40 rows: 35 plant R items and E7's 5".
+
+## L1c re-send (run 45827464121, scripts at the hashes of declaration-l1c.md's re-send section): every required item met
+
+Raw: `l1c2/`. Observed: runner `scripts.tsv` exit 0 for both scripts (429 s, 110 s); E16 `179 checks, 0 differ` (its per-case outputs now upload under `k188-smoke-e16`); E3 TRUE; E15 8 TRUE (the seven plants and `exitplant`); E15R 6 TRUE (itsd, itsdpos, emptysample, ruvskip, ruvdrop, daerror; the earlier "7" was a miscount: the six plants with R rows); exactly one `unit_completed` row (`exitplant`, TRUE by design); timing `error` empty and exit 0 for the seven plants, exit 3 for `exitplant`; no `no_result_no_trace` in the status file; provenance `units_with_error` 1; `plants-l1c.tsv` identical to the first send's. Cost about 1.25 core-hours ((9.0 + 10) x 4 / 60); L1c's two sends about 2.54 of its 3.67 allowance; no third send is authorised.
