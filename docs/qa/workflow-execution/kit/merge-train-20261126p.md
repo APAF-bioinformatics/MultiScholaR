@@ -103,3 +103,46 @@ job-minutes for the comparison.
 - The stored-value row for `test-prot-norm-core.R:188` (the skip run's count of `resolveProtNormCompositeFigureInputs`,
   1 to 2; no output changes), as VAL-282 and VAL-301.
 - `NEWS.md`: KIT-259's bullets (merged without conflict here).
+
+## Result
+
+Two runs, both dispatched without error (no HTTP 500/502; the API's 403 rate limit hit only the watcher, not the
+runs). Requests `train23-compare-460253ba` (run 45716988827) and `train23-render-460253ba` (run 45716996784), request
+commit 9d5ca71d. Head 460253ba vs base 176f9d3f (staging). Tables: `merge-train-20261126p/` (comparison) and
+`merge-train-20261126p-render/` (render), same directory as this file.
+
+**Job-minutes.** Comparison 580.9 (tests head 62.8/44.5/60.4/62.0/54.8, tests base 53.3/55.6/48.8/53.0/54.0, check head
+15.1, check base 15.6, plan 0.3, results 0.7) against the ceiling of 600 = 38.73 core-hours. Render 23.7 (scripts 22.9;
+the script itself 792 s) against 60 = 1.58 core-hours. **Total 604.6 job-minutes = 40.31 core-hours** (ceilings 660 =
+44.0).
+
+| Item | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| Scope | 85 files | | 85 | HELD (83 + `test-kit204-prot-da-not-tested.R`, `test-kit261-norm-run-button.R`) |
+| test-kit259b-second-correction.R | only-on-head, 90/0 | absent | 90/0, 0 skipped | HELD |
+| test-prot-norm-core.R | message-changed, 1548/306 to 1547/307, one new failure at `:187-189` | 1548/306 | 1547/307 | HELD (below) |
+| test-kit259-pearson-histogram-figure-failure.R | same, 85/0 | 85/0 | 85/0 | HELD |
+| test-metab-01k-s4-plot-pearson-characterization.R | same, 17/0 | 17/0 | 17/0 | HELD |
+| the other 80 files incl. kit204 and kit261 | same | same | same | HELD |
+| R CMD check | identical | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | HELD: 6 findings identical, only on head none, only on base none |
+| Render V0 | text identical to base's, drawings 3, 3, 3, 1 | | | HELD, all four lanes |
+| Render V1 | one added sentence (a and h) on LFQ, TMT, DIA; none on DIA with limpa | | | HELD |
+| Render V2 | no sentence | | | HELD |
+
+Comparison totals: 85 files, 83 `same`, 1 `only-on-head`, 1 `message-changed`, no `new-failure`, no `count-changed`.
+
+**The one change in `test-prot-norm-core.R`**, from `compare-failures.txt` (head):
+the test "the normalisation action and the correlation action give the recorded output through the moved functions",
+kind failure: "Expected `skipped$calls` to be identical to `c(...)`. `actual[2:7]`: 0 0 1 2 1 1; `expected[2:7]`: 0 0 1 1 1 1"
+(the pinned call count of `resolveProtNormCompositeFigureInputs`, `:187-189`, 2 observed against 1 pinned). The other
+failures of that block (the `correlation`, `normalization_manual` and `normalization_skip` digests) are identical on
+both sides. No other change in the file.
+
+**Render** (`merge-train-20261126p-render/checks.tsv`): 27 of 27 checks as predicted. V0 text equal on prot_lfq,
+prot_tmt, prot_dia, prot_dia_limpa; drawings 3, 3, 3, 1; no placeholder sentence. V1 one sentence, letters a and h, on
+LFQ, TMT, DIA, the rest of the text equal to V0; none on DIA with limpa. V2 no sentence on any lane.
+
+**Decision.** Every prediction held. TRAIN GREEN, with the one pinned-count message change that is the coordinator's
+stored-value row (the end-of-project re-record list). The pre-existing failures in the other files (for example
+`test-gui-entry-proteomics.R` 92/101, `test-omic-summary-module.R` 1675/28, `test-workflow-saved-da.R` 755/196) are
+identical on both sides.
