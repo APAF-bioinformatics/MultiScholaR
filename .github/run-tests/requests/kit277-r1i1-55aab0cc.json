@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-277 R1 instrument re-send 1 of 3 (VAL-54): new file only, tests-only commit 55aab0cc (definition order, lane step id, P8 capture); no expectation changed; ceiling 6.67 core-hours; running total 7.73 + 6.67 of 200.00",
+  "label": "KIT-277 R1 instrument re-send 1 55aab0cc",
+  "package_commit": "55aab0ccd38d892d8d0fb1bf1933300d19c965e5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 90
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
