@@ -150,4 +150,4 @@ Decision: KIT-219 is green on the merged tree.
 ## What the coordinator resolves at landing
 
 - Ledger: `VAL-<train38-1>` (`docs/methods-decision-ledger.md:2560`) takes its number (next free VAL-388). Status cells of the rows it cites: VAL-179 (SD-5) and VAL-187: fill "implemented by KIT-219 (VAL-n), merged by train 38" where they wait for this merge. No stored-reference row (the audit found no stored value moves).
-- Placeholders in the member's records and NEWS: none found by `grep -rn "VAL-<"` over `kit-219/` and `NEWS.md` (the ledger row is the only one).
+- Placeholders in the member's records and NEWS: `docs/qa/workflow-execution/kit/kit-219/outcome.md:50` (row A5) mentions the ledger row as `VAL-<merge>` (a record mention, to read as the row's number); `NEWS.md` has none. (My first line here said none; the grep output showed that one hit.)
