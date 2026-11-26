@@ -1,0 +1,2 @@
+run	commit	purpose	job_minutes	result
+45723980071	050a04028feb2653b8710a0cc446d24bae8e4ae6	R1 tests-only, one shard, no base (kit274 file 135 s, kit264 file 256 s)	about 15 (expected 20; 1.0 core-h of 1.33)	T1-T7,T12 fail by value as predicted; T8,T9,T11 pass; T10 (predicted pass) FAILED: missed prediction, stop and report; X1 base line printed
