@@ -5,3 +5,4 @@ run_id	request	commit	purpose	job_minutes	core_hours	result
 45797086832	kit277-sg1-53e4c745	53e4c745	SG1 stage 1 (S1 rows + G2 + globals)	28	1.9	HELD: new file 113 passed 0 failed 17 skipped (S2/S3); globals 14 passed 0 failed
 45804909404	kit277-r2-53e4c745	53e4c745 vs f16edb13	R2 comparison, 134 files, 4 shards per side, check both	~806	~55	STOP RULE 3: 132 same, KIT-247 file fixed, new file 3 head failures (O4 x2, P4 lfq record_da); check identical (0 ERRORs, 3 WARNINGs, 3 NOTEs both sides)
 45825080961	kit277-diag-o4-2044cdba	2044cdba vs 17045564	O4 diagnostic (log only, S2 rows, base and head)	~38	~2.5	diagnostic read (outcome.md): head da_results stays <none> from point A to F; base current throughout
+45829015562	kit277-diag2-fc8df559	fc8df559 vs 376c2bfe	O4 diagnostic 2 (full notes, DA press trace, console)	(pending)		in flight
