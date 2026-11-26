@@ -1,3 +1,6 @@
 run	commit	purpose	job_minutes	core_hours	result
 45776354953	e77f096c	R1 tests only, failing-first	28.3	1.89	119 passed 64 failed 2 errors (T8b, T14 mechanics); 66 predicted failures at the stated values; integration-input :703 failed as predicted
 45780547662	f847c433	R1b instrument repair 1 of 3 (T8b, T14 mechanics only)	22.4	1.49	125 passed 70 failed 0 errors; T8b and T14 failed by value as predicted
+45784213557	2f76cca9 vs f847c433	R2 fix against tests-only, 97 files, R CMD check both sides	1154.5	77.0	95 same, 2 fixed (new file 125/70 -> 194/1: T2 mechanics; integration-input 240/1 -> 241/0), 0 new-failure; check identical 0/3/3; test-prot-norm-core same 1555/307
+45799233856	e6f83d43 vs 72ba4edc	R3 instrument repair 2 of 3 (T2 mechanics), new file only, base and head	42.0	2.80	base 123 passed 72 failed (T2 fails all three expectations as predicted); head 195 passed 0 failed
+total				83.3	of 172.00 core-hours (expected 84.2 restated; ticket 61.26)
