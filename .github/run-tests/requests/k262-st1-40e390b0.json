@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-262 M3 stage 1 of the blinded re-estimation (m3-counted-declaration.md at 40e390b0): scorer self-test first (gate), then 100 stress units (S-N, S-E, replicates 1:50; rows private); OMP_NUM_THREADS=1; plan 35 min, timeouts 20 and 75; running line about 91.3 of 250.32 before this request",
+  "label": "KIT-262 M3 stage 1 40e390b0",
+  "package_commit": "40e390b04564e2820d825cd8df3768bde2f304c7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R",
+      "args": ["selftest", "k262-st1/s1", "docs/qa/workflow-execution/kit/kit-262/e5hand-m3-expected.tsv"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k262-st1/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m3-k262.R",
+      "args": ["k262-st1/s2"],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K262_M3_GATE": "k262-st1/s1/checks.tsv",
+        "K262_M3_STAGE1": "1",
+        "K262_M3_REPS": "1:50",
+        "K262_M3_E8": "0",
+        "K262_M3_WORKERS": "4"
+      },
+      "out": "k262-st1/s2",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
