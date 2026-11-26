@@ -350,6 +350,59 @@ runProtDesignImportConfirmationFlow <- function(
     buildStateCheckpointFn = buildProtDesignStateCheckpoint,
     completePostCheckpointFn = completeProtDesignPostCheckpoint
 ) {
+  # KIT-247 (VAL-239, OD-1 (D)): compared before the bus is hydrated; a changed design over later steps asks first.
+  manager <- workflowData$state_manager
+  if (inherits(manager, "DIAStateAdapter")) {
+    stateName <- protDesignStateName(manager)
+    later <- length(omicsDesignLaterStates(manager, stateName)) > 0L
+    verdict <- if (later) compareOmicsDesignResult(manager, list(design_matrix = importedArtifacts$importedDesign,
+      data = importedArtifacts$importedDataCln), stateName,
+      omicsDesignCompared(manager, workflowData)) else "first"
+    if (later && verdict %in% c("unchanged", "changed")) {
+      importedConfig <- workflowData$config_list
+      # AUDIT I01 (VAL-277): the confirmed import runs inside the import's error handling, as the unconfirmed one does
+      # in the shell: an error after Save is shown as "Error during import: ...", and the bus is put back as it was.
+      flow <- function(cut) {
+        # AUDIT C05: also the FASTA and UniProt tables the sidecars read from the folder before the checkpoint.
+        fields <- c("design_matrix", "data_cln", "contrasts_tbl", "config_list", "taxon_id", "organism_name",
+          "aa_seq_tbl_final", "fasta_metadata", "uniprot_dat_cln")
+        kept <- lapply(stats::setNames(fields, fields), function(field) shiny::isolate(workflowData[[field]]))
+        tryCatch({
+          workflowData$config_list <- importedConfig
+          runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
+          importedArtifacts, taxonId, organismName, session, qcTrigger, successMessage, successNotificationId,
+          hydrateFastaSidecar, hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn,
+          completePostCheckpointFn, cut = cut)
+        }, error = function(e) {
+          for (field in fields) workflowData[[field]] <- kept[[field]]
+          msg <- paste("Error during import:", conditionMessage(e))
+          logger::log_error(msg)
+          shiny::removeModal()
+          shiny::showNotification(msg, type = "error", duration = 15)
+          shiny::removeNotification(successNotificationId)
+          invisible(NULL)
+        })
+      }
+      # AUDIT I01 (b): the working notice is closed before the question (Cancel then leaves nothing behind).
+      if (identical(verdict, "changed")) shiny::removeNotification(successNotificationId)
+      return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, unchanged = function() {
+        shiny::removeNotification(successNotificationId)
+        applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = importedArtifacts$importedContrasts,
+          config_list = workflowData$config_list), "differential_expression")
+      })))
+    }
+  }
+  runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts, importedArtifacts, taxonId,
+    organismName, session, qcTrigger, successMessage, successNotificationId, hydrateFastaSidecar,
+    hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn, completePostCheckpointFn)
+}
+
+#' The import's commit (KIT-247: `runProtDesignImportConfirmationFlow` decides first); `cut` sets the previous design's
+#' later states aside after the commit.
+#' @noRd
+runProtDesignImportConfirmationFlowNow <- function(workflowData, experimentPaths, importArtifacts, importedArtifacts,
+    taxonId, organismName, session, qcTrigger, successMessage, successNotificationId, hydrateFastaSidecar,
+    hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn, completePostCheckpointFn, cut = FALSE) {
   hydrateFastaSidecar(
     workflowData = workflowData,
     importPath = importArtifacts$importPath,
@@ -374,10 +427,6 @@ runProtDesignImportConfirmationFlow <- function(
     organismName = organismName
   )
 
-  # KIT-026: the directory import reads its design (and FASTA, when one is found) from files.
-  recordDIAWorkflowInputs(workflowData$state_manager, c(design_file = importArtifacts$designFile,
-    fasta = importArtifacts$fastaPath))
-
   workflowData$prot_design_log2_counts <- NULL
   stateName <- buildStateCheckpointFn(
     workflowData = workflowData,
@@ -385,6 +434,12 @@ runProtDesignImportConfirmationFlow <- function(
     actionLabel = "Import",
     validateColumnMapping = TRUE
   )
+  # KIT-026: the directory import reads its design (and FASTA, when one is found) from files. KIT-247 (AUDIT C05): recorded
+  # after the checkpoint, so an import refused there is never named as the project's input.
+  recordDIAWorkflowInputs(workflowData$state_manager, c(design_file = importArtifacts$designFile,
+    fasta = importArtifacts$fastaPath))
+  rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
+  didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
   # KIT-177: the values the design step set to missing, named and counted.
   notifyProtDesignLog2Counts(workflowData)
 
@@ -400,6 +455,7 @@ runProtDesignImportConfirmationFlow <- function(
     successMessage = successMessage,
     successNotificationId = successNotificationId
   )
+  if (didCut) completeOmicsDesignCut(workflowData, "proteomics", experimentPaths)
 
   invisible(list(
     workflowType = workflowType,
@@ -440,6 +496,9 @@ runProtDesignImportObserverShell <- function(
   showNotification("Importing design files...", id = "importing_design", duration = NULL)
 
   tryCatch({
+    # KIT-247: the import reads the folder's config.ini into the bus; a changed design waiting for confirmation keeps
+    # the session's own until Save (Cancel then changes nothing).
+    previousConfig <- workflowData$config_list
     importedArtifacts <- loadImportedArtifacts(
       workflowData = workflowData,
       experimentPaths = experimentPaths,
@@ -458,6 +517,7 @@ runProtDesignImportObserverShell <- function(
       session = session,
       qcTrigger = qcTrigger
     )
+    if (identical(flowResult, "changed")) workflowData$config_list <- previousConfig
 
     invisible(list(
       ok = TRUE,

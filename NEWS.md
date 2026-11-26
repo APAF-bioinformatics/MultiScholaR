@@ -274,6 +274,24 @@
    application, and transcriptomics were not affected. Analyses recorded before this change now replay with the
    Benjamini-Hochberg values their record names, so for those comparisons a replay differs from the results saved
    before this change (significant counts, plots, enrichment and report numbers included) (KIT-249).
+ * Every omic: saving the design again (Save Design or Import Existing Design) after Quality Control or normalisation
+   now compares it with the design it replaces. When the design table changes (samples, groups, technical replicates,
+   factors or batch) or the data table the user is asked first; on Save the earlier Quality Control, normalisation and later results are set aside, the omic's earlier
+   integration input (its folder and the file beside it) is removed, and a notice says so. A change of the
+   comparisons only keeps every later step (the differential analysis is to be run again). 'Run Normalization' pressed
+   after that and before Quality Control is applied again still runs, as on a new project, but no longer silently:
+   Quality Control shows as not done, proteomics warns on entering Normalisation and no longer says the run uses the
+   current quality-control result, and the analysis record lists only what was run. Before, saving the design again
+   set nothing aside: 'Run Normalization' pressed after it normalised the new design's table without the Quality
+   Control steps, while the Quality Control tab still showed complete and the analysis record listed the earlier
+   design's steps; and 'Reset to Pre-Normalization' could make the previous design's table current again
+   (proteomics: the previous design's Protein Replicate Filter table, or on DIA with limpa its Peptide Count Filter
+   table; lipidomics, metabolomics, transcriptomics: the table the last normalisation started from), and the next
+   normalisation, correlation filter and differential analysis then ran on the previous design's samples and groups
+   with the new design's comparisons, with no message. Lipidomics, metabolomics and transcriptomics Reset now brings
+   back the starting table only while it is current. The message for a design whose technical replicates collide
+   (KIT-222) now says to apply Quality Control again after saving the corrected design. A refused 'Save Workflow
+   Arguments' now also removes the omic's earlier integration file beside its folder (KIT-247).
  * Every omic: when the table changed after the differential analysis (a Reset and a new run, a Revert, the
    correlation filter applied again, or Quality Control reverted) and the analysis was not run again, the Summary's
    'Save Workflow Arguments', 'Generate Report' and 'Copy to Publication Directory' now refuse with a message; a

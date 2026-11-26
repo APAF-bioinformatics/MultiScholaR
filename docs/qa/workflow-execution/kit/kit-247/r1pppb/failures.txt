@@ -1,0 +1,99 @@
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): prot_lfq a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): prot_lfq a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$status[[key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): lipid_canonical a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): lipid_canonical a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$status[[key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$history` to be identical to `out$before$history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+                           - "protein_replicate_filtered" [6]
+                           - "normalized"                 [7]
+                           - "correlation_filtered"       [8]
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$head` to be identical to `out$before$head`.
+  Differences:
+  `actual`:   "protein_s4_initial"  
+  `expected`: "correlation_filtered"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$entity` to be identical to `out$before$entity`.
+  Differences:
+  `actual`:   "d3fcbf5e9b92ce5b2208017d9460b072093c0c5d888f087c7725b62fd9133593"
+  `expected`: "a90f730981381450b9fbdd126b157ea0e117443730240cea36e669fdab211411"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$status$quality_control` to be identical to `out$before$status$quality_control`.
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "complete"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$status$normalization` to be identical to `out$before$status$normalization`.
+  Differences:
+  `actual`:   "disabled"
+  `expected`: "complete"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288c (VAL-288): the question names what changed (draft wording)
+kind: error
+message:
+  Error in `omicsDesignResaveLimitedText("formula")`: could not find function "omicsDesignResaveLimitedText"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(...) at test-kit247-design-resave.R:759:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
