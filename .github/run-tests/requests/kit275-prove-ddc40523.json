@@ -1,0 +1,119 @@
+{
+  "requested_by": "KIT-275 proving send (once; continuation paths; the run's overall status is failure BY PREDICTION; declaration declarations/proving-declaration.md on branch kit-275; VAL-382; ceiling 49 job-minutes)",
+  "label": "KIT-275 proving ddc40523",
+  "package_commit": "ddc40523ddd774cb4141f3107f5c459f706a84f4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-prove-selftest"
+      },
+      "out": "k275-prove-selftest",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "S,T",
+        "D3",
+        "9201",
+        "9202",
+        "k275-prove/a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_JOB": "k275-prove",
+        "K275_WORKERS": "4"
+      },
+      "out": "k275-prove/a",
+      "out_pattern": ".",
+      "timeout_minutes": 2
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "S,T",
+        "D3",
+        "9201",
+        "9202",
+        "k275-prove/b"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_JOB": "k275-prove",
+        "K275_WORKERS": "4",
+        "K275_ONLY_UNITS": "T-D3-9201,T-D3-9202"
+      },
+      "out": "k275-prove/b",
+      "out_pattern": ".",
+      "timeout_minutes": 8
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/score-k275.R",
+      "args": [
+        "k275-prove",
+        "k275-prove-s1"
+      ],
+      "env": {
+        "K275_G1": "docs/qa/workflow-execution/kit/kit-275/g1/g1.tsv",
+        "K275_SCORE_R": "200,9202,20",
+        "K275_BOOT_B": "200"
+      },
+      "out": "k275-prove-s1",
+      "out_pattern": "^(decision\\.tsv|settings\\.txt)$",
+      "timeout_minutes": 5
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "S,T",
+        "D3",
+        "9201",
+        "9202",
+        "k275-prove/c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_JOB": "k275-prove",
+        "K275_WORKERS": "4",
+        "K275_ONLY_UNITS": "T-D3-9201"
+      },
+      "out": "k275-prove/c",
+      "out_pattern": ".",
+      "timeout_minutes": 8
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/score-k275.R",
+      "args": [
+        "k275-prove",
+        "k275-prove-s2"
+      ],
+      "env": {
+        "K275_G1": "docs/qa/workflow-execution/kit/kit-275/g1/g1.tsv",
+        "K275_SCORE_R": "200,9202,20",
+        "K275_BOOT_B": "200"
+      },
+      "out": "k275-prove-s2",
+      "out_pattern": "^(decision\\.tsv|settings\\.txt)$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
