@@ -25,6 +25,9 @@ for (omic in c("lipidomics", "metabolomics")) {
       expect_match(help, k258bMost, ignore.case = TRUE)
       expect_match(help, k258bThenMean, ignore.case = TRUE)
       expect_match(help, k258bTableOrder, ignore.case = TRUE)
+      # VAL-284 (1): a zero is not measured; the kept row keeps its own annotation.
+      expect_match(help, "(0|zero)[^.]*not measured", ignore.case = TRUE)
+      expect_match(help, "keeps its own name and annotation", ignore.case = TRUE)
       expect_false(grepl(k258bOld, help, ignore.case = TRUE))
     })
   })
@@ -40,6 +43,7 @@ for (prefix in c("lipid", "metab")) {
       text <- k258bFlat(omicQcDuplicatesText(resolved, prefix))
       expect_match(text, k258bMost, ignore.case = TRUE)
       expect_match(text, k258bThenMean, ignore.case = TRUE)
+      expect_match(text, "(0|zero)[^.]*not measured", ignore.case = TRUE)
       expect_false(grepl(k258bOld, text, ignore.case = TRUE))
     })
   })
@@ -129,6 +133,21 @@ for (name in names(k258bTitles)) {
       expect_false(grepl("highest average intensity", rd_title, ignore.case = TRUE))
       expect_match(roxygen_title, "most completely measured", ignore.case = TRUE)
       expect_false(grepl("highest average intensity", roxygen_title, ignore.case = TRUE))
+    })
+  })
+}
+
+# ---- (5) The declared step's description (the step's heading in the analysis record and its appendix) ------------------
+
+for (omic in c("lipidomics", "metabolomics")) {
+  local({
+    omic <- omic
+    test_that(sprintf("KIT-258b (5) %s: the declared step's description states the rule as merged", omic), {
+      binding <- if (identical(omic, "lipidomics")) lipidomicsDeclarationBinding else metabolomicsDeclarationBinding
+      description <- k258bFlat(omicsDuplicateResolutionStep(binding)$description)
+      expect_match(description, k258bMost, ignore.case = TRUE)
+      expect_match(description, k258bThenMean, ignore.case = TRUE)
+      expect_false(grepl(k258bOld, description, ignore.case = TRUE))
     })
   })
 }
