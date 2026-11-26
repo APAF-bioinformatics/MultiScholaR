@@ -1,0 +1,59 @@
+check	cell	rep	condition	value	threshold	pass	note
+E12_patterns	lipid msdial	0	format default	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid lipidsearch	0	format default	^IS_|ISTD|Internal|_IS	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab msdial	0	format default	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E4b	constructed	0	ties	NA	exact	TRUE	share 1 block 3 jaccard 0.333333333333333; no-tie share 0
+E3	metab	0	defaults	NA	equal to 2.1 and 18.4	FALSE	differ: ; labelled names matching an ITSD pattern: ; markers off their current token: ; import pattern as shipped FALSE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k
+E6	M12	401	N0	1.776e-15	1e-12	TRUE	
+E10	M12	401	N0 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E14	M12	401	N0 none LA	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	M12	401	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E14	M12	401	N0 none GA	ok	a status per assay; script equals product	TRUE	product NA; identical() strictness only: FALSE
+E1	M12	401	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	401	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M12	401	N0 none LCMS_Pos	2.556e-14	1e-08	TRUE	k 2, controls 6 (reported, never re-run)
+E3_itsd_identity	M12	401	N0 none NO	NA	identical DA tables, ITSD ticked against off	TRUE	rows 423 and 423; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E3_itsd_identity	M12	401	N0 none LA	NA	identical DA tables, ITSD ticked against off	TRUE	rows 423 and 423; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E10	M12	401	N0 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 18: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E10	M12	401	N0 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 3 (product 3), k used 2, cap 2: bound TRUE, record TRUE
+E3_itsd_identity	M12	401	N0 vd20 NO	NA	identical DA tables, ITSD ticked against off	TRUE	rows 402 and 402; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E3_itsd_identity	M12	401	N0 vd20 LA	NA	identical DA tables, ITSD ticked against off	TRUE	rows 378 and 378; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E6	M12	401	N1	1.776e-15	1e-12	TRUE	
+E10	M12	401	N1 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E8	M12	401	N1 none LCMS_Pos	1.332e-15	1e-08	TRUE	k 2, controls 6 (reported, never re-run)
+E10u	M12	401	N1 none	NA	the sweep is untouched by the bound	TRUE	LCMS_Pos: LA sweep k 4 pct 4, untouched sweep k 4 pct 4, product k_sweep 4: TRUE
+E10	M12	401	N1 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 8: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E10	M12	401	N1 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 14: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E6	M12	401	E0	1.776e-15	1e-12	TRUE	
+E10	M12	401	E0 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 6: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E8	M12	401	E0 none LCMS_Pos	7.477e-14	1e-08	TRUE	k 2, controls 8 (reported, never re-run)
+E10	M12	401	E0 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 5: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E10	M12	401	E0 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 15: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E6	M12	401	E1	1.776e-15	1e-12	TRUE	
+E10	M12	401	E1 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 12: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E8	M12	401	E1 none LCMS_Pos	1.887e-15	1e-08	TRUE	k 2, controls 17 (reported, never re-run)
+E3_itsd_identity	M12	401	E1 none NO	NA	identical DA tables, ITSD ticked against off	TRUE	rows 429 and 429; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E3_itsd_identity	M12	401	E1 none LA	NA	identical DA tables, ITSD ticked against off	TRUE	rows 429 and 429; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E10	M12	401	E1 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 5: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E10	M12	401	E1 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E3_itsd_identity	M12	401	E1 vd20 NO	NA	identical DA tables, ITSD ticked against off	TRUE	rows 402 and 402; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E3_itsd_identity	M12	401	E1 vd20 LA	NA	identical DA tables, ITSD ticked against off	TRUE	rows 390 and 390; itsd record fields applied,method_type,itsd_aggregation,itsd_pattern_columns,removed_itsd,timestamp
+E2	M12	401	E1 vd20	0	identical	TRUE	rows 402 and 402
+E6	M12	401	N2	1.776e-15	1e-12	TRUE	
+E10	M12	401	N2 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 8: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 3 (product 3), k used 2, cap 2: bound TRUE, record TRUE
+E8	M12	401	N2 none LCMS_Pos	2.831e-15	1e-08	TRUE	k 2, controls 11 (reported, never re-run)
+E10	M12	401	N2 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 9: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 3 (product 3), k used 2, cap 2: bound TRUE, record TRUE
+E10	M12	401	N2 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 3 (product 3), k used 2, cap 2: bound TRUE, record TRUE
+E6	M12	401	E2	1.776e-15	1e-12	TRUE	
+E10	M12	401	E2 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 10: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 1 (product 1), k used 1, cap 2: bound TRUE, record TRUE
+E8	M12	401	E2 none LCMS_Pos	2.665e-15	1e-08	TRUE	k 1, controls 14 (reported, never re-run)
+E10	M12	401	E2 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 9: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 1 (product 1), k used 1, cap 2: bound TRUE, record TRUE
+E10	M12	401	E2 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 17: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 1 (product 1), k used 1, cap 2: bound TRUE, record TRUE
+E15_silence	all	0	every journey of the run	0	0 instrument rows, 0 itsd_ok or norm_ok FALSE, 0 failing E14 rows	TRUE	1 units

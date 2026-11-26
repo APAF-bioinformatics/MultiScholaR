@@ -1,0 +1,83 @@
+check	cell	rep	condition	value	threshold	pass	note
+E12_patterns	lipid msdial	0	format default	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid lipidsearch	0	format default	^IS_|ISTD|Internal|_IS	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab msdial	0	format default	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E4b	constructed	0	ties	NA	exact	TRUE	share 1 block 3 jaccard 0.333333333333333; no-tie share 0
+E3	metab	0	defaults	NA	equal to 2.1 and 18.4	FALSE	differ: ; labelled names matching an ITSD pattern: ; markers off their current token: ; import pattern as shipped FALSE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k
+E3	lipid	0	defaults	NA	equal to 2.1 and 18.4	FALSE	differ: ; labelled names matching an ITSD pattern: ; markers off their current token: ; import pattern as shipped FALSE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k
+E6	M12	401	N0	1.776e-15	1e-12	TRUE	
+E9	M12	401	N0 none	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 6: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E14	M12	401	N0 none LP	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	M12	401	N0 none LP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	401	N0 vd5	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 11: 15 controls, positions among valid rows 1-15, expected 1..15: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E9	M12	401	N0 vd20	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 11: 15 controls, positions among valid rows 1-15, expected 1..15: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E6	M12	401	N1	1.776e-15	1e-12	TRUE	
+E9	M12	401	N1 none	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 14: 20 controls, positions among valid rows 1-20, expected 1..20: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E9	M12	401	N1 vd5	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 15: 21 controls, positions among valid rows 1-21, expected 1..21: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E9	M12	401	N1 vd20	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E6	M12	401	E0	1.776e-15	1e-12	TRUE	
+E9	M12	401	E0 none	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 18: 25 controls, positions among valid rows 1-25, expected 1..25: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 2, uncapped sweep k 2: TRUE
+E9	M12	401	E0 vd5	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 17: 24 controls, positions among valid rows 1-24, expected 1..24: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 2, uncapped sweep k 2: TRUE
+E9	M12	401	E0 vd20	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 18: 24 controls, positions among valid rows 1-24, expected 1..24: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E6	M12	401	E1	1.776e-15	1e-12	TRUE	
+E9	M12	401	E1 none	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 4, uncapped sweep k 4: TRUE
+E9	M12	401	E1 vd5	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 4: 6 controls, positions among valid rows 1-6, expected 1..6: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E9	M12	401	E1 vd20	NA	same sets	TRUE	LP LCMS_Pos: RUV input rows in the written order TRUE; LP LCMS_Pos pct 4: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LP LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LP LCMS_Pos: k 1, uncapped sweep k 1: TRUE
+E6	M12	401	N0	1.776e-15	1e-12	TRUE	
+E10	M12	401	N0 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E14	M12	401	N0 none LA	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	M12	401	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E14	M12	401	N0 none LAs	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	M12	401	N0 none LAs	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E11	M12	401	N0 none	5.329e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 8.882e-16
+E10	M12	401	N0 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 18: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	N0 vd5	5.329e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 8.882e-16
+E10	M12	401	N0 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 3 (product 3), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	N0 vd20	8.66e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E6	M12	401	N1	1.776e-15	1e-12	TRUE	
+E10	M12	401	N1 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	N1 none	3.553e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E10	M12	401	N1 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 8: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	N1 vd5	6.217e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E10	M12	401	N1 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 14: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	N1 vd20	5.329e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E6	M12	401	E0	1.776e-15	1e-12	TRUE	
+E10	M12	401	E0 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 6: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	E0 none	6.217e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 8.882e-16
+E10	M12	401	E0 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 5: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	E0 vd5	5.329e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E10	M12	401	E0 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 15: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	E0 vd20	3.553e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 8.882e-16
+E6	M12	401	E1	1.776e-15	1e-12	TRUE	
+E10	M12	401	E1 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 12: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	E1 none	3.553e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E10	M12	401	E1 vd5 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 5: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 5 (product 5), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	E1 vd5	5.329e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 8.882e-16
+E10	M12	401	E1 vd20 LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 4: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 4 (product 4), k used 2, cap 2: bound TRUE, record TRUE
+E11	M12	401	E1 vd20	5.107e-15	constant per feature at most 1e-9; logFC 1e-10	TRUE	LCMS_Pos: same RUV input TRUE, same controls and k TRUE, per-feature range of the difference 1.776e-15
+E10	K172c-lipid	0	N0 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 20: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 8 (product 8), k used 2, cap 2: bound TRUE, record TRUE
+E14	K172c-lipid	0	N0 none LA	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	K172c-lipid	0	N0 none LA	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E10	K172c-lipid	0	N0 none LM	NA	rule (d), the bound, the record	TRUE	LM LCMS_Pos pct 5: controls equal rule (d) with BH TRUE (with qvalue TRUE); LM LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E14	K172c-lipid	0	N0 none LM	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	K172c-lipid	0	N0 none LM	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E14	K172c-lipid	0	N0 none GA	none	a status per assay; script equals product	TRUE	product NA; identical() strictness only: FALSE
+E1	K172c-lipid	0	N0 none GA	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-lipid	0	N0 none NO	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole
+E10	K172c-metab	0	N0 none LA	NA	rule (d), the bound, the record	TRUE	LA LCMS_Pos pct 20: controls equal rule (d) with BH TRUE (with qvalue TRUE); LA LCMS_Pos: k_sweep 8 (product 8), k used 2, cap 2: bound TRUE, record TRUE
+E14	K172c-metab	0	N0 none LA	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	K172c-metab	0	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E10	K172c-metab	0	N0 none LM	NA	rule (d), the bound, the record	TRUE	LM LCMS_Pos pct 5: controls equal rule (d) with BH TRUE (with qvalue TRUE); LM LCMS_Pos: k_sweep 2 (product 2), k used 2, cap 2: bound TRUE, record TRUE
+E14	K172c-metab	0	N0 none LM	corrected	a status per assay; script equals product	TRUE	product corrected; identical() strictness only: FALSE
+E1	K172c-metab	0	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E14	K172c-metab	0	N0 none GA	none	a status per assay; script equals product	TRUE	product NA; identical() strictness only: FALSE
+E1	K172c-metab	0	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-metab	0	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole
+E15_silence	all	0	every journey of the run	0	0 instrument rows, 0 itsd_ok or norm_ok FALSE, 0 failing E14 rows	TRUE	3 units

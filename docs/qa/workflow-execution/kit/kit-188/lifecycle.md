@@ -288,3 +288,18 @@ Proposed split: (1) M12; (2) M168 deciding; (3) M168 reported, lp, las. Indicati
 Measured basis (smoke check, M12 data set 401, 4 cores, one unit per job type): deciding 1,243 s alone (send 2 B), lp 372 s, las 596 s, K172c 229 s (send 1), L1c eight units in 119 s of wall. **Scaled, not measured:** every M168, L12 and L64 time
 (M168 deciding about 77 min, L12 about 34, L64 about 61) is M12's measured 1,243 s times L1's ratios (3.7, 1.65, 2.9: Nov 24 core-seconds per data set on the pre-KIT-190 base, which do not include the checks added since); M168's reported unit
 (about 4.6 times M12's reported, itself unmeasured) is the least certain and is why it is a job of its own. G3 sets the real figures from L1r's times.
+
+## Smoke check, send 3 of 3 (the last): result against smoke/declaration-3.md (runs 45733512357 request A, 45733516113 request B, scripts at 27b0bbdd)
+
+Raw: `smoke/3a-raw.tar.gz`, `smoke/3b-raw.tar.gz`; tables and consoles in `smoke/3a/`, `smoke/3b/`. Nothing is a result; no repair follows (the ruling).
+
+| Declared item | Observed |
+|---|---|
+| 1 both scripts parse | met (`parse: both scripts parse`) |
+| 2 ALL E16 cases finish, every prediction met | **met**: 11 of 11 cases as predicted (`k4`, `tf`, `smokeflag`, `itsd`, `gap`, `cellgap` included), `E16: 140 checks, 0 differ`, the below-5 % `dropped` condition and the corrected 398 included; E16 took 251 s |
+| 3 `emptysample` and `daerror` as predicted | `daerror` **met**; `emptysample` **not as declared**: it now runs, but its journey is status `instrument` with `norm_ok` FALSE for `LCMS_Pos` (E13 fires), where declaration-3 predicted E13 silent. That declaration item was written from the r1.20 text (OD-1 (c)); on this base (no KIT-242) 35.6's pre-r1.20 paragraph applies, which predicts exactly `status instrument, class norm_not_applied:LCMS_Pos`. It is the base's behaviour, the same kind of difference as `ruvdrop`'s `dropped`; the declaration item was wrong for this base, not the script. Recorded; not repaired |
+| 4 no partial-match stop | met: no `partial-match guard` in any console, trace or table of either run |
+| 5 progress files, start checks, provenance | met for every job (`"smoke": true` in all three provenance files) |
+| 6 everything send 2 showed | met: M12 lp/las/k172c: E9 12, E10 16, E11 12, E14 9, E1 11, E15_silence pass; M12 deciding (1,204 s alone): E10 18, E10u 1, `E3_itsd_identity` 8, E14, E1, E2, E6, E8, E15_silence pass; l1c: itsd, itsdpos, ruvskip, daerror, normplant, exitplant as predicted; E3 (import pattern) and `ruvdrop` (`dropped`) differ as this base requires; `SMOKE_counted_refusal` exited 1 after 3 s before any unit |
+
+Running total on L1r's line (core-hours, (job minutes + 10) x 4 / 60, indicative): send 1 2.13, send 2 4.10 (A 2.05, B 2.05), send 3 3.63 (A 1.63, B 2.00): **9.86** against the 3.33 declared; the excess is inside Part L's accepted 2,611.55.
