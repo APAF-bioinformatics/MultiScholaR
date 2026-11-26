@@ -1,0 +1,9 @@
+cell	job	rep	scenario	mask	wall_seconds	unit_seconds	exit	error	rows	rows_sha256	fault	e7
+L12	l1c	401	N1	none	65.1	NA	0		2	1edbccf56da7fbc2971f83ab02c1fa16ad55a9fc1f4571a5f590c8889ce8372f	FALSE	FALSE
+L12	l1c	401	N1	none	65.1	NA	0		2	1dc3c1d5ff753a9f9e4cb3fae8cc7da329875f82b9e84c45e1a963aaf5147998	FALSE	FALSE
+L12	l1c	401	N1	none	31	NA	0	simpleError $ operator is invalid for atomic vectors	1	75427750805ec8909a35301340fb20e106417382ec4b31d67ce1c33913127f22	FALSE	FALSE
+L12	l1c	401	N1	none	42.7	NA	0		2	94f8d3cbb8cc50202139b53a7872b6faf113f31751b695f9ea8873d5c2d9c1d4	FALSE	FALSE
+L12	l1c	401	N1	none	48.6	NA	0		2	1988d132ae87d07146a43d99e48f61e639303767000966bdb6c9de534f912d3c	FALSE	FALSE
+L12	l1c	401	N1	none	34.8	NA	0	simpleError $ operator is invalid for atomic vectors	1	75427750805ec8909a35301340fb20e106417382ec4b31d67ce1c33913127f22	FALSE	FALSE
+L12	l1c	401	N1	none	46.2	NA	0		2	919ac2ab426d404d7d88124f2f8d3854f745a1480c6b91c0637cbcb8cceb66de	FALSE	FALSE
+L12	l1c	401	N1	none	6.5	NA	3	child process exit 3, no result	1	419490cfb7631957354d161eb51c552d2a6acc43c7bfb0a9dc89ad5275621521	FALSE	FALSE

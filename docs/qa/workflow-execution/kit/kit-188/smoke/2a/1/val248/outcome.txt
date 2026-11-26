@@ -1,0 +1,1 @@
+lipid_metab: no outcome by rule: K1 blocked by non-correction (LA safe, GA unsafe, NO safe; K1's non-correction clause failed) [phi over the data sets that reached the RUV step; LA's largest upper limit 0.105]

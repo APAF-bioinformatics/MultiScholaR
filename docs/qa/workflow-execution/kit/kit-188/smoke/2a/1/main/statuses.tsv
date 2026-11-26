@@ -1,0 +1,18 @@
+part	cell	job	arm	arm_scale	status	class	n
+L	L12	deciding	LA	1	dropped		40
+L	L12	deciding	GA	1	ok		6784
+L	L24	deciding	GA	1	ok		1200
+L	L12	deciding	LA	1	ok		7058
+L	L24	deciding	LA	1	ok		1200
+L	L12	deciding	NO	1	ok		7182
+L	L24	deciding	NO	1	ok		1200
+L	L12	deciding	OR	1	ok		7182
+L	L24	deciding	OR	1	ok		1200
+L	L12	deciding	LA	1	uncorrected		30
+L	L12	deciding	LA	1	refused	multischolar_refusal	5
+L	L12	deciding	LA	1	crashed	planted	49
+L	L12	deciding	GA	1	not_run	planted not_run	398
+L	L12	deciding	GA	1	crashed	unit: child process exit 3, no result	18
+L	L12	deciding	LA	1	crashed	unit: child process exit 3, no result	18
+L	L12	deciding	NO	1	crashed	unit: child process exit 3, no result	18
+L	L12	deciding	OR	1	crashed	unit: child process exit 3, no result	18

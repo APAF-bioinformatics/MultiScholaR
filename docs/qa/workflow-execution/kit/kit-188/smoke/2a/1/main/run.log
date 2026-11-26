@@ -1,0 +1,11 @@
+Warning messages:
+1: In stats::qt(0.975, n - 1L) : NaNs produced
+2: In stats::qt(0.975, n - 1L) : NaNs produced
+3: In stats::qt(1 - 0.025/family[[part]], n - 1L) : NaNs produced
+4: In stats::qt(0.975, n - 1L) : NaNs produced
+5: In stats::qt(0.975, n - 1L) : NaNs produced
+6: In stats::qt(1 - 0.025/family[[part]], n - 1L) : NaNs produced
+7: In stats::qt(0.975, n - 1L) : NaNs produced
+8: In stats::qt(0.975, n - 1L) : NaNs produced
+9: In stats::qt(1 - 0.025/family[[part]], n - 1L) : NaNs produced
+KIT-188 scoring: 33600 rows, 33600 data-set rows, 480 conditions

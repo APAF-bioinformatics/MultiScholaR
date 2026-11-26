@@ -1,0 +1,1 @@
+lipid_metab: K2 (LA safe, GA safe, NO safe; K1's non-correction clause failed) [phi over the data sets that reached the RUV step; LA's largest upper limit 0.105; GA's largest upper limit 0.009, per condition in phi.tsv]

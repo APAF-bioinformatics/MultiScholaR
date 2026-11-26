@@ -238,3 +238,33 @@ as it runs, the parent writes `checks-<job>-start.tsv` and the provenance before
 `K188_SMOKE=1`: written to the provenance and to the rows' `smoke` column; `score-k188.R` refuses any input carrying it (E16 case `smokeflag`);
 the parent's check `SMOKE_counted_refusal` stops a request that sets it without `K188_LIFECYCLE=1` (shown by script 4 of request A).
 E16 gains the `tf` case (a column of T and F letters), the stand-alone `dropped` condition at 20 of 400 and `smokeflag`.
+
+## Smoke check, send 2 of 3: result (runs 45728889412 request A and 45728892552 request B, scripts at 758d76c7; nothing is a result, nothing is judged)
+
+Raw: `smoke/2a-raw.tar.gz`, `smoke/2b-raw.tar.gz` (verbatim downloads), key tables and consoles in `smoke/2a/`, `smoke/2b/`.
+
+**Observed, as the re-send declaration (smoke/declaration-2.md) required:**
+1. Both scripts parse.
+2. E16: the scorer now runs (480 conditions on the `main` case). The E16 script timed out at 600 s (about 100 s per case, run serially; it was the only script that did), so the
+   comparison itself did not run on the runner. Run offline on the five cases that had finished (check-e16.py over the downloaded outputs): every prediction of `main`, `k1`, `k2phi`, `val248` and `k3` was met
+   except one, `statuses.tsv L12 deciding GA not_run planted not_run n: got 398, predicted 399`. The scorer is right: the unit row at data set 5 turns one of GA's 399
+   `not_run` journeys into a crash. The prediction (make-e16.py) was wrong by that one and is corrected to 398 (an instrument defect of the committed prediction, found by this run;
+   no other value changed). Cases k4, tf, smokeflag and the stop cases did not finish on the runner.
+3. Request A script 3 (l1c): six of eight plants completed and all fired as predicted except `ruvdrop` (observed `dropped` for the restricted assay, by design on this base); `exitplant` met;
+   `emptysample` and `daerror` crashed again, now with their call stack (`smoke/2a/3/unit-trace-*.txt`): `armRows` -> `groupOfComparison(da$comparison)`, error `$ operator is invalid for atomic vectors`.
+   **Cause (in the script, not the package):** `journey$da` is read with `$`, which matches by prefix when no name is exact, so a journey with no `da` returned the logical flag `da_reached`
+   that `journeyL` had set. The flag is renamed `reached_da`; the same prefix hazard existed for `e1` against `e12` and `e13` (renamed `itsd_check`, `norm_check`); a comment names the rule.
+   The repair has not been run; it needs a send (3 of 3), which is the coordinator's to allow.
+4. Request B (M12 deciding, one unit, 1,243 s, alone): `E10` 18 of 18, `E10u` (the untouched sweep) 1 of 1 (LA sweep k 4, percentage 4, equal), `E3_itsd_identity` 8 of 8 (identical DA tables, ITSD ticked against off, rows 378 to 429),
+   `E14`, `E1`, `E2`, `E6`, `E8` and `E15_silence` all pass; the only failure is E3 (the import pattern, by design). Request A script 2 (M12 lp, las, K172c; 527 s): E9 12 of 12, E10 16 of 16, E11 12 of 12, E14 9 of 9, E15_silence pass.
+5. `SMOKE_counted_refusal`: script 4 (K188_SMOKE=1, no K188_LIFECYCLE) exited 1 after 3 s with `Error: SMOKE_counted_refusal: ... refused`, before any unit. The flag is in the provenance (`"smoke": true`, 7 outputs) and the rows' `smoke` column; the scorer's refusal is the E16 case `smokeflag` (not run).
+6. Incremental evidence worked: `checks-*-start.tsv`, `provenance-*.json` and `unit-*-progress.tsv` exist for every job.
+
+**Repairs after this run (not run):** the prefix rename; the E16 prediction 398; the E16 runner scores four cases at a time (`run-e16.sh`, bash) and its limit is 25 minutes.
+
+**Job plans that follow from the measured unit times** (a unit is one data set, run sequentially; units run four at a time): M12 deciding 1,243 s alone (20.7 min), M12 lp 372 s, M12 las 596 s (it also runs LA), K172c 229 s,
+L1c eight units in 119 s of wall. From L1's measured ratios (M168 deciding 3.7 and L12 1.65 and L64 2.9 times M12's) the indicative wall times are: M168 deciding about 77 min, L12 deciding 34 min, L64 deciding 61 min.
+L1r's L job (plan 80, timeout 120) still fits (its longest unit, L64, about 61 min, plus L24's data set). L1r's M job (plan 75, timeout 115) holds only for M12 (about 25 min); M168's deciding unit alone is about 77 min and its reported unit (L1: 4.6 times M12's reported) is
+likely near or above 115 min: **the ticket's single M job does not hold and should be two or three jobs** (M12; M168 deciding; M168 reported, lp, las). L1c (plan 30, timeout 45) holds with large margin (about 2 minutes of wall plus set-up).
+Budget, indicative: the M line (125 x 4 / 60 = 8.33 ceiling) becomes M12 (25 + 10) x 4 / 60 = 2.33, M168 deciding (90 + 10) x 4 / 60 = 6.67 and M168 reported/lp/las (130 + 10) x 4 / 60 = 9.33 ceiling, 18.3 against 8.33: about +10 on the line, to be set by G3 from L1r's own times, as the ticket says.
+**Smoke running total** (core-hours, job minutes plus 10 set-up, x 4 / 60): send 1 2.13; send 2 A 2.05, B 2.05; total 6.23 against the 3.33 declared (excess 2.9, charged to L1r's line, inside Part L's accepted ceiling).

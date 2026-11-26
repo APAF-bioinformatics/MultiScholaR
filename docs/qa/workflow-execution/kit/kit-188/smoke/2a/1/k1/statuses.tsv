@@ -1,0 +1,5 @@
+part	cell	job	arm	arm_scale	status	class	n
+L	L12	deciding	GA	1	ok		7200
+L	L12	deciding	LA	1	ok		7200
+L	L12	deciding	NO	1	ok		7200
+L	L12	deciding	OR	1	ok		7200

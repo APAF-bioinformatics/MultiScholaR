@@ -1,0 +1,2 @@
+cell	job	rep	scenario	mask	wall_seconds	unit_seconds	exit	error	rows	rows_sha256	fault	e7
+M12	deciding	401	all	all	1243	1239.2	0		216	f9ab984954b912cc1016c127f2628eb9167d1e096551f0df61270d76d8eb9aca	FALSE	FALSE

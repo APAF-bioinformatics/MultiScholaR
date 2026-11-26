@@ -99,7 +99,7 @@ main	conditions.tsv	L24|deciding|N0|none|LA|S5	classification	not determined
 main	statuses.tsv	L|L12|deciding|LA|1|crashed|planted	n	49
 main	statuses.tsv	L|L12|deciding|LA|1|crashed|unit: child process exit 3, no result	n	18
 main	statuses.tsv	L|L12|deciding|LA|1|refused|multischolar_refusal	n	5
-main	statuses.tsv	L|L12|deciding|GA|1|not_run|planted not_run	n	399
+main	statuses.tsv	L|L12|deciding|GA|1|not_run|planted not_run	n	398
 main	conditions.tsv	absent:L24	deciding_rows	0
 k1	outcome.txt	line	startswith	lipid_metab: K1 
 k2phi	outcome.txt	line	startswith	lipid_metab: K2 

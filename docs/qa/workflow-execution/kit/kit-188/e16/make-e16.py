@@ -241,7 +241,7 @@ expect("main", "conditions.tsv", k, "classification", "not determined")
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "crashed", "planted"), "n", 19 + 20 + 10)
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "crashed", "unit: child process exit 3, no result"), "n", 18)
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "refused", "multischolar_refusal"), "n", 5)
-expect("main", "statuses.tsv", pk("L", "L12", "deciding", "GA", "1", "not_run", "planted not_run"), "n", 399)
+expect("main", "statuses.tsv", pk("L", "L12", "deciding", "GA", "1", "not_run", "planted not_run"), "n", 398)
 # L24 is in no verdict
 expect("main", "conditions.tsv", "absent:L24", "deciding_rows", 0)
 

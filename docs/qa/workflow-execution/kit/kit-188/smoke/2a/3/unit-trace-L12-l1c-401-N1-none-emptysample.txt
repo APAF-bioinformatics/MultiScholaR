@@ -1,0 +1,11 @@
+tryCatch(withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now, Sys.getenv("K188_PLANT_UNIT")), error = function(e) {    
+tryCatchList(expr, classes, parentenv, handlers)
+tryCatchOne(expr, names, parentenv, handlers[[1L]])
+doTryCatch(return(expr), name, parentenv, handler)
+withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now, Sys.getenv("K188_PLANT_UNIT")), error = function(e) {     stack <<
+runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now, Sys.getenv("K188_PLANT_UNIT"))
+runPlantUnit(plant, cellname, r, d)
+armRows(sim, j, setdiff(j$kept %||% character(), sim$is_ids), common, choiceOf(j, arm %in% c("LA", "LM")))
+groupOfComparison(da$comparison)
+.handleSimpleError(function (e)  {     stack <<- vapply(sys.calls(), function(cl) substr(oneLine(paste(deparse(cl, width.cutoff = 200L), collapse = " "), 200L), 1L, 200L), "") }, "$ operator is invali
+h(simpleError(msg, call))

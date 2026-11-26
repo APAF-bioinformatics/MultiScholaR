@@ -478,6 +478,9 @@ expectedOperations <- function(binding, itsd, ruv, correlation, filter = TRUE) {
         if (ruv) paste0(prefix, "_ruv"), if (correlation) paste0(prefix, "_pearson_selection"))
 }
 
+# NOTE (smoke check send 2, defect 2): `$` on a list matches a name by its prefix when no name is exact, so a journey's `da` (absent when the
+# DA did not return) was read as `da_reached`, and `e1` could read `e12` or `e13`. The journey's fields are therefore named so that none is
+# a prefix of another (`reached_da`, `itsd_check`, `norm_check`), and the new fields below must follow the same rule.
 # ---- the per-journey checks E12 to E14 (35.2 (2), (3); 7.4) ------------------------------------------------------------
 #' E12 (journeys that run ITSD): per assay (a) no row starting `IS_` remains after the ITSD step, (b) the step's own record
 #' count equals the `IS_` rows the assay held at `<prefix>_qc_complete` (0 when the record holds none), (c) at least one
@@ -558,8 +561,8 @@ journeyAssayColumns <- function(out, request, assays) {
     requested <- !is.null(request$ruv)
     declared <- requested && isTRUE(request$gate)
     lapply(stats::setNames(assays, assays), function(a) {
-        e12 <- if (!is.null(out$e12)) out$e12[out$e12$assay == a, , drop = FALSE]
-        e13 <- if (!is.null(out$e13)) out$e13[out$e13$assay == a, , drop = FALSE]
+        e12 <- if (!is.null(out$itsd_check)) out$itsd_check[out$itsd_check$assay == a, , drop = FALSE]
+        e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE]
         field <- function(x, column) if (!is.null(x) && nrow(x)) x[[column]][[1L]] else NA
         trace <- out$optimisation[[a]]
         res <- trace$optimization_results
@@ -583,7 +586,7 @@ journeyAssayColumns <- function(out, request, assays) {
         legacy_return <- requested && !declared && status %in% c("corrected", "uncorrected", "dropped")
         da_failed <- identical(out$error_step, "da")
         failed_here <- if (!is.null(out$da_errors)) out$da_errors[out$da_errors$assay == a, , drop = FALSE]
-        da_status <- if (da_failed) "failed" else if (!isTRUE(out$da_reached)) "not_reached" else
+        da_status <- if (da_failed) "failed" else if (!isTRUE(out$reached_da)) "not_reached" else
             if (is.null(out$da) || !nrow(out$da) || !a %in% out$da$assay || (!is.null(failed_here) && nrow(failed_here))) "no_da" else "ok"
         list(itsd_is_left = field(e12, "itsd_is_left"), itsd_n_used = field(e12, "itsd_n_used"), itsd_n_expected = field(e12, "itsd_n_expected"),
             itsd_max_change = field(e12, "itsd_max_change"), itsd_ok = field(e12, "itsd_ok"),
@@ -660,9 +663,9 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             out$rows_itsd <- vapply(out$m_itsd, nrow, integer(1L))
             itsd_record <- owner$getState(paste0(prefix, "_itsd_norm"))@args$ITSDNormalization
             out$itsd_record_fields <- paste(names(itsd_record), collapse = ",")
-            out$e12 <- checkItsdActed(m_qc, out$m_itsd, itsd_record)
-            if (!all(out$e12$itsd_ok)) {
-                bad <- out$e12[!out$e12$itsd_ok, , drop = FALSE]
+            out$itsd_check <- checkItsdActed(m_qc, out$m_itsd, itsd_record)
+            if (!all(out$itsd_check$itsd_ok)) {
+                bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
                 out$status <- "instrument"
                 out$class <- paste(sprintf("itsd_not_applied:%s:%s", bad$assay, bad$itsd_failed), collapse = " | ")
             }
@@ -678,9 +681,9 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             compared <- out$m_in
             # `normplant` (35.6): the matrix E13 compares is the log2 matrix for one assay; the route's output is untouched
             if (identical(plant, "normplant")) compared[["LCMS_Pos"]] <- out$m_log2[["LCMS_Pos"]]
-            out$e13 <- checkNormActed(compared, out$m_log2)
-            if (!all(out$e13$norm_ok)) {
-                bad <- out$e13[!out$e13$norm_ok, , drop = FALSE]
+            out$norm_check <- checkNormActed(compared, out$m_log2)
+            if (!all(out$norm_check$norm_ok)) {
+                bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
                 text <- paste(sprintf("norm_not_applied:%s", bad$assay), collapse = " | ")
                 out$class <- if (identical(out$status, "instrument")) paste(out$class, text, sep = " | ") else text
                 out$status <- "instrument"
@@ -709,7 +712,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         final <- owner$getState(owner$current_state)
         out$runs_final <- as.character(final@design_matrix[[final@sample_id]])
         step <- "da"
-        out$da_reached <- TRUE
+        out$reached_da <- TRUE
         if (identical(plant, "daerror")) stop("K188 planted DA error (E15)")
         da <- quiet(runWorkflowOmicsReferenceDaAnalysis(binding, owner, getWorkflowStateReference(owner),
             list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), contrastsOf(sim)))

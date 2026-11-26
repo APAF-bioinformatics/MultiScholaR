@@ -1,0 +1,2 @@
+Error: SMOKE_counted_refusal: K188_SMOKE=1 is set on a counted (non-lifecycle) request; refused
+Execution halted

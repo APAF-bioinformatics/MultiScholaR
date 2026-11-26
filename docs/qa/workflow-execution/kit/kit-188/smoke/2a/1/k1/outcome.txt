@@ -1,0 +1,1 @@
+lipid_metab: K1 (LA safe, GA safe, NO safe) [phi over the data sets that reached the RUV step; LA's largest upper limit 0.009]

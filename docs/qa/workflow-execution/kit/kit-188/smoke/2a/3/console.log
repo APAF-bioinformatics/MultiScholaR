@@ -1,0 +1,2 @@
+KIT-188 smoke2-c: 8 units, 4 workers, lifecycle TRUE, jobs l1c
+KIT-188 smoke2-c finished: 8 units (3 with an error), wall 2.0 min

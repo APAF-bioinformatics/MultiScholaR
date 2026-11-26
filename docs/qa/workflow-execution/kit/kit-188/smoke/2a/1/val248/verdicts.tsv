@@ -1,0 +1,4 @@
+group	arm	verdict	meets	fails	not_determined	no_result	sensitive
+lipid_metab	GA	unsafe	44	1	0	0	0
+lipid_metab	LA	safe	45	0	0	0	0
+lipid_metab	NO	safe	45	0	0	0	0
