@@ -1,0 +1,6 @@
+what	predicted
+file	test-kit255-omics-correlation-assays.R alone, head only (no base side, no check), on the merged tree (staging 0ebce762)
+count	358 passed, 0 failed, 0 errors, 0 skipped (run 45718599671 head: 348 passed, 2 failed, 2 errors; E15 now runs its 3 remaining assertions per omic (+6), E20's failing assertion passes and its study-parameters assertion is split in two (+2 per omic, +4)); a count other than 358 with 0 failed and 0 errors is a counting difference, anything failing is a stop
+E15 lipid, metab	the session field and the clean-fixture summary assertions pass
+E20 lipid, metab	the notice, the summary, the study-parameters heading and the study-parameters line "    - LCMS_Neg: group B" (the drafted form, wording.md 9) all pass, each labelled
+cost	about 1.1 core-hours expected (one job, about 17 minutes), stated ceiling 3.0 (45 minutes)

@@ -1,0 +1,159 @@
+== test-kit259b-second-correction.R | fixed | KIT-259 A3-E5 (lipid): a lowest correlation in [-0.3, -0.2) labels the x axis in plain numbers
+-- base:
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 A3-E5 (metab): a lowest correlation in [-0.3, -0.2) labels the x axis in plain numbers
+-- base:
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+-- base:
+  Expected `file.exists(file.path(dir, "post_norm_pca.png"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  error
+  Expected `file.exists(file.path(dir, "post_norm_pca.png"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  workflow_execution_busy
+  Expected `file.exists(file.path(dir, "post_norm_pca.png"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  workflow_execution_stale
+  Expected `inherits(got$value, case$class) && inherits(got$value, "error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  error
+  Expected `inherits(got$value, case$class) && inherits(got$value, "error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  workflow_execution_busy
+  Expected `inherits(got$value, case$class) && inherits(got$value, "error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  workflow_execution_stale
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 I04-E1 (in process): the DIA-with-limpa RUV covariates step names a figure it replaced
+-- base:
+  Expected [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 I04-E1 (managed): the DIA-with-limpa RUV covariates step names a figure it replaced
+-- base:
+  Expected [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 I04-E2: managed, a pre-normalisation figure redrawn because the input changed is named in a notice
+-- base:
+  Expected `Filter(...)` to have length 0.
+  Actual length: 1.
+  Expected `sum(...)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E1: a placeholder leaves a marker beside it, which a later drawn figure removes
+-- base:
+  Expected `file.exists(marker)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E2: a normalisation run removes the earlier run's post-normalisation and RUV markers, not the pre ones
+-- base:
+  Expected `file.exists(file.path(dir, names))` to be identical to `c(FALSE, FALSE, TRUE)`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE
+  `expected`: FALSE FALSE TRUE
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (LFQ): the report names the Figure 1 panels replaced by a placeholder
+-- base:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (TMT): the report names the Figure 1 panels replaced by a placeholder
+-- base:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (DIANN): the report names the Figure 1 panels replaced by a placeholder
+-- base:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (DIANN_limpa): the report names the Figure 1 panels replaced by a placeholder
+-- base:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-kit259-pearson-histogram-figure-failure.R | fixed | KIT-259 B-E1: the post-normalisation generator replaces a figure it cannot draw by a placeholder
+-- base:
+  Expected `list.files(dir)` to have the same values as `c(...)`.
+  Actual: "post_norm_correlation.png", "post_norm_density.png", "post_norm_pca.png", "post_norm_rle.png"
+  Expected: "post_norm_pca.png", "post_norm_rle.png", "post_norm_density.png", "post_norm_correlation.png", "post_norm_correlation.png.placeholder"
+  Absent: "post_norm_correlation.png.placeholder"
+-- head:
+  <passes>
+

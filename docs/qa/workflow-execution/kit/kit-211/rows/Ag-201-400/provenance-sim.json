@@ -1,0 +1,71 @@
+{
+  "ticket": "KIT-211",
+  "script": "docs/qa/workflow-execution/kit/kit-211/sim-k211.R",
+  "script_sha256": "51c2d4672fc7e758b565c4e74e886eac5f805751871e0a47feaa382c518011b4",
+  "bound_commit": "cfcde043d1daadb44e18b18f8e6ce83cf7914662",
+  "lifecycle": false,
+  "determinism": false,
+  "cells": "Ag",
+  "cell_index": 212,
+  "masks": {
+    "Ag": ["vd5", "vd10", "vd25"]
+  },
+  "arms": {
+    "main": ["S", "A", "B", "Bp", "N", "C0"],
+    "Ag": ["S", "A", "B", "Bp", "B1", "Bp1"]
+  },
+  "arms_filter": [],
+  "share": 0.5,
+  "band_width": 1,
+  "old_rule": {
+    "A": {
+      "m": 3,
+      "g": 2
+    },
+    "B": {
+      "m": 3,
+      "g": 2
+    },
+    "C": {
+      "m": 3,
+      "g": 2
+    },
+    "D": {
+      "m": 2,
+      "g": 3
+    },
+    "Av": {
+      "m": 3,
+      "g": 2
+    },
+    "Ag": {
+      "m": 3,
+      "g": 2
+    }
+  },
+  "replicates": [201, 400],
+  "tasks_this_process": 200,
+  "tasks_complete": 200,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection)",
+  "workers": 4,
+  "seconds_per_cell": {
+    "Ag": 8534.761
+  },
+  "seconds_per_replicate_mask": 14.2246016666667,
+  "warnings": 0,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "limma": "3.68.4",
+  "qvalue": "2.44.0",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "started": "2026-11-25T23:51:51+0000",
+  "finished": "2026-11-26T00:27:43+0000",
+  "exit_status": 0,
+  "tables_sha256": {
+    "Ag.tsv.gz": "a895f4d2deb052acd40443003d3aa9b4928eac9ef9877a48471d758b6efd598d",
+    "metrics.tsv": "0db62150e8022e8a7eb743edbd07d98e667c22f894d75515b9cae1844a105166",
+    "range.tsv": "eebfdeace484fd731fa4e8638541f74964582e1c47807955551690afd9c9604e"
+  }
+}

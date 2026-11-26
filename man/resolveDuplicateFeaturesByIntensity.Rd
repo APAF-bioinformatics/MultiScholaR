@@ -2,7 +2,7 @@
 % Please edit documentation in R/func_omics_qc_shared.R
 \name{resolveDuplicateFeaturesByIntensity}
 \alias{resolveDuplicateFeaturesByIntensity}
-\title{Resolve Duplicate Features by Keeping Highest Average Intensity}
+\title{Resolve Duplicate Features by Keeping the Most Completely Measured Row}
 \usage{
 resolveDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
 }

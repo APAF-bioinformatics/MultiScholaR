@@ -1,0 +1,29 @@
+file	test	nb	passed	failed	skipped	error	real
+test-omic-summary-module.R	(a) the four summary UIs keep their HTML, ids, test ids, labels, buttons, placeholders, texts, conditions and defaults	45	45	0	FALSE	FALSE	0.632000000000001
+test-omic-summary-module.R	(b) lipid_refusals: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	99	99	0	FALSE	FALSE	3.472
+test-omic-summary-module.R	(b) lipid_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	99	96	3	FALSE	FALSE	3.632
+test-omic-summary-module.R	(b) lipid_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	57	54	3	FALSE	FALSE	2.955
+test-omic-summary-module.R	(b) lipid_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	43	43	0	FALSE	FALSE	2.425
+test-omic-summary-module.R	(b) lipid_github_fallback: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	29	29	0	FALSE	FALSE	1.386
+test-omic-summary-module.R	(b) lipid_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	43	40	3	FALSE	FALSE	2.256
+test-omic-summary-module.R	(b) lipid_global_another: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	15	15	0	FALSE	FALSE	1.287
+test-omic-summary-module.R	(b) metab_refusals: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	99	99	0	FALSE	FALSE	1.656
+test-omic-summary-module.R	(b) metab_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	99	96	3	FALSE	FALSE	2.377
+test-omic-summary-module.R	(b) metab_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	57	54	3	FALSE	FALSE	1.757
+test-omic-summary-module.R	(b) metab_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	43	43	0	FALSE	FALSE	2.676
+test-omic-summary-module.R	(b) metab_github_fallback: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	29	29	0	FALSE	FALSE	1.329
+test-omic-summary-module.R	(b) metab_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	43	40	3	FALSE	FALSE	2.345
+test-omic-summary-module.R	(b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	143	139	4	FALSE	FALSE	28.162
+test-omic-summary-module.R	(b) trx_technical: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	44	43	1	FALSE	FALSE	13.863
+test-omic-summary-module.R	(b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	58	55	3	FALSE	FALSE	16.7
+test-omic-summary-module.R	(b) prot_refusals: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	99	99	0	FALSE	FALSE	0.704999999999998
+test-omic-summary-module.R	(b) prot_route_dia: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	71	71	0	FALSE	FALSE	7.193
+test-omic-summary-module.R	(b) prot_route_dia_limpa: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	71	71	0	FALSE	FALSE	5.813
+test-omic-summary-module.R	(b) prot_route_tmt: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	71	71	0	FALSE	FALSE	5.68499999999999
+test-omic-summary-module.R	(b) prot_route_lfq: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	71	71	0	FALSE	FALSE	5.76600000000001
+test-omic-summary-module.R	(b) prot_stale: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	43	43	0	FALSE	FALSE	5.53999999999999
+test-omic-summary-module.R	(b) prot_owner: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	99	98	1	FALSE	FALSE	1.68599999999999
+test-omic-summary-module.R	(b) prot_owner_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	71	70	1	FALSE	FALSE	1.40600000000001
+test-omic-summary-module.R	(b) prot_native: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	29	29	0	FALSE	FALSE	1.077
+test-omic-summary-module.R	(b) prot_github_fallback: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's	29	29	0	FALSE	FALSE	5.71199999999999
+test-omic-summary-module.R	(W3, F108-03) trx: the save before the RUVIII export shows the gate's warning and no "Saved Integration" notice	4	4	0	FALSE	FALSE	12.129

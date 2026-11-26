@@ -163,3 +163,61 @@ Expected 10.53, ceiling 53.33 core-hours. No correction, instrument rerun or wor
   - Limits: synthetic data only; nothing between 20 and 60 samples.
   - Ledger: INT-31 (correction of INT-24's evidence), VAL-251, VAL-293, VAL-327. Runs: R1 45584885011, R2
     45675980031.
+
+## Follow-up (VAL-305), 2026-11-26: predictions (written before the change and before any run)
+
+Bounded item: put the four phrases of the text the owner was shown ("made for this software", "(two groups of 10)",
+"this scaling", "of four data sets") into the one shared passage `integrationScalingEvidenceText()`; both the Model
+tab's help and the Methods sentence change with it. Branch kit-246c from staging 176f9d3ff. The passage's last
+sentence (VAL-251) is unchanged.
+
+Tests-only commit bfc57ce7: one added block of assertions in the KIT-246 block (E5) of
+`tests/testthat/test-integration-record.R`: 4 phrases x 2 expectations (the shared passage holds the phrase; the help
+and the Methods sentence both hold it) + 1 (the passage's last sentence is unchanged) = 9 expectations.
+
+Predictions for the run (base = tests-only commit, head = the change):
+- `test-integration-record.R`: base 201 passed, 8 failed (the eight phrase expectations; the last-sentence one
+  passes); head 209 passed, 0 failed; verdict `fixed`. Staging has the file at 200 passed, 0 failed before the 9 added.
+- The other ten files: `same` (reading of the term lists of E2, E5, L7 and the whole-table scans: none of
+  "weak", "every computer|any computer|on every machine", "same total variance|unit variance", "too small",
+  "there was none", "no practical difference", "rose by" occurs in the four phrases).
+- R CMD check: findings identical on base and head.
+
+### Predictions restated for the run's scope (coordinator, option 1, 2026-11-26; new commit, before the run)
+
+The run is the ticket's conditional wording line: `test-integration-record.R`, `test-integration-results.R`,
+`test-integration-gui.R`, `test-integration-model.R`; one shard per side; no R CMD check in this run; base bfc57ce7,
+head 10df1d31; env MULTISCHOLAR_TRX_MANIFEST_NOTE=1; ceiling 60 job-minutes (4.00 core-hours).
+- `test-integration-record.R`: base 201 passed / 8 failed, head 209 passed / 0 failed; verdict `fixed`.
+- `test-integration-results.R`, `test-integration-gui.R`, `test-integration-model.R`: `same`.
+- No check in this run. The full 11-file scope with R CMD check rides the merge train (coordinator's ruling,
+  2026-11-26). The first predictions above that name ten `same` files and an identical check are superseded by this
+  scope.
+
+## Follow-up (VAL-305), 2026-11-26: result of the wording run
+
+Run 45712506511 (request kit246c-wording-10df1d31, request commit d2599e58; package 10df1d31 against tests-only
+bfc57ce7; `test-integration-record.R`, `-results.R`, `-gui.R`, `-model.R`; one shard per side; no check; env
+MULTISCHOLAR_TRX_MANIFEST_NOTE=1). Tables: `r3-compare.tsv`, `r3-tests.tsv`, `r3-tests-base.tsv`,
+`r3-compare-failures.txt`, `r3-meta.txt`.
+
+Observed, against the predictions:
+
+| File | Predicted | Observed |
+|---|---|---|
+| test-integration-record.R | base 201 / 8, head 209 / 0, fixed | base 201 passed, 8 failed; head 209 passed, 0 failed; `fixed` |
+| test-integration-results.R | same | 258 / 0 on both; `same` |
+| test-integration-gui.R | same | 405 / 0 on both; `same` |
+| test-integration-model.R | same | 265 / 0 on both; `same` |
+
+- The eight base failures are the phrase expectations: each of the four phrases, for the shared passage (4) and for
+  the help and the Methods sentence together (4); each actual FALSE (`r3-compare-failures.txt`). The expectation that
+  the passage's last sentence (VAL-251) is unchanged passed on both sides.
+- Cost: 54.6 job-minutes (head 22.6, base 31.1, plan 0.4, results 0.5; GitHub job timings) = 3.64 core-hours, under
+  the 4.00 ceiling (60 job-minutes). One run, no correction used.
+- All predictions met. The 11-file scope with R CMD check was not run here; it rides the merge train (coordinator's
+  ruling, 2026-11-26).
+
+Inferred: no other reader of the passage moves, from the three unchanged files and the search of step 0.
+
+Not checked: R CMD check on this change; the other seven files of KIT-246's scope; the rendered Word report.

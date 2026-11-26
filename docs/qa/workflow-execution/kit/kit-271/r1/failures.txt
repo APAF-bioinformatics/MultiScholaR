@@ -1,0 +1,199 @@
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T1: DIA with limpa, after the correlation filter the protein QC folder holds normalised_ and no ruv_ table (fails before)
+kind: failure
+message:
+  Expected `present` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  in process
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T1: DIA with limpa, after the correlation filter the protein QC folder holds normalised_ and no ruv_ table (fails before)
+kind: failure
+message:
+  Expected `present` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  worker
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T2: the RUV covariates action, in either mode, leaves the table's name and content unchanged (name row fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  covariates
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T2: the RUV covariates action, in either mode, leaves the table's name and content unchanged (name row fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  correction
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T3: DIA with limpa, after Skip RUV the table is the same normalised_ table (fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  in process
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T3: DIA with limpa, after Skip RUV the table is the same normalised_ table (fails before)
+kind: failure
+message:
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  worker
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T4: Copy after the correlation delivers normalised_results.tsv, not RUV_normalised_results.tsv, with the table's values (fails before)
+kind: failure
+message:
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  in process
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T4: Copy after the correlation delivers normalised_results.tsv, not RUV_normalised_results.tsv, with the table's values (fails before)
+kind: failure
+message:
+  Expected `"RUV_normalised_results.tsv" %in% copy$tables` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  in process
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T4: Copy after the correlation delivers normalised_results.tsv, not RUV_normalised_results.tsv, with the table's values (fails before)
+kind: failure
+message:
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  worker
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T4: Copy after the correlation delivers normalised_results.tsv, not RUV_normalised_results.tsv, with the table's values (fails before)
+kind: failure
+message:
+  Expected `"RUV_normalised_results.tsv" %in% copy$tables` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  worker
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5: the export names the table normalised_ in its metadata and file list (fails before)
+kind: failure
+message:
+  Expected `out$results_file` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5: the export names the table normalised_ in its metadata and file list (fails before)
+kind: failure
+message:
+  Expected `paste0("protein_qc/", k271New) %in% out$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5: the export names the table normalised_ in its metadata and file list (fails before)
+kind: failure
+message:
+  Expected `paste0("protein_qc/", k271Old) %in% out$destinations` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5b: after the RUV covariates action, in either mode, the export names the same table and succeeds (name row fails before)
+kind: failure
+message:
+  Expected `out$results_file` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  covariates
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5b: after the RUV covariates action, in either mode, the export names the same table and succeeds (name row fails before)
+kind: failure
+message:
+  Expected `paste0("protein_qc/", k271New) %in% out$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  covariates
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5b: after the RUV covariates action, in either mode, the export names the same table and succeeds (name row fails before)
+kind: failure
+message:
+  Expected `out$results_file` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  correction
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T5b: after the RUV covariates action, in either mode, the export names the same table and succeeds (name row fails before)
+kind: failure
+message:
+  Expected `paste0("protein_qc/", k271New) %in% out$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  correction
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T8 (Copy): an earlier build's project: Copy delivers the table it holds as normalised_results.tsv (fails before)
+kind: failure
+message:
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit271-limpa-table-name.R
+test: KIT-271 T8 (Copy): an earlier build's project: Copy delivers the table it holds as normalised_results.tsv (fails before)
+kind: failure
+message:
+  Expected `"RUV_normalised_results.tsv" %in% copy$tables` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+

@@ -223,7 +223,7 @@ protNormS4DownloadHandler <- function(workflowData, normData, experimentPaths, o
           shiny::showNotification(paste("Error exporting session:", conditionMessage(e)), type = "error", duration = 10)
           stop(e)
         })
-      names <- resolveProtNormCorrelationResultFilenames(normData$ruv_optimization_result,
+      names <- resolveProtNormCorrelationTableNames(workflowData$state_manager, normData$ruv_optimization_result,
         workflowData$ruv_optimization_result)
       canonical <- file.path(experimentPaths$protein_qc_dir, names$rdsFilename)
       exportDIAS4Compatibility(workflowData$state_manager, canonical)

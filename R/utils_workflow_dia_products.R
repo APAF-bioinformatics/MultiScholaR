@@ -1008,8 +1008,10 @@ diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
     norm_data$normalization_input_reference <- source
     redraw_pre <- FALSE
     if (usesDIAReferenceStates(manager) && isSavedWorkflowReference(source)) {
+        # KIT-247 (VAL-239; coordinator's ruling on R1-01 (a)): not shown for a run from the design state, where no
+        # Quality Control was applied (the sentence would be false).
         if (isTRUE(norm_data$normalization_complete) && isSavedWorkflowReference(previous) &&
-            !identical(previous$entity_id, source$entity_id) &&
+            !identical(previous$entity_id, source$entity_id) && !identical(manager$current_state, "protein_s4_initial") &&
             identical(readDIALineageRecord(manager, source)$class, "ProteinQuantitativeData")) {
             message(structure(class = c("prot_norm_input_current", "message", "condition"), list(message = paste(
                 "This normalisation uses your current quality-control result. The previous normalisation used an",
@@ -1100,7 +1102,8 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
         paths[c("source_dir", "protein_qc_dir", "time_dir")], function(staging) withWorkflowShortStaging(staging, function(staged) {
             norm_data$publication_paths <- staged
             on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
-            pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png$", full.names = TRUE)
+            # KIT-259 third pass (VAL-307, C01): with their placeholders' markers, which the combined figure's list reads.
+            pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png([.]placeholder)?$", full.names = TRUE)
             if (length(pre_files) && !all(file.copy(pre_files, staged$protein_qc_dir))) {
                 cli::cli_abort("cannot stage pre-normalization display inputs")
             }
@@ -1133,6 +1136,8 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
             # images than the worker read), the figure is built here, as before.
             if (!writeDIACompositeFigureFiles(manager, product, settings$ruv_mode, staged$protein_qc_dir, omic_type))
                 generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
+            # KIT-259 third pass (VAL-307, C01): the combined figure's replaced panels, written with it.
+            writeProtNormCompositePlaceholders(settings$ruv_mode, staged$protein_qc_dir, omic_type)
             list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
                 filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
         }, "the normalisation's files could not be copied into the project's staging folder"), identity = list(product = product$entity_id, color = settings$color_variable,
@@ -1834,9 +1839,11 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
             }
             saveRDS(saved$ruv_result[setdiff(names(saved$ruv_result), "best_cancor_plot")],
                 file.path(staged$source_dir, "ruv_covariates_optimization_results.RDS"))
-            if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+            # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I04): guarded as the normalisation's cancor figure.
+            if (!is.null(saved$ruv_result$best_cancor_plot)) drawProtNormQcFigure(staged$protein_qc_dir,
+                "ruv_covariates_cancor.png", 8, 6, function() ggplot2::ggsave(
                 file.path(staged$protein_qc_dir, "ruv_covariates_cancor.png"),
-                saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+                saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150))
             ruv_qc(saved$adjusted)
             list(completed = TRUE, qc_paths = norm_data$qc_plot_paths, staged_qc_dir = staged$protein_qc_dir)
         }, "the RUV covariates' files could not be copied into the project's staging folder"), identity = list(product = product$entity_id, color = settings$color_variable,
@@ -1850,6 +1857,46 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
     }
     norm_data$ruv_covariates_complete <- TRUE
     accepted
+}
+
+#' KIT-273 (VAL-317 (2), VAL-332): what the differential analysis used, delivered with the results package on DIA with
+#' limpa. Decided by the store's DA record (`manifest$model`: its model, `ruv_mode` and `w_terms`), and only when that
+#' analysis is current (`workflowDaResultStatus`); the tables are read from the record's source state, so a file left in the
+#' protein QC folder by an earlier run is never delivered. RUV-III correction: the source's protein table (the corrected
+#' matrix the model fitted) as `Publication_tables/ruv_corrected_results.tsv`. RUV-III factors as covariates: the source's
+#' whole design (study columns and W1..Wk) as `Study_report/design_matrix_with_ruv_factors.tab`. No analysis, a stale
+#' analysis, a skipped RUV step or a design that applied no RUV: nothing. The names are drafts for the wording pass.
+#' @param manager The reference-state owner (Copy reads it from the active scope).
+#' @param directory The results summary folder; its `Publication_tables` and `Study_report` folders exist.
+#' @return NULL when nothing is delivered; else `list(name, display_name, console)` and, when the table could not be
+#'   decided or written, the failure's text as `error` (nothing escapes: Copy records it as a failed copy).
+#' @noRd
+writeDIARuvDeliveryTables <- function(manager, directory) {
+    entry <- list(name = "ruv_delivery", display_name = "RUV-III delivery table")
+    tryCatch(withDIAStateScope(manager, function() {
+        if (!identical(workflowDaResultStatus(manager), "current")) return(NULL)
+        context <- manager$.context
+        manifest <- resolveWorkflowStateValue(context, context$snapshot$da_results)
+        model <- manifest$model
+        if (!identical(model$model, "dpcDE")) return(NULL)
+        if (identical(model$ruv_mode, "correction")) {
+            entry <<- list(name = "Publication_tables/ruv_corrected_results.tsv", display_name = "RUV-III Corrected Results TSV",
+                field = "protein_quant_table", console = paste0("COPY: DIA with limpa, RUV-III correction: the corrected matrix ",
+                "the analysis used is delivered as Publication_tables/ruv_corrected_results.tsv"))
+        } else if (length(model$w_terms) > 0L) {
+            entry <<- list(name = "Study_report/design_matrix_with_ruv_factors.tab", display_name = "Design Matrix with RUV-III Factors",
+                field = "design_matrix", console = paste0("COPY: DIA with limpa, RUV-III factors as covariates: the design with ",
+                "the factors the analysis used is delivered as Study_report/design_matrix_with_ruv_factors.tab"))
+        } else {
+            return(NULL)
+        }
+        components <- readDIAStateMetadata(manager, manifest$source)$data$components
+        writeDIADesignTable(manager, components[[entry$field]], file.path(directory, entry$name), vroom::vroom_write)
+        entry
+    }), error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("The RUV-III delivery table could not be written:", conditionMessage(error))))
+        c(entry, list(error = conditionMessage(error)))
+    })
 }
 
 #' Apply, skip or reapply Pearson filtering from the original saved population.
@@ -2001,7 +2048,7 @@ publishDIAReferenceCorrelation <- function(manager, run, workflow, norm_data, pa
                 plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
             qc_plot <- stripProtNormQcPlotOwners(plot + ggplot2::labs(title = if (skipped)
                 "Final Data (Correlation Filter Skipped)" else "Final Correlation-Filtered Data"))
-            names <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
+            names <- resolveProtNormCorrelationTableNames(manager, norm_data$ruv_optimization_result,
                 workflow$ruv_optimization_result)
             writeDIADesignTable(manager, spec$components$protein_quant_table,
                 file.path(staged$protein_qc_dir, names$tsvFilename), readr::write_tsv)

@@ -1,0 +1,54 @@
+kit236-report-sentences: ..................................................................................................................................................................................................................................................................................................1...2...3...4...5...6..
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit236-report-sentences.R:727:9'): KIT-268 T4: the FDR sent
+Expected `k236Has(planted$norm$de_details, paste(k268Existing, k268Added))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+lipid
+
+── 2. Failure ('test-kit236-report-sentences.R:727:9'): KIT-268 T4: the FDR sent
+Expected `k236Has(planted$norm$de_details, paste(k268Existing, k268Added))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+metab
+
+── 3. Failure ('test-kit236-report-sentences.R:736:9'): KIT-268 T4: the FDR sent
+Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+LFQ
+
+── 4. Failure ('test-kit236-report-sentences.R:736:9'): KIT-268 T4: the FDR sent
+Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+TMT
+
+── 5. Failure ('test-kit236-report-sentences.R:736:9'): KIT-268 T4: the FDR sent
+Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+DIANN
+
+── 6. Failure ('test-kit236-report-sentences.R:736:9'): KIT-268 T4: the FDR sent
+Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+DIANN_limpa
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit236-report-sentences.R pass 307 fail 6 error 0 skip 0 warn 0

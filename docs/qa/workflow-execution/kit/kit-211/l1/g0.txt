@@ -1,0 +1,67 @@
+KIT-211 G0 (local, git only), run 2026-11-25T22:23:50Z
+bound commit (the branch point of kit-211-threshold-filter-test, a v0.9-staging head): 894b9cc821a70b03baab1e1fa47b3d47440c7ed5
+KIT-187's state (the base of KIT-197): 19997323
+
+git diff --stat 19997323 894b9cc821a70b03baab1e1fa47b3d47440c7ed5 -- R/func_prot_qc_filtering_helpers.R R/func_prot_s4_qc_filter_methods.R R/func_general_parameter_helpers.R R/func_prot_da_model_methods.R R/func_prot_da_model_stats.R R/func_prot_s4_da_methods.R R/func_prot_da_compat.R R/func_lipid_qc.R src/ DESCRIPTION NAMESPACE
+ DESCRIPTION                    | 10 ++++-
+ NAMESPACE                      |  2 +
+ R/func_lipid_qc.R              |  9 ++--
+ R/func_prot_da_compat.R        |  4 +-
+ R/func_prot_da_model_methods.R |  7 ++-
+ R/func_prot_da_model_stats.R   | 96 ++++++++++++++++++++++++++++++++++--------
+ 6 files changed, 105 insertions(+), 23 deletions(-)
+
+Commits (19997323..bound) that changed each file; the merge commits among them are marked (merge):
+== R/func_prot_qc_filtering_helpers.R
+commits: 0
+== R/func_prot_s4_qc_filter_methods.R
+commits: 0
+== R/func_general_parameter_helpers.R
+commits: 0
+== R/func_prot_da_model_methods.R
+commits: 3
+0a16eb232 (merge) Merge v0.9-staging 63143aa3 into KIT-201: replay DA block keeps staging's assertWorkflowReplayDaSour
+c788f04a9 KIT-220 fix (VAL-191): published DA counts, figures and lists follow the run's threshold
+fa1f99092 KIT-201 fix (route (a), VAL-127, VAL-131): TREAT takes the moderated test's trend and robust setting
+== R/func_prot_da_model_stats.R
+commits: 6
+2288d9448 (merge) Merge v0.9-staging 3a6794b0 into kit-249 (NEWS: every entry kept, staging's first; ledger: staging's
+82470db18 KIT-249 fix: runTestsContrasts keeps its Benjamini-Hochberg fallback when qvalue() fails (the handle
+b0d7828aa (merge) Merge v0.9-staging dd769671 (KIT-196, KIT-200 and others) into KIT-201: the replay-marker list keeps
+dc23416c5 KIT-200 audit I05 fix: a matrix without row names is named by position before the removal (correctio
+9779f8276 KIT-200: proteomics DA removes proteins without values before eBayes and reports them as untested ro
+fa1f99092 KIT-201 fix (route (a), VAL-127, VAL-131): TREAT takes the moderated test's trend and robust setting
+== R/func_prot_s4_da_methods.R
+commits: 0
+== R/func_prot_da_compat.R
+commits: 1
+c788f04a9 KIT-220 fix (VAL-191): published DA counts, figures and lists follow the run's threshold
+== R/func_lipid_qc.R
+commits: 1
+6e02de152 KIT-202 fix: the lipid and metabolite intensity filter counts only the design's samples (S4 methods,
+== src
+commits: 0
+== DESCRIPTION
+commits: 6
+e4b0f98ec KIT-241: the enrichment results archive is written by zip::zipr (no external zip program); zip decla
+4a501cb0e KIT-167 pass 2: downloadReferenceProteome (the current-release choice, its two refusals); import pan
+278f30f54 KIT-167 workflow and enrichment: mapping identity, record sheet, Methods text, store on the head, re
+f56db86df KIT-167 core: mapStrainToReference (strain FASTA classes, identical-sequence entities, DIAMOND both
+698f37aa1 KIT-175 fix: an empty or incomplete UniProt annotation is a classed, recorded, shown and never cache
+af04046f6 (merge) Merge branch 'v0.9-staging' into kit-175-uniprot-annotation
+== NAMESPACE
+commits: 1
+f56db86df KIT-167 core: mapStrainToReference (strain FASTA classes, identical-sequence entities, DIAMOND both
+
+Stop rule (6.7, r1.3): a change beyond KIT-187's state in R/func_prot_qc_filtering_helpers.R, R/func_prot_s4_qc_filter_methods.R or R/func_general_parameter_helpers.R stops the ticket before L1.
+  R/func_prot_qc_filtering_helpers.R: 0 changed lines of diff --stat (0 = unchanged)
+  R/func_prot_s4_qc_filter_methods.R: 0 changed lines of diff --stat (0 = unchanged)
+  R/func_general_parameter_helpers.R: 0 changed lines of diff --stat (0 = unchanged)
+Result: the three filter files are unchanged since 19997323: no stop.
+R/func_lipid_qc.R changed (KIT-202): scopes E9 only (its helper takes sample_columns; at this commit the KIT-217 rule is absent, so E9's classed warning is expected not to occur and is counted).
+DA files changed (KIT-200, KIT-201, KIT-220, KIT-249): scope E1 (the DA-dependent columns are written as one flag).
+
+Package tree equal to the staging commit's (git diff --stat 894b9cc821a70b03baab1e1fa47b3d47440c7ed5 <this branch's head> -- R/ src/ inst/ tests/ DESCRIPTION NAMESPACE), checked at the request commit and recorded in runs.tsv:
+(empty = equal)
+package-tree equality with 4d588ba3 (the head of Re-check 1): git diff --stat 4d588ba3 894b9cc821a70b03baab1e1fa47b3d47440c7ed5 -- R/ src/ inst/ tests/ DESCRIPTION NAMESPACE:
+(empty = equal)

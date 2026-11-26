@@ -1,0 +1,561 @@
+== test-kit247-design-resave.R | fixed | KIT-247 E1, E2, E12, E16: label-free, a changed design confirmed over later steps sets them aside; Reset brings nothing back
+-- base:
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 8
+  `expected`: 2
+  
+  prot_lfq
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "protein_s4_initial"        
+  
+  prot_lfq
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+      actual                       | expected                        
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "duplicates_removed"         | "duplicates_removed"         [5]
+  [6] "protein_replicate_filtered" | "protein_replicate_filtered" [6]
+                                   - "normalized"                 [7]
+                                   - "correlation_filtered"       [8]
+  
+  prot_lfq
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  prot_lfq
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_lfq
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  prot_lfq
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "protein_s4_initial"  
+  
+  prot_lfq
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E3, E14: label-free, a run after the cut reads the new design state, with no 'current quality-control result' notice
+-- base:
+  Expected `out$history` to be identical to `c("initial", "protein_s4_initial", "normalized")`.
+  Differences:
+      actual                       | expected                
+  [1] "initial"                    | "initial"            [1]
+  [2] "protein_s4_initial"         | "protein_s4_initial" [2]
+  [3] "protein_accession_cleaned"  - "normalized"         [3]
+  [4] "protein_intensity_filtered" -                         
+  [5] "duplicates_removed"         -                         
+  [6] "protein_replicate_filtered" -                         
+  [7] "normalized"                 -                         
+  [8] "correlation_filtered"       -                         
+  Expected `out$notices` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E19: a changed re-save answered Cancel commits nothing and leaves the bus as it was
+-- base:
+  Expected `out$design` to be identical to `out$before$design`.
+  Differences:
+  actual vs expected
+                   group factor1 replicates tech_rep_group
+    actual[2, ]       KO      KO          2           KO_2
+    actual[3, ]       KO      KO          3           KO_3
+    actual[4, ]       KO      KO          4           KO_4
+  - actual[5, ]       WT      WT          1           WT_1
+  + expected[5, ]     KO      KO          5           KO_5
+  - actual[6, ]       WT      WT          2           WT_2
+  + expected[6, ]     WT      WT          1           WT_1
+  - actual[7, ]       WT      WT          3           WT_3
+  + expected[7, ]     WT      WT          2           WT_2
+  - actual[8, ]       WT      WT          4           WT_4
+  + expected[8, ]     WT      WT          3           WT_3
+  - actual[9, ]       WT      WT          5           WT_5
+  + expected[9, ]     WT      WT          4           WT_4
+  - actual[10, ]      WT      WT          6           WT_6
+  + expected[10, ]    WT      WT          5           WT_5
+  
+  `actual$group[2:8]`:   "KO" "KO" "KO" "WT" "WT" "WT" "WT"
+  `expected$group[2:8]`: "KO" "KO" "KO" "KO" "WT" "WT" "WT"
+  
+  `actual$factor1[2:8]`:   "KO" "KO" "KO" "WT" "WT" "WT" "WT"
+  `expected$factor1[2:8]`: "KO" "KO" "KO" "KO" "WT" "WT" "WT"
+  
+    `actual$replicates[2:10]`: 2 3 4 1 2 3 4 5 6
+  `expected$replicates[2:10]`: 2 3 4 5 1 2 3 4 5
+  
+       actual$tech_rep_group | expected$tech_rep_group     
+   [2] "KO_2"                | "KO_2"                  [2] 
+   [3] "KO_3"                | "KO_3"                  [3] 
+   [4] "KO_4"                | "KO_4"                  [4] 
+   [5] "WT_1"                - "KO_5"                  [5] 
+   [6] "WT_2"                - "WT_1"                  [6] 
+   [7] "WT_3"                - "WT_2"                  [7] 
+   [8] "WT_4"                - "WT_3"                  [8] 
+   [9] "WT_5"                - "WT_4"                  [9] 
+  [10] "WT_6"                - "WT_5"                  [10]
+  Expected `out$entity` to be identical to `out$before$entity`.
+  Differences:
+  `actual`:   "2c54a2a4b4dee6f36612d2cc58047c6c1e97bbf02546b4e7a24488b17f426f75"
+  `expected`: "7e83d9774abd2dc96899786b3f7171244b385a2e0b67cf90f83d014ac510ad98"
+  Expected `out$head` to be identical to `out$before$head`.
+  Differences:
+  `actual`:   "protein_s4_initial"  
+  `expected`: "correlation_filtered"
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E17, E18: label-free, a comparison-only or unchanged re-save keeps every later step
+-- base:
+  Expected `any(grepl("Comparisons saved", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out$entity` to be identical to `out$before$entity`.
+  Differences:
+  `actual`:   "5eff521f567b90879d95a45d1b1dee9bf90e0fc074ebf351e4f20dd4e5d5fdce"
+  `expected`: "df7f79cfa4b041d61dc121bf35863df31d6ea6118f74171c5cc821761c91ea9f"
+  
+  contrast
+  Expected `out$entity` to be identical to `out$before$entity`.
+  Differences:
+  `actual`:   "ef36b8ba535e9d403462aa547e119fa66af5bbf17f863094b1e019c7b9e01e0f"
+  `expected`: "a6ec61759d0ec4314ae635994e4ad0734f3a20cee8dbd3c7f67818c26a50f4c4"
+  
+  same
+  Expected `out$head` to be identical to `out$before$head`.
+  Differences:
+  `actual`:   "protein_s4_initial"  
+  `expected`: "correlation_filtered"
+  
+  contrast
+  Expected `out$head` to be identical to `out$before$head`.
+  Differences:
+  `actual`:   "protein_s4_initial"  
+  `expected`: "correlation_filtered"
+  
+  same
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E21 (OD-4 (a)): the cut removes the omic's earlier integration input, folder and top-level file
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `length(grep("^proteomics", out$after))` to be identical to 0L.
+  Differences:
+    `actual`: 4
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E4, E5, E6: TMT, DIA (iq) and DIA with limpa: the cut, and Reset brings nothing back
+-- base:
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 11
+  `expected`:  2
+  
+  prot_dia_limpa
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 16
+  `expected`:  2
+  
+  prot_dia
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 8
+  `expected`: 2
+  
+  prot_tmt
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "peptide_count_filtered"
+  `expected`: "raw_data_s4"           
+  
+  prot_dia_limpa
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "protein_s4_initial"        
+  
+  prot_tmt
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "protein_replicate_filtered"
+  `expected`: "raw_data_s4"               
+  
+  prot_dia
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+       actual                       | expected                         
+  [12] "protein_intensity_filtered" | "protein_intensity_filtered" [12]
+  [13] "duplicates_removed"         | "duplicates_removed"         [13]
+  [14] "protein_replicate_filtered" | "protein_replicate_filtered" [14]
+                                    - "normalized"                 [15]
+                                    - "correlation_filtered"       [16]
+  
+  prot_dia
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+      actual                       | expected                        
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "duplicates_removed"         | "duplicates_removed"         [5]
+  [6] "protein_replicate_filtered" | "protein_replicate_filtered" [6]
+                                   - "normalized"                 [7]
+                                   - "correlation_filtered"       [8]
+  
+  prot_tmt
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+      actual                   | expected                     
+  [7] "protein_dpc_quant"      | "protein_dpc_quant"      [7] 
+  [8] "protein_normalised"     | "protein_normalised"     [8] 
+  [9] "peptide_count_filtered" | "peptide_count_filtered" [9] 
+                               - "correlation_filtered"   [10]
+                               - "ruv_covariates"         [11]
+  
+  prot_dia_limpa
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  prot_dia
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  prot_dia_limpa
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  prot_tmt
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_dia
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_dia_limpa
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_tmt
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  prot_dia
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  prot_dia_limpa
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  prot_tmt
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "protein_s4_initial"  
+  
+  prot_tmt
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "raw_data_s4"         
+  
+  prot_dia
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "ruv_covariates"
+  `expected`: "raw_data_s4"   
+  
+  prot_dia_limpa
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E8, E9, E10, E11, E15: lipidomics, metabolomics, transcriptomics: the cut; Reset brings nothing back (OD-2 (a)); a run reads only the new design state
+-- base:
+  Expected `any(grepl("_reset$", out$reset_history))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid_canonical
+  Expected `any(grepl("_reset$", out$reset_history))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab_lc
+  Expected `any(grepl("_reset$", out$reset_history))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  trx_screen
+  Expected `any(grepl("intensity|duplicate|qc|filtered_qc", out[-seq_len(at)]))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `any(grepl("no longer current", out$reset_notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid_canonical
+  Expected `any(grepl("no longer current", out$reset_notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab_lc
+  Expected `any(grepl("no longer current", out$reset_notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trx_screen
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 5
+  `expected`: 2
+  
+  trx_screen
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 9
+  `expected`: 2
+  
+  lipid_canonical
+  Expected `length(out$history)` to be identical to `match(out$design, out$before_history)`.
+  Differences:
+    `actual`: 9
+  `expected`: 2
+  
+  metab_lc
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "lipid_reset"      
+  `expected`: "lipid_raw_data_s4"
+  
+  lipid_canonical
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "metab_reset"      
+  `expected`: "metab_raw_data_s4"
+  
+  metab_lc
+  Expected `out$reset_head` to be identical to `out$design`.
+  Differences:
+  `actual`:   "trx_reset"      
+  `expected`: "trx_raw_data_s4"
+  
+  trx_screen
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+       actual                       | expected                        
+   [7] "lipid_log2"                 | "lipid_log2"                 [7]
+   [8] "lipid_normalized"           | "lipid_normalized"           [8]
+   [9] "lipid_correlation_filtered" | "lipid_correlation_filtered" [9]
+  [10] "lipid_reset"                -                                 
+  
+  lipid_canonical
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+       actual                       | expected                        
+   [7] "metab_log2"                 | "metab_log2"                 [7]
+   [8] "metab_normalized"           | "metab_normalized"           [8]
+   [9] "metab_correlation_filtered" | "metab_correlation_filtered" [9]
+  [10] "metab_reset"                -                                 
+  
+  metab_lc
+  Expected `out$reset_history` to be identical to `out$history`.
+  Differences:
+      actual                    | expected                     
+  [3] "trx_expression_filtered" | "trx_expression_filtered" [3]
+  [4] "trx_qc_complete"         | "trx_qc_complete"         [4]
+  [5] "trx_ruvs"                | "trx_ruvs"                [5]
+  [6] "trx_reset"               -                              
+  
+  trx_screen
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  lipid_canonical
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  metab_lc
+  Expected `out$status$normalization` to be identical to "disabled".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "disabled"
+  
+  trx_screen
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  lipid_canonical
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  metab_lc
+  Expected `out$status$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  trx_screen
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  lipid_canonical
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  metab_lc
+  Expected `sum(grepl("The design was saved again", out$notes, fixed = TRUE))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  trx_screen
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "lipid_correlation_filtered"
+  `expected`: "lipid_raw_data_s4"         
+  
+  lipid_canonical
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "metab_correlation_filtered"
+  `expected`: "metab_raw_data_s4"         
+  
+  metab_lc
+  Expected `utils::tail(out$history, 1L)` to be identical to `out$design`.
+  Differences:
+  `actual`:   "trx_ruvs"       
+  `expected`: "trx_raw_data_s4"
+  
+  trx_screen
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E17 (lipidomics): a comparison-only re-save keeps every later step
+-- base:
+  Expected `out$entity` to be identical to `out$before$entity`.
+  Differences:
+  `actual`:   "af98cd6b4aa1f616d2a65f7da4d03409fd9f09ee0e76f655750b641ae2018f38"
+  `expected`: "07f0ac75bd070c8c0883524a5a9c6b913171e8b6839dea485f43287f1ac24ce5"
+  Expected `out$head` to be identical to `out$before$head`.
+  Differences:
+  `actual`:   "lipid_raw_data_s4"         
+  `expected`: "lipid_correlation_filtered"
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E22 (R1-03): a re-save that changes only a batch or factor value is 'changed'
+-- base:
+  Error in `compareOmicsDesignResult(manager, list(design_matrix = design, data = data), "lipid_raw_data_s4", current)`: could not find function "compareOmicsDesignResult"
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E13 (OD-2 (a)): lipidomics, Reset after a Quality Control Revert below the run's start brings nothing back
+-- base:
+  Expected `any(grepl("_reset$", out$history))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `any(grepl("no longer current", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out$head` to be identical to `out$reverted$head`.
+  Differences:
+  `actual`:   "lipid_reset"     
+  `expected`: "lipid_normalized"
+-- head:
+  <passes>
+
+== test-kit247-design-resave.R | fixed | KIT-247 E23 (VAL-239 (iv), VAL-148's rule completed): a refused Summary Save removes the omic's folder AND its top-level file
+-- base:
+  Expected `out$after` to be identical to `character()`.
+  Differences:
+  `actual`:   "lipidomics_lipid_canonical_final_s4.RDS"
+  `expected`:                                          
+  
+  lipid_canonical
+  Expected `out$after` to be identical to `character()`.
+  Differences:
+  `actual`:   "metabolomics_metab_lc_final_s4.RDS"
+  `expected`:                                     
+  
+  metab_lc
+  Expected `out$after` to be identical to `character()`.
+  Differences:
+  `actual`:   "transcriptomics_normalized_data.tsv"
+  `expected`:                                      
+  
+  trx_screen
+-- head:
+  <passes>
+
+== test-workflow-native-session.R | new-failure | KIT-026: the head records inputs by role and external resources, and both survive export and open
+-- base:
+  <passes>
+-- head:
+  Error in `paste0("kit247_design_resave_", session$ns(""))`: attempt to apply non-function
+

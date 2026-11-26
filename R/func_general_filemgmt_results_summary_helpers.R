@@ -341,6 +341,12 @@ copyToResultsSummary <- function(omic_type,
                 dest = "QC_figures", is_dir = FALSE,
                 display_name = "Correlation Filtered Plots")))
         }
+        # KIT-259 third pass (VAL-307, C01): the combined figure's list of replaced panels, which the report reads.
+        composite_placeholders <- file.path(current_paths$feature_qc_dir, "proteomics_composite_QC_figure.placeholders")
+        if (file.exists(composite_placeholders)) {
+            files_to_copy <- c(files_to_copy, list(list(source = composite_placeholders, dest = "QC_figures", is_dir = FALSE,
+                display_name = "Composite QC (replaced panels)", new_name = paste0(omic_type, "_composite_QC_figure.placeholders"))))
+        }
         files_to_copy <- c(files_to_copy, list(
             list(source = composite_pdf, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
             list(source = composite_png, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
@@ -377,8 +383,20 @@ copyToResultsSummary <- function(omic_type,
         ruv_rds_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results_cln_with_replicates.RDS")
         norm_rds_path <- file.path(current_paths$feature_qc_dir, "normalised_results_cln_with_replicates.RDS")
 
+        # KIT-271 (VAL-317): on DIA with limpa the correlation filter's table precedes any RUV step, so it is delivered as
+        # the normalised table; a project written by an earlier build holds the `ruv_` file only, delivered the same
+        # way (the new name first when both exist).
+        limpa_tsv_paths <- Filter(file.exists, c(norm_tsv_path, ruv_tsv_path))
+
         # Determine which files exist and use appropriate naming
-        if (file.exists(ruv_tsv_path)) {
+        if (identical(getDIAActiveManager()$workflow_type, "DIA_LIMPA") && length(limpa_tsv_paths) > 0L) {
+            limpa_rds_path <- if (identical(limpa_tsv_paths[[1L]], norm_tsv_path)) norm_rds_path else ruv_rds_path
+            files_to_copy <- c(files_to_copy, list(
+                list(source = limpa_tsv_paths[[1L]], dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results TSV", new_name = "normalised_results.tsv"),
+                list(source = limpa_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS", new_name = "normalised_results.RDS")
+            ))
+            cat("COPY: Using normalized file names (DIA with limpa: the table precedes any RUV step)\n")
+        } else if (file.exists(ruv_tsv_path)) {
             # RUV was applied - use RUV filenames
             files_to_copy <- c(files_to_copy, list(
                 list(source = ruv_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV", new_name = "RUV_normalised_results.tsv"),
@@ -405,6 +423,18 @@ copyToResultsSummary <- function(omic_type,
                 files_to_copy)
             copyDIANativeSessionArtifact(current_paths$source_dir,
                 file.path(current_paths$results_summary_dir, "Publication_tables", "filtered_session.msdia.tar"))
+        }
+        # KIT-273 (VAL-317 (2), VAL-332): on DIA with limpa the matrix (RUV-III correction) or the design with the factors
+        # (RUV-III covariates) the current differential analysis used, written from the store by that analysis's own record.
+        if (identical(getDIAActiveManager()$workflow_type, "DIA_LIMPA")) {
+            delivery <- writeDIARuvDeliveryTables(getDIAActiveManager(), current_paths$results_summary_dir)
+            if (!is.null(delivery) && is.null(delivery$error)) {
+                cat(delivery$console, "\n", sep = "")
+            } else if (!is.null(delivery)) {
+                failed_copies[[length(failed_copies) + 1]] <- list(type = "ruv_delivery", source = delivery$name,
+                    destination = file.path(current_paths$results_summary_dir, dirname(delivery$name)),
+                    display_name = delivery$display_name, error = delivery$error)
+            }
         }
     } else if (omic_type == "metabolomics") {
         cat("COPY: Adding metabolomics-specific files\n")

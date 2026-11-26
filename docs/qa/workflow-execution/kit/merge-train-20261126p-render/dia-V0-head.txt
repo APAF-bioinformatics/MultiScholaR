@@ -1,0 +1,54 @@
+drawings: 3
+DIANN analysis for prot_dia - report - created on 2026-11-25 23:12:54
+Prepared with MultiScholaR; analyst: [to be completed]
+2026-11-25
+Sample Details
+SAMPLE DETAILS
+The analysis included 8 samples, each a separate biological sample (no technical replicates were declared in the design).• Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]
+Method Details
+METHOD DETAILS
+Data analyses were performed with MultiScholaR; the software version and build are listed under ‘Software and build’. SOP reference: [to be completed by the analyst].
+Data import, filtering and normalisation
+Precursor-level identifications and quantities were imported from the DIA-NN main report (one row per precursor and run). Peptide and protein quantification was then performed using a series of filtering and aggregation steps to ensure high-confidence identifications and accurate quantification. Initially, low-confidence peptide identifications were removed using q-value and proteotypic peptide filtering, retaining only peptides with a q-value threshold of 0.01 and only those that are proteotypic. Precursor ion intensities were then aggregated into peptide-level quantification values, combining all charge states of the same peptide sequence while keeping different modified peptides (peptidoforms) as separate entries.
+Intensity threshold filtering was applied to remove peptides where a significant proportion of samples fell below a specified log-intensity threshold. By default, peptides were excluded if 50% or more of the samples were below the lowest 0.1st percentile of intensity values. Proteins were required to have a minimum of 1 peptides, which could include different modifications of the same sequence, to be considered for further analysis.
+Sample quality control and filtering
+Samples with poor performance, indicated by an unusually low number of identified peptides, were identified and removed to ensure data quality and reliable downstream analysis. Such samples may be compromised due to issues in sample preparation, instrument performance, or other technical factors. Including these low-quality samples in downstream analysis could introduce bias and reduce the statistical power to detect true biological differences. Samples with fewer than 1 peptides were excluded from further analysis. This minimum peptide threshold ensures that all retained samples have sufficient protein coverage for reliable quantification and statistical testing. Of 8 initial samples, 8 samples were retained after filtering. The following samples were removed due to insufficient peptide counts: .
+Peptides appearing in only one replicate across all groups were also excluded to maintain measurement reproducibility. Protein-level quantification was performed using the IQ algorithm, implementing the maxLFQ algorithm to generate protein abundance values. Peptide intensities were aggregated into protein-level quantification without normalisation at this stage, resulting in a protein quantification matrix with log2-transformed intensity values for each protein across all samples.
+FASTA reference and protein accession cleanup
+Protein identifications were validated against a standard UniProt FASTA database, providing comprehensive protein metadata including evidence levels, reviewed status, gene names, and isoform information. This metadata was used to select the highest-quality protein identifications during accession cleanup.
+After quality control filtering, N/A proteins remained for normalisation.
+Using the protein intensity matrix, zero values were replaced with NA denoting these are missing values. Protein filtering was then applied based on missing value patterns and intensity thresholds to ensure robust statistical analysis. Intensities below the 0.1th percentile of all intensities in the table were treated as missing. Within each experimental group a protein failed if the share of its values that were missing exceeded the allowed share, 75% (shown rounded to three decimals); a protein was retained if the share of experimental groups in which it failed did not exceed the allowed share, 50% (shown rounded to three decimals). The data matrix was then log (base 2) transformed and between-sample normalisation were performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015).
+RUV-III batch correction was not applied. The analysis proceeded directly with normalised data for differential abundance analysis.
+At each stage of the data normalisation, the samples were checked for batch effects using principal component analysis (PCA) plot, density boxplots, relative log-expression (RLE) plots and the distribution of the Pearson correlation between replicate samples within groups.
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].
+Results
+Quality Control
+Figure 1 shows four quality-control views at two stages of processing: after log2 transformation (left column: panels a, c, e, g) and after between-sample normalisation (right column: b, d, f, h). RUV-III correction was not applied to this dataset.• Principal component analysis (panels a-b): samples plotted on the first two principal components, coloured by experimental group.• Density plots (panels c-d): the distribution of protein intensities per sample.• Relative log expression (panels e-f): per-sample deviations from the protein-wise median.• Pearson correlation (panels g-h): the distribution of between-sample correlations within groups.
+Whether technical variation was reduced and biological signal retained is assessed from these panels by the analyst; this report draws no automated conclusion from them.
+
+Figure 1: QC metrics across normalisation stages
+Differential Abundance Analysis
+DIFFERENTIAL ABUNDANCE ANALYSIS
+Differential abundance analysis of proteins was performed using the adjusted abundance matrix for the comparisons defined in the contrast table. The ‘limma’ R package (Ritchie et al., 2015) was used. A linear model was fitted using the formula ‘~ 0 + group’ with the ‘lmFit’ function, and p-values were calculated using the ‘eBayes’ function. A trended and robust empirical Bayes analysis was performed. False discovery rates were estimated as q-values (Storey, 2002). Each comparison was tested for any difference from zero log2 fold change. Significant differentially expressed proteins were defined as those with q-values less than 0.05.
+Volcano plots of differentially expressed proteins across all groups are shown in Figure 3, with a threshold of q-value < 0.05 and no log fold-change threshold. Full details of all proteins are provided in the supplementary results table DA_results_proteomics.xlsx within the Publication_tables folder.
+The number of significant differentially expressed proteins is summarised in Figure 2 (q-value < 0.05). For the comparison KO_vs_WT, there were 10 upregulated and 5 downregulated proteins.
+
+Figure 2: Number of significant differentially expressed proteins for each comparison.
+
+Figure 3: Volcano plots of differentially expressed proteins one per comparison.
+Analyst interpretation
+ANALYST INTERPRETATION
+[To be completed by the analyst: quality-control assessment from Figure 1, technical performance, limitations of this dataset, and recommendations for downstream analysis. Nothing in this section is generated automatically.]
+GO Enrichment Analysis
+GO ENRICHMENT ANALYSIS
+Gene Ontology (GO) enrichment analysis was performed on the differentially expressed proteins to identify significantly enriched biological processes, molecular functions, and cellular components. The analysis was conducted using the following parameters: • Up- and down-regulated proteins were those with a positive or negative log2 fold-change among proteins with a differential-abundance q-value below 0.05; no fold-change cutoff was applied. • A term was called significant when its adjusted p-value was below 0.05. • The background was the identifiers of the proteins tested in each comparison (those with a p-value in its differential-abundance table; the first gene name of each protein, from the protein annotation or, where the annotation gives none, from the identifier table; proteins without a gene name were left out of the lists and the background) that g:Profiler recognises (a custom background).
+The enrichment analysis was performed with g:Profiler (Kolberg et al., 2023) through the gprofiler2 R package (Kolberg et al., 2020). Gene Ontology biological process, molecular function and cellular component terms, KEGG pathways and Reactome pathways were tested, each data source as its own family, with g:SCS correction of the p-values. On g:Profiler, a list for which no term is significant cannot be told apart from a list in which the service recognised none of the gene names.
+Key findings from the GO enrichment analysis are summarised below for each comparison:
+Biological Process:
+Molecular Function:
+Cellular Component:
+The complete list of enriched GO terms with statistics is provided in the supplementary file ‘Pathway_enrichment_results.xlsx’ within the Publication_tables folder.
+Figure 4: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.
+Software and build
+MultiScholaR version: 0.9.0Source commit: not recordedBuild: 2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4R: R version 4.6.1 (2026-06-24)BLAS: /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+

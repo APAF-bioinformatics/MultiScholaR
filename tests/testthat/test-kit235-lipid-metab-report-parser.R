@@ -221,6 +221,25 @@ test_that("KIT-235 T5: a writer file with RUV not applied says so (S lipid, S me
 
 # --- T6: the older shapes print what they printed (a guard; passes on base by construction) -----------------------------
 
+# KIT-272 (declared edit, by substitution on the base side; the frozen base copies are untouched): the Methods bullet
+# "Density boxplots to assess distribution consistency" describes the figure's box plots of principal component scores,
+# which here come from a separate PCA of every feature with at least two values (the owner's decision VAL-332).
+# File-local copy of the constants of test-kit272-prot-box-panel-text.R, never sourced.
+k272OldBullet <- "\u2022 Density boxplots to assess distribution consistency"
+k272NewBullet <- c(
+    lipid = paste0("\u2022 Box plots of the samples' scores on the first two principal components of every lipid with ",
+        "at least two values, a separate analysis from the PCA panels, which use the tenth of the lipids with the ",
+        "largest ratio of standard deviation to mean"),
+    metab = paste0("\u2022 Box plots of the samples' scores on the first two principal components of every metabolite ",
+        "with at least two values, a separate analysis from the PCA panels, which use the tenth of the metabolites with ",
+        "the largest ratio of standard deviation to mean"))
+
+#' `text` with the one `old` replaced by `new`, after asserting that `old` is there exactly once
+k272Substitute <- function(text, old, new) {
+    expect_identical(lengths(regmatches(text, gregexpr(old, text, fixed = TRUE))), 1L, info = old)
+    sub(old, new, text, fixed = TRUE)
+}
+
 test_that("KIT-235 T6: '\u2022' and '-' files print the base text, and the same text as the '*' file (M, L1)", {
     for (case in c("M", "L1")) {
         omic <- k235Cases[[case]]$omic
@@ -235,8 +254,11 @@ test_that("KIT-235 T6: '\u2022' and '-' files print the base text, and the same 
             expect_true(k235Has(head$content$method_details, "METHOD DETAILS"), info = info)
             # KIT-236 (declared edit (b)): the Methods changed by design outside the RUV and quality-control paragraphs.
             for (heading in c("Batch Effect Correction", "Quality Control")) {
-                expect_identical(k235Paragraph(k235Text(head$content$method_details), heading),
-                    k235Paragraph(k235Text(base$content$method_details), heading), info = paste(info, heading))
+                base_paragraph <- k235Paragraph(k235Text(base$content$method_details), heading)
+                if (identical(heading, "Quality Control")) base_paragraph <- k272Substitute(base_paragraph, k272OldBullet,
+                    k272NewBullet[[omic]])
+                expect_identical(k235Paragraph(k235Text(head$content$method_details), heading), base_paragraph,
+                    info = paste(info, heading))
             }
             expect_identical(k235Text(head$content$method_details), head_star, info = info)
         }

@@ -1738,15 +1738,23 @@ collectDIANativeGuiFiles <- function(manager, metadata) {
     }
     # KIT-206 (SD-3): the results file the run wrote (`results_file`); metadata saved before it (a later Summary
     # refresh of an earlier export) names the file by its RUV setting, as before.
-    if (is.character(metadata$results_file) && length(metadata$results_file) == 1L) {
-        add("protein_qc", metadata$results_file)
+    results_file <- if (is.character(metadata$results_file) && length(metadata$results_file) == 1L) {
+        metadata$results_file
     } else {
         final_stub <- paste0(if (!identical(metadata$ruv_mode, "skip")) "ruv_" else "",
             "normalised_results_cln_with_replicates")
-        add("protein_qc", paste0(final_stub, ".tsv"))
+        paste0(final_stub, ".tsv")
     }
+    # KIT-271 (VAL-317): on DIA with limpa the table is `normalised_` (before any RUV step); a project written by an
+    # earlier build holds the `ruv_` file only, which is then the file the export lists (the new name first).
+    if (identical(manager$workflow_type, "DIA_LIMPA")) {
+        held <- paste0(c("", "ruv_"), "normalised_results_cln_with_replicates.tsv")
+        held <- held[file.exists(file.path(roots$protein_qc, held))]
+        if (length(held)) results_file <- held[[1L]]
+    }
+    add("protein_qc", results_file)
     protein_names <- c("normalized_protein_matrix_pre_ruv.tsv", "remove_proteins_with_only_one_rep.tsv",
-        paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds")),
+        paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds", "placeholders")),
         paste0(rep(c("pre_norm", "post_norm", "ruv_corrected"), each = 4L), "_",
             rep(c("pca", "density", "rle", "correlation"), 3L), ".png"), "ruv_corrected_cancor.png")
     for (name in protein_names[file.exists(file.path(roots$protein_qc, protein_names))]) add("protein_qc", name)
@@ -1988,7 +1996,7 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
     }
     # KIT-206 (SD-3): the results file and the RUV statement follow the run, not the tab's RUV setting: the file the
     # correlation's writer names (`publishDIAReferenceCorrelation`), the mode the tab's RUV summary reads.
-    results_file <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
+    results_file <- resolveProtNormCorrelationTableNames(manager, norm_data$ruv_optimization_result,
         workflow_data$ruv_optimization_result, messageFn = function(...) invisible(NULL))$tsvFilename
     run <- resolveDIARuvRunDescription(manager)
     ruv_mode <- run$ruv_mode %||% input$ruv_mode

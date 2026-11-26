@@ -332,20 +332,25 @@ saveProtNormQcPlotArtifact <- function(
 
 #' A normalisation QC figure's name for the user, from its file name.
 #' @param filename The figure's file name (`<stage>_<kind>.png`).
+#' @param adjusted Whether the RUV figures show the RUV-III-adjusted matrix drawn for quality control only (the DIA
+#'   with limpa RUV covariates step; KIT-259 third pass, VAL-307, W11), not a corrected one.
 #' @return The name, or the file name when it is not a stage figure.
 #' @noRd
-protNormFigureTitle <- function(filename) {
-  stages <- c(pre_norm = "Pre-normalisation", post_norm = "Post-normalisation", ruv_corrected = "RUV-corrected")
+protNormFigureTitle <- function(filename, adjusted = FALSE) {
+  stages <- c(pre_norm = "Pre-normalisation", post_norm = "Post-normalisation", ruv_corrected = "RUV-corrected",
+    ruv_covariates = "RUV-III covariates")
   kinds <- c(pca = "PCA", rle = "RLE", density = "PCA density", correlation = "Pearson correlation",
     cancor = "canonical correlation")
-  parts <- regmatches(filename, regexec("^(pre_norm|post_norm|ruv_corrected)_(pca|rle|density|correlation|cancor)[.]png$",
+  parts <- regmatches(filename, regexec("^(pre_norm|post_norm|ruv_corrected|ruv_covariates)_(pca|rle|density|correlation|cancor)[.]png$",
     filename))[[1L]]
   if (length(parts) != 3L) return(filename)
+  if (adjusted && identical(parts[[2L]], "ruv_corrected")) stages[["ruv_corrected"]] <- "RUV-III-adjusted (for quality control)"
   paste(stages[[parts[[2L]]]], kinds[[parts[[3L]]]])
 }
 
-#' Write the placeholder image of a QC figure that could not be drawn, at the figure's size. No partial file is left
-#' when it cannot be written either.
+#' Write the placeholder image of a QC figure that could not be drawn, at the figure's size, and its marker
+#' `<path>.placeholder` (the reason, one line; KIT-259 second correction, VAL-287 (ii): the report reads it to name the
+#' Figure 1 panels that were replaced). No partial file is left when either cannot be written.
 #' @param path The figure's path.
 #' @param figure The figure's file name.
 #' @param reason Why it could not be drawn.
@@ -361,9 +366,11 @@ writeProtNormFigurePlaceholder <- function(path, figure, reason, width, height, 
     ggplot2::theme(plot.background = ggplot2::element_rect(fill = "white", colour = NA))
   tryCatch({
     ggplot2::ggsave(path, plot, width = width, height = height, dpi = dpi)
-    checkWorkflowFigureFiles(path, "a placeholder for a figure that could not be drawn was not written")
+    writeLines(gsub("[\r\n\t]+", " ", reason), paste0(path, ".placeholder"), useBytes = TRUE)
+    checkWorkflowFigureFiles(c(path, paste0(path, ".placeholder")),
+      "a placeholder for a figure that could not be drawn was not written")
   }, error = function(e) {
-    unlink(path)
+    unlink(c(path, paste0(path, ".placeholder")))
     stop(e)
   })
   path
@@ -373,8 +380,12 @@ writeProtNormFigurePlaceholder <- function(path, figure, reason, width, height, 
 #' `prot_norm_figure_unavailable` (fields `figure`, `reason`). Diverges from conventions/R.md (catch specific
 #' conditions): ggplot2's drawing errors carry no stable class, so a drawing error is caught generically, as the
 #' lipidomics and metabolomics generators do, and logged with its message. A figure that could not be written
-#' (`workflow_figure_unwritten`), a condition of the store (`saved_entity_*`) and an interrupt still stop.
-#' @param qcDir The figure's directory; NULL draws nothing and writes no placeholder.
+#' (`workflow_figure_unwritten`), a condition of the store (`saved_entity_*`), the head-ownership conditions
+#' (`workflow_execution_stale`, `workflow_execution_busy`), R's memory-allocation error and an interrupt still stop
+#' (KIT-259 second correction, VAL-287; AUDIT-KIT-259-impl I05). A figure drawn removes its earlier placeholder's
+#' marker.
+#' @param qcDir The figure's directory; NULL writes no placeholder and signals nothing: a figure that cannot be drawn
+#'   is then only logged and NULL is returned.
 #' @param filename The figure's file name.
 #' @param width,height,dpi The figure's size.
 #' @param draw `function()` that draws and writes the figure, returning its path.
@@ -383,31 +394,62 @@ writeProtNormFigurePlaceholder <- function(path, figure, reason, width, height, 
 #' @return The path written, the figure's or its placeholder's; NULL when nothing was written.
 #' @noRd
 drawProtNormQcFigure <- function(qcDir, filename, width, height, draw, dpi = 150, placeholder = TRUE, signal = TRUE) {
-  tryCatch(draw(), error = function(e) {
-    if (inherits(e, "workflow_figure_unwritten") || any(startsWith(class(e), "saved_entity"))) stop(e)
+  drawn <- tryCatch(draw(), error = function(e) {
+    if (inherits(e, c("workflow_figure_unwritten", "workflow_execution_stale", "workflow_execution_busy")) ||
+        any(startsWith(class(e), "saved_entity")) ||
+        grepl("cannot allocate (vector|memory)", conditionMessage(e))) stop(e)
     reason <- cli::ansi_strip(conditionMessage(e))
     logger::log_warn(paste("The QC figure", filename, "could not be drawn:", reason))
     if (!placeholder || is.null(qcDir)) return(NULL)
     path <- writeProtNormFigurePlaceholder(file.path(qcDir, filename), filename, reason, width, height, dpi)
     if (signal) rlang::warn(paste0("The QC figure '", filename, "' could not be drawn: ", reason),
       class = "prot_norm_figure_unavailable", figure = filename, reason = reason)
-    path
+    structure(path, placeholder = TRUE)
   })
+  if (isTRUE(attr(drawn, "placeholder"))) return(as.vector(drawn))
+  if (!is.null(qcDir)) unlink(file.path(qcDir, paste0(filename, ".placeholder")))
+  drawn
+}
+
+#' KIT-259 third pass (VAL-307; closure check C01): the panels of the combined QC figure that are placeholders, written
+#' beside the figure when the publication builds it (`<omic>_composite_QC_figure.placeholders`, one line per panel: its
+#' letter and its figure, tab-separated), so that the report names exactly the panels its Figure 1 shows as notes. The
+#' panels are read from the markers beside the figure's inputs in `qcDir` (the publication's staging, where the
+#' pre-normalisation markers are copied with their images). No placeholder, or no combined figure: no file.
+#' @param ruvMode The run's RUV mode (the figure's layout).
+#' @param qcDir The folder holding the combined figure and its inputs.
+#' @param omicType The omic (the figure's file name).
+#' @return The file written, or NULL, invisibly.
+#' @noRd
+writeProtNormCompositePlaceholders <- function(ruvMode, qcDir, omicType) {
+  if (!file.exists(file.path(qcDir, paste0(omicType, "_composite_QC_figure.png")))) return(invisible(NULL))
+  inputs <- resolveProtNormCompositeFigureInputs(ruvMode, qcDir)
+  panels <- sub("[)]$", "", unlist(inputs$rowLabels, use.names = FALSE))
+  figures <- basename(inputs$plotFiles)
+  marked <- !is.na(inputs$plotFiles) & file.exists(paste0(inputs$plotFiles, ".placeholder"))
+  if (!any(marked)) return(invisible(NULL))
+  path <- file.path(qcDir, paste0(omicType, "_composite_QC_figure.placeholders"))
+  writeLines(paste(panels[marked], sub("[.]png$", "", figures[marked]), sep = "\t"), path, useBytes = TRUE)
+  invisible(path)
 }
 
 #' The warning notice naming the figures that could not be drawn.
 #' @param figures A list of `list(figure, reason)`.
+#' @param step The step that finished (`"normalisation"`, `"RUV-III covariates step"`), or NULL when the figures were
+#'   drawn before it (a pre-normalisation figure redrawn on a managed session).
 #' @return The notice's text.
 #' @noRd
-buildProtNormFigureUnavailableNotice <- function(figures) {
-  named <- vapply(figures, function(item) paste0("'", protNormFigureTitle(item$figure), "'"), "")
+buildProtNormFigureUnavailableNotice <- function(figures, step = "normalisation") {
+  adjusted <- identical(step, "RUV-III covariates step")
+  named <- vapply(figures, function(item) paste0("'", protNormFigureTitle(item$figure, adjusted), "'"), "")
   reasons <- vapply(figures, function(item) item$reason, "")
+  lead <- if (is.null(step)) "The " else paste0("The ", step, " finished, but the ")
   if (length(figures) == 1L) {
-    return(paste0("The normalisation finished, but the figure ", named, " could not be drawn: ", reasons,
+    return(paste0(lead, "figure ", named, " could not be drawn: ", reasons,
       ". The normalised data are not affected. In this tab, the composite QC figure and the report the figure is ",
       "replaced by a note giving the reason."))
   }
-  paste0("The normalisation finished, but these figures could not be drawn: ",
+  paste0(if (is.null(step)) "These " else paste0("The ", step, " finished, but these "), "figures could not be drawn: ",
     paste0(named, " (", reasons, ")", collapse = "; "),
     ". The normalised data are not affected. In this tab, the composite QC figure and the report each figure is ",
     "replaced by a note giving the reason.")
@@ -416,16 +458,17 @@ buildProtNormFigureUnavailableNotice <- function(figures) {
 #' Evaluate a normalisation run's completion; afterwards, one warning notice names the figures it could not draw.
 #' @param code The run and its completion.
 #' @param showNotificationFn The notice.
+#' @param step The step that finished, for the notice (`buildProtNormFigureUnavailableNotice`).
 #' @return The value of `code`.
 #' @noRd
-withProtNormFigureNotice <- function(code, showNotificationFn = shiny::showNotification) {
+withProtNormFigureNotice <- function(code, showNotificationFn = shiny::showNotification, step = "normalisation") {
   figures <- list()
   value <- withCallingHandlers(code, prot_norm_figure_unavailable = function(w) {
     figures[[length(figures) + 1L]] <<- list(figure = w$figure, reason = w$reason)
     invokeRestart("muffleWarning")
   })
   if (length(figures)) {
-    showNotificationFn(buildProtNormFigureUnavailableNotice(figures), type = "warning", duration = NULL)
+    showNotificationFn(buildProtNormFigureUnavailableNotice(figures, step), type = "warning", duration = NULL)
   }
   value
 }
@@ -766,6 +809,36 @@ resolveProtNormCorrelationResultFilenames <- function(
   )
 }
 
+#' KIT-271 (VAL-317): the file names of the correlation filter's results table on the route that writes it. On DIA
+#' with limpa the filter's table is the protein table before any RUV step in every RUV mode (the covariates are computed
+#' after the filter and the RUV matrices are other files), so it takes the `normalised` names whatever RUV result the
+#' tab holds, which on that route is absent or applied by design. The pinned resolver stays the one place that holds the
+#' names, called once on every route; the other routes get its value unchanged.
+#' @param manager The session owner (only its `workflow_type` is read), or NULL.
+#' @param normRuvOptimizationResult,workflowRuvOptimizationResult The tab's and the workflow's RUV results.
+#' @param messagePrefix,messageFn The console line's prefix and writer.
+#' @return The resolver's list (`ruvWasSkipped`, `tsvFilename`, `rdsFilename`).
+#' @noRd
+resolveProtNormCorrelationTableNames <- function(
+  manager,
+  normRuvOptimizationResult = NULL,
+  workflowRuvOptimizationResult = NULL,
+  messagePrefix = "*** CORRELATION",
+  messageFn = message
+) {
+  workflow_type <- tryCatch(manager$workflow_type, error = function(e) NULL)
+  if (!identical(workflow_type, "DIA_LIMPA")) {
+    return(resolveProtNormCorrelationResultFilenames(normRuvOptimizationResult, workflowRuvOptimizationResult,
+      messagePrefix, messageFn))
+  }
+  table_names <- resolveProtNormCorrelationResultFilenames(list(ruv_skipped = TRUE), NULL, messagePrefix,
+    messageFn = function(...) invisible(NULL))
+  messageFn(sprintf(
+    "%s: DIA with limpa - the correlation filter's table precedes any RUV step; using 'normalised' file names ***",
+    messagePrefix))
+  table_names
+}
+
 #' KIT-257 (VAL-250): before a proteomics normalisation or correlation run, remove its own earlier files from
 #' `protein_qc_dir`, by exact name: both names of the correlation's results table (TSV and the S4 compatibility RDS),
 #' and at a normalisation also the RUV-corrected figures and the cancor figure (written with RUV only). Copy prefers the
@@ -777,8 +850,13 @@ resolveProtNormCorrelationResultFilenames <- function(
 removeProtNormOwnFiles <- function(paths, stage = c("normalization", "correlation")) {
   stage <- match.arg(stage)
   tables <- paste0(rep(c("ruv_normalised", "normalised"), 2L), "_results_cln_with_replicates.", rep(c("tsv", "RDS"), each = 2L))
+  # KIT-259 second correction (VAL-287 (ii)): and the markers of the post-normalisation and RUV-corrected figures'
+  # placeholders, which the report reads.
   names <- if (identical(stage, "normalization")) c(paste0("ruv_corrected_", c("pca", "rle", "density", "correlation", "cancor"),
-    ".png"), tables) else tables
+    ".png"), tables, paste0(rep(c("post_norm_", "ruv_corrected_"), each = 5L),
+      c("pca", "rle", "density", "correlation", "cancor"), ".png.placeholder"),
+    # KIT-259 third pass (VAL-307, C01): the combined figure's list of replaced panels.
+    "proteomics_composite_QC_figure.placeholders") else tables
   texts <- omicNormGuardTexts()
   removeWorkflowOwnFiles(file.path(paths$protein_qc_dir, names),
     if (identical(stage, "normalization")) texts$norm_unremoved else texts$correlation_unremoved)

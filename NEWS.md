@@ -83,6 +83,31 @@
 
 ### Fixes
 
+ * Proteomics reports: the description of panels d to f of Figure 1 (QC metrics across normalisation stages) was
+   wrong. The panels are not distributions of protein intensities per sample: they are box plots of the samples' scores
+   on principal components 1 and 2 by group, the same scores that the principal component analysis panels plot as
+   points. The reports of all four routes (DIA, DIA with limpa, label-free, TMT) now say so, and say what the box, the
+   whiskers and the notches show (the notches are a rough guide for comparing medians and are not readable with fewer
+   than about ten samples per group). The PCA bullet now says which proteins the analysis uses. The Methods sentence
+   says "box plots of the principal component scores". The lipidomics and metabolomics reports describe their own box
+   plots (a separate analysis of every lipid or metabolite with at least two values). The figure itself is unchanged.
+   A project that has already generated a report keeps the report template it copied then, with the earlier wording:
+   delete `scripts/<omic>/<template>.rmd` (`proteomics`, `lipidomics` or `metabolomics`) in the project folder to
+   receive the corrected text at the next report. The proteomics wording is new to 0.9 (it replaced a correct
+   paragraph of the earlier version); the lipidomics and metabolomics bullet dates from earlier versions. (KIT-272)
+ * Differential abundance (all omics that compute q-values): when Storey's q-values cannot be computed for a comparison and
+   Benjamini-Hochberg values are used, the notice on the tab (now also for lipidomics and metabolomics, which showed none)
+   names the comparisons, and the report and the analysis record say these values are more conservative than Storey's
+   q-values and not on the same scale as the other comparisons (for lipidomics and metabolomics once their analysis record
+   names the method per comparison, KIT-242) (KIT-268). No q-value, p-value or significance call changes.
+ * Transcriptomics: 'Run RUVIII Export' is refused when no correction for unwanted variation was applied to the analysis
+   (the RUV design none, or a design whose number of factors is 0). Until now the export was accepted with k = 0: the
+   analysis record and the study parameters listed it, and the report said that RUVIII had been applied with the RUVs
+   inferred negative controls, beside its statement that no correction was applied. In that state the integration export
+   is the TMM logCPM, and it still is. Such an export is no longer listed in the record or the report. A project saved
+   by an earlier build that holds one reads as never exported: press Save again so that the record is rewritten (a
+   report that was generated before keeps its older template text). Replaying a record that lists such an export skips
+   it and says so. The differential expression results and the integration files are unchanged. (KIT-274)
  * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
    greyed out and says a step is still running while another step of the same analysis runs, for example the
    quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those
@@ -122,6 +147,71 @@
    form's organism (Homo sapiens by default), which then set the UniProt annotation, the Taxon ID in the study
    parameters and the enrichment organism. The organism window now says that only the selected organism is looked up
    in UniProt and tested for enrichment. No result of an import that completes changes (KIT-265).
+ * Proteomics, DIA with limpa: the table written by the correlation filter, and the results package's copy of it, no
+   longer carry the name of an RUV-normalised table. The table is the protein table before any RUV step (RUV-III
+   factors, when used, are computed after the filter; the Skip mode computes none), but it was stored as
+   `ruv_normalised_results_cln_with_replicates.tsv` and delivered as `Publication_tables/RUV_normalised_results.tsv`; it
+   is now stored as `normalised_results_cln_with_replicates.tsv` and delivered as `normalised_results.tsv`, as on the
+   other proteomics routes when RUV did not correct the table. "Normalised" here means "before RUV": with the default
+   limpa setting (no between-sample normalisation) the table holds the quantified values as they are, and a
+   between-sample normalisation was applied only if one was chosen. The values are unchanged. In the RUV correction
+   mode the delivered `normalised_results.tsv` is the uncorrected table, and the matrix the differential analysis used
+   (RUV-III's corrected matrix) is not delivered in the results package; in the factors-as-covariates mode the
+   factors' design columns are not delivered either; both stay as before. Projects saved by an earlier build need no
+   re-run: Copy delivers the table they hold as `normalised_results.tsv` and the session export works; the old file
+   name stays in their protein QC folder until the normalisation or the correlation filter is run again. This route is
+   new in 0.9 (tag v0.9.0 and later). (KIT-271)
+ * Lipidomics and metabolomics with two or more assays (for example positive and negative mode): the sample-correlation
+   filter now judges each sample within each assay. A sample whose correlation with its replicates is below the threshold
+   in one assay only has its values in that assay set to missing; it stays in the analysis of the other assays and leaves
+   the study only when no assay keeps a value for it. Features of that assay that met the minimum number of values per
+   group may then have fewer; they are tested on the values that remain. Before, such a sample left the study but its
+   values stayed in the other assays, so the lipidomics differential analysis stopped with a message naming the other
+   assay, the metabolomics one stopped on Windows, macOS and when the application runs without its background worker, and
+   otherwise ran without the sample in every assay. The version on `main` analysed every assay without the sample;
+   results in the assays where the sample passed now include it. The normalisation tab, the analysis record, the study
+   parameters and the report name each sample set missing, with the assay; the normalisation tab also names each sample
+   removed because no assay kept a value for it. When every sample of a group is set missing in one assay, the same
+   places say that comparisons with that group were not tested in that assay (the differential-analysis tables still
+   list that assay's rows for those comparisons, without a result). Older analysis records replay as they were computed. The
+   differential-analysis heatmaps leave out a sample with no value in the assays shown; in the view that combines assays,
+   the cells of a sample set missing in one assay are drawn at the feature's average. Limits: in an RUV-corrected data
+   set holding a sample set missing in it, the integration's removed RUV factors cannot be determined, so the optional
+   adjustment for them is unavailable there; the integration model still counts such a sample as measured in that data
+   set (in the data set's sample count, and it is kept when the option to keep only samples measured in every data set
+   is chosen). After RUV, the sample-correlation filter rarely fails a single anomalous sample: RUV takes a deviation confined to
+   one sample into one of its factors and moves that sample's corrected values to its group's average, so that it
+   then correlates well with its replicates. The filter can still act when RUV is skipped or removes no factor, or
+   when the deviating samples and the other unwanted variation together need more factors than RUV removes. With the
+   RUV factors in the model (the declared RUV design), such a sample is in effect left out of that assay's test. On
+   the legacy RUV-III-C route it stays in the test as if it were a genuine replicate, and the differential analysis
+   can then report differences that are not there; how often is not yet known (derived, not measured; to be measured
+   before the release, KIT-275; VAL-330). Where a sample's values were missing altogether in one assay, that assay may not have been
+   normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
+ * The list of additional settings in the study-parameters file (`study_parameters.txt`) was empty, without any message,
+   whenever the file was written without an analysis record, because a setting with several numbers (the shipped
+   `plotRle yaxis_limit = -3,3`, or the RUV control features of lipidomics and metabolomics) could not be listed; the
+   exported `createStudyParametersFile()` stopped on the shipped configuration for the same reason. Settings with
+   several values are now listed as comma-separated values in full (`Yaxis Limit: -3, 3`; a text setting of six or more
+   values is no longer cut after five; a named setting such as the RUV control features is printed as `name=value`, one
+   per feature, as in the analysis record), and a listing that still fails now says so in the file. Inside the application
+   the file is written from the analysis record and was not affected unless the record could not be built. This was so
+   in `main` and the published release 0.3.6.3. Only the printed file changes; analyses and results do not (KIT-269).
+ * Proteomics, DIA with limpa: the results package now holds what the differential analysis used. With RUV-III in the
+   correction mode, the corrected matrix the analysis fitted is delivered as `Publication_tables/ruv_corrected_results.tsv`
+   (until now only the table before correction was delivered, so the package did not hold the analysed matrix as a table).
+   With RUV-III factors as covariates (the default), the design with the factors W1 to Wk that the model contained is
+   delivered as `Study_report/design_matrix_with_ruv_factors.tab`. The matrix that the covariates mode draws for quality
+   control only is not delivered, because the analysis did not use it. The tables are written from the project's current
+   differential analysis when Copy runs, so projects from earlier builds receive them at their next Copy without a re-run,
+   and nothing is delivered when no differential analysis has been run or when it is not current. The file follows what
+   the analysis used: pressing "Skip RUV" after a RUV run does not yet undo that run (the next analysis still uses the
+   factors or the corrected matrix, whatever the tab says), so the file is then still delivered. The quantification's
+   per-protein, per-sample standard errors and which values were imputed are also inputs of the model (in limpa 1.4.2 the
+   standard errors enter as a predictor of the precision trend and the observation counts flag imputed values for the
+   residual degrees-of-freedom correction; a reproduction also needs the technical-replicate block, the contrasts and the
+   eBayes settings); the standard errors and counts are in the session archive delivered with the package
+   (`filtered_session.msdia.tar`, readable by MultiScholaR), not as tables. This route is new in 0.9. (KIT-273)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
@@ -129,14 +219,16 @@
  * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
    stopping with an error (KIT-259).
  * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
-   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   correlations below 0; before, they were left out without a note. Its axis labels read as plain numbers when the lowest correlation is
+   negative (a draft build printed them in scientific notation for some ranges). The histogram also says how many sample pairs
    have no correlation and are not shown (KIT-259).
  * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
    unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
-   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
-   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
-   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
-   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. The report names the
+   Figure 1 panels that the normalisation run replaced. The DIA-with-limpa RUV covariates step and, on the installed application, a
+   pre-normalisation figure redrawn because the input changed show the same warning, and the covariates step's
+   canonical-correlation figure is covered too; only tab entry and a 'Color by' or 'Shape by' change show the note
+   without a warning. This came in with the 0.9 development builds. In earlier
    releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
    figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
  * Reports (lipidomics, metabolomics; the same corrections in the proteomics reports): the report no longer prints
@@ -272,6 +364,24 @@
    application, and transcriptomics were not affected. Analyses recorded before this change now replay with the
    Benjamini-Hochberg values their record names, so for those comparisons a replay differs from the results saved
    before this change (significant counts, plots, enrichment and report numbers included) (KIT-249).
+ * Every omic: saving the design again (Save Design or Import Existing Design) after Quality Control or normalisation
+   now compares it with the design it replaces. When the design table changes (samples, groups, technical replicates,
+   factors or batch) or the data table the user is asked first; on Save the earlier Quality Control, normalisation and later results are set aside, the omic's earlier
+   integration input (its folder and the file beside it) is removed, and a notice says so. A change of the
+   comparisons only keeps every later step (the differential analysis is to be run again). 'Run Normalization' pressed
+   after that and before Quality Control is applied again still runs, as on a new project, but no longer silently:
+   Quality Control shows as not done, proteomics warns on entering Normalisation and no longer says the run uses the
+   current quality-control result, and the analysis record lists only what was run. Before, saving the design again
+   set nothing aside: 'Run Normalization' pressed after it normalised the new design's table without the Quality
+   Control steps, while the Quality Control tab still showed complete and the analysis record listed the earlier
+   design's steps; and 'Reset to Pre-Normalization' could make the previous design's table current again
+   (proteomics: the previous design's Protein Replicate Filter table, or on DIA with limpa its Peptide Count Filter
+   table; lipidomics, metabolomics, transcriptomics: the table the last normalisation started from), and the next
+   normalisation, correlation filter and differential analysis then ran on the previous design's samples and groups
+   with the new design's comparisons, with no message. Lipidomics, metabolomics and transcriptomics Reset now brings
+   back the starting table only while it is current. The message for a design whose technical replicates collide
+   (KIT-222) now says to apply Quality Control again after saving the corrected design. A refused 'Save Workflow
+   Arguments' now also removes the omic's earlier integration file beside its folder (KIT-247).
  * Proteomics: a project's session file can be opened again after the enrichment analysis. Before, 'Export Filtered
    Data Session' refused after enrichment with an untrue message, the session file the Summary wrote after enrichment
    could not be opened by 'Load Filtered Session', and no session file from a session that had run enrichment could be
@@ -400,6 +510,21 @@
    so a comparisons column stored as a factor no longer puts one comparison's statistics under another comparison's
    name (KIT-218). Before this fix every call with such a column stopped with an error first, so the mix-up was never
    delivered to a user.
+ * Proteomics, scripted differential abundance: `differentialAbundanceAnalysis()` given several comparisons in one call
+   fitted all of them but built its significance table, wide and long tables, count tables and volcano and p-value
+   plots from the first comparison only, without a message; `protein_deAnalysisWrapperFunction()` (and
+   `deAnalysisWrapperFunction()`) given a plain data frame of several comparisons analysed only the first. Both now
+   return every comparison asked for; each comparison's values are the same as a call with that comparison alone (bit
+   for bit in a model without covariates; to floating-point rounding when the model has covariates). No reported
+   value was wrong for comparisons given as text; comparisons were missing. The application asks for one comparison
+   per call and is unchanged. `outputDaResultsAllContrasts()` still expects one comparison per list element.
+   `differentialAbundanceAnalysis()` now also accepts a tibble (it stopped with an error before). With several
+   comparisons the long table's per-sample columns are numbered rather than named by sample. Both functions now stop
+   with a clear message when `contrasts_tbl` is not a data frame (before: an error, 'incorrect number of dimensions', for
+   a vector or a list; a one-column character matrix was read, by every row in `differentialAbundanceAnalysis()` and by
+   its first value in `protein_deAnalysisWrapperFunction()`), and read
+   the comparisons as text: with a comparisons column stored as a factor whose levels were not in row order,
+   `differentialAbundanceAnalysis()` labelled one comparison's results with another's name (KIT-221).
  * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
    `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
    those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).

@@ -340,11 +340,15 @@ test_that("filterSamplesByMetaboliteCorrelationThreshold and plotPearson preserv
     )
   )
 
-  expect_identical(filtered@design_matrix$Run, c("Sample_1", "Sample_2"))
+  # KIT-255 (VAL-283): Sample_3 and Sample_4 fail in LCMS_Pos only; they stay in the design and are set missing there.
+  expect_identical(filtered@design_matrix$Run, c("Sample_1", "Sample_2", "Sample_3", "Sample_4"))
   expect_identical(
     colnames(filtered@metabolite_data$LCMS_Pos),
-    c("feature", "annotation_id", "Sample_1", "Sample_2")
+    c("feature", "annotation_id", "Sample_1", "Sample_2", "Sample_3", "Sample_4")
   )
+  expect_true(all(is.na(filtered@metabolite_data$LCMS_Pos$Sample_3)))
+  expect_true(all(is.na(filtered@metabolite_data$LCMS_Pos$Sample_4)))
+  expect_identical(filtered@metabolite_data$LCMS_Neg, the_object@metabolite_data$LCMS_Neg)
 
   expect_error(
     filterSamplesByMetaboliteCorrelationThreshold(

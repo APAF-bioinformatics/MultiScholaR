@@ -138,7 +138,7 @@ collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, inp
             list(features = n_features, samples = n_samples)
         }) |> purrr::set_names(names(assays))
     }
-    c(list(
+    session <- c(list(
         r6_current_state_name = current_state_name, current_s4_object = if (!managed) current_s4,
         contrasts_tbl = workflowData$contrasts_tbl, design_matrix = workflowData$design_matrix, config_list = workflowData$config_list,
         itsd_selections = normData$itsd_selections, ruv_optimization_results = normData$ruv_optimization_results,
@@ -153,6 +153,12 @@ collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, inp
         stats::setNames(list(workflowData[[export$counts_field]]), export$counts_field),
         list(qc_params = workflowData$qc_params, normalization_complete = normData$normalization_complete,
             ruv_complete = normData$ruv_complete, correlation_filtering_complete = normData$correlation_filtering_complete))
+    # KIT-255 (VAL-283): the samples the correlation filter set missing in one assay (added only when there are any, so a session
+    # without them is the list it was).
+    excluded <- tryCatch(readWorkflowOmicsMetadata(binding, manager, current_state_name)$slots$args$correlation_exclusions,
+        error = function(error) NULL)
+    if (!is.null(excluded)) session$correlation_exclusions <- excluded
+    session
 }
 
 #' The normalisation export's files under the owner's publication request (KIT-105 W2, from `saveLipidNormExportArtifacts`

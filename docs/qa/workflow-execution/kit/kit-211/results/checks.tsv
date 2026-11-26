@@ -1,0 +1,9 @@
+check	value	pass	detail
+complete	36000	TRUE	36000 rows of 36000 expected
+ranges_incomplete	0	TRUE	ranges incomplete after their one continuation (a cell is scored on the replicates that completed; R beside every figure)
+F1	0	TRUE	identity violations of F1, summed
+F2	0	TRUE	E3 failures and logFC identities (E10) not exact, counted
+t_r_monotone	0	TRUE	replicate-masks where the count of tested p <= t_r differs from the calls
+bh_fallback	0	TRUE	replicate-masks whose q-values fell back to BH (counted, not a stop)
+bootstrap_B	10000	TRUE	B is 10000 in a counted scoring; another value is a lifecycle mechanics run
+determinism	5	TRUE	cell A, first five replicates of the range run twice
