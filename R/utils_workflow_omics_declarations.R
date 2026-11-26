@@ -807,20 +807,6 @@ omicsRuvSearchOutcomes <- function(ruv_results, ruv_mode, search_object) {
     design_samples <- as.character(search_object@design_matrix[[search_object@sample_id]])
     stats::setNames(lapply(names(ruv_results), function(assay_name) {
         result <- ruv_results[[assay_name]]
-        # A search that reports success but holds no control set of its own for the assay (the control selection could
-        # not read it, and the Manual search then hands the whole list; R/func_lipid_norm_ruv_optimization_helpers.R
-        # and R/func_metab_norm.R, Manual mode) is a failed search: it stops, naming duplicated feature ids when present.
-        controls <- result$control_genes_index
-        if (isTRUE(result$success) && !is.null(controls) && !(is.atomic(controls) && is.null(dim(controls)))) {
-            assay <- assays[[assay_name]]
-            ids <- if (is.data.frame(assay)) as.character(assay[[methods::slot(search_object, slots$id)]]) else character()
-            duplicated_ids <- unique(ids[duplicated(ids)])
-            return(list(action = "stop", reason = "search_error", text = paste0(sprintf(paste("RUV-III was not run: the",
-                "control-feature search found no control features for assay %s, because it could not read the assay."), assay_name),
-                if (length(duplicated_ids)) sprintf(paste(" The assay has %d duplicated feature identifiers (%s). Run 'Resolve",
-                    "Duplicates' in the Quality Control tab, then run the normalisation again."), length(duplicated_ids),
-                    paste(utils::head(duplicated_ids, 3L), collapse = ", ")) else "")))
-        }
         if (isTRUE(result$success)) return(list(action = "correct", reason = NA_character_, text = ""))
         status <- as.character(result$optimization_results$status %||% character())
         if (!identical(ruv_mode, "automatic") || !length(status) || any(startsWith(status, "error_"))) {
@@ -837,7 +823,7 @@ omicsRuvSearchOutcomes <- function(ruv_results, ruv_mode, search_object) {
         cols <- intersect(colnames(assay), design_samples)
         one <- cols[vapply(assay[cols], function(x) sum(is.finite(suppressWarnings(as.numeric(x)))) == 1L, logical(1L))]
         list(action = "keep", reason = "no_usable_controls", text = paste0(sprintf(paste("RUV-III was not applied to assay %s:",
-            "the automatic search found too few control features observed in every sample: %s. The assay keeps its values",
+            "the automatic search found too few control features observed in every sample (%s). The assay keeps its values",
             "without RUV."), assay_name, result$error %||% "no valid percentage"),
             if (length(one)) sprintf(" Samples %s have one value each in this assay, so no control is observed in every sample.",
                 paste(one, collapse = ", ")) else ""))
