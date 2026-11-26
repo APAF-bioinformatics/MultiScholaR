@@ -6,7 +6,7 @@ root <- Sys.getenv("KIT219_ROOT")
 w1 <- parse(file.path(root, "tests", "testthat", "test-omic-summary-module.R"))
 wanted <- c("omicSummaryW1Roots", "omicSummaryW1FeatureSetup", "omicSummaryW1ProtSetup")
 for (expr in w1) {
-    if (is.call(expr) && identical(expr[[1L]], as.name("<-")) && as.character(expr[[2L]]) %in% wanted) eval(expr)
+    if (is.call(expr) && identical(expr[[1L]], as.name("<-")) && is.name(expr[[2L]]) && as.character(expr[[2L]]) %in% wanted) eval(expr)
 }
 
 rows <- list()

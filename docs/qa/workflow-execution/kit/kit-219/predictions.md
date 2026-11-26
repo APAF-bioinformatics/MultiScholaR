@@ -99,3 +99,15 @@ min), 6 x (shard + 10) = 310, check 2 x 90 = 180, g0b 20: 510 job-minutes; ceili
 Predictions: every file `same` (the two moved files return to their base failure lists: 25 and 28 failures on both sides) except
 `test-kit219-enrichment-files-current.R` `fixed`; check findings identical; G0b: no listed leaf, as declared for R2.
 Files not rerun keep the R2 evidence (they do not reach the changed line): the other 24.
+
+## Run R2c (infrastructure and instrument rerun; declared before the request)
+
+In R2b the base side's shard 3 lost its job after 7 minutes (no result for 8 files: `test-kit212-da-current.R`,
+`test-kit243-summary-current-outputs.R`, `test-kit257-norm-own-files.R`, `test-kit271-limpa-table-name.R`,
+`test-kit259b-second-correction.R`, `test-kit207-summary-head-guard.R`, `test-kit219-enrichment-files-current.R`,
+`test-gui-entry-lipidomics.R`), and `g0b.R` stopped on a call expression whose target is not a name (instrument repair 2 of 3 for
+G0b; no expectation changed). Rerun of those 8 files, base and head, 2 shards per side (22.2 and 17.5 min), no check (R2b's
+check ran on both sides and is identical), and `g0b.R`. Plan: 2 x (32.2 + 27.5) = 119 + scripts 15 = 134 job-minutes; ceiling
+1.6 x 134 = **214 job-minutes (14.3 core-h)**. Order: kit212, kit243, kit257, kit271, kit259b, kit207, kit219, gui-entry-lipidomics.
+Predictions: all `same` (the head counts of R2b: kit212 309, kit243 246, kit257 133, kit271 78, kit259b 90, kit207 292, gui-entry-
+lipidomics 19/16) except kit219 `fixed`. G0b: as declared for R2.
