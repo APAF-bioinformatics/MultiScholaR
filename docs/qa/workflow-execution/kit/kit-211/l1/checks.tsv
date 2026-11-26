@@ -1,0 +1,12 @@
+id	units	passed	pass	detail
+E2	60	60	TRUE	replicate-masks over both ranges
+E3	60	60	TRUE	replicate-masks over both ranges
+E7	60	60	TRUE	replicate-masks over both ranges
+E9	60	60	TRUE	replicate-masks over both ranges; classed warnings muffled and counted: 0
+E10	60	60	TRUE	replicate-masks over both ranges; maximum absolute deviation of logFC 0
+E8	2	2	TRUE	K211_DETERMINISM=1 on cell A r = 9101, 9102 (rows and metrics, seconds excluded)
+E1	120	120	TRUE	S's filter-dependent columns (membership counts per subset, class, stratum and ell; kept and added counts; threshold) against KIT-197's committed rows, cells A to D, r = 101 to 105, six masks (120 replicate-masks expected); G0 lists DA-file changes, so the DA-dependent columns are written as one flag: all equal FALSE
+E4	56	56	TRUE	base:exit ok; base:outcome ok; base:classes ok; base:withheld ok; base:pc_f4 ok; k2w:exit ok; k2w:outcome ok; k2w:classes ok; k2w:withheld ok; k2w:pc_f4 ok; k1:exit ok; k1:outcome ok; k1:classes ok; k1:withheld ok; k1:pc_f4 ok; k3:exit ok; k3:outcome ok; k3:classes ok; k3:withheld ok; k3:pc_f4 ok; k4:exit ok; k4:outcome ok; k4:classes ok; k4:withheld ok; k4:pc_f4 ok; k5:exit ok; k5:outcome ok; k5:classes ok; k5:withheld ok; k5:pc_f4 ok; n0a:exit ok; n0a:outcome ok; n0a:classes ok; n0a:withheld ok; n0a:pc_f4 ok; n0b:exit ok; n0b:outcome ok; n0b:classes ok; n0b:withheld ok; n0b:pc_f4 ok; stopf4:exit ok; stopf4:outcome ok; stopf4:classes ok; stopf4:withheld ok; stopf4:pc_f4 ok; stopf1:exit ok; stopf1:outcome ok; join:exit ok; join:outcome ok; join:classes ok; join:withheld ok; join:pc_f4 ok; hand_estimates ok; hand_jackknife ok; join:R ok; join:empty_resamples ok
+E5	2	2	TRUE	two runs exit 0, 0; 11 files each; all identical: TRUE
+E6	1	1	TRUE	killed while running: TRUE; complete tasks after the kill: 1 of 4; continued with 3 task(s), exit 0; uninterrupted exit 0; assembled rows identical: TRUE; metrics identical (seconds excluded): TRUE; each replicate once with six masks: TRUE
+G2	2	2	TRUE	planned script minutes of a counted job at this run's seconds per replicate-mask (600 replicate-masks, 4 workers; the limit is 150): deciding cells 41.0, cell Ag 38.4; timeouts 120 and 139 minutes

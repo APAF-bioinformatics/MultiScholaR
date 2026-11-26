@@ -522,13 +522,34 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
     })
 }
 
+#' KIT-247 (VAL-239, OD-2 (a); VAL-203's rule for lipidomics, metabolomics and transcriptomics): whether the table a
+#' run started from is still held by a state of the active history (its entity unchanged), as `omicNormRunStart` tests.
+#' A non-owner manager keeps today's Reset.
+#' @param manager The session owner.
+#' @param start The recorded start (`post_filter_obj`), or NULL.
+#' @noRd
+omicNormResetStartHeld <- function(manager, start) {
+    if (!inherits(manager, "DIAStateAdapter") || !isSavedWorkflowReference(start)) return(TRUE)
+    history <- as.character(unlist(manager$getHistory()))
+    any(vapply(history, function(state) identical(getWorkflowStateReference(manager, state)$entity_id, start$entity_id),
+        logical(1)))
+}
+
+#' KIT-247. The Reset's text when nothing is brought back (DRAFT wording, VAL-41).
+#' @noRd
+omicNormResetNothingText <- function() {
+    paste("Normalisation reset: the table the normalisation started from is no longer current (for example, the design",
+        "was saved again), so nothing was brought back. Apply Quality Control again, then run the normalisation.")
+}
+
 #' Reset to the state the run started from: the store step `<prefix>_reset` recommits its record (KIT-075), and the
 #' tab's flags and results are cleared.
 #' @noRd
 resetOmicNorm <- function(workflowData, normData, addLog, config) {
     shiny::req(workflowData$state_manager)
     tryCatch({
-        if (!is.null(normData$post_filter_obj)) {
+        held <- omicNormResetStartHeld(workflowData$state_manager, normData$post_filter_obj)
+        if (!is.null(normData$post_filter_obj) && held) {
             step <- paste0(config$binding$binding$prefix, "_reset")
             commitWorkflowOmicsStoreStep(workflowData$state_manager, step, step, workflowData$config_list,
                 "Reset to pre-normalization state", source = normData$post_filter_obj)
@@ -540,8 +561,13 @@ resetOmicNorm <- function(workflowData, normData, addLog, config) {
         normData$ruv_corrected_obj <- NULL
         normData$correlation_filtered_obj <- NULL
         normData$ruv_optimization_results <- list()
-        addLog("Reset to pre-normalization state")
-        shiny::showNotification("Reset to pre-normalization state", type = "message")
+        if (!is.null(normData$post_filter_obj) && !held) {
+            addLog("Reset: the starting table is no longer current; nothing was brought back")
+            shiny::showNotification(omicNormResetNothingText(), type = "warning", duration = NULL)
+        } else {
+            addLog("Reset to pre-normalization state")
+            shiny::showNotification("Reset to pre-normalization state", type = "message")
+        }
         invisible(TRUE)
     }, error = function(e) {
         addLog(paste("ERROR during reset:", e$message))
@@ -596,6 +622,17 @@ completeOmicNormTab <- function(workflowData) {
     invisible(updated_status)
 }
 
+#' The notice for the samples the correlation filter set missing in one assay (KIT-255, VAL-283; DRAFT wording): read from the
+#' filtered state's exclusion record through the metadata reader, so the tab and the worker's completion both have it.
+#' @return A character vector, empty when no sample was set missing (or the record cannot be read).
+#' @noRd
+omicNormCorrelationNotice <- function(binding, manager, reference) {
+    tryCatch({
+        meta <- readWorkflowOmicsMetadata(binding, manager, reference)
+        omicsCorrelationExclusionNotice(meta$slots$args$correlation_exclusions, meta$assay_names)
+    }, error = function(error) character())
+}
+
 #' The correlation filter on the head (the normalisation's last commit): the pairs and the selection, committed under
 #' `<prefix>_correlation_filtered` (KIT-031, KIT-072); on the worker under a managed session (KIT-078).
 #' @noRd
@@ -620,6 +657,10 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
             normData$correlation_filtered_obj <- reference # KIT-075: the state's reference
             normData$correlation_filtering_complete <- TRUE
             completeOmicNormTab(workflowData)
+            # KIT-255 (VAL-283): the samples the filter set missing in one assay (read from the state's `args` on both routes).
+            notice <- omicNormCorrelationNotice(binding, manager, reference)
+            for (line in notice) addLog(line)
+            if (length(notice)) shiny::showNotification(paste(notice, collapse = " "), type = "warning", duration = 20)
             addLog("Correlation filtering complete")
             shiny::removeNotification("corr_working")
             shiny::showNotification("Correlation filtering complete! Ready for DE analysis.", type = "message")

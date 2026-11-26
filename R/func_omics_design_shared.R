@@ -793,7 +793,8 @@ omicsDesignReplicateKeyCollisionText <- function(collisions) {
         paste(sprintf("'%s': %s", collisions$key, collisions$runs), collapse = "; "), "): the runs were marked as ",
         "technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical ",
         "replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological ",
-        "sample together, each sample with its own number, save and run the analysis again. If these runs are one ",
+        "sample together, each sample with its own number, save it, then apply Quality Control again and run the ",
+        "normalisation and the later steps. If these runs are one ",
         "sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count ",
         "the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group ",
         "means two samples were analysed as one.")

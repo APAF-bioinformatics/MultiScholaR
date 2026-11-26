@@ -619,7 +619,18 @@ test_that("KIT-266 E14: the covariates summary text names the RUV-III-adjusted Q
     expect_false(grepl("RUV-corrected QC plots", texts$summary, fixed = TRUE))
 })
 
-test_that("KIT-266 G3: the three classic templates' Results text is the base's for the three RUV states", {
+# Declared edit after KIT-272 (VAL-332; AUDIT-KIT-272-impl I07): KIT-272 replaced the PCA bullet and the density bullet in
+# every state of the three classic templates, so the base copies (tests/testdata/kit236/base) are compared after a base-side
+# substitution of those two bullets by the head's, each with an exactly-one-match assertion. Everything else must be equal.
+k266Bullets <- function(text, last) {
+    first <- gregexpr("• Principal component analysis", text, fixed = TRUE)[[1L]]
+    end <- gregexpr(paste0(last, "[^\n]*"), text)[[1L]]
+    list(first = first, end = end, count = c(sum(first > 0L), sum(end > 0L)),
+        span = if (sum(first > 0L) == 1L && sum(end > 0L) == 1L)
+            substr(text, first[[1L]], end[[1L]] + attr(end, "match.length")[[1L]] - 1L) else NA_character_)
+}
+
+test_that("KIT-266 G3: the three classic templates' Results text is the base's for the three RUV states, but for KIT-272's two bullets", {
     states <- list(TRUE, FALSE, NA)
     for (file in c("LFQ_report.rmd", "TMT_report.rmd", "DIANN_report.rmd")) {
         texts <- lapply(c(head = system.file("reports", "proteomics", file, package = "MultiScholaR"),
@@ -628,7 +639,17 @@ test_that("KIT-266 G3: the three classic templates' Results text is the base's f
             for (e in k266Exprs(path, "Result Section")) eval(e, env)
             lapply(states, function(state) paste(as.character(env$FormatResults(list(), ruv_applied = state)), collapse = ""))
         })
-        expect_identical(texts$head, texts$base, info = file)
+        for (i in seq_along(states)) {
+            info <- paste(file, "state", i)
+            new <- k266Bullets(texts$head[[i]], "• Principal component scores by group")
+            old <- k266Bullets(texts$base[[i]], "• Density plots")
+            expect_identical(new$count, c(1L, 1L), info = info)
+            expect_identical(old$count, c(1L, 1L), info = info)
+            substituted <- if (is.na(new$span) || is.na(old$span)) NA_character_ else
+                paste0(substr(texts$base[[i]], 1L, old$first[[1L]] - 1L), new$span,
+                    substring(texts$base[[i]], old$end[[1L]] + attr(old$end, "match.length")[[1L]]))
+            expect_identical(substituted, texts$head[[i]], info = info)
+        }
         expect_true(all(nzchar(unlist(texts$head))), info = file)
     }
 })

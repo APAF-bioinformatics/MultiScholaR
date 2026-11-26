@@ -1,0 +1,4 @@
+revision	mode	guard	pattern	outcome	hint_in_message	folder_holds_259	other_broken	other_errors	expectations_passed
+ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1	mutant	1	259 characters	fail	TRUE	FALSE	0	0	20
+ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1	mutant	2	259 characters	fail	TRUE	FALSE	0	0	20
+ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1	mutant	3	259 characters	fail	TRUE	FALSE	0	0	20

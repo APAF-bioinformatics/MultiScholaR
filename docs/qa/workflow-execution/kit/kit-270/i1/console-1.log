@@ -1,0 +1,8 @@
+pid 19638, hex 4cb6, session folder RtmpmrH7cW
+== repeat fc3657f9 (kit270-out/repeat-fc3657f9.tsv)
+                                 revision   mode   pid pid_hex session_folder
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 repeat 19638    4cb6     RtmpmrH7cW
+ repeats f1_iterations f2_iterations guard1_failures guard2_failures
+    5000            20             0              10              10
+ guard3_failures seconds
+              10    1352

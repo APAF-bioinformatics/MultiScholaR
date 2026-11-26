@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit268-bh-fallback-notice.R	0	0	0	0	0	0	absent
+test-kit236-report-sentences.R	289	0	0	0	0	13.9	ok
+test-omic-da-module.R	1288	81	0	0	0	643.2	failed

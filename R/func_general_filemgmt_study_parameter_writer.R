@@ -368,6 +368,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             cat("WORKFLOW ARGS: Added Normalization Method section\n")
         }
 
+        # KIT-255 (VAL-283): the samples the correlation filter set missing in one assay (nothing is written without any).
+        output_lines <- c(output_lines, omicsCorrelationExclusionStudyLines(metab_params$correlation_exclusions))
+
         # Add Metadata section
         if (!is.null(metab_params$metadata) && length(metab_params$metadata) > 0) {
             meta <- metab_params$metadata
@@ -564,6 +567,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             output_lines <- c(output_lines, norm_lines)
             cat("WORKFLOW ARGS: Added Normalization Method section\n")
         }
+
+        # KIT-255 (VAL-283): the samples the correlation filter set missing in one assay (nothing is written without any).
+        output_lines <- c(output_lines, omicsCorrelationExclusionStudyLines(lipid_params$correlation_exclusions))
 
         # Add Metadata section
         if (!is.null(lipid_params$metadata) && length(lipid_params$metadata) > 0) {
@@ -988,7 +994,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             },
             error = function(e) {
                 cat(sprintf("WORKFLOW ARGS: formatConfigList failed: %s\n", e$message))
-                config_lines <- c(config_lines, paste("Error formatting config:", e$message))
+                # KIT-269: `<<-` so the line reaches the writer's own config_lines (a plain `<-` was discarded).
+                # DRAFT wording (owner's pass). For an rlang condition the message already holds its parents' causes.
+                reason <- trimws(gsub("[[:space:]]+", " ", cli::ansi_strip(conditionMessage(e))))
+                config_lines <<- c(config_lines, paste("The configuration settings could not be listed here:", reason))
             }
         )
     } else {

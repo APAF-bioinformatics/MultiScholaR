@@ -1,0 +1,2169 @@
+omic-da-module: ...................1.................::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+............................::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpLTON7a/kit106-lipid-4f0142170130/source/lipid_filtered_session_data_latest.rds
+::notice title=INFO::   Adopted the legacy session into a fresh state owner
+::notice title=INFO::   Restored 2 contrasts
+::error title=ERROR::   Error loading session: Loaded lipid session assay_names do not match S4 lipid_data assays: session [LCMS_Pos, LCMS_Neg], S4 [LCMS_Pos, GCMS]
+.........2.....::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpLTON7a/kit106-lipid-4f0130d25b62/source/lipid_filtered_session_data_latest.rds
+::notice title=INFO::   Adopted the legacy session into a fresh state owner
+::notice title=INFO::   Restored 2 contrasts
+.........3.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+.........4.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+.........5.....::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpLTON7a/kit106-lipid-4f01518b19cc/source/lipid_filtered_session_data_latest.rds
+::notice title=INFO::   Adopted the legacy session into a fresh state owner
+::notice title=INFO::   Restored 2 contrasts
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/lipid-publication-4f0155af6d94/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/lipid-publication-4f0155af6d94/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/lipid-publication-4f0155af6d94/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/lipid-publication-4f0155af6d94/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/lipid-publication-4f0155af6d94/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top lipids
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top lipids
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = RES_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 2: groupRES-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::   Applying tree cutting method: k_clusters
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::   Applying tree cutting method: height_cutoff
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::   Applying tree cutting method: dynamic
+::warning title=WARN::   dynamicTreeCut package not installed, skipping dynamic cutting
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::Save Heatmap button clicked
+::notice title=INFO::--- Entering save_heatmap_products ---
+::notice title=INFO::   Created directory: /tmp/RtmpLTON7a/kit106-lipid-4f01518b19cc/publication_graphs/Heatmap
+::notice title=INFO::   Saved heatmap PNG: lipid_RES_vs_WT_heatmap.png
+::notice title=INFO::   Saved heatmap PDF: lipid_RES_vs_WT_heatmap.pdf
+::notice title=INFO::   Saved methods MD: lipid_RES_vs_WT_heatmap_methods.md
+::notice title=INFO::   No cluster information to save.
+::notice title=INFO::--- Exiting save_heatmap_products ---
+.........6...................7............8............9............a............b............c............d............e............f............g...........h::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/lipid-publication-4f01236fb864/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/lipid-publication-4f01236fb864/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/lipid-publication-4f01236fb864/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/lipid-publication-4f01236fb864/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/lipid-publication-4f01236fb864/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::--- Entering generateLipidDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---
+.........i..................::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+............................::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpLTON7a/kit106-metab-4f0127022c01/source/metab_filtered_session_data_latest.rds
+::error title=ERROR::   Error loading session: Session assay_names do not match current_s4_object assays: session=LCMS_Pos, LCMS_Neg; object=LCMS_Pos, GCMS
+.........j.....::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpLTON7a/kit106-metab-4f013b8c29f5/source/metab_filtered_session_data_latest.rds
+::error title=ERROR::   Error loading session: Session assay_names do not match current_s4_object assays: session=GCMS, LCMS_Pos; object=LCMS_Pos, GCMS
+.........k.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+.........l.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+.........m.....::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpLTON7a/kit106-metab-4f014fc7633/source/metab_filtered_session_data_latest.rds
+::notice title=INFO::   Adopted the legacy session into a fresh state owner
+::notice title=INFO::   Restored 2 contrasts
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/metab-publication-4f01b7be65d/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/metab-publication-4f01b7be65d/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/metab-publication-4f01b7be65d/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/metab-publication-4f01b7be65d/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/metab-publication-4f01b7be65d/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top metabolites
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top metabolites
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = RES_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 2: groupRES-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::   Applying tree cutting method: k_clusters
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::   Applying tree cutting method: height_cutoff
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = RES_vs_WT, top_n = 20
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::   Applying tree cutting method: dynamic
+::warning title=WARN::   dynamicTreeCut package not installed, skipping dynamic cutting
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::Save Heatmap button clicked
+::notice title=INFO::--- Entering save_heatmap_products ---
+::notice title=INFO::   Created directory: /tmp/RtmpLTON7a/kit106-metab-4f014fc7633/publication_graphs/Heatmap
+::notice title=INFO::   Saved heatmap PNG: metab_RES_vs_WT_heatmap.png
+::notice title=INFO::   Saved heatmap PDF: metab_RES_vs_WT_heatmap.pdf
+::notice title=INFO::   Saved methods MD: metab_RES_vs_WT_heatmap_methods.md
+::notice title=INFO::   No cluster information to save.
+::notice title=INFO::--- Exiting save_heatmap_products ---
+.........n...................o............p............q............r............s............t............u............v............w............x...........y::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/metab-publication-4f016563cbfe/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/metab-publication-4f016563cbfe/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/metab-publication-4f016563cbfe/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/metab-publication-4f016563cbfe/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/metab-publication-4f016563cbfe/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::--- Entering generateMetabDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---
+...z.....A......B...........::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpLTON7a/file4f01d2322d2/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpLTON7a/file4f01d2322d2/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_223400
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpLTON7a/file4f01d2322d2/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::error title=ERROR::   DA analysis error: the contrast 'groupMissing-groupRPMI' is not estimable: object 'groupMissing' not found
+......................................................::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpLTON7a/file4f0136f2ebfa/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpLTON7a/file4f0136f2ebfa/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_223423
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpLTON7a/file4f0136f2ebfa/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+........................CD............E......................................................F::error title=ERROR::Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+............................::notice title=INFO::Loaded UniProt annotations from /tmp/RtmpLTON7a/kit106-prot-4f0119676ba/source/uniprot_dat_cln.RDS
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+........................GH..::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::--- Entering generateProtDAHeatmap ---
+::notice title=INFO::   selected_contrast = B_vs_A, top_n_genes = 20
+::notice title=INFO::   Found 4 significant proteins
+::notice title=INFO::   Selected top 4 proteins for heatmap
+::notice title=INFO::   Expression matrix: 4 x 4
+::notice title=INFO::   Performing tree cutting: method=k_clusters
+::notice title=INFO::   Tree cutting complete: 4 clusters formed
+::notice title=INFO::--- Exiting generateProtDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateProtDAHeatmap ---
+::notice title=INFO::   selected_contrast = B_vs_A, top_n_genes = 20
+::notice title=INFO::   Found 4 significant proteins
+::notice title=INFO::   Selected top 4 proteins for heatmap
+::notice title=INFO::   Expression matrix: 4 x 4
+::notice title=INFO::   Performing tree cutting: method=k_clusters
+::notice title=INFO::   Tree cutting complete: 3 clusters formed
+::notice title=INFO::--- Exiting generateProtDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateProtDAHeatmap ---
+::notice title=INFO::   selected_contrast = B_vs_A, top_n_genes = 20
+::notice title=INFO::   Found 4 significant proteins
+::notice title=INFO::   Selected top 4 proteins for heatmap
+::notice title=INFO::   Expression matrix: 4 x 4
+::notice title=INFO::   Performing tree cutting: method=height_cutoff
+::notice title=INFO::   Tree cutting complete: 2 clusters formed
+::notice title=INFO::--- Exiting generateProtDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateProtDAHeatmap ---
+::notice title=INFO::   selected_contrast = B_vs_A, top_n_genes = 20
+::notice title=INFO::   Found 4 significant proteins
+::notice title=INFO::   Selected top 4 proteins for heatmap
+::notice title=INFO::   Expression matrix: 4 x 4
+::notice title=INFO::   Performing tree cutting: method=dynamic
+::warning title=WARN::   dynamicTreeCut package not installed, falling back to k=4
+::notice title=INFO::   Tree cutting complete: 4 clusters formed
+::notice title=INFO::--- Exiting generateProtDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateProtDAHeatmap ---
+::notice title=INFO::   selected_contrast = B_vs_A, top_n_genes = 20
+::notice title=INFO::   Found 4 significant proteins
+::notice title=INFO::   Selected top 4 proteins for heatmap
+::notice title=INFO::   Expression matrix: 4 x 4
+::notice title=INFO::--- Exiting generateProtDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateProtDAHeatmap ---
+::notice title=INFO::   selected_contrast = B_vs_A, top_n_genes = 20
+::notice title=INFO::   Found 4 significant proteins
+::notice title=INFO::   Selected top 4 proteins for heatmap
+::notice title=INFO::   Expression matrix: 4 x 4
+::notice title=INFO::   Performing tree cutting: method=k_clusters
+::notice title=INFO::   Tree cutting complete: 3 clusters formed
+::notice title=INFO::--- Exiting generateProtDAHeatmap (success) ---
+::notice title=INFO::Save Heatmap button clicked
+::notice title=INFO::--- Entering save_heatmap_products ---
+::notice title=INFO::   Created directory: /tmp/RtmpLTON7a/kit106-prot-4f0147cdbcd6/publication_graphs/Heatmap
+::notice title=INFO::   Saved heatmap PNG: prot_B_vs_A_heatmap.png
+::notice title=INFO::   Saved heatmap PDF: prot_B_vs_A_heatmap.pdf
+::notice title=INFO::   Saved methods MD: prot_B_vs_A_heatmap_methods.md
+::notice title=INFO::   Saved clusters CSV: prot_B_vs_A_clusters.csv
+::notice title=INFO::--- Exiting save_heatmap_products ---
+.....................................IJ...K........L...M............N............O............P........Q...R........S...T........U...V........W...X........Y...Z........F...F............F............F...........F............................::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = A_vs_B
+::notice title=INFO::   Glimma: Available contrasts in data: A_vs_B
+::notice title=INFO::   Glimma: Target contrast: A_vs_B
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (1 up, 3 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+........................FF..::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/wfx-4f012d06467a/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/wfx-4f012d06467a/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/wfx-4f012d06467a/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/wfx-4f012d06467a/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/wfx-4f012d06467a/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top lipids
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = RES_vs_WT
+::notice title=INFO::   selected_assay = GCMS
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 2: groupRES-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---
+...F.....F......F...........::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::--- Entering outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/wfx-4f01554678fd/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/wfx-4f01554678fd/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/wfx-4f01554678fd/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/wfx-4f01554678fd/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/wfx-4f01554678fd/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top metabolites
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = RES_vs_WT
+::notice title=INFO::   selected_assay = GCMS
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 2: groupRES-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---
+...F.....F......F...........::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpLTON7a/file4f0115fc17f9/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpLTON7a/file4f0115fc17f9/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_223618
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpLTON7a/file4f0115fc17f9/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+........................FF..................................FF..F...........F........::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/lipid-publication-4f0172504a75/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/lipid-publication-4f0172504a75/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/lipid-publication-4f0172504a75/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/lipid-publication-4f0172504a75/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/lipid-publication-4f0172504a75/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top lipids
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = KO_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---
+.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/wfx-4f01623db5a7/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/wfx-4f01623db5a7/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/wfx-4f01623db5a7/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/wfx-4f01623db5a7/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/wfx-4f01623db5a7/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top lipids
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = KO_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---
+.....::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpLTON7a/file4f017a8f9a57/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpLTON7a/file4f017a8f9a57/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_223727
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpLTON7a/file4f017a8f9a57/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+......::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::warning title=WARN::   The DA tab could not read the head state: state requires explicit legacy conversion
+......::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/metab-publication-4f017870e508/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/metab-publication-4f017870e508/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/metab-publication-4f017870e508/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/metab-publication-4f017870e508/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/metab-publication-4f017870e508/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top metabolites
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = KO_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---
+.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Expression matrix: 6 metabolites x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 metabolites x 6 samples
+::notice title=INFO::--- Entering outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/wfx-4f0145ca8cbd/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/wfx-4f0145ca8cbd/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/wfx-4f0145ca8cbd/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/wfx-4f0145ca8cbd/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/wfx-4f0145ca8cbd/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_metabolites_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top metabolites
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputMetabDaResultsAllContrasts ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateMetabDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top metabolites
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateMetabDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateMetabDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = KO_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateMetabDAVolcanoPlotGlimma (success) ---
+.....::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::warning title=WARN::   The DA tab could not read the head state: state requires explicit legacy conversion
+...............::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+....::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpLTON7a/file4f014ccd93c0/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpLTON7a/file4f014ccd93c0/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_223839
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpLTON7a/file4f014ccd93c0/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 3
+::notice title=INFO::   data_subset dims = 6 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 6 lipids x 6 samples
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Extracted 6 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 6 rows
+::notice title=INFO::   expr_matrix: 6 lipids x 6 samples
+::notice title=INFO::   intensity_long: 36 rows
+::notice title=INFO::   intensity_wide: 6 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupRES-groupWT
+::notice title=INFO::   Final da_results_long: 6 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpLTON7a/wfx-4f017c54616/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpLTON7a/wfx-4f017c54616/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpLTON7a/wfx-4f017c54616/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpLTON7a/wfx-4f017c54616/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpLTON7a/wfx-4f017c54616/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, GCMS
+::notice title=INFO::   Found 2 contrasts: groupKO-groupWT, groupRES-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: GCMS (mode: gcms)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupKO-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::      Processing contrast: groupRES-groupWT
+::notice title=INFO::      Wrote TSV: de_gcms_lipids_groupRES-groupWT_long_annot.tsv (6 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_gcms_lipids_groupRES-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: gcms_groupRES-groupWT.png
+::notice title=INFO::      Saved volcano PDF: gcms_groupRES-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupRES-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: gcms_groupRES-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: gcms_groupRES-groupWT_heatmap.pdf
+::notice title=INFO::   Created combined volcano PDF: 4 plots
+::notice title=INFO::   Created combined heatmap PDF: 4 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 2 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 8 top lipids
+::notice title=INFO::   Expression matrix: 8 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAVolcanoPlotGlimma ---
+::notice title=INFO::   selected_contrast = KO_vs_WT
+::notice title=INFO::   selected_assay = LCMS_Pos
+::notice title=INFO::   Found 6 rows for contrast
+::notice title=INFO::   Using coefficient index 1: groupKO-groupWT
+::notice title=INFO::   Generating Glimma widget using glimmaXY...
+::notice title=INFO::--- Exiting generateLipidDAVolcanoPlotGlimma (success) ---
+..........::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+.......F::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = A_vs_B
+::notice title=INFO::   Glimma: Available contrasts in data: A_vs_B
+::notice title=INFO::   Glimma: Target contrast: A_vs_B
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (1 up, 3 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+..............::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = A_vs_B
+::notice title=INFO::   Glimma: Available contrasts in data: A_vs_B
+::notice title=INFO::   Glimma: Target contrast: A_vs_B
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (1 up, 3 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+..::error title=ERROR::Error applying proteomics step: worker failed: forced DA kernel failure (KIT-112 W3)
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+................::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+............::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+........::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::error title=ERROR::managed action da_publication ended: publication_pending
+::error title=ERROR::Error applying DA publication: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again.
+::notice title=INFO::DA publication applied successfully
+.........::error title=ERROR::managed action pearson-pairs ended: publication_pending
+::error title=ERROR::Error applying proteomics step: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again.
+........::error title=ERROR::managed action DA-contrast-output ended: publication_pending
+::error title=ERROR::Error applying proteomics step: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again.
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+.......::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::error title=ERROR::managed action da_publication ended: publication_pending
+::error title=ERROR::Error applying DA publication: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again.
+::notice title=INFO::DA publication applied successfully
+....::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::error title=ERROR::managed action da_publication ended: publication_pending
+::error title=ERROR::Error applying DA publication: the result was saved, but its tables and figures could not be written to the project folder. Press the button again to write them; the step is not run again.
+::error title=ERROR::Error applying DA publication: the earlier publication belongs to a superseded state and was dropped; run the step again
+::notice title=INFO::Removed the earlier run's files: /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/Volcano_Plots/groupB-groupA.png, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/Volcano_Plots/groupB-groupA.pdf, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/Interactive_Volcano_Plots/B_vs_A.html, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png, /tmp/RtmpLTON7a/kit112-prot-4f01704031eb/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf
+::notice title=INFO::DA publication applied successfully
+......::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+...::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+....::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+...::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+.::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+..::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::DA publication applied successfully
+.::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 4 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 6 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 6 proteins and 4 samples
+::notice title=INFO::   Glimma: Highlighting 4 significant genes (3 up, 1 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-omic-da-module.R:439:13'): (a) the lipid, metab, trx-profil
+Expected `actual[[omic]][[part]]` to be identical to `omicDaW1FrozenUi[[omic]][[part]]`.
+Differences:
+`actual`:   "56d6c2da95d26603a47eb607893f694b1e70098a6262af04766fbe660b10df04"
+`expected`: "001abe86f81a8a3479caac17a5752f3ff4e054d31a1bb38993f44417dd56c7ac"
+
+trx html
+
+── 2. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_mismatch ─
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+`actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+`expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+
+lipid_mismatch load_mismatch states
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 3. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_reordered 
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+`actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+`expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+
+lipid_reordered load_reordered states
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 4. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_no_contras
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+`actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+`expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+
+lipid_no_contrasts run_no_contrasts states
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 5. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_invalid_pr
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+`actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+`expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+
+lipid_invalid_preflight run_invalid states
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 6. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_main ─────
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+`actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+`expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+
+lipid_main start states
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 7. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_main ─────
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+  "Significant (Q < 0.050): 8 (66.7%)"
+  "  Up-regulated: 4"
+  "  Down-regulated: 4"
+- "Not tested (no value in a compared group): 0"
+
+lipid_main run values
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 8. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_main ─────
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+  "Significant (Q < 0.050): 4 (66.7%)"
+  "  Up-regulated: 3"
+  "  Down-regulated: 1"
+- "Not tested (no value in a compared group): 0"
+
+lipid_main select values
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 9. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_main ─────
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+  "Significant (Q < 0.050): 4 (66.7%)"
+  "  Up-regulated: 3"
+  "  Down-regulated: 1"
+- "Not tested (no value in a compared group): 0"
+
+lipid_main tree_k values
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+── 10. Failure ('test-omic-da-module.R:4673:9'): (b) in process: lipid_main ────
+Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+Differences:
+lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+  "Significant (Q < 0.050): 4 (66.7%)"
+  "  Up-regulated: 3"
+  "  Down-regulated: 1"
+- "Not tested (no value in a compared group): 0"
+
+lipid_main tree_height values
+Backtrace:
+    ▆
+ 1. └─expectOmicDaW1Case(name)
+ 2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+  ... and 71 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-omic-da-module.R pass 1288 fail 81 error 0 skip 0 warn 0

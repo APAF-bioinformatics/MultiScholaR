@@ -2,7 +2,7 @@
 % Please edit documentation in R/func_lipid_qc_support_helpers.R
 \name{resolveLipidDuplicateFeaturesByIntensity}
 \alias{resolveLipidDuplicateFeaturesByIntensity}
-\title{Resolve Duplicate Features by Keeping Highest Average Intensity}
+\title{Resolve Duplicate Features by Keeping the Most Completely Measured Row}
 \usage{
 resolveLipidDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
 }

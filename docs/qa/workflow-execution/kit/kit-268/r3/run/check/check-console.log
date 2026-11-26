@@ -1,0 +1,343 @@
+* using log directory ‘/home/runner/work/_temp/check-work/MultiScholaR.Rcheck’
+* using R version 4.6.1 (2026-06-24)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+    GNU Fortran (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+* running under: Ubuntu 22.04.5 LTS
+* using session charset: UTF-8
+* current time: 2026-11-26 00:21:06 UTC
+* using options ‘--no-tests --no-manual’
+* checking for file ‘MultiScholaR/DESCRIPTION’ ... OK
+* this is package ‘MultiScholaR’ version ‘0.9.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... INFO
+Packages suggested but not available for checking:
+  'RhpcBLASctl', 'devtools', 'testthat', 'covr', 'dynamicTreeCut',
+  'GlimmaV2', 'GSEABase', 'shinytest2'
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  tools/profiling/perf108-extension/extension-ci-tools/.github
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... NOTE
+Found the following non-portable file paths:
+  MultiScholaR/docs/qa/workflow-execution/kit/analysis-record-series/AUDIT-20261019-implementation.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-014/in-process-peptide-qc-check-attempt1-parameters.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-014/in-process-peptide-qc-check-protein_peptide-intensity.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-021/kit-journey-021t-tmt-fixture-lifecycle-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-030/kit-lifecycle-lipid.kit030-attempt1-contrasts-fallback-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-030/kit-lifecycle-metab.kit030-attempt1-contrasts-fallback-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-038/analysis_record-rebuilt-kit020-dia-unchanged.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-057/kit-journey-057-screen-lifecycle-bounded-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-057/variant-check-peptide_accession-full-tree-partitioned.rds
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-057/variant-check-peptide_accession-full-tree-whole.rds
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-068/kit-lifecycle-lipid-fail.attempt1-no-launch-record-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-068/kit-lifecycle-lipid-fail.attempt2-sampler-na-uptime-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-068/kit-lifecycle-metab.attempt1-sampler-gaps-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-069/kit-lifecycle-lipid.kit069-attempt1-sampler-gaps-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/figure-compare-082l.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/figure-compare-082m.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/kit082-kit-journey-082l-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/kit082-kit-journey-082m-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/kit082-kit-lifecycle-lipid-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/kit082-kit-lifecycle-metab-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/member-record-replay-082l.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/member-record-replay-082m.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.1/attempt1-volcano-combined/power-state.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2a-monitor-race/kit082-kit-journey-082l-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2a-monitor-race/kit082-kit-journey-082m-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2a-monitor-race/kit082-kit-lifecycle-lipid-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2a-monitor-race/kit082-kit-lifecycle-metab-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2a-monitor-race/member-record-replay-082l.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2a-monitor-race/member-record-replay-082m.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2b-monitor-fix-regression/kit082-kit-journey-082l-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-082/rev-1.2b-monitor-fix-regression/kit082-kit-journey-082m-stage.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-107/w2-merge/k107-w2m-test-workflow-analysis-record.R.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/object-sizes.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/replica-rows.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/rprof-copy-by-line.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/rprof-copy-by-self.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/rprof-copy-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/rprof-render-by-line.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/rprof-render-by-self.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-complete/rprof-render-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-fail/rprof-copy-by-line.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-fail/rprof-copy-by-self.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-fail/rprof-copy-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-load-all/replica-rows.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-load-all/rprof-copy-by-line.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/lifecycle/i3-107a-load-all/rprof-render-by-line.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/m1-m3/108d-i3-fail/rprof-copy-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/m1-m3/108p-i3-r1/rprof-render-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/m1-m3/108p-i3-r2/rprof-render-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/m1-m3/108q-i3-r1/rprof-render-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-108/memory/m1-m3/108q-i3-r2/rprof-render-by-total.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-113/w2/rows/start-test-workflow-omics-binding-steps.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-113/w2/rows/test-workflow-omics-application-reads.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-113/w3/rows/start-test-omic-enrich-module-w3-blocks.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s1-compare.out
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s1-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s2-compare.out
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s2-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s3-compare.out
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s3-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s4-compare.out
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/allarms-compare/s4-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/proof-scored/k124-aggregate.meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/proof-scored/k124-cell-status.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/refblas-compare/s1-compare.out
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/refblas-compare/s1-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/refblas-compare/s4-compare.out
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/gha-proof-20261118/refblas-compare/s4-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s1-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s1-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s1-legacy-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s1-legacy-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s2-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s2-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s3-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s3-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s4-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2c/s4-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2t/s3-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2t/s3-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2x/s3-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2x/s4-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/gate/confirm-p2x/s4-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/s3-rescore/aggregate-used.sha256
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm-gha/s3-rescore/not-committed.sha256
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm06-gha/gate/ruv06/s1-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm06-gha/gate/ruv06/s2-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm06-gha/gate/ruv06/s3-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm06-gha/gate/ruv06/s4-gate-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/confirm06-gha/gate/ruv06/s4-gate-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/exact-gha/beside/all-together-vs-parts.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/exact-k128-gha/beside/all-together-vs-parts.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/exact-k128-gha/beside/paired-differences.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/exact-k128-gha/beside/variant-beside-base.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/exact-k128-gha/compare/gate-rows-outside.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-124/scored/s34-stress-partial/k124-aggregate.meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-125/runs/dia_limpa-runner/lifecycle-against-laptop.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first-fourth/failing-first-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first-fourth/failing-first-tests.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first-fourth/runner-44401068161-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass-failing-first/failing-first-meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass-failing-first/failing-first-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass-failing-first/failing-first-tests.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass/runner-44413067329-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass/runner-44420412815-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass/separation-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-fifth-pass/separation-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass/failing-first-meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass/failing-first-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass/firstpass-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass/firstpass-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass-failing-first/failing-first-meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass-failing-first/failing-first-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass-failing-first/failing-first-tests.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass/diaseparation-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass/diaseparation-meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass/diaseparation-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass/runner-44422378183-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass/runner-44424549943-check-compare.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass/runner-44424549943-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass/failing-first-meta.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass/failing-first-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass/firstpass-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass/firstpass-summary.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-trx-corpus/runner-44409070858-compare.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/final-method/out-trx-corpus/trx-corpus-digests.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1024_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_lipid_1440_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_1-legacy-default_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_5-none.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_6-recommended-light.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1024_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_1-legacy-default_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_5-none.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_6-recommended-light.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-classic_1440_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1024_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_prot-dialimpa_1440_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1024_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1024_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1440_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/after/after_trx_1440_7-supplied-rules-open.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_lipid_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_1-legacy-default_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_5-none.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1024_6-recommended-light.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_1-legacy-default_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_5-none.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-classic_1440_6-recommended-light.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_prot-dialimpa_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1024_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1024_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1024_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1024_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1024_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1440_1-legacy-default.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1440_2-recommended-estimated.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1440_2-recommended-estimated_page.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1440_3-supplied-separation-pending.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-129/panel-ui/before/before_trx_1440_4-firstpass-number.png
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-134/p3/laptop-systemd-lifecycle-laptop-invalid-run-as-node.log
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-134/token/windows-run44017206786/internal-packages.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-134/token/windows-run44041155687/checks-from-job-log.txt
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-134/token/windows-run44044598918/internal-packages.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-134/token/windows-run44195739758/internal-packages.tsv
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-134/token/windows-run44195739758/lane-differences.tsv
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_client_tests.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_deploy.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_distribution.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/base.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/c_cpp.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/rust.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/duckdb_extension.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/scripts/append_extension_metadata.py
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/scripts/modify_distribution_matrix.py
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/portfile.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg-port-config.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_build.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_configure.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_install.cmake
+
+Tarballs are only required to store paths of up to 100 bytes and cannot
+store those of more than 256 bytes, with restrictions including to 100
+bytes for the final component.
+See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘MultiScholaR’ can be installed ... OK
+* used C compiler: ‘gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0’
+* checking installed package size ... INFO
+  installed size is 29.0Mb
+  sub-directories of 1Mb or more:
+    R         8.1Mb
+    extdata  10.4Mb
+    shiny     8.7Mb
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking whether startup messages can be suppressed ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘cli’
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+computeRuvCovariates: no visible binding for global variable
+  ‘.ruv_replicate_block’
+streamDIAPeptideIdentitySummary: no visible binding for global variable
+  ‘n_rows’
+ruvIII_C_Varying,ProteinQuantitativeData: no visible binding for global
+  variable ‘.ruv_replicate_block’
+Undefined global functions or variables:
+  .ruv_replicate_block n_rows
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking line endings in shell scripts ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking line endings in Makefiles ... OK
+* checking compilation flags in Makevars ... WARNING
+Non-portable flags in variable 'PKG_CFLAGS':
+  -fno-fast-math
+* checking for GNU extensions in Makefiles ... WARNING
+Found the following file(s) containing GNU extensions:
+  src/Makevars
+  tools/profiling/perf108-extension/Makefile
+Portable Makefiles do not use GNU extensions such as +=, :=, $(shell),
+$(wildcard), ifeq ... endif, .NOTPARALLEL See section ‘Writing portable
+packages’ in the ‘Writing R Extensions’ manual.
+* checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking use of PKG_*FLAGS in Makefiles ... OK
+* checking include directives in Makefiles ... OK
+* checking compiled code ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+
+Status: 3 WARNINGs, 3 NOTEs
+See
+  ‘/home/runner/work/_temp/check-work/MultiScholaR.Rcheck/00check.log’
+for details.
+

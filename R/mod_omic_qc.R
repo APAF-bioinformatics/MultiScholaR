@@ -304,7 +304,8 @@ registerOmicQcShell <- function(output, session, workflow_data, experiment_paths
                 NULL
             } else if (inherits(workflow_data$state_manager, "DIAStateAdapter")) {
                 workflow_data$state_update_trigger
-                if (hasDIAState(workflow_data$state_manager, state)) TRUE else NULL
+                # KIT-247 (F2): the active history only, so a design saved again that set QC aside is not re-completed.
+                if (state %in% diaStateHistory(workflow_data$state_manager)) TRUE else NULL
             } else {
                 workflow_data$state_manager$states[[state]]
             }

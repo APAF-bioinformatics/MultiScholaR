@@ -1,0 +1,12 @@
+scenario	exit	outcome	class_A	class_B	class_Bp	withheld	pc_pass	f4	B
+base	0	K2	E	E	E		TRUE	FALSE	10000
+k2w	0	K2	E	U	E	B	TRUE	FALSE	1000
+k1	0	K1	R	E	R		TRUE	FALSE	1000
+k3	0	K3	C	R	R		TRUE	FALSE	1000
+k4	0	K4	R	R	R		TRUE	FALSE	1000
+k5	0	K5	U	R	R	A	TRUE	FALSE	1000
+n0a	0	N0	E	E	E		FALSE	FALSE	1000
+n0b	0	N0	E	E	E		FALSE	FALSE	1000
+stopf4	0	Stop	E	E	E		TRUE	TRUE	1000
+stopf1	1	Stop							1000
+join	0	K2	E	E	E		TRUE	FALSE	1000

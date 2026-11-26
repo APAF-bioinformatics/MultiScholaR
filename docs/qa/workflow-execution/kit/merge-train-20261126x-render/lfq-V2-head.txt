@@ -1,0 +1,45 @@
+drawings: 2
+LFQ Proteomics Analysis for prot_lfq - report - created on 2026-11-26 02:19:51
+Prepared with MultiScholaR; analyst: [to be completed]
+2026-11-26
+Sample Details
+SAMPLE DETAILS
+The analysis included 10 samples, each a separate biological sample (no technical replicates were declared in the design).• Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]
+Method Details
+METHOD DETAILS
+Data analyses were performed with MultiScholaR; the software version and build are listed under ‘Software and build’. SOP reference: [to be completed by the analyst].
+Data import and protein quantification
+Protein-level label-free quantification was imported from the ‘prot_lfq’ export, one quantity per protein and sample, with missing values kept as missing.
+Protein quality control and filtering
+Protein identifications were filtered to ensure high-confidence quantification and reliable downstream statistical analysis.
+FASTA reference and protein accession cleanup
+Protein identifications were validated against a standard UniProt FASTA database, providing comprehensive protein metadata including evidence levels, reviewed status, gene names, and isoform information. This metadata was used to select the highest-quality protein identifications during accession cleanup.
+Protein groups containing multiple accessions (separated by ‘;’ delimiters) were resolved by selecting the best representative protein based on protein evidence levels, sequence length, and database annotation quality. Quantitative values for proteins within the same group were aggregated using the ‘mean’ method, reducing 400 protein groups to 400 unique protein identifications. Duplicate protein entries were removed to prevent redundancy in quantification.
+Proteins were then filtered on missing values within experimental groups. Intensities below the 0.1th percentile of all intensities in the table were treated as missing. Within each group a protein failed if the share of its values that were missing exceeded the allowed share, 80% (shown rounded to three decimals); a protein was retained if the share of experimental groups in which it failed did not exceed the allowed share, 50% (shown rounded to three decimals).
+Proteins appearing in only one replicate across all groups were also excluded to ensure measurement reproducibility and reliable quantification across biological replicates. After quality control filtering, N/A proteins remained for normalisation.
+Normalisation and batch effect correction
+Using the protein intensity matrix, zero values were replaced with NA to denote missing values. The data matrix was log (base 2) transformed and between-sample normalisation was performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015). This normalisation approach adjusts for systematic technical variation while preserving biological differences.
+RUV-III batch correction was not applied. The analysis proceeded directly with normalised data for differential abundance analysis.
+At each stage of the data normalisation, the samples were checked for batch effects using principal component analysis (PCA) plots, box plots of the principal component scores, relative log-expression (RLE) plots, and the distribution of Pearson correlation between replicate samples within groups. These quality control visualisations allow assessment of technical variation removal while ensuring biological signal is retained.
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].
+Results
+Quality Control
+Figure 1 shows four quality-control views at two stages of processing: after log2 transformation (left column: panels a, c, e, g) and after between-sample normalisation (right column: b, d, f, h). RUV-III correction was not applied to this dataset.• Principal component analysis (panels a-b): samples plotted on the first two principal components of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ratio of standard deviation to mean of their log2 values; coloured by experimental group.• Principal component scores by group (panels c-d): for each experimental group, a box plot of the samples’ scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that panels a-b plot as points. The line in each box is the median, the box spans the first to the third quartile, the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of different panels are not on a common scale and their signs are arbitrary.• Relative log expression (panels e-f): per-sample deviations from the protein-wise median.• Pearson correlation (panels g-h): the distribution of between-sample correlations within groups.
+Whether technical variation was reduced and biological signal retained is assessed from these panels by the analyst; this report draws no automated conclusion from them.
+Differential Abundance Analysis
+DIFFERENTIAL ABUNDANCE ANALYSIS
+Differential abundance analysis of proteins was performed using the adjusted abundance matrix for the comparisons defined in the contrast table. The ‘limma’ R package (Ritchie et al., 2015) was used. A linear model was fitted using the formula ‘~ 0 + group’ with the ‘lmFit’ function, and p-values were calculated using the ‘eBayes’ function. A trended and robust empirical Bayes analysis was performed. False discovery rates were estimated as q-values (Storey, 2002). Each comparison was tested for any difference from zero log2 fold change. Significant differentially expressed proteins were defined as those with q-values less than 0.05.
+Volcano plots of differentially expressed proteins across all groups are shown in Figure 3, with a threshold of q-value < 0.05 and no log fold-change threshold. Full details of all proteins are provided in the supplementary results table DA_results_proteomics.xlsx within the Publication_tables folder.
+The number of significant differentially expressed proteins is summarised in Figure 2 (q-value < 0.05). For the comparison KO_vs_WT, there were 8 upregulated and 9 downregulated proteins.
+
+Figure 2: Number of significant differentially expressed proteins for each comparison.
+
+Figure 3: Volcano plots of differentially expressed proteins one per comparison.
+Analyst interpretation
+ANALYST INTERPRETATION
+[To be completed by the analyst: quality-control assessment from Figure 1, technical performance, limitations of this dataset, and recommendations for downstream analysis. Nothing in this section is generated automatically.]
+GO Enrichment Analysis
+No enrichment analysis was run for this project.
+Software and build
+MultiScholaR version: 0.9.0Source commit: not recordedBuild: 2cab6efa340c6a15137bc6261f8057e41399ab28321e1f4c197e0c7bab44a2b4R: R version 4.6.1 (2026-06-24)BLAS: /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+

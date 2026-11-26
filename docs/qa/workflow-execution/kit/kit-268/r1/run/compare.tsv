@@ -1,0 +1,4 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit268-bh-fallback-notice.R	0	0	0	0	absent	12	11	0	0	failed	only-on-head		
+test-kit236-report-sentences.R	289	0	0	0	ok	307	6	0	0	failed	new-failure	new-failure (test only on head): KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons; counts: KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons (passed NA -> 18, skipped NA -> 0)	
+test-omic-da-module.R	1288	81	0	0	failed	1286	83	0	0	failed	new-failure	new-failure: GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning; counts: GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning (passed 5 -> 3, skipped 0 -> 0)	

@@ -1,0 +1,667 @@
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `sort(unique(rows$comparison))` to be identical to `both`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_identical(sort(unique(rows$comparison)), both) at test-kit221-da-several-comparisons.R:180:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `nrow(rows)` to be identical to 120L.
+  Differences:
+    `actual`:  60
+  `expected`: 120
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_identical(nrow(rows), 120L) at test-kit221-da-several-comparisons.R:181:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `nrow(value$contrasts_results_table)` to be identical to 120L.
+  Differences:
+    `actual`:  60
+  `expected`: 120
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:182:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `unique(value$num_sig_da_molecules$comparison)` to have the same values as `both`.
+  Actual: "B_vs_A"
+  Expected: "B_vs_A", "C_vs_A"
+  Absent: "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_setequal(...) at test-kit221-da-several-comparisons.R:183:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `unique(value$num_sig_da_molecules_first_go$table$comparison)` to have the same values as `both`.
+  Actual: "B_vs_A"
+  Expected: "B_vs_A", "C_vs_A"
+  Absent: "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_setequal(...) at test-kit221-da-several-comparisons.R:184:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `nrow(value$list_of_volcano_plots)` to be identical to 2L.
+  Differences:
+    `actual`: 1
+  `expected`: 2
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:185:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `all(c("log2FC:B_vs_A", "log2FC:C_vs_A") %in% names(value$da_proteins_wide))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_true(...) at test-kit221-da-several-comparisons.R:187:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1: two comparisons in a data.frame give every table and plot both comparisons (limma)
+kind: failure
+message:
+  Expected `sort(unique(value$da_proteins_long$comparison))` to be identical to `both`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:188:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W1b: two comparisons in a tibble give both comparisons too (M1: the base message is recorded)
+kind: failure
+message:
+  Expected W1b error to be NULL.
+  Differences:
+  `actual` is a character vector ('number of items to replace is not a multiple of replacement length')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit221Completed(run, "W1b error") at test-kit221-da-several-comparisons.R:210:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit221-da-several-comparisons.R:153:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W2: each comparison of a two-comparison call equals a call with that comparison alone (limma)
+kind: failure
+message:
+  Expected W2 comparisons to be identical to `sort(names(refs))`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:221:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:160:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W2: each comparison of a two-comparison call equals a call with that comparison alone (limma)
+kind: failure
+message:
+  Expected `nrow(a)` to be identical to `nrow(b)`.
+  Differences:
+    `actual`:  0
+  `expected`: 60
+  
+  W2 C_vs_A rows
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:221:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:164:9
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W3: the sibling wrapper given a two-row data.frame returns both comparisons, each equal to its one-row tibble call
+kind: failure
+message:
+  Expected `length(value$contrasts_results$results)` to be identical to 2L.
+  Differences:
+    `actual`: 1
+  `expected`: 2
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W3: the sibling wrapper given a two-row data.frame returns both comparisons, each equal to its one-row tibble call
+kind: failure
+message:
+  Expected `sort(unique(value$significant_rows$comparison))` to be identical to `c("B_vs_A", "C_vs_A")`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W3: the sibling wrapper given a two-row data.frame returns both comparisons, each equal to its one-row tibble call
+kind: failure
+message:
+  Expected `nrow(value$significant_rows)` to be identical to 120L.
+  Differences:
+    `actual`:  60
+  `expected`: 120
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W3: the sibling wrapper given a two-row data.frame returns both comparisons, each equal to its one-row tibble call
+kind: failure
+message:
+  Expected W3 comparisons to be identical to `sort(names(refs))`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:238:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:160:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W3: the sibling wrapper given a two-row data.frame returns both comparisons, each equal to its one-row tibble call
+kind: failure
+message:
+  Expected `nrow(a)` to be identical to `nrow(b)`.
+  Differences:
+    `actual`:  0
+  `expected`: 60
+  
+  W3 C_vs_A rows
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:238:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:164:9
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `sort(unique(rows$comparison))` to be identical to `both`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_identical(sort(unique(rows$comparison)), both) at test-kit221-da-several-comparisons.R:180:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `nrow(rows)` to be identical to 120L.
+  Differences:
+    `actual`:  60
+  `expected`: 120
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_identical(nrow(rows), 120L) at test-kit221-da-several-comparisons.R:181:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `nrow(value$contrasts_results_table)` to be identical to 120L.
+  Differences:
+    `actual`:  60
+  `expected`: 120
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:182:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `unique(value$num_sig_da_molecules$comparison)` to have the same values as `both`.
+  Actual: "B_vs_A"
+  Expected: "B_vs_A", "C_vs_A"
+  Absent: "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_setequal(...) at test-kit221-da-several-comparisons.R:183:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `unique(value$num_sig_da_molecules_first_go$table$comparison)` to have the same values as `both`.
+  Actual: "B_vs_A"
+  Expected: "B_vs_A", "C_vs_A"
+  Absent: "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_setequal(...) at test-kit221-da-several-comparisons.R:184:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `nrow(value$list_of_volcano_plots)` to be identical to 2L.
+  Differences:
+    `actual`: 1
+  `expected`: 2
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:185:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `all(c("log2FC:B_vs_A", "log2FC:C_vs_A") %in% names(value$da_proteins_wide))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_true(...) at test-kit221-da-several-comparisons.R:187:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `sort(unique(value$da_proteins_long$comparison))` to be identical to `both`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221ExpectBoth(multi$value) at test-kit221-da-several-comparisons.R:253:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:188:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected W4 comparisons to be identical to `sort(names(refs))`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:254:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:160:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W4: two comparisons on the limpa route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `nrow(a)` to be identical to `nrow(b)`.
+  Differences:
+    `actual`:  0
+  `expected`: 60
+  
+  W4 C_vs_A rows
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:254:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:164:9
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W5: two comparisons on the RUV-factors-in-the-model route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `sort(unique(multi$value$significant_rows$comparison))` to be identical to `c("B_vs_A", "C_vs_A")`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W5: two comparisons on the RUV-factors-in-the-model route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `nrow(multi$value$significant_rows)` to be identical to `2L * nrow(singles$B_vs_A$value$significant_rows)`.
+  Differences:
+    `actual`: 239
+  `expected`: 478
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W5: two comparisons on the RUV-factors-in-the-model route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected W5 comparisons to be identical to `sort(names(refs))`.
+  Differences:
+  `actual`:   "B_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:270:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:160:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W5: two comparisons on the RUV-factors-in-the-model route give both comparisons, each equal to its one-comparison call
+kind: failure
+message:
+  Expected `nrow(a)` to be identical to `nrow(b)`.
+  Differences:
+    `actual`:   0
+  `expected`: 239
+  
+  W5 C_vs_A rows
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:270:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:164:9
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W7: a factor column gives each comparison its own statistics (limma, differentialAbundanceAnalysis)
+kind: failure
+message:
+  Expected W7 comparisons to be identical to `sort(names(refs))`.
+  Differences:
+  `actual`:   "C_vs_A"         
+  `expected`: "B_vs_A" "C_vs_A"
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:282:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:160:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W7: a factor column gives each comparison its own statistics (limma, differentialAbundanceAnalysis)
+kind: failure
+message:
+  Expected `nrow(a)` to be identical to `nrow(b)`.
+  Differences:
+    `actual`:  0
+  `expected`: 60
+  
+  W7 B_vs_A rows
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:282:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:164:9
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W7: a factor column gives each comparison its own statistics (limma, differentialAbundanceAnalysis)
+kind: failure
+message:
+  Expected `a[[column]]` to be identical to `b[[column]]`.
+  Differences:
+       actual | expected     
+   [1] 0.132  - 0.085    [1] 
+   [2] 0.372  - -0.056   [2] 
+   [3] 0.959  - 0.235    [3] 
+   [4] 0.796  - -0.145   [4] 
+   [5] 1.333  - 0.495    [5] 
+   [6] 0.923  - -0.293   [6] 
+   [7] 1.076  - -0.018   [7] 
+   [8] 1.105  - 0.185    [8] 
+   [9] -0.045 - -0.003   [9] 
+  [10] 0.492  - 0.313    [10]
+  [11] 0.297  - 0.489    [11]
+  [12] 0.089  - 0.224    [12]
+  [13] 0.266  - 0.302    [13]
+  [14] 0.155  - 0.275    [14]
+  [15] -0.113 - -0.046   [15]
+  [16] -0.106 - -0.065   [16]
+  [17] -0.095 - 0.064    [17]
+  [18] 0.052  - -0.139   [18]
+  [19] 0.236  - 0.384    [19]
+  [20] 0.016  - -0.121   [20]
+  [21] 0.193  - 0.178    [21]
+  [22] 0.222  - 0.045    [22]
+  [23] -0.033 - 0.008    [23]
+  [24] -0.022 - -0.247   [24]
+  [25] -0.261 - -0.376   [25]
+  [26] 0.323  - -0.027   [26]
+  [27] -0.184 - 0.380    [27]
+  [28] -0.150 - -0.071   [28]
+  [29] -0.127 - -0.217   [29]
+  [30] 0.467  - 0.061    [30]
+  [31] 0.058  - 0.429    [31]
+  [32] -0.435 - -0.247   [32]
+  [33] 0.111  - 0.163    [33]
+  [34] 0.120  - 0.099    [34]
+  [35] -0.111 - 0.099    [35]
+  [36] -0.106 - -0.143   [36]
+  [37] -0.287 - 0.010    [37]
+  [38] 0.145  - 0.332    [38]
+  [39] -0.140 - -0.359   [39]
+  [40] 0.287  - 0.188    [40]
+  [41] 0.187  - 0.243    [41]
+  [42] -0.281 - 0.105    [42]
+  [43] -0.168 - 0.114    [43]
+  [44] 0.181  - 0.155    [44]
+  [45] 0.216  - 0.113    [45]
+  [46] -0.097 - -0.185   [46]
+  [47] -0.024 - -0.134   [47]
+  [48] -0.047 - -0.013   [48]
+  [49] -0.433 - -0.324   [49]
+  [50] -0.123 - 0.087    [50]
+  [51] -0.261 - 0.065    [51]
+  [52] -0.108 - -0.055   [52]
+  [53] 0.072  - 0.124    [53]
+  [54] 0.322  - 0.039    [54]
+  [55] -0.138 - -0.005   [55]
+  [56] -0.277 - -0.213   [56]
+  [57] -0.259 - -0.201   [57]
+  [58] -0.171 - -0.155   [58]
+  [59] -0.208 - -0.041   [59]
+  [60] -0.322 - 0.073    [60]
+  
+  W7 C_vs_A log2FC
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:282:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:171:13
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W7: a factor column gives each comparison its own statistics (limma, differentialAbundanceAnalysis)
+kind: failure
+message:
+  Expected `a[[column]]` to be identical to `b[[column]]`.
+  Differences:
+       actual | expected     
+   [1] 0.585  - 0.727    [1] 
+   [2] 0.076  - 0.788    [2] 
+   [3] 0.000  - 0.231    [3] 
+   [4] 0.000  - 0.481    [4] 
+   [5] 0.000  - 0.013    [5] 
+   [6] 0.000  - 0.209    [6] 
+   [7] 0.000  - 0.930    [7] 
+   [8] 0.000  - 0.417    [8] 
+   [9] 0.822  - 0.989    [9] 
+  [10] 0.023  - 0.142    [10]
+  [11] 0.156  - 0.021    [11]
+  [12] 0.657  - 0.266    [12]
+  [13] 0.182  - 0.131    [13]
+  [14] 0.475  - 0.206    [14]
+  [15] 0.566  - 0.817    [15]
+  [16] 0.619  - 0.761    [16]
+  [17] 0.668  - 0.772    [17]
+  [18] 0.795  - 0.494    [18]
+  [19] 0.225  - 0.051    [19]
+  [20] 0.952  - 0.654    [20]
+  [21] 0.440  - 0.477    [21]
+  [22] 0.310  - 0.838    [22]
+  [23] 0.879  - 0.972    [23]
+  [24] 0.917  - 0.252    [24]
+  [25] 0.210  - 0.073    [25]
+  [26] 0.094  - 0.887    [26]
+  [27] 0.406  - 0.089    [27]
+  [28] 0.465  - 0.728    [28]
+  [29] 0.597  - 0.368    [29]
+  [30] 0.024  - 0.765    [30]
+  [31] 0.816  - 0.088    [31]
+  [32] 0.039  - 0.237    [32]
+  [33] 0.601  - 0.444    [33]
+  [34] 0.516  - 0.592    [34]
+  [35] 0.564  - 0.610    [35]
+  [36] 0.607  - 0.487    [36]
+  [37] 0.165  - 0.961    [37]
+  [38] 0.473  - 0.104    [38]
+  [39] 0.515  - 0.098    [39]
+  [40] 0.203  - 0.404    [40]
+  [41] 0.417  - 0.293    [41]
+  [42] 0.209  - 0.636    [42]
+  [43] 0.418  - 0.582    [43]
+  [44] 0.472  - 0.538    [44]
+  [45] 0.278  - 0.567    [45]
+  [46] 0.627  - 0.355    [46]
+  [47] 0.921  - 0.573    [47]
+  [48] 0.809  - 0.947    [48]
+  [49] 0.065  - 0.165    [49]
+  [50] 0.540  - 0.665    [50]
+  [51] 0.258  - 0.777    [51]
+  [52] 0.652  - 0.817    [52]
+  [53] 0.741  - 0.568    [53]
+  [54] 0.126  - 0.851    [54]
+  [55] 0.489  - 0.981    [55]
+  [56] 0.154  - 0.271    [56]
+  [57] 0.218  - 0.339    [57]
+  [58] 0.388  - 0.433    [58]
+  [59] 0.342  - 0.851    [59]
+  [60] 0.121  - 0.722    [60]
+  
+  W7 C_vs_A raw_pvalue
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:282:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:171:13
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W7: a factor column gives each comparison its own statistics (limma, differentialAbundanceAnalysis)
+kind: failure
+message:
+  Expected `a[[column]]` to be identical to `b[[column]]`.
+  Differences:
+       actual | expected     
+   [1] 0.31   - 0.96     [1] 
+   [2] 0.16   - 0.96     [2] 
+   [3] 0.00   - 0.90     [3] 
+   [4] 0.00   - 0.96     [4] 
+   [5] 0.00   - 0.63     [5] 
+   [6] 0.00   - 0.90     [6] 
+   [7] 0.00   - 0.99     [7] 
+   [8] 0.00   - 0.96     [8] 
+   [9] 0.35   - 0.99     [9] 
+  [10] 0.07   - 0.85     [10]
+  [11] 0.23   - 0.63     [11]
+  [12] 0.31   - 0.90     [12]
+  [13] 0.23   - 0.85     [13]
+  [14] 0.31   - 0.90     [14]
+  [15] 0.31   - 0.96     [15]
+  [16] 0.31   - 0.96     [16]
+  [17] 0.31   - 0.96     [17]
+  [18] 0.35   - 0.96     [18]
+  [19] 0.23   - 0.78     [19]
+  [20] 0.37   - 0.96     [20]
+  [21] 0.31   - 0.96     [21]
+  [22] 0.28   - 0.96     [22]
+  [23] 0.36   - 0.99     [23]
+  [24] 0.37   - 0.90     [24]
+  [25] 0.23   - 0.78     [25]
+  [26] 0.18   - 0.99     [26]
+  [27] 0.31   - 0.78     [27]
+  [28] 0.31   - 0.96     [28]
+  [29] 0.31   - 0.96     [29]
+  [30] 0.07   - 0.96     [30]
+  [31] 0.35   - 0.78     [31]
+  [32] 0.10   - 0.90     [32]
+  [33] 0.31   - 0.96     [33]
+  [34] 0.31   - 0.96     [34]
+  [35] 0.31   - 0.96     [35]
+  [36] 0.31   - 0.96     [36]
+  [37] 0.23   - 0.99     [37]
+  [38] 0.31   - 0.78     [38]
+  [39] 0.31   - 0.78     [39]
+  [40] 0.23   - 0.96     [40]
+  [41] 0.31   - 0.93     [41]
+  [42] 0.23   - 0.96     [42]
+  [43] 0.31   - 0.96     [43]
+  [44] 0.31   - 0.96     [44]
+  [45] 0.26   - 0.96     [45]
+  [46] 0.31   - 0.96     [46]
+  [47] 0.37   - 0.96     [47]
+  [48] 0.35   - 0.99     [48]
+  [49] 0.15   - 0.90     [49]
+  [50] 0.31   - 0.96     [50]
+  [51] 0.25   - 0.96     [51]
+  [52] 0.31   - 0.96     [52]
+  [53] 0.34   - 0.96     [53]
+  [54] 0.21   - 0.96     [54]
+  [55] 0.31   - 0.99     [55]
+  [56] 0.23   - 0.90     [56]
+  [57] 0.23   - 0.96     [57]
+  [58] 0.31   - 0.96     [58]
+  [59] 0.30   - 0.96     [59]
+  [60] 0.21   - 0.96     [60]
+  
+  W7 C_vs_A fdr_qvalue
+trace (first lines):
+      ▆
+   1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:282:5
+   2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:171:13
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W8: the sibling wrapper given a factor column returns both comparisons, each equal to its one-row character call
+kind: failure
+message:
+  Expected W8 factor error to be NULL.
+  Differences:
+  `actual` is a character vector ('i In index: 1.\nCaused by error in `fit$coefficients[, coef]`:\n! subscript out of bounds')
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─kit221Completed(run, "W8 factor error") at test-kit221-da-several-comparisons.R:293:5
+   2.   └─testthat::expect_null(run$error, label = label) at test-kit221-da-several-comparisons.R:153:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W9: a character vector is refused with the class prot_da_contrasts_invalid by both functions
+kind: failure
+message:
+  Expected the call was refused with class prot_da_contrasts_invalid; it gave: incorrect number of dimensions to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─kit221Refused(...) at test-kit221-da-several-comparisons.R:313:5
+   2.   └─testthat::expect_true(...) at test-kit221-da-several-comparisons.R:304:5
+
+file: test-kit221-da-several-comparisons.R
+test: KIT-221 W9: a character vector is refused with the class prot_da_contrasts_invalid by both functions
+kind: failure
+message:
+  Expected the call was refused with class prot_da_contrasts_invalid; it gave: incorrect number of dimensions to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─kit221Refused(...) at test-kit221-da-several-comparisons.R:315:5
+   2.   └─testthat::expect_true(...) at test-kit221-da-several-comparisons.R:304:5
+

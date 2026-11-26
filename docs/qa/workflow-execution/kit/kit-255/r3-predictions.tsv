@@ -1,0 +1,16 @@
+file	test (row)	predicted at the base (the tests commit on the merged tree: c25e1335's code)	predicted at head (the correction)
+test-kit255-omics-correlation-assays.R	E20 (K3, group B blank in LCMS_Neg), lipid and metab	FAIL: `record$not_tested` is NULL (no record of the untested comparisons)	pass
+test-kit255-omics-correlation-assays.R	E20 two replicates per group, lipid and metab	FAIL: `not_tested` NULL	pass
+test-kit255-omics-correlation-assays.R	E25 and G7 (I03), lipid and metab	FAIL: `no_value` NULL, the notice lacks the sentence 'Sample B_6 had no remaining value in any assay and was removed from the study.'	pass
+test-kit255-omics-correlation-assays.R	I02 three assays, lipid and metab	FAIL: the LCMS_Neg notice names GCMS and lacks '(it reached the threshold there)'; the summary heading is 'Excluded in one assay only'; no 'was not tested' clause	pass
+test-kit255-omics-correlation-assays.R	E15 summary heading, lipid and metab	FAIL: the summary says 'Excluded in one assay only', not 'Set missing in some assays only'	pass
+test-kit255-omics-correlation-assays.R	E16 study parameters and the session field (in E15)	study block test FAILS (no 'Comparisons not tested' lines); the session-field assertion passes (a guard)	pass
+test-kit255-omics-correlation-assays.R	E6 managed notice	PASS (a guard: the worker's completion delivers the notice)	pass
+test-kit255-omics-correlation-assays.R	E7 to E10, E8 equality on the declared route	PASS (a guard: implemented, not asserted before)	pass
+test-kit255-omics-correlation-assays.R	I07 two-threshold merge	PASS (a guard: the merge code exists and was never executed)	pass
+test-kit255-omics-correlation-assays.R	every other row (E1 to E19, E22 to E24, G rows, T-OLD)	pass	pass
+test-kit236-report-sentences.R	KIT-255 I01/I02 report comment	FAIL: '2 samples were excluded in one assay only' counts entries; no not-tested sentence	pass
+test-kit236-report-sentences.R	every other row	same	same
+test-kit235-lipid-metab-report-parser.R	all	same	same
+test-omic-norm-module.R	all	the eight provenance digests (lipid :671, :695, :712, :743; metab :896, :920, :937, :968) FAIL (the marker is already in the base), VAL-303: not edited	the same eight fail with the same messages; verdict same
+R CMD check	-	identical on both sides (0 ERROR, 3 WARNING, 3 NOTE as in R2; staging may have moved the counts: judged base against head)	-

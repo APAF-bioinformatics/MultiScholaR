@@ -328,7 +328,8 @@ omicQcDuplicateTablesUi <- function(duplicates, ns, texts) {
 omicQcDuplicatesText <- function(resolved, prefix) {
     removed <- sum(vapply(resolved, function(stat) stat$removed, numeric(1)))
     paste("Duplicate Resolution Complete", "==============================",
-        "Strategy: Keep feature with highest average intensity", "", "Per-Assay Results:",
+        "Rule: the row measured in the most design samples (a missing value or 0 is not measured), then the highest average of its measured values",
+        "", "Per-Assay Results:",
         paste(vapply(names(resolved), function(assay) {
             stat <- resolved[[assay]]
             sprintf("  %s: %d -> %d rows (removed %d duplicates)", assay, stat$original, stat$resolved, stat$removed)
