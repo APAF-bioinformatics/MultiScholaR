@@ -456,7 +456,7 @@ EXPECTED_DEFAULTS$metab <- EXPECTED_DEFAULTS$lipid
 # 5.2 (r1.20; VAL-241 OD-1 (c)), the import's default pattern as KIT-260 ships it, read at the bound commit by E3 (a difference
 # stops: the route under test changed)
 BOUND_MARKERS <- c("duplicate_resolution_rank", "correlation_exclusion", # on staging (KIT-255 at aa119308)
-    "normalisation_fallback", "protein_normalisation_fallback", "itsd_outcome", "ruv_fallback") # waiting: KIT-242 (itsd_outcome: also KIT-260)
+    "normalisation_fallback", "protein_normalisation_fallback", "itsd_outcome", "ruv_fallback") # KIT-242 (itsd_outcome: also KIT-260), all on staging at e4a6d4ae
 ITSD_DEFAULT_PATTERN <- "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
 checkE3 <- function(omic) {
     got <- routeDefaults(omic)
@@ -476,10 +476,9 @@ checkE3 <- function(omic) {
     pattern_ok <- identical(omic, "prot") || identical(imported, ITSD_DEFAULT_PATTERN)
     got$cyclic_loess_minimum <- loess_minimum
     got$itsd_import_pattern <- imported
-    # BIND-1: the replay markers the bound commit must hold, so that a run on the wrong base stops here. KIT-255's `correlation_exclusion` and the
-    # duplicate-resolution rank marker are on staging (aa119308); KIT-242's and KIT-260's names are as their branches define them
-    # (origin/kit-242: `normalisation_fallback`, `protein_normalisation_fallback`, `itsd_outcome`, `ruv_fallback`; origin/kit-260: `itsd_outcome`)
-    # and WAIT for the bound commit (re-read there; a name that differs is written into lifecycle.md and edited here before L1r).
+    # BIND-1: the replay markers the bound commit must hold, so that a run on the wrong base stops here. All six are on staging at e4a6d4ae
+    # (KIT-255: `correlation_exclusion`; the duplicate-resolution rank marker; KIT-242: `normalisation_fallback`, `protein_normalisation_fallback`,
+    # `itsd_outcome` (one marker for KIT-242 and KIT-260), `ruv_fallback`; R/utils_workflow_analysis_record.R).
     missing_markers <- setdiff(BOUND_MARKERS, names(workflowReplayRuleMarkers))
     list(pass = !length(differ) && !length(matched) && !length(leaked) && pattern_ok && !length(missing_markers), got = got,
         note = sprintf("differ: %s; labelled names matching an ITSD pattern: %s; markers off their current token: %s; import pattern as shipped %s; replay markers missing at this commit: %s",
@@ -699,6 +698,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             out$rows_itsd <- vapply(out$m_itsd, nrow, integer(1L))
             itsd_record <- owner$getState(paste0(prefix, "_itsd_norm"))@args$ITSDNormalization
             out$itsd_record_fields <- paste(names(itsd_record), collapse = ",")
+            out$itsd_features_record <- itsd_record[["itsd_features_per_assay"]]
             out$itsd_check <- checkItsdActed(m_qc, out$m_itsd, itsd_record)
             if (!all(out$itsd_check$itsd_ok)) {
                 bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
@@ -738,6 +738,13 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
             record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
             out$record_ruv <- recordOutcomes(record, paste0(prefix, "_ruv_corrected"))
+            out$record_itsd <- recordOutcomes(record, paste0(prefix, "_itsd_norm"))
+            out$record_norm <- recordOutcomes(record, paste0(prefix, "_normalized"))
+        } else if (!is.null(plant)) {
+            # the planted cases without a RUV request (`emptysample`) read the record's ITSD and normalisation outcomes too (bound commit, KIT-242)
+            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+            out$record_itsd <- recordOutcomes(record, paste0(prefix, "_itsd_norm"))
+            out$record_norm <- recordOutcomes(record, paste0(prefix, "_normalized"))
         }
         if (correlation) {
             step <- "correlation"
@@ -2071,6 +2078,20 @@ flattenJourney <- function(j, assays) {
         warning_classes = as.character(j$warning_classes %||% NA))
     for (a in assays) for (name in names(j$assay_cols[[a]])) flat[paste0(name, ".", a)] <- as.character(j$assay_cols[[a]][[name]])
     for (what in c("rows_filter", "rows_itsd", "rows_ruv_input")) for (a in names(j[[what]])) flat[paste0(what, ".", a)] <- as.character(j[[what]][[a]])
+    # the bound commit's records (KIT-242, KIT-260): the analysis record's outcomes of the ITSD, normalisation and RUV steps, per assay (exact `[[`)
+    one <- function(x) if (is.null(x) || !length(x)) NA_character_ else paste(as.character(unlist(x)), collapse = ",")
+    for (a in assays) {
+        itsd <- j[["record_itsd"]]; norm <- j[["record_norm"]]; ruv <- j[["record_ruv"]]
+        flat[paste0("itsd_record_applied.", a)] <- one(itsd[["itsd_applied_per_assay"]][[a]])
+        flat[paste0("itsd_record_reason.", a)] <- one(itsd[["itsd_not_applied_reason_per_assay"]][[a]])
+        flat[paste0("itsd_record_count.", a)] <- one(itsd[["itsd_counts_per_assay"]][[a]])
+        flat[paste0("itsd_record_ids.", a)] <- one(j[["itsd_features_record"]][[a]])
+        flat[paste0("norm_record_excluded.", a)] <- one(norm[["normalisation_samples_excluded_per_assay"]][[a]])
+        flat[paste0("ruv_record_applied.", a)] <- one(ruv[["ruv_applied_per_assay"]][[a]])
+        flat[paste0("ruv_record_reason.", a)] <- one(ruv[["ruv_not_applied_reason_per_assay"]][[a]])
+    }
+    flat[["itsd_record_applied"]] <- one(j[["record_itsd"]][["itsd_applied"]])
+    flat[["norm_record_removed"]] <- one(j[["record_norm"]][["normalisation_samples_removed"]])
     flat
 }
 runPlantUnit <- function(plant, cellname, r, d) {
