@@ -111,3 +111,31 @@ for the formula Save lane prot_lfq: export state before and after its Save and i
 expectation is changed. One send, base and head, STAGE=2 and DIAG=1, file timeout 20 minutes; worst case 3.0 core-hours (2 x 30 min =
 60 min = 4.0 exceeds, so the timeout is 15 minutes: 2 x 25 = 50 min = 3.33... lowered to a 12-minute file timeout: 2 x 22 = 44 min =
 2.93); running total about 77 + 2.93 of 200.00.
+
+## THE ONE CORRECTION PASS (coordinator's ruling 2026-11-27; AUDIT-KIT-277-plan section "Miss 1: cause and repair")
+Tests-only commit 1: (i) ruling K: P4 prot_lfq's `expect_false(out$record_da)` is replaced by the user-level guarantee: the digest of
+`source_dir/analysis_record.json` is unchanged across the Save Workflow Arguments press after the FASTA cut (the press is refused by the head
+rule and writes no record); (ii) new row O5 (S2): the session exported at the DA head (the lane's session_export step), organism Save, Save
+Workflow Arguments: `export_pending` NULL; the Save's notices hold no error; the owned generation equals the head; the refreshed metadata
+holds no `uniprot_dat_cln`; the members of `collectDIANativeGuiFiles` include no `source/uniprot_dat_cln.RDS` and no `da/`; the
+annotation file is still absent. `kit277CopyClick` also returns the Save press's notices as an attribute and clears notes before the Save.
+(iii) The diagnostic blocks (kit277Diag, kit277ExportState, the traces, the diagnostic-only test) STAY in the file, gated by
+MULTISCHOLAR_KIT277_DIAG, which is unset in every counted run (R1, R2): declared.
+Code commit 2: in `refreshDIANativeSummaryArchive` (R/utils_workflow_dia_sessions.R), before the export call, take `aa_seq_tbl_final` and
+`uniprot_dat_cln` from the CURRENT bus into the metadata, and in its `prepare_outputs` write those two tables as the user's export does
+(R/mod_prot_norm_session_helpers.R:256-261); nothing else. Option A is rejected. The DA readiness check, the pending flag's lifecycle and
+`setOmicsDaBack` are not touched.
+Predictions, R1 (the tests-only tree; new file and test-kit247-design-resave.R, old code): the new file: O5's lines fail by value on
+the old code (the earlier archive still declares the annotation and the DA folder: members include `source/uniprot_dat_cln.RDS` and
+`da/`, annotation_in_metadata TRUE, source file present); P4 prot_lfq's replaced line fails by value (the old code applies no cut, so
+the Save writes a new analysis_record.json); O4's two lines PASS on the old code as in R2; every other row as in R1/R1c (fail by value,
+except G2, G3, G4, P2 parts, P4 head-rule for tmt/dia/limpa which pass on both sides). The KIT-247 file: 170 passed / 16 failed as in R1.
+Predictions, R2 (head = the code commit, base = the tests-only tree; the 134 files plus test-gui-entry-proteomics.R, 4 shards per side
+from order4.json with the gui-entry file in the lightest shard, check both, file timeouts 120 (KIT-247 file, gui-entry file) and 90 (new
+file), MULTISCHOLAR_TRX_MANIFEST_NOTE=1): the new file passes every row on the head (O4 and O5 included); the KIT-247 file `fixed`
+170/16 -> 186/0; test-gui-entry-proteomics.R `same` (92 passed / 101 as on staging; the refresh runs in every proteomics lane's Save
+path: a stored GUI-entry leaf recording source/aa_seq_tbl_final.RDS or source/uniprot_dat_cln.RDS moving is a RESULT and stops the work);
+test-kit216-prot-session-after-enrichment.R, test-kit206-prot-norm-export-guard.R, test-workflow-native-session.R and every other file
+`same`; check identical. A miss anywhere in R2: stop, the correction pass is spent.
+Budget line: spent about 79.5 (R1..R2, three diagnostics, incl. diagnostic 3); R1 expected 7.3 (worst 10), R2 expected 56 (worst 70)
+-> at most 79.5 + 10 + 70 = 159.5 of 200.00.
