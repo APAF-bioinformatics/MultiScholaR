@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-272 R1: tests-only commit, failing first on the old report templates (stop rule 1); ceiling 45 job-minutes",
+  "label": "KIT-272 R1 tests-first 84ee54db vs staging 7f17547f",
+  "package_commit": "84ee54db3e6f9d348569cc041fad9b4aef99869e",
+  "base_commit": "7f17547f99f5440f1330d7e760722be994460611",
+  "tools_ref": "",
+  "tests": [
+    "test-kit272-prot-box-panel-text.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
