@@ -99,28 +99,28 @@ Adapted (ticket section 6 list) or new, by KIT-281 line:
 
 ## `l1-k281.R` against `l1-k211.R`
 
-SHA-256 of `l1-k281.R`: `47a065cfce6e0239e326e38b3c092d5b458a8f1fc1bb3cfa098f54d89c6df2e3`
+SHA-256 of `l1-k281.R`: `7d5d4cb295c4ea3968d33e93ea737cd662ad1efead1accfc7beb7e31fdb88c32`
 
 Verbatim (E0, markers): `run` (l1-k197.R:34-37) and `sha` (l1-k197.R:38-38). Adapted: the header; the partial-match guard (global); provenance and progress before the
 first unit; G0 as a check; E2, E3, E7, E10 (E9 dropped); E8; **E1'** in place of E1 (S and B against KIT-211's committed rows); **E4** is the scorer self-test (`selftest/`)
 in place of KIT-211's e4 tables; E5 (scorer twice, mechanics env); E6 (three masks); G2 (75 minutes); **new G3** (the count, rule G3 as `g3Rule`, `g3-count.tsv`,
-`g3-rule.tsv`); after the script audit: E1''s missing-unit comparison (S04), G2 from set-up plus script with derived timeouts (S05, `g2-plan.tsv`), named arguments in every `addCheck`, `run` and `failureNote` call (S08), PATH for the self-test runner. Unchanged ranges (3 lines or more):
+`g3-rule.tsv`); after the script audit: E11 (counted-range refusal through the last net, RC1-5), E1''s missing-unit comparison (S04), G2 from set-up plus script with derived timeouts (S05, `g2-plan.tsv`), named arguments in every `addCheck`, `run` and `failureNote` call (S08), PATH for the self-test runner. Unchanged ranges (3 lines or more):
 
 | old lines | new lines |
 |---|---|
-| 21-32 | 43-54 |
-| 37-40 | 66-69 |
-| 46-48 | 75-77 |
-| 52-57 | 101-106 |
-| 62-65 | 115-118 |
-| 71-76 | 124-129 |
-| 88-90 | 136-138 |
-| 114-116 | 167-169 |
-| 132-134 | 191-193 |
-| 208-211 | 214-217 |
-| 217-220 | 223-226 |
-| 224-231 | 230-237 |
-| 238-240 | 244-246 |
-| 242-246 | 248-252 |
-| 249-251 | 255-257 |
-| 275-278 | 313-316 |
+| 21-32 | 44-55 |
+| 37-40 | 67-70 |
+| 46-48 | 76-78 |
+| 52-57 | 102-107 |
+| 62-65 | 127-130 |
+| 71-76 | 136-141 |
+| 88-90 | 148-150 |
+| 114-116 | 179-181 |
+| 132-134 | 203-205 |
+| 208-211 | 226-229 |
+| 217-220 | 235-238 |
+| 224-231 | 242-249 |
+| 238-240 | 256-258 |
+| 242-246 | 260-264 |
+| 249-251 | 267-269 |
+| 275-278 | 325-328 |

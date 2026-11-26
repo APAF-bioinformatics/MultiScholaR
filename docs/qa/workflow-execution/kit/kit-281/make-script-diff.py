@@ -115,7 +115,7 @@ out += ['## `l1-k281.R` against `l1-k211.R`', '', 'SHA-256 of `l1-k281.R`: `%s`'
         'Verbatim (E0, markers): `run` (l1-k197.R:34-37) and `sha` (l1-k197.R:38-38). Adapted: the header; the partial-match guard (global); provenance and progress before the',
         'first unit; G0 as a check; E2, E3, E7, E10 (E9 dropped); E8; **E1\'** in place of E1 (S and B against KIT-211\'s committed rows); **E4** is the scorer self-test (`selftest/`)',
         'in place of KIT-211\'s e4 tables; E5 (scorer twice, mechanics env); E6 (three masks); G2 (75 minutes); **new G3** (the count, rule G3 as `g3Rule`, `g3-count.tsv`,',
-        '`g3-rule.tsv`); after the script audit: E1\'\'s missing-unit comparison (S04), G2 from set-up plus script with derived timeouts (S05, `g2-plan.tsv`), named arguments in every `addCheck`, `run` and `failureNote` call (S08), PATH for the self-test runner. Unchanged ranges (3 lines or more):', '', '| old lines | new lines |', '|---|---|']
+        '`g3-rule.tsv`); after the script audit: E11 (counted-range refusal through the last net, RC1-5), E1\'\'s missing-unit comparison (S04), G2 from set-up plus script with derived timeouts (S05, `g2-plan.tsv`), named arguments in every `addCheck`, `run` and `failureNote` call (S08), PATH for the self-test runner. Unchanged ranges (3 lines or more):', '', '| old lines | new lines |', '|---|---|']
 for tag, i1, i2, j1, j2 in ops(a, b):
     if tag == 'equal' and i2 - i1 >= 3:
         out.append('| %s | %s |' % (rng(i1, i2), rng(j1, j2)))

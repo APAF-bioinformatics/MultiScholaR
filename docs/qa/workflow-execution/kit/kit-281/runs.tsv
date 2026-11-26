@@ -1,3 +1,5 @@
 run_id	commit	purpose	minutes	core_hours	result
 45759150472	a352632a85dcc7b2cd7d74752f1249ab1c448324	S09 parse-and-self-test send (smoke/declaration.md; expected 1.33, ceiling 2.00 core-h; timeout 30); minutes = run created to last updated (upper bound; script 102 s)	14.1	0.94	script exit 1: three parses ok; SELFTEST 2007 checks, 4 differ (all `fields` upper_jack: prediction defect in make-selftest.py, see outcome note); probe Stop instrument ok; cal105 Calibrated ok; seed 9301 task exit 0, E2/E3/E7/E10 3 of 3 ok, provenance smoke true ok, scorer refused (smoke flag) ok
+# instrument defect 1 (self-test item, prediction script; no re-send used): see smoke/outcome.md; repaired locally, expected.tsv four values changed
 # running total: 0.00 + 0.94 used; planned 72.67 at ceilings; ceiling 74.67 (VAL-371). No second send without the coordinator's ruling; L1 not sent.
+# running ceiling before L1: 0.94 used + 3.67 this request + 69.00 planned (counted 44.00, scoring 2.67, reserve 6.33, Part C 16.00) = 73.61 <= 74.67

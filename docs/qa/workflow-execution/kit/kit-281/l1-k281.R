@@ -18,6 +18,7 @@
 #   E5: score-k281.R twice on the two ranges' rows (the join): every output file identical.
 #   E6: cell A, r = 9201 to 9204 with one worker, killed (SIGKILL to the process tree) once one task is complete; continued from the list of
 #       missing tasks; the assembled rows equal an uninterrupted run (four workers).
+#   E11: a counted range (r = 401) is refused through the last net before load_all (no G3 table in the tree): exit 1, instrument-stop.txt, no metrics.
 #   G0: the three protein filter files equal KIT-211's bound commit's (the replay marker of KIT-280 is asserted absent by every child).
 #   G2: the planned job minutes (set-up plus script) of counted jobs of 200, 171 and 77 replicates from this run's seconds per replicate-mask, the
 #       timeouts derived from them (g2-plan.tsv); none may pass 75 minutes.
@@ -110,6 +111,17 @@ cat("KIT-281 L1: start", format(Sys.time(), "%H:%M:%S"), "\n")
 g0 <- system2("git", c("diff", "--stat", KIT211_BOUND, "HEAD", "--", "R/func_prot_qc_filtering_helpers.R", "R/func_prot_s4_qc_filter_methods.R",
     "R/func_general_parameter_helpers.R"), stdout = TRUE)
 addCheck(id = "G0", units = 1L, passed = if (length(g0) == 0L) 1L else 0L, detail = "git diff --stat of the three filter files between 894b9cc8 and the package commit is empty")
+
+# ---- E11 (added after the script audit, AUDIT-KIT-281-scripts RC1-5): a counted range is refused through the last-net writer, before load_all -------------------
+# sim-k281.R on r = 401 (a counted seed) with no g3-rule.tsv in the tree must exit 1, leave instrument-stop.txt ("a counted job needs the G3 table"), no metrics.tsv and
+# no part file: no draw is made. It proves the G3 refusal and the error option's writer, which no other unit reaches.
+e11_dir <- file.path(work, "e11")
+status_e11 <- run(script = sim, arguments = c(e11_dir, "401", "401"), env = "K211_CELLS=A", log = file.path(work, "sim-e11.log"))
+e11_stop <- file.path(e11_dir, "instrument-stop.txt")
+e11_ok <- status_e11 == 1L && file.exists(e11_stop) && any(grepl("a counted job needs the G3 table", readLines(e11_stop, warn = FALSE), fixed = TRUE)) &&
+    !file.exists(file.path(e11_dir, "metrics.tsv")) && length(list.files(file.path(e11_dir, "parts"))) == 0L
+addCheck(id = "E11", units = 1L, passed = if (e11_ok) 1L else 0L, detail = sprintf("counted range r = 401 with no G3 table: exit %d (1 expected); instrument-stop.txt present %s; no metrics.tsv, no part file",
+    status_e11, file.exists(e11_stop)))
 
 # ---- the lifecycle simulation (E2, E3, E7, E10; two ranges per cell, joined by the scorer: E5) -----------------------------
 rows_root <- file.path(work, "rows")

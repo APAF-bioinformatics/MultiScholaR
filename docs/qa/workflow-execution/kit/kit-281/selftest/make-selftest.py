@@ -219,6 +219,22 @@ def expect(case, file, key, column, value):
     EXPECTED.append((case, file, key, column, fmt(value) if not isinstance(value, str) else value))
 
 
+def jack_se_of(thetas):
+    """The delete-one jackknife SE, sqrt((n - 1) / n * sum((t - mean)^2)); not finite when any value is not."""
+    n = len(thetas)
+    if n < 2 or any(math.isnan(t) for t in thetas):
+        return NAN
+    m = sum(thetas) / n
+    return math.sqrt((n - 1) / n * sum((t - m) ** 2 for t in thetas))
+
+
+def pool_jack_stats(spec):
+    """Stats of the pool with one (cell, replicate) unit deleted (all its masks), for every unit of the pool: the scorer's jackknife units."""
+    keys = {(c, m) for c in CELLS for m in MASKS}
+    units = sorted({(c, r) for (c, m, r) in spec})
+    return [stats(agg(spec, keys, lambda cell, mask, rr, u=u: 0 if (cell, rr) == u else 1)) for u in units]
+
+
 def predict_decision(case, spec, outcome=None, jack_finite=True, boot_nonfinite_pool=0):
     """Predicted decision.tsv, falsifier.tsv, positive-control.tsv and outcome.tsv rows of a degenerate (or declared) case."""
     keys = {(c, m) for c in CELLS for m in MASKS}
@@ -226,16 +242,20 @@ def predict_decision(case, spec, outcome=None, jack_finite=True, boot_nonfinite_
     st = stats(s)
     items = [("rho_g", "rhog.B1", RHO_MARGIN), ("G1a", "B1.fdr_bh", FDP_LIMIT), ("G1b", "dfdrbh.B1", GUARD_MARGIN), ("G2", "dpowbh.B1", POWER_MARGIN)]
     states = {}
+    z_jack = __import__("statistics").NormalDist().inv_cdf(0.975)
+    jacks = pool_jack_stats(spec)
     for id_, stat, limit in items:
         est = st[stat]
-        up = est  # degenerate: the bootstrap 0.975 quantile of identical resamples is the estimate
+        up = est  # the bootstrap 0.975 quantile: identical resamples in these cases (every cell's replicates alike), so the estimate
+        se = jack_se_of([j[stat] for j in jacks])   # the jackknife by the delete-one formula for EVERY case (SE = 0 falls out where it is 0)
+        up_jack = est + z_jack * se
         states[id_] = state(up, limit)
         expect(case, "decision.tsv", id_, "estimate", est)
         expect(case, "decision.tsv", id_, "upper", up)
         expect(case, "decision.tsv", id_, "limit", limit)
         expect(case, "decision.tsv", id_, "state", states[id_])
-        expect(case, "decision.tsv", id_, "upper_jack", up if jack_finite else NAN)
-        expect(case, "decision.tsv", id_, "state_jack", state(up if jack_finite else NAN, limit))
+        expect(case, "decision.tsv", id_, "upper_jack", up_jack)
+        expect(case, "decision.tsv", id_, "state_jack", state(up_jack, limit))
         expect(case, "decision.tsv", id_, "boot_nonfinite", boot_nonfinite_pool if id_ == "rho_g" else 0)
     m6 = st["B1.m6_l_H"]
     fires = (not math.isnan(m6)) and (m6 > 0 or m6 < 0)
