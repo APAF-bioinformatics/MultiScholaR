@@ -222,7 +222,7 @@ and whether it already failed on runners (R2a-2's tables for Part A's moves and 
 train runs where they cover a file; otherwise stated as not known before R2). No prediction of the list is made (P0 is
 the measurement); an instrument failure (a shard that does not complete) is reported, not counted.
 
-### P0 (run 45723354055, 0c8778d9; 539.2 job-minutes, 35.94 core-hours; ceiling 840): observed
+### P0 (run 45723354055, 0c8778d9; 539.2 job-minutes, 35.95 core-hours; ceiling 840): observed
 
 186 files: 152 ok, 34 failed, none timed out or crashed. Full list, one row per failing expectation with its class:
 `p0-45723354055/moved.tsv`. Classes (observed by matching each failure to the runner tables named):
@@ -232,7 +232,7 @@ the measurement); an instrument failure (a shard that does not complete) is repo
 | Moved by Part B (new) | 16 | `test-workflow-omics-worker.R:25-31` (7 each for lipid_ruv, metab_ruv): the RUV step on the raw fixture now stops; `test-module-ci-metab-norm.R:202`, `:204` (MCI-015.3): a failed Manual search now stops |
 | Defect in the fix (Part B) | 1 | `test-workflow-operation-registry.R:257` (KIT-025 scan): the text "every sample (%s)" in `omicsRuvSearchOutcomes` matches `sample\s*\(` |
 | Moved by Part A (R2a-2's list) | 79 | `test-omic-norm-module.R` 56 (call sites `:1560`-`:1585`), `test-kit172-downstream.R` 14, `test-metab-02w-…:226-240` 3, the two declarations files 3 each (`:47`, `:138`, `:188`) |
-| Already failing on staging train heads | 950 | proteomics, enrichment, summary, DA modules, KIT-073/094 fixtures, GUI-entry lanes (lipid 16, metab 48, proteomics 101), others (`moved.tsv`) |
+| Already failing on staging train heads | 951 | proteomics, enrichment, summary, DA modules, KIT-073/094 fixtures, GUI-entry lanes (lipid 16, metab 48, proteomics 101), others (`moved.tsv`) |
 | Transcriptomics corpus-manifest digest | 22 | `test-kit129-run-path.R`, `test-kit224-…`, `test-module-ci-trx-norm.R`, `test-trx-da-without-ruv.R`, `test-trx-ruv-designs.R`, `test-workflow-trx-declarations.R`: fail on R2a-2's base 17d1ecc4 too, pass on trains 15/16 (environment, not a KIT-242 rule) |
 | Runner library | 2 errors | `test-tech-reps-limma.R` (devtools), `test-workflow-checkpoint-harness.R` (lobstr) |
 
@@ -256,7 +256,7 @@ VAL-290), with marker `ruv_fallback`; evidence R1b-B 45714743051, R1d 4572116895
 ## After P0: the coordinator's rulings (2026-11-26), no run
 
 **Cost against the lines.** R1d (45721168959) was not a planned row: run as the smallest test that could falsify the fix
-before spending P0's 186 files on it (0.93 core-hours). P0 used 35.94 core-hours against its line of 28.0 expected and
+before spending P0's 186 files on it (0.93 core-hours). P0 used 35.95 core-hours against its line of 28.0 expected and
 56.0 ceiling. Used to date: 148.31 of 901.33 (VAL-329).
 
 **Correction 1 (accepted).** The no-usable-controls notice reads "observed in every sample: <reason>" (was "every
@@ -494,10 +494,10 @@ implemented, the evidence runs, the precedents, the classification and what is n
 |---|---|---|---|
 | A1 | G0 observes C1 to C14 as predicted (or the ticket is revised) | `g0-*` on `kit-242-g0`; r1.3 | met (C4 revised the ticket, r1.3) |
 | A2 | Every E row fails at base, G rows pass, all pass on the fix | R1a, R1b-A, R1c, R1b-B, R1d; R2 base/head | met (R2: the new file fixed, 526/0 on the head) |
-| A3 | No warning followed by an unhandled skip in the four S4 methods | the A3 sections above | met, with the two logged-only removals named |
-| A4 | P0 lists the moving expectations; R2 as 8.2 | P0 45723354055 (`moved.tsv`); R2 45738934354 | met; one message-level prediction error (KIT-073 `registry`), verdict unaffected |
+| A3 | No warning followed by an unhandled skip in the four S4 methods | the A3 sections above | met on the application's path, with the two logged-only removals named; except the script path of audit I07: `omicsRuvCorrectByCause` hands a k or control list that does not name every assay to the earlier rule, which drops that assay silently |
+| A4 | P0 lists the moving expectations; R2 as 8.2 | P0 45723354055 (`moved.tsv`); R2 45738934354 | not met for the 18 expectations of audit I01, which move outside the owner-approved files (awaiting the owner, asked 2026-11-26); otherwise met, with one message-level prediction error (KIT-073 `registry`), verdict unaffected |
 | A5 | R3 full suite: no difference other than A4's | by the merge train's run, coordinator's ruling | owed to the train |
-| A6 | NEWS, ledger row, `outcome.md` with "For the change report"; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged | NEWS (two KIT-242 bullets), ledger `VAL-<merge>`, this file | met (`git diff aa119308 -- man NAMESPACE DESCRIPTION` empty) |
+| A6 | NEWS, ledger row, `outcome.md` with "For the change report"; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged | NEWS (two KIT-242 bullets), ledger `VAL-<merge>`, this file | met except that OD-4 (c)'s note wherever an older record is read is not implemented (audit I03), and `VAL-<merge>` now says so; `git diff aa119308 -- man NAMESPACE DESCRIPTION` empty |
 | A7 | Hand-offs recorded by the coordinator | `DISPATCH-STATE.md` | the coordinator's |
 
 ## Stored values moved, by file (for the stored-reference rows; VAL-303, VAL-352)
@@ -505,8 +505,8 @@ implemented, the evidence runs, the precedents, the classification and what is n
 No stored value is edited beyond the two VAL-303 pins and the three VAL-352 edits. Failing until the end-of-project
 re-record (VAL-303, VAL-352 (2) to (4)):
 - `tests/testthat/test-omic-norm-module.R` (frozen captures `:553`-`:1539`, compared at `:1549`, call sites
-  `:1560`-`:1585`): 56 expectations. The 12 internal-standard provenance digests are VAL-303's; the other 44 (logs,
-  states, outputs, final PCA of the manual and automatic sessions, and the skip sessions' provenance) VAL-352 (4).
+  `:1560`-`:1585`): 56 expectations: 22 provenance, 12 states and 6 final-PCA digests (whole S4 states, moved by the
+  per-assay ITSD arguments), 12 outputs and 4 log lines. 12 are VAL-303 (1)'s, the other 44 VAL-352 (4)'s.
   Part B also moves, inside those 56: log (manual run, automatic run), provenance (manual run, skip_correlation, reset;
   automatic run, final_plot, final_plot_failing), outputs (manual run, skip_correlation, reset; automatic run,
   final_plot, final_plot_failing), lipid and metab (observed R2).
@@ -518,9 +518,13 @@ re-record (VAL-303, VAL-352 (2) to (4)):
 - GUI-entry lanes (`tests/testdata/gui-entry/lipid_canonical.json`, `metab_lc.json`, `metab_gc.json`,
   `metab_combined.json`; `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R`): the internal-standard log and
   record captures (Part A); no RUV in these lanes; VAL-352 (2).
-- `tests/testthat/test-workflow-lipid-declarations.R:138`, `:188` and the metab twin: `itsd_applied` TRUE on a fixture
-  whose ITSD finds no standard (Part A; the ticket's 8.1 row).
-- `tests/testthat/test-kit172-downstream.R` T10 (14 expectations, Part A): on the re-record list with Part A's moves.
+Awaiting the owner (asked 2026-11-26; audit I01): 18 expectations in three files that pass on staging and that Part A
+turns red; no owner row covers them (not VAL-303, not VAL-352, not the standing re-record rule, which covers only
+references already failing):
+- `tests/testthat/test-workflow-lipid-declarations.R:138`, `:188` and `test-workflow-metab-declarations.R:138`, `:188`
+  (2 each): `itsd_applied` TRUE on a fixture whose ITSD matches no standard, and in the report overlay.
+- `tests/testthat/test-kit172-downstream.R` T10 (`:189-238`, 14): the tab's warning and notification counts and the
+  first warning's text (the fixture matches no standard, so the tab also warns that ITSD was not applied).
 Edited, with authority: `test-workflow-lipid-declarations.R:47`, `test-workflow-metab-declarations.R:47` (VAL-303 (2));
 `test-metab-02w-…:226-240` (VAL-352 (1)); `test-workflow-omics-worker.R` RUV branch and `test-module-ci-metab-norm.R:200-204`
 (VAL-352 (5)); `test-workflow-omics-worker.R:15-23` (Part A's declared edit, r1.6).
@@ -528,6 +532,17 @@ Edited, with authority: `test-workflow-lipid-declarations.R:47`, `test-workflow-
 ## Not checked (final)
 
 - The full suite on the merged tree (A5): by the merge train's run.
+- OD-4 (c)'s note wherever an older record is read (record viewer, report overlay, KIT-236's sentences): not implemented
+  here; the markers are (audit I03; the owner told).
+- Audit I04: on the proteomics `normalization-ruv` route an empty sample leaves the design with no notice and no record
+  (the warning `omics_normalisation_sample_removed` is not captured by `diaNormalizationOperation`); owed by r1.6, not
+  done; awaiting the owner's decision (asked 2026-11-26).
+- Audit I05: the study-parameters file's ITSD lines are not per assay (owed by r1.6 "with Part B"; not done).
+- Audit I06: the declared design records the excluded sample only in its factor records (no record outcome, no notice;
+  its warnings escape uncaptured); the gate is off.
+- Audit I11: no test for `protein_normalisation_fallback` in the two proteomics declarations, its earlier-token scale
+  case or a pre-KIT-242 proteomics record's replay; E18 to E23 under the earlier RUV token (only E14 is shown); no row for
+  the notice naming a one-value sample; `test-omics-module-globals.R` not in R2's scope.
 - The declared design through the tab and the managed worker with an empty sample (E20 is kernel-level).
 - RUV-III-C's own behaviour on a sample left out and put back (item iii's "not checked"): the put-back column is
   all-missing by construction; the DA on it is limma's per-feature fit.
@@ -539,17 +554,124 @@ Edited, with authority: `test-workflow-lipid-declarations.R:47`, `test-workflow-
 ## For the change report (final)
 
 - Lipidomics and metabolomics between-sample normalisation left an assay unnormalised when one sample had no value or the
-  method failed, while the tab, record and session summary said it was done (legacy code, one trigger new in 0.9:
-  IMP-017). Now the sample is left out of that assay only (removed from the design when empty everywhere) and failures
+  method failed, while the tab said complete and the session summary said it was done (legacy, on `main`); the analysis
+  record saying "applied" is new in 0.9 (legacy code, one trigger new in 0.9: IMP-017). Now the sample is left out of that assay only (removed from the design when empty everywhere) and failures
   stop. Evidence: G0 C1-C3, R2a-2, R2.
 - ITSD with no matched standard (a likely default case) normalised nothing for that assay and said "applied"; now
   recorded per assay with the standards used, shown in the tab and the session summary. Evidence: G0 C3, C10.
-- Legacy RUV-III-C dropped an assay it could not correct, or returned the input when every assay failed, while
-  recording `ruv_applied` TRUE (metab since 2025-05-06, lipid since 2026-01-18); the control alignment failed on any
-  feature the control selection did not list. Now by cause (VAL-242 Q6.1, Q6.2 (c); VAL-290). Evidence: G0 C4, C12,
+- Legacy RUV-III-C dropped an assay it could not correct, or returned the input when every assay failed (legacy, on
+  `main`); the analysis record's `ruv_applied` TRUE for it is new in 0.9. The control alignment failed on any feature
+  the control selection did not list (metab since 2025-05-06, lipid since 2026-01-18). Now by cause (VAL-242 Q6.1, Q6.2 (c); VAL-290). Evidence: G0 C4, C12,
   R1b-B, R1d, R2.
 - The declared RUV design refused an assay with an empty sample; now computes its factors on the other samples and
   leaves the sample out of that assay's DA. Evidence: E20 (R1d, R2).
 - Proteomics Scale normalisation with an empty sample made the table all-missing; the sample now leaves the design
   (Part C). Evidence: G0 C9, E17.
 - Every change has a replay marker, so records made before replay as made.
+
+## After the implementation audit (AUDIT-KIT-242-impl-20261126, I01 to I11): record fixes; no code, no test change
+
+- R2's head (afb27738) is the tip's code: every later commit touches only `docs/`. The merge afb27738 resolved **two** R
+  files by hand (I08), not one as said in an earlier hand-back: `R/utils_workflow_analysis_record.R` (the marker list)
+  and `R/utils_workflow_saved_exports.R` (the session list).
+- P0's class "already failing on staging" is 951 (926 + 25) and P0 cost 35.95 core-hours (539.2 x 4 / 60), corrected above
+  (I08). Ticket total unchanged to rounding (221.81).
+- Corrected above: the 18 expectations of I01 (awaiting the owner, asked 2026-11-26; not on any re-record list),
+  acceptance A3 (I07), A4 (I01) and A6 (I03), "Not checked" (I03's note, I04, I05, I06, I11), "For the change report"
+  (I08), the description of the 56 digests (I09 (a)).
+- The lanes: no RUV marker enters them (they skip RUV, `tests/testthat/helper-gui-entry.R:615`); VAL-352 (2)'s mention of
+  "the RUV marker" should not be repeated in the stored-reference row (I09 (c)).
+
+### Prepared for the owner (text only; not committed as code or tests)
+
+**(i) I01 under option (a): the 18 edits, old and new.**
+
+`tests/testthat/test-kit172-downstream.R`, first T10 test (`:207-209`, per route; 8 expectations over lipid and metab, in
+process and managed). Old:
+
+    warnings <- Filter(function(note) identical(note$type, "warning"), run$notes)
+    expect_length(warnings, 1L)
+    expect_identical(warnings[[1L]]$message, text, info = route)
+
+New:
+
+    # KIT-242 (VAL-242 OD-2 (b); owner <date>, VAL-<n>): the fixture matches no internal standard, so the tab also warns
+    # that ITSD was not applied; T10 counts the scale warning by its own text.
+    warnings <- Filter(function(note) identical(note$type, "warning") && identical(note$message, text), run$notes)
+    expect_length(warnings, 1L)
+    expect_identical(warnings[[1L]]$message, text, info = route)
+
+Second T10 test (`:236`, three cases per class; 6 expectations). Old:
+
+    expect_length(Filter(function(note) identical(note$type, "warning"), run$notes), 0L)
+
+New:
+
+    # KIT-242 (owner <date>, VAL-<n>): no scale warning; the ITSD notice for this fixture is not counted here.
+    expect_length(Filter(function(note) identical(note$type, "warning") &&
+      grepl("Scale normalisation rescales", note$message, fixed = TRUE), run$notes), 0L)
+
+`tests/testthat/test-workflow-lipid-declarations.R:138` and `test-workflow-metab-declarations.R:138`. Old
+`expect_true(by_state$lipid_itsd_norm$outcomes$itsd_applied)` (metab: `metab_itsd_norm`); new
+`expect_false(by_state$lipid_itsd_norm$outcomes$itsd_applied)  # KIT-242 (owner <date>, VAL-<n>): no standard matched`.
+`:188` in both: old `expect_true(overlay$itsd_applied)`; new `expect_false(overlay$itsd_applied)  # KIT-242: no standard
+matched, so the overlay says not applied`. Shown failing on staging and passing on the train's head.
+
+**(ii) I04, the smallest repair.** By reading, the in-process twin `runProtNormBetweenSamplesStep`
+(`R/mod_prot_norm_workflow_helpers.R:15-30`) is no longer reached by the application: `grep` finds no caller in `R/`,
+only two characterisation tests (`test-prot-05b-norm-module-contracts.R:1006-1029`, `test-prot-05d-norm-module-characterization.R:1252-1262`).
+So only `diaNormalizationOperation` needs it:
+- `R/utils_workflow_dia_products.R:387`: wrap the call as the limpa route does (`R/utils_workflow_prot_declarations.R:1252-1257`):
+
+      removed <- character()
+      normalized <- withCallingHandlers(normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method),
+          omics_normalisation_sample_removed = function(w) {
+              removed <<- unique(c(removed, w$sample))
+              invokeRestart("muffleWarning")
+          })
+
+- `:510`: `if (length(removed)) value$samples_removed <- removed` (added only when non-empty, so other products are
+  unchanged).
+- The record (`R/utils_workflow_analysis_record.R:155-170`, the `normalization-ruv` outcomes): `if
+  (length(saved$samples_removed)) outcomes$samples_removed <- saved$samples_removed`; the tab's step text and a warning
+  notification "Warning: samples <samples> have no value and were removed from the design." (the limpa route's text,
+  `diaProteinNormalisationText`), in both runners' result handlers for this step.
+- Test (proteomics, E17 through the declaration): a protein object with B_6 empty, `runSavedOperation` of
+  `diaNormalizationOperation` with `norm_method = "cyclicloess"`, `ruv_mode = "skip"`: the value's `samples_removed` is
+  "B_6", the record's outcomes name it, the design lacks it. Fails on the base by value (`samples_removed` NULL);
+  `test-prot-norm-core.R` stays `same` (no fixture holds an empty sample).
+
+**(iii) I02, the two candidate behaviours (lipid and metab; under the current rule only).** Common part:
+- The control selection records why it skipped an assay, under the current rule: lipid
+  `R/func_lipid_s4_ruv_control_methods.R:187-191` (groups with fewer than two samples), `:148-162` (duplicated ids),
+  `:167-172` (too little data); metab `R/func_metab_s4_design_control_methods.R:270-273` and twins. Sketch: return the
+  skipped assays' reasons as an attribute of the list (`attr(final_control_list, "skipped") <- list(A2 = list(reason =
+  "group_counts", groups = c(B = 1L)))`), set at `:348` (metab `:431`).
+- Automatic search: lipid `R/func_lipid_norm_ruv_optimization_helpers.R:191-203`, metab `R/func_metab_norm.R:714-726`:
+  when the control list is named and lacks the assay, return a row with status `skipped_no_controls_selected` and the
+  attribute's reason (instead of taking the whole list, which makes `sum()` fail at `:203` / `:726`).
+- Manual search: lipid `:421-425`, metab `:944-948`: the same case returns `success = FALSE` with `skip_reason`.
+- `omicsRuvSearchOutcomes` (`R/utils_workflow_omics_declarations.R:804-845`): map `skipped_no_controls_selected` (and a
+  Manual result with `skip_reason`) by the reason; duplicated ids keep today's stop with "Resolve Duplicates".
+
+(a) Stop with the true cause:
+
+    if (identical(reason$reason, "group_counts")) return(list(action = "stop", reason = "group_too_small",
+        text = sprintf(paste("RUV-III was not run: in assay %s the groups %s have fewer than two samples with values, so",
+            "control features cannot be chosen. Remove the sample, choose another grouping, or run without RUV."),
+            assay_name, paste(names(reason$groups), collapse = ", "))))
+
+(b) Keep that assay without RUV, recorded as `no_usable_controls`:
+
+    if (identical(reason$reason, "group_counts")) return(list(action = "keep", reason = "no_usable_controls",
+        text = sprintf(paste("RUV-III was not applied to assay %s: the groups %s have fewer than two samples with values",
+            "there, so control features cannot be chosen. The assay keeps its values without RUV."), assay_name,
+            paste(names(reason$groups), collapse = ", "))))
+
+Test rows (lipid and metab, Automatic and Manual; E27): A2's group B left with one sample holding values
+(`v$A2[, c("B_2", "B_3", "B_4", "B_5", "B_6")] <- NA`), the chain to the normalised state, then legacy RUV. Base (the
+tip): Automatic stops with R's "invalid 'type' (list) of argument", Manual with `search_error` and the wrong cause. Head
+under (a): `omics_ruv_failed`, `assay` "A2", `reason` "group_too_small", the message naming group B; under (b): the step
+completes, A2 equal to its input, A1 corrected, `ruv_not_applied_reason_per_assay$A2` "no_usable_controls", the notice
+naming group B. Plus KIT-275's VE shape (group B with one sample in every assay): under (a) a stop naming every assay;
+under (b) every assay kept without RUV, `ruv_applied` FALSE.
