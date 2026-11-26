@@ -1,0 +1,35 @@
+sim-k211.R: SHA-256 51c2d4672fc7e758... as declared
+score-k211.R: SHA-256 aefc66baa7dc42a8... as declared
+l1-k211.R: SHA-256 a387ac1e74d44a05... as declared
+sim-k281.R: verbatim region 256 lines (KIT-211 :24-279) byte-identical
+  SHA-256 of the region (newline-terminated): 16d9e76ec4c4029896df3194b04fcf30f0473031f004851afc18f4b9ceae4744
+  sim function bFilterKept      identical
+  sim function packageBKept     identical
+  sim function lfcDeviation     identical
+  sim function aggregateSubset  identical
+  sim function writeTsv         identical
+  sim function num              identical
+  sim function readPart         identical
+  sim function partPaths        identical
+  sim function writeTask        identical
+  sim function assemble         identical
+  sim function sha256           identical
+score-k281.R: 3 verbatim blocks (3 expected: num and writeTsv share one)
+  block score-k197.R:44-49 (6 lines): identical to KIT-197 and KIT-211
+  block score-k197.R:219-223 (5 lines): identical to KIT-197 and KIT-211
+  block score-k197.R:225-225 (1 lines): identical to KIT-197 and KIT-211
+  score function limitsOf         identical
+  score function q1               identical
+  score function fmt              identical
+  score function mdTable          identical
+  score function resampleStats    identical
+  score function summariseStats   identical
+  score function bootstrapWeights identical
+  score function jackSe           identical
+  score function quant            identical
+  score function num              identical
+  score function writeTsv         identical
+l1-k281.R: 2 verbatim blocks
+  block l1-k197.R:34-37 (4 lines): identical
+  block l1-k197.R:38-38 (1 lines): identical
+E0: pass

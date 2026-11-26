@@ -1,0 +1,14 @@
+# G0 (local, at a5de1c2eba3051cf00bd56328dc4b67f070e1f63): the three protein filter files against KIT-211's bound commit 894b9cc8; empty = unchanged
+# DA files (may show KIT-204 and KIT-221 only):
+ R/func_prot_da_compat.R        |  8 +++-
+ R/func_prot_da_model_methods.R | 91 +++++++++++++++++++++---------------------
+ 2 files changed, 53 insertions(+), 46 deletions(-)
+4654fd600 KIT-221 fix (VAL-193): scripted proteomics DA returns every comparison; comparisons read as text; a non-data-frame is refused with prot_da_contrasts_invalid
+ab5ba116d Merge KIT-204: proteomics DA counts proteins with no value in a compared group as 'Not tested' and keeps them out of the significance filters (VAL-<train15-2>); stacked on KIT-190 and train 14
+acc97cb00 Merge v0.9-staging bbbfdc1a into kit-190-ruv-control-selection (ledger: staging's rows through VAL-297, then VAL-<merge>, VAL-<merge-b>, VAL-<merge-c>; NEWS and R/utils_workflow_saved_exports.R merged automatically)
+d1bdcfe3d Merge v0.9-staging abfc99ac into kit-204: ledger keeps staging's rows through VAL-279, KIT-204's row after them citing VAL-278; NEWS and the code auto-merged (KIT-201's da_model line and KIT-204's count-table hunks in differentialAbundanceAnalysisHelper kept as merged, the coordinator's ruling)
+f5ea9cc20 Merge v0.9-staging 828dd105 into kit-190-ruv-control-selection
+89ce2a1f2 Merge v0.9-staging 7327607f into kit-204: conflicts with KIT-220 resolved as AUDIT-KIT-204-impl section 6 states (q_val_thresh then p_value_column; the Not tested line before the cutoff, KIT-220's note last; staging's ledger rows kept, KIT-204's after them)
+e6cc84961 Merge v0.9-staging e0747fc1 into kit-190-ruv-control-selection
+29848a2f8 KIT-204 correction after R2: the barplot filters leave out Not significant and Not tested (instead of keeping the two significant labels), so a figure drawn from any other status is as before (test-prot-07c-da-results-output-shared.R:347)
+b5bf4b5c8 KIT-204: proteomics DA rows without a p-value are counted as Not tested (summary line always, count-table status when present; display selection v2; significant-only barplots filter the two significant statuses)
