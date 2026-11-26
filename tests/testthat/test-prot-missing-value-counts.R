@@ -1,7 +1,9 @@
 # KIT-187 (VAL-71, VAL-83): the protein missing-value filter decides by counts. Each stored cutoff is read as the
 # three-decimal rounding of an exact share and compared in integers, so a group passes with at least min(n, m) values
 # present and a protein with at least g passing groups. Tables are synthetic; every one holds `P_floor`, whose one value
-# of 10 in the first run sets the threshold at percentile 0 (present means strictly above it, so that value is missing).
+# of 10 in the first run sets the threshold at percentile 0. Before KIT-280 present meant strictly above the threshold,
+# so that value was missing; since KIT-280 a value counts as missing only when it is absent (the earlier rule is
+# selected by `k187Legacy`).
 
 k187Design <- function(sizes) {
     groups <- rep(names(sizes), sizes)
@@ -109,7 +111,9 @@ k187Marker <- function(record, state) {
     list(source = rows[[1L]]$source, value = decodeWorkflowRecordValue(rows[[1L]]$value))
 }
 
-k187Legacy <- list(MultiScholaR.missing_filter_rule = "rounded_percentage")
+# KIT-280: "the earlier rule" is the rule before both changes (the count comparison and the threshold-level values).
+k187Legacy <- list(MultiScholaR.missing_filter_rule = "rounded_percentage",
+    MultiScholaR.missing_filter_threshold_rule = "missing")
 
 test_that("T1: groups of 3 at the tab's defaults keep a protein with one missing value per group", {
     result <- k187Filter(k187Object(k187T1Table(), k187T1Design()), 2, 2)
@@ -142,7 +146,7 @@ test_that("T4: unequal groups keep the largest group's share (3 and 6: unchanged
     expect_setequal(k187Filter(k187Object(table, design), 2, 2)$kept, c("P_full", "P_twoA", "P_floor"))
     design <- k187Design(c(A = 2L, B = 3L))
     table <- k187Table(design, list(P_full = character(), P_oneB = "B_1"))
-    expect_setequal(k187Filter(k187Object(table, design), 2, 2)$kept, c("P_full", "P_oneB"))
+    expect_setequal(k187Filter(k187Object(table, design), 2, 2)$kept, c("P_full", "P_oneB", "P_floor"))
 })
 
 test_that("T5: strict mode keeps only fully observed proteins", {
@@ -150,10 +154,10 @@ test_that("T5: strict mode keeps only fully observed proteins", {
     withr::defer(closeDIAStateAdapter(manager))
     value <- k187Quiet(computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager),
         list(strict_mode = TRUE, min_reps_per_group = 2L, min_groups = 2L, proteins_intensity_cutoff_percentile = 0)))
-    expect_identical(value$protein_count, 1L)
+    expect_identical(value$protein_count, 2L)
     workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list())))
     k187Quiet(finishDIAReferenceProteinStep(workflow, value, publish = FALSE))
-    expect_setequal(manager$getState("protein_intensity_filtered")@protein_quant_table$Protein.Ids, "P_full")
+    expect_setequal(manager$getState("protein_intensity_filtered")@protein_quant_table$Protein.Ids, c("P_full", "P_floor"))
 })
 
 test_that("T6: explicit percentages give the same sets, and 55 % with 20 samples passes 11 missing values", {

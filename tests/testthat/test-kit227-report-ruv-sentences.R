@@ -381,6 +381,15 @@ k272OldPca <- "\u2022 Principal component analysis (panels a-c): samples plotted
 k272NewPca <- paste0("\u2022 Principal component analysis (panels a-c): samples plotted on the first two principal components of the ",
     "log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ",
     "ratio of standard deviation to mean of their log2 values; coloured by experimental group.")
+# KIT-280 (declared edit, ticket section 6): a report made without an analysis record no longer states the earlier
+# filter sentence ("Intensities below the Nth percentile ... were treated as missing"): it states that the rule is not
+# recorded. The base templates' rendered sentence (percentile 1; the line wrap differs by template) is substituted.
+k280OldFilterSentence <- function(name) if (identical(name, "DIANN")) paste0("Intensities below the 1st percentile of all \n",
+    "intensities in the table were treated as missing.") else paste0("Intensities below the \n",
+    "1st percentile of all intensities in the table were treated as missing.")
+k280NewFilterSentence <- paste("Whether intensities at or below the 1st percentile of all intensities counted as missing in",
+    "this filter is not recorded for this analysis.")
+
 k272OldMethod <- "density boxplots"
 k272NewMethod <- "box plots of the principal component scores"
 
@@ -407,6 +416,8 @@ test_that("KIT-227 G1: Automatic on the group column prints the base text byte f
             base_method <- if (identical(name, "DIANN_limpa")) sub(paste0("(?s)\\*\\*Technical replicate averaging\\*\\*\n\n",
                 ".*?\\(Oberg et al\\., 2008\\)\\.\n\n"), "", base$method, perl = TRUE) else base$method
             base_method <- k272Substitute(base_method, k272OldMethod, k272NewMethod)
+            if (identical(case, "file_only") && name %in% k227Proteomics) base_method <- k272Substitute(base_method,
+                k280OldFilterSentence(name), k280NewFilterSentence)
             expect_identical(head$method, base_method, info = info)
             base_results <- k272Substitute(base$results, k272OldBullet, k272NewBullet)
             base_results <- k272Substitute(base_results, k272OldPca, k272NewPca)
