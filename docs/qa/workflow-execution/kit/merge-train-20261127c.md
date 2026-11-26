@@ -90,3 +90,38 @@ After deleting those, each head record equals its base record; any residue is a 
 
 - Every prediction holds: TRAIN GREEN for KIT-266 on the stacked tree. Anything else is a result, recorded and not re-run; no test or expectation is removed, weakened or edited. One run; a shard that times out or an instrument failure with no result: handed back, not re-sent.
   An HTTP 500/502 at dispatch with no run created is started once by hand.
+
+## Results (run 45766835733, request kit266-train36-fa9a7b8c, head fa9a7b8c4, base 761b43017)
+
+Run success; every file ran to completion (no timeout, no crash, no withheld file). Tables beside this file: `merge-train-20261127c-compare.tsv`, `-check-compare.txt`, `-tests-head.tsv`, `-tests-base.tsv`, `-masked-comparison.txt`.
+Base versus head: same 57, only-on-head 1, count-changed 1, message-changed 1, new-failure 0, fixed 0. Tests head: passed 16178, failed 667, errors 4, skipped 90; base: 15960, 667, 4, 90 (the difference 218 = the new file's 210 + 8). **Every prediction held: TRAIN GREEN for KIT-266 (on the stacked tree).**
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit266-limpa-combined-qc-figure.R | absent / 210/0, only-on-head | absent | 210/0/0/0 (1579 s) | only-on-head: HELD. E10 (Copy call restored to R1's form): passed, first evidence for that line is a pass |
+| test-prot-norm-core.R | 1547/307 / 1555/307, identical messages, count-changed | 1547/307 | 1555/307 (1949 s, limit 60 min) | count-changed: HELD; its 307 failure records are identical on both sides |
+| test-gui-entry-proteomics.R | 92/101 both, message-changed in prot_dia_limpa only | 92/101 | 92/101 | message-changed: HELD (masked comparison below) |
+| test-kit272-prot-box-panel-text.R | 373/0 same | 373/0 | 373/0 | same: HELD |
+| test-omics-module-globals.R | 14/0 same | 14/0 | 14/0 | same: HELD |
+| kit259b 90/0, kit227 186/0, worker-figures 71/0, kit273 130/0, kit216 152/0/0/1 | same | as stated | as stated | same: HELD |
+| the standing-failure files (saved-da 755/196, omic-summary-module 1675/28, omics-summary-core 676/25/0/2, omic-norm-module 631/8, operation-registry 1107/2, gui-diagnostic 65/0/3, checkpoint-harness 628/0/1) | same | as stated | same | same: HELD |
+| other files | same | no base-side count differed from a prediction | same | same: HELD (I did not compare the unnamed files' base counts with their older tables one by one; the run's own base side is the reference) |
+| R CMD check | identical 0/3/3 | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical, 6 findings on both, only on head: none: HELD |
+
+**Masked comparison** (Python `-I`, script kept outside the repository; output `merge-train-20261127c-masked-comparison.txt`). 671 failure records on each side; 660 identical after path masking; 11 differ, all
+`test-gui-entry-proteomics.R` lane `prot_dia_limpa` (the 11 steps `norm` to `summary_export`). `test-prot-norm-core.R` and every other file: 0 differing records. At the 11 steps, every differing line is one of the declared kinds:
+composite keys, `pre_norm_*` keys, `*_post_filter_assay1` outputs, store counts, the nine `ruv_covariates_summary` lines, `artifacts` length lines and their numbers, `names(artifacts)` ordering and chunk lines. After
+deleting those, residue 0, with one note: at the `correlation` step the four keys `results/proteomics/protein_qc/post_norm_{correlation,density,pca,rle}.png` appear as a `+` and a `-` line each (the same key re-sorted
+in the `names(artifacts)` chunk, base and head), which the declaration's "ordering lines" mask covers; my first pass of the script did not mask the length numbers or the context line "State saved as: 'ruv_covariates'" and
+showed residue only of those lines; the mask was widened to the declared kinds and rerun on the same tables.
+
+**Budget** (jobs API, summed): **805.83 job-minutes = 53.72 core-hours** (core-hours = job-minutes x 4 / 60): ceiling 1,200 (80.0), expected about 865: under both. Longest shard 59.1 job-minutes (`tests head 2`, with test-prot-norm-core.R), 20 % of 300; no shard near 75 %.
+Check head 14.2, base 15.57; plan 0.38; results 2.53. A base shard holding the new file (absent on base) took 10.62.
+
+Decision: KIT-266 is green on the stacked tree (stacked on train 35: if train 35 is rebuilt, this train is rebuilt).
+
+## What the coordinator resolves at landing
+
+- Land train 35 first. Ledger: the member's row is the second `VAL-<merge>` (KIT-266; the first is KIT-216's) in `docs/methods-decision-ledger.md` (line 2550); the stored-reference row (draft in AUDIT-KIT-266-impl-20261127 section 8) is added and numbered with it.
+  Status cells the member's row cites: the rows the member's row cites: VAL-307, VAL-308, VAL-316, VAL-334, VAL-348, VAL-367 (the coordinator fills those whose status cell waits for this merge).
+- Placeholders in the member's records: `docs/qa/workflow-execution/kit/kit-266/outcome.md` (mentions of `VAL-<merge>`); NEWS carries none from this member (to be checked at landing).
