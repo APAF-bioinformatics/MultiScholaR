@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-272 R1b: instrument defect 1 (guards vs frozen base), tests-only, failing first; ceiling 45 job-minutes",
+  "label": "KIT-272 R1b tests-first 57d83190 vs staging 7f17547f",
+  "package_commit": "57d8319078f24a0a5c55874b827284bd19e83fb4",
+  "base_commit": "7f17547f99f5440f1330d7e760722be994460611",
+  "tools_ref": "",
+  "tests": [
+    "test-kit272-prot-box-panel-text.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
