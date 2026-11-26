@@ -15,3 +15,11 @@ Substance decided by the owner (VAL-318, VAL-332). The texts are drafts; the tes
 reason ("the estimated count found no unwanted factor (no component above the permutation null)"); "no reason was recorded"
 when the state holds none. The bracketed class in the tab is `trxConditionText`'s, as for every transcriptomics refusal;
 changing it is a separate ticket if the owner wants it.
+
+## Points from the implementation audit (I06), drafts for the owner's pass
+
+- Replay statement: it must not say the replay "writes" the TMM logCPM (the replay writes no integration file; it re-creates the TMM
+  logCPM product in its store). Draft change of the last clause: "...and in this state the integration uses the TMM logCPM." (the clause
+  "which the replay writes as before" removed). The code string in `replayWorkflowAnalysisRecord` and the test constant `K274Statement` both
+  carry the current draft and move together at the wording pass.
+- NEWS may add: a leftover ruviii_before_and_after.png stays in the project, and Copy delivers it until the normalisation is run again.
