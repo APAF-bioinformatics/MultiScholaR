@@ -73,3 +73,16 @@ Per file (compare.tsv verdicts):
 - No stored value moves. Any other verdict stops the work.
 Budget line: spent 10.60 + R1c (about 3) + SG1 (about 3) = about 17 before R2; R2 expected 58.04, worst case 92.00; total
 worst case under 200.00.
+
+## Diagnostic for O4's miss (declared before sending; outside the correction pass; nothing is judged by it)
+Purpose: find why, on the head, O4's Copy gate says "refused" and the Copy press raises the "files unmade" text after the organism
+Save, the DA run and the enrichment run (R2 45804909404). Tests-only commit: `kit277Diag` (log lines `KIT277DIAG <point> <name> = <value>`
+written to a file and printed by the O4 test when MULTISCHOLAR_KIT277_DIAG is set) and a stage value "2" (S2 rows only). No expectation
+changes. Points: A after the organism Save; B after the first Save Workflow Arguments + Copy; C after the refused enrichment press;
+D after the DA run; E after the enrichment run; F after the second Save + Copy. Logged: manager and snapshot current state, history with
+each state's entity id, context head entity, store identity, da_results entity and its manifest's source entity/owner/parameters,
+enrichment marker, workflowDaResultStatus and the three tests (owner, membership, workflowDaTablesDiffer with the component ids),
+the head's args$daAnalysisUI, candidate against made against unmade DA files, the publication marker, every notification, the Copy
+gate's class and full message. One send: base (tests tree with the diagnostic on the staging R/) and head (the same tests with the
+code), env MULTISCHOLAR_KIT277_STAGE=2, MULTISCHOLAR_KIT277_DIAG=1; file timeout 25 minutes; worst case 4.67 core-hours of the 5.0
+authorised; running total about 71 + 4.67 of 200.00. Hand back the log's reading; no repair.

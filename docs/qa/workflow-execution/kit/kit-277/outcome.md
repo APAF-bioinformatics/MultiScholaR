@@ -65,3 +65,24 @@ file (cleanup results can differ on label-free, TMT and DIA with limpa). Evidenc
 - Lipidomics and metabolomics session export with a NULL DA. A session opened from a file cannot see an import's formula change.
 - The enrichment tab's `enrichment_da_stale` text names a changed table as the reason; left for the wording pass.
 - No stored reference was edited; R2 found none moved.
+
+## Coordinator rulings after the stop (2026-11-27), recorded
+- R2's failure output is committed under tables/r2/ (failures-head.txt, compare-failures.txt, compare.tsv, new-file-head.log). The
+  log shows which refusal text O4 raised: BOTH of O4's Copy refusals on prot_dia (after the organism Save, and after the DA and
+  enrichment ran again) are the "files unmade" text (`summary_da_files_unmade`: "The results folder ... holds differential analysis
+  files that no differential analysis of this session made (da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx, ...Volcano_Plots/...
+  and 6 more)"); the "earlier table" (stale) text quoted in the first outcome belongs to the P4 prot_lfq Copy press (the expected
+  refusal after the FASTA cut), not to O4. The files-unmade text is raised whenever the DA status is not "current", so after the
+  re-run the status is not "current" (none or stale) or the re-run's files do not match: the diagnostic below settles it.
+- Miss 1 (O4): a diagnostic outside the correction pass (declared in predictions.md; purpose: read the store at six points; nothing is
+  judged by it; ceiling 5.0 core-hours; one send, base and head). The cause is to be read from its log; no repair yet.
+- Miss 2 (P4 prot_lfq `record_da`): ruling (K): the product is right as built (the DA is stale after the FASTA cut, like KIT-247's design
+  cut; no writer can reach a record that lists it: the head rule refuses the Summary Save, Report and Export there). The expectation
+  `expect_false(out$record_da)` was mis-specified (the ticket's 4.3 sentence and Re-check 2's R15). It is replaced IN THE CORRECTION PASS
+  (not yet) by the user-level guarantee: the Save press after the cut is refused and writes no analysis record (digest of
+  analysis_record.json unchanged), failing by value on the base and passing on the head. The owner is told.
+- Departures stated: R2 ran 4 shards per side under the 300-minute job limit (the register's 6 was for 80 minutes; inside the budget).
+  The coordinator's ruling R12 = (b) was applied: W288a and W288b are EDITED, not deleted, and the KIT-247 file ran with a
+  120-minute file timeout (R1 and R2).
+- Outside this ticket, recorded: a session export at a DA-state head with a stale DA still packs the DA folder
+  (R/utils_workflow_dia_sessions.R:1782, `collectDIANativeGuiFiles`, condition `!is.null(snapshot$da_results)`).
