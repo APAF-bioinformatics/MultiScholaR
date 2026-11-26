@@ -97,16 +97,24 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     omicNormWarnRuvGrouping(workflowData, getRuvGroupingVariableFn(), mode, choice$ruv_design,
       technical = omicNormRuvHeadTechnicalReplicates(manager),
       showNotificationFn = showNotificationFn)
-    finish <- function(accepted) finishProtNormRuvCovariates(accepted, mode, output, workflowData, normData, renderTextFn,
-      showNotificationFn, messageFn)
+    # KIT-266 (VAL-308): when RUV was applied the DIA with limpa route's combined QC figure is rebuilt with its third column,
+    # in the application here; on a managed session the worker builds it after the stage figures (`composite`).
+    finish <- function(accepted, build = TRUE) {
+      if (build && isTRUE(shiny::isolate(normData$best_k) > 0)) buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, mode, manager)
+      finishProtNormRuvCovariates(accepted, mode, output, workflowData, normData, renderTextFn, showNotificationFn, messageFn)
+    }
     # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
     runner <- workflowOmicsManagedActions("proteomics")
     if (!is.null(runner)) return(dispatchProtNormRuvCovariates(runner, settings, workflowData, normData, experimentPaths,
-      generateRuvCorrectedQcFn, getRuvGroupingVariableFn, finish, function(e) reportProtNormRuvCovariatesError(e, output,
-        renderTextFn, showNotificationFn, messageFn)))
+      generateRuvCorrectedQcFn, getRuvGroupingVariableFn, function(accepted) finish(accepted, build = FALSE),
+      function(e) reportProtNormRuvCovariatesError(e, output, renderTextFn, showNotificationFn, messageFn),
+      composite = function(failed) dispatchProtNormLimpaComposite(runner, workflowData, normData, experimentPaths, omicType,
+        omicNormPlotAestheticsGetter(settings), failed)))
     # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I04): after the completion notice, one warning names the
     # figures that could not be drawn, as after the normalisation.
     withProtNormFigureNotice({
+      # KIT-266: an earlier run's markers of the RUV figures' placeholders go before the run (the list of replaced panels).
+      removeDiaLimpaRuvMarkers(experimentPaths)
       accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
         generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
       finish(accepted)
@@ -177,7 +185,7 @@ finishProtNormRuvCovariates <- function(accepted, mode, output, workflowData, no
   text <- if (identical(mode, "correction")) paste0("RUV-III correction applied to the quantified matrix: k = ", normData$best_k, "; ", controls,
     ". The corrected matrix and the DPC EList carry Y - W alpha; the DPC standard errors are kept as quantified; no W terms enter the DA model.\n",
     "State saved as: 'ruv_corrected'") else paste0("RUV-III covariates appended to the design: k = ", normData$best_k, " (W", if (normData$best_k > 1) paste0("1..W", normData$best_k) else "1",
-    "); ", controls, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.\n",
+    "); ", controls, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-III-adjusted QC figures only.\n",
     "State saved as: 'ruv_covariates'")
   output$ruv_covariates_summary <- renderTextFn(text)
   showNotificationFn(if (identical(mode, "correction")) sprintf("RUV-III correction applied (k = %s). Ready for differential expression analysis.", normData$best_k) else
@@ -263,23 +271,85 @@ protNormFiguresDispatcher <- function(workflowData, getPlotAestheticsFn) {
 #' @param settings The run's settings (its aesthetics).
 #' @param passThrough `function()`, the in-process pass-through with its notice; `failed` `function(error)`.
 #' @param experimentPaths The omic's project paths: KIT-257 removes the earlier run's own files when the action starts.
+#' @param preQc KIT-266 (VAL-316 (1)): the tab's pre-normalisation figure generator. On a press that designates the head the
+#'   actions start with the DPC-Quant state's figures, whose delivery draws it (the left column of Figure 1); NULL draws none.
+#' @param composite KIT-266: `function()` giving the combined QC figure's action (`protNormLimpaCompositeAction`), the last of
+#'   this run's actions on a press that designates the head: it follows the pass-through's delivery, which draws the post
+#'   figures and writes the left column's notes, in the same run (no press that waited can come between them).
 #' @return TRUE, invisibly, once dispatched.
 #' @noRd
-dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData, passThrough, failed, experimentPaths = NULL) {
+dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData, passThrough, failed, experimentPaths = NULL,
+                                        preQc = NULL, composite = NULL) {
   manager <- workflowData$state_manager
   held <- new.env(parent = emptyenv())
+  stopped <- function(error) failed(protNormTagRemovedFiles(error, held$removed))
   runner$run(function() shiny::isolate({
+    held$designates <- FALSE
+    held$pre <- NULL
     source <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "normalization")
       source <- diaLimpaPassThroughSource(manager, normData)
       # AUDIT-KIT-257-impl I01 (KIT-244 I07): only a press that designates the head makes the earlier files stale.
-      held$removed <- if (identical(source$entity_id, getDIAStateReference(manager)$entity_id))
-        removeProtNormOwnFiles(experimentPaths, "normalization")
+      held$designates <- identical(source$entity_id, getDIAStateReference(manager)$entity_id)
+      held$removed <- if (held$designates) removeProtNormOwnFiles(experimentPaths, "normalization")
+      if (held$designates && is.function(preQc) && setDiaLimpaPreNormalisationSource(manager))
+        held$pre <- diaLimpaPreNormalisationSource(manager)
       source
     })
-    list(protNormFiguresAction(source, omicNormPlotAestheticsGetter(settings)(), deliver = function(result) passThrough()))
-  }), failed = function(error) failed(protNormTagRemovedFiles(error, held$removed)))
+    aesthetics <- omicNormPlotAestheticsGetter(settings)()
+    build <- isTRUE(held$designates) && is.function(composite)
+    actions <- list(protNormFiguresAction(source, aesthetics, deliver = function(result) {
+      passThrough()
+      # KIT-266: the source check of the combined figure's left column, before the worker looks at the project.
+      if (build) withDIAStateScope(manager, function() writeDiaLimpaPreNormalisationNotes(manager, experimentPaths$protein_qc_dir))
+    }))
+    # KIT-266 (S13): a pre figure that cannot be drawn is named now, as the classic route's redrawn one is.
+    if (!is.null(held$pre)) actions <- c(list(protNormFiguresAction(held$pre, aesthetics, deliver = function(result) {
+      withProtNormFigureNotice(preQc(), step = NULL)
+      normData$pre_norm_qc_generated <- TRUE
+    })), actions)
+    if (build) actions <- c(actions, list(composite()))
+    actions
+  }), failed = stopped)
   invisible(TRUE)
+}
+
+#' The managed DIA_LIMPA route's combined QC figure (KIT-266): one `normalization-qc-figures` action (`limpa_composite`),
+#' built by the worker from the stage images in the project (`saveWorkflowDiaLimpaCompositeFigure`), then the application's
+#' delivery writes its files and KIT-259's list (`deliverDiaLimpaCompositeFigure`). The action is a function resolved when it
+#' starts, so its layout is the head's then (a press that waited behind another reads what the action before it left); the
+#' left column's source check and its labelled notes are written then too, before the worker looks at the project.
+#' Dispatched from a run's `done`, never from inside a delivery (a run issued there queues behind presses that waited).
+#' @param runner The omic's managed runner.
+#' @param workflowData,normData The tab's bus and state.
+#' @param experimentPaths The omic's project paths.
+#' @param omicType The omic, which names the files.
+#' @param aesthetics `function()` giving `list(color_var, shape_var)`.
+#' @param failed `function(error)`.
+#' @return TRUE, invisibly, once dispatched.
+#' @noRd
+dispatchProtNormLimpaComposite <- function(runner, workflowData, normData, experimentPaths, omicType, aesthetics, failed) {
+  manager <- workflowData$state_manager
+  runner$run(function() shiny::isolate({
+    action <- protNormLimpaCompositeAction(manager, normData, experimentPaths, omicType, aesthetics)
+    withDIAStateScope(manager, function() writeDiaLimpaPreNormalisationNotes(manager, experimentPaths$protein_qc_dir))
+    list(action)
+  }), failed = failed)
+  invisible(TRUE)
+}
+
+#' The combined QC figure's managed action (KIT-266): the layout, the method and the input state are read from the head now.
+#' @param manager,normData,experimentPaths,omicType As `dispatchProtNormLimpaComposite`.
+#' @param aesthetics `function()` giving `list(color_var, shape_var)`.
+#' @param mode The layout; NULL reads it from the head (`diaLimpaCompositeLayout`).
+#' @return The action (`protNormFiguresAction`).
+#' @noRd
+protNormLimpaCompositeAction <- function(manager, normData, experimentPaths, omicType, aesthetics, mode = NULL) {
+  state <- withDIAStateScope(manager, function() list(mode = mode %||% diaLimpaCompositeLayout(manager, normData),
+    method = diaLimpaNormMethod(manager), source = getDIAStateReference(manager)))
+  protNormFiguresAction(state$source, aesthetics(), "limpa_composite", function(result)
+    deliverDiaLimpaCompositeFigure(manager, state, experimentPaths, omicType),
+    list(ruv_mode = state$mode, norm_method = state$method))
 }
 
 #' The managed RUV covariates (DIA_LIMPA, KIT-111 D3): the gate, the source and the parameters as
@@ -288,10 +358,12 @@ dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData
 #' @param settings `ruv_mode`, `color_variable`, `shape_variable`.
 #' @param ruvQc,grouping The module's RUV QC callback and grouping function.
 #' @param finish `function(accepted)`; `failed` `function(error)`.
+#' @param composite KIT-266: `function(failed)`, which dispatches the combined QC figure's action after the stage figures
+#'   (from the run's `done`), when RUV was applied.
 #' @return TRUE, invisibly, once dispatched.
 #' @noRd
 dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normData, experimentPaths, ruvQc, grouping,
-                                          finish, failed) {
+                                          finish, failed, composite = NULL) {
   manager <- workflowData$state_manager
   group <- grouping()
   entry <- proteomicsDiaBinding$norm$ruv_covariates
@@ -309,7 +381,8 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
     }, step = "RUV-III covariates step")
   }
   figures <- function() runner$run(list(protNormFiguresAction(held$result$value$adjusted,
-    omicNormPlotAestheticsGetter(settings)(), deliver = publish)), failed = failed)
+    omicNormPlotAestheticsGetter(settings)(), deliver = publish)),
+    done = function() if (is.function(composite) && isTRUE(shiny::isolate(normData$best_k) > 0)) composite(failed), failed = failed)
   # GUI audit A111-01: the gate and the source are read when the action starts, so a click that waited behind a
   # correlation re-apply runs on that re-apply's result, as in process. The step's observer does not depend on the reads.
   runner$run(function() shiny::isolate({
@@ -318,6 +391,8 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
       list(source = diaRuvCovariatesSource(manager, normData),
         parameters = diaRuvCovariatesRequestParameters(workflowData$config_list, group, settings))
     })
+    # KIT-266: an earlier run's markers of the RUV figures' placeholders go when the action starts (KIT-257 R1-01's reason).
+    removeDiaLimpaRuvMarkers(experimentPaths)
     list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
       function(result) held$result <- result))
   }), done = figures, failed = failed)
@@ -508,8 +583,16 @@ runProtNormNormalizationWorkflow <- function(
         assertDIALimpaDesignationNotNormalised(workflowData$state_manager, normData))
       # KIT-041: the route's normalisation ran in the protein QC stage; RUV covariates follow the correlation step.
       # KIT-259 (B2): after the completion notice, one warning names the figures that could not be drawn.
-      pass_through <- function() withProtNormFigureNotice({
+      # KIT-266 (VAL-308): in process, a press that designates the head also draws the left column from the DPC-Quant state
+      # (`pre`) and builds the two-column combined figure (`build`); managed, the dispatcher does both as actions of its own.
+      pass_through <- function(pre = FALSE, build = FALSE) withProtNormFigureNotice({
+        manager <- workflowData$state_manager
+        designates <- withDIAStateScope(manager, function()
+          identical(diaLimpaPassThroughSource(manager, normData)$entity_id, getDIAStateReference(manager)$entity_id))
+        if (pre && designates && is.function(generatePreNormalizationQcFn))
+          drawDiaLimpaPreNormalisationFigures(manager, normData, generatePreNormalizationQcFn)
         completed <- runDIAReferenceLimpaNormalisationPassThrough(settings, workflowData, normData, generatePostNormalizationQcFn)
+        if (build && designates) buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, "skip", manager)
         showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode %||% "covariates"), type = "message", duration = 10)
         completed
       }, showNotificationFn)
@@ -527,9 +610,11 @@ runProtNormNormalizationWorkflow <- function(
           if (identical(diaLimpaPassThroughSource(manager, normData)$entity_id, getDIAStateReference(manager)$entity_id))
             removeProtNormOwnFiles(experimentPaths, "normalization")
         })
-        return(withProtNormRemovedFiles(removed, pass_through()))
+        return(withProtNormRemovedFiles(removed, pass_through(pre = TRUE, build = TRUE)))
       }
-      return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through, fail, experimentPaths))
+      return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through, fail, experimentPaths,
+        preQc = generatePreNormalizationQcFn, composite = function() protNormLimpaCompositeAction(workflowData$state_manager,
+          normData, experimentPaths, omicType, omicNormPlotAestheticsGetter(settings), mode = "skip")))
     }
     # KIT-182: the request runs synchronously here on both paths; when the run reads another table than the previous
     # run, its classed message is shown as the tab's notice.
@@ -700,8 +785,12 @@ runProtNormApplyCorrelationObserver <- function(
       successNotification = "Correlation filtering completed! Ready for differential expression analysis.",
       completionMessage = "Correlation workflow completed",
       messagePrefix = "Correlation"
-    ), failed), error = failed))
+    ), failed, composite = function(composeFailed) dispatchProtNormLimpaComposite(runner, workflowData, normData,
+      experimentPaths, omicType, getPlotAestheticsFn, composeFailed)), error = failed))
   return(tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
+    # KIT-266 (VAL-308): on the DIA with limpa route a filter applied again after a RUV step leaves no RUV result behind it, so
+    # the combined figure is rebuilt with two columns (the head is read before the correlation runs).
+    rebuild <- protNormLimpaRebuildAtCorrelation(workflowData$state_manager)
     final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
       input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn)
     completeCorrelationWorkflowFn(
@@ -715,6 +804,7 @@ runProtNormApplyCorrelationObserver <- function(
       completionMessage = "Correlation workflow completed",
       messagePrefix = "Correlation"
     )
+    if (rebuild) buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, "skip", workflowData$state_manager)
     # KIT-041/053: on the DIA_LIMPA route the RUV-III covariates are the tab's own action after the filter
     # (`apply_ruv_covariates`), the script's order; nothing runs here.
     final
@@ -728,10 +818,12 @@ runProtNormApplyCorrelationObserver <- function(
 #' @param threshold The filter's threshold.
 #' @param grouping,aesthetics The module's grouping and aesthetics functions.
 #' @param finish `function(final)`; `failed` `function(error)`.
+#' @param composite KIT-266: `function(failed)`, which dispatches the DIA with limpa combined QC figure's action; run from
+#'   this run's `done` when the head, read before the pairs start, was a RUV state (the figure is rebuilt with two columns).
 #' @return TRUE, invisibly, once dispatched.
 #' @noRd
 dispatchProtNormCorrelation <- function(runner, workflowData, normData, experimentPaths, threshold, omicType,
-                                        experimentLabel, grouping, aesthetics, finish, failed) {
+                                        experimentLabel, grouping, aesthetics, finish, failed, composite = NULL) {
   manager <- workflowData$state_manager
   group <- grouping()
   entry <- proteomicsDiaBinding$norm$correlation
@@ -743,7 +835,7 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
     final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
       threshold, FALSE, omicType, experimentLabel, aesthetics))
     finish(final)
-  })), failed = stopped)
+  })), done = function() if (isTRUE(held$rebuild) && is.function(composite)) composite(stopped), failed = stopped)
   select <- function() runner$run(list(protNormManagedAction(entry$selection,
     list(pairs = held$pairs$reference$entity_id, threshold = threshold), held$source, "correlation_filtered",
     function(result) held$final <- result$value)), done = figures, failed = stopped)
@@ -755,6 +847,8 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
       source <- diaCorrelationSource(manager, normData)
       # KIT-257 (VAL-250): the earlier results table (either name) goes before the pairs start.
       held$removed <- removeProtNormOwnFiles(experimentPaths, "correlation")
+      # KIT-266: the head before the correlation runs decides whether the combined figure is rebuilt (S06).
+      held$rebuild <- protNormLimpaRebuildAtCorrelation(manager)
       readDIAStateMetadata(manager, source)
       source
     })
@@ -782,7 +876,15 @@ runProtNormSkipCorrelationObserver <- function(
   getRuvGroupingVariableFn = NULL,
   generateRuvCorrectedQcFn = NULL
 ) {
-  return(tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
+  # KIT-266 (VAL-308): the DIA with limpa combined figure is rebuilt with two columns when the filter leaves a RUV result
+  # behind it (the head is read before the correlation runs). This observer runs in process even on a managed session, so
+  # with a runner the rebuild is dispatched after the state scope has closed, never inside it (S07).
+  rebuild <- completed <- FALSE
+  runner <- workflowOmicsManagedActions("proteomics")
+  failed <- function(e) handleCorrelationErrorFn(error = protNormRemovedFilesNotice(e),
+    logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")
+  value <- tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
+    rebuild <<- protNormLimpaRebuildAtCorrelation(workflowData$state_manager)
     final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
       0, TRUE, omicType, experimentLabel, function() NULL, getPlotAestheticsFn)
     completeCorrelationWorkflowFn(
@@ -796,10 +898,14 @@ runProtNormSkipCorrelationObserver <- function(
       completionMessage = "Correlation workflow completed",
       messagePrefix = "Correlation"
     )
+    completed <<- TRUE
+    if (rebuild && is.null(runner)) buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, "skip", workflowData$state_manager)
     # KIT-041/053: the RUV-III covariates follow the (skipped) filter through the tab's own action.
     final
-  }), error = function(e) handleCorrelationErrorFn(error = protNormRemovedFilesNotice(e),
-      logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
+  }), error = failed)
+  if (completed && rebuild && !is.null(runner)) tryCatch(dispatchProtNormLimpaComposite(runner, workflowData,
+    normData, experimentPaths, omicType, getPlotAestheticsFn, failed), error = failed)
+  value
 }
 
 notifyProtNormExportSessionPrereqWarning <- function(

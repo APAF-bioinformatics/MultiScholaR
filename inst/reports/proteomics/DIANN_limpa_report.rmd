@@ -577,10 +577,47 @@ Test conditions, deviations from the method and critical reagent details: [to be
 ```{r Result Section, echo=FALSE}
 # Results function - focuses on correlation data
 FormatResults <- function(correlation_data, figures_dir = file.path(results_dir, "protein_qc"), ruv_applied = TRUE,
-                          ruv_column = "after RUVIII-C correction", stages_known = TRUE) {
+                          ruv_column = "after RUVIII-C correction", stages_known = TRUE, limpa_norm = NULL) {
   # KIT-227: ruv_applied NA = not recorded; stages_known FALSE when the figure's column layout is not known (the limpa
   # route without RUV).
   ruv_state <- if (isTRUE(ruv_applied)) TRUE else if (isFALSE(ruv_applied)) FALSE else NA
+  # KIT-266 (VAL-308, VAL-316): on DIA with limpa (`limpa_norm` given: the recorded between-sample method, "none" when absent)
+  # Figure 1's columns are DPC-Quant's estimates, the table after the peptide count filter (and the recorded between-sample
+  # normalisation), both before the sample-correlation filter, and, with a RUV step, the RUV-III result after that filter. The
+  # figure has two columns in every state without a RUV step applied (RUV_applied FALSE) and three with one.
+  if (!is.null(limpa_norm)) {
+    left <- "DPC-Quant's protein estimates (a complete log2 matrix; model-based where peptides were not detected)"
+    centre <- if (identical(limpa_norm, "none")) "after the peptide count filter, with no between-sample normalisation applied" else
+      paste0("after the ", switch(limpa_norm, cyclicloess = "cyclic loess", limpa_norm), " normalisation and the peptide count filter")
+    if (isTRUE(ruv_state)) {
+      return(glue::glue("
+Quality Control  
+
+Figure 1 shows four quality-control views at three stages of processing: {left} (left column: panels a, d, g, j); {centre}, before the sample-correlation filter (centre column: b, e, h, k); and {ruv_column} (right column: c, f, i, l).  
+• Principal component analysis (panels a-c): samples plotted on the first two principal components,
+  coloured by experimental group.  
+• Density plots (panels d-f): the distribution of protein intensities per sample.  
+• Relative log expression (panels g-i): per-sample deviations from the protein-wise median.  
+• Pearson correlation (panels j-l): the distribution of between-sample correlations within groups.  
+
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
+.trim = FALSE))
+    }
+    return(glue::glue("
+Quality Control  
+
+Figure 1 shows four quality-control views at two stages of processing: {left} (left column: panels a, c, e, g) and {centre}, before the sample-correlation filter (right column: b, d, f, h). RUV-III correction was not applied to this dataset.  
+• Principal component analysis (panels a-b): samples plotted on the first two principal components,
+  coloured by experimental group.  
+• Density plots (panels c-d): the distribution of protein intensities per sample.  
+• Relative log expression (panels e-f): per-sample deviations from the protein-wise median.  
+• Pearson correlation (panels g-h): the distribution of between-sample correlations within groups.  
+
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
+.trim = FALSE))
+  }
   # KIT-055: the text describes what Figure 1 contains; it makes no claim about what this dataset's panels show.
   # Interpretation belongs to the analyst (see "Analyst interpretation").
   if (isTRUE(ruv_state) && isTRUE(stages_known)) {
@@ -1427,11 +1464,16 @@ Main <- function() {
       results        = if (!is.null(analysis_results$numbers$dpc_engine) &&
         !identical(analysis_results$numbers$dpc_engine, "not recorded") && !all(is.na(analysis_results$numbers$dpc_engine))) {
         ruvcov_k <- analysis_results$numbers$ruvcov_k
-        if (is.null(ruvcov_k) || identical(ruvcov_k, "not recorded") || all(is.na(ruvcov_k)))
-          FormatResults(correlation_data, ruv_applied = FALSE, stages_known = FALSE) else
-          FormatResults(correlation_data, ruv_column = if (identical(analysis_results$numbers$ruvcov_mode, "correction"))
-            "after RUV-III correction (the corrected matrix entered the differential abundance model)" else
-            "for the RUV-III-adjusted matrix (drawn for quality control only; the differential abundance model carried the RUV-III factors as covariates)")
+        # KIT-266 (VAL-316 (1), (4)): the recorded between-sample method (absent = none, as the Methods read it), and every
+        # state without an applied RUV step (no covariates step, a record without the factor count, k = 0) has the two-column figure.
+        limpa_norm <- analysis_results$numbers$limpa_norm_method
+        if (is.null(limpa_norm) || identical(limpa_norm, "not recorded") || all(is.na(limpa_norm))) limpa_norm <- "none"
+        if (is.null(ruvcov_k) || identical(ruvcov_k, "not recorded") || all(is.na(ruvcov_k)) ||
+            identical(analysis_results$numbers$ruvcov_mode, "none") || isTRUE(suppressWarnings(as.numeric(ruvcov_k[[1L]])) == 0))
+          FormatResults(correlation_data, ruv_applied = FALSE, limpa_norm = limpa_norm) else
+          FormatResults(correlation_data, limpa_norm = limpa_norm, ruv_column = if (identical(analysis_results$numbers$ruvcov_mode, "correction"))
+            "after RUV-III correction (the corrected matrix entered the differential abundance model), applied after the sample-correlation filter" else
+            "for the RUV-III-adjusted matrix after the sample-correlation filter (drawn for quality control only; the differential abundance model carried the RUV-III factors as covariates)")
       } else FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% NA,
         ruv_column = "after RUVIII-C correction"),
       interpretation = FormatAnalystInterpretation(),
@@ -1473,7 +1515,7 @@ results_data <- tryCatch({
 
 `r results_data$content$results`
 
-```{r QC_metrics, echo=FALSE, warning=FALSE, out.height="8.5in", fig.align="center", fig.cap="Figure 1: QC metrics across normalisation stages"}
+```{r QC_metrics, echo=FALSE, warning=FALSE, out.height="8.5in", fig.align="center", fig.cap="Figure 1: QC metrics across normalisation stages. On DIA with limpa the left and centre columns are before the sample-correlation filter and the right column is after it."}
 # Use NEW path variable
 composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_type, "_composite_QC_figure.png"))
 if(file.exists(composite_qc_fig_path)) {
@@ -1495,12 +1537,15 @@ FormatPlaceholderPanels <- function(qc_figures_dir, omic_type) {
   rows <- strsplit(readLines(list_path, warn = FALSE), "\t", fixed = TRUE)
   rows <- Filter(function(row) length(row) == 2L && nzchar(row[[1L]]), rows)
   if (!length(rows)) return("")
-  stages <- c(pre_norm = "after log2 transformation", post_norm = "after between-sample normalisation",
-    ruv_corrected = "after RUVIII-C correction")
+  # KIT-266 (VAL-308): on DIA with limpa the columns of Figure 1 are DPC-Quant's estimates, the table after the peptide count
+  # filter (and any between-sample normalisation) and the RUV-III result after the sample-correlation filter.
+  stages <- c(pre_norm = "of DPC-Quant's protein estimates",
+    post_norm = "after the peptide count filter and any between-sample normalisation",
+    ruv_corrected = "of the RUV-III-adjusted matrix after the sample-correlation filter")
   kinds <- c(pca = "principal component analysis", density = "density plot", rle = "relative log expression",
     correlation = "Pearson correlation")
   describe <- function(figure) {
-    if (identical(figure, "ruv_corrected_cancor")) return("RUV-III canonical correlation")
+    if (figure %in% c("ruv_corrected_cancor", "ruv_covariates_cancor")) return("RUV-III canonical correlation")
     stage <- sub("_(pca|density|rle|correlation)$", "", figure)
     kind <- sub("^.*_", "", figure)
     if (!stage %in% names(stages) || !kind %in% names(kinds)) return(figure)

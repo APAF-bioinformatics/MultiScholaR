@@ -136,6 +136,19 @@
    re-run: Copy delivers the table they hold as `normalised_results.tsv` and the session export works; the old file
    name stays in their protein QC folder until the normalisation or the correlation filter is run again. This route is
    new in 0.9 (tag v0.9.0 and later). (KIT-271)
+ * DIA with limpa: the report now has its Figure 1. The Results text of the limpa report described four quality-control
+   views at each stage of processing, but this route never built the combined figure, so the report showed none; Copy to
+   Results Summary said the files were copied, but Figure 1 was not among them (the copy's log listed it as missing). The
+   figure is now built after the normalisation step (two stages), again after the sample-correlation filter is
+   re-applied, and after the RUV step (three stages); in the RUV-covariates mode its right-hand column shows the
+   RUV-III-adjusted matrix after the sample-correlation filter and is labelled as drawn for quality control only, because
+   the analysis used the quantified matrix with the RUV-III factors as covariates. On this route the tab's first column
+   of quality-control figures had been drawn from a later table (or not at all); it is now drawn from the DPC-Quant
+   output. A project saved with an earlier version keeps the tab's earlier images until a normalisation press that
+   designates the current table, and its first Figure 1 shows a note in the first column. No number or result changes.
+   One limit: if you re-apply the sample-correlation filter after the RUV step, Figure 1 is rebuilt with two columns, but
+   the report's Methods and Results text still describe the earlier RUV step as part of the analysis (this was so before
+   this change and is not changed by it). This was so in the first 0.9 release (v0.9.0). (KIT-266)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

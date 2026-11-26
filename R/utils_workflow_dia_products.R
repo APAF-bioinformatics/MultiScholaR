@@ -2064,10 +2064,12 @@ diaQcStageFigureSizes <- list(pca = c(8, 6), rle = c(10, 6), density = c(8, 6), 
 #' The QC figures action's parameters: the aesthetics the tab draws with, and which figures.
 #' @param aesthetics `list(color_var, shape_var)`.
 #' @param figures `stage` (the four figures of a stage, with their images), `final_pca` (the correlation tab's PCA,
-#'   which the tab draws from the saved product; no image) or `composite` (the normalisation's composite QC figure, its
-#'   three files; `saveWorkflowDiaCompositeFigure`).
-#' @param composite For `composite` only: `list(product, ruv_mode)`, the entity id of the normalisation run's product
-#'   and the run's RUV mode.
+#'   which the tab draws from the saved product; no image), `composite` (the normalisation's composite QC figure, its
+#'   three files; `saveWorkflowDiaCompositeFigure`) or `limpa_composite` (the DIA with limpa route's combined figure,
+#'   built from the project's stage images; `saveWorkflowDiaLimpaCompositeFigure`).
+#' @param composite For `composite`: `list(product, ruv_mode)`, the entity id of the normalisation run's product
+#'   and the run's RUV mode. For `limpa_composite`: `list(ruv_mode, norm_method)`, the layout (`skip`, `covariates` or
+#'   `correction`) and the recorded between-sample method.
 #' @return The parameters.
 #' @noRd
 diaQcFiguresParameters <- function(aesthetics, figures = "stage", composite = NULL) {
@@ -2095,8 +2097,8 @@ indexWorkflowHeadProducts <- function(manager) {
 computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
     source <- request$input_references$state
     parameters <- request$parameters
-    if (!isTRUE(parameters$figures %in% c("stage", "final_pca", "composite")))
-        cli::cli_abort("the QC figures must be stage, final_pca or composite", class = "workflow_operation_parameters")
+    if (!isTRUE(parameters$figures %in% c("stage", "final_pca", "composite", "limpa_composite")))
+        cli::cli_abort("the QC figures must be stage, final_pca, composite or limpa_composite", class = "workflow_operation_parameters")
     aesthetics <- list(color_var = parameters$color_variable, shape_var = parameters$shape_variable)
     plot <- function(kind) resolveDIAReferenceQcPlot(source, aesthetics, kind, buildProtNormQcPlotProduct,
         plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
@@ -2104,6 +2106,8 @@ computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
         plot("pca")
     } else if (identical(parameters$figures, "composite")) {
         saveWorkflowDiaCompositeFigure(manager, request, aesthetics)
+    } else if (identical(parameters$figures, "limpa_composite")) {
+        saveWorkflowDiaLimpaCompositeFigure(manager, request)
     } else {
         # KIT-131: in a worker, not under its request-owned temporary folder (on Windows past 259 characters).
         directory <- tempfile("dia-qc-figures-", tmpdir = workflowShortScratchRoot())
@@ -2146,8 +2150,9 @@ diaCompositeFigureMediaTypes <- c(png = "image/png", pdf = "application/pdf", rd
 #' worker computes the identities on the directory it builds the figure in, the application on the publication's
 #' staged directory.
 #' @param manager The session owner.
-#' @param product The normalisation run's product reference.
-#' @param ruv_mode The run's RUV mode.
+#' @param product The normalisation run's product reference (the DIA with limpa figure: the state reference the action
+#'   names, KIT-266).
+#' @param ruv_mode The run's RUV mode (the DIA with limpa figure: its layout string, `diaLimpaCompositeLayoutString`).
 #' @param qc_dir The directory that holds the stage images.
 #' @return The identities, named by kind (`diaCompositeFigureMediaTypes`).
 #' @noRd
@@ -2180,6 +2185,7 @@ diaCompositeFigureSaved <- function(manager, identity) {
 #' @return NULL, invisibly.
 #' @noRd
 saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
+    # KIT-266: the DIA with limpa route's twin is `saveWorkflowDiaLimpaCompositeFigure` (it has no normalisation product).
     store <- manager$.context$store
     parameters <- request$parameters
     product <- manager$.context$snapshot$products[[parameters$product]]
@@ -2225,12 +2231,60 @@ saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
     invisible(NULL)
 }
 
+#' The DIA with limpa route's combined QC figure on the worker (the `limpa_composite` figures of
+#' `normalization-qc-figures`; KIT-266, the memory rule of VAL-316: the build is 0.9 GiB in the application, measured by
+#' G0). A SIBLING of `saveWorkflowDiaCompositeFigure`, which is left as it is: its body reads the classic run's product,
+#' which this route does not have. The stage images are in the project already (the pass-through's, the covariates
+#' publication's and the left column's, written before this action), so the worker copies from `protein_qc_dir` every file the
+#' identity digests, and the canonical-correlation image, into a short temporary folder, runs the classic builder there through the limpa
+#' layout, and saves the three files as rendered assets rooted on the request's input state. The application's delivery
+#' (`deliverDiaLimpaCompositeFigure`) writes their bytes and builds in the application only if they are not found saved.
+#' With no project folder nothing is saved (the classic action reads the published pre images from the project the same
+#' way). A figure already saved for these images and this layout is not built again.
+#' @param manager The worker's owner.
+#' @param request The request: the input state, `parameters$ruv_mode` (the layout) and `parameters$norm_method`.
+#' @return NULL, invisibly.
+#' @noRd
+saveWorkflowDiaLimpaCompositeFigure <- function(manager, request) {
+    # KIT-266: the classic route's twin is `saveWorkflowDiaCompositeFigure`.
+    parameters <- request$parameters
+    source <- request$input_references$state
+    published <- workflowRequestExperimentPaths(request)$protein_qc_dir
+    if (is.null(published)) return(invisible(NULL))
+    directory <- tempfile("dia-qc-composite-", tmpdir = workflowShortScratchRoot())
+    dir.create(directory)
+    on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+    stages <- list.files(published, pattern = "^(pre_norm|post_norm|ruv_corrected)_(pca|density|rle|correlation)[.]png$", full.names = TRUE)
+    cancor <- file.path(published, "ruv_covariates_cancor.png")
+    file.copy(c(stages, if (file.exists(cancor)) cancor), directory)
+    layout <- diaLimpaCompositeLayoutString(parameters$ruv_mode, parameters$norm_method, directory)
+    identities <- diaCompositeFigureIdentities(manager, source, layout, directory)
+    absent <- names(identities)[!vapply(identities, function(identity) diaCompositeFigureSaved(manager, identity), NA)]
+    if (!length(absent)) return(invisible(NULL))
+    omic_type <- workflowActionSpec(request$operation)$omic_type
+    generateProtNormCompositeQcFigure(parameters$ruv_mode, directory, omic_type, resolveInputsFn = function(ruvMode, qcDir)
+        resolveDiaLimpaCompositeFigureInputs(ruvMode, qcDir, parameters$norm_method))
+    files <- stats::setNames(file.path(directory, paste0(omic_type, "_composite_QC_figure.", names(identities))), names(identities))
+    # The builder reports its own failure and leaves no file; nothing is saved, and the application builds.
+    if (!all(file.exists(files))) return(invisible(NULL))
+    dimensions <- readBin(readBin(files[["png"]], "raw", n = 24L)[17:24], "integer", n = 2L, size = 4L, endian = "big")
+    for (kind in absent) {
+        asset <- newSavedWorkflowRenderedAsset(readBin(files[[kind]], "raw", n = file.size(files[[kind]])),
+            diaCompositeFigureMediaTypes[[kind]], dimensions)
+        reference <- saveWorkflowConsumerEntity(manager$.context$store, asset, basename(tempfile("dia-qc-composite-")),
+            identities[[kind]], "rendered_asset")
+        rootDIAProduct(manager, reference, list(source))
+    }
+    invisible(NULL)
+}
+
 #' Write the composite QC figure's files from the store into a QC directory, under the builder's names
 #' (`generateProtNormCompositeQcFigure`), when all three are saved for the stage images that are there.
 #' @param manager The session owner.
-#' @param product The normalisation run's product reference.
-#' @param ruv_mode The run's RUV mode.
-#' @param qc_dir The publication's staged QC directory.
+#' @param product The normalisation run's product reference (the DIA with limpa figure: the state reference the action
+#'   names, KIT-266).
+#' @param ruv_mode The run's RUV mode (the DIA with limpa figure: its layout string, `diaLimpaCompositeLayoutString`).
+#' @param qc_dir The publication's staged QC directory (the DIA with limpa figure: the project's `protein_qc` folder).
 #' @param omic_type The omic, which names the files.
 #' @return TRUE when the files were written; FALSE when one is not saved (nothing is written).
 #' @noRd
