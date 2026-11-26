@@ -1,6 +1,6 @@
 --- sim-k188.R@0866982f (omitted ranges removed)
 +++ sim-k275.R (before the added section)
-@@ -1,42 +1,31 @@
+@@ -1,42 +1,45 @@
 -# KIT-188 (VAL-72, VAL-81, VAL-84): calibration of the default route with legacy RUV-III Automatic, lipidomics,
 -# metabolomics (Part L) and proteomics (Part P). Evidence code under docs/qa: no package code. Runs on a GitHub-hosted
 -# runner with MultiScholaR installed from the bound commit (run-tests `scripts`), from the package root.
@@ -64,12 +64,26 @@
 +# exact; that warning is an error here, in every process and inside `quiet()` (which would otherwise muffle it). A stop from it is an
 +# instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
 +options(warnPartialMatchDollar = TRUE)
-+globalCallingHandlers(warning = function(w) {
-+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
++# A `stop()` raised from a GLOBAL calling handler runs with every local handler disabled (R's rule for the handler stack), so it cannot reach a
++# `tryCatch`: it ends the process with nothing written (smoke 2's planted guard unit). The guard is therefore also installed as a LOCAL calling
++# handler (`guardWarning`) around each journey and around each unit, where its stop reaches the enclosing `tryCatch`; the global handler stays as
++# a last net, with an error writer that leaves a trace before the process ends.
++guardWarning <- function(w) {
++    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {
++        options(k275.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L]], collapse = ""), 1L, 80L), ""), collapse = " <- "))
++        stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
++    }
++}
++globalCallingHandlers(warning = guardWarning)
++if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() {   # an error that escaped every handler: write what is known, then end non-zero
++    dir <- dirname(Sys.getenv("K275_CHECKS_PATH"))
++    tag <- sub("\\.tsv$", "", sub("^checks-", "", basename(Sys.getenv("K275_CHECKS_PATH"))))
++    try(writeLines(c(geterrmessage(), getOption("k275.guard_trace", "")), file.path(dir, sprintf("unit-trace-%s.txt", tag))), silent = TRUE)
++    quit(save = "no", status = 1L)
 +})
  
  args <- commandArgs(TRUE)
-@@ -60,7 +49,7 @@
+@@ -60,7 +63,7 @@
  MED_VAR_L <- 0.25
  MED_VAR_P <- 4 * 0.25^2 / stats::qchisq(0.5, 4)
 -cellDef <- function(idx, part, omic, assays, per_assay, groups, per, level, sd, unwanted, blocks = 0L, n2 = FALSE) {
@@ -79,7 +93,7 @@
 +        sd = sd, unwanted = unwanted, blocks = blocks, n2 = n2, no_is = no_is) # K275-cells
  }
  CELLS <- list(
-@@ -78,8 +67,17 @@
+@@ -78,8 +81,17 @@
      L24 = cellDef(11L, "L", "lipid", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 12L, 20, 2, "drift_factor"),
      # 5.8b: KIT-172's concentration fixture, both classes, one fixed data set (reported; job k172c only)
 -    K172c = cellDef(0L, "L", "lipid", "LCMS_Pos", 515L, 2L, 6L, NA, NA, "none"))
@@ -99,13 +113,13 @@
 +REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", "prot_ruv_insufficient_controls", "prot_ruv_empty_result", # K275-REFUSALS
      "workflow_execution_invalid", "ruv_factor_count_unavailable", "prot_ruv_factors_unavailable", "omics_ruv_factors_refused",
      "omics_ruv_no_residual_df", "ruv_k_refused", "ruv_k_above_limit")
-@@ -99,4 +97,5 @@
+@@ -99,4 +111,5 @@
      }
      invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
-+        if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
++        guardWarning(w) # K275-guard
          warning_count$n <- warning_count$n + 1L
          noteOf(w)
-@@ -129,5 +128,8 @@
+@@ -129,5 +142,8 @@
  ARM_MARKERS <- list(
      LP = list(MultiScholaR.ruv_control_grouping = "dropped", MultiScholaR.ruv_k_bound = "none"),
 -    LAs = list(MultiScholaR.ruv_feature_levels = "shifted"))
@@ -115,7 +129,7 @@
 +    LG2 = list(MultiScholaR.ruv_control_grouping = "dropped"))
  armMarkers <- function(arm) {
      set <- ARM_MARKERS[[arm]] %||% list()
-@@ -154,7 +156,7 @@
+@@ -154,7 +170,7 @@
  
  # ---- the generator (5.2, 18.3) -------------------------------------------------------------------------------------
 -generate <- function(cellname, scenario, r) {
@@ -125,21 +139,21 @@
 +    set.seed(275000000 + 100000 * p$idx + 10000 * match(scenario, SCENARIOS) + r, kind = "Mersenne-Twister", # K275-seed
          normal.kind = "Inversion", sample.kind = "Rejection")
      groups <- GROUPS[seq_len(p$groups)]
-@@ -173,5 +175,5 @@
+@@ -173,5 +189,5 @@
      n_feat <- p$per_assay * n_assays
      n_lbl <- if (identical(omic, "prot")) 0L else 5L * n_assays
 -    n_is <- if (identical(omic, "lipid")) 5L * n_assays else 0L
 +    n_is <- if (identical(omic, "lipid") && !isTRUE(p$no_is)) 5L * n_assays else 0L # K275-noIS
      medvar <- if (identical(omic, "prot")) MED_VAR_P else MED_VAR_L
      # 1 levels and residual variances (features, then labelled controls)
-@@ -221,5 +223,5 @@
+@@ -221,5 +237,5 @@
      factor_raw <- stats::rnorm(n_runs)
      # 6 loadings (features, standards, labelled controls)
 -    C <- switch(p$unwanted, drift_factor = 2L, plate_drift = 2L, batch_drift = p$blocks)
 +    C <- switch(p$unwanted, drift_one = 1L, drift_factor = 2L, plate_drift = 2L, batch_drift = p$blocks) # K275-C
      sd_load <- sqrt(3 * medvar / C)
      A_feat <- matrix(stats::rnorm(n_feat * C), n_feat, C) * sd_load
-@@ -276,4 +278,26 @@
+@@ -276,4 +292,26 @@
      feat_ids <- if (identical(omic, "prot")) sprintf("P%05d", seq_len(n_feat)) else sprintf("F%04d", seq_len(n_feat))
      lbl_ids <- if (n_lbl > 0L) sprintf(if (identical(omic, "lipid")) "LBL_%03d" else "CTL_%03d", seq_len(n_lbl)) else character()
 +    # K275-plant (section 5.3 of the ticket): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
@@ -166,14 +180,14 @@
 +    }
      is_ids <- if (n_is > 0L) sprintf("IS_%02d", seq_len(n_is)) else character()
      is_assay <- rep(p$assays, each = 5L)[seq_len(n_is)]
-@@ -298,5 +322,5 @@
+@@ -298,5 +336,5 @@
          y = rbind(y_feat, y_lbl, y_is), oracle = rbind(oracle_feat, oracle_lbl), unwanted = rbind(unw_feat, unw_lbl),
          l = l, theta = theta, planted = stats::setNames(c(rowSums(beta != 0) > 0, rep(FALSE, n_lbl)), c(feat_ids, lbl_ids)),
 -        U = U, order_of = order_of, ba_u = ba_u, ba_block = ba_block, Z = Z, C = C)
 +        U = U, order_of = order_of, ba_u = ba_u, ba_block = ba_block, Z = Z, C = C, planted_delta = planted_delta) # K275-ret
  }
  
-@@ -305,9 +329,9 @@
+@@ -305,9 +343,9 @@
      stats::uniroot(function(lod) mean(stats::plogis(lod - values)) - rate, c(min(values) - 60, max(values) + 60), tol = 1e-10)$root
  }
 -maskOf <- function(sim, mask) {
@@ -185,7 +199,7 @@
 +    out <- sim$U < stats::plogis(solveLod(lod_values, rate) - y) # K275-mask
      if (identical(mask, "ba")) {
          with_missing <- which(rowSums(out) > 0)
-@@ -420,7 +444,7 @@
+@@ -420,7 +458,7 @@
          percentile = 1, strict = FALSE))
  EXPECTED_DEFAULTS$metab <- EXPECTED_DEFAULTS$lipid
 -# 5.2 (r1.20; VAL-241 OD-1 (c)), the import's default pattern as KIT-260 ships it, read at the bound commit by E3 (a difference
@@ -196,7 +210,7 @@
 +# before KIT-260, "w/o MS2:"); the replay markers hold their current token (a leak stops the unit).
  checkE3 <- function(omic) {
      got <- routeDefaults(omic)
-@@ -428,20 +452,13 @@
+@@ -428,20 +466,13 @@
      differ <- names(want)[!vapply(names(want), function(n) identical(got[[n]], want[[n]]) ||
          (is.numeric(want[[n]]) && is.numeric(got[[n]]) && isTRUE(all.equal(got[[n]], want[[n]]))), logical(1L))]
 -    patterns <- c("(?i)itsd|istd|internal.?standard", "(?i)^rt_|_rt$|retention.?time", "(?i)^is_|_is$|^isd_|_isd$",
@@ -225,7 +239,7 @@
 +            paste(leaked, collapse = ","), paste(absent, collapse = ","), ce_ok))
  }
  
-@@ -548,6 +565,6 @@
+@@ -548,6 +579,6 @@
      declared <- requested && isTRUE(request$gate)
      lapply(stats::setNames(assays, assays), function(a) {
 -        e12 <- if (!is.null(out$e12)) out$e12[out$e12$assay == a, , drop = FALSE]
@@ -234,21 +248,28 @@
 +        e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE] # K275-prefix
          field <- function(x, column) if (!is.null(x) && nrow(x)) x[[column]][[1L]] else NA
          trace <- out$optimisation[[a]]
-@@ -572,5 +589,5 @@
+@@ -572,5 +603,5 @@
          da_failed <- identical(out$error_step, "da")
          failed_here <- if (!is.null(out$da_errors)) out$da_errors[out$da_errors$assay == a, , drop = FALSE]
 -        da_status <- if (da_failed) "failed" else if (!isTRUE(out$da_reached)) "not_reached" else
 +        da_status <- if (da_failed) "failed" else if (!isTRUE(out$reached_da)) "not_reached" else # K275-prefix
              if (is.null(out$da) || !nrow(out$da) || !a %in% out$da$assay || (!is.null(failed_here) && nrow(failed_here))) "no_da" else "ok"
          list(itsd_is_left = field(e12, "itsd_is_left"), itsd_n_used = field(e12, "itsd_n_used"), itsd_n_expected = field(e12, "itsd_n_expected"),
-@@ -581,5 +598,5 @@
+@@ -581,5 +612,5 @@
              ruv_changed = if (legacy_return) identical(status, "corrected") else NA,
              ruv_k_found = if (requested && !declared && !is.null(trace)) (if (isTRUE(trace$success)) as.integer(trace$best_k) else NA_integer_) else NA_integer_,
 -            ruv_n_controls = if (requested && !declared && !is.null(trace)) sum(trace$control_genes_index, na.rm = TRUE) else NA_integer_,
 +            ruv_n_controls = if (requested && !declared && !is.null(trace) && is.logical(trace[["control_genes_index"]])) sum(trace[["control_genes_index"]], na.rm = TRUE) else NA_integer_, # K275-assaycols
              ruv_no_k_reason = reason,
              ruv_k_sweep = if (requested && !declared) pickAssay(product$k_sweep, a) else NA,
-@@ -629,4 +646,9 @@
+@@ -622,5 +653,5 @@
+     step <- "owner"
+     omic_plant <- if (!is.null(plant) && plant %in% c("itsd", "itsdpos")) plant else NULL
+-    result <- tryCatch({
++    result <- tryCatch(withCallingHandlers({ # K275-guard
+         object <- omicObject(sim, log2_values, ids = ids, scale = scale, plant = omic_plant)
+         fixture <- quiet(if (identical(sim$p$omic, "lipid")) lipidDeclarationsOwner(root, object) else metabDeclarationsOwner(root, object))
+@@ -629,4 +660,9 @@
          config <- fixture$workflow$config_list
          if (fault) stop("K188 deliberate fault (E7)")
 +        if (isTRUE(getOption("k275.guard_now"))) { # K275-guard: the planted partial `$` match on a data frame (the self-check of the guard)
@@ -258,7 +279,7 @@
 +        }
          if (filter) {
              step <- "intensity_filter"
-@@ -649,7 +671,7 @@
+@@ -649,7 +685,7 @@
              itsd_record <- owner$getState(paste0(prefix, "_itsd_norm"))@args$ITSDNormalization
              out$itsd_record_fields <- paste(names(itsd_record), collapse = ",")
 -            out$e12 <- checkItsdActed(m_qc, out$m_itsd, itsd_record)
@@ -269,7 +290,7 @@
 +                bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
                  out$status <- "instrument"
                  out$class <- paste(sprintf("itsd_not_applied:%s:%s", bad$assay, bad$itsd_failed), collapse = " | ")
-@@ -662,4 +684,7 @@
+@@ -662,4 +698,7 @@
          quiet(runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, method, config))
          out$m_in <- stateMatrices(owner, binding, paste0(prefix, "_normalized"))
 +        step <- "pairs_pre" # K275-pairs
@@ -277,7 +298,7 @@
 +        step <- "between_sample"
          out$rows_ruv_input <- vapply(out$m_in, nrow, integer(1L))
          if (!identical(method, "none") && !identical(arm, "OR")) {
-@@ -667,7 +692,7 @@
+@@ -667,7 +706,7 @@
              # `normplant` (35.6): the matrix E13 compares is the log2 matrix for one assay; the route's output is untouched
              if (identical(plant, "normplant")) compared[["LCMS_Pos"]] <- out$m_log2[["LCMS_Pos"]]
 -            out$e13 <- checkNormActed(compared, out$m_log2)
@@ -288,7 +309,7 @@
 +                bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
                  text <- paste(sprintf("norm_not_applied:%s", bad$assay), collapse = " | ")
                  out$class <- if (identical(out$status, "instrument")) paste(out$class, text, sep = " | ") else text
-@@ -681,8 +706,11 @@
+@@ -681,8 +720,11 @@
              out$ruv_value <- run$value[setdiff(names(run$value), c("final", "optimisation", "factors", "separation_plots"))]
              out$ruv_factors <- lapply(run$value$factors, function(f) f[intersect(names(f), c("status", "reason", "k", "control_ids",
 -                "control_count", "ruv_k_estimate"))])
@@ -301,7 +322,7 @@
 +            step <- "ruv"
              # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
              record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
-@@ -694,9 +722,21 @@
+@@ -694,9 +736,21 @@
              out$corr_one_assay <- paste(oneAssayRemovals(out$m_out %||% out$m_in, stateMatrices(owner, binding, owner$current_state)),
                  collapse = ";")
 +            # K275-pairs: per assay, the samples that held a value before the filter and none after it (the package filter's own removed set, E5)
@@ -324,14 +345,17 @@
 +        out$reached_da <- TRUE # K275-prefix
          if (identical(plant, "daerror")) stop("K188 planted DA error (E15)")
          da <- quiet(runWorkflowOmicsReferenceDaAnalysis(binding, owner, getWorkflowStateReference(owner),
-@@ -725,4 +765,5 @@
+@@ -725,4 +779,5 @@
                  stringsAsFactors = FALSE))
          }
 +        } # K275-nogroup
          # E1: the provenance of every committed state names the declared operation and the binding's default variant
          snapshot <- owner$.context$snapshot
-@@ -744,7 +785,11 @@
-     }, error = function(e) {
+@@ -742,9 +797,13 @@
+             note = oneLine(sprintf("ops %s; variants %s", paste(got_ops, collapse = ","), paste(got_variant, collapse = ","))))
+         NULL
+-    }, error = function(e) {
++    }, warning = guardWarning), error = function(e) { # K275-guard
          cls <- intersect(class(e), REFUSALS)
 +        guard <- grepl("partial-match guard", conditionMessage(e), fixed = TRUE) # K275-guard
          text <- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
@@ -343,7 +367,7 @@
 +        } else if (identical(out$status, "instrument")) {
              out$class <<- paste(out$class, text, sep = " | ")
          } else {
-@@ -787,5 +832,5 @@
+@@ -787,5 +846,5 @@
          ctl <- x$control_genes_index
          k_sweep <- if (isTRUE(x$success)) as.integer(x$best_k) else NA_integer_
 -        k_used <- suppressWarnings(as.integer(unlist(journey$ruv_value$best_k[[a]])[1L]))

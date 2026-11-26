@@ -471,6 +471,15 @@ E("cell|B|D|D3|V1g|LM2|jk_hi", "num", math.sqrt(est + z * se))
 E("cell|B|D|D3|V1g|LM2|lo", "between", "%r:%r" % (math.sqrt(0.5), math.sqrt(est)))
 E("cell|B|D|D3|V1g|LM2|hi", "between", "%r:%r" % (math.sqrt(est), math.sqrt(1.5)))
 
+
+# ---- the unit paths of the guard (coordinator's ruling after smoke 2): an instrument unit row, a crashed unit row, a unit that did not complete ----------------------
+rows = d_rows({}); u = blank(tier="D", design="D3", r=9101, arm="unit", smoke="FALSE", status="instrument", cls="")
+u["class"] = "partial_match_guard: partial-match guard: Partial match of 'abc' to 'abcdef' in data frame"
+E = new_case("unit_instrument", rows + [u]); expected += [("unit_instrument", "exit|unit_instrument", "exit", "nonzero", ""), ("unit_instrument", "stderr|unit_instrument", "substr", "instrument status", "")]
+u2 = blank(tier="D", design="D3", r=1, arm="unit", smoke="FALSE", status="crashed"); u2["class"] = "child process exit 1, no result"
+E = new_case("unit_crashed", rows + [u2]); expected += [("unit_crashed", "exit|unit_crashed", "exit", "nonzero", ""), ("unit_crashed", "stderr|unit_crashed", "substr", "left no journey rows", "")]
+E = new_case("unit_completed_false", rows, files={"checks-x.tsv": hdr + "unit_completed\tD\t1\tD3\tNA\tran to the end\tFALSE\tchild process exit 1, no result\n"})
+expected += [("unit_completed_false", "exit|unit_completed_false", "exit", "nonzero", ""), ("unit_completed_false", "stderr|unit_completed_false", "substr", "did not complete", "")]
 with open(os.path.join(OUT, "index.tsv"), "w", newline="") as f:
     w = csv.writer(f, delimiter="\t", lineterminator="\n")
     w.writerow(["case", "mode", "env"])

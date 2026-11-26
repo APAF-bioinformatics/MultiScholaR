@@ -24,8 +24,22 @@
 # exact; that warning is an error here, in every process and inside `quiet()` (which would otherwise muffle it). A stop from it is an
 # instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
 options(warnPartialMatchDollar = TRUE)
-globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+# A `stop()` raised from a GLOBAL calling handler runs with every local handler disabled (R's rule for the handler stack), so it cannot reach a
+# `tryCatch`: it ends the process with nothing written (smoke 2's planted guard unit). The guard is therefore also installed as a LOCAL calling
+# handler (`guardWarning`) around each journey and around each unit, where its stop reaches the enclosing `tryCatch`; the global handler stays as
+# a last net, with an error writer that leaves a trace before the process ends.
+guardWarning <- function(w) {
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {
+        options(k275.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L]], collapse = ""), 1L, 80L), ""), collapse = " <- "))
+        stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    }
+}
+globalCallingHandlers(warning = guardWarning)
+if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() {   # an error that escaped every handler: write what is known, then end non-zero
+    dir <- dirname(Sys.getenv("K275_CHECKS_PATH"))
+    tag <- sub("\\.tsv$", "", sub("^checks-", "", basename(Sys.getenv("K275_CHECKS_PATH"))))
+    try(writeLines(c(geterrmessage(), getOption("k275.guard_trace", "")), file.path(dir, sprintf("unit-trace-%s.txt", tag))), silent = TRUE)
+    quit(save = "no", status = 1L)
 })
 
 args <- commandArgs(TRUE)
@@ -96,7 +110,7 @@ quiet <- function(expr) {
         warning_count$log <- c(warning_count$log, paste(class(cond)[[1L]], if (length(hit)) hit[[1L]] else "", sep = "@"))
     }
     invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
-        if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
+        guardWarning(w) # K275-guard
         warning_count$n <- warning_count$n + 1L
         noteOf(w)
         invokeRestart("muffleWarning")
@@ -638,7 +652,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
     fixture <- NULL
     step <- "owner"
     omic_plant <- if (!is.null(plant) && plant %in% c("itsd", "itsdpos")) plant else NULL
-    result <- tryCatch({
+    result <- tryCatch(withCallingHandlers({ # K275-guard
         object <- omicObject(sim, log2_values, ids = ids, scale = scale, plant = omic_plant)
         fixture <- quiet(if (identical(sim$p$omic, "lipid")) lipidDeclarationsOwner(root, object) else metabDeclarationsOwner(root, object))
         fixture$workflow$contrasts_tbl <- contrastsOf(sim)
@@ -782,7 +796,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         out$e1 <- list(pass = identical(unname(got_ops), unname(want)) && identical(unname(got_variant), unname(want_variant)),
             note = oneLine(sprintf("ops %s; variants %s", paste(got_ops, collapse = ","), paste(got_variant, collapse = ","))))
         NULL
-    }, error = function(e) {
+    }, warning = guardWarning), error = function(e) { # K275-guard
         cls <- intersect(class(e), REFUSALS)
         guard <- grepl("partial-match guard", conditionMessage(e), fixed = TRUE) # K275-guard
         text <- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
@@ -1290,6 +1304,10 @@ runArm <- function(ctx, v, version, arm, lifecycle, write, correlation = TRUE, f
         itsd = FALSE, correlation = correlation, fault = fault)
     ruv <- !is.null(request[["ruv"]])
     row <- journeyRow(ctx, j, sim, version, arm, ruv, extra = extra)
+    if (identical(row[["status"]], "instrument") && startsWith(as.character(row[["class"]]), "partial_match_guard:")) {   # a guard stop inside a journey: leave its trace
+        tag <- sub("\\.tsv$", "", sub("^checks-", "", basename(Sys.getenv("K275_CHECKS_PATH"))))
+        try(writeLines(c(as.character(row[["class"]]), getOption("k275.guard_trace", "")), file.path(dirname(Sys.getenv("K275_CHECKS_PATH")), sprintf("unit-trace-%s-journey.txt", tag))), silent = TRUE)
+    }
     if (isTRUE(note_refusal) && identical(row[["status"]], "refused") && tooFewLeft(sim) && row[["class"]] %in% FEW_CLASSES) row[["status"]] <- "refused_after_exclusion"
     write(row)
     condition <- paste(version, arm)
@@ -1395,6 +1413,7 @@ runUnit <- function(tier, design, r, lifecycle, fault_now, e7r, smoke, rows_path
     ctx <- list(tier = tier, design = design, cell = cellname, omic = p$omic, r = r, per = p$per, smoke = smoke, threshold = defaults$correlation,
         defaults = defaults, shares = plantedShares(cellname, r))
     mask <- if (identical(tier, "V")) "vd5" else "none"
+    if (isTRUE(getOption("k275.guard_unit"))) invisible(data.frame(abcdef = 1)$abc)   # the planted unit-level partial match (outside any journey)
     v0 <- makeVersion(cellname, r, "V0", mask)
     versions <- list(V0 = v0)
     getV <- function(version) {
@@ -1463,13 +1482,13 @@ runChildMain <- function() {
     rows_path <- Sys.getenv("K275_ROWS_PATH")
     checks_path <- Sys.getenv("K275_CHECKS_PATH")
     last_calls <- NULL
-    options(k275.guard_now = flag("K275_GUARD_UNIT"))
+    options(k275.guard_now = flag("K275_GUARD_UNIT"), k275.guard_unit = flag("K275_GUARD_UNIT_LEVEL"))
     result <- tryCatch(withCallingHandlers({
         runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), flag("K275_LIFECYCLE"), flag("K275_FAULT_UNIT"), flag("K275_E7R_UNIT"),
             flag("K275_SMOKE"), rows_path, checks_path)
         list(ok = TRUE)
-    }, error = function(e) last_calls <<- paste(vapply(sys.calls(), function(cl) oneLine(deparse(cl)[[1L]], 80L), ""), collapse = " <- ")),
-        error = function(e) list(error = oneLine(paste(class(e)[[1L]], conditionMessage(e))), trace = last_calls))
+    }, warning = guardWarning, error = function(e) last_calls <<- paste(vapply(sys.calls(), function(cl) oneLine(deparse(cl)[[1L]], 80L), ""), collapse = " <- ")),
+        error = function(e) list(error = oneLine(paste(class(e)[[1L]], conditionMessage(e))), trace = last_calls %||% getOption("k275.guard_trace", "")))
     flushChecks(checks_path)
     saveRDS(result, args[[5L]])
     quit(save = "no", status = 0L)
@@ -1525,9 +1544,14 @@ runParentMain <- function() {
     units$fault <- FALSE
     units$e7r <- FALSE
     units$guard <- FALSE
+    units$guard_unit <- FALSE
     if (lifecycle && identical(Sys.getenv("K275_FAULT_GUARD"), "1")) {   # the planted partial-match fault: the guard's own self-check
         hit <- which(units$tier == "D" & !units$repeat_run)
         if (length(hit)) units$guard[[hit[[1L]]]] <- TRUE
+    }
+    if (lifecycle && identical(Sys.getenv("K275_FAULT_GUARD_UNIT"), "1")) {   # the planted unit-level variant, on the first unit of the first tier after the journey-level one
+        hit <- which(!units$guard & !units$fault & !units$repeat_run)
+        if (length(hit)) units$guard_unit[[hit[[length(hit)]]]] <- TRUE
     }
     if (lifecycle && fault) {
         units$fault[[1L]] <- TRUE
@@ -1575,13 +1599,15 @@ runParentMain <- function() {
         checks_path <- file.path(progress_dir, sprintf("checks-%s.tsv", u$tag))
         env <- c(sprintf("K275_LIFECYCLE=%s", if (lifecycle) "1" else "0"), sprintf("K275_FAULT_UNIT=%s", if (u$fault) "1" else "0"),
             sprintf("K275_E7R_UNIT=%s", if (u$e7r) "1" else "0"), sprintf("K275_SMOKE=%s", if (smoke) "1" else "0"),
-            sprintf("K275_GUARD_UNIT=%s", if (u$guard) "1" else "0"), sprintf("K275_ROWS_PATH=%s", rows_path), sprintf("K275_CHECKS_PATH=%s", checks_path))
+            sprintf("K275_GUARD_UNIT=%s", if (u$guard) "1" else "0"), sprintf("K275_GUARD_UNIT_LEVEL=%s", if (u$guard_unit) "1" else "0"), sprintf("K275_ROWS_PATH=%s", rows_path), sprintf("K275_CHECKS_PATH=%s", checks_path))
         t0 <- Sys.time()
         code <- system2("Rscript", c(shQuote(script_file), "--unit", u$tier, u$design, u$r, shQuote(rds)), env = env, stdout = FALSE, stderr = FALSE)
         seconds <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-        res <- if (file.exists(rds)) readRDS(rds) else list(error = sprintf("child process exit %d, no result", code))
+        trace_file <- file.path(progress_dir, sprintf("unit-trace-%s.txt", u$tag))
+        res <- if (file.exists(rds)) readRDS(rds) else list(error = paste(sprintf("child process exit %d, no result", code),
+            if (file.exists(trace_file)) oneLine(paste(readLines(trace_file, n = 1L), collapse = " "), 200L) else ""))
         unlink(rds)
-        if (!is.null(res[["trace"]])) writeLines(res[["trace"]], file.path(progress_dir, sprintf("unit-trace-%s.txt", u$tag)))
+        if (!is.null(res[["trace"]])) writeLines(c(res[["error"]] %||% "", res[["trace"]]), trace_file)
         data.frame(tag = u$tag, tier = u$tier, design = u$design, r = u$r, wall_seconds = round(seconds, 1), exit = code,
             error = res[["error"]] %||% "", stringsAsFactors = FALSE)
     }

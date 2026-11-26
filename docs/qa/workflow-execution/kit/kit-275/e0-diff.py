@@ -47,7 +47,7 @@ def main():
         last_old = old_numbers[i2 - 1] if i2 > i1 else None
         text = "\n".join(retained_new[j1:j2])
         marks = sorted({w.strip("();,:") for w in text.replace("#", " ").split() if w.startswith("K275-") or w.startswith("(K275-")})
-        header = j2 <= 30
+        header = j2 <= 50
         if not marks and tag == "delete" and first_old is not None:
             for name, lo, hi in MARK_RANGES:
                 if lo <= first_old and last_old <= hi:

@@ -97,6 +97,12 @@ if (is.null(rows) || !nrow(rows)) stop("K275 scoring stops: no rows")
 for (column in setdiff(names(rows), TEXT_COLUMNS)) rows[[column]] <- num(rows[[column]])
 instrument_rows <- sum(rows[["status"]] %in% "instrument" | grepl("partial-match guard|partial_match_guard", rows[["class"]]))
 if (!blind && instrument_rows > 0L) stop("K275 scoring stops: an instrument status or a partial-match guard stop in the rows (VAL-54)")
+if (!blind && any(rows[["arm"]] %in% "unit")) stop("K275 scoring stops: a unit left no journey rows (a unit row of status crashed): the job did not complete")
+checks_files0 <- list.files(rows_dir, pattern = "^checks-.*\\.tsv$", full.names = TRUE, recursive = TRUE)
+if (!blind && length(checks_files0)) {
+    unit_bad <- sum(unlist(lapply(checks_files0, function(f) { x <- readText(f); sum(x[["check"]] %in% "unit_completed" & !(as.character(x[["pass"]]) %in% "TRUE")) })))
+    if (unit_bad > 0L) stop("K275 scoring stops: a unit did not complete (check unit_completed is false)")
+}
 rows <- rows[!rows[["arm"]] %in% "unit", , drop = FALSE]
 if (!blind) {
     lim <- vapply(rows[["tier"]], function(t) if (t %in% c("D", "K", "F", "S", "V", "M", "T", "E", "ID")) declaredR(t) else NA_real_, numeric(1L))
