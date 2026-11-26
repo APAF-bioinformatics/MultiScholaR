@@ -130,3 +130,41 @@ disturbed: one documents-only commit follows the declaration on this branch (and
 `docs/qa/workflow-execution/kit/kit-255/outcome.md` and `wording.md`, plus this file. No `R/`, `tests/`, `inst/` or `man/`
 file changed. The base stays `7f17547f` (staging has only gained VAL-344's ledger row since; the merge into staging at
 landing will meet it in the ledger).
+
+## Result
+
+Run 45726836882 (request `kit255-train25-1567f188`, request commit 8f30e413 on `run-tests`), created by the dispatcher
+without error (no hand dispatch); green (infrastructure). Head `1567f188` against base `7f17547f`; fetched once. My
+`gh run watch` ended on a TLS handshake timeout from the API (not a run failure); the run was then read by single status
+calls and the one fetch. Tables: `merge-train-20261126r-compare.tsv`, `-check-compare.txt`, `-tests.tsv`,
+`-tests-base.tsv` (this directory).
+
+**Job-minutes 464.6 = 30.98 core-hours** (job-minutes x 4 / 60) against the ceiling of 600 (40.0 core-hours) and the
+expected about 480: tests head 59.3/63.1/55.6/40.4, tests base 53.6/61.0/53.8/52.0, check head 9.2, check base 15.8,
+plan 0.3, results 0.5 (job start to end from the API).
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit255-omics-correlation-assays.R | only-on-head, 360/0 | absent | 360/0/0/0 | only-on-head: HELD |
+| test-omic-norm-module.R | new-failure, 631/8, the eight digests | 639/0 | 631/8 | new-failure: HELD. The eight failures are the (b) lipid and metab "skip" scenarios' correlation, final_plot, export and reset provenance digests (actual 15e689a4 x3, c0ed83bb; 9b3649ec x3, 62d62f5a: the predicted values); the stored-file line numbers :671 to :968 are not shown by the tables (the traces point at `expectOmicNormScenario`, test lines 1560 and 1565) |
+| test-workflow-omics-declarations.R | message-changed, 43/25, selection step's `fixed` lines only | 43/25 | 43/25 | message-changed: HELD (the head side differs from the base side only by `fixed` is a list against NULL, for `lipid_pearson_selection` and `metab_pearson_selection`) |
+| test-workflow-omics-binding-steps.R | message-changed, 57/2, parameters 3 against 2 | 57/2 | 57/2 | message-changed: HELD (only `steps[[10]]$parameters` length 3 against 2, lipidomics and metabolomics) |
+| test-metab-s4-qc-shared.R | count-changed 32 to 35 | 32/0 | 35/0 | count-changed: HELD |
+| test-kit236-report-sentences.R | count-changed 289 to 293, all passed | 289/0 | 293/0 | count-changed: HELD |
+| test-kit254-omics-correlation-skip.R | same, 379/0 | 379/0 | 379/0 | same: HELD |
+| test-omics-module-globals.R | same, **14/0** | 13/1 | 13/1 | same: verdict HELD; **the declared count was wrong** (see below) |
+| test-gui-entry-lipidomics.R / -metabolomics.R | same at the base's counts | 19/16, 57/48 | 19/16, 57/48 | same: HELD |
+| the other 43 files | same | same | same | same: HELD |
+| R CMD check | identical | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none; only on base: none): HELD |
+
+Totals: 54 files, 48 `same`, 1 `only-on-head`, 1 `new-failure`, 2 `message-changed`, 2 `count-changed`; no verdict outside the
+predicted set.
+
+**Prediction error of the declaration (verdict unaffected).** `test-omics-module-globals.R` was declared at 14/0 (newest
+committed table); it is 13/1 on both sides. Coordinator's note, quoted: "tests/testthat/test-omics-module-globals.R is 13
+passed / 1 failed on BOTH sides of your comparison (staging holds KIT-261's `shown_idle <<- idle`; KIT-278's fix is not on
+your base), verdict same." The verdict `same` held; KIT-255 adds no match to that file's patterns.
+
+**Decision.** Every verdict prediction held. TRAIN GREEN for KIT-255. The count prediction for
+`test-omics-module-globals.R` missed (13/1, not 14/0): an error of the declaration, not of the change.
+Not covered: the seven heatmap-consumer test files named in the scope section; the full suite (the next checkpoint).
