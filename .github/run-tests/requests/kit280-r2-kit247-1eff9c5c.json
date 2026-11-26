@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-280 R2 dedicated job: test-kit247-design-resave.R alone, base e4a6d4ae against head 1eff9c5c; ceiling 2 x 95 = 190 job-min = 12.67 core-h",
+  "label": "KIT-280 R2 kit247 alone base e4a6d4ae vs head 1eff9c5c",
+  "package_commit": "1eff9c5cf6f33c4280b0a2bbe4b1c1aff6af373f",
+  "base_commit": "e4a6d4aea111efe3d50e778c69f512356037cdc0",
+  "tools_ref": "",
+  "tests": [
+    "test-kit247-design-resave.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit247-design-resave.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
