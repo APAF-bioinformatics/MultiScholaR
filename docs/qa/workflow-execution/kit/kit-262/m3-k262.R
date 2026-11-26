@@ -22,8 +22,8 @@
 #                   reestimate.tsv of `reestimate-m3-k262.R` and fixed console lines leave
 #   K262_LIFECYCLE  "1": row files under tempdir(); only checks.tsv, timing.tsv and hashes.tsv leave (VAL-11)
 #   K262_M3_FAULT   "1" (L3 only): units 1 to 5 carry planted faults: 1 a journey stop (a data-set error row), 2 a partial match inside a
-#                   journey, 3 a partial match in unit code outside a journey (both instrument rows), 4 a partial match swallowed by a
-#                   tryCatch in unit code (instrument row, class partial_match_guard_absorbed), 5 a worker that dies with no row
+#                   journey, 3 a partial match in unit code outside a journey (both instrument rows), 4 a partial match inside an inner
+#                   tryCatch(error =) in unit code (still caught by the guard: instrument row, class partial_match_guard), 5 a worker that dies with no row
 #                   and no trace (an instrument row written by the parent). The checks FAULT_ROWS then read the five outcomes and that the sixth unit is clean.
 # Rows: `summary.tsv` (one line per unit, appended by the unit itself when it ends), `traces/trace-<tag>.txt` for an error or
 # instrument unit, `provenance.json` (at start and at end), `checks.tsv`, `timing.tsv`, `hashes.tsv`. A unit with no row and no
@@ -434,7 +434,7 @@ m3Unit <- function(task, omic = task$omic) {
   if (inherits(run_p, "error")) return(stopped(run_p, "P journey"))
   on.exit(closeDIAStateAdapter(run_p$owner), add = TRUE, after = FALSE)
   if (identical(planted_fault, "unit")) invisible(data.frame(abcdef = 1)$abc)  # a partial match in unit code outside any journey
-  if (identical(planted_fault, "absorbed")) tryCatch(invisible(data.frame(abcdef = 1)$abc), error = function(e) NULL)  # a partial match inside a tryCatch that swallows the stop
+  if (identical(planted_fault, "inner_trycatch")) tryCatch(invisible(data.frame(abcdef = 1)$abc), error = function(e) NULL)  # a partial match inside an inner tryCatch(error =): the guard's stop is signalled past it (L3r2: still an instrument row, class partial_match_guard)
   p <- m3Endpoints(run = run_p, data = data, runs = runs, n_samples = n_samples)
   trace <- p$trace
   if (!is.data.frame(trace) || !nrow(trace)) stop("the P journey returned no optimisation trace")
@@ -569,7 +569,6 @@ m3UnitSafe <- function(task) {
   cell <- M3_CELLS[M3_CELLS$id == task$cell, ]
   empty <- m3EmptyRow(cell = task$cell, r = task$r, seed = m3Seed(idx = cell$idx, stress = cell$stress, r = task$r), purpose = task$purpose, omic = task$omic)
   if (identical(task$fault, "kill")) tools::pskill(Sys.getpid(), tools::SIGKILL)  # the worker dies with no row and no trace
-  options(k262.guard_trace = NULL)  # S1: the guard's trace is reset before each unit
   row <- tryCatch(withCallingHandlers(m3Unit(task), warning = m3GuardMuffle), error = function(e) {
     trace <- paste(c(conditionMessage(e), getOption("k262.guard_trace", "")), collapse = "\n")
     try(writeLines(trace, file.path(out_dir, "traces", sprintf("trace-%s.txt", task$tag))), silent = TRUE)
@@ -579,13 +578,6 @@ m3UnitSafe <- function(task) {
     empty$seconds_total <- proc.time()[[3L]] - started
     empty
   })
-  # S1 (audit): a guard stop absorbed by a handler of the product or of unit code (a tryCatch that swallowed it) left its trace set while the unit
-  # ended: the unit's result may have changed silently, so it is an instrument row
-  if (!identical(row$status, "instrument") && nzchar(getOption("k262.guard_trace", ""))) {
-    try(writeLines(c("partial_match_guard_absorbed", getOption("k262.guard_trace", "")), file.path(out_dir, "traces", sprintf("trace-%s.txt", task$tag))), silent = TRUE)
-    row$status <- "instrument"; row$class <- "partial_match_guard_absorbed"
-    row$error <- "a partial match was signalled and absorbed by a handler inside the unit; the unit's result cannot be trusted"
-  }
   if (identical(row$status, "error")) try(writeLines(c(row$class, row$error), file.path(out_dir, "traces", sprintf("trace-%s.txt", task$tag))), silent = TRUE)
   cat(m3Line(row), "\n", sep = "", file = summary_file, append = TRUE)  # the unit's own record, before it returns
   cat(sprintf("unit %s: %s (%.0f s)\n", task$tag, row$status, as.numeric(row$seconds_total)))  # progress: the tag and the status only
@@ -639,7 +631,7 @@ if (nzchar(only)) {
 }
 tasks$omic <- "lipid"
 tasks$fault <- NA_character_
-if (fault_on) tasks$fault[seq_len(min(5L, nrow(tasks)))] <- c("error", "guard", "unit", "absorbed", "kill")[seq_len(min(5L, nrow(tasks)))]
+if (fault_on) tasks$fault[seq_len(min(5L, nrow(tasks)))] <- c("error", "guard", "unit", "inner_trycatch", "kill")[seq_len(min(5L, nrow(tasks)))]
 rownames(tasks) <- NULL
 M3_D <- if (any(tasks$purpose == "e9" | (tasks$cell %in% names(M3_FINAL_R)))) m3CommittedD() else NULL
 
@@ -717,7 +709,7 @@ if (fault_on) {
   by_cell <- function(i) final[final$cell == tasks$cell[[i]] & final$r == as.character(tasks$r[[i]]) & final$purpose == tasks$purpose[[i]], , drop = FALSE]
   task_tag_of <- function(i) tasks$tag[[i]]
   fr <- lapply(1:5, by_cell)
-  want <- list(c("error", ""), c("instrument", "partial_match_guard"), c("instrument", "partial_match_guard"), c("instrument", "partial_match_guard_absorbed"), c("instrument", "no_row"))
+  want <- list(c("error", ""), c("instrument", "partial_match_guard"), c("instrument", "partial_match_guard"), c("instrument", "partial_match_guard"), c("instrument", "no_row"))
   hit <- vapply(1:5, function(i) nrow(fr[[i]]) == 1L && identical(fr[[i]]$status, want[[i]][[1L]]) && (!nzchar(want[[i]][[2L]]) || identical(fr[[i]]$class, want[[i]][[2L]])), logical(1L))
   others_ok <- sum(final$status == "ok") == nrow(final) - 5L
   # L3r: per planted unit its id, the expected and the observed status and class (aggregate: no data value), so a failing unit is seen in the log

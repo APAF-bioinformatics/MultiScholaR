@@ -1,6 +1,6 @@
-# KIT-262 M3 local checks (no R; python3 -I), L3r
-PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 796 lines, brackets balanced
-PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 673 lines, brackets balanced
+# KIT-262 M3 local checks (no R; python3 -I), L3r2
+PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 788 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 681 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R: 148 lines, brackets balanced
 PASS m3 e2PickCells = effect.R 8 source lines, 8 kept verbatim, 0 marked, 0 source lines replaced
 PASS m3 e2Values = effect.R (marked [L]) 37 source lines, 37 kept verbatim, 1 marked, 0 source lines replaced
@@ -27,7 +27,7 @@ PASS m3StressValues: the draws before the mask are M2's (the effect-share line a
 PASS score tangoZ = decide.R 7 source lines, 7 kept verbatim, 0 marked, 0 source lines replaced
 PASS score bergerBoos = decide.R 16 source lines, 16 kept verbatim, 0 marked, 0 source lines replaced
 PASS score skewness = decide.R 5 source lines, 5 kept verbatim, 0 marked, 0 source lines replaced
-PASS score effectTest = decide.R 38 source lines, 37 kept verbatim, 1 marked, 1 source lines replaced
+PASS score effectTest = decide.R 38 source lines, 36 kept verbatim, 2 marked, 2 source lines replaced
 PASS score nullTest = decide.R 7 source lines, 7 kept verbatim, 0 marked, 0 source lines replaced
 PASS score tangoZb = bounds.R tangoZ (renamed)
 PASS score alpha, margins and the sign-flip seed

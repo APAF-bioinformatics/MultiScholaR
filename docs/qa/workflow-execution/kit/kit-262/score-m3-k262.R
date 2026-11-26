@@ -86,7 +86,7 @@ effectTest <- function(d, m = M_EFFECT, vectors = 100000L, seed = SIGNFLIP_SEED)
   e <- d - m
   n <- length(e)
   s <- stats::sd(e)
-  if (!is.finite(s) || s == 0) {
+  if (!is.finite(s) || s < 1e-14) {  # [T] VAL-400: a spread below 1e-14 is representation noise (FDP ratios of counts <= 515 differ by >= 1.4e-11), treated as zero
     # S4 (c): every paired difference equal; the studentised statistic is undefined; no worse iff mean(d) < margin.
     return(list(n = n, mean_d = mean(d), sd_d = 0, t = NA_real_, p_signflip = NA_real_, mc_se = NA_real_, skewness = 0,
       johnson_used = FALSE, t_johnson = NA_real_, t_upper_bound = mean(d), no_worse = mean(d) < m))
@@ -271,13 +271,13 @@ blindM3 <- function(dirs, plan, out_dir, reps = NULL) {
 # ---- the counted scorer -----------------------------------------------------------------------------------------------------------
 verdictCell <- function(cell, v) {
   kind <- if (cell %in% NULL_CELLS) "any_call" else "fdp"
-  if (nrow(v) == 0L) return(data.frame(cell = cell, endpoint = kind, n = 0L, estimate = NA_real_, statistic = NA_real_, p_value = NA_real_, p_berger_boos = NA_real_,
+  if (nrow(v) == 0L) return(data.frame(cell = cell, endpoint = kind, n = 0L, estimate = NA_real_, statistic = NA_real_, p_value = NA_real_, p_signflip = NA_real_, p_berger_boos = NA_real_,
     skewness = NA_real_, johnson_used = NA, no_worse = NA, lower_bound = NA_real_, upper_bound = NA_real_, label = "not determined (no valid pair)", stringsAsFactors = FALSE))
   if (kind == "any_call") {
     r <- nullTest(lgl(v$c_any_call), lgl(v$p_any_call))
     lower <- tangoBound(b = r$b, c = r$c, n = r$n, side = "lower"); upper <- tangoBound(b = r$b, c = r$c, n = r$n, side = "upper")
     nw <- r$no_worse
-    data.frame(cell = cell, endpoint = kind, n = r$n, estimate = r$difference, statistic = r$tango_z, p_value = NA_real_, p_berger_boos = r$berger_boos_p, skewness = NA_real_,
+    data.frame(cell = cell, endpoint = kind, n = r$n, estimate = r$difference, statistic = r$tango_z, p_value = NA_real_, p_signflip = NA_real_, p_berger_boos = r$berger_boos_p, skewness = NA_real_,
       johnson_used = NA, no_worse = nw, lower_bound = lower, upper_bound = upper,
       label = if (isTRUE(nw)) "NW" else if (isTRUE(lower > 0)) "shown worse" else "inconclusive", stringsAsFactors = FALSE)
   } else {
@@ -286,7 +286,7 @@ verdictCell <- function(cell, v) {
     ts <- tSummary(d)
     lower <- if (is.finite(ts$lower)) ts$lower else mean(d)
     upper <- if (is.finite(ts$upper)) ts$upper else mean(d)
-    data.frame(cell = cell, endpoint = kind, n = r$n, estimate = r$mean_d, statistic = if (r$johnson_used) r$t_johnson else r$t, p_value = r$p_signflip, p_berger_boos = NA_real_,
+    data.frame(cell = cell, endpoint = kind, n = r$n, estimate = r$mean_d, statistic = if (r$johnson_used) r$t_johnson else r$t, p_value = r$p_signflip, p_signflip = r$p_signflip, p_berger_boos = NA_real_,
       skewness = r$skewness, johnson_used = r$johnson_used, no_worse = r$no_worse, lower_bound = lower, upper_bound = upper,
       label = if (isTRUE(r$no_worse)) "NW" else if (isTRUE(lower > 0)) "shown worse" else "inconclusive", stringsAsFactors = FALSE)
   }
@@ -403,7 +403,7 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL) {
   names(per) <- cells
   det <- vapply(per, function(x) x$missing == 0L, logical(1L))
   verdicts <- do.call(rbind, lapply(per, function(x) {
-    if (x$missing > 0L) return(data.frame(cell = x$cell, endpoint = if (x$cell %in% NULL_CELLS) "any_call" else "fdp", n = x$valid, estimate = NA_real_, statistic = NA_real_, p_value = NA_real_,
+    if (x$missing > 0L) return(data.frame(cell = x$cell, endpoint = if (x$cell %in% NULL_CELLS) "any_call" else "fdp", n = x$valid, estimate = NA_real_, statistic = NA_real_, p_value = NA_real_, p_signflip = NA_real_,
       p_berger_boos = NA_real_, skewness = NA_real_, johnson_used = NA, no_worse = NA, lower_bound = NA_real_, upper_bound = NA_real_, label = "not determined (did not complete)", stringsAsFactors = FALSE))
     verdictCell(cell = x$cell, v = x$v)
   }))
@@ -518,12 +518,20 @@ selfTest <- function(out_dir, expected_path) {
   # a +0.20 shift in every pair: effect cells not NW and shown worse; null cells with 40 of 100 candidate-only calls not NW and shown worse
   shifted <- do.call(c, lapply(M3_IDS, function(cell) lapply(1:100, function(r) {
     if (cell %in% NULL_CELLS) mkUnit(cell, r, p_any_call = "FALSE", c_any_call = if (r <= 40) "TRUE" else "FALSE") else
-      mkUnit(cell, r, p_fdp = sprintf("%.3f", 0.1 + 0.002 * (r %% 7)), c_fdp = sprintf("%.3f", 0.3 + 0.002 * (r %% 7)))
+      mkUnit(cell, r, p_fdp = "0.100", c_fdp = sprintf("%.3f", 0.3 + 0.01 * ((r %% 5) - 2)))  # L3r2: d = 0.2 + 0.01 k, k = -2..2, 20 each: mean 0.2, sd 0.01421, skewness 0; sign-flip p = 1 (every e > 0), lower bound 0.2 - 1.6604 x 0.01421 / 10 = 0.1976 > 0
   })))
   writeSource(src("shifted"), shifted)
   rs <- fullM3(src("shifted"), fullPlan(rep(100L, 10L)), TRUE, file.path(out_dir, "case-shifted"), B = 200L)
   add("shift_not_NW_shown_worse", all(rs$verdicts$label == "shown worse") && identical(rs$outcome$outcome, "K4"), paste(unique(rs$verdicts$label), collapse = ","))
   add("shift_null_statistic_matches_hand", near(rs$verdicts$statistic[rs$verdicts$cell == "N-r"], ev("tango_z.b40_c0_n100_m0.10")), "")
+  # L3r2 (VAL-400): the OLD degenerate input of L3r (d = 0.2 up to rounding noise, sd 2e-17, skewness -2.67, where Johnson's third term diverged to NW). Under
+  # the zero-spread rule (sd < 1e-14) there is no statistic and no_worse = (mean(d) < 0.05); the mean is 0.2, so not NW; Johnson is not used; the one-sided
+  # lower bound is 0.2 - 1.66 x 2e-18 = 0.2 > 0, so the label is "shown worse"; the sign-flip p is NA.
+  df_of <- function(rows) do.call(rbind, lapply(rows, function(x) as.data.frame(x, stringsAsFactors = FALSE)))
+  d_old <- num(sprintf("%.3f", 0.3 + 0.002 * (1:100 %% 7))) - num(sprintf("%.3f", 0.1 + 0.002 * (1:100 %% 7)))
+  eo <- effectTest(d_old)
+  vo <- verdictCell(cell = "E-r", v = df_of(lapply(1:100, function(r) mkUnit("E-r", r, p_fdp = sprintf("%.3f", 0.1 + 0.002 * (r %% 7)), c_fdp = sprintf("%.3f", 0.3 + 0.002 * (r %% 7))))))
+  add("zero_spread_rule_on_old_degenerate_input", isFALSE(eo$no_worse) && isFALSE(eo$johnson_used) && is.na(eo$p_signflip) && identical(vo$label, "shown worse") && is.na(vo$p_signflip) && abs(eo$mean_d - 0.2) < 1e-12, vo$label)
   # inconclusive: an effect cell with mean difference 0.06 and large spread (lower bound below 0), a null cell with 15 candidate-only of 100
   # effect cell E-r: 30 data sets with FDP 0 -> 1, 24 with 1 -> 0, 46 equal: mean difference 0.06 above the margin, SD about 0.73: not NW, lower bound below 0
   inc_e2 <- lapply(1:100, function(r) if (r <= 30) mkUnit("E-r", r, p_fdp = "0", c_fdp = "1") else if (r <= 54) mkUnit("E-r", r, p_fdp = "1", c_fdp = "0") else mkUnit("E-r", r, p_fdp = "0.5", c_fdp = "0.5"))
