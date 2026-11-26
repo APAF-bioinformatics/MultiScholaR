@@ -1,4 +1,5 @@
 run_id	commit	purpose	minutes	result
 45707147607	79680e763fe5eb017e9e9da7276e261199972815	R1: tests-only commit, failing first (no base)	11.3	success; file 15 passed / 5 failed / 4 errors, as predicted (see outcome.md)
 45709024838	220b1e2e09f826adeaed8b750f6c6e6c260e7587 vs 50077f3a6a8d30e079322874db9547b8785a21fb	R2: base against head, 46 files, check both	61.8 wall; 301.8 job-minutes	 success; 45 files same, new file fixed; check identical
-45726785537	edf5d314 (no base)	correction pass run 1: new T2 row on the code of 9e6c3fc3, failing by value	7.5	prediction held: 33 passed 1 failed 0 errors\n45728050261	a0bc43f9 vs 50077f3a	correction pass run 2: fix, four files, no check	18.9	prediction held: new file 17/6/4 -> 34/0/0 fixed; kit235 54/0, direct-shared 33/0, roundtrip 24/0 same\n
+45726785537	edf5d314 (no base)	correction pass run 1: new T2 row on the code of 9e6c3fc3, failing by value	7.5	prediction held: 33 passed 1 failed 0 errors
+45728050261	a0bc43f9 vs 50077f3a	correction pass run 2: fix, four files, no check	18.9	prediction held: new file 17/6/4 -> 34/0/0 fixed; kit235 54/0, direct-shared 33/0, roundtrip 24/0 same
