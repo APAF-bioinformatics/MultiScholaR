@@ -1,0 +1,13 @@
+{
+  "ticket": "KIT-281",
+  "status": "started",
+  "package_commit": "02ee886c7e69e218479fbf272dbf4929f2ed5c7a",
+  "kit211_bound_commit": "894b9cc821a70b03baab1e1fa47b3d47440c7ed5",
+  "script_sha256": "7d5d4cb295c4ea3968d33e93ea737cd662ad1efead1accfc7beb7e31fdb88c32",
+  "sim_sha256": "10fa5bfda5cb05c3ee84def2fd528b64a2bb84b4c51ce242731f5eb0b8b4a236",
+  "score_sha256": "0f838f47e3eb21bf4fe389e6e776c0639fba751f73880d0e589e4b3ddf6d8628",
+  "declaration_sha256": "e4320017cc09b1eca3feee047a573e03a0bbedc7c12125b0a240b6e6362f6be5",
+  "ranges": [9201, 9202],
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "started": "2026-11-26T05:39:30+0000"
+}

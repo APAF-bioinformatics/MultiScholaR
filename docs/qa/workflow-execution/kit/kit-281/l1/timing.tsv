@@ -1,0 +1,3 @@
+run	replicate_masks	mean_seconds	max_seconds
+L1 cells A to D (4 workers; per replicate-mask, all arms together)	24	18.227125	20.721
+E6 uninterrupted (4 workers, 4 tasks, wall seconds)	NA	40.0708401203156	NA

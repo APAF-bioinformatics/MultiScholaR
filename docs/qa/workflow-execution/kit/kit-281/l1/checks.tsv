@@ -1,0 +1,15 @@
+id	units	passed	pass	detail
+G0	1	1	TRUE	git diff --stat of the three filter files between 894b9cc8 and the package commit is empty
+E11	1	1	TRUE	counted range r = 401 with no G3 table: exit 1 (1 expected); instrument-stop.txt present TRUE; no metrics.tsv, no part file
+E2	24	24	TRUE	replicate-masks over both ranges
+E3	24	24	TRUE	replicate-masks over both ranges
+E7	24	24	TRUE	replicate-masks over both ranges
+E10	24	24	TRUE	replicate-masks over both ranges; maximum absolute deviation of logFC 0
+E8	2	2	TRUE	K211_DETERMINISM=1 on cell A r = 9201, 9202 (rows and metrics, seconds excluded)
+E1'	120	120	TRUE	S's and B's filter-dependent columns (membership counts per subset, class, stratum, ell, band and ell0; kept and added counts; threshold) against KIT-211's committed rows, cells A to D, r = 201 to 205, the three vd masks (120 replicate-masks expected: 4 cells x 3 masks x 5 replicates x 2 arms); G0 lists DA-file changes, so the DA-dependent columns are written as one flag: all equal TRUE
+E4	2007	2007	TRUE	SELFTEST: 2007 checks, 0 differ
+E5	2	2	TRUE	two scorer runs on the lifecycle rows (mechanics: K281_RANGE, B = 1000) exit 0, 0; 16 files each; all identical: TRUE
+E6	1	1	TRUE	killed while running: TRUE; complete tasks after the kill: 1 of 4; continued with 3 task(s), exit 0; uninterrupted exit 0; assembled rows identical: TRUE; metrics identical (seconds excluded): TRUE; each replicate once with three masks: TRUE
+G2	3	3	TRUE	planned job minutes (script + 10 set-up) at this run's seconds per replicate-mask for 200, 171 and 77 replicates: 55.6, 49.0, 27.5; timeouts 75, 75, 45; none may pass 75 minutes (g2-plan.tsv)
+G3rule	24	24	TRUE	rule G3's function against Python's table (Fractions): the examples of the ticket and both edges of every branch
+G3	1	1	TRUE	one count over 12 settings written (g3-count.tsv); rule G3's table written (g3-rule.tsv); R and seeds r = 401 to 715 are in the table, not here
