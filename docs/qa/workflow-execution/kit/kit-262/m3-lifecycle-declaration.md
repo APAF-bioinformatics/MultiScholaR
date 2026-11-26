@@ -6,6 +6,8 @@
 
 ## 1. The scripts, in one request, in this order; every timeout explicit
 
+**Environment for every script of this request and of every counted job: `OMP_NUM_THREADS=1`** (audit S4: threaded floating-point summation could make E11's `identical()` and E8 fail spuriously, and L3's seconds would not be the counted ones; whether RUVIIIC threads was not checked; the setting is harmless either way).
+
 | # | Script and arguments (from the package root) | Environment | Plan (expected wall, at spread 1.0 / 1.93) | `timeout_minutes` |
 |---|---|---|---|---|
 | S1 | `reestimate-m3-k262.R selftest out/kit-262/l3/s1` | | 1 min | 5 |
@@ -34,7 +36,7 @@ Every timeout is at least twice the plan at the larger spread (S3: 2 x 27.0 = 54
 | S3 E7 (reduced) | 36 of 36: P within C1 row by row; C1's k used at most the cap; RUV under P implies RUV under C1 | ticket 3 (nesting), M2's E7; C2 and the curves are not used in M3 |
 | S3 E9 | 16 of 16 compared and equal in percentage, sweep k and k used, **derived from the statement `m3-binding-a7.md`, "A7 for E9's reference"** (the changes from KIT-190's D tree a1c12d28 to the binding: KIT-217, KIT-202, KIT-242, KIT-260 cannot move P's percentage, sweep k or k used on these data; KIT-224 and KIT-201 change the DA only; KIT-190's cap is accounted for by comparing k used with the D+B row) | a difference in percentage, sweep k or k used not explained by that statement is **F3 (a result): no counted job; to the coordinator**. Calls and FDP are not compared (expected to differ: KIT-224, KIT-201) |
 | S3 E11 | every run passes (a Manual journey at P's own percentage and k gives P's DA table field for field); the number run is the number of re-used units (**OBSERVE**) | the bounded arms of KIT-190 used this route (audit `:152-156`); `omicsRuvCorrectByCause`: with nothing left out the result is the earlier rule's |
-| S3 F2 | every Manual arm passes (percentage, k and controls as declared and as rule (d)'s oracle at that percentage) | KIT-190's `oracle_ok` (falsifier `oracle` 0 in its bounded arms) |
+| S3 F2 | every Manual arm of the eight cells passes (percentage, k and controls as declared and as rule (d)'s oracle at that percentage); **F2 in the stress cells is OBSERVE** (reported as `F2_STRESS`, not a hard check): KIT-190's oracle was validated only at n = 12 with at most 3 of 6 values missing per group, and the stress cells have uncapped MCAR, so a feature can hold one value in a group; whether the shipped ANOVA and `stats::aov` treat that alike was never observed. A difference goes to the coordinator; it is neither an instrument defect nor a decided F2 stop | KIT-190's `oracle_ok` (falsifier `oracle` 0 in its bounded arms, eight-cell design) |
 | S3 E8 | 10 of 10 identical rows between lipidomics and metabolomics (all fields but the class and the seconds) | KIT-190's metabolomics identity check; M1 and M2's E8 |
 | S3 E10 | 4 of 4 stress units ran the direct sweep | the comparison itself is the scorer's (McNemar counts) and is not read in L3 |
 | S3 seeds | SEEDS 36 of 36; SEED_RANGE 4 of 4 (stress seeds 262299001 to 262309002, above M2's 262119895 and below the re-measurement's 263100000); FLOOR_ORDER_STRESS 1 of 1 | `m3Seed`; `e0-m3-k262.py` |
@@ -56,6 +58,8 @@ Every timeout is at least twice the plan at the larger spread (S3: 2 x 27.0 = 54
 
 ## 5. Pass rule and what L3 decides
 
+**Blindness note (audit S5).** The unit counts on the `E11` and `F2` rows of L3's `checks.tsv` reveal the number of re-used and changed units among the 20 lifecycle units, on lifecycle seeds only; they are not an estimate for the counted data sets.
+
 L3 passes when every row of every `checks.tsv` is `pass` for the hard checks (E1, E7, E9 as OBSERVE above, F2, COMPLETION, INSTRUMENT_ROWS, SEEDS, SEED_RANGE, FLOOR_ORDER_STRESS, FAULT_ROWS, the scorer rehearsal, STAGE1_ESTIMATE_SCHEMA), S1 and S2 pass, and the 16 E9 units agree with KIT-190's D rows. E8, E10 and E11 are reported (a failed E11 means the ticket's remedy, every candidate row run, is costed and put to the coordinator; a failed E8 means lipidomics decides). It decides only whether the instrument may be used and what the counted plan is; it decides nothing about C1 or P. A failure whose log shows a mechanics failure and no result judged is an instrument defect (VAL-54: fixed, the same request sent again, at most three further runs for the item, recorded in `runs.tsv`); a failure that is a comparison of the product with its committed past (E9, F2, E7) is a result and goes to the coordinator.
 
 ## 6. Budget and the running-ceiling line (core-hours = job-minutes x 4 / 60; set-up 10 job-minutes)
@@ -73,12 +77,22 @@ Arithmetic (stdlib Python, `round(m * 4 / 60, 2)`): L3 expected 1 + 5 + 14.01 + 
 
 **Running-ceiling line against the ticket's 250.32 (VAL-390):** used 87.24 (M1 0.88, L2 5.56, M2 jobs 46.77, continuation 4.56, M2 scoring 0.80, re-measurement 28.68, rounded; recomputed from `runs.tsv`); remaining 163.08. After L3 at its ceiling 91.24; after stage 1 at spread 1.93 98.40; after M3's counted jobs at their ceiling for this option set 213.77; after scoring 215.64; the two reserves on paper (correction 8.77, instrument 7.43) bring it to 231.84, **18.48 below 250.32**. M3's plan is made from L3's own timings and returns to the owner if it exceeds the ceiling.
 
+**L3 excess (audit S6, the coordinator's ruling).** Any L3 cost above its 4.00 core-hour line (expected 2.57, 3.91 at spread 1.93) is charged to the instrument reserve (7.43 left on paper), not to M3's line. Stage 1 of the re-estimation is charged to M3's line (115.37 + 7.16 = 122.53 at spread 1.93, inside the widest ceiling 128.03).
+
 **Attempts (VAL-54).** L3 once; repeated only after a script change for an instrument defect, inside the instrument reserve, at most three further runs. Stage 1, the counted jobs and the continuation are not part of this declaration.
 
 ## 7. What is taken unchanged from M2 and what is new
 
 `m3-e0-statement.md` (E0 for M3: each block, its source, its marks, the check that proves it).
 
-## 8. Script SHA-256 (draft values, recomputed at the declaring commit)
+## 8. Script SHA-256 (at the declaring commit)
 
-See `m3-script-hashes.txt` at the declaring commit.
+- `m3-k262.R` 9e9fc20a48e12eb68d51cb64d4d82e37298983c400f02d251622c234556debe8
+- `rules-k262.R` 9547d350211350615a4d6f6e8f992be2307bc753e24790dfdb6cd5a1578d9d0a (unchanged since M1)
+- `score-m3-k262.R` 490b0848d8e26fc47c76e8015c8ccf278519db169c6e97811c5e8670e96c4a78
+- `reestimate-m3-k262.R` b6d18e54c08d85480d984b40357c6256acafc4e2373b5af51fbabd2e1972e94d
+- `e5hand-m3-expected.tsv` 3e78da07ee78eab1cace85636966ad4629d65aff304a945d914368d1479a13bf
+
+## 9. Running-ceiling line for this request
+
+Used 87.24 of the ticket's 250.32 (VAL-390); L3 line 4.00 (expected 2.57); after L3 at its line 91.24. Only this request (L3) is declared here: no stage 1 counted run and no counted job. The audit's S1 to S6 and the coordinator's rulings of 2026-11-27 are applied in this file (S1: fault 4 and 6 of 6; S2: A7 for E9's reference; S3: F2 in the stress cells OBSERVE; S4: `OMP_NUM_THREADS=1`; S5, S6: sections 5 and 6).
