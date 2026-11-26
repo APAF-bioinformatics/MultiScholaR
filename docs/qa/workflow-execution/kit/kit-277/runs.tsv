@@ -1,1 +1,2 @@
 run_id	request	commit	purpose	job_minutes	core_hours	result
+45777669520	kit277-r1-6aeb21e6	6aeb21e6	R1 tests-only, new file + edited KIT-247 file	116	7.73	valid result for 47+93 failures at stated values; 10 instrument defects (see outcome.md)

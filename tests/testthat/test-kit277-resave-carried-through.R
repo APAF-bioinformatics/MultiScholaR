@@ -253,6 +253,32 @@ kit277State <- function(api, probe) {
         copy = kit277Gate(api, probe, TRUE), summary = kit277Gate(api, probe, FALSE))
 }
 
+#' The lane's exported design folder (the project's source_dir after its design save), copied, with `edit` applied to its
+#' design_matrix.tab (as test-kit247-design-resave.R's `kit247ExportedDesign`).
+kit277ExportedDesign <- function(probe, edit) {
+    source <- probe$paths$source_dir
+    target <- file.path(tempfile("k277-export-"))
+    dir.create(target)
+    files <- list.files(source, pattern = "^(design_matrix|data_cln.*|contrast_strings|assay_manifest|column_mapping|config)\\.(tab|txt|json|ini)$")
+    file.copy(file.path(source, files), target)
+    design <- utils::read.delim(file.path(target, "design_matrix.tab"), stringsAsFactors = FALSE, check.names = FALSE)
+    design <- edit(design)
+    utils::write.table(design, file.path(target, "design_matrix.tab"), sep = "\t", row.names = FALSE, quote = FALSE)
+    target
+}
+
+kit277Import <- function(api, lane, folder, taxon = 9606L, organism = "Homo sapiens") {
+    api$set(stats::setNames(list("design"), api$tabs))
+    if (identical(lane$omic_type, "proteomics")) {
+        api$set(list(`design_matrix-import_dir_text` = folder, `design_matrix-import_taxon_id` = taxon,
+            `design_matrix-import_organism_name` = organism))
+        kit277Click(api, "design_matrix-confirm_import")
+    } else {
+        api$set(list(`design-import_dir` = folder))
+        kit277Click(api, "design-confirm_import")
+    }
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Stage 1: the formula.
 # ---------------------------------------------------------------------------------------------------------------------
@@ -467,32 +493,6 @@ test_that("KIT-277 G2 (guard): a comparisons-only change is KIT-247's: 'Comparis
 # Stage 2: the organism.
 # ---------------------------------------------------------------------------------------------------------------------
 
-#' The lane's exported design folder (the project's source_dir after its design save), copied, with `edit` applied to its
-#' design_matrix.tab (as test-kit247-design-resave.R's `kit247ExportedDesign`).
-kit277ExportedDesign <- function(probe, edit) {
-    source <- probe$paths$source_dir
-    target <- file.path(tempfile("k277-export-"))
-    dir.create(target)
-    files <- list.files(source, pattern = "^(design_matrix|data_cln.*|contrast_strings|assay_manifest|column_mapping|config)\\.(tab|txt|json|ini)$")
-    file.copy(file.path(source, files), target)
-    design <- utils::read.delim(file.path(target, "design_matrix.tab"), stringsAsFactors = FALSE, check.names = FALSE)
-    design <- edit(design)
-    utils::write.table(design, file.path(target, "design_matrix.tab"), sep = "\t", row.names = FALSE, quote = FALSE)
-    target
-}
-
-kit277Import <- function(api, lane, folder, taxon = 9606L, organism = "Homo sapiens") {
-    api$set(stats::setNames(list("design"), api$tabs))
-    if (identical(lane$omic_type, "proteomics")) {
-        api$set(list(`design_matrix-import_dir_text` = folder, `design_matrix-import_taxon_id` = taxon,
-            `design_matrix-import_organism_name` = organism))
-        kit277Click(api, "design_matrix-confirm_import")
-    } else {
-        api$set(list(`design-import_dir` = folder))
-        kit277Click(api, "design-confirm_import")
-    }
-}
-
 kit277IntegrationDir <- function(paths) paths$integration_dir %||% file.path(paths$base_dir, "integration")
 
 kit277Enrich <- function(api, probe, taxid) {
@@ -632,7 +632,7 @@ kit277FastaState <- function(probe) {
 
 kit277CleanupId <- function(lane_id) {
     ids <- vapply(guiEntrySteps(guiEntryLane(lane_id)), `[[`, "", "id")
-    grep("accession_cleanup", ids, fixed = TRUE)[[1L]]
+    grep("cleanup", ids, fixed = TRUE)[[1L]]
 }
 
 kit277PreCleanupId <- function(lane_id) {
@@ -845,8 +845,9 @@ test_that("KIT-277 P8 (S3): with no application session a limited change after A
     kit277Skip("S3")
     ran <- character()
     limited <- list(fasta = list(from = "a.fasta", to = "b.fasta", steps = "Accession Cleanup"))
-    expect_error(runOmicsDesignResaveGate(NULL, "unchanged", TRUE, commit = function(cut) ran <<- c(ran, "commit"),
-        unchanged = function() ran <<- c(ran, "unchanged"), limited = limited), class = "omics_design_resave_unconfirmed")
+    condition <- tryCatch(runOmicsDesignResaveGate(NULL, "unchanged", TRUE, commit = function(cut) ran <<- c(ran, "commit"),
+        unchanged = function() ran <<- c(ran, "unchanged"), limited = limited), error = function(e) e)
+    expect_s3_class(condition, "omics_design_resave_unconfirmed")
     expect_identical(ran, character())
 })
 

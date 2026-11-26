@@ -23,3 +23,12 @@ R1 = the tests-only commit on the unchanged code (R/ is staging 38443af8). Bindi
 - W288a (prot_lfq, lipid_canonical) and W288b: fail on the old code (no question).
 ## Stage filter
 `MULTISCHOLAR_KIT277_STAGE=1` (SG1): the S1 rows and G2 run; S2/S3 rows are skipped.
+
+## Instrument repair 1 of R1 (declared before sending; mechanics only, no expected value changed)
+R1 run 45777669520 showed, in the new file, ten errors with no result produced: (a) F4 (two rows): `kit277ExportedDesign` and
+`kit277Import` were defined below their first use at file level; moved above. (b) P1/P2, P3/P9, P4 (lfq, tmt, dia), P5/P6
+(lfq), R1b: the lane step id is `qc_protein_cleanup` / `qc_peptide_accession_cleanup`, so `grep("accession_cleanup")` found
+none; now `grep("cleanup")`. (c) P8: on the old code the call raised an "unused argument" error inside `expect_error(class=)`,
+reported as an error, not a failure; the call is captured with `tryCatch` and `expect_s3_class(condition,
+"omics_design_resave_unconfirmed")` asserts the same class. The 47+93 failures of the file and the 16 of the KIT-247 file
+(W288a x2 = 10, W288b = 6) were each at the stated value; they are not re-run. Re-send: the new file only.
