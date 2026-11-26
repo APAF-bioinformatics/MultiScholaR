@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-258 texts (VAL-306) step description follow-up: base 8496674a vs head ef570448, 5 files, 1 shard per side, no check; predictions in docs/qa/workflow-execution/kit/kit-258/texts-step0.md section 5",
+  "label": "KIT-258b R3 step description ef570448 vs 8496674a",
+  "package_commit": "ef570448e0f90c3c7d0f47425e92f5f7248aa426",
+  "base_commit": "8496674a8fa8facadf64a1b2f4ce9dd06d634a12",
+  "tools_ref": "",
+  "tests": [
+    "test-kit258b-duplicate-texts.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-kit258-duplicate-completeness.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
