@@ -458,7 +458,7 @@ by-file question for these 16 keys is the combined values above, put once.
   `provenance`, `outputs`, `final_pca`; final_plot and final_plot_failing `states`, `provenance`, `outputs` (11 each);
   lipid and metab skip: `provenance` of run, correlation, final_plot, export, reset (5 each). Of these, the sixteen
   `log`/`outputs` keys are VAL-376's (KIT-260's values kept, failing until the re-record); the `provenance` keys are
-  VAL-303 (1)'s; the `states` and `final_pca` keys are KIT-242's (its RUV outcome), its own prediction.
+  VAL-303 (1)'s; the `states` and `final_pca` keys move with KIT-242 Part A's per-assay ITSD arguments (not its RUV outcome: no `states` key changed in R2 for Part B), its own prediction.
 
 ## For the change report
 

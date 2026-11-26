@@ -550,6 +550,7 @@ Edited, with authority: `test-workflow-lipid-declarations.R:47`, `test-workflow-
 - Whether any expectation already failing on staging hides a numeric change: R2's per-expectation comparison shows only
   the listed message changes.
 - Real data (KIT-188 and the KC sets are not used); the frequency of empty samples and of no-elbow searches in real data.
+- VAL-383's cleared case (a sample removed, then a clean run) and the publish step's own write of `norm_data$samples_removed` when a sample is removed: no test covers either (E17 hands `normData` to the finish directly); they are by reading only (closure check CC.2).
 - Whether a reset should clear the tab's log (listed for the auditor above).
 
 ## For the change report (final)
@@ -883,7 +884,7 @@ A miss: stop and hand back, no repair (it returns to the owner).
 ### R1g (run 45785313805, 9a63a3b7; 93.9 job-minutes, 6.26 core-hours): observed
 
 Every prediction held. `test-prot-norm-core.R` 1547/307/0, and its 307 failure messages are identical, one by one, to
-R2's head (afb27738, the messages staging gives): no `samples_removed` in any message. The new file 571/0; the worker
+R2's head (afb27738; R2's head's messages, KIT-242 on staging aa119308, not staging's own): no `samples_removed` in any message. The new file 571/0; the worker
 265/0; `test-prot-05b-norm-module-contracts.R` 440/0, `test-prot-05d-norm-module-characterization.R` 82/0,
 `test-prot-norm-input-current.R` 321/0, `test-kit257-norm-own-files.R` 133/0, `test-kit206-prot-norm-export-guard.R`
 116/0, `test-kit225-prot-norm-reset-source.R` 56/0, each as R2's head. The run used 93.9 job-minutes against its
