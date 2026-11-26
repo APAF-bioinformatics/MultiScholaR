@@ -1,0 +1,2 @@
+run	commit	purpose	job_minutes	core_hours	result
+45713081362	8fa24087 (kit-266-g0, staging 894b9cc8)	G0 (valid; first send 45711141374 was an instrument defect, 11.1 min)	26.9	1.79	P1 to P7 as predicted; memory 0.914 / 0.539 GiB (spent before this branch)

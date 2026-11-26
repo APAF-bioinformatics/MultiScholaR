@@ -133,16 +133,18 @@ test_that("KIT-122 (E1): on DIA_LIMPA the pass-through's and the RUV covariates'
     }
     unmanaged <- protNormK122Drive(protNormW1LimpaOwner(), steps(), managed = FALSE)
     managed <- protNormK122Drive(protNormW1LimpaOwner(), steps(), managed = TRUE)
-    expect_length(unmanaged$images$pass_through, 4L)
-    expect_length(unmanaged$images$ruv, 8L)
+    expect_length(unmanaged$images$pass_through, 8L)
+    expect_length(unmanaged$images$ruv, 12L)
     expect_identical(managed$images, unmanaged$images)
     expect_identical(managed$final, unmanaged$final)
     expect_false(any(startsWith(names(unmanaged$counts), "worker")))
     expect_identical(names(managed$counts), c("worker saveWorkflowDiaQcAsset", "worker saveWorkflowDiaQcProduct"))
     expect_identical(unname(managed$counts), unname(unmanaged$counts))
     figures <- "normalization-qc-figures"
-    expect_identical(managed$actions, list(pass_through = figures, correlation = c("pearson-pairs", "pearson-selection", figures),
-        ruv = c("protein_ruv_covariates", figures)))
+    # KIT-266 (declared edit): the pass-through also saves the pre figures' state and builds the combined figure on the worker
+    # (three figures actions); the RUV step builds it after its stage figures.
+    expect_identical(managed$actions, list(pass_through = c(figures, figures, figures),
+        correlation = c("pearson-pairs", "pearson-selection", figures), ruv = c("protein_ruv_covariates", figures, figures)))
 })
 
 # ------------------------------------------------------------------------------------------------

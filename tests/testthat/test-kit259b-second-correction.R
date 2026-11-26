@@ -375,15 +375,17 @@ test_that("KIT-259 C01-E5: a session exported after the run and imported again k
     if (file.exists(restored)) expect_identical(readLines(restored), "h\tpost_norm_correlation")
 })
 
-test_that("KIT-259 C01-G1: DIA with limpa builds no combined figure, so no list is written even when a figure is replaced", {
+# KIT-266 (VAL-308 overrides VAL-307's "DIA with limpa (which has no combined figure) prints nothing"; declared edit): DIA
+# with limpa builds the combined figure, so the list is written when a figure is replaced.
+test_that("KIT-259 C01-G1 (KIT-266): DIA with limpa builds the combined figure, so the list is written when a figure is replaced", {
     skip_if_not_installed("limpa")
     skip_if_not_installed("mixOmics")
     state <- new.env()
     k259bFailCorrelation(state)
     fixture <- protNormW1LimpaOwner()
     k259bDrive(fixture, k259bCovariatesSteps(state))
-    expect_false(file.exists(file.path(fixture$paths$protein_qc_dir, k259bList)))
-    expect_false(file.exists(file.path(fixture$paths$protein_qc_dir, "proteomics_composite_QC_figure.png")))
+    expect_true(file.exists(file.path(fixture$paths$protein_qc_dir, k259bList)))
+    expect_true(file.exists(file.path(fixture$paths$protein_qc_dir, "proteomics_composite_QC_figure.png")))
 })
 
 k259bTemplates <- c(LFQ = "LFQ_report.rmd", TMT = "TMT_report.rmd", DIANN = "DIANN_report.rmd",
@@ -422,17 +424,31 @@ k259bSentence <- function(file, list = NULL, composite = TRUE, markers = charact
 }
 
 for (name in names(k259bTemplates)) {
+    # KIT-266 (declared edit): the limpa template's stage words are limpa's (its Figure 1 columns are DPC-Quant's estimates,
+    # the table after the peptide count filter, and the RUV-III result after the sample-correlation filter), and its panel
+    # m) is the covariates step's canonical correlation image; the three classic templates keep theirs.
     test_that(sprintf("KIT-259 (ii)-E3 (%s): the report names Figure 1's replaced panels from the list beside it", name), {
         file <- k259bTemplates[[name]]
         expect_false(is.null(k259bChunk(file, "QC_metrics_placeholders")))
         skip_if(is.null(k259bChunk(file, "QC_metrics_placeholders")))
-        expect_match(k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation")), paste0("In Figure 1, panels a ",
-            "\\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample ",
-            "normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot."))
-        expect_match(k259bSentence(file, c("a\tpre_norm_pca", "k\tpost_norm_correlation", "m\truv_corrected_cancor")),
-            "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)")
-        expect_match(k259bSentence(file, "f\tpost_norm_rle"), paste0("In Figure 1, panel f \\(relative log expression ",
-            "after between-sample normalisation\\) could not be drawn by the application; it shows a note"))
+        if (identical(name, "DIANN_limpa")) {
+            filtered <- "after the peptide count filter and any between-sample normalisation"
+            expect_match(k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation")), paste0("In Figure 1, panels a ",
+                "\\(principal component analysis of DPC-Quant's protein estimates\\) and h \\(Pearson correlation ", filtered,
+                "\\) could not be drawn by the application; each shows a note giving the reason instead of the plot."))
+            expect_match(k259bSentence(file, c("a\tpre_norm_pca", "k\tpost_norm_correlation", "m\truv_covariates_cancor")),
+                paste0("panels a \\(.*\\), k \\(Pearson correlation ", filtered, "\\) and m \\(RUV-III canonical correlation\\)"))
+            expect_match(k259bSentence(file, "f\tpost_norm_rle"), paste0("In Figure 1, panel f \\(relative log expression ",
+                filtered, "\\) could not be drawn by the application; it shows a note"))
+        } else {
+            expect_match(k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation")), paste0("In Figure 1, panels a ",
+                "\\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample ",
+                "normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot."))
+            expect_match(k259bSentence(file, c("a\tpre_norm_pca", "k\tpost_norm_correlation", "m\truv_corrected_cancor")),
+                "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)")
+            expect_match(k259bSentence(file, "f\tpost_norm_rle"), paste0("In Figure 1, panel f \\(relative log expression ",
+                "after between-sample normalisation\\) could not be drawn by the application; it shows a note"))
+        }
     })
 
     test_that(sprintf("KIT-259 C01-E6 (%s): the tab's current markers are not read; a list without a combined figure prints nothing",
