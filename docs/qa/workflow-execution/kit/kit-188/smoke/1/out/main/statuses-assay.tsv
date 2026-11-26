@@ -1,0 +1,199 @@
+part	cell	job	scenario	mask	arm	ruv_status	da_status	n
+L	L12	deciding	E0	none	GA			1
+L	L12	deciding	E1	none	GA			1
+L	L12	deciding	E2	none	GA			1
+L	L12	deciding	N0	none	GA			1
+L	L12	deciding	N1	none	GA			1
+L	L12	deciding	N2	none	GA			1
+L	L12	deciding	E0	vd20	GA			1
+L	L12	deciding	E1	vd20	GA			1
+L	L12	deciding	E2	vd20	GA			1
+L	L12	deciding	N0	vd20	GA			1
+L	L12	deciding	N1	vd20	GA			1
+L	L12	deciding	N2	vd20	GA			1
+L	L12	deciding	E0	vd5	GA			1
+L	L12	deciding	E1	vd5	GA			1
+L	L12	deciding	E2	vd5	GA			1
+L	L12	deciding	N0	vd5	GA			1
+L	L12	deciding	N1	vd5	GA			1
+L	L12	deciding	N2	vd5	GA			1
+L	L12	deciding	E0	none	LA			1
+L	L12	deciding	E1	none	LA			1
+L	L12	deciding	E2	none	LA			1
+L	L12	deciding	N0	none	LA			1
+L	L12	deciding	N1	none	LA			1
+L	L12	deciding	N2	none	LA			1
+L	L12	deciding	E0	vd20	LA			1
+L	L12	deciding	E1	vd20	LA			1
+L	L12	deciding	E2	vd20	LA			1
+L	L12	deciding	N0	vd20	LA			1
+L	L12	deciding	N1	vd20	LA			1
+L	L12	deciding	N2	vd20	LA			1
+L	L12	deciding	E0	vd5	LA			1
+L	L12	deciding	E1	vd5	LA			1
+L	L12	deciding	E2	vd5	LA			1
+L	L12	deciding	N0	vd5	LA			1
+L	L12	deciding	N1	vd5	LA			1
+L	L12	deciding	N2	vd5	LA			1
+L	L12	deciding	E0	none	NO			1
+L	L12	deciding	E1	none	NO			1
+L	L12	deciding	E2	none	NO			1
+L	L12	deciding	N0	none	NO			1
+L	L12	deciding	N1	none	NO			1
+L	L12	deciding	N2	none	NO			1
+L	L12	deciding	E0	vd20	NO			1
+L	L12	deciding	E1	vd20	NO			1
+L	L12	deciding	E2	vd20	NO			1
+L	L12	deciding	N0	vd20	NO			1
+L	L12	deciding	N1	vd20	NO			1
+L	L12	deciding	N2	vd20	NO			1
+L	L12	deciding	E0	vd5	NO			1
+L	L12	deciding	E1	vd5	NO			1
+L	L12	deciding	E2	vd5	NO			1
+L	L12	deciding	N0	vd5	NO			1
+L	L12	deciding	N1	vd5	NO			1
+L	L12	deciding	N2	vd5	NO			1
+L	L12	deciding	E0	none	OR			1
+L	L12	deciding	E1	none	OR			1
+L	L12	deciding	E2	none	OR			1
+L	L12	deciding	N0	none	OR			1
+L	L12	deciding	N1	none	OR			1
+L	L12	deciding	N2	none	OR			1
+L	L12	deciding	E0	vd20	OR			1
+L	L12	deciding	E1	vd20	OR			1
+L	L12	deciding	E2	vd20	OR			1
+L	L12	deciding	N0	vd20	OR			1
+L	L12	deciding	N1	vd20	OR			1
+L	L12	deciding	N2	vd20	OR			1
+L	L12	deciding	E0	vd5	OR			1
+L	L12	deciding	E1	vd5	OR			1
+L	L12	deciding	E2	vd5	OR			1
+L	L12	deciding	N0	vd5	OR			1
+L	L12	deciding	N1	vd5	OR			1
+L	L12	deciding	N2	vd5	OR			1
+L	L12	deciding	N0	none	LA	not_reached	failed	19
+L	L12	deciding	N0	vd5	LA	not_reached	failed	20
+L	L12	deciding	E1	none	LA	refused	failed	5
+L	L12	deciding	E0	none	LA	uncorrected	failed	10
+L	L12	deciding	E0	none	NO		ok	399
+L	L24	deciding	E0	none	NO		ok	100
+L	L12	deciding	E1	none	NO		ok	399
+L	L24	deciding	E1	none	NO		ok	100
+L	L12	deciding	E2	none	NO		ok	399
+L	L12	deciding	N0	none	NO		ok	399
+L	L24	deciding	N0	none	NO		ok	100
+L	L12	deciding	N1	none	NO		ok	399
+L	L24	deciding	N1	none	NO		ok	100
+L	L12	deciding	N2	none	NO		ok	399
+L	L12	deciding	E0	vd20	NO		ok	399
+L	L24	deciding	E0	vd20	NO		ok	100
+L	L12	deciding	E1	vd20	NO		ok	399
+L	L24	deciding	E1	vd20	NO		ok	100
+L	L12	deciding	E2	vd20	NO		ok	399
+L	L12	deciding	N0	vd20	NO		ok	399
+L	L24	deciding	N0	vd20	NO		ok	100
+L	L12	deciding	N1	vd20	NO		ok	399
+L	L24	deciding	N1	vd20	NO		ok	100
+L	L12	deciding	N2	vd20	NO		ok	399
+L	L12	deciding	E0	vd5	NO		ok	399
+L	L24	deciding	E0	vd5	NO		ok	100
+L	L12	deciding	E1	vd5	NO		ok	399
+L	L24	deciding	E1	vd5	NO		ok	100
+L	L12	deciding	E2	vd5	NO		ok	399
+L	L12	deciding	N0	vd5	NO		ok	399
+L	L24	deciding	N0	vd5	NO		ok	100
+L	L12	deciding	N1	vd5	NO		ok	399
+L	L24	deciding	N1	vd5	NO		ok	100
+L	L12	deciding	N2	vd5	NO		ok	399
+L	L12	deciding	E0	none	OR		ok	399
+L	L24	deciding	E0	none	OR		ok	100
+L	L12	deciding	E1	none	OR		ok	399
+L	L24	deciding	E1	none	OR		ok	100
+L	L12	deciding	E2	none	OR		ok	399
+L	L12	deciding	N0	none	OR		ok	399
+L	L24	deciding	N0	none	OR		ok	100
+L	L12	deciding	N1	none	OR		ok	399
+L	L24	deciding	N1	none	OR		ok	100
+L	L12	deciding	N2	none	OR		ok	399
+L	L12	deciding	E0	vd20	OR		ok	399
+L	L24	deciding	E0	vd20	OR		ok	100
+L	L12	deciding	E1	vd20	OR		ok	399
+L	L24	deciding	E1	vd20	OR		ok	100
+L	L12	deciding	E2	vd20	OR		ok	399
+L	L12	deciding	N0	vd20	OR		ok	399
+L	L24	deciding	N0	vd20	OR		ok	100
+L	L12	deciding	N1	vd20	OR		ok	399
+L	L24	deciding	N1	vd20	OR		ok	100
+L	L12	deciding	N2	vd20	OR		ok	399
+L	L12	deciding	E0	vd5	OR		ok	399
+L	L24	deciding	E0	vd5	OR		ok	100
+L	L12	deciding	E1	vd5	OR		ok	399
+L	L24	deciding	E1	vd5	OR		ok	100
+L	L12	deciding	E2	vd5	OR		ok	399
+L	L12	deciding	N0	vd5	OR		ok	399
+L	L24	deciding	N0	vd5	OR		ok	100
+L	L12	deciding	N1	vd5	OR		ok	399
+L	L24	deciding	N1	vd5	OR		ok	100
+L	L12	deciding	N2	vd5	OR		ok	399
+L	L12	deciding	E0	none	LA	corrected	ok	389
+L	L24	deciding	E0	none	LA	corrected	ok	100
+L	L12	deciding	E1	none	LA	corrected	ok	394
+L	L24	deciding	E1	none	LA	corrected	ok	100
+L	L12	deciding	E2	none	LA	corrected	ok	399
+L	L12	deciding	N0	none	LA	corrected	ok	380
+L	L24	deciding	N0	none	LA	corrected	ok	100
+L	L12	deciding	N1	none	LA	corrected	ok	369
+L	L24	deciding	N1	none	LA	corrected	ok	100
+L	L12	deciding	N2	none	LA	corrected	ok	399
+L	L12	deciding	E0	vd20	LA	corrected	ok	399
+L	L24	deciding	E0	vd20	LA	corrected	ok	100
+L	L12	deciding	E1	vd20	LA	corrected	ok	399
+L	L24	deciding	E1	vd20	LA	corrected	ok	100
+L	L12	deciding	E2	vd20	LA	corrected	ok	399
+L	L12	deciding	N0	vd20	LA	corrected	ok	399
+L	L24	deciding	N0	vd20	LA	corrected	ok	100
+L	L12	deciding	N1	vd20	LA	corrected	ok	399
+L	L24	deciding	N1	vd20	LA	corrected	ok	100
+L	L12	deciding	N2	vd20	LA	corrected	ok	399
+L	L12	deciding	E0	vd5	LA	corrected	ok	399
+L	L24	deciding	E0	vd5	LA	corrected	ok	100
+L	L12	deciding	E1	vd5	LA	corrected	ok	378
+L	L24	deciding	E1	vd5	LA	corrected	ok	100
+L	L12	deciding	E2	vd5	LA	corrected	ok	399
+L	L12	deciding	N0	vd5	LA	corrected	ok	379
+L	L24	deciding	N0	vd5	LA	corrected	ok	100
+L	L12	deciding	N1	vd5	LA	corrected	ok	399
+L	L24	deciding	N1	vd5	LA	corrected	ok	100
+L	L12	deciding	N2	vd5	LA	corrected	ok	399
+L	L12	deciding	E1	vd5	LA	dropped	ok	21
+L	L12	deciding	E0	none	GA	ok	ok	399
+L	L24	deciding	E0	none	GA	ok	ok	100
+L	L12	deciding	E1	none	GA	ok	ok	399
+L	L24	deciding	E1	none	GA	ok	ok	100
+L	L12	deciding	E2	none	GA	ok	ok	399
+L	L12	deciding	N0	none	GA	ok	ok	399
+L	L24	deciding	N0	none	GA	ok	ok	100
+L	L12	deciding	N1	none	GA	ok	ok	399
+L	L24	deciding	N1	none	GA	ok	ok	100
+L	L12	deciding	N2	none	GA	ok	ok	399
+L	L12	deciding	E0	vd20	GA	ok	ok	399
+L	L24	deciding	E0	vd20	GA	ok	ok	100
+L	L12	deciding	E1	vd20	GA	ok	ok	399
+L	L24	deciding	E1	vd20	GA	ok	ok	100
+L	L12	deciding	E2	vd20	GA	ok	ok	399
+L	L12	deciding	N0	vd20	GA	ok	ok	399
+L	L24	deciding	N0	vd20	GA	ok	ok	100
+L	L12	deciding	N1	vd20	GA	ok	ok	399
+L	L24	deciding	N1	vd20	GA	ok	ok	100
+L	L12	deciding	N2	vd20	GA	ok	ok	399
+L	L12	deciding	E0	vd5	GA	ok	ok	399
+L	L24	deciding	E0	vd5	GA	ok	ok	100
+L	L12	deciding	E1	vd5	GA	ok	ok	399
+L	L24	deciding	E1	vd5	GA	ok	ok	100
+L	L12	deciding	E2	vd5	GA	ok	ok	399
+L	L12	deciding	N0	vd5	GA	ok	ok	399
+L	L24	deciding	N0	vd5	GA	ok	ok	100
+L	L12	deciding	N1	vd5	GA	ok	ok	399
+L	L24	deciding	N1	vd5	GA	ok	ok	100
+L	L12	deciding	N2	vd5	GA	ok	ok	399
+L	L12	deciding	N1	none	LA	uncorrected	ok	30

@@ -1,0 +1,99 @@
+parse: both scripts parse
+main     as predicted (exit 0; expected ok)
+k1       DIFFERS (exit 1; expected ok)
+k2phi    DIFFERS (exit 1; expected ok)
+val248   DIFFERS (exit 1; expected ok)
+k3       DIFFERS (exit 1; expected ok)
+k4       DIFFERS (exit 1; expected ok)
+itsd     as predicted (exit 1; expected stop:itsd_ok)
+gap      as predicted (exit 1; expected stop:absent without a unit row)
+cellgap  as predicted (exit 1; expected stop:L24 deciding)
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 n_gate: got 1, predicted 20
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 r_used: got 0, predicted 380
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 r_out: got 1, predicted 20
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 no_result: got TRUE, predicted FALSE
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 classification: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 class_best: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S1 class_worst: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 n_gate: got 1, predicted 20
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 r_used: got 0, predicted 380
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 r_out: got 1, predicted 20
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 no_result: got TRUE, predicted FALSE
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 classification: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 class_best: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S2 class_worst: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 n_gate: got 1, predicted 20
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 r_used: got 0, predicted 380
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 r_out: got 1, predicted 20
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 no_result: got TRUE, predicted FALSE
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 classification: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 class_best: got no result, predicted meets
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 class_worst: got no result, predicted fails
+DIFFERS main conditions.tsv L12|deciding|N0|none|LA|S5 sensitive: got FALSE, predicted TRUE
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S1 n_gate: got 1, predicted 21
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S1 r_out: got 1, predicted 21
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S1 r_used: got 0, predicted 379
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S2 n_gate: got 1, predicted 21
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S2 r_out: got 1, predicted 21
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S2 r_used: got 0, predicted 379
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S5 n_gate: got 1, predicted 21
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S5 r_out: got 1, predicted 21
+DIFFERS main conditions.tsv L12|deciding|N0|vd5|LA|S5 r_used: got 0, predicted 379
+DIFFERS main phi.tsv L12|deciding|E0|none|LA events_also_gate: got 0, predicted 10
+DIFFERS main phi.tsv L12|deciding|E0|none|LA r_reached: got 0, predicted 399
+DIFFERS main phi.tsv L12|deciding|N1|none|LA events: got 0, predicted 30
+DIFFERS main phi.tsv L12|deciding|N1|none|LA r_declared: got 1, predicted 400
+DIFFERS main phi.tsv L12|deciding|N1|none|LA r_reached: got 0, predicted 399
+DIFFERS main phi.tsv L12|deciding|N1|none|LA phi: got NA, predicted 0.07518796992481203
+DIFFERS main phi.tsv L12|deciding|N1|none|LA phi_all: got 0, predicted 0.075
+DIFFERS main phi.tsv L12|deciding|N1|none|LA lan0_mark: got FALSE, predicted TRUE
+DIFFERS main phi.tsv L12|deciding|E1|vd5|LA events_also_gate: got 0, predicted 21
+DIFFERS main conditions.tsv L12|deciding|E1|vd5|LA|S3 n_gate: got 1, predicted 22
+DIFFERS main conditions.tsv L12|deciding|E1|vd5|LA|S3 r_used: got 0, predicted 399
+DIFFERS main conditions.tsv L12|deciding|E1|vd5|LA|S5 n_gate: got 1, predicted 22
+DIFFERS main conditions.tsv L12|deciding|E1|vd5|LA|S5 r_used: got 0, predicted 399
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S3 n_gate: got 1, predicted 6
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S3 r_out: got 1, predicted 6
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S3 r_used: got 0, predicted 394
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S3 no_result: got TRUE, predicted FALSE
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S5 n_gate: got 1, predicted 6
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S5 r_out: got 1, predicted 6
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S5 r_used: got 0, predicted 394
+DIFFERS main conditions.tsv L12|deciding|E1|none|LA|S5 no_result: got TRUE, predicted FALSE
+DIFFERS main conditions.tsv L12|deciding|N1|vd20|GA|S1 oracle_check: got FALSE, predicted TRUE
+DIFFERS main conditions.tsv L12|deciding|N1|vd20|GA|S1 classification: got no result, predicted not determined (excess over OR)
+DIFFERS main conditions.tsv L12|deciding|N1|vd20|GA|S1 n_paired_dropped: got NA, predicted 399
+DIFFERS main conditions.tsv L12|deciding|N1|vd20|GA|S1 class_best: got no result, predicted meets (excess over OR)
+DIFFERS main conditions.tsv L12|deciding|N1|vd20|GA|S1 class_worst: got no result, predicted fails (excess over OR)
+DIFFERS main conditions.tsv L12|deciding|N1|vd20|GA|S1 sensitive: got FALSE, predicted TRUE
+DIFFERS main conditions.tsv L24|deciding|N0|none|LA|S5 role: got (0 rows), predicted reported
+DIFFERS main conditions.tsv L24|deciding|N0|none|LA|S5 R: got (0 rows), predicted 100
+DIFFERS main conditions.tsv L24|deciding|N0|none|LA|S5 label: got (0 rows), predicted cannot meet S5 at this R (zero events give an upper limit of 0.0362)
+DIFFERS main conditions.tsv L24|deciding|N0|none|LA|S5 classification: got (0 rows), predicted not determined
+DIFFERS main statuses.tsv L|L12|deciding|GA|1|not_run|planted not_run n: got 398, predicted 399
+DIFFERS k1 outcome.txt line startswith: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k1/outcome.txt', predicted lipid_metab: K1 
+DIFFERS k2phi outcome.txt line startswith: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/outcome.txt', predicted lipid_metab: K2 
+DIFFERS k2phi outcome.txt line contains: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/outcome.txt', predicted K1's non-correction clause failed
+DIFFERS k2phi outcome.txt line contains: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/outcome.txt', predicted GA's largest upper limit
+DIFFERS val248 outcome.txt line startswith: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/val248/outcome.txt', predicted lipid_metab: no outcome by rule: K1 blocked by non-correction
+DIFFERS k3 outcome.txt line startswith: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k3/outcome.txt', predicted lipid_metab: K3 
+DIFFERS k4 outcome.txt line startswith: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k4/outcome.txt', predicted lipid_metab: K4 
+DIFFERS k1 verdicts.tsv lipid_metab|LA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k1/verdicts.tsv', predicted safe
+DIFFERS k1 verdicts.tsv lipid_metab|GA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k1/verdicts.tsv', predicted safe
+DIFFERS k1 verdicts.tsv lipid_metab|NO verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k1/verdicts.tsv', predicted safe
+DIFFERS k2phi verdicts.tsv lipid_metab|LA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/verdicts.tsv', predicted safe
+DIFFERS k2phi verdicts.tsv lipid_metab|GA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/verdicts.tsv', predicted safe
+DIFFERS k2phi verdicts.tsv lipid_metab|NO verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/verdicts.tsv', predicted safe
+DIFFERS val248 verdicts.tsv lipid_metab|LA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/val248/verdicts.tsv', predicted safe
+DIFFERS val248 verdicts.tsv lipid_metab|GA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/val248/verdicts.tsv', predicted unsafe
+DIFFERS val248 verdicts.tsv lipid_metab|NO verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/val248/verdicts.tsv', predicted safe
+DIFFERS k3 verdicts.tsv lipid_metab|LA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k3/verdicts.tsv', predicted unsafe
+DIFFERS k3 verdicts.tsv lipid_metab|GA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k3/verdicts.tsv', predicted unsafe
+DIFFERS k3 verdicts.tsv lipid_metab|NO verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k3/verdicts.tsv', predicted safe
+DIFFERS k4 verdicts.tsv lipid_metab|LA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k4/verdicts.tsv', predicted unsafe
+DIFFERS k4 verdicts.tsv lipid_metab|GA verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k4/verdicts.tsv', predicted unsafe
+DIFFERS k4 verdicts.tsv lipid_metab|NO verdict: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k4/verdicts.tsv', predicted unsafe
+DIFFERS k2phi phi.tsv L12|deciding|N0|none|LA events: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/phi.tsv', predicted 30
+DIFFERS k2phi phi.tsv L12|deciding|N0|none|LA phi_upper: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k2phi/phi.tsv', predicted 0.10533763861384532
+DIFFERS k1 phi.tsv L12|deciding|N0|none|LA events: got error: [Errno 2] No such file or directory: '/home/runner/work/MultiScholaR/MultiScholaR/pkg/k188-smoke-e16/k1/phi.tsv', predicted 0
+E16: 128 checks, 93 differ

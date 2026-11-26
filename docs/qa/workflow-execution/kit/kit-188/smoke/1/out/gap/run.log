@@ -1,0 +1,2 @@
+Error: KIT-188 scoring stops: a data set of the declared range is absent without a unit row (a timeout gap: an instrument defect, VAL-54; its units are re-sent before scoring): L12 deciding: 21599 (job, cell, scenario, mask, arm, data set) absent without a unit row, first L12 deciding N1 none LA 1
+Execution halted

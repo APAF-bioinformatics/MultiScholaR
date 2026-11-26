@@ -1,0 +1,1 @@
+lipid_metab: K4 (LA not shown safe, GA not shown safe, NO not shown safe; K1's non-correction clause failed) [phi over the data sets that reached the RUV step; LA's largest upper limit -Inf]

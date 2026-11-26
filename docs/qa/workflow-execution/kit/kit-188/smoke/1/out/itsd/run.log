@@ -1,0 +1,2 @@
+Error: KIT-188 scoring stops: 1 row(s) have itsd_ok or norm_ok FALSE or status instrument (an instrument defect, VAL-54, or the bound commit's own behaviour, reported before scoring: 7.4); first: L12 deciding 1 LA NA
+Execution halted

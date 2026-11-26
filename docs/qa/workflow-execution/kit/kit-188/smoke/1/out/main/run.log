@@ -1,0 +1,5 @@
+There were 50 or more warnings (use warnings() to see the first 50)
+Warning message:
+In max(p[[column]], na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf
+KIT-188 scoring: 33600 rows, 72 data-set rows, 288 conditions

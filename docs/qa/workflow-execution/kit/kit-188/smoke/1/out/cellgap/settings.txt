@@ -1,0 +1,2 @@
+score_r = 400,100
+score_cells = L12:deciding,L24:deciding

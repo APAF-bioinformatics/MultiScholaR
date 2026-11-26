@@ -193,3 +193,36 @@ Step 1: both scripts parsed with Rscript, then E16 (script `e16/run-e16.R`, limi
 `predictions-smoke.tsv` (header only, no R items; limit 10 minutes). Printed: the console of each script and the tables each writes (checks, plants,
 statuses, provenance). Ceiling: one job, 40 minutes, (40 + 10) x 4 / 60 = 3.33 core-hours, charged to the L1r line. Decision: proceed to L1r, or fix
 mechanics. It uses none of L1r's three VAL-54 re-sends; each fix-and-resend is the coordinator's to allow.
+
+## Smoke check result (run 45723685855, request k188-smoke-d6e718c3, scripts at d6e718c3 on staging 75acd421)
+
+An instrument check with no expectation; nothing below is a result and no prediction is judged. Raw output: `smoke/` (console logs,
+`scripts.tsv`, every table the three scripts wrote; `smoke/README.txt`). Observed: script 1 (parse, E16) exit 1 after 7 s; script 2
+(M12 and K172c; deciding, lp, las, k172c; data set 401; limit 1,200 s) timed out; script 3 (L12 job l1c, 8 units) exit 0 after 115 s.
+**Both scripts parse** (`parse: both scripts parse`, smoke/1/console.log). The run was stopped here, nothing was fixed or re-sent.
+
+Defects found (file and line at d6e718c3; none fixed):
+
+1. **The scorer's reading of the rows loses every `T` (score-k188.R:49; used at :110, :391).** `read.delim` without `colClasses`
+   turns the `scoreset` column, which holds the letter `T`, into logical `TRUE`, so `rows$scoreset %in% "T"` is FALSE for every
+   data row (the same reading of the unit-expanded rows, which are built as the string "T", is why only they survive). Evidence:
+   E16 case `main` scored "33600 rows, 72 data-set rows, 288 conditions" (the 72 are the expanded unit rows: one data set per condition and
+   arm), every constructed prediction of it differs (for example `L12|deciding|N0|none|LA|S1 n_gate: got 1, predicted 20`,
+   `classification: got no result, predicted meets`); cases k1, k2phi, val248, k3, k4 stop with `Error in dataset[dataset$arm == "OR", c("part", "cell", "job", "scenario", ...: incorrect number of dimensions` (an empty `dataset`) and write no verdicts.tsv or phi.tsv. The same reading would have hit any counted run. The stop cases itsd, gap and cellgap behaved as predicted
+   (smoke/1/console.log: 93 of 128 E16 checks differ, all of them downstream of this one). Candidate repair (not made): read with `colClasses = "character"` and convert the numeric columns through `num()` as the file already does.
+2. **Two L1c plants crash outside the journey (sim-k188.R:2014, `runPlantUnit`; child handler :2102).** `emptysample` and `daerror`
+   each ended their unit with `simpleError $ operator is invalid for atomic vectors` (smoke/3/out/timing-smoke-c.tsv, rows with a non-empty
+   `error`; status rows `unit crashed`); six plants wrote rows (itsd, itsdpos, ruvskip, ruvdrop, normplant, and exitplant's unit row). Both
+   journeys have no DA table (emptysample's route is not known to reach it; daerror stops at it). The error escapes `journeyL`, so it is in
+   code run after the journey (`journeyAssayColumns`, `armRows`, `flattenJourney`, `choiceOf`); the child's handler keeps only the message, so
+   the line is not located. Proposed diagnostic (needs the coordinator's allowance): have the child's `error` handler (sim-k188.R:2102-2104) also write `sys.calls()` into the result.
+3. **Script 2's M12 deciding unit did not finish in 1,200 s** (smoke/2/out/rows holds the finished units only: K172c k172c 229 s, M12 las 596 s, M12 lp 372 s;
+   no `checks-*`, `timing-*`, `provenance-*` were written because the parent was killed). M12 deciding adds, since r1.16, E10u (one journey),
+   the metabolomics ITSD identity check (4 conditions x 2 arms), E8, M-amp, E2 and the record read per journey. G3 and the next smoke send need a larger limit or a split.
+4. **Observed on this base, by design (not defects):** `E3` fails on the import pattern (staging still pre-fills `w/o MS2:`); `ruvdrop`'s
+   observed `LCMS_Pos` status is `dropped` (predicted `uncorrected`, Q6.2 (c) is not on staging); `itsd`, `itsdpos`, `normplant` fired as predicted;
+   E15 `ruvskip`, `exitplant` met.
+5. Harmless: the scorer printed `In max(p[[column]], na.rm = TRUE): no non-missing arguments to max; returning -Inf` (phiMax over an empty set, score-k188.R:330).
+
+Checks that passed in the unit tables (smoke/2/out/rows/unit-checks-*): E1, E10 (K172c, M12 las), E11 (every M12 condition, difference 3.6e-15 to 8.7e-15), E14, E9 for LP (M12, every condition). The
+`LAu` check (E10u) and `E3_itsd_identity` belong to the unfinished deciding unit and were not exercised.
