@@ -1,7 +1,7 @@
-# KIT-221 outcome (PARTIAL: stopped after R1 at a missed prediction)
+# KIT-221 outcome
 
-Base: `origin/v0.9-staging` 176f9d3ff. Tests-only commit 41c69770f (nothing under `R/`). The fix is drafted in the
-working tree of the worktree, uncommitted and never run.
+Base: `origin/v0.9-staging` 176f9d3ff. Tests-only commit 41c69770f (nothing under `R/`); fix commit 4654fd600.
+The sections below the R1 table were added after the coordinator's rulings of 2026-11-26; R1 stands unchanged.
 
 ## R1 (run 45713440865, request kit221-r1-41c69770, one test job and one script job)
 
@@ -131,3 +131,74 @@ ticket's sibling check is placed right after `contrasts_tbl` is read (before lin
 
 **Instrument rerun 1 result.** Run 45715339444: script exit 0 after 5 s; `g1-base.tsv` (93 digests: limma 19, limpa 20,
 ruv 17, kernel 19, alias 18) is kept in this directory. Prediction (exit 0, five cases, at least ten rows each) met.
+
+## R2 (run 45716909041, base e80e558d, head 53ac0f87; R/ at head = 4654fd600; observed)
+
+Request kit221-r2-53ac0f87: 45 files, 3 shards per side, check on both sides, head script. Tables in `r2/`.
+
+| Item | Predicted | Observed |
+|---|---|---|
+| new file, head | 124 passed, 0 failed (W5's guard included), verdict `fixed` | 124 passed, 0 failed, 0 errors, 0 skipped; `fixed` (base 43/38, as R1) |
+| the other 44 files | `same` | `same` (44 of 44, per-file counts and masked failure messages) |
+| failures present on both sides | unchanged | `test-dia-limpa-ruv-rules.R` 1, `test-gui-entry-proteomics.R` 101, `test-kit129-run-path.R` 6, `test-kit220-da-threshold-consumers.R` 2, `test-omic-da-module.R` 81, `test-workflow-saved-da.R` 196 on both sides (stored references recorded on the laptop; the ticket cites 171 for the last, the run gives 196 on both sides, verdict `same`) |
+| `test-kit218-da-wrapper-tail.R` (G4) | 80 passed / 2 skipped both | 80 / 2 both |
+| R CMD check | identical, nothing only on head | base and head: 0 ERROR, 3 WARNING, 3 NOTE; 6 findings identical; only on head: none; only on base: none |
+| G1 and G3 | every digest equal, base against head | `g1-base.tsv` (run 45715339444, 93 rows) and `g1-head.tsv` equal in every case, field and digest (cut -f1-3 diff empty); head row count 93 |
+
+No missed prediction on R2.
+
+## Core-hours (job minutes x 4 / 60, from the jobs' start and end times)
+
+| Run | Job minutes | Core-hours | Expected | Ceiling |
+|---|---|---|---|---|
+| R1, 45713440865 | 17.5 | 1.17 | 2.0 | 6.67 |
+| g1 base, 45715339444 (instrument rerun 1 of 3) | 10.4 | 0.69 | 1.0 | 2.67 |
+| R2, 45716909041 | 351.9 | 23.46 | 36.0 | 55.2 |
+| Total | 379.8 | 25.3 | | ticket total 473.33 (R3 excluded by the ruling) |
+
+## Acceptance
+
+| # | Criterion | Result |
+|---|---|---|
+| A0 | OD-1 and OD-4 answered | met: OD-1 (A) by VAL-193 (1); OD-4 to KIT-230 (parked); no change to 3, 3.1 or 7 |
+| A1 | tests-only commit: failing-first rows fail at the stated values; G1, G3, G4 pass; M1 recorded; head: all W rows pass | met with the recorded correction (W5's `length` assertion is a guard); M1 = "number of items to replace is not a multiple of replacement length"; head 124/0 |
+| A2 | G1 and G3 digests equal base against head | met (93 digests; the base side from the script job on the tests-only side, same R/ as base) |
+| A3 | R2: every file `same` except the new file; nothing only on head in check | met |
+| A4 | full suite base against head | by the checkpoint after merge (coordinator's ruling, 2026-11-26) |
+| A5 | NEWS, ledger row; `NAMESPACE`, `man/`, `DESCRIPTION` unchanged; "For the change report" | NEWS entry and ledger row `VAL-<merge>` added; `git diff` of NAMESPACE, man/, DESCRIPTION is empty; section below |
+
+## For the change report
+
+**What was wrong and who was affected.** Only people who script the package and pass several comparisons in one call.
+`differentialAbundanceAnalysis()` fitted every comparison, then built its significance table, wide and long tables,
+both count tables and the volcano and p-value plots from the first comparison only (only `contrasts_results` kept
+all); `protein_deAnalysisWrapperFunction()` (and its alias `deAnalysisWrapperFunction()`) given a base data frame of
+several rows analysed only its first row. No message in either case. For comparisons given as text no reported
+number was wrong; comparisons were missing. With a comparisons column stored as a factor whose levels were not in row
+order, the S4 method labelled one comparison's statistics with another's name (R1, W7: the effect proteins' mean
+log2FC under the label C_vs_A was 1.03). Not affected: the application, replay and the managed worker (one
+comparison per kernel call, `R/utils_workflow_dia_da.R:535-543`); the shipped workbooks' DA call (archived by KIT-234).
+
+**Code references.** Base 176f9d3ff: `R/func_prot_da_model_methods.R:295` (`contrasts_tbl[, 1]`), `:430`, `:433`
+(`results[[1]]`, `names(...)[1]`), `:477-480` and `:509-514` (one-table nested lists); `R/func_prot_da_compat.R:115`
+(`contrasts_tbl[, 1][[1]]`). Fix 4654fd600: `R/func_prot_da_model_methods.R` check and `as.character(contrasts_tbl[[1]])`
+at `:295-302`, `contrast_tables` (`purrr::imap`) at `:443-461`, `list(contrast_tables)` at the two calls; 
+`R/func_prot_da_compat.R:32-38` (check) and `:121` (`as.character(contrasts_tbl[[1]])`).
+
+**What changed in results.** A scripted call with several comparisons now returns every comparison in every table and
+plot; each comparison's `log2FC`, `raw_pvalue`, `fdr_qvalue` equal those of a call with it alone (identical on the
+limma, limpa-with-a-fake-`dpcDE` and RUV-factors routes, W2, W4, W5). With several comparisons the long table's
+per-sample columns are numbered by position. A tibble now works in the S4 method (it stopped before). A
+non-data-frame stops with `prot_da_contrasts_invalid` (before: "incorrect number of dimensions"). Comparisons are read
+as text, closing the factor mislabelling. One-comparison outputs are unchanged (G1, G3).
+
+**Evidence and limits.** R1 45713440865, g1 base 45715339444, R2 45716909041. One synthetic design (60 proteins, three
+groups of four; the RUV route 12 runs relabelled A, B, C with one factor); the limpa route uses a fake `dpcDE`. Not
+tested: digit-named groups with several comparisons (the group-name mapping is applied per table), real data, the full
+suite (A4, after merge). `outputDaResultsAllContrasts()` still expects one comparison per list element (ticket F3).
+
+## Not checked
+
+The full suite; digit-named groups with several comparisons; the limpa route with the real `dpcDE`; designs with
+covariates beyond the RUV route (identity to rounding is stated in NEWS, tested only bitwise on the three routes
+here); real data; Windows.
