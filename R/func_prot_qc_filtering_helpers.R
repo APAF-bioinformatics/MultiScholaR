@@ -143,8 +143,9 @@ removeRowsWithMissingValues <- function(
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @title Remove rows with missing values
 #' @description Removes the proteins that fail too many groups. Within a group, a value is missing when it is not
-#'   finite or not strictly above the intensity threshold (the `proteins_intensity_cutoff_percentile` quantile of
-#'   every finite value in the table). A group fails when its count of missing values exceeds the share its cutoff
+#'   finite (KIT-280: a value at or below the intensity threshold, the `proteins_intensity_cutoff_percentile` quantile
+#'   of every finite value in the table, counts as present, as the differential analysis uses it; a step made before
+#'   that change counted a value not strictly above the threshold as missing and replays so). A group fails when its count of missing values exceeds the share its cutoff
 #'   stands for, and a protein is removed when its count of failing groups exceeds the share the group cutoff stands
 #'   for. Each cutoff is read as rounded to three decimals, as `updateMissingValueParameters()` stores it, and the
 #'   comparison is made in whole numbers: a group of n samples with k missing values fails when
@@ -163,7 +164,7 @@ removeRowsWithMissingValues <- function(
 #' @param max_groups_percentage_cutoff The share of the groups, in percent, that a protein may fail; a protein failing
 #'   more groups is removed. One finite number from 0 to 100, read as rounded to three decimals.
 #' @param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
-#' @param proteins_intensity_cutoff_percentile The percentile of the protein intensity values to be used as the minimum threshold for protein intensity.
+#' @param proteins_intensity_cutoff_percentile The percentile of the protein intensity values that sets the intensity threshold. Since KIT-280 it does not decide which proteins are kept (only the replay of an earlier step uses it for that); `computeDIAReferenceProteinIntensityFilter()` marks the values at or below it.
 #' @return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
 #' @export
 removeRowsWithMissingValuesPercentHelper <- function(
@@ -239,12 +240,21 @@ removeRowsWithMissingValuesPercentHelper <- function(
 
   # 6. Calculate missing stats
   # Perform aggregation directly
+  # KIT-280 (VAL-354, rule B of KIT-211): a value at or below the threshold is present, so that the filter and the
+  # differential analysis that follows agree on what a value is: only an absent value is missing. The earlier rule is
+  # kept unchanged for the replay of a step made before that change (`workflowReplayRuleMarkers`).
+  threshold_marker <- workflowReplayRuleMarkers$threshold_values_in_filter
+  threshold_values_missing <- identical(getOption(threshold_marker$option), threshold_marker$earlier)
   count_percent_missing_per_group <- abundance_long |>
-    dplyr::mutate(is_missing = dplyr::if_else(
-      !is.na(!!rlang::sym(temporary_abundance_column)) &
-        !!rlang::sym(temporary_abundance_column) > min_protein_intensity_threshold,
-      0, 1
-    )) |>
+    dplyr::mutate(is_missing = if (threshold_values_missing) {
+      dplyr::if_else(
+        !is.na(!!rlang::sym(temporary_abundance_column)) &
+          !!rlang::sym(temporary_abundance_column) > min_protein_intensity_threshold,
+        0, 1
+      )
+    } else {
+      dplyr::if_else(is.na(!!rlang::sym(temporary_abundance_column)), 1, 0)
+    }) |>
     dplyr::group_by(!!rlang::sym(row_id_str), !!rlang::sym(group_var_str)) |>
     dplyr::summarise(num_missing_per_group = sum(is_missing), .groups = "drop") |>
     dplyr::left_join(count_values_per_group, by = group_var_str) |>
@@ -317,3 +327,131 @@ allowedByRoundedPercent <- function(size, cutoff_percent) {
 #' 2 P + 1, P the cutoff in thousandths of a percent (KIT-187).
 #' @noRd
 roundedPercentNumerator <- function(cutoff_percent) 2 * round(1000 * cutoff_percent) + 1
+
+# ----------------------------------------------------------------------------
+# KIT-280 (VAL-354, VAL-365): the flag for proteins kept with a value at or below the intensity threshold
+# ----------------------------------------------------------------------------
+
+#' Separator of the group labels in the `low_intensity_groups` column of `protein_id_table` (KIT-280).
+#' @noRd
+LOW_INTENSITY_GROUP_SEPARATOR <- "; "
+
+#' The DIA sentence of the tab's help, the report and NEWS (KIT-280, VAL-365 Q3; a draft for the owner's wording pass).
+#' @noRd
+PROTEIN_DIA_PEPTIDE_FILTER_SENTENCE <- paste(
+  "On the DIA route the peptide intensity filter runs first, defaults to 2 groups and counts values below its own",
+  "threshold as missing, so at the defaults this protein-level change removes almost no additional protein; the flag",
+  "still marks proteins that hold a low value."
+)
+
+#' The groups in which each protein holds a value at or below the intensity threshold (KIT-280)
+#'
+#' The threshold is the `percentile` quantile (type 7) of every finite value of the table's non-id columns, the quantity
+#' the filter's kernel computes, taken from the table as it is given (the caller passes the table before the filter,
+#' so that the threshold does not depend on which proteins the filter removes).
+#' @param protein_quant_table Wide protein table: the id column and one column per sample.
+#' @param design_matrix Design with the sample and the group columns.
+#' @param protein_id_column,sample_id,group_id Names of the id, sample and group columns.
+#' @param percentile The percentile, from 0 to 100.
+#' @return Character vector named by protein id: the group labels (sorted, joined by `LOW_INTENSITY_GROUP_SEPARATOR`)
+#'   in which the protein holds a finite value at or below the threshold; "" when it holds none.
+#' @noRd
+lowIntensityGroupsByProtein <- function(protein_quant_table, design_matrix, protein_id_column, sample_id, group_id,
+                                        percentile) {
+  ids <- as.character(protein_quant_table[[protein_id_column]])
+  unique_ids <- unique(ids)
+  none <- stats::setNames(rep("", length(unique_ids)), unique_ids)
+  values <- as.matrix(protein_quant_table[, setdiff(names(protein_quant_table), protein_id_column), drop = FALSE])
+  finite <- is.finite(values)
+  if (!any(finite)) {
+    return(none)
+  }
+  threshold <- stats::quantile(values[finite], probs = percentile / 100, names = FALSE, type = 7)
+  low <- finite & (values <= threshold)
+  group <- as.character(design_matrix[[group_id]][match(colnames(values), as.character(design_matrix[[sample_id]]))])
+  labels <- sort(unique(group[!is.na(group)]))
+  if (!length(labels)) {
+    return(none)
+  }
+  hit <- matrix(vapply(labels, \(label) rowSums(low[, which(group == label), drop = FALSE]) > 0, logical(nrow(low))),
+    nrow = nrow(low))
+  by_id <- rowsum(hit * 1, group = ids, reorder = FALSE) > 0
+  text <- rep("", nrow(by_id))
+  for (i in which(rowSums(by_id) > 0)) {
+    text[i] <- paste(labels[by_id[i, ]], collapse = LOW_INTENSITY_GROUP_SEPARATOR)
+  }
+  stats::setNames(text, rownames(by_id))
+}
+
+#' Write the groups of low-intensity values into the protein object's `protein_id_table` (KIT-280)
+#'
+#' The column `low_intensity_groups` holds the text of `lowIntensityGroupsByProtein` for the proteins the object's
+#' quantification table keeps and NA for a protein of the table that the filter removed. An object whose table is empty
+#' or lacks the id column is returned unchanged.
+#' @param object A `ProteinQuantitativeData` after the filter.
+#' @param groups The value of `lowIntensityGroupsByProtein` for the table before the filter.
+#' @return The object.
+#' @noRd
+attachLowIntensityGroups <- function(object, groups) {
+  id_column <- object@protein_id_column
+  table <- object@protein_id_table
+  if (nrow(table) == 0L || !id_column %in% names(table)) {
+    return(object)
+  }
+  table_ids <- as.character(table[[id_column]])
+  text <- unname(groups[table_ids])
+  text[!table_ids %in% as.character(object@protein_quant_table[[id_column]])] <- NA_character_
+  table$low_intensity_groups <- text
+  object@protein_id_table <- table
+  object
+}
+
+#' Whether a protein holds a low-intensity value in either group of a comparison (KIT-280)
+#'
+#' `low_intensity_value` of the long DA table: TRUE when `low_intensity_groups` names the comparison's left or right
+#' group. The DA renames a group label that starts with a digit to `grp_<label>` in its design, so a label that reads
+#' `grp_` and a digit is also matched without the prefix.
+#' @param groups The `low_intensity_groups` text per row (NA reads as none).
+#' @param left_group,right_group The comparison's groups per row.
+#' @return Logical vector.
+#' @noRd
+lowIntensityInComparison <- function(groups, left_group, right_group) {
+  restore <- \(label) ifelse(grepl("^grp_[0-9]", label), sub("^grp_", "", label), label)
+  tokens <- strsplit(ifelse(is.na(groups), "", as.character(groups)), LOW_INTENSITY_GROUP_SEPARATOR, fixed = TRUE)
+  left <- as.character(left_group)
+  right <- as.character(right_group)
+  vapply(seq_along(tokens), \(i) any(c(left[[i]], restore(left[[i]]), right[[i]], restore(right[[i]])) %in% tokens[[i]]),
+    logical(1))
+}
+
+#' The report's sentence on the filter's treatment of values at or below the intensity threshold (KIT-280)
+#'
+#' Three cases (ticket section 4.3): a record whose filter step lists the marker `threshold_values_in_filter` gets the
+#' sentence of the rule now in force; a record without it (or without a filter step) the earlier sentence, which the
+#' template passes in with its own line breaks; no record at all a neutral sentence, because a report may be made
+#' without the analysis record having been saved. The sentences are drafts for the owner's wording pass.
+#' @param rule The record's `threshold_values_rule` (NULL or NA when absent).
+#' @param record_present TRUE when the report read an analysis record.
+#' @param percentile,suffix The protein filter's percentile and its ordinal suffix.
+#' @param earlier The earlier sentence as the template wrote it.
+#' @param dia TRUE for the DIA-NN template, which adds the sentence on the peptide filter.
+#' @return One string.
+#' @noRd
+proteinThresholdValuesSentence <- function(rule, record_present, percentile, suffix, earlier, dia = FALSE) {
+  position <- paste0(percentile, suffix, " percentile")
+  if (!isTRUE(record_present)) {
+    return(paste0("Whether intensities at or below the ", position, " of all intensities counted as missing in this ",
+      "filter is not recorded for this analysis."))
+  }
+  if (!identical(as.character(rule)[1L], "present")) {
+    return(earlier)
+  }
+  paste(paste0("A value at or below the ", position, " of all intensities in the table counted as present: only an ",
+    "absent value counted as missing."),
+  paste("Proteins kept with such a value in one of the two groups compared are marked in the results table (column",
+    "low_intensity_value). In simulated data (KIT-211; ten settings pooled), unchanged proteins kept with such a value in",
+    "one of the two groups compared reached p < 0.05 1.9 times as often as other kept proteins (two-sided 95 % interval",
+    "1.83 to 1.96; 1.5 to 3.3 times in the individual simulated settings; measured at the 1st percentile only). Treat",
+    "such calls with caution."),
+  if (isTRUE(dia)) PROTEIN_DIA_PEPTIDE_FILTER_SENTENCE)
+}

@@ -246,7 +246,7 @@ diaDaResultsTableView <- function(daResultsList, tableContrast, tableSignificanc
                         cat(sprintf("   DA TABLE: Using fallback protein ID column = %s\n", protein_id_column))
                     }
 
-                    display_columns <- c(protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue")
+                    display_columns <- c(protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue", "low_intensity_value")
                     current_results <- current_results |>
                         dplyr::select(any_of(display_columns))
 

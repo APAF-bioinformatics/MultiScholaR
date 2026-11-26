@@ -743,6 +743,21 @@
 
 ### Scientific changes
 
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter no longer counts a value at or below the
+   intensity threshold (the 1st percentile of all values, by default) as missing; before, it did while the
+   differential analysis used the value. A value counts as missing only when it is absent. The clean-up after RUV and
+   the strict mode now also count missing values only; neither was measured. Proteins kept with such a value in one of
+   the two groups compared are marked in the results table (column low_intensity_value): in simulated data, unchanged
+   proteins holding one reached p < 0.05 1.9 times as often as other kept proteins (1.83 to 1.96; 1.5 to 3.3 across
+   the simulated settings, about 3 where a quarter of the values are missing; measured at the 1st percentile only).
+   The percentile now only sets which values are marked. On the DIA route the peptide intensity filter runs first,
+   defaults to 2 groups and counts values below its own threshold as missing, so at the defaults this protein-level
+   change removes almost no additional protein; the flag still marks proteins that hold a low value. A session saved
+   before this version has no marks until the filter is applied again, and each step of a saved record keeps its own
+   rule. Records made before replay with the earlier rule; a step made now lists `threshold_values_in_filter =
+   present`. A report made without a saved analysis record says that the rule is not recorded. (KIT-280, VAL-354,
+   VAL-365)
+
  * Lipidomics and metabolomics, RUV-III (Automatic and Manual, the default design): the negative-control features are
    now chosen from a one-way analysis of variance on the RUV grouping column, and the automatic number of factors
    removed is capped by the number of samples. Before this version the grouping column was removed before that analysis,
@@ -997,9 +1012,7 @@
    were false; a follow-up simulation on new draws, pooled over 2, 4 and 5 groups of 3 and 3 groups of 4, traced this
    higher share to lower power among them (truly changed proteins found 0.61 against 0.80 among the proteins kept under
    both rules), while unchanged proteins among them reached p below 0.05 about as often (5.1 % against 5.0 %, at most
-   3.4 % more often), except the few that hold a value at or below the intensity threshold, which the filter counts as
-   missing but the test uses (2.5 times as often; about 2 % of them, 15 % with four groups of three and 5 % of values
-   missing); it also appears, at about half the size, when the same share of values is missing at random (KIT-197));
+   3.4 % more often), except the few that hold a value at or below the intensity threshold (2.5 times as often; about 2 % of them, 15 % with four groups of three and 5 % of values missing): about a factor of 1.5 of this came from the filter counting those values as missing while the test uses them (since changed, see the bullet on the protein missing-value filter in this section), and the rest appears even without a filter, because holding such a value marks proteins whose spread the test underestimates (KIT-211, simulated; pooled over ten settings; the filter's own factor is 1.4 to 2.2 in the individual settings outside the two-groups-of-three design, where it is not resolved; KIT-280); it also appears, at about half the size, when the same share of values is missing at random (KIT-197));
    these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
    sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
    Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this

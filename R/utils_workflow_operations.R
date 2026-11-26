@@ -574,7 +574,7 @@ workflowParameterLabels <- local({
             ruv_mode = "RUV-III mode (covariates or correction)"),
         protein_intensity_filter = list(strict_mode = "Strict mode (all groups must pass)",
             min_reps_per_group = "Minimum replicates per group above the cutoff", min_groups = "Minimum groups passing",
-            proteins_intensity_cutoff_percentile = "Protein intensity cutoff percentile"),
+            proteins_intensity_cutoff_percentile = "Low-intensity marking percentile"),
         protein_duplicate_removal = list(aggregation_method = "Aggregation of duplicate proteins"),
         protein_replicate_filter = list(grouping_variable = "Grouping variable", parallel_cores = "Parallel cores"),
         `normalization-ruv` = list(norm_method = "Between-sample normalisation method", ruv_mode = "RUV-III mode",

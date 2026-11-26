@@ -375,7 +375,9 @@ readDIAResultPage <- function(manifest, contrast, significance = "all", qvalue =
         length(offset) != 1L || !is.finite(offset) || offset < 0 || offset != floor(offset) ||
         !significance %in% c("all", "significant", "up", "down")) cli::cli_abort("invalid result page")
     view <- resolveDIAResultSelection(manager, reference, qvalue, lfc)
-    columns <- c(manifest$protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue")
+    # KIT-280: the flag column pages with the table when the saved result holds it (older results do not).
+    columns <- c(manifest$protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue",
+        intersect("low_intensity_value", result$columns))
     if (significance == "all") {
         page <- readSavedWorkflowTable(manager$.context$store, reference, columns,
             offset = offset, limit = limit)$data
@@ -414,8 +416,8 @@ readDIAResultDisplay <- function(manifest, contrast, expression = FALSE) {
     manager <- getDIAActiveManager()
     selected <- selectDIAContrastReference(manifest, contrast)
     columns <- intersect(unique(c(manifest$protein_id_column, "comparison", "log2FC",
-        "raw_pvalue", "fdr_qvalue", "gene_name", "gene_names", "Protein.Ids", "Entry", "description")),
-        selected$columns)
+        "raw_pvalue", "fdr_qvalue", "low_intensity_value", "gene_name", "gene_names", "Protein.Ids", "Entry",
+        "description")), selected$columns)
     result <- readDIAContrastOutput(selected, "da_proteins_long", columns)
     if (expression) result$theObject <- readDIAExecutionComponents(manager, manifest$source,
         fields = c("protein_quant_table", "design_matrix"))

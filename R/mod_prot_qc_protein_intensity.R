@@ -67,6 +67,9 @@ mod_prot_qc_protein_intensity_ui <- function(id) {
               width = "100%"
             ),
             shiny::helpText("Minimum groups that must meet the replicate threshold (default: 2)"),
+            # KIT-280 (VAL-354, VAL-365): drafts for the owner's wording pass.
+            shiny::helpText("A value at or below the percentile below counts as present: only an absent value counts as missing."),
+            shiny::helpText(PROTEIN_DIA_PEPTIDE_FILTER_SENTENCE),
             
             shiny::hr(),
             
@@ -86,11 +89,12 @@ mod_prot_qc_protein_intensity_ui <- function(id) {
           # Intensity cutoff (always shown)
           shiny::h5("Intensity Threshold"),
           shiny::numericInput(ns("proteins_intensity_cutoff_percentile"), 
-            "Protein Intensity Cutoff Percentile (%)", 
+            "Low-intensity marking percentile (%)", 
             value = 1, min = 0.1, max = 10, step = 0.1,
             width = "100%"
           ),
-          shiny::helpText("Intensity threshold percentile (default: 1%)"),
+          shiny::helpText(paste("Values at or below this percentile of all values are marked in the results table;",
+            "marking does not remove proteins. The figure quoted with the flag was measured at 1 %.")),
           
           shiny::hr(),
           shiny::div(

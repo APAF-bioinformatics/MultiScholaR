@@ -478,6 +478,12 @@ FormatMethodDetailsTMT <- function(numbers) {
   ordinal_suffix <- function(n) { n <- suppressWarnings(as.integer(round(as.numeric(n)))); if (is.na(n)) return("th")
     if (n %% 100 %in% 11:13) "th" else switch(as.character(n %% 10), "1" = "st", "2" = "nd", "3" = "rd", "th") }
   intensity_cutoff_suffix <- ordinal_suffix(intensity_cutoff_pct)
+  # KIT-280: the sentence on values at or below the intensity threshold follows the record's marker
+  # (`threshold_values_in_filter`; R/func_prot_qc_filtering_helpers.R).
+  threshold_values_text <- MultiScholaR:::proteinThresholdValuesSentence(numbers$threshold_values_rule,
+    isTRUE(numbers$record_present), intensity_cutoff_pct, intensity_cutoff_suffix,
+    earlier = paste0("Intensities below the \n", intensity_cutoff_pct, intensity_cutoff_suffix,
+      " percentile of all intensities in the table were treated as missing."))
   
   # KIT-227: the RUV sentence states what was run, by the recorded state: applied, not applied or not recorded (the
   # record's outcome, else the file's sections); the mode (the record's ruv_mode, else the file's separation metric),
@@ -599,8 +605,7 @@ and reliable downstream statistical analysis.
 
 {accession_cleanup_text} Duplicate protein entries were removed to prevent redundancy in quantification.{mixed_species_text}
 
-Proteins were then filtered on missing values within experimental groups. Intensities below the 
-{intensity_cutoff_pct}{intensity_cutoff_suffix} percentile of all intensities in the table were treated as missing. 
+Proteins were then filtered on missing values within experimental groups. {threshold_values_text} 
 Within each group a protein failed if the share of its values that were missing exceeded the allowed share, {groupwise_cutoff}% (shown rounded to three decimals); {cross_groups_text}
 
 Proteins appearing in only one replicate across all groups were also excluded 

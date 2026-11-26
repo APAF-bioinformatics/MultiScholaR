@@ -97,6 +97,15 @@ createDaResultsLongFormat <- function(lfc_qval_tbl,
     arrange(comparison, fdr_qvalue, log2FC) |>
     distinct()
 
+  # KIT-280 (VAL-365 Q1): per comparison, TRUE when the protein holds a value at or below the intensity threshold in
+  # either group compared. Only a protein table that carries the filter's `low_intensity_groups` gets the column, so
+  # that a table built from an older object, or from the compat path, is as before.
+  if ("low_intensity_groups" %in% colnames(da_proteins_long)) {
+    da_proteins_long$low_intensity_value <- lowIntensityInComparison(
+      da_proteins_long$low_intensity_groups, da_proteins_long$left_group, da_proteins_long$right_group
+    )
+  }
+
   # --- NEW: Rename columns to use sample IDs if single contrast ---
   # Only perform this renaming if we have a single comparison, to ensure unique mapping
   if (length(unique(da_proteins_long$comparison)) == 1) {

@@ -532,8 +532,11 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
         },
         # KIT-187 (VAL-71, D2): the clean-up after RUV decides by counts; a recorded step without this marker replays
         # with the earlier rounded-percentage comparison (`workflowReplayRuleMarkers`). KIT-242 Part C (VAL-242 OD-4 (c)):
-        # the normalisation's handling of a sample with no value, likewise.
-        fixed = list(missing_value_comparison = "counts", protein_normalisation_fallback = "remove"))
+        # the normalisation's handling of a sample with no value, likewise. KIT-280 (VAL-354): the clean-up counts only an absent value as missing
+        # (`threshold_values_in_filter`; neither it nor strict mode was measured), a recorded step without the marker replays
+        # with the earlier rule.
+        fixed = list(missing_value_comparison = "counts", protein_normalisation_fallback = "remove",
+            threshold_values_in_filter = "present"))
 }
 
 #' Today's normalisation declaration takes none of the new design's parameters (KIT-126 audit F-06, KIT-129 B1): its

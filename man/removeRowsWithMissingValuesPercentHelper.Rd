@@ -36,7 +36,7 @@ more missing values fails. One finite number from 0 to 100, read as rounded to t
 \item{max_groups_percentage_cutoff}{The share of the groups, in percent, that a protein may fail; a protein failing
 more groups is removed. One finite number from 0 to 100, read as rounded to three decimals.}
 
-\item{proteins_intensity_cutoff_percentile}{The percentile of the protein intensity values to be used as the minimum threshold for protein intensity.}
+\item{proteins_intensity_cutoff_percentile}{The percentile of the protein intensity values that sets the intensity threshold. Since KIT-280 it does not decide which proteins are kept (only the replay of an earlier step uses it for that); \code{computeDIAReferenceProteinIntensityFilter()} marks the values at or below it.}
 
 \item{temporary_abundance_column}{The name of a temporary column to keep the abundance value you want to filter upon}
 }
@@ -45,8 +45,9 @@ A list, the name of each element is the sample ID and each element is a vector c
 }
 \description{
 Removes the proteins that fail too many groups. Within a group, a value is missing when it is not
-finite or not strictly above the intensity threshold (the \code{proteins_intensity_cutoff_percentile} quantile of
-every finite value in the table). A group fails when its count of missing values exceeds the share its cutoff
+finite (KIT-280: a value at or below the intensity threshold, the \code{proteins_intensity_cutoff_percentile} quantile
+of every finite value in the table, counts as present, as the differential analysis uses it; a step made before
+that change counted a value not strictly above the threshold as missing and replays so). A group fails when its count of missing values exceeds the share its cutoff
 stands for, and a protein is removed when its count of failing groups exceeds the share the group cutoff stands
 for. Each cutoff is read as rounded to three decimals, as \code{updateMissingValueParameters()} stores it, and the
 comparison is made in whole numbers: a group of n samples with k missing values fails when

@@ -258,6 +258,20 @@ computeDIAReferenceProteinIntensityFilter <- function(manager, reference, parame
     max_groups <- object@args[[section]]$max_groups_percentage_cutoff
     removeRowsWithMissingValuesPercentFn <- removeRowsWithMissingValuesPercent
     filtered <- removeRowsWithMissingValuesPercentFn(object)
+    # KIT-280 (VAL-365 Q1): the proteins kept with a value at or below the threshold are marked, once here and not in the
+    # kernel, so that the clean-up after RUV never recomputes it. The threshold is that of the table before the filter. A
+    # step replayed under the earlier threshold rule writes no mark, so that it reproduces its recorded digests.
+    threshold_marker <- workflowReplayRuleMarkers$threshold_values_in_filter
+    marked <- NULL
+    if (!identical(getOption(threshold_marker$option), threshold_marker$earlier)) {
+        groups <- lowIntensityGroupsByProtein(object@protein_quant_table, object@design_matrix, object@protein_id_column,
+            object@sample_id, object@group_id, percentile)
+        filtered <- attachLowIntensityGroups(filtered, groups)
+        if ("low_intensity_groups" %in% names(filtered@protein_id_table)) marked <- sum(nzchar(groups[unique(
+            as.character(filtered@protein_quant_table[[filtered@protein_id_column]]))]))
+    }
+    marked_line <- if (!is.null(marked)) sprintf("Proteins kept with a value at or below the threshold: %d (marked in the results)\n",
+        marked)
     protein_count <- nrow(dplyr::distinct(filtered@protein_quant_table, .data[[filtered@protein_id_column]]))
     checkpoint <- checkpointDIAReferenceProteinObject(manager, reference, filtered)
     object <- filtered <- NULL
@@ -273,6 +287,7 @@ computeDIAReferenceProteinIntensityFilter <- function(manager, reference, parame
         "Groupwise % cutoff: 0.000% (strict - no missing allowed)\n",
         "Max groups % cutoff: 0.000% (strict - all groups must pass)\n",
         sprintf("Intensity cutoff percentile: %.1f%%\n", percentile),
+        marked_line,
         "State saved as: 'protein_intensity_filtered'\n") else paste(
         "Protein Intensity Filter Applied Successfully\n",
         "============================================\n",
@@ -283,6 +298,7 @@ computeDIAReferenceProteinIntensityFilter <- function(manager, reference, parame
         sprintf("Groupwise %% cutoff: %.3f%% (calculated)\n", groupwise),
         sprintf("Max groups %% cutoff: %.3f%% (calculated)\n", max_groups),
         sprintf("Intensity cutoff percentile: %.1f%%\n", percentile),
+        marked_line,
         "State saved as: 'protein_intensity_filtered'\n")
     list(checkpoint = checkpoint, reference = checkpoint$components$protein_quant_table,
         state_name = "protein_intensity_filtered",
@@ -460,8 +476,10 @@ diaProteinIntensityFilterOperation <- function() {
         global_statistics = c(min_protein_intensity_threshold = "the percentile of every finite value in the whole table",
             group_sizes = "samples per group and the number of groups from the design"),
         # KIT-187 (VAL-71): the step decides by counts; a recorded step without this marker replays with the earlier
-        # rounded-percentage comparison (`workflowReplayRuleMarkers`).
-        fixed = list(missing_value_comparison = "counts"))
+        # rounded-percentage comparison (`workflowReplayRuleMarkers`). KIT-280 (VAL-354): a value at or below the intensity
+        # threshold counts as present and the step marks the proteins kept with one; a recorded step without
+        # `threshold_values_in_filter` replays with the earlier rule and writes no mark.
+        fixed = list(missing_value_comparison = "counts", threshold_values_in_filter = "present"))
 }
 
 #' The duplicate-protein removal as a declaration (KIT-015): unit feature group by the active protein key

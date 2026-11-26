@@ -716,7 +716,7 @@ validateWorkflowAnalysisRecord <- function(record) {
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds two rows, `ruv_control_grouping` and `ruv_k_bound`; KIT-205,
 #' VAL-129 (2), adds `enrichment_background`; KIT-202 adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
 #' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
-#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`; KIT-258 adds `duplicate_resolution_rank`; KIT-255 adds `correlation_exclusion`, the last row): for
+#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`; KIT-258 adds `duplicate_resolution_rank`; KIT-255 adds `correlation_exclusion`; KIT-242 adds `normalisation_fallback`, `protein_normalisation_fallback`, `itsd_outcome` and `ruv_fallback`; KIT-280 adds `threshold_values_in_filter`): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -783,7 +783,13 @@ workflowReplayRuleMarkers <- list(
     # sample or feature with no value out of the search and the correction and puts it back as missing, keeps an assay
     # with no usable controls or no supported number of factors without RUV, and stops on a failed computation
     # ("by_cause"); records made before dropped an assay whose correction failed ("drop").
-    ruv_fallback = list(option = "MultiScholaR.ruv_fallback", current = "by_cause", earlier = "drop"))
+    ruv_fallback = list(option = "MultiScholaR.ruv_fallback", current = "by_cause", earlier = "drop"),
+    # KIT-280 (VAL-354, VAL-365): the proteomics missing-value filter counts a value at or below the intensity threshold as
+    # present, so that only an absent value is missing, as the differential analysis that follows uses such a value
+    # ("present"), and the filter step marks the proteins kept with one (`low_intensity_groups`); records made before
+    # counted such a value as missing and wrote no mark ("missing"). The row is the last one at the time of writing.
+    threshold_values_in_filter = list(option = "MultiScholaR.missing_filter_threshold_rule", current = "present",
+        earlier = "missing"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
@@ -1534,7 +1540,10 @@ workflowRecordReportSources <- list(
     enrichment_background = list(record = c("enrichment", "enrichment_background")),
     # KIT-215 (VAL-170): the lists not tested, on both routes ("<comparison>: <direction>", joined by "; "); a record
     # without it ("not recorded") was made with every list tested or before KIT-215.
-    enrichment_lists_not_tested = list(record = c("outcomes", "enrichment", "enrichment_lists_not_tested")))
+    enrichment_lists_not_tested = list(record = c("outcomes", "enrichment", "enrichment_lists_not_tested")),
+    # KIT-280: the rule of the protein filter on a value at or below the intensity threshold, a fixed constant of the step; a
+    # record whose filter step lacks it was made with such a value counted as missing.
+    threshold_values_rule = list(record = c("protein_intensity_filter", "threshold_values_in_filter")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the
