@@ -1,0 +1,87 @@
+{
+  "requested_by": "KIT-262 re-measurement lifecycle (VAL-381; rm-lifecycle-declaration.md at 7048c9c1): both floor orders, REPRO against M2, planted fault; blind; running ceiling 58.56 + 2.0 of 221.63; ceiling 30 job-minutes",
+  "label": "KIT-262 re-measurement lifecycle 7048c9c1",
+  "package_commit": "7048c9c10a86203bf80b798c1cb459d4c5966f76",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-rm-lc/after"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_FLOOR_ORDER": "after",
+        "K262_SEED_BASE": "263100000",
+        "K262_CELLS": "14,17,50,53,83,89,121,125,143,159,179,194",
+        "K262_REPS": "91",
+        "K262_E8_MAX": "91",
+        "K262_E1P": "91",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-rm-lc/after",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 8
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-rm-lc/before"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_FLOOR_ORDER": "before",
+        "K262_SEED_BASE": "263100000",
+        "K262_CELLS": "14,17,50,53,83,89,121,125,143,159,179,194",
+        "K262_REPS": "91",
+        "K262_E8_MAX": "91",
+        "K262_E1P": "91",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-rm-lc/before",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 8
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-rm-lc/repro"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_REPRO": "1",
+        "K262_CELLS": "89,125,79",
+        "K262_REPS": "1:2",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-rm-lc/repro",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 3
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-rm-lc/fault"],
+      "env": {
+        "K262_LIFECYCLE": "1",
+        "K262_FLOOR_ORDER": "after",
+        "K262_SEED_BASE": "263100000",
+        "K262_CELLS": "89",
+        "K262_REPS": "91:92",
+        "K262_E8": "0",
+        "K262_E1P": "0",
+        "K262_FAULT": "1",
+        "K262_WORKERS": "2"
+      },
+      "out": "k262-rm-lc/fault",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 2
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
