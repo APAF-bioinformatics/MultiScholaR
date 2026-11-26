@@ -1,0 +1,60 @@
+{
+  "requested_by": "KIT-275 non-counted diagnostic (VAL-392 (1); declaration diag/declaration.md on branch kit-275; ceiling 89 job-minutes = 5.93 core-hours; nothing decided by it)",
+  "label": "KIT-275 diagnostic 2ccc234e",
+  "package_commit": "2ccc234eb34b7c8e60d42df83fa8c8b6a01733f5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/diag/selftest/run-diag-selftest.R",
+      "args": [],
+      "env": {
+        "K275_DIAG_SELFTEST_OUT": "k275-diag-selftest"
+      },
+      "out": "k275-diag-selftest",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 4
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/diag/diag-k275.R",
+      "args": [
+        "D3,D4,D6",
+        "1",
+        "50",
+        "k275-diag"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_WORKERS": "4",
+        "K275_DIAG_JOB": "k275-diag",
+        "K275_DIAG_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/diag/declaration.md"
+      },
+      "out": "k275-diag",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 70
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/diag/score-diag.R",
+      "args": [
+        "k275-diag/rows",
+        "k275-diag-score"
+      ],
+      "env": {},
+      "out": "k275-diag-score",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
