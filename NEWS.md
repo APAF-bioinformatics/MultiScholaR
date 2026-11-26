@@ -92,8 +92,8 @@
    transcriptomics, which have no enrichment analysis in the application, no file of that folder is copied. The report asks
    for a new copy when the publication folder holds older enrichment results. Lipidomics and metabolomics: the report no
    longer states that a pathway enrichment analysis was performed; neither omic has one in the application, and the
-   enrichment section appears only when the publication folder holds an enrichment file. 'Copy to Publication Directory'
-   called from the workbooks is unchanged. A project that already generated a report keeps its copy of the report template:
+   enrichment section appears only when the publication folder holds an enrichment file. `copyToResultsSummary()`
+   called directly without its new `enrichment_files` argument (from a script) is unchanged. A project that already generated a report keeps its copy of the report template:
    delete `scripts/<omic>/<template>` to take the new one. No computed value changes (KIT-219).
 
  * Proteomics reports: the description of panels d to f of Figure 1 (QC metrics across normalisation stages) was

@@ -20,3 +20,17 @@ report templates. The ticket's drafts (7) with the deviations below.
   Enrichment Analysis" (the proteomics sentence). T3 (the proteomics sentence for an enrichment that is no longer current) is
   not built: it needs a value passed to the report (F7); the one sentence above is printed.
 - NEWS (`### Fixes`): the ticket's draft (7) with the OD-5 (i) sentence and the template-copy limit sentence.
+
+## Added after the implementation audit (K219-I08, I12; for the owner, not built)
+
+- T3 (when the enrichment stops being current: the DA re-run, a Revert or Reset, no product, another machine) the proteomics report
+  prints "No enrichment analysis was run for this project.", which is untrue: one was run, on an earlier analysis. Before this change
+  the same report showed the earlier enrichment's figures as if current. The templates are NOT changed here. The register's three
+  options: (a) keep the sentence until the wording pass and state the case in NEWS meanwhile; (b) one sentence for both cases now,
+  "No enrichment result of the current differential analysis is included." (needs no new mechanism; edits four templates and one
+  hand-written assertion, `tests/testthat/test-prot-summary-report-templates.R:43-56`); (c) T3 as drafted, "The enrichment analysis of
+  this project was run on an earlier differential analysis and is not included; run it again to include it." (needs a value passed to
+  the report, F7). Register's recommendation: (b), or (c) at the wording pass, before the release commit.
+- T2 has no variant for omics without an enrichment analysis (T1b's form): for lipidomics, metabolomics and transcriptomics it says
+  "the current enrichment"; a T2b would say "this application has no enrichment analysis for <omic>".
+- T2's doubled opening ("Report generation failed: The report was not generated: ...").
