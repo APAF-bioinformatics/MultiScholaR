@@ -803,3 +803,51 @@ test_that("KIT-276 note 1.5: a declared-rule run with no sweep leaves no canonic
     expect_length(plot_files, 12L)
     expect_false(cancor %in% plot_files)
 })
+
+#' The native session export of the project (as test-kit271-limpa-table-name.R's k271Export writes it), at the head.
+k276Export <- function(fixture, norm, input) {
+    fixture$manager$.context$session_format <- "native_v1"
+    source_dir <- fixture$paths$source_dir
+    k276Quiet(withDIAStateScope(fixture$manager, function() {
+        collected <- collectDIANativeSessionMetadata(fixture$workflow, norm, input)
+        files <- collectDIANativeGuiFiles(fixture$manager, collected$metadata)
+        runDIANativeSessionExport(fixture$manager, collected$metadata, source_dir, extra_references = collected$references,
+            dependencies = files, prepare_outputs = function(metadata, request) {
+                saveProtNormExportMetadataFiles(metadata, source_dir, messageFn = k276Noop, strict = TRUE)
+                writeLines("kit276", file.path(source_dir, "filtered_session_summary.txt"))
+            })
+    }))
+}
+
+#' The metadata of the newest session archive in the source folder, opened into a private folder (k206Archive's way).
+k276NewestArchive <- function(fixture) {
+    archives <- sort(list.files(fixture$paths$source_dir, pattern = "^filtered_session_.*[.]msdia[.]tar$", full.names = TRUE))
+    root <- tempfile("k276-archive-")
+    dir.create(root)
+    imported <- k276Quiet(openDIANativeSession(utils::tail(archives, 1L), root))
+    on.exit(closeDIAStateAdapter(imported$manager), add = TRUE)
+    imported$metadata
+}
+
+test_that("KIT-276 T8d (AUDIT-KIT-276-impl I01, VAL-389): after an export at the RUV head, Skip RUV and the Summary's refresh, the session file keeps no RUV sweep", {
+    k276Need()
+    fixture <- k276Start("in process")
+    norm <- new.env(parent = emptyenv())
+    k276Journey(fixture, norm, "in process", c("P", "C", "K"))
+    k276Export(fixture, norm, list(norm_method = "quantile", ruv_mode = "covariates"))
+    planted <- file.path(fixture$paths$source_dir, "ruv_optimization_results.RDS")
+    expect_true(file.exists(planted), info = "the export wrote the RUV run's file")
+    k276RuvSkip(fixture, norm)
+    expect_false(file.exists(planted), info = "the Skip removed it")
+    # the Summary's refresh of the session file: refreshed (no text shown), not refused
+    shown <- k276Quiet(withDIAStateScope(fixture$manager, function() protSummaryRefreshArchive(fixture$workflow,
+        fixture$paths$source_dir)))
+    expect_null(shown)
+    metadata <- k276NewestArchive(fixture)
+    expect_identical(metadata$ruv_mode, "none")
+    expect_identical(metadata$ruv_applied, FALSE)
+    expect_null(metadata$ruv_k)
+    expect_null(metadata$ruv_optimization_result)
+    expect_false(file.exists(planted))
+    expect_false(k276StudySection(fixture))
+})
