@@ -1,0 +1,5 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit255-omics-correlation-assays.R	322	28	2	0	0	216.8	failed
+test-omic-norm-module.R	631	8	0	0	0	298.6	failed
+test-kit236-report-sentences.R	289	4	0	0	0	11.9	failed
+test-kit235-lipid-metab-report-parser.R	54	0	0	0	0	12.3	ok

@@ -1,0 +1,35 @@
+item	object	class	observable	predicted
+STOP-i	K2-b,K3-b	lipid,metab	construction	K2-b: B_6 all NA in LCMS_Neg only (LCMS_Pos untouched); K3-b: B_1 to B_6 all NA in LCMS_Neg
+STOP-i	K2-RUVnew,K2-RUVleg	lipid,metab	B_6 best within-group correlation after RUV, declaration route	LCMS_Pos >= 0.5 (passes); LCMS_Neg < 0.5 (fails)
+STOP-i	K2-RUVnew,K2-RUVleg	lipid,metab	RUV applied: k per assay at the ruv_corrected head	k = 1 in LCMS_Pos and LCMS_Neg (new design: status ok; legacy: applied)
+P-a	K2-RUVnew	lipid,metab	Apply 0.5, declaration: design samples	11; B_6 absent
+P-a	K2-RUVnew	lipid,metab	Apply 0.5, declaration: LCMS_Pos / LCMS_Neg sample columns	12 with B_6 / 11 without B_6
+P-a	K2-RUVnew	lipid,metab	args$ruv_uncorrected_assays$LCMS_Neg: B_6 finite values, and copy before = copy after the press	all 520 finite; the copy identical before and after
+P-a	K2-RUVleg	lipid,metab	design samples; LCMS_Pos / LCMS_Neg sample columns	11 without B_6; 12 with B_6 / 11 without
+P-a	K2-RUVleg	lipid,metab	args$ruv_uncorrected_assays	absent
+P-a	K2-RUVnew	lipid,metab	tab in process then managed (new design, quantile): design, columns, copy, managed = in process	design 11 without B_6; LCMS_Pos 12 with B_6; LCMS_Neg 11; copy's B_6 finite in all rows; managed design = in-process design
+P-b	K2-RUVnew	lipid	declared RUV DA on the filtered state	no assay table; errors name 'missing from design: B_6' (LCMS_Pos)
+P-b	K2-RUVnew	metab	declared RUV DA on the filtered state	completes; tables for LCMS_Pos and LCMS_Neg; no errors; B_6 is not in the design
+P-b	K2-RUVleg	lipid	legacy DA on the filtered state	no assay table; errors or a failure naming 'missing from design: B_6'
+P-b	K2-RUVleg	metab	legacy DA on the filtered state	completes; tables for LCMS_Pos and LCMS_Neg
+P-c	K2-RUVnew,K2-RUVleg	lipid,metab	writeOmicsIntegrationInput on the filtered state	writes; samples 11; every matrix 11 columns; corrected matrices 11 columns; the LCMS_Pos feature table has a column B_6; the uncorrected matrix of the corrected view has 11 columns without B_6; correction present
+P-d	K2-b	lipid,metab	exported DA kernel on K2-b and K2-a	both complete; tables for LCMS_Pos and LCMS_Neg
+P-d	K2-b	lipid,metab	LCMS_Neg table of K2-b against K2-a: common numeric non-run columns differing above 1e-10	none (equal to 1e-10)
+P-d	K2-b	lipid,metab	LCMS_Pos table of K2-b against K2-a	differs (the 12-sample fit includes B_6)
+P-d	K2-b	lipid,metab	B_6 in the long tables: per-sample column, finite cells in LCMS_Neg / LCMS_Pos	if the table carries per-sample columns: B_6 all NA in LCMS_Neg, finite in LCMS_Pos
+P-d	K2-b,K2-a	lipid,metab	per-feature residual df of lmFit(~ 0 + group) on LCMS_Neg	K2-b = K2-a feature by feature (df = observed - rank)
+P-d	K2-b	lipid,metab	features whose group-B observed count falls from >= 3 to < 3 by the blanking	a count is reported (information)
+P-d	K2-b	lipid,metab	declaration route DA on a fresh owner holding K2-b	completes; tables for LCMS_Pos and LCMS_Neg; no errors
+P-d	K2-b	lipid,metab	tab in-process preflight (omicDaPreflight) on K2-b	NULL (the run may go on)
+P-e	K2-b-RUV	lipid,metab	exported kernel with factors on the uncorrected values, B_6 blank in LCMS_Neg, against B_6 removed (same factors)	both complete; W has a B_6 row in LCMS_Neg; LCMS_Neg equal to 1e-10; LCMS_Pos differs
+P-f	K3-b	lipid,metab	non-RUV kernel DA with the contrast groupB-groupA	completes; a LCMS_Neg table with NA statistics for the contrast (no abort of both assays); LCMS_Pos tested
+P-f	K3-b-RUV	lipid,metab	RUV-factors kernel DA, group B blank in LCMS_Neg	completes; group B listed as not observed in LCMS_Neg; LCMS_Pos tested
+P-g	K2-b	lipid,metab	plotPca, plotDensity	LCMS_Neg shows 11 samples (B_6 omitted), LCMS_Pos 12
+P-g	K2-b	lipid,metab	plotRle, static volcano, Glimma volcano (LCMS_Neg)	build without error
+P-g	K2-b	lipid,metab	DA heatmap LCMS_Neg (all features, row scaling)	builds; B_6's column drawn as zeros (every cell 0)
+P-g	K2-b	lipid,metab	DA heatmap Combined	builds; B_6's LCMS_Neg cells drawn as zeros, its LCMS_Pos cells not
+P-h	K2-b	lipid,metab	writer on an owner at norm complete	writes; samples table 12 rows; every matrix 12 columns; LCMS_Neg B_6 numeric all NA; no column B_6 in either feature table
+P-h	K2-b	lipid,metab	model alignment, whole and partitioned, missing_samples keep_missing and drop_incomplete	no refusal; every view counts 12 samples measured (B_6 counted in LCMS_Neg); drop_incomplete keeps B_6; the two paths agree
+P-i	K2-b	lipid,metab	design rows; samples counted per assay; the summary's removed count	12; 12 and 12; Removed: 0 (arithmetic of the summary on the metadata reader's design counts)
+P-j	K2	lipid,metab	project saved by the base through the declared journey (QC complete, correlation 0.5), analysis record, replay once	design 11 without B_6; LCMS_Pos holds B_6; replay mismatches empty; tarball and sha written
+P-k	K2-b-RUVnew,K2-b-RUVleg	lipid,metab	writer with the failing column blank in the final read and in the normalised matrix that entered RUV	LCMS_Neg removed_factors status not_determined, 0 features measured in every run; warning of class integration_input_removed_factors_undetermined; input written without the factors; LCMS_Pos determined
