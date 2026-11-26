@@ -1,0 +1,6 @@
+index	path	exit	seconds	status
+1	docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R	0	0	ok
+2	docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R	1	14	failed
+3	docs/qa/workflow-execution/kit/kit-262/m3-k262.R	0	450	ok
+4	docs/qa/workflow-execution/kit/kit-262/m3-k262.R	1	40	failed
+5	docs/qa/workflow-execution/kit/kit-262/m3-k262.R	0	127	ok

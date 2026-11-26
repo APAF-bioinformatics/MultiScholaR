@@ -1,0 +1,10 @@
+unit c01-r9101: error (0 s)
+unit c01-r9102: instrument (0 s)
+unit c01-r9104: instrument (21 s)
+unit c01-r9103: instrument (26 s)
+unit c01-r9106: ok (33 s)
+FAULT unit 1 (c01-r9101, r 9101): expected error / (any), observed error / simpleError -> ok
+FAULT unit 2 (c01-r9102, r 9102): expected instrument / partial_match_guard, observed instrument / partial_match_guard -> ok
+FAULT unit 3 (c01-r9103, r 9103): expected instrument / partial_match_guard, observed instrument / partial_match_guard -> ok
+FAULT unit 4 (c01-r9104, r 9104): expected instrument / partial_match_guard_absorbed, observed instrument / partial_match_guard -> MISMATCH
+FAULT unit 5 (c01-r9105, r 9105): expected instrument / no_row, observed instrument / no_row -> ok

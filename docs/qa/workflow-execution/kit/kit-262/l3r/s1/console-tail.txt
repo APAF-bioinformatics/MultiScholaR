@@ -1,0 +1,9 @@
+selftest effect_shift: ok
+selftest null_swap: ok
+selftest null_split: ok
+selftest plan_265_300: ok
+selftest plan_035: ok
+selftest plan_040: ok
+selftest plan_floors: ok
+selftest plan_cost: ok
+selftest plan_never_reduced: ok
