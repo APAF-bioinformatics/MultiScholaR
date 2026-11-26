@@ -361,3 +361,12 @@ the scorer stops on an instrument row (and on any row whose class contains `part
 Planted variants: job `guard` on M12 (`K188_GUARD`; `guardjourney`: a deliberate `$` prefix match inside a journey; `guardunit`: inside the unit outside any journey; `guardcontrol`: an ordinary journey) and the E16 case `guardunit`.
 **One difference from KIT-275, for the coordinator:** the scorer does not stop on a crashed unit row. Under VAL-243 (38.2 (2)) a unit crash counts in the 5 % gate, so stopping on it would contradict the declared rule; an instrument unit row stops it, a crashed one is counted. The path left with no trace is a failure of the options(error) writer itself (the `try` around it), untested.
 The prepared declaration for one further send is `smoke/declaration-5.md` (not sent).
+
+## Which ending gives which row (the line between `instrument` and `crashed`; the coordinator accepted that the scorer stops on `instrument` unit rows only)
+
+| Ending | Row | Why |
+|---|---|---|
+| a guard stop anywhere: in a journey (under `quiet()` or not), in a unit outside any journey, or one that reaches the global net (a trace is left; the parent reads it) | journey or unit row `instrument`, with the guard's text (and a trace); the parent's own death leaves `parent-trace.txt` | an instrument defect by definition (VAL-54); the scorer stops |
+| an error of the package under test inside a journey | the journey's own classified status (`refused` with its class when it is in `REFUSALS`, else `crashed`) | 7.3 and 5.7 |
+| a unit that ended with an error that is not the guard (the child's handler caught it, or it escaped every handler and left a trace) | `unit` row `crashed`, with the error text | 38.2 (2): a unit crash is expanded to every arm and condition of its job and counts in the 5 % gate |
+| a unit that left NO result file and NO trace (killed by the runner, out of memory, a failure of the trace writer itself) | the parent records a `unit` row `crashed`, class `child process exit <code>, no result` | 38.4's declared text counts a data set "whose process ended without rows" toward "no result" and 38.2 (2) expands a unit row; a data set absent WITHOUT a unit row stops scoring (35.2), so the row is what keeps it from stopping. The ticket does not separate a runner kill from an error; it is listed for the coordinator, not decided here |

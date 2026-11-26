@@ -2183,6 +2183,8 @@ if (child) {
     # an error that ends the unit also carries the call stack at the point of the error (deparsed, one line each, truncated), so the
     # failing line is located (coordinator's ruling, defect 2)
     stack <- NULL
+    # the planted `crashnet` unit: a non-guard error raised OUTSIDE every handler, so only `options(error=)` sees it (the trace writer; the parent records `crashed`)
+    if (identical(Sys.getenv("K188_PLANT_UNIT"), "crashnet")) stop("K188 planted non-guard error outside every handler")
     result <- tryCatch(withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now,
         Sys.getenv("K188_PLANT_UNIT")), warning = guardWarning, error = function(e) {
         stack <<- vapply(sys.calls(), function(cl) substr(oneLine(paste(deparse(cl, width.cutoff = 200L), collapse = " "), 200L), 1L, 200L), "")
@@ -2222,8 +2224,8 @@ p_last <- {
 # 35.6: K188_PLANT (comma list, default all eight) names the planted cases of the L1c job (K188_JOBS = l1c)
 plants_wanted <- strsplit(Sys.getenv("K188_PLANT", paste(PLANTS, collapse = ",")), ",", fixed = TRUE)[[1L]]
 # K188_GUARD (comma list, default all three): the planted guard units of the job `guard` (the metabolomics cell M12)
-guards_wanted <- strsplit(Sys.getenv("K188_GUARD", "guardjourney,guardunit,guardcontrol"), ",", fixed = TRUE)[[1L]]
-if ("guard" %in% jobs) stopifnot(lifecycle, identical(part, "L"), all(guards_wanted %in% c("guardjourney", "guardunit", "guardcontrol")))
+guards_wanted <- strsplit(Sys.getenv("K188_GUARD", "guardjourney,guardunit,guardcontrol,crashnet"), ",", fixed = TRUE)[[1L]]
+if ("guard" %in% jobs) stopifnot(lifecycle, identical(part, "L"), all(guards_wanted %in% c("guardjourney", "guardunit", "guardcontrol", "crashnet")))
 if ("l1c" %in% jobs) {
     stopifnot(lifecycle, identical(part, "L"), all(plants_wanted %in% PLANTS))
     # 40.3 (8), 35.6 (r1.20): the R-marked predictions are read at the bound commit and written into lifecycle.md before the
@@ -2368,6 +2370,12 @@ runChild <- function(i) {
             threshold = "instrument", pass = nrow(rows) == 1L && identical(as.character(rows$arm), "unit") && identical(as.character(rows$status), "instrument") &&
                 grepl("partial-match guard", as.character(rows$class), fixed = TRUE), note = oneLine(as.character(rows$class)), stringsAsFactors = FALSE)
     }
+    if (identical(u$plant, "crashnet")) {
+        res$checks <- data.frame(check = "GUARD_planted", cell = u$cell, rep = u$r, condition = "crashnet", value = as.character(rows$status[[1L]]),
+            threshold = "crashed, with a trace", pass = nrow(rows) == 1L && identical(as.character(rows$arm), "unit") && identical(as.character(rows$status), "crashed") &&
+                grepl("K188 planted non-guard error", as.character(rows$class), fixed = TRUE) && file.exists(trace_file), note = oneLine(as.character(rows$class)),
+            stringsAsFactors = FALSE)
+    }
     silence <- if (!identical(u$job, "l1c") && !identical(u$job, "guard") && !is.null(rows$status)) data.frame(n_instrument = sum(rows$status %in% "instrument"),
         n_itsd_false = sum(as.character(rows$itsd_ok) %in% "FALSE"), n_norm_false = sum(as.character(rows$norm_ok) %in% "FALSE"))
     list(timing = timing, checks = res$checks, status = status, plant = res$plant, silence = silence)
@@ -2394,7 +2402,7 @@ unlink(list.files(file.path(out_dir, "rows"), pattern = "^unit-(timing|checks)-"
 timing <- do.call(rbind, timing)
 # a unit that ended with an error is a failed check in a lifecycle run (the planted exit and guard units end so by design)
 for (i in which(nzchar(timing$error))) checks <- rbind(checks, data.frame(check = "unit_completed", cell = timing$cell[[i]], rep = timing$rep[[i]],
-    condition = paste(timing$job[[i]], units$plant[[i]]), value = NA, threshold = "ran to the end", pass = units$plant[[i]] %in% c("exitplant", "guardunit"),
+    condition = paste(timing$job[[i]], units$plant[[i]]), value = NA, threshold = "ran to the end", pass = units$plant[[i]] %in% c("exitplant", "guardunit", "crashnet"),
     note = timing$error[[i]], stringsAsFactors = FALSE))
 statuses <- do.call(rbind, status_rows)
 statuses <- stats::aggregate(statuses["n"], statuses[c("cell", "job", "arm", "arm_scale", "scenario", "mask", "status", "class")], sum)
