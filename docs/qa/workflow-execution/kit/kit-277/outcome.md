@@ -86,3 +86,25 @@ file (cleanup results can differ on label-free, TMT and DIA with limpa). Evidenc
   120-minute file timeout (R1 and R2).
 - Outside this ticket, recorded: a session export at a DA-state head with a stale DA still packs the DA folder
   (R/utils_workflow_dia_sessions.R:1782, `collectDIANativeGuiFiles`, condition `!is.null(snapshot$da_results)`).
+
+## Reading of the O4 diagnostic (run 45825080961; tables/diag/head.log, base.log; no repair made)
+Head (code 53e4c745) at the six points A to F (after the organism Save; after the first Save Workflow Arguments and Copy; after the refused
+enrichment press; after the DA run; after the enrichment run; after the second Save and Copy):
+- `da_results` entity "<none>" and `workflowDaResultStatus` "none" at EVERY point, A to F. The DA status is never "stale" and the three
+  tests of the status (owner, membership, component difference) are never evaluated ("<no DA reference>"). The "files unmade" text is
+  raised because the status is "none" (R/utils_workflow_dia_da.R `workflowDaFilesUnmade`, called by `assertWorkflowSummaryDaCurrent`
+  with files = TRUE), as read.
+- At A the set-back is as designed (da_results NULL, enrichment marker FALSE). The break is at D: the DA press on the head produced
+  no accepted manifest (da_results still "<none>", publication marker "complete", unmade files "<no DA>").
+- `commitDIADaArguments` committed nothing: the head entity (d1912228...) and the head's `args$daAnalysisUI` (timestamp 13:16:54, the
+  lane's own DA) are identical at A to F. The annotation fetch DID run at D (O2b and O2 pass in R2: the bus table is the new organism's).
+- The DA press added two notifications (the list grows 3 -> 5 between C and D); their texts are NOT in the log: the diagnostic
+  printed them with `str`, which truncates, and the DA handler's own messages are `cat()` output captured by the lane harness.
+Base (the same file on staging's R) at the same points: `da_results` present and "current" at A to C (owner, membership true, component
+difference FALSE, ids equal), a NEW da_results entity after D (c3350c25...), the head entity changes at C, D and E (the earlier enrichment
+and the DA re-run commit), unmade files empty, publication marker "complete", copy gate "allowed" throughout.
+Pointer: the divergence is between the set-back (correct at A) and the DA press at D; by reading the press passes the null check, runs
+the fetch (R/mod_prot_da_handlers_run_analysis.R:71) and then does not reach `acceptDIADaManifest` (R/utils_workflow_dia_da.R, accept half),
+i.e. an error inside the handler's `tryCatch` (`report_error`: "Error in DA analysis: ...") is the candidate. The log does not show which.
+Needed to settle it: one more diagnostic send printing the FULL text of every notification at D (`paste(notes, collapse = " || ")`, a
+one-line change to `kit277Diag`) and the error class. NOT done: awaiting the coordinator's word.

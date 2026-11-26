@@ -1,0 +1,18 @@
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$copy_after` to be identical to "allowed".
+  Differences:
+  `actual`:   "refused"
+  `expected`: "allowed"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes_rerun, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
