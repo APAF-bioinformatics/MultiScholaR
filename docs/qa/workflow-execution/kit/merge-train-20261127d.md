@@ -125,3 +125,29 @@ Totals expected: 51 files; 1 only-on-head, 50 same; no new-failure, no fixed, no
 ### Decision and attempts
 
 One run. A shard that times out or an instrument failure with no result: handed back, not re-sent. A 502/403 from the API is not a run failure (re-attach once). An HTTP 500/502 at dispatch with no run created: started once by hand.
+
+## Results (run 45842971860, request train38-kit219-21ed5db2, head 21ed5db2b, base e4a6d4aea)
+
+Run success; every file ran to completion (no timeout, no crash, no withheld file); the watch did not need a re-attach. Tables beside this file: `merge-train-20261127d-compare.tsv`, `-check-compare.txt`, `-tests-head.tsv`, `-tests-base.tsv`.
+Base versus head, 51 files: same 50, only-on-head 1, new-failure 0, count-changed 0, message-changed 0, fixed 0. Tests head: passed 10225, failed 310, errors 3, skipped 45; base: 10068, 310, 3, 45 (the difference 157 is the new file).
+**Every prediction held: TRAIN GREEN for KIT-219.**
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit219-enrichment-files-current.R | absent / 157/0 | absent | 157/0/0/0 (226 s) | only-on-head: HELD |
+| test-omic-summary-module.R, test-omics-summary-core.R, test-omic-enrich-module.R | 1675/28, 676/25/0/2, 1011/59 | as predicted | same | same: HELD (the `stringdb_plot` flake did not appear: 0 mentions in `compare-failures.txt`) |
+| the four GUI-entry files | 92/101, 19/16, 57/48, 16/13, messages identical | as predicted | same | same: HELD |
+| test-kit216-prot-session-after-enrichment.R 152/0/0/1; test-kit212-da-current.R 309/0; test-kit243-summary-current-outputs.R 246/0; test-omics-module-globals.R 14/0 | same | as predicted | same | same: HELD |
+| the other files | same | equal to train 37's table | same | same: HELD |
+| R CMD check | identical 0/3/3 | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical, 6 findings on both, none only on head: HELD |
+
+No base-side count differed from train 37's table (all 50 existing files compared by script; the only mismatch the script printed is the new file's "absent" against its 0/0/0/0 placeholder row).
+
+**Budget** (jobs API, summed, skipped jobs 0): **469.55 job-minutes = 31.30 core-hours** (core-hours = job-minutes x 4 / 60). Ceiling 1,400 (93.3), expected about 425 (28.3): 10 % above the expectation, 34 % of the ceiling. Longest shard 56.82 job-minutes (`tests base 1`, with `test-kit266-limpa-combined-qc-figure.R`, which took 2,536 s on head, limit 90 min): 19 % of 300. Check head 13.38, base 9.68; plan 0.42; results 0.53.
+
+Decision: KIT-219 is green on the merged tree.
+
+## What the coordinator resolves at landing
+
+- Ledger: `VAL-<train38-1>` (`docs/methods-decision-ledger.md:2560`) takes its number (next free VAL-388). Status cells of the rows it cites: VAL-179 (SD-5) and VAL-187: fill "implemented by KIT-219 (VAL-n), merged by train 38" where they wait for this merge. No stored-reference row (the audit found no stored value moves).
+- Placeholders in the member's records and NEWS: none found by `grep -rn "VAL-<"` over `kit-219/` and `NEWS.md` (the ledger row is the only one).
