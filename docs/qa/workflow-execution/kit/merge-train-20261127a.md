@@ -166,7 +166,7 @@ message-changed 1, new-failure 0, count-changed 0, fixed 0. Tests head: passed 1
 | test-module-ci-trx-summary.R | 87/1 same | 87/1 | 87/1 | same: HELD (83/2 in R2 without the variable) |
 | test-omics-module-globals.R | 14/0 same | 14/0 | 14/0 | same: HELD |
 | test-omic-summary-module.R 1675/28; test-omics-summary-core.R 676/25/0/2; test-workflow-saved-exports.R 271/0/1/4 | same | as predicted | same | same: HELD |
-| the other 38 files | same | equal to R2's base except the two named above | same | same: HELD |
+| the other 37 files | same | equal to R2's base except the two named above | same | same: HELD |
 | R CMD check | identical, 0/3/3 | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none): HELD |
 
 **Masked comparison** (Python `-I`, script kept outside the downloaded folder; output `merge-train-20261127a-masked-comparison.txt`). 659 failure records on each side;
