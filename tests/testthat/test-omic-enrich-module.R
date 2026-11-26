@@ -1050,10 +1050,8 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
-        states = c(
-            initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "61dae2e69108addd"),
+        history = "<unchanged>",
+        states = "<unchanged>",
         product = c(
             schema = "dia_enrichment_product_v1", service = "gprofiler2:gprofiler2_test_double",
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
@@ -1482,10 +1480,8 @@ omicEnrichW1Frozen[["clusterprofiler"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
-        states = c(
-            initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "a62a41b234214817"),
+        history = "<unchanged>",
+        states = "<unchanged>",
         product = c(
             schema = "dia_enrichment_product_v1", service = "unavailable", `parameters$taxon_id` = "999999",
             `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0", `parameters$q_cutoff` = "0.05",
@@ -1862,10 +1858,8 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
-        states = c(
-            initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "b8448caae3e5e28b"),
+        history = "<unchanged>",
+        states = "<unchanged>",
         product = c(
             schema = "dia_enrichment_product_v1", service = "gprofiler2:e2e_fake_gost",
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
@@ -2116,7 +2110,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
+        history = "<unchanged>",
         states = c(
             initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
             enrichment_completed = "1167a2b0dbbd17a5"),
@@ -2363,10 +2357,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
-        states = c(
-            initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "61dae2e69108addd"),
+        history = "<unchanged>",
+        states = "<unchanged>",
         product = c(
             schema = "dia_enrichment_product_v1", service = "gprofiler2:gprofiler2_test_double",
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
@@ -2637,10 +2629,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
-        states = c(
-            initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "61dae2e69108addd"),
+        history = "<unchanged>",
+        states = "<unchanged>",
         product = c(
             schema = "dia_enrichment_product_v1", service = "gprofiler2:gprofiler2_test_double",
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
@@ -3466,10 +3456,8 @@ omicEnrichW1Frozen[["restore"]] <- list(
         tab_status = c(
             normalization = "complete", differential_expression = "complete",
             enrichment_analysis = "complete", differential_abundance = "complete"),
-        history = c("initial", "correlation_filtered", "enrichment_completed"),
-        states = c(
-            initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "61dae2e69108addd"),
+        history = "<unchanged>",
+        states = "<unchanged>",
         product = c(
             schema = "dia_enrichment_product_v1", service = "gprofiler2:gprofiler2_test_double",
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
@@ -3918,7 +3906,7 @@ omicEnrichW113DumpPath <- function() {
 # OMIC_ENRICH_W113_FROZEN_START
 omicEnrichW113Frozen <- list()
 omicEnrichW113Frozen[["gprofiler"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
@@ -3954,7 +3942,7 @@ omicEnrichW113Frozen[["gprofiler"]] <- list(
         `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["clusterprofiler"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "clusterprofiler",
         `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
@@ -3989,7 +3977,7 @@ omicEnrichW113Frozen[["clusterprofiler"]] <- list(
         `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
 
 omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
@@ -4025,7 +4013,7 @@ omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
         `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "clusterprofiler",
         `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
@@ -4060,7 +4048,7 @@ omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
         `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
 
 omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
@@ -4098,7 +4086,7 @@ omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
         `parameters$enrichment_background` = "fixed ; fixed ; tested"))
 
 omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
@@ -4160,7 +4148,7 @@ omicEnrichW113Frozen[["refusals/table_removed"]] <- list(
     record = "<none>")
 
 omicEnrichW113Frozen[["restore"]] <- list(
-    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    history = c("initial", "correlation_filtered"),
     state = c(
         `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",

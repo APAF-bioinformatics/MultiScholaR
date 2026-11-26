@@ -5922,7 +5922,7 @@
       "step": "enrichment",
       "tab": "enrichment",
       "kind": "action",
-      "head": "enrichment_completed",
+      "head": "correlation_filtered",
       "history": [
         "initial",
         "raw_data_s4",
@@ -5939,8 +5939,7 @@
         "duplicates_removed",
         "protein_replicate_filtered",
         "normalized",
-        "correlation_filtered",
-        "enrichment_completed"
+        "correlation_filtered"
       ],
       "tab_status": {
         "setup_import": "complete",
@@ -5968,8 +5967,7 @@
         "duplicates_removed": "986dfd52b07e695f9136bb4dff05aa6cca2de3b7fdb221da37a3d21d37870bce",
         "protein_replicate_filtered": "3561cc108aeb0a2717b57cd7b3f24ad5c9db3db8166c49cfa08c78535db81f6c",
         "normalized": "af98ebabec3237c6258be6903137a07e1c9d686631ec8b910fc5f8665de0f918",
-        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f",
-        "enrichment_completed": "f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705"
+        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -5989,7 +5987,7 @@
         "proteomics_workflow-differential_expression-cluster_summary": "No clusters defined. Enable clustering and tree cutting on the heatmap.",
         "proteomics_workflow-differential_expression-contrasts_display": "groupKO-groupWT",
         "proteomics_workflow-differential_expression-da_results_table": "<req>",
-        "proteomics_workflow-differential_expression-da_status": "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        "proteomics_workflow-differential_expression-da_status": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
         "proteomics_workflow-differential_expression-da_summary_stats": "<req>",
         "proteomics_workflow-differential_expression-download_da_results": "<download>",
         "proteomics_workflow-differential_expression-heatmap_plot": "<req>",
@@ -6318,7 +6316,7 @@
       "step": "summary_refusal",
       "tab": "session_summary",
       "kind": "refusal",
-      "head": "enrichment_completed",
+      "head": "correlation_filtered",
       "history": [
         "initial",
         "raw_data_s4",
@@ -6335,8 +6333,7 @@
         "duplicates_removed",
         "protein_replicate_filtered",
         "normalized",
-        "correlation_filtered",
-        "enrichment_completed"
+        "correlation_filtered"
       ],
       "tab_status": {
         "setup_import": "complete",
@@ -6364,8 +6361,7 @@
         "duplicates_removed": "986dfd52b07e695f9136bb4dff05aa6cca2de3b7fdb221da37a3d21d37870bce",
         "protein_replicate_filtered": "3561cc108aeb0a2717b57cd7b3f24ad5c9db3db8166c49cfa08c78535db81f6c",
         "normalized": "af98ebabec3237c6258be6903137a07e1c9d686631ec8b910fc5f8665de0f918",
-        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f",
-        "enrichment_completed": "f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705"
+        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -6385,7 +6381,7 @@
         "proteomics_workflow-differential_expression-cluster_summary": "No clusters defined. Enable clustering and tree cutting on the heatmap.",
         "proteomics_workflow-differential_expression-contrasts_display": "groupKO-groupWT",
         "proteomics_workflow-differential_expression-da_results_table": "<req>",
-        "proteomics_workflow-differential_expression-da_status": "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        "proteomics_workflow-differential_expression-da_status": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
         "proteomics_workflow-differential_expression-da_summary_stats": "<req>",
         "proteomics_workflow-differential_expression-download_da_results": "<download>",
         "proteomics_workflow-differential_expression-heatmap_plot": "<req>",
@@ -6715,7 +6711,7 @@
       "step": "summary_save",
       "tab": "session_summary",
       "kind": "action",
-      "head": "enrichment_completed",
+      "head": "correlation_filtered",
       "history": [
         "initial",
         "raw_data_s4",
@@ -6732,8 +6728,7 @@
         "duplicates_removed",
         "protein_replicate_filtered",
         "normalized",
-        "correlation_filtered",
-        "enrichment_completed"
+        "correlation_filtered"
       ],
       "tab_status": {
         "setup_import": "complete",
@@ -6761,8 +6756,7 @@
         "duplicates_removed": "986dfd52b07e695f9136bb4dff05aa6cca2de3b7fdb221da37a3d21d37870bce",
         "protein_replicate_filtered": "3561cc108aeb0a2717b57cd7b3f24ad5c9db3db8166c49cfa08c78535db81f6c",
         "normalized": "af98ebabec3237c6258be6903137a07e1c9d686631ec8b910fc5f8665de0f918",
-        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f",
-        "enrichment_completed": "f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705"
+        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -6782,7 +6776,7 @@
         "proteomics_workflow-differential_expression-cluster_summary": "No clusters defined. Enable clustering and tree cutting on the heatmap.",
         "proteomics_workflow-differential_expression-contrasts_display": "groupKO-groupWT",
         "proteomics_workflow-differential_expression-da_results_table": "<req>",
-        "proteomics_workflow-differential_expression-da_status": "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        "proteomics_workflow-differential_expression-da_status": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
         "proteomics_workflow-differential_expression-da_summary_stats": "<req>",
         "proteomics_workflow-differential_expression-download_da_results": "<download>",
         "proteomics_workflow-differential_expression-heatmap_plot": "<req>",
@@ -7117,7 +7111,7 @@
       "step": "summary_copy",
       "tab": "session_summary",
       "kind": "action",
-      "head": "enrichment_completed",
+      "head": "correlation_filtered",
       "history": [
         "initial",
         "raw_data_s4",
@@ -7134,8 +7128,7 @@
         "duplicates_removed",
         "protein_replicate_filtered",
         "normalized",
-        "correlation_filtered",
-        "enrichment_completed"
+        "correlation_filtered"
       ],
       "tab_status": {
         "setup_import": "complete",
@@ -7163,8 +7156,7 @@
         "duplicates_removed": "986dfd52b07e695f9136bb4dff05aa6cca2de3b7fdb221da37a3d21d37870bce",
         "protein_replicate_filtered": "3561cc108aeb0a2717b57cd7b3f24ad5c9db3db8166c49cfa08c78535db81f6c",
         "normalized": "af98ebabec3237c6258be6903137a07e1c9d686631ec8b910fc5f8665de0f918",
-        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f",
-        "enrichment_completed": "f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705"
+        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -7184,7 +7176,7 @@
         "proteomics_workflow-differential_expression-cluster_summary": "No clusters defined. Enable clustering and tree cutting on the heatmap.",
         "proteomics_workflow-differential_expression-contrasts_display": "groupKO-groupWT",
         "proteomics_workflow-differential_expression-da_results_table": "<req>",
-        "proteomics_workflow-differential_expression-da_status": "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        "proteomics_workflow-differential_expression-da_status": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
         "proteomics_workflow-differential_expression-da_summary_stats": "<req>",
         "proteomics_workflow-differential_expression-download_da_results": "<download>",
         "proteomics_workflow-differential_expression-heatmap_plot": "<req>",
@@ -7537,7 +7529,7 @@
       "step": "summary_report",
       "tab": "session_summary",
       "kind": "action",
-      "head": "enrichment_completed",
+      "head": "correlation_filtered",
       "history": [
         "initial",
         "raw_data_s4",
@@ -7554,8 +7546,7 @@
         "duplicates_removed",
         "protein_replicate_filtered",
         "normalized",
-        "correlation_filtered",
-        "enrichment_completed"
+        "correlation_filtered"
       ],
       "tab_status": {
         "setup_import": "complete",
@@ -7583,8 +7574,7 @@
         "duplicates_removed": "986dfd52b07e695f9136bb4dff05aa6cca2de3b7fdb221da37a3d21d37870bce",
         "protein_replicate_filtered": "3561cc108aeb0a2717b57cd7b3f24ad5c9db3db8166c49cfa08c78535db81f6c",
         "normalized": "af98ebabec3237c6258be6903137a07e1c9d686631ec8b910fc5f8665de0f918",
-        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f",
-        "enrichment_completed": "f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705"
+        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -7604,7 +7594,7 @@
         "proteomics_workflow-differential_expression-cluster_summary": "No clusters defined. Enable clustering and tree cutting on the heatmap.",
         "proteomics_workflow-differential_expression-contrasts_display": "groupKO-groupWT",
         "proteomics_workflow-differential_expression-da_results_table": "<req>",
-        "proteomics_workflow-differential_expression-da_status": "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        "proteomics_workflow-differential_expression-da_status": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
         "proteomics_workflow-differential_expression-da_summary_stats": "<req>",
         "proteomics_workflow-differential_expression-download_da_results": "<download>",
         "proteomics_workflow-differential_expression-heatmap_plot": "<req>",
@@ -7967,7 +7957,7 @@
       "step": "summary_export",
       "tab": "session_summary",
       "kind": "action",
-      "head": "enrichment_completed",
+      "head": "correlation_filtered",
       "history": [
         "initial",
         "raw_data_s4",
@@ -7984,8 +7974,7 @@
         "duplicates_removed",
         "protein_replicate_filtered",
         "normalized",
-        "correlation_filtered",
-        "enrichment_completed"
+        "correlation_filtered"
       ],
       "tab_status": {
         "setup_import": "complete",
@@ -8013,8 +8002,7 @@
         "duplicates_removed": "986dfd52b07e695f9136bb4dff05aa6cca2de3b7fdb221da37a3d21d37870bce",
         "protein_replicate_filtered": "3561cc108aeb0a2717b57cd7b3f24ad5c9db3db8166c49cfa08c78535db81f6c",
         "normalized": "af98ebabec3237c6258be6903137a07e1c9d686631ec8b910fc5f8665de0f918",
-        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f",
-        "enrichment_completed": "f7aec17c486f39252bdd7370536cdb28292475d8fd7c3be5284301c858443705"
+        "correlation_filtered": "0ced1154a533e6019cfb92f14d4d64dfd4ff0d3fc90ac2f04d359f739664c99f"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -8034,7 +8022,7 @@
         "proteomics_workflow-differential_expression-cluster_summary": "No clusters defined. Enable clustering and tree cutting on the heatmap.",
         "proteomics_workflow-differential_expression-contrasts_display": "groupKO-groupWT",
         "proteomics_workflow-differential_expression-da_results_table": "<req>",
-        "proteomics_workflow-differential_expression-da_status": "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        "proteomics_workflow-differential_expression-da_status": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
         "proteomics_workflow-differential_expression-da_summary_stats": "<req>",
         "proteomics_workflow-differential_expression-download_da_results": "<download>",
         "proteomics_workflow-differential_expression-heatmap_plot": "<req>",
