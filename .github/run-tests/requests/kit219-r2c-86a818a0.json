@@ -1,0 +1,38 @@
+{
+  "requested_by": "KIT-219: run R2c, rerun of the 8 files whose base shard was lost, base against head, plus G0 (iii)/(iv); ceiling 214 job-minutes (14.3 core-h)",
+  "label": "KIT-219 R2c rerun 86a818a0 against tests-only a70b352c5",
+  "package_commit": "86a818a08a94d3223e82a6ad270e2995131be45d",
+  "base_commit": "a70b352c5128f39295cbbf695ba73ab5dee77fa4",
+  "tools_ref": "",
+  "tests": [
+    "test-kit212-da-current.R",
+    "test-kit243-summary-current-outputs.R",
+    "test-kit257-norm-own-files.R",
+    "test-kit271-limpa-table-name.R",
+    "test-kit259b-second-correction.R",
+    "test-kit207-summary-head-guard.R",
+    "test-kit219-enrichment-files-current.R",
+    "test-gui-entry-lipidomics.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-219/g0b.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-219/g0b-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
