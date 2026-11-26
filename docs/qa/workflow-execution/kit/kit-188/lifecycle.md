@@ -226,3 +226,15 @@ Defects found (file and line at d6e718c3; none fixed):
 
 Checks that passed in the unit tables (smoke/2/out/rows/unit-checks-*): E1, E10 (K172c, M12 las), E11 (every M12 condition, difference 3.6e-15 to 8.7e-15), E14, E9 for LP (M12, every condition). The
 `LAu` check (E10u) and `E3_itsd_identity` belong to the unfinished deciding unit and were not exercised.
+
+## Smoke check, send 2: the repairs of send 1's defects (coordinator's rulings)
+
+Reads of row files in the scripts (searched with grep for `read.delim`, `read.table`, `read.csv`, `fread`): score-k188.R:49 (every row file; now
+`colClasses = "character"`, numerics through `num()`; this was defect 1); sim-k188.R `loadPredictions` (character), the E5 readers of `part-*.tsv`
+(two, character), and the per-cell assembly (character); `readRDS` of a unit's result is not a table. No other script reads row files.
+Defect 2: the child's error result now carries `sys.calls()` (written to `unit-trace-<unit>.txt`); the cause for `emptysample` and `daerror` is not fixed
+yet, it is not located until that trace exists. Defect 3: the request is split (`smoke/declaration-2.md`); each unit appends its checks to `unit-<unit>-progress.tsv`
+as it runs, the parent writes `checks-<job>-start.tsv` and the provenance before any unit runs, and the provenance again at the end.
+`K188_SMOKE=1`: written to the provenance and to the rows' `smoke` column; `score-k188.R` refuses any input carrying it (E16 case `smokeflag`);
+the parent's check `SMOKE_counted_refusal` stops a request that sets it without `K188_LIFECYCLE=1` (shown by script 4 of request A).
+E16 gains the `tf` case (a column of T and F letters), the stand-alone `dropped` condition at 20 of 400 and `smokeflag`.
