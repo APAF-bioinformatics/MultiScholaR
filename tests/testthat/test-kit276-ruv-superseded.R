@@ -618,6 +618,7 @@ test_that("KIT-276 T8b: the archive's RUV fields after the re-apply say no RUV",
     norm <- new.env(parent = emptyenv())
     k276Journey(fixture, norm, "in process", c("P", "C", "K"))
     k276Reapply(fixture, norm)
+    fixture$manager$.context$session_format <- "native_v1"
     collected <- k276Quiet(withDIAStateScope(fixture$manager, function() collectDIANativeSessionMetadata(fixture$workflow,
         norm, list(norm_method = "quantile", ruv_mode = "covariates"))))
     expect_identical(collected$metadata$ruv_mode, "none")
@@ -697,8 +698,8 @@ test_that("KIT-276 T12, T13: the in-order journeys and the Skip with no RUV befo
 
 test_that("KIT-276 T14: a history written by an earlier build opens and records as before and heals at the next DA that commits and the next correlation", {
     k276Need()
-    plant <- function() {
-        fixture <- k276Start("in process")
+    plant <- function(env = parent.frame()) {
+        fixture <- k276Start("in process", envir = env)
         norm <- new.env(parent = emptyenv())
         k276Journey(fixture, norm, "in process", c("P", "C", "K"))
         context <- fixture$manager$.context
