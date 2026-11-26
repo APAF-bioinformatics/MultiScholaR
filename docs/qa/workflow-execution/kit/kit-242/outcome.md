@@ -437,3 +437,119 @@ and the GUI-entry files (as train 19). Line: 59.33 expected / 120.0 ceiling core
 - The E25m row fails by value on the base, as the change intended; the two declared edits fail on the base and pass on
   the head.
 - Used: 148.31 + 73.49 = 221.80 of 901.33 core-hours.
+
+## After R2: the coordinator's rulings (2026-11-26), no run
+
+**(1) KIT-073's `registry` message: a prediction error of the message, verdict unaffected.** Established by reading
+(the failure texts of run 45738934354 and the code):
+- The expectation is `expect_identical(current$registry, frozen$registry)` (`tests/testthat/test-workflow-omics-declarations.R:45`),
+  against the stored dump `tests/testthat/fixtures/kit073-omics-declarations-frozen.rds` (`:7-10`). The failure text is
+  printed in full (6,664 characters, identical on base and head in `failures.txt` and `failures-base.txt`); it is not
+  cut. It ends with "`actual$metabolomics$metab_ruv$declaration$fixed` is a list / `expected$...$fixed` is NULL", and
+  reports `lipid_ruv`'s the same way: the stored dump predates every `fixed` list on the RUV declarations (KIT-224's
+  first one), so the comparison stops at "list against NULL" for that entry and never prints the list's rows.
+- The value does differ: head `fixed = list(ruv_feature_levels = "restored", ruv_control_grouping = "kept", ruv_k_bound =
+  "sample_size", ruv_fallback = "by_cause")` (`R/utils_workflow_omics_declarations.R:790-791`; the declared design's
+  `fixed` gains `ruv_fallback` at `:1102`); base 9bb5ef0d the same list without `ruv_fallback`
+  (`R/utils_workflow_omics_declarations.R:760` there). So `current$registry` differs between base and head; the message
+  cannot show it because an earlier difference of the same entry is what is printed. My earlier inferred cause (a display
+  cut after the first differences) was wrong; this is the same situation as KIT-258's (VAL-338).
+
+**(2) The two keys declared "not predicted" (manual `reset outputs`, lipid and metab) changed.** What it means: the
+tab's log (the `norm_log` output) still holds the RUV run's closing line after the reset, so the reset does not clear
+the log. The ticket's text says nothing about the reset or the log; listed for the auditor (whether a reset should clear
+the log is outside KIT-242; its behaviour here is the existing one, only the line's text changed).
+
+**(3) Run order (the coordinator's ruling).** R3 is not sent: the implementation audit comes first, and A5's full suite is
+met by the merge train's run (KIT-242 with KIT-260, the full suite on the merged tree), so that one full suite is not
+run twice.
+
+**NEWS clause for the train (prepared, not committed here; KIT-268's bullet is on staging since train 32, not on this
+branch).** Staging's text "(for lipidomics and metabolomics once their analysis record names the method per comparison,
+KIT-242) (KIT-268)" becomes "; the lipidomics and metabolomics analysis record now names the method per comparison and
+assay (KIT-268, KIT-242)". KIT-236's bullet ("Not yet changed (they wait for KIT-242): the sentence naming the
+between-sample normalisation method applied, the internal-standard sentence and the method named in the Figure 1
+caption") stays true: KIT-242 writes the record those sentences will read but changes no report template (section 3,
+out of scope, KIT-236).
+
+**Ledger.** A6 owes a row: `VAL-<merge>` written after VAL-358 in `docs/methods-decision-ledger.md` (the decisions as
+implemented, the evidence runs, the precedents, the classification and what is not measured).
+
+### A3 (Part B's methods)
+
+`git grep -n "log_warn(" -- R/func_lipid_s4_ruv_methods.R R/func_metab_s4_ruv_methods.R` at 8162ea52 (55 each, twins):
+- `ruvIII_C_Varying`: under the current rule the method hands every call to `omicsRuvCorrectByCause`, which runs the
+  method body under the earlier rule only for the assays it corrects; every skip there (`return(NULL)` after a
+  `log_warn`) leaves the assay absent or unchanged, which `omicsRuvCorrectByCause` turns into `omics_ruv_failed`
+  (`correction_error`), and the invalid-k, malformed-assay and no-control cases are decided before the body runs. Two
+  logged-only removals remain, as decided: features with values returned all non-finite (`:713-715` area, G9) and
+  samples returned all non-finite (`:719-722` area, adjacent item 8, not decided; an excluded empty sample never reaches
+  it, it is put back as missing).
+- `ruvCancor`: a skipped assay returns no plot; under the current rule the search records it as `error_cancor`, a failed
+  computation when no percentage is valid (stop). The control alignment at `:219` no longer skips (Q6.1).
+
+## Acceptance (ticket section 9)
+
+| # | Criterion | Evidence | State |
+|---|---|---|---|
+| A1 | G0 observes C1 to C14 as predicted (or the ticket is revised) | `g0-*` on `kit-242-g0`; r1.3 | met (C4 revised the ticket, r1.3) |
+| A2 | Every E row fails at base, G rows pass, all pass on the fix | R1a, R1b-A, R1c, R1b-B, R1d; R2 base/head | met (R2: the new file fixed, 526/0 on the head) |
+| A3 | No warning followed by an unhandled skip in the four S4 methods | the A3 sections above | met, with the two logged-only removals named |
+| A4 | P0 lists the moving expectations; R2 as 8.2 | P0 45723354055 (`moved.tsv`); R2 45738934354 | met; one message-level prediction error (KIT-073 `registry`), verdict unaffected |
+| A5 | R3 full suite: no difference other than A4's | by the merge train's run, coordinator's ruling | owed to the train |
+| A6 | NEWS, ledger row, `outcome.md` with "For the change report"; `man/`, `NAMESPACE`, `DESCRIPTION` unchanged | NEWS (two KIT-242 bullets), ledger `VAL-<merge>`, this file | met (`git diff aa119308 -- man NAMESPACE DESCRIPTION` empty) |
+| A7 | Hand-offs recorded by the coordinator | `DISPATCH-STATE.md` | the coordinator's |
+
+## Stored values moved, by file (for the stored-reference rows; VAL-303, VAL-352)
+
+No stored value is edited beyond the two VAL-303 pins and the three VAL-352 edits. Failing until the end-of-project
+re-record (VAL-303, VAL-352 (2) to (4)):
+- `tests/testthat/test-omic-norm-module.R` (frozen captures at `:571`-`:1510`, compared at `:1549`, call sites
+  `:1560`-`:1585`): 56 expectations. The 12 internal-standard provenance digests are VAL-303's; the other 44 (logs,
+  states, outputs, final PCA of the manual and automatic sessions, and the skip sessions' provenance) VAL-352 (4).
+  Part B also moves, inside those 56: log (manual run, automatic run), provenance (manual run, skip_correlation, reset;
+  automatic run, final_plot, final_plot_failing), outputs (manual run, skip_correlation, reset; automatic run,
+  final_plot, final_plot_failing), lipid and metab (observed R2).
+- `tests/testthat/test-workflow-omics-declarations.R:45` and the `values` comparisons (KIT-073, fixture
+  `fixtures/kit073-omics-declarations-frozen.rds`): registry (four marker rows) and the RUV values (five new fields);
+  VAL-352 (3).
+- `tests/testthat/test-workflow-omics-binding-steps.R:197` (KIT-094, fixture `fixtures/kit094-characterisation.rds`):
+  the `records` part (the marker rows; the RUV step's per-assay outcomes); VAL-352 (3).
+- GUI-entry lanes (`tests/testdata/gui-entry/lipid_canonical.json`, `metab_lc.json`, `metab_gc.json`,
+  `metab_combined.json`; `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R`): the internal-standard log and
+  record captures (Part A); no RUV in these lanes; VAL-352 (2).
+- `tests/testthat/test-workflow-lipid-declarations.R:138`, `:188` and the metab twin: `itsd_applied` TRUE on a fixture
+  whose ITSD finds no standard (Part A; the ticket's 8.1 row).
+- `tests/testthat/test-kit172-downstream.R` T10 (14 expectations, Part A): on the re-record list with Part A's moves.
+Edited, with authority: `test-workflow-lipid-declarations.R:47`, `test-workflow-metab-declarations.R:47` (VAL-303 (2));
+`test-metab-02w-…:226-240` (VAL-352 (1)); `test-workflow-omics-worker.R` RUV branch and `test-module-ci-metab-norm.R:200-204`
+(VAL-352 (5)); `test-workflow-omics-worker.R:15-23` (Part A's declared edit, r1.6).
+
+## Not checked (final)
+
+- The full suite on the merged tree (A5): by the merge train's run.
+- The declared design through the tab and the managed worker with an empty sample (E20 is kernel-level).
+- RUV-III-C's own behaviour on a sample left out and put back (item iii's "not checked"): the put-back column is
+  all-missing by construction; the DA on it is limma's per-feature fit.
+- Whether any expectation already failing on staging hides a numeric change: R2's per-expectation comparison shows only
+  the listed message changes.
+- Real data (KIT-188 and the KC sets are not used); the frequency of empty samples and of no-elbow searches in real data.
+- Whether a reset should clear the tab's log (listed for the auditor above).
+
+## For the change report (final)
+
+- Lipidomics and metabolomics between-sample normalisation left an assay unnormalised when one sample had no value or the
+  method failed, while the tab, record and session summary said it was done (legacy code, one trigger new in 0.9:
+  IMP-017). Now the sample is left out of that assay only (removed from the design when empty everywhere) and failures
+  stop. Evidence: G0 C1-C3, R2a-2, R2.
+- ITSD with no matched standard (a likely default case) normalised nothing for that assay and said "applied"; now
+  recorded per assay with the standards used, shown in the tab and the session summary. Evidence: G0 C3, C10.
+- Legacy RUV-III-C dropped an assay it could not correct, or returned the input when every assay failed, while
+  recording `ruv_applied` TRUE (metab since 2025-05-06, lipid since 2026-01-18); the control alignment failed on any
+  feature the control selection did not list. Now by cause (VAL-242 Q6.1, Q6.2 (c); VAL-290). Evidence: G0 C4, C12,
+  R1b-B, R1d, R2.
+- The declared RUV design refused an assay with an empty sample; now computes its factors on the other samples and
+  leaves the sample out of that assay's DA. Evidence: E20 (R1d, R2).
+- Proteomics Scale normalisation with an empty sample made the table all-missing; the sample now leaves the design
+  (Part C). Evidence: G0 C9, E17.
+- Every change has a replay marker, so records made before replay as made.
