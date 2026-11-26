@@ -8,8 +8,62 @@
 # old code cannot answer is recorded as an error text, not raised. Texts are drafts (VAL-41).
 
 kit277StageOnly <- function() identical(Sys.getenv("MULTISCHOLAR_KIT277_STAGE"), "1")
+
+#' Diagnostic log (MULTISCHOLAR_KIT277_DIAG set; O4's scenario only; no expectation reads it): the store's state at a point.
+kit277Diag <- function(label, api, probe) {
+    file <- Sys.getenv("MULTISCHOLAR_KIT277_DIAG_FILE")
+    if (!nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG")) || !nzchar(file)) return(invisible(NULL))
+    emit <- function(name, value) cat("KIT277DIAG", label, name, "=", paste(utils::capture.output(utils::str(value, give.attr = FALSE)), collapse = " "), "\n", file = file, append = TRUE)
+    manager <- probe$manager()
+    context <- manager$.context
+    snap <- context$snapshot
+    emit("manager_current_state", kit277Try(manager$current_state))
+    emit("snapshot_current_state", kit277Try(snap$current_state))
+    emit("history_entities", kit277Try(vapply(as.character(unlist(snap$state_history)), function(s) snap$states[[s]]$entity_id %||% NA_character_, "")))
+    emit("context_head_entity", kit277Try(context$head$entity_id))
+    emit("store_identity", kit277Try(context$store$identity))
+    emit("da_results_entity", kit277Try(snap$da_results$entity_id %||% "<none>"))
+    emit("enrichment_marker", kit277Try(!is.null(snap$enrichment_results)))
+    emit("da_manifest", kit277Try(withWorkflowStateScope(manager, function() {
+        if (!isSavedWorkflowReference(snap$da_results)) return("<no DA>")
+        m <- resolveWorkflowStateValue(context, snap$da_results)
+        list(source = m$source$entity_id, owner = m$source$owner, parameters = m$parameters, contrasts = m$contrasts$friendly_names,
+            result_names = names(m$results))
+    })))
+    emit("da_status", kit277Try(workflowDaResultStatus(manager)))
+    emit("status_tests", kit277Try(withWorkflowStateScope(manager, function() {
+        if (!isSavedWorkflowReference(snap$da_results)) return("<no DA reference>")
+        source <- resolveWorkflowStateValue(context, snap$da_results)$source
+        history <- as.character(unlist(snap$state_history))
+        table <- workflowDaTableState(manager)
+        fields <- workflowDaTableFields(table$record$data$class)
+        list(owner_same = identical(source$owner, context$store$identity),
+            member = any(vapply(history, function(s) identical(snap$states[[s]]$entity_id, source$entity_id), logical(1))),
+            differ = workflowDaTablesDiffer(manager, source, table),
+            source_components = vapply(readComponentMetadata(manager, source)$data$components[fields], function(c) c$entity_id %||% NA_character_, ""),
+            head_components = vapply(table$record$data$components[fields], function(c) c$entity_id %||% NA_character_, ""))
+    })))
+    emit("daAnalysisUI_head", kit277Try(withWorkflowStateScope(manager, function() readWorkflowStateMetadata(manager)$data$slots$args$daAnalysisUI)))
+    emit("candidate_files", kit277Try(sub(probe$paths$base_dir, "", workflowDaCandidateFiles(probe$paths, "proteomics"), fixed = TRUE)))
+    emit("made_files", kit277Try(withWorkflowStateScope(manager, function() {
+        if (!isSavedWorkflowReference(snap$da_results)) return("<no DA>")
+        sub(probe$paths$base_dir, "", workflowDaMadeFiles(manager, probe$paths, "proteomics"), fixed = TRUE)
+    })))
+    emit("unmade_files", kit277Try(withWorkflowStateScope(manager, function() {
+        if (!isSavedWorkflowReference(snap$da_results)) return("<no DA>")
+        sub(probe$paths$base_dir, "", workflowDaFilesUnmade(manager, probe$paths, "proteomics"), fixed = TRUE)
+    })))
+    emit("publication_marker", kit277Try(tryCatch({ assertWorkflowDaPublicationComplete(probe$paths); "complete" }, error = function(e) paste(class(e)[[1L]], conditionMessage(e)))))
+    emit("notes", kit277Try(probe$notes()))
+    emit("copy_gate", kit277Try(tryCatch({
+        shiny::isolate(assertWorkflowSummaryDaCurrent(api$workflow_data, "proteomics", probe$paths, files = TRUE)); "allowed"
+    }, error = function(e) paste(paste(class(e), collapse = "/"), conditionMessage(e)))))
+    invisible(NULL)
+}
 kit277Skip <- function(stage) {
     if (kit277StageOnly() && !stage %in% c("S1", "G2")) testthat::skip("stage-1 gate: the S1 rows and G2 only")
+    # Diagnostic run (O4's miss): MULTISCHOLAR_KIT277_STAGE=2 runs the S2 rows only; nothing is judged by it.
+    if (identical(Sys.getenv("MULTISCHOLAR_KIT277_STAGE"), "2") && !identical(stage, "S2")) testthat::skip("diagnostic: S2 rows only")
 }
 
 kit277Cache <- new.env(parent = emptyenv())
@@ -568,6 +622,10 @@ kit277OrganismScenario <- function() {
         probe$flush()
         out$notes <- probe$notes()
         out$places_after <- places()
+        diag_file <- tempfile("k277diag-")
+        withr::local_envvar(MULTISCHOLAR_KIT277_DIAG_FILE = diag_file)
+        out$diag_file <- diag_file
+        kit277Diag("A_after_organism_save", api, probe)
         out$taxon_after <- probe$bus("taxon_id")
         out$organism_after <- probe$bus("organism_name")
         out$after <- kit277State(api, probe)
@@ -576,19 +634,24 @@ kit277OrganismScenario <- function() {
         out$export_da <- kit277ExportHasDa(probe)
         out$status_enrichment <- probe$status()$enrichment_analysis
         out$copy_notes_after <- kit277CopyClick(api, probe)
+        kit277Diag("B_after_first_save_and_copy", api, probe)
         # The enrichment Run is refused until the DA runs again.
         kit277Enrich(api, probe, "10090")
         out$enrichment_before_da <- !is.null(probe$manager()$.context$snapshot$enrichment_results)
+        kit277Diag("C_after_refused_enrichment", api, probe)
         # The DA run fetches the new organism's annotation.
         kit277RunDa(api, lane)
         probe$flush()
+        kit277Diag("D_after_da_run", api, probe)
         out$da_organisms <- kit277Organisms(probe$bus("uniprot_dat_cln"))
         # The enrichment run uses it.
         kit277Enrich(api, probe, "10090")
         probe$flush()
+        kit277Diag("E_after_enrichment", api, probe)
         out$enrich_organisms <- kit277Organisms(probe$bus("uniprot_dat_cln"))
         out$copy_after <- kit277Gate(api, probe, TRUE)
         out$copy_notes_rerun <- kit277CopyClick(api, probe)
+        kit277Diag("F_after_second_save_and_copy", api, probe)
         out
     }))
 }
@@ -615,6 +678,7 @@ test_that("KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes not
 test_that("KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer", {
     kit277Skip("S2")
     out <- kit277OrganismScenario()
+    if (nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG")) && file.exists(out$diag_file)) cat(readLines(out$diag_file), sep = "\n")
     expect_identical(out$after$copy, "refused")
     expect_identical(out$after$summary, "allowed")
     expect_false(out$after$da)
