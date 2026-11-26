@@ -1,0 +1,25 @@
+{
+  "ticket": "KIT-281",
+  "status": "started",
+  "script": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+  "script_sha256": "10fa5bfda5cb05c3ee84def2fd528b64a2bb84b4c51ce242731f5eb0b8b4a236",
+  "bound_commit": "b837a5d9a4174b39948e8ad736c9f2ac7a267b4b",
+  "smoke": false,
+  "counted": true,
+  "lifecycle": false,
+  "determinism": false,
+  "cells": "C",
+  "masks": {
+    "C": ["vd5", "vd10", "vd25"]
+  },
+  "arms": {
+    "main": ["S", "B", "B1", "N"]
+  },
+  "arms_filter": [],
+  "replicates": [559, 715],
+  "tasks_this_process": 157,
+  "workers": 4,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection)",
+  "g3_table_sha256": "9568f599fccf85442a49da738fc4f2ebe25bbccc4c31a607aff2b84ff19d8497",
+  "started": "2026-11-26T06:06:57+0000"
+}

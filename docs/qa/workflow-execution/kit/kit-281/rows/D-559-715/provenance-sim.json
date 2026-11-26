@@ -1,0 +1,78 @@
+{
+  "ticket": "KIT-281",
+  "script": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+  "status": "complete",
+  "smoke": false,
+  "counted": true,
+  "marker_names": ["missing_value_comparison", "enrichment_background", "intensity_filter_samples", "duplicate_resolution_samples", "ruv_feature_levels", "treat_moderation", "ruv_control_grouping", "ruv_k_bound", "intensity_filter_missing", "duplicate_resolution_rank", "correlation_exclusion"],
+  "kit280_marker_absent": true,
+  "g3_table_sha256": "9568f599fccf85442a49da738fc4f2ebe25bbccc4c31a607aff2b84ff19d8497",
+  "partial_match_guard": "own table handling only (assembly, lifecycle checks, determinism comparison); never around package, limma or qvalue calls",
+  "script_sha256": "10fa5bfda5cb05c3ee84def2fd528b64a2bb84b4c51ce242731f5eb0b8b4a236",
+  "bound_commit": "b837a5d9a4174b39948e8ad736c9f2ac7a267b4b",
+  "lifecycle": false,
+  "determinism": false,
+  "cells": "D",
+  "cell_index": 204,
+  "masks": {
+    "D": ["vd5", "vd10", "vd25"]
+  },
+  "arms": {
+    "main": ["S", "B", "B1", "N"]
+  },
+  "arms_filter": [],
+  "share": 0.5,
+  "band_width": 1,
+  "old_rule": {
+    "A": {
+      "m": 3,
+      "g": 2
+    },
+    "B": {
+      "m": 3,
+      "g": 2
+    },
+    "C": {
+      "m": 3,
+      "g": 2
+    },
+    "D": {
+      "m": 2,
+      "g": 3
+    },
+    "Av": {
+      "m": 3,
+      "g": 2
+    },
+    "Ag": {
+      "m": 3,
+      "g": 2
+    }
+  },
+  "replicates": [559, 715],
+  "tasks_this_process": 157,
+  "tasks_complete": 157,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection)",
+  "workers": 4,
+  "seconds_per_cell": {
+    "D": 5214.847
+  },
+  "seconds_per_replicate_mask": 11.0718619957537,
+  "warnings": 0,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "limma": "3.68.4",
+  "qvalue": "2.44.0",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "started": "2026-11-26T06:06:54+0000",
+  "finished": "2026-11-26T06:29:07+0000",
+  "exit_status": 0,
+  "tables_sha256": {
+    "D.tsv.gz": "8f6f1c105e6c04e42f201dd847135b4e3df9a0a502f241fedcf9762d34ae8ee2",
+    "metrics.tsv": "0019eac6aaebb401b0dd3dffe1c5b9f6feab32dd2eb7e5800ada3ae608c5d592",
+    "progress.tsv": "4cd549cf2468d4fa49afe239270111b4ee4ed31881179a3aed00d06e5108d691",
+    "range.tsv": "3a0525e8400bcaf8fe482ae9044f9d78ca622724d5587cc54c650d87c051a55d"
+  }
+}

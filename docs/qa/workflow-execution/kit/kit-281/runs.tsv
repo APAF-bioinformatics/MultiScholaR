@@ -15,3 +15,4 @@ run_id	commit	purpose	minutes	core_hours	result
 45764727947	b837a5d9a4174b39948e8ad736c9f2ac7a267b4b	counted job D2 r559-715 (declaration-counted.md; timeout 70; minutes = run created to updated, upper bound)	34.3	2.29	complete, exit 0; range.tsv expected=complete; provenance complete, smoke false, counted true; no stop file; not scored
 # check-request-k281.py on the eight requests before the push: accepted (every cell r = 401 to 715 once), exit 0
 # counted jobs total 291.8 min = 19.45 core-hours; running total 2.28 + 19.45 = 21.73 of 74.67 (ceiling line before each request 65.95)
+# scoring request: running-ceiling line before it: 21.73 used + 2.67 this request + 7.67 reserves (continuation 5.00, re-scoring 2.67) + Part C 16.00 = 48.07 <= 74.67

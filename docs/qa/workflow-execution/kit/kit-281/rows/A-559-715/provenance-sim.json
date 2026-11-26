@@ -1,0 +1,78 @@
+{
+  "ticket": "KIT-281",
+  "script": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+  "status": "complete",
+  "smoke": false,
+  "counted": true,
+  "marker_names": ["missing_value_comparison", "enrichment_background", "intensity_filter_samples", "duplicate_resolution_samples", "ruv_feature_levels", "treat_moderation", "ruv_control_grouping", "ruv_k_bound", "intensity_filter_missing", "duplicate_resolution_rank", "correlation_exclusion"],
+  "kit280_marker_absent": true,
+  "g3_table_sha256": "9568f599fccf85442a49da738fc4f2ebe25bbccc4c31a607aff2b84ff19d8497",
+  "partial_match_guard": "own table handling only (assembly, lifecycle checks, determinism comparison); never around package, limma or qvalue calls",
+  "script_sha256": "10fa5bfda5cb05c3ee84def2fd528b64a2bb84b4c51ce242731f5eb0b8b4a236",
+  "bound_commit": "b837a5d9a4174b39948e8ad736c9f2ac7a267b4b",
+  "lifecycle": false,
+  "determinism": false,
+  "cells": "A",
+  "cell_index": 201,
+  "masks": {
+    "A": ["vd5", "vd10", "vd25"]
+  },
+  "arms": {
+    "main": ["S", "B", "B1", "N"]
+  },
+  "arms_filter": [],
+  "share": 0.5,
+  "band_width": 1,
+  "old_rule": {
+    "A": {
+      "m": 3,
+      "g": 2
+    },
+    "B": {
+      "m": 3,
+      "g": 2
+    },
+    "C": {
+      "m": 3,
+      "g": 2
+    },
+    "D": {
+      "m": 2,
+      "g": 3
+    },
+    "Av": {
+      "m": 3,
+      "g": 2
+    },
+    "Ag": {
+      "m": 3,
+      "g": 2
+    }
+  },
+  "replicates": [559, 715],
+  "tasks_this_process": 157,
+  "tasks_complete": 157,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection)",
+  "workers": 4,
+  "seconds_per_cell": {
+    "A": 4971.885
+  },
+  "seconds_per_replicate_mask": 10.5560191082803,
+  "warnings": 0,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "limma": "3.68.4",
+  "qvalue": "2.44.0",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261122.372.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "started": "2026-11-26T06:07:12+0000",
+  "finished": "2026-11-26T06:28:21+0000",
+  "exit_status": 0,
+  "tables_sha256": {
+    "A.tsv.gz": "2982983a9c88b6764121b7cc845648b0d3b43fd02dc84c97dc077bd9010c3cf3",
+    "metrics.tsv": "11b694e01c34a71acb44d90ea66d9f8b9e0822180b5722fe39e160366a1d94d8",
+    "progress.tsv": "bdb5426e3e783b7e56105fcb63d8e1ea587102f33e1d68ace6c0e1125c53af7d",
+    "range.tsv": "630cbacb2d8f58c9d99fc5c5080df08321ae51ad096e9e7504ffb40687e72a06"
+  }
+}
