@@ -57,3 +57,24 @@ R1 judged: every new test failed by value (72 failed, 75 passed, no error). Two 
 - T5 (c): a record with no marker at all replays with the earlier comparison as well, which removes P_low2 too (one missing value of three is 33.3333 % against the cutoff 33.333 %): 38 stay, not 39 (the ticket's "39 kept" holds for the record with only `missing_value_comparison = counts`, case (b), which R1 confirmed at 39 of 40 under the earlier threshold rule on the old code's rule). Corrected in the test.
 - `test-kit227-report-ruv-sentences.R` R1: 186 passed / 3 failed (predicted 183 / 3): the declared substitution's three match assertions are passing expectations.
 This is the one correction pass of the ticket (tests only, no expected behaviour weakened). R1b re-runs only the new file on the old code.
+
+## Second tests-only pass (ticket r1.3, AUDIT-KIT-280-r2-20261127; allowed by the owner, VAL-394 (1)); predictions committed before the run
+
+R2 (base e4a6d4ae against head 1eff9c5c) stopped on unpredicted verdicts; the diagnosis finds no product defect. This pass changes tests only (nothing under R/, inst/ or man/):
+- H1: the three "QC change" calls (`test-prot-norm-input-current.R`, `test-kit206-prot-norm-export-guard.R`, `test-prot-norm-worker-figures.R`) run under `MultiScholaR.missing_filter_threshold_rule = "missing"`; no expectation changes, no other filter call is wrapped, the fallback is left as it is.
+- H2: `test-prot-ruv-factors-in-model.R` (declared expected-value change): `expect_length(uncorrected_only, 0L)` in the 6-per-group case, `expect_gt(..., 0L)` kept in the 3-per-group case, plus a `cat()` of both lengths.
+- H3: T3c of the new file: `keepNA = TRUE`, plus the assertion that the removed protein's value is NA.
+- Fixture F's 38 fillers and T5's 39 / 38 are already in the committed test (bb320e7e): no edit.
+
+Targeted run (head = 1eff9c5c plus this commit's tests, the five files; base = e4a6d4ae with the edited `test-prot-ruv-factors-in-model.R` only). Expected 69.9 job-min = 4.66 core-h (head 56.3 min 3.76, base 13.6 min 0.90); ceiling 105 min = 7.00 core-h; running total 59.79 used of 174.33.
+
+| File | Side | Predicted |
+|---|---|---|
+| test-prot-norm-input-current.R | head | 321 passed / 0 failed / 0 errors; the log shows "KIT-182 F2 before=64 after=58 removed=6" |
+| test-kit206-prot-norm-export-guard.R | head | 116 / 0 |
+| test-prot-norm-worker-figures.R | head | 71 / 0 |
+| test-prot-ruv-factors-in-model.R | head | 312 / 0; printed lengths: 6-per-group 0, 3-per-group > 0 |
+| test-prot-ruv-factors-in-model.R | base | 311 / 1: the 6-per-group `expect_length(..., 0L)` fails with a length of at least 1 |
+| test-kit280-prot-threshold-values.R | head | 149 / 0 |
+
+Any other verdict stops the ticket. R2's results for every other file are reused, with the explanations of the diagnosis recorded after the fact (not predicted): test-prot-norm-core.R 1,543 / 319 (six frozen `workflow` digests, 12 expectations), the lanes 79 / 114 (the UI digest moves in 93 steps), test-workflow-analysis-record.R 353 / 0 (two more DA long-table columns checked), test-kit280 T3c.
