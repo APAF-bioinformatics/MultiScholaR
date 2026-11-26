@@ -1,0 +1,235 @@
+== test-prot-norm-core.R | message-changed | the normalisation action and the correlation action give the recorded output through the moved functions
+-- base:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "21ab8a3c0e9774ec2c30ca808c5cc40479409cc518409e229115dfefdc80aed1"
+  `expected`: "a5d707779c1311d65a32a6664cc56a94d569796b78dc878fdde1de292a956bf2"
+  
+  correlation
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "6850077e6ae352d87f922f6102d4e481ec79731404d868aab460c1a6915b773f"
+  `expected`: "e741aaed67b4371eb675644924c46bc2bdd7bccf0a9b9b407b9121398ef5a05c"
+  
+  normalization_manual
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "90a1539a824a5bd44e44da5879dd397a1bbaa9883e82a9be0407290077175568"
+  `expected`: "d21daf95829cd776ee2495206c2de1f40eec75da29c1396ec92db7142e2fd6cc"
+  
+  normalization_skip
+-- head:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "21ab8a3c0e9774ec2c30ca808c5cc40479409cc518409e229115dfefdc80aed1"
+  `expected`: "a5d707779c1311d65a32a6664cc56a94d569796b78dc878fdde1de292a956bf2"
+  
+  correlation
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "6850077e6ae352d87f922f6102d4e481ec79731404d868aab460c1a6915b773f"
+  `expected`: "e741aaed67b4371eb675644924c46bc2bdd7bccf0a9b9b407b9121398ef5a05c"
+  
+  normalization_manual
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "90a1539a824a5bd44e44da5879dd397a1bbaa9883e82a9be0407290077175568"
+  `expected`: "d21daf95829cd776ee2495206c2de1f40eec75da29c1396ec92db7142e2fd6cc"
+  
+  normalization_skip
+  Expected `skipped$calls` to be identical to `c(...)`.
+  Differences:
+    `actual[2:7]`: 0 0 1 2 1 1
+  `expected[2:7]`: 0 0 1 1 1 1
+
+== test-kit259b-second-correction.R | fixed | KIT-259 I04-E1 (in process): the DIA-with-limpa RUV covariates step names a figure it replaced
+-- base:
+  Expected [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. | [warning NULL] The RUV-III covariates step finished, but the figure 'RUV-corrected Pearson correlation' could not be drawn: injected drawing failure. The normalised data are not affected. In this tab, the composite QC figure and the report the figure is replaced by a note giving the reason. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 I04-E1 (managed): the DIA-with-limpa RUV covariates step names a figure it replaced
+-- base:
+  Expected [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. | [warning NULL] The RUV-III covariates step finished, but the figure 'RUV-corrected Pearson correlation' could not be drawn: injected drawing failure. The normalised data are not affected. In this tab, the composite QC figure and the report the figure is replaced by a note giving the reason. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E1 (in process): the run writes the replaced panels beside the combined figure; a redraw leaves them
+-- base:
+  Expected `lists[[1L]]` to be identical to "h\tpost_norm_correlation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('h\tpost_norm_correlation')
+  Expected `lists[[2L]]` to be identical to "h\tpost_norm_correlation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('h\tpost_norm_correlation')
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E1 (managed): the run writes the replaced panels beside the combined figure; a redraw leaves them
+-- base:
+  Expected `lists[[1L]]` to be identical to "h\tpost_norm_correlation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('h\tpost_norm_correlation')
+  Expected `lists[[2L]]` to be identical to "h\tpost_norm_correlation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('h\tpost_norm_correlation')
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | message-changed | KIT-259 C01-E2: a redraw that fails after a run whose figures drew writes no list; pre markers enter the list
+-- base:
+  Expected `file.exists(file.path(fixture$paths$protein_qc_dir, "post_norm_correlation.png.placeholder"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `lists[[1L]]` to be identical to "a\tpre_norm_pca".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('a\tpre_norm_pca')
+-- head:
+  Expected `file.exists(file.path(fixture$paths$protein_qc_dir, "post_norm_correlation.png.placeholder"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E3: a normalisation run removes the earlier list; the pre markers stay
+-- base:
+  Expected `file.exists(file.path(dir, c(k259bList, "pre_norm_pca.png.placeholder")))` to be identical to `c(FALSE, TRUE)`.
+  Differences:
+  `actual`:   TRUE  TRUE
+  `expected`: FALSE TRUE
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E4: Copy carries the list into QC_figures beside the combined figure
+-- base:
+  Expected `file.exists(copied)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E5: a session exported after the run and imported again keeps the list
+-- base:
+  Expected `file.exists(restored)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (LFQ): the report names Figure 1's replaced panels from the list beside it
+-- base:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E6 (LFQ): the tab's current markers are not read; a list without a combined figure prints nothing
+-- base:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (TMT): the report names Figure 1's replaced panels from the list beside it
+-- base:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E6 (TMT): the tab's current markers are not read; a list without a combined figure prints nothing
+-- base:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (DIANN): the report names Figure 1's replaced panels from the list beside it
+-- base:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E6 (DIANN): the tab's current markers are not read; a list without a combined figure prints nothing
+-- base:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+-- base:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis after log2 transformation\\) and h \\(Pearson correlation after between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+-- head:
+  <passes>
+
+== test-kit259b-second-correction.R | fixed | KIT-259 C01-E6 (DIANN_limpa): the tab's current markers are not read; a list without a combined figure prints nothing
+-- base:
+  Expected `k259bSentence(file, markers = c("pre_norm_pca", "post_norm_correlation"))` to be identical to "".
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot."
+  - ""
+-- head:
+  <passes>
+

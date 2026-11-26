@@ -1489,6 +1489,40 @@ if(file.exists(composite_qc_fig_path)) {
 }
 ```
 
+```{r QC_metrics_placeholders, echo=FALSE, results="asis"}
+# KIT-259 (VAL-287, VAL-307): name the Figure 1 panels that the normalisation run replaced by a note (a figure it could
+# not draw). The run writes their letters and figures beside the combined QC figure when it builds it
+# (`<omic>_composite_QC_figure.placeholders`), and Copy carries the file beside the figure this report shows. No such
+# file, or no combined figure: nothing is printed and the report is as before.
+FormatPlaceholderPanels <- function(qc_figures_dir, omic_type) {
+  figure_path <- file.path(qc_figures_dir, paste0(omic_type, "_composite_QC_figure.png"))
+  list_path <- file.path(qc_figures_dir, paste0(omic_type, "_composite_QC_figure.placeholders"))
+  if (!file.exists(figure_path) || !file.exists(list_path)) return("")
+  rows <- strsplit(readLines(list_path, warn = FALSE), "\t", fixed = TRUE)
+  rows <- Filter(function(row) length(row) == 2L && nzchar(row[[1L]]), rows)
+  if (!length(rows)) return("")
+  stages <- c(pre_norm = "after log2 transformation", post_norm = "after between-sample normalisation",
+    ruv_corrected = "after RUVIII-C correction")
+  kinds <- c(pca = "principal component analysis", density = "density plot", rle = "relative log expression",
+    correlation = "Pearson correlation")
+  describe <- function(figure) {
+    if (identical(figure, "ruv_corrected_cancor")) return("RUV-III canonical correlation")
+    stage <- sub("_(pca|density|rle|correlation)$", "", figure)
+    kind <- sub("^.*_", "", figure)
+    if (!stage %in% names(stages) || !kind %in% names(kinds)) return(figure)
+    paste(kinds[[kind]], stages[[stage]])
+  }
+  items <- vapply(rows, function(row) paste0(row[[1L]], " (", describe(row[[2L]]), ")"), "")
+  joined <- if (length(items) == 1L) items else
+    paste(paste(items[-length(items)], collapse = ", "), "and", items[[length(items)]])
+  paste0("In Figure 1, ", if (length(items) == 1L) "panel " else "panels ", joined,
+    " could not be drawn by the application; ", if (length(items) == 1L) "it shows" else "each shows",
+    " a note giving the reason instead of the plot.")
+}
+qc_placeholder_text <- FormatPlaceholderPanels(report_qc_figures_dir, params$omic_type)
+if (nzchar(qc_placeholder_text)) cat("\n\n", qc_placeholder_text, "\n\n", sep = "")
+```
+
 # Differential Abundance Analysis
 
 `r results_data$content$de_details`
