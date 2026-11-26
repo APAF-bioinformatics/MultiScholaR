@@ -86,3 +86,14 @@ the head's args$daAnalysisUI, candidate against made against unmade DA files, th
 gate's class and full message. One send: base (tests tree with the diagnostic on the staging R/) and head (the same tests with the
 code), env MULTISCHOLAR_KIT277_STAGE=2, MULTISCHOLAR_KIT277_DIAG=1; file timeout 25 minutes; worst case 4.67 core-hours of the 5.0
 authorised; running total about 71 + 4.67 of 200.00. Hand back the log's reading; no repair.
+
+## Diagnostic 2 for O4's miss (declared before sending; outside the correction pass; coordinator-allowed; nothing judged by it)
+Purpose: the full text and class of every notification and of any condition raised in the DA press at point D, and the DA handler's
+console output for that press. Added (tests only, only when MULTISCHOLAR_KIT277_DIAG is set): `notes_full` at every point (no `str`);
+at D a tracing wrapper of `runDIAReferenceDaAnalysis` (the in-process DA call at R/mod_prot_da_handlers_run_analysis.R:~138) that logs
+the formula the request carries, the annotation argument (rows and columns, or class) and the taxon, and on error the condition's class,
+call and message before re-raising; the press's console output (`cat()` lines) captured into the diagnostic file; the bus annotation's
+rows, id column, organisms and the removed flag after the press; at E the enrichment press's console output. No expectation changes. One
+send, base (diagnostic file on staging R) and head (same file, code), env STAGE=2 and DIAG=1, file timeout 25 minutes; worst case 4.0
+core-hours (3.9 expected ceiling: 2 jobs x 35 min = 70 min = 4.67 would exceed, so the file timeout is lowered to 20 min: 2 x 30 = 60 min
+= 4.0); running total about 74 + 4.0 of 200.00. Hand back: the error text and class, the code line, the smallest repair as text.

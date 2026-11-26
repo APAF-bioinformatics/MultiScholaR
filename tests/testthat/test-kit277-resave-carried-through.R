@@ -55,6 +55,7 @@ kit277Diag <- function(label, api, probe) {
     })))
     emit("publication_marker", kit277Try(tryCatch({ assertWorkflowDaPublicationComplete(probe$paths); "complete" }, error = function(e) paste(class(e)[[1L]], conditionMessage(e)))))
     emit("notes", kit277Try(probe$notes()))
+    cat("KIT277DIAG", label, "notes_full =", kit277Try(paste(probe$notes(), collapse = " || ")), "\n", file = file, append = TRUE)
     emit("copy_gate", kit277Try(tryCatch({
         shiny::isolate(assertWorkflowSummaryDaCurrent(api$workflow_data, "proteomics", probe$paths, files = TRUE)); "allowed"
     }, error = function(e) paste(paste(class(e), collapse = "/"), conditionMessage(e)))))
@@ -640,12 +641,40 @@ kit277OrganismScenario <- function() {
         out$enrichment_before_da <- !is.null(probe$manager()$.context$snapshot$enrichment_results)
         kit277Diag("C_after_refused_enrichment", api, probe)
         # The DA run fetches the new organism's annotation.
-        kit277RunDa(api, lane)
+        dalog <- function(...) cat("KIT277DIAG D_press", ..., "\n", file = diag_file, append = TRUE)
+        original_da <- get("runDIAReferenceDaAnalysis", asNamespace("MultiScholaR"))
+        traced_da <- function(...) {
+            args <- list(...)
+            dalog("args formula =", kit277Try(args[[1L]]$formula_string), "| annotations =",
+                kit277Try(if (is.data.frame(args[[6L]])) paste(nrow(args[[6L]]), "rows; columns", paste(names(args[[6L]]), collapse = ",")) else class(args[[6L]])[[1L]]),
+                "| taxon =", kit277Try(probe$bus("taxon_id")))
+            tryCatch(original_da(...), error = function(e) {
+                dalog("ERROR class =", paste(class(e), collapse = "/"), "| call =", paste(deparse(conditionCall(e)), collapse = " "),
+                    "| message =", conditionMessage(e))
+                stop(e)
+            })
+        }
+        diagnosing <- nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG"))
+        if (diagnosing) {
+            console_d <- utils::capture.output(testthat::with_mocked_bindings(kit277RunDa(api, lane),
+                runDIAReferenceDaAnalysis = traced_da, .package = "MultiScholaR"))
+            for (line in console_d) dalog("console |", line)
+        } else {
+            kit277RunDa(api, lane)
+        }
         probe$flush()
+        annotation <- probe$bus("uniprot_dat_cln")
+        dalog("bus annotation rows =", kit277Try(nrow(annotation)), "| id column present =", kit277Try("Entry" %in% names(annotation)),
+            "| organisms =", kit277Organisms(annotation), "| removed flag =", probe$bus("uniprot_annotation_removed"))
         kit277Diag("D_after_da_run", api, probe)
         out$da_organisms <- kit277Organisms(probe$bus("uniprot_dat_cln"))
         # The enrichment run uses it.
-        kit277Enrich(api, probe, "10090")
+        if (diagnosing) {
+            console_e <- utils::capture.output(kit277Enrich(api, probe, "10090"))
+            for (line in console_e) cat("KIT277DIAG E_press console |", line, "\n", file = diag_file, append = TRUE)
+        } else {
+            kit277Enrich(api, probe, "10090")
+        }
         probe$flush()
         kit277Diag("E_after_enrichment", api, probe)
         out$enrich_organisms <- kit277Organisms(probe$bus("uniprot_dat_cln"))
