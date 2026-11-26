@@ -1,0 +1,7 @@
+# KIT-275 G1 (the exactness fixtures): declaration, committed before the request
+
+- Purpose (ticket 8.4): positive control PC2 (a hand-made pseudo-replicate: rho_unmod expected sqrt((2n-3)/(2n-1)) = 0.775, 0.845, 0.905) and negative control NC2 (genuine data: expected 1), 20 data sets per design (X3, X4, X6; 2,000 features; scenario N0), plus E6 and E10. **Not blind**: its readings are part of the result (reported in results.md). Runs ONCE.
+- Binding: package commit = the commit named in the request (branch `kit-275` after the closure repairs C01 to C05, on staging ec27f69e0, which holds KIT-255 with I01). Seeds: generator 275000000 + 100000 c + 10000 s + r, c = 5, 6, 7, s = 1, r = 1 to 20.
+- Request: script 1 `fixture-k275.R D3,D4,D6 1 20 k275-g1` (limit 20 min); script 2 `score-k275.R --g1 k275-g1/g1.tsv k275-g1` (limit 5 min). Upload pattern `\.(tsv|txt|json)$`. Ceiling (20 + 5 + 10 set-up) = 35 job-minutes = 2.33 core-hours (the ticket's G1 line is 30 minutes = 2.00; the extra 5 minutes are the `--g1` judging line; the ledger below carries 2.33).
+- Decision: F3 fires if any of the six controls fails (the two-sided interval of the mean at 0.01/3 not within 0.03 of its value): STOP, nothing else runs, the owner is told. A mechanics failure before any reading is an instrument defect: handed back with the evidence, no re-send without the coordinator's word. E6 or E10 failing is recorded and handed back.
+- Running ceiling: used 4.35 + this ceiling 2.33 + everything else planned 338.27 = 344.95, at most 350.73: met (`runs.tsv`).
