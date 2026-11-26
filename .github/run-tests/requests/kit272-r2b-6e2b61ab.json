@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-272 R2b: instrument defect 2 (T7 framing), new file only against tests-only 57d83190; ceiling 45 job-minutes",
+  "label": "KIT-272 R2b new file 6e2b61ab vs 57d83190",
+  "package_commit": "6e2b61ab82b097cc6f74808f30e8b59220bd4c63",
+  "base_commit": "57d8319078f24a0a5c55874b827284bd19e83fb4",
+  "tools_ref": "",
+  "tests": [
+    "test-kit272-prot-box-panel-text.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
