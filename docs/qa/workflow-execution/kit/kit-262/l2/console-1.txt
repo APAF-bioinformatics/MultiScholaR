@@ -1,0 +1,29 @@
+cells 1 to 40 done: 40 data sets, 0 errors, 457.6 s of sweeps
+cells 41 to 80 done: 40 data sets, 0 errors, 465.4 s of sweeps
+cells 81 to 120 done: 40 data sets, 0 errors, 508.1 s of sweeps
+cells 121 to 160 done: 40 data sets, 0 errors, 563.3 s of sweeps
+cells 161 to 198 done: 38 data sets, 0 errors, 509.8 s of sweeps
+       check units passed failed status
+1         E1   198    198      0   pass
+2    E1PRIME   198    198      0   pass
+3         E2   198    198      0   pass
+4         E3   198    198      0   pass
+5         E4   198    198      0   pass
+6         E7   198    198      0   pass
+7         E8    10     10      0   pass
+8 COMPLETION   198    198      0   pass
+9         E6     6      6      0   pass
+    n    f seconds_sweep seconds_total
+1   4  300      5.995444      12.79633
+2   6  300      6.608889      14.41300
+3  12  300      6.330167      13.90939
+4  24  300      6.538611      15.57950
+5  48  300      7.113556      16.58067
+6  96  300      9.131667      18.66722
+7   4 1000     15.697889      32.51789
+8   6 1000     16.346611      34.92461
+9  12 1000     16.729056      37.09900
+10 24 1000     17.936778      38.14489
+11 48 1000     19.380833      39.18011
+12 96 1000     22.154944      47.43744
+data sets: 198; errors: 0
