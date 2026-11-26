@@ -20,10 +20,11 @@ containing pair-wise correlation results from \code{pearsonCorForSamplePairs}.}
 correlation below this threshold in their replicate group are removed.}
 }
 \value{
-An updated LipidomicsAssayData object with poorly correlated samples removed.
+An updated LipidomicsAssayData object with poorly correlated samples removed (with several assays: set to missing in the assay where they fail, removed when no assay keeps a value; the samples set missing are recorded in \code{@args$correlation_exclusions}).
 }
 \description{
 Removes samples from a LipidomicsAssayData object based on
 Pearson correlation thresholds. Samples that do not have at least one
 replicate pair with correlation above the threshold are removed.
+With several assays, a sample below the threshold in one assay has its values set to missing in that assay only and is kept in the others; it leaves the design when no assay keeps a value for it.
 }

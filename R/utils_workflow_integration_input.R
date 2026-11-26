@@ -138,6 +138,12 @@ integrationInputRemovedFactors <- function(uncorrected, corrected, k, sample_ids
         reason = reason))
     if (is.na(declared)) return(undetermined("the correction records no number of removed factors"))
     if (features < declared + 1L) {
+        # KIT-255: a run with no finite value (set missing by the sample-correlation filter, or empty before) is named.
+        empty <- sample_ids[colSums(is.finite(u)) == 0L | colSums(is.finite(v)) == 0L]
+        if (length(empty)) {
+            return(undetermined(sprintf("%s no value in this data set, and no feature is then measured in every run",
+                if (length(empty) == 1L) paste("run", empty, "has") else paste("runs", paste(empty, collapse = ", "), "have"))))
+        }
         return(undetermined(sprintf("%d features are measured in every run, fewer than the %d needed for %d factors",
             features, declared + 1L, declared)))
     }

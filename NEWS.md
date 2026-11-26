@@ -122,6 +122,31 @@
    form's organism (Homo sapiens by default), which then set the UniProt annotation, the Taxon ID in the study
    parameters and the enrichment organism. The organism window now says that only the selected organism is looked up
    in UniProt and tested for enrichment. No result of an import that completes changes (KIT-265).
+ * Lipidomics and metabolomics with two or more assays (for example positive and negative mode): the sample-correlation
+   filter now judges each sample within each assay. A sample whose correlation with its replicates is below the threshold
+   in one assay only has its values in that assay set to missing; it stays in the analysis of the other assays and leaves
+   the study only when no assay keeps a value for it. Features of that assay that met the minimum number of values per
+   group may then have fewer; they are tested on the values that remain. Before, such a sample left the study but its
+   values stayed in the other assays, so the lipidomics differential analysis stopped with a message naming the other
+   assay, the metabolomics one stopped on Windows, macOS and when the application runs without its background worker, and
+   otherwise ran without the sample in every assay. The version on `main` analysed every assay without the sample;
+   results in the assays where the sample passed now include it. The normalisation tab, the analysis record, the study
+   parameters and the report name each sample set missing, with the assay; the normalisation tab also names each sample
+   removed because no assay kept a value for it. When every sample of a group is set missing in one assay, the same
+   places say that comparisons with that group were not tested in that assay (the differential-analysis tables still
+   list that assay's rows for those comparisons, without a result). Older analysis records replay as they were computed. The
+   differential-analysis heatmaps leave out a sample with no value in the assays shown; in the view that combines assays,
+   the cells of a sample set missing in one assay are drawn at the feature's average. Limits: in an RUV-corrected data
+   set holding a sample set missing in it, the integration's removed RUV factors cannot be determined, so the optional
+   adjustment for them is unavailable there; the integration model still counts such a sample as measured in that data
+   set (in the data set's sample count, and it is kept when the option to keep only samples measured in every data set
+   is chosen). After RUV, the sample-correlation filter judges the corrected values. In one constructed test (12 samples in two
+   groups, one sample's values in one assay replaced at random, one RUV factor), RUV removed that sample's deviation, so
+   the filter did not fail it. This was seen with the new RUV design, and with the legacy RUV-III-C route as it chose its
+   control features before this version. How often the filter can act after RUV with the current settings, and how the
+   differential analysis then treats such a sample, will be measured before the release (KIT-275; VAL-330). With RUV
+   skipped, or when RUV removes no factor, the filter acts as described above. Where a sample's values were missing altogether in one assay, that assay may not have been
+   normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
