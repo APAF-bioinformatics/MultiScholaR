@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-242 R1f (VAL-373 Q-C, re-check RC-1): the correction's first evidence, head-only on 5be656b2, 16 files; predictions in outcome.md at 37e94b33; ceiling 90 job-minutes (6.0 core-hours) per VAL-329",
+  "label": "KIT-242 R1f head 5be656b2",
+  "package_commit": "5be656b2e81d6caf8e2e5898f8b4b0597f003f61",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit242-normalisation-fallback.R",
+    "test-omics-module-globals.R",
+    "test-workflow-omics-worker.R",
+    "test-module-ci-metab-norm.R",
+    "test-metab-02w-normalise-between-samples-characterization.R",
+    "test-kit172-downstream.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-prot-norm-core.R",
+    "test-lipid-12b-norm-ruv-helpers-shared.R",
+    "test-lipid-12c-ruv-s4-characterization.R",
+    "test-metab-02y-get-neg-ctrl-metab-anova-characterization.R",
+    "test-metab-04-ruv-optimization.R",
+    "test-metab-norm-standalone-shared.R",
+    "test-ruv-control-anova-grouping.R",
+    "test-metab-03a-ruviii-c-varying-characterization.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "limpa",
+    "mixOmics",
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
