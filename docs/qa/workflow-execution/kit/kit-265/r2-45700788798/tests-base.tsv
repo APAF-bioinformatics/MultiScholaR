@@ -1,0 +1,11 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit265-organism-routes.R	67	52	0	0	0	13.9	failed
+test-e2e-test-mode-integration.R	61	0	0	0	0	11.7	ok
+test-kit250-organism-dialog.R	118	1	0	0	0	10.4	failed
+test-module-ci-prot-import.R	107	0	0	0	0	9.7	ok
+test-prot-01c-import-module-contracts.R	436	2	0	0	0	17.1	failed
+test-prot-01d-import-module-characterization.R	79	0	0	0	0	11.9	ok
+test-prot-import-core.R	38	0	0	0	0	11.1	ok
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	0	12	ok
+test-workflow-server-shared.R	226	0	0	0	0	12.5	ok
+test-workflow-ui-shared.R	178	0	0	0	0	11.9	ok

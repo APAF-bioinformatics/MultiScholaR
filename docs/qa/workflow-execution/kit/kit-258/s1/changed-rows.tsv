@@ -1,0 +1,3 @@
+input	assay	variant	id	base_row	base_n_measured	base_mean	base_annotation	head_row	head_n_measured	head_mean	head_annotation
+lipid_msdial_dup_import	LCMS_Pos	partitioned	P001	2	3	177.333333	TG 52:3	1	4	150.5	PC 34:1
+lipid_msdial_dup_import	LCMS_Pos	whole	P001	2	3	177.333333	TG 52:3	1	4	150.5	PC 34:1

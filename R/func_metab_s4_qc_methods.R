@@ -385,13 +385,19 @@ setMethod("resolveDuplicateFeatures",
                         dplyr::mutate(
                             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
                         ) %>%
+                        # KIT-258 (VAL-284): the count and the mean of the measured values, neither missing nor zero
+                        dplyr::mutate(
+                            n_measured = length(duplicateResolutionMeasured(dplyr::c_across(dplyr::any_of(sample_cols)))),
+                            avg_measured = duplicateResolutionMeasuredMean(dplyr::c_across(dplyr::any_of(sample_cols)))
+                        ) %>%
                         dplyr::ungroup() %>%
                         dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>%
                         # *** Group by the correct ID column ***
                         dplyr::group_by(!!rlang::sym(id_col)) %>%
-                        dplyr::slice_max(order_by = .data$avg_intensity, n = 1, with_ties = FALSE) %>%
+                        # KIT-258: the most measured row, then the highest mean, then the first
+                        keepDuplicateResolutionRow() %>%
                         dplyr::ungroup() %>%
-                        dplyr::select(-.data$avg_intensity)
+                        dplyr::select(-.data$avg_intensity, -"n_measured", -"avg_measured")
 
                     rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                     if (rows_removed_non_itsd > 0) {
@@ -796,7 +802,9 @@ setMethod(
                         ggplot(aes(pearson_correlation)) +
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
                         # Set x-axis limits and breaks
-                        scale_x_continuous(limits = c(lower, 1), breaks = seq(lower, 1, 0.1), expand = c(0, 0)) +
+                        # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I02): rounded below 0, so that the tick at 0
+                        # is 0 (seq() gives 5.6e-17 from -0.3, -0.6 or -0.7, and every label then printed in scientific form).
+                        scale_x_continuous(limits = c(lower, 1), breaks = if (lower < 0) round(seq(lower, 1, 0.1), 1) else seq(lower, 1, 0.1), expand = c(0, 0)) +
                         # # Set fixed y-axis scale, similar to protein version
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +

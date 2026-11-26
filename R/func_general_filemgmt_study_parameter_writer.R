@@ -1006,16 +1006,18 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             record_lines <- c(record_lines, sprintf("[%s. %s: %s]", step$order, step$state, step$operation))
             for (previous in step$preceded_by %||% list()) for (parameter in previous$parameters)
                 record_lines <- c(record_lines, sprintf("  %s.%s [%s] = %s", previous$operation, parameter$name,
-                    parameter$provenance, workflowRecordValueText(parameter$value)))
+                    parameter$provenance, studyParameterRecordValueText(parameter, step$order)))
             for (parameter in step$parameters) record_lines <- c(record_lines, sprintf("  %s [%s] = %s", parameter$name,
-                parameter$provenance, workflowRecordValueText(parameter$value)))
+                parameter$provenance, studyParameterRecordValueText(parameter, step$order)))
             record_lines <- c(record_lines, "")
         }
         for (name in names(analysis_record$analyses)) {
             analysis <- analysis_record$analyses[[name]]
+            # KIT-213: the step that produced the analysis's inputs is the record step of its source state.
+            source_order <- Find(function(step) identical(step$state, analysis$source_state), analysis_record$steps)$order
             record_lines <- c(record_lines, sprintf("[%s: %s]", name, analysis$operation))
             for (parameter in analysis$parameters) record_lines <- c(record_lines, sprintf("  %s [%s] = %s", parameter$name,
-                parameter$provenance, workflowRecordValueText(parameter$value)))
+                parameter$provenance, studyParameterRecordValueText(parameter, source_order %||% NA_integer_)))
             record_lines <- c(record_lines, "")
         }
         output_lines <- c(output_lines, record_lines)
@@ -1062,4 +1064,33 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             stop("Failed to write study parameters file: ", e$message)
         }
     )
+}
+
+#' The value text of one analysis-record parameter in study_parameters.txt (KIT-213, VAL-169 (1)). A parameter that
+#' holds an earlier result's identifier in the session's store (`pairs`, `logcpm`, `grid` and `results`, of provenance
+#' `input`) is printed as a label naming the step that produced it: the identifier differs between sessions and
+#' projects and is not a checksum of the result. The label is made from the record alone; every other value, and a
+#' NULL, empty or `NA` value of the four, is printed by the record's formatter as before.
+#' @param parameter One parameter of the record (`name`, `provenance`, `value` as encoded).
+#' @param step_order The record `order` of the step whose block prints the line (for an analysis, the step of its
+#'   source state), or `NA`.
+#' @return The text after `= ` on the line.
+#' @noRd
+studyParameterRecordValueText <- function(parameter, step_order) {
+    text <- workflowRecordValueText(parameter$value)
+    labels <- c(pairs = "the sample-pair correlations computed %s", logcpm = "the TMM log counts per million computed %s",
+        grid = "the RUV choice made %s")
+    if (!identical(parameter$provenance, "input") || !isTRUE(parameter$name %in% c(names(labels), "results"))) return(text)
+    value <- decodeWorkflowRecordValue(parameter$value)
+    if (!is.atomic(value) || !length(value) || all(is.na(value))) return(text)
+    if (identical(parameter$name, "results")) {
+        contrast <- names(value)
+        label <- if (is.null(contrast)) rep("the differential abundance results in this analysis", length(value)) else
+            sprintf("the differential abundance results of contrast %s in this analysis", contrast)
+        label[is.na(value)] <- "NA"
+        return(paste(if (is.null(contrast)) label else paste0(contrast, "=", label), collapse = ", "))
+    }
+    where <- if (length(step_order) == 1L && !is.na(step_order)) sprintf("in step %s of this analysis", step_order) else
+        "in this analysis"
+    sprintf(labels[[parameter$name]], where)
 }

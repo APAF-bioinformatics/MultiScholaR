@@ -1,0 +1,16 @@
+lipidomics project 1: head=lipid_correlation_filtered done=1 failed= ids=49 incarnation_lines=0 analyses: differential_abundance: lipid_da_contrast source_state=lipid_correlation_filtered
+  notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+lipidomics project 2: head=lipid_correlation_filtered done=1 failed= ids=49 incarnation_lines=0 analyses: differential_abundance: lipid_da_contrast source_state=lipid_correlation_filtered
+  notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+metabolomics project 1: head=metab_correlation_filtered done=1 failed= ids=49 incarnation_lines=0 analyses: differential_abundance: metab_da_contrast source_state=metab_correlation_filtered
+  notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+metabolomics project 2: head=metab_correlation_filtered done=1 failed= ids=49 incarnation_lines=0 analyses: differential_abundance: metab_da_contrast source_state=metab_correlation_filtered
+  notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+transcriptomics project 1: head=trx_ruvs done=1 failed= ids=46 incarnation_lines=0 k=2 export=accepted analyses: differential_abundance: trx_da_contrast source_state=trx_ruvs; trx_ruviii_export: trx_ruviii_export source_state=trx_ruvs
+  notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+transcriptomics project 2: head=trx_ruvs done=1 failed= ids=46 incarnation_lines=0 k=2 export=accepted analyses: differential_abundance: trx_da_contrast source_state=trx_ruvs; trx_ruviii_export: trx_ruviii_export source_state=trx_ruvs
+  notes: [message] Saved Integration S4 Object | [message] Study parameters saved successfully
+proteomics project 1: head=enrichment_completed done=1 failed= ids=47 incarnation_lines=0 analyses: differential_abundance: DA-contrast-output source_state=correlation_filtered
+  notes: [message] Saved Integration input | [message] Study parameters saved successfully
+proteomics project 2: head=enrichment_completed done=1 failed= ids=47 incarnation_lines=0 analyses: differential_abundance: DA-contrast-output source_state=correlation_filtered
+  notes: [message] Saved Integration input | [message] Study parameters saved successfully

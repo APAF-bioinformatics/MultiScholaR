@@ -14,7 +14,8 @@
    now shows where the reported model ranks among the training seeds by the final value of MOFA2's training objective
    (the ELBO), how far it is below the highest and the range over the seeds. The test setting
    `MULTISCHOLAR_TEST_FEATURES=1` now shows only the RUV design choices. `options(MultiScholaR.integration_gui = FALSE)`
-   hides the tabs. The Enrichment tab marks its eight defaults not yet confirmed (KIT-240).
+   hides the tabs. The Enrichment tab's defaults are confirmed decisions; the three organism settings say they default
+   to human and can be changed for other species (KIT-240, KIT-267).
 
  * Integration: the Results tab and the integration report now state the limitations of the factor model, with this
    analysis's own numbers: how many biological samples the model has, beside what the package's simulations could and
@@ -105,6 +106,26 @@
    earlier releases that carried these settings (since November 2025). Only the printed file changes; analyses,
    results and stored records do not. `createWorkflowArgsFromConfig()` gains `omic_type`; scripts that do not pass
    it get the same file as before (KIT-263).
+ * Transcriptomics report and analysis record: a RUVIII integration export made before the normalisation was run again
+   (with another k, or without RUV) is no longer described as part of the analysis. Before, the report still said
+   RUVIII had been applied, gave the earlier export's k and showed its figure, next to the current run's description (a
+   different k, or a caption saying no correction had been applied). The earlier export's figure is now removed when
+   you run the normalisation again, so the results package no longer carries it. In a project whose normalisation was
+   run again with an earlier version, that figure stays, and Copy still delivers it, until the normalisation is run
+   again; a report made from such a project's earlier copy of the report template
+   (`scripts/transcriptomics/transcriptomics_report.rmd`) still shows it until then. A report of an analysis saved
+   with an earlier version keeps the earlier statement until Save Workflow Arguments is pressed again. No result
+   changes: with RUV applied the integration input already refused such an export. This came with the 0.9 development
+   builds and is in 0.9.0 (KIT-264).
+ * Proteomics import with 'Mixed species FASTA' ticked: when no organism window can be shown, the import no longer keeps
+   the organism typed in the form without saying so. If no organism in the FASTA file can be matched to the search
+   results' proteins, a notice now says which organism will be used and how to change it. If the organisms in the
+   FASTA file cannot be counted, the search results have no protein column, or the FASTA file cannot be read or
+   processed, the import is stopped with a message saying what failed and what to do. It is also stopped when none of
+   the proteins in the search results could be found in the FASTA file. Before, these imports finished with the
+   form's organism (Homo sapiens by default), which then set the UniProt annotation, the Taxon ID in the study
+   parameters and the enrichment organism. The organism window now says that only the selected organism is looked up
+   in UniProt and tested for enrichment. No result of an import that completes changes (KIT-265).
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving
@@ -112,14 +133,16 @@
  * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
    stopping with an error (KIT-259).
  * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
-   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   correlations below 0; before, they were left out without a note. Its axis labels read as plain numbers when the lowest correlation is
+   negative (a draft build printed them in scientific notation for some ranges). The histogram also says how many sample pairs
    have no correlation and are not shown (KIT-259).
  * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
    unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
-   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
-   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
-   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
-   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. The report names the
+   Figure 1 panels that the normalisation run replaced. The DIA-with-limpa RUV covariates step and, on the installed application, a
+   pre-normalisation figure redrawn because the input changed show the same warning, and the covariates step's
+   canonical-correlation figure is covered too; only tab entry and a 'Color by' or 'Shape by' change show the note
+   without a warning. This came in with the 0.9 development builds. In earlier
    releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
    figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
  * Reports (lipidomics, metabolomics; the same corrections in the proteomics reports): the report no longer prints
@@ -365,6 +388,18 @@
  * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
    `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
    those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).
+
+ * study_parameters.txt: in the analysis-record section, a parameter that names an earlier result of the same analysis
+   (the correlation filter's sample pairs; the transcriptomics logCPM and RUV choice; the proteomics enrichment's input
+   tables) now says which earlier result it is (for the correlation pairs and the transcriptomics inputs, the step
+   number that produced it; for the enrichment, each contrast's differential abundance results). Before, it showed an
+   identifier of the session's internal store, which differs between sessions and projects, so two runs of the same
+   analysis gave different files and the value looked like a checksum when it was not. The identifier is still in
+   analysis_record.json. No result changes. Limit: analysis_record.json still names each result by its identifier in the
+   project's internal store, and its identity_sha256 values are computed over those identifiers, so two projects that
+   run the same analysis write different records; a record replays inside a copy of the project that made it. The
+   integration's study parameters likewise print a 'Checksum of the model's identity' that is specific to the project
+   (KIT-213).
 
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
@@ -683,6 +718,18 @@
    counted as a missing value. Analyses recorded before this change replay with the earlier rule. A design sample that
    is missing from a table with a duplicated identifier, or is not numeric, is now refused with a message. (KIT-214,
    VAL-173)
+
+ * Lipidomics and metabolomics, duplicated identifiers: the row measured in the most of the design's samples is now
+   kept; among rows measured in equally many, the one with the highest average of its measured values; if still tied,
+   the first in the table. A missing value or an intensity of exactly 0 counts as not measured, for the count and for
+   the average, as at import (a zero can reach this step from a design folder read by Import Existing Design, or from an
+   object built in code). Before (from KIT-214), the highest average alone decided, so a row measured in few samples
+   could be kept over a row measured in all (2 of 6 samples averaging 210,000 over 6 of 6 averaging 150,000); in earlier
+   releases the average also included numeric identifier and annotation columns. The kept row brings its own name and
+   annotation. One more measured sample always wins, whatever the intensities: a complete low-level row is kept over a
+   row missing in one sample. The rule applies to a duplicated internal standard as to any feature, and the kept row
+   feeds the internal-standard normalisation; the S4 method `resolveDuplicateFeatures()` still keeps and renames
+   duplicated internal standards. Analyses saved earlier replay their earlier choice. (KIT-258, VAL-254, VAL-284)
 
  * Proteomics enrichment: the background (universe) of each comparison is now the proteins tested in that comparison,
    those with a p-value in its differential-abundance table, on both the g:Profiler and the clusterProfiler routes.
