@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-280 R1: tests-only commit on the old R/ code; each new test must fail at its stated value (declared in docs/qa/workflow-execution/kit/kit-280/predictions.md); ceiling 75 job-min = 5.00 core-h",
+  "label": "KIT-280 R1 tests-only on kit-280 aff34c7d (old code, no base)",
+  "package_commit": "aff34c7dbe79af8f45a47094910bab7fb4705a79",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit280-prot-threshold-values.R",
+    "test-prot-missing-value-counts.R",
+    "test-kit227-report-ruv-sentences.R",
+    "test-prot-summary-report-templates.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
