@@ -1,0 +1,32 @@
+cells 157 to 157 done: 40 data sets, 0 errors, 467.4 s of sweeps
+cells 164 to 164 done: 40 data sets, 0 errors, 1171.6 s of sweeps
+cells 165 to 165 done: 40 data sets, 0 errors, 474.3 s of sweeps
+cells 168 to 168 done: 40 data sets, 0 errors, 1247.7 s of sweeps
+cells 173 to 173 done: 40 data sets, 0 errors, 483.8 s of sweeps
+cells 174 to 174 done: 40 data sets, 0 errors, 1191.2 s of sweeps
+cells 175 to 175 done: 40 data sets, 0 errors, 480.1 s of sweeps
+cells 178 to 178 done: 40 data sets, 0 errors, 1202.8 s of sweeps
+cells 187 to 187 done: 40 data sets, 0 errors, 322.0 s of sweeps
+cells 192 to 192 done: 40 data sets, 0 errors, 916.2 s of sweeps
+cells 195 to 195 done: 40 data sets, 0 errors, 310.2 s of sweeps
+cells 181 to 181 done: 40 data sets, 0 errors, 332.0 s of sweeps
+cells 182 to 182 done: 40 data sets, 0 errors, 917.5 s of sweeps
+cells 186 to 186 done: 40 data sets, 0 errors, 919.4 s of sweeps
+cells 189 to 189 done: 40 data sets, 0 errors, 296.8 s of sweeps
+cells 194 to 194 done: 40 data sets, 0 errors, 874.2 s of sweeps
+cells 197 to 197 done: 40 data sets, 0 errors, 279.7 s of sweeps
+       check units passed failed status
+1         E1   680    680      0   pass
+2    E1PRIME    34     34      0   pass
+3         E2   680    680      0   pass
+4         E3   680    680      0   pass
+5         E4   680    680      0   pass
+6         E7   680    680      0   pass
+7         E8     0      0      0   pass
+8 COMPLETION   680    680      0   pass
+   n    f seconds_sweep seconds_total
+1  4  300      7.702785       9.25246
+2 96  300     11.910237      14.15505
+3  4 1000     22.670956      25.55782
+4 96 1000     30.083456      33.94258
+data sets: 680; errors: 0

@@ -1,0 +1,72 @@
+cells 1 to 1 done: 40 data sets, 0 errors, 364.5 s of sweeps
+cells 2 to 2 done: 40 data sets, 0 errors, 940.6 s of sweeps
+cells 9 to 9 done: 40 data sets, 0 errors, 338.8 s of sweeps
+cells 10 to 10 done: 40 data sets, 0 errors, 951.0 s of sweeps
+cells 17 to 17 done: 40 data sets, 0 errors, 295.8 s of sweeps
+cells 18 to 18 done: 40 data sets, 0 errors, 787.4 s of sweeps
+cells 26 to 26 done: 40 data sets, 0 errors, 956.2 s of sweeps
+cells 27 to 27 done: 40 data sets, 0 errors, 336.7 s of sweeps
+cells 34 to 34 done: 40 data sets, 0 errors, 873.1 s of sweeps
+cells 35 to 35 done: 40 data sets, 0 errors, 294.8 s of sweeps
+cells 42 to 42 done: 40 data sets, 0 errors, 965.7 s of sweeps
+cells 43 to 43 done: 40 data sets, 0 errors, 358.9 s of sweeps
+cells 48 to 48 done: 40 data sets, 0 errors, 954.8 s of sweeps
+cells 51 to 51 done: 40 data sets, 0 errors, 339.7 s of sweeps
+cells 58 to 58 done: 40 data sets, 0 errors, 955.2 s of sweeps
+cells 59 to 59 done: 40 data sets, 0 errors, 351.3 s of sweeps
+cells 67 to 67 done: 40 data sets, 0 errors, 349.3 s of sweeps
+cells 68 to 68 done: 40 data sets, 0 errors, 954.6 s of sweeps
+cells 76 to 76 done: 40 data sets, 0 errors, 991.3 s of sweeps
+cells 79 to 79 done: 40 data sets, 0 errors, 365.7 s of sweeps
+cells 84 to 84 done: 40 data sets, 0 errors, 987.4 s of sweeps
+cells 89 to 89 done: 40 data sets, 0 errors, 327.5 s of sweeps
+cells 92 to 92 done: 40 data sets, 0 errors, 985.2 s of sweeps
+cells 97 to 97 done: 40 data sets, 0 errors, 369.3 s of sweeps
+cells 102 to 102 done: 40 data sets, 0 errors, 994.2 s of sweeps
+cells 105 to 105 done: 40 data sets, 0 errors, 356.1 s of sweeps
+cells 110 to 110 done: 40 data sets, 0 errors, 1012.9 s of sweeps
+cells 114 to 114 done: 40 data sets, 0 errors, 1063.9 s of sweeps
+cells 115 to 115 done: 40 data sets, 0 errors, 386.1 s of sweeps
+cells 122 to 122 done: 40 data sets, 0 errors, 1024.4 s of sweeps
+cells 125 to 125 done: 40 data sets, 0 errors, 362.6 s of sweeps
+cells 130 to 130 done: 40 data sets, 0 errors, 1036.8 s of sweeps
+cells 133 to 133 done: 40 data sets, 0 errors, 390.0 s of sweeps
+cells 138 to 138 done: 40 data sets, 0 errors, 1024.8 s of sweeps
+cells 141 to 141 done: 40 data sets, 0 errors, 375.6 s of sweeps
+cells 147 to 147 done: 40 data sets, 0 errors, 489.5 s of sweeps
+cells 148 to 148 done: 40 data sets, 0 errors, 1224.5 s of sweeps
+cells 154 to 154 done: 40 data sets, 0 errors, 1244.4 s of sweeps
+cells 155 to 155 done: 40 data sets, 0 errors, 483.9 s of sweeps
+cells 162 to 162 done: 40 data sets, 0 errors, 1196.5 s of sweeps
+cells 163 to 163 done: 40 data sets, 0 errors, 479.6 s of sweeps
+cells 170 to 170 done: 40 data sets, 0 errors, 1260.7 s of sweeps
+cells 171 to 171 done: 40 data sets, 0 errors, 508.7 s of sweeps
+cells 179 to 179 done: 40 data sets, 0 errors, 485.5 s of sweeps
+cells 180 to 180 done: 40 data sets, 0 errors, 1204.6 s of sweeps
+cells 183 to 183 done: 40 data sets, 0 errors, 342.6 s of sweeps
+cells 190 to 190 done: 40 data sets, 0 errors, 805.7 s of sweeps
+cells 191 to 191 done: 40 data sets, 0 errors, 340.9 s of sweeps
+cells 198 to 198 done: 40 data sets, 0 errors, 755.0 s of sweeps
+       check units passed failed status
+1         E1  1960   1960      0   pass
+2    E1PRIME    98     98      0   pass
+3         E2  1960   1960      0   pass
+4         E3  1960   1960      0   pass
+5         E4  1960   1960      0   pass
+6         E7  1960   1960      0   pass
+7         E8     0      0      0   pass
+8 COMPLETION  1960   1960      0   pass
+    n    f seconds_sweep seconds_total
+1   4  300      8.543650      10.16029
+2   6  300      8.153350       9.83504
+3  12  300      8.744300      10.41971
+4  24  300      8.866269      10.54981
+5  48  300      9.463975      11.24196
+6  96  300     12.236255      14.24196
+7   4 1000     19.508963      22.26700
+8   6 1000     22.541485      25.55486
+9  12 1000     23.939450      26.97152
+10 24 1000     24.738112      27.80863
+11 48 1000     25.814245      29.10427
+12 96 1000     30.654375      34.44670
+data sets: 1960; errors: 0
