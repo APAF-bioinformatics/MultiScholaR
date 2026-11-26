@@ -294,9 +294,11 @@ the rule, every holder of the texts, the grep for the regression scope) and the 
 **Inferred.** That the wording drafts are what the owner wants (the tests match the rule's parts, not exact sentences, so a
 reworded text that keeps the parts still passes).
 
-**Core-hours.** R1 about 1.7, R2 about 9.8, total about 11.5 (job-minutes x 4 / 60, estimated from the shards' setup and
-test seconds, not read from the API: about 26 and 147 job-minutes); expected before R1: 14.4. KIT-258: 19.62 + 11.5 = about
-31 of 106.0. No instrument defect, no correction pass used.
+**Core-hours** (job durations from `gh run view --json jobs`; core-hours = job-minutes x 4 / 60; skipped jobs not
+counted): R1 45725399662 22.61 job-minutes (plan 0.30, tests head 11.23, tests base 10.58, results 0.50) = 1.51; R2
+45727220849 141.07 job-minutes (plan 0.32, check head 12.62, check base 13.57, tests head 27.70 and 28.13, tests base
+22.88 and 35.23, results 0.62) = 9.40; total 163.68 job-minutes = 10.91 core-hours (expected before R1: 14.4).
+KIT-258: 19.62 + 10.91 = 30.53 of 106.0. No instrument defect; the texts follow-up used no correction.
 
 **Not checked.** The two screens in a browser; the other omics' (proteomics, transcriptomics) texts (they have no duplicate
 rule step); the text of the declared step's description ("Resolved duplicate %s features by keeping highest intensity",
@@ -304,3 +306,27 @@ rule step); the text of the declared step's description ("Resolved duplicate %s 
 earlier rule and is not one of the four texts: left untouched, for a scope decision; the stale code comment at
 `R/utils_workflow_lipid_declarations.R:58`; `tools/refactor/staging/**` (old snapshots, not loaded); the quarantined test
 files; a full-suite run.
+
+### Addition: the declared step's description (T02, T03, T06, T07), 2026-11-26
+
+Ruled by the coordinator inside VAL-306's intent. Tests first at `f0ca0ef4` (block (5): 3 expectations per omic on
+`omicsDuplicateResolutionStep(binding)$description`; T03: the zero clause on the help (2) and the result text (2), the
+annotation clause on the help (2)); predictions in `texts-step0.md` section 5 (committed before the change and the run;
+the tests-first state itself was not run: the block's failure on the old text is by reading, and R1's pattern applies).
+Change at `ef570448`: the description now reads "Resolved duplicate <noun> features: kept the row measured in the most
+design samples, then the highest average of its measured values" (before: "...by keeping highest intensity"); the code
+comments at `R/utils_workflow_lipid_declarations.R:58` and `R/func_metab_s4_qc_methods.R:382` state the rule as merged.
+Nothing else under `R/`.
+
+**Observed** (run 45734166836, head `ef570448`, base `8496674a`, 5 files, 1 shard per side; `tx3/`): all predictions held.
+`test-kit258b-duplicate-texts.R` 34/0 to 46/0 (`count-changed`); `test-workflow-omics-binding-steps.R` 57/2 on both
+sides, `message-changed`; `test-kit258-duplicate-completeness.R` 162/0, `test-workflow-lipid-declarations.R` and
+`test-workflow-metab-declarations.R` 259/0: `same`. Moved lines of the KIT-094 snapshot
+(`tests/testthat/fixtures/kit094-characterisation.rds`, not edited): `lipidomics$steps[[4]]$description` (snapshot
+"Resolved duplicate lipid features by keeping highest intensity") and `metabolomics$steps[[4]]$description` (snapshot
+"Resolved duplicate metabolite features by keeping highest intensity"); nothing else in the failure text differs.
+Job-minutes from the jobs API: 27.20 (plan 0.35, tests base 12.58, head 13.78, results 0.48) = 1.81 core-hours. KIT-258:
+30.53 + 1.81 = 32.34 of 106.0. A record keeps the description it was made with on replay; only development records made
+between merge train 20 and this fix carry the old words beside `measured_then_mean`.
+Interpretation: "the two declarations files" read as the lipid and the metabolomics declarations tests.
+Instrument note: the first `gh run watch` ended with exit 1 on a network read timeout (`connection timed out`) while the run was still in progress; the single fetch.sh then waited for the run itself.
