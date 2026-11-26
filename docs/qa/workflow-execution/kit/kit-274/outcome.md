@@ -78,3 +78,12 @@ Stored values: none moved; none edited (test-kit264 file unedited, no stored ref
   whenever the file exists, `:126`): a v0.9.0 build that used the RUV design section's none could record and report the k = 0
   export the same way. v0.9.0 is not a release; `main` (0.4.1.2) has no transcriptomics.
 - Evidence: runs 45723980071 (R1), 45726224100 (R1b), 45728402078 (R2); the X1 line before and after above.
+
+## R2b: run 45739818528 (T11 restored; coordinator's ruling on implementation audit I01)
+
+Head e4335b58 (staging ec27f69e merged, fix present, T11 restored in 27a42adb) against base 7ca71057 (the same tree with the fix reverted, on kit-274),
+the new file only, one shard per side, no check. Table: r2b-compare.tsv. Result as predicted (predictions.md, pushed before the request):
+base 55 passed / 25 failed, head 84 passed / 0 failed, verdict fixed; T11 passes on both sides (no T11 failure in either failure list);
+T8's written-file digest ba839e69b0d2c199d37a7e68ed0207679b0138f7751c5a6897f4e3c233da6108 again. Merge of origin/v0.9-staging ec27f69e into kit-274: no conflict
+(NEWS and the ledger merged automatically; my NEWS bullet stays first under Fixes, my ledger row stays last as VAL-<merge>; nothing under R/, tests/ or inst/ conflicted).
+Job-minutes of R2b were not read from the API (one shard per side; ceiling 40).
