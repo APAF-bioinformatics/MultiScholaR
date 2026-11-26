@@ -416,6 +416,50 @@ RUV outcome line) and by the position of KIT-260's two lines, which the merged r
 complete' and KIT-242's count line (before the merge they came before 'ITSD normalization complete'). The owner's
 by-file question for these 16 keys is the combined values above, put once.
 
+## The final merges (2026-11-26) and KIT-260's rows of the joint train's predictions
+
+- **2103247a: merge of origin/kit-242 167df89a** (KIT-242's final tip, its VAL-373 and VAL-383 corrections). Conflict: the
+  ledger only (each branch appended its own `VAL-<merge>` row; both kept, KIT-242's first). Nothing under `R/`, `tests/`
+  or `inst/` conflicted.
+- **0544b42b: merge of origin/v0.9-staging 91817473** (merge trains 34 to 36, ledger to VAL-383). Conflicts: NEWS (the
+  end of the KIT-255 bullet, which KIT-242 shortened by its "until KIT-242's first part is merged" sentence, and staging's
+  two new bullets after it: KIT-242's ending kept, staging's two bullets kept whole, so every bullet is kept) and the
+  ledger (staging's rows first, then the two `VAL-<merge>` rows, KIT-242's then KIT-260's). KIT-260's row now reads, for
+  the sixteen captures, "left failing until the end-of-project re-record, KIT-260's values kept (VAL-376)". Nothing under
+  `R/`, `tests/` or `inst/` conflicted.
+- **The sixteen keys:** the owner's by-file answer (VAL-376): they stay failing until the re-record, KIT-260's values kept.
+  Not touched.
+- **Verified by reading on the merged tree (0544b42b):**
+  - one marker row: `git grep -c "itsd_outcome = list(" -- R/` gives 1 (`R/utils_workflow_analysis_record.R`);
+  - one reporter: `omicsItsdReportResult <- function(value, addLog, warn)` once (`R/utils_workflow_omics_actions.R:339`),
+    which logs KIT-260's per-assay rows line after KIT-242's count line, from `value$itsd$rows_used`;
+  - `omicsItsdRowsNotice()` (`R/utils_workflow_omics_declarations.R:725`) called at both call sites
+    (`R/utils_workflow_omics_actions.R:421` managed, `:554` in process), each after `omicsItsdReportResult`;
+  - the ITSD kernel puts `rows_used`, `id_column` and `legacy_rows` into `value$itsd` only under KIT-242's per-assay
+    condition (`!is.null(itsd$applied_per_assay)`), which holds only under the marker's current token; one `fixed`
+    entry `list(method = "ITSD", itsd_outcome = "per_assay")`;
+  - KIT-242's changes since 8162ea52 (`git diff 8162ea52 167df89a -- R/`: the RUV optimisation helpers, the RUV control
+    methods, the declarations' RUV keep rule with `no_usable_controls`, the proteomics notice in
+    `mod_prot_norm_workflow_helpers.R`, `utils_workflow_dia_products.R`) touch no ITSD line: the diff of the two ITSD
+    files holds no `itsd` line.
+- **No run:** the joint merge train's full-suite run is the evidence.
+- **KIT-260's rows of the joint train's predictions (base: current staging 91817473):**
+
+  | File | Staging (base) | Merged head (KIT-242 + KIT-260) | Why |
+  |---|---|---|---|
+  | `test-kit260-itsd-default-pattern.R` | absent | 157 passed, 0 failed | R1c 45756920334 on the same code (KIT-242's later changes touch no ITSD line) |
+  | `test-omic-norm-module.R` | 631 / 8 | 583 / 56 | as R2d 45750259637 on 0c7fbdf7; the 56 failing keys below |
+  | `test-omics-norm-core.R` | 62 / 0, 14 skipped | 63 / 0, 14 skipped | KIT-260's notification, then the error note (one more expectation) |
+  | `test-omics-module-globals.R` | 14 / 0 | 14 / 0 | by reading (in no KIT-260 comparison; AUDIT M06) |
+
+  The 56 keys of `omicNormFrozen` failing on the merged head (R2d's head, by scenario): lipid and metab manual: run
+  `log`, `states`, `provenance`, `outputs`, `final_pca`; skip_correlation `states`, `provenance`, `outputs`,
+  `final_pca`; reset `states`, `provenance`, `outputs` (12 each); lipid and metab automatic: run `log`, `states`,
+  `provenance`, `outputs`, `final_pca`; final_plot and final_plot_failing `states`, `provenance`, `outputs` (11 each);
+  lipid and metab skip: `provenance` of run, correlation, final_plot, export, reset (5 each). Of these, the sixteen
+  `log`/`outputs` keys are VAL-376's (KIT-260's values kept, failing until the re-record); the `provenance` keys are
+  VAL-303 (1)'s; the `states` and `final_pca` keys are KIT-242's (its RUV outcome), its own prediction.
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
