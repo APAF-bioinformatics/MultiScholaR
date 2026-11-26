@@ -130,20 +130,21 @@
    assay, the metabolomics one stopped on Windows, macOS and when the application runs without its background worker, and
    otherwise ran without the sample in every assay. The version on `main` analysed every assay without the sample;
    results in the assays where the sample passed now include it. The normalisation tab, the analysis record, the study
-   parameters and the report name each sample set missing, with the assay, and each sample removed because no assay kept
-   a value for it. When every sample of a group is set missing in one assay, the same places say that comparisons with
-   that group were not tested in that assay. Older analysis records replay as they were computed. The
+   parameters and the report name each sample set missing, with the assay; the normalisation tab also names each sample
+   removed because no assay kept a value for it. When every sample of a group is set missing in one assay, the same
+   places say that comparisons with that group were not tested in that assay (the differential-analysis tables still
+   list that assay's rows for those comparisons, without a result). Older analysis records replay as they were computed. The
    differential-analysis heatmaps leave out a sample with no value in the assays shown; in the view that combines assays,
    the cells of a sample set missing in one assay are drawn at the feature's average. Limits: in an RUV-corrected data
    set holding a sample set missing in it, the integration's removed RUV factors cannot be determined, so the optional
    adjustment for them is unavailable there; the integration model still counts such a sample as measured in that data
    set (in the data set's sample count, and it is kept when the option to keep only samples measured in every data set
-   is chosen). After RUV, the sample-correlation filter rarely fails a single anomalous sample, because RUV-III absorbs
-   a one-sample anomaly into one of its factors; it can still act when RUV is skipped or removes no factor, when more
-   samples deviate than there are factors, or when the deviation does not show in the control features; on the legacy
-   RUV-III-C route such a sample's corrected values resemble its replicates' average, which makes standard errors too
-   small (derived factors 0.775, 0.845 and 0.905 at 3, 4 and 6 samples per group; to be measured before the release,
-   KIT-275; VAL-330). Where a sample's values were missing altogether in one assay, that assay may not have been
+   is chosen). After RUV, the sample-correlation filter judges the corrected values. In one constructed test (12 samples in two
+   groups, one sample's values in one assay replaced at random, one RUV factor), RUV removed that sample's deviation, so
+   the filter did not fail it. This was seen with the new RUV design, and with the legacy RUV-III-C route as it chose its
+   control features before this version. How often the filter can act after RUV with the current settings, and how the
+   differential analysis then treats such a sample, will be measured before the release (KIT-275; VAL-330). With RUV
+   skipped, or when RUV removes no factor, the filter acts as described above. Where a sample's values were missing altogether in one assay, that assay may not have been
    normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
