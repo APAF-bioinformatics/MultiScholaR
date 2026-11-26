@@ -1,0 +1,49 @@
+{
+  "requested_by": "KIT-188 L1c re-send (instrument repair 1 of 3; declaration-l1c.md re-send section; mechanics and controls only, estimands blinded; bound commit e4a6d4ae); own Part L allowance",
+  "label": "KIT-188 L1c re-send a7d7389d",
+  "package_commit": "a7d7389d78232291dc093dab2a2b31732a0ec42e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-smoke-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "401",
+        "k188-l1c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "l1c",
+        "K188_JOB": "l1c",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-l1c.tsv"
+      },
+      "out": "k188-l1c",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
