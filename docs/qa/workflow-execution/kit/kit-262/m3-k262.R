@@ -20,6 +20,8 @@
 #   K262_M3_FORCE_ARMS "1" (L3): every unit whose C1 re-uses P's row also runs the Manual journey at P's own choice (E11 forced)
 #   K262_M3_STAGE1  "1": blind stage 1 of the re-estimation (cells S-N, S-E, replicates 1:50): rows stay under tempdir(); only the
 #                   reestimate.tsv of `reestimate-m3-k262.R` and fixed console lines leave
+#   K262_M3_GATE    path (from the package root) of the checks.tsv of the scorer's self-test run earlier in the same request: when set, the script
+#                   stops before any unit unless that file exists and every row passes (the runner does not stop a request after a failed script)
 #   K262_LIFECYCLE  "1": row files under tempdir(); only checks.tsv, timing.tsv and hashes.tsv leave (VAL-11)
 #   K262_M3_FAULT   "1" (L3 only): units 1 to 5 carry planted faults: 1 a journey stop (a data-set error row), 2 a partial match inside a
 #                   journey, 3 a partial match in unit code outside a journey (both instrument rows), 4 a partial match inside an inner
@@ -52,6 +54,12 @@ args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) >= 1L)
 out <- normalizePath(file.path(getwd(), args[[1L]]), mustWork = FALSE)
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
+# The gate (counted requests): the scorer's self-test must have passed in this request, else no unit runs.
+gate <- Sys.getenv("K262_M3_GATE")
+if (nzchar(gate)) {
+  g <- tryCatch(utils::read.delim(gate, stringsAsFactors = FALSE, colClasses = "character"), error = function(e) NULL)
+  if (is.null(g) || !nrow(g) || !"pass" %in% names(g) || !all(g$pass %in% "TRUE")) stop("K262 M3 gate: the scorer's self-test did not pass (", gate, "); no unit was run")
+}
 source("docs/qa/workflow-execution/kit/kit-262/rules-k262.R")
 
 # The test helpers of this tree in their own environment (the harness of KIT-172 and KIT-190, read-only), attached behind the global one.
