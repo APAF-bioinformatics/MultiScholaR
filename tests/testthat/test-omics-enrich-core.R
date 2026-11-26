@@ -158,8 +158,9 @@ for (case in names(omicsEnrichCoreCases)) {
             expect_identical(run$result[["raw_contrast"]], "groupB-groupA")
             expect_identical(run$result[["selected"]], "TRUE")
             # The state commits when it did at the start commit (W1 (b): the live kernel cases' commit fails today and is
-            # reported as a warning; F-16 then leaves no provenance pending).
-            expect_identical(run$result[["saved"]], if (identical(frozen$run$history, "<unchanged>")) "FALSE" else "TRUE",
+            # reported as a warning; F-16 then leaves no provenance pending). KIT-216 (VAL-175; edit allowed by VAL-372 (1)):
+            # read from the case's stored committed state, as the run history no longer names the enrichment.
+            expect_identical(run$result[["saved"]], if (identical(omicEnrichW113Frozen[[case]]$state, "<none>")) "FALSE" else "TRUE",
                 info = paste(case, run$result[["saved_warning"]]))
             # F107-01: the run never replaces the manifest the caller holds.
             expect_identical(run$result[["manifest_unchanged"]], "TRUE")
