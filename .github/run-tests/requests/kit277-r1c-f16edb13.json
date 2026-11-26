@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-277 R1c: failing-first of the NEW test lines (Copy press, head rule at P4, G4) on the old code, tests-only tree f16edb13; new file only; worst case 6.67 core-hours; running total 10.60 + 6.67 of 200.00",
+  "label": "KIT-277 R1c new lines on old code f16edb13",
+  "package_commit": "f16edb134595dff68036c35a6af7017c7d752798",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 90
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
