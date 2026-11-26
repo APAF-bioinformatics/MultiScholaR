@@ -1,0 +1,4 @@
+revision	mode	guard	pattern	outcome	hint_in_message	folder_holds_259	other_broken	other_errors	expectations_passed
+ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1	seeded	1	259 characters	pass	FALSE	TRUE	0	0	23
+ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1	seeded	2	259 characters	pass	FALSE	TRUE	0	0	23
+ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1	seeded	3	259 characters	pass	FALSE	TRUE	0	0	23

@@ -1,0 +1,4 @@
+run_id	commit	purpose	job_minutes	result
+45713440865	41c69770ff0ee6346a2a02ccb9a83a465973c306	R1 tests-only: W1-W9 failing-first, G4, g1.R base digests (request kit221-r1-41c69770)	see outcome.md	Tests: new file 43 passed 38 failed 0 errors (predicted 42/39: W5 miss); G4 file 80 passed 0 failed 2 skipped; g1.R exit 1 (instrument defect: ProteinQuantitativeData is not exported)
+45715339444	e80e558d68709b75556b02a6b8e383652dfa3a30	g1.R base digests (instrument rerun 1 of 3); 93 digests (limma 19, limpa 20, ruv 17, kernel 19, alias 18)	5 s script	script ok, exit 0
+45716909041	53ac0f870bb4a676846254beba608f1beb92bb1b (base e80e558d68709b75556b02a6b8e383652dfa3a30)	R2: 45 files base vs head, check both sides, head g1.R	351.9 job-min (23.46 core-h)	45 files: 44 same, new file fixed (43/38 -> 124/0); check identical (0 ERROR 3 WARNING 3 NOTE both); G1/G3 digests equal (93 rows)
