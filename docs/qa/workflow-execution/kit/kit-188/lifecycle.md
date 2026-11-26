@@ -477,3 +477,39 @@ Unit timings (s, wall): K172c 243; L12 lp 620, munit 1,948, reported 2,719, L12 
 | L64-reported-401-all-all | 183 | 0 | (empty) | ae2cd915ce6c8fc8e332c7589ae20bdea5dcf9a936209eb71b02706dcd2ba0ba | 470c2121d1958411563b38b192a7416170e19ad0731d4ac78aab9755a9f2a5f0 | 6545.5 |
 
 `E15_silence` by reading over the ten finished units' part files: 849 rows, 0 `instrument`, 0 `itsd_ok` or `norm_ok` FALSE; every E14 row in their unit-checks TRUE (26 of 26). E5r for L64 was lost with the killed parent (A2 does not require it for L1r). Finished units are not re-run.
+
+## L1r continuation (run 45861512771, request k188-l1r-cont-6838f5a9; declaration-l1r-continuation.md): result
+
+Raw: `l1r/cont-raw.tar.gz`. Observed: runner `scripts.tsv` exit 0 (1,786 s); L12 deciding 401 1,779 s and L12 las 401 897 s, exit 0, error empty; E1 5, E2, E6 10, E8 12, E10 30, E10u, E14 4, `E15_silence`, `E5r` all TRUE; E11 12 of 12 TRUE: the RUV clauses and the fold-change clause (differences 1.4e-14 to 8.9e-14) apply and hold because no one-assay exclusion occurred in either arm (the advance reading of E11 for this unit); no `no_result_no_trace`, provenance `units_with_error` 0, no smoke flag. Cost about 2.65 core-hours ((29.8 + 10) x 4 / 60); L1r's line 40.66 + 2.65 = 43.31 of 51.05. L1r is complete for every unit.
+
+## G3: the counted plan from L1r's measured per-unit times (ticket section 10's rule; nothing counted is sent; the figure goes to the owner first)
+
+Rule applied: per cell the larger of the ticket's estimate and the measured figure (a unit = one data set on one core; the measured wall times of L1r's units, which include the lifecycle-only checks and so overstate a counted unit; the measured figures are used as they are); a cell more than 40 % above its estimate is re-split into jobs of at most 170 planned minutes at the same R (R is never reduced); jobs hold 4 units at a time, `rounds = ceil(data sets per job / 4)`, `plan = rounds x unit minutes`; timeout 1.5 x plan rounded up to 5, capped at 260; expected (plan + 10) x 4 / 60 and ceiling (timeout + 10) x 4 / 60 per job; 25 % reserve of each block's ceiling. The estimate column folds D6 (N2 and E2) into L12 and M12 deciding (a unit runs all six scenarios). **Scaled, not measured:** M12 munit (not run in L1r: L12's ratio 2.85 times the estimate 342 = 974 s). Estimates: ticket section 10 core-seconds per data set.
+
+| Block | Cell | R | Estimate (s) | Measured (s) | Ratio | Re-split (>1.4) | Jobs | Sets per job | Plan (min) | Timeout (min) | Expected (core-h) | Ceiling (core-h) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| deciding | L12 | 400 | 936 | 1,871 | 2.00 | yes | 20 | 20 | 156 | 235 | 221.33 | 326.67 |
+| deciding | M12 | 400 | 468 | 1,291 | 2.76 | yes | 15 | 27 | 151 | 230 | 161.00 | 240.00 |
+| deciding | L64 | 400 | 1,560 | 4,356 | 2.79 | yes | 50 | 8 | 146 | 220 | 520.00 | 766.67 |
+| deciding | M168 | 400 | 1,872 | 3,304 | 1.76 | yes | 34 | 12 | 166 | 250 | 398.93 | 589.33 |
+| reported | L12 | 100 | 1,116 | 2,719 | 2.44 | yes | 9 | 12 | 136 | 205 | 87.60 | 129.00 |
+| reported | M12 | 100 | 558 | 1,050 | 1.88 | yes | 3 | 34 | 158 | 240 | 33.60 | 50.00 |
+| reported | L64 | 100 | 2,790 | 6,546 | 2.35 | yes | 25 | 4 | 110 | 165 | 200.00 | 291.67 |
+| reported | M168 | 100 | 3,348 | 5,929 | 1.77 | yes | 25 | 4 | 99 | 150 | 181.67 | 266.67 |
+| munit | L12 | 100 | 684 | 1,948 | 2.85 | yes | 5 | 20 | 163 | 245 | 57.67 | 85.00 |
+| munit | M12 | 100 | 342 | 974 (scaled) | 2.85 | yes | 3 | 34 | 147 | 225 | 31.40 | 47.00 |
+| lp | L12 | 100 | 432 | 620 | 1.44 | yes | 2 | 50 | 135 | 205 | 19.33 | 28.67 |
+| lp | M12 | 100 | 216 | 292 | 1.35 | no | 1 | 100 | 122 | 185 | 8.80 | 13.00 |
+| lp | L64 | 100 | 1,080 | 1,607 | 1.49 | yes | 5 | 20 | 134 | 205 | 48.00 | 71.67 |
+| lp | M168 | 100 | 1,296 | 1,881 | 1.45 | yes | 5 | 20 | 157 | 240 | 55.67 | 83.33 |
+| las | L12 | 100 | 432 | 897 | 2.08 | yes | 3 | 34 | 135 | 205 | 29.00 | 43.00 |
+| las | M12 | 100 | 216 | 479 | 2.22 | yes | 2 | 50 | 104 | 160 | 15.20 | 22.67 |
+| las | L64 | 100 | 1,080 | 2,800 | 2.59 | yes | 9 | 12 | 140 | 210 | 90.00 | 132.00 |
+| las | M168 | 100 | 1,296 | 2,739 | 2.11 | yes | 9 | 12 | 137 | 210 | 88.20 | 132.00 |
+| ba | L64 | 100 | 520 | 1,312 | 2.52 | yes | 4 | 25 | 154 | 235 | 43.73 | 65.33 |
+| ba | M168 | 100 | 624 | 1,726 | 2.77 | yes | 5 | 20 | 144 | 220 | 51.33 | 76.67 |
+| L24 (reported) | L24 | 100 | 936 | 2,704 | 2.89 | yes | 9 | 12 | 136 | 205 | 87.60 | 129.00 |
+
+Blocks (expected / ceiling / 25 % reserve, core-hours): deciding 1,301.27 / 1,922.67 / 480.67; reported 502.87 / 737.33 / 184.33; munit 89.07 / 132.00 / 33.00; lp 131.80 / 196.67 / 49.17; las 222.40 / 329.67 / 82.42; BA 95.07 / 142.00 / 35.50; L24 87.60 / 129.00 / 32.25. S total **2,430.07 expected and 4,486.67 ceiling with the reserves** (243 jobs); with job D (2.00 / 2.67) and the scoring job (2.00 / 3.67): **2,434.07 expected, 4,493.01 ceiling**.
+**Against Part L's accepted 2,640.74 (VAL-362):** the expected counted figure (2,434) plus what is spent on lifecycles (L1 18.58, L1r's line 43.31, L1c about 2.5, the smoke series on L1r's line included in that) fits under 2,640.74; the counted ceiling (4,493) exceeds it by about 1,852. The ceiling is what G3's rule sends to the owner: R is not reduced (VAL-24). The per-job figures are indicative (the measured units include lifecycle-only checks, which a counted unit lacks).
+**Continuation rule for a timed-out counted job (as L1r's):** a unit writes its rows when it completes; a counted job that reaches its timeout keeps its finished units' rows; the unfinished units are "no result" (instrument ending: the scorer stops on the gap, 35.2); they are re-sent ONCE as a continuation, declared alone first, same hashes, only the unfinished data sets, nothing else changed (38.4, VAL-54); finished units are never re-run; the declaration records the evidence for the finished units (timing files, row hashes). A unit that timed out twice is handed to the coordinator.
