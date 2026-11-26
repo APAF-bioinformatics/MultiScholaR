@@ -38,8 +38,8 @@ lanes <- list(
     tmt = list(id = "prot_tmt", template = "TMT_report.rmd", drawings = 3L),
     dia = list(id = "prot_dia", template = "DIANN_report.rmd", drawings = 3L),
     dial = list(id = "prot_dia_limpa", template = "DIANN_limpa_report.rmd", drawings = 2L))
-CAPTION <- paste("Figure 1: QC metrics across normalisation stages. On DIA with limpa the left and centre columns are before the",
-    "sample-correlation filter and the right column is after it.")
+CAPTION <- paste("Figure 1: QC metrics across normalisation stages. On DIA with limpa the first two columns are before the",
+    "sample-correlation filter, and a third column, when the figure has one, is after it.")
 LEFT <- "DPC-Quant's protein estimates (a complete log2 matrix; model-based where peptides were not detected)"
 THREE <- paste0("Figure 1 shows four quality-control views at three stages of processing: ", LEFT,
     " (left column: panels a, d, g, j); after the peptide count filter, with no between-sample normalisation applied, before the ",

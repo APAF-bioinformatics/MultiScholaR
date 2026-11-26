@@ -17,3 +17,11 @@ GiB are the fallback's, not a measurement of the worker branch). Stop rule 7: a 
 cause is the instrument; the cause is not yet known (this script loads the package with `load_all` while the child runs the
 installed one; or the sibling function's save/root does not reach the controller's store). Before re-sending M1, a head check of
 the new test file (R1c, below) shows whether the in-process double finds the worker's files saved (E16 to E18, E20, E21).
+
+## Re-send 2 of 3 (VAL-54), declaration restated
+
+Cause of the failed control (outcome.md, "M1's failed path control: diagnosis"): not the product (R1c: E16 to E21 pass); the script ran the
+controller on a `load_all` tree against an installed child (m1.R:30 in the first send). Repair: installed package in the controller; diagnostic
+line on a failed path control. No expected value, threshold or comparison changes: rise under 0.3 GiB at both build points; reset, path
+and positive controls as declared above. Ceiling 60 job-minutes, expected 30. A rise of 0.3 GiB or more with the path control passing is a
+result and returns to the coordinator (stop rule 7); a path control failing again is not re-sent: hand back with the diagnostic line.

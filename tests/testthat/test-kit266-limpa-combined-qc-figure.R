@@ -448,8 +448,11 @@ test_that("KIT-266 E12 (a), (c): a replaced RUV panel writes the list; a second 
             state$fail <- TRUE
             click("apply_ruv_covariates")(session)
         },
+        # A press with the same inputs replays the earlier publication (its identity names the product and the aesthetics), so
+        # the figure is drawn again when the aesthetics change.
         ruv_drawn = function(session, selected) {
             state$fail <- FALSE
+            session$setInputs(color_variable = "batch")
             click("apply_ruv_covariates")(session)
         }))
     expect_identical(got$steps$ruv_failing$list, "l\truv_corrected_correlation")
@@ -599,7 +602,9 @@ test_that("KIT-266 E13 (caption): the limpa template's Figure 1 caption names th
         grep("^```\\{r QC_metrics,", lines, value = TRUE)
     }
     expect_match(caption("DIANN_limpa_report.rmd"), paste0('fig.cap="Figure 1: QC metrics across normalisation stages. On DIA with limpa ',
-        'the left and centre columns are before the sample-correlation filter and the right column is after it."'), fixed = TRUE)
+        'the first two columns are before the sample-correlation filter, and a third column, when the figure has one, is after it."'), fixed = TRUE)
+    # The caption names only columns the figure has: it has two or three, never a named left, centre or right one.
+    expect_false(grepl("left column|centre column|right column", caption("DIANN_limpa_report.rmd")))
     for (file in c("LFQ_report.rmd", "TMT_report.rmd", "DIANN_report.rmd")) {
         expect_match(caption(file), 'fig.cap="Figure 1: QC metrics across normalisation stages"', fixed = TRUE, info = file)
     }

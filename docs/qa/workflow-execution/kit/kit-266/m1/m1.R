@@ -19,13 +19,18 @@ status <- function() {
 }
 kb <- function(field) as.numeric(gsub("[^0-9]", "", status()[startsWith(status(), paste0(field, ":"))]))
 GiB <- 1024^2
-suppressMessages(pkgload::load_all(".", quiet = TRUE, export_all = TRUE, helpers = TRUE))
+# The controller runs the INSTALLED package, as the child does (the first send loaded it with pkgload::load_all, the one
+# difference between the two processes; the test helpers are sourced into an environment under the installed namespace).
+suppressMessages(library(MultiScholaR))
+helperEnv <- new.env(parent = asNamespace("MultiScholaR"))
+suppressMessages(testthat::source_test_helpers("tests/testthat", env = helperEnv))
 rows <- list()
 path <- new.env(parent = emptyenv())
 path$written <- logical()
 path$logged <- character()
 lines <- function(...) say(...)
 
+local({
 testthat::test_that("KIT-266 M1", {
     testthat::skip_if_not(workflowOwnerCapable())
     fixture <- protNormW1LimpaOwner()
@@ -90,6 +95,14 @@ testthat::test_that("KIT-266 M1", {
         writeDIACompositeFigureFiles = function(...) {
             got <- original_write(...)
             path$written <- c(path$written, got)
+            if (!got) {
+                # Evidence for a failed path control: which of the three files the controller finds saved, and the layout.
+                args <- list(...)
+                identities <- diaCompositeFigureIdentities(args[[1L]], args[[2L]], args[[3L]], args[[4L]])
+                say("PATH DIAGNOSTIC layout=", args[[3L]], " saved(png,pdf,rds)=", paste(vapply(identities, function(identity)
+                    diaCompositeFigureSaved(args[[1L]], identity), NA), collapse = ","), " software=",
+                    paste(as.character(args[[1L]]$.context$software), collapse = ";"))
+            }
             got
         },
         deliverDiaLimpaCompositeFigure = function(...) {
@@ -120,6 +133,7 @@ testthat::test_that("KIT-266 M1", {
     dir.create(file.path(out, "images"), showWarnings = FALSE)
     file.copy(list.files(fixture$paths$protein_qc_dir, pattern = "[.]png$", full.names = TRUE), file.path(out, "images"))
 })
+}, envir = helperEnv)
 
 say("CONTROL reset: after clear_refs VmHWM is within 5 percent of VmRSS: ",
     if (length(rows)) all(vapply(rows, function(r) r$hwm_after_reset <= 1.05 * r$rss_before, NA)) else NA)

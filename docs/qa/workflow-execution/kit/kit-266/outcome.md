@@ -50,3 +50,34 @@ once then, and record what conflicted in `DIANN_limpa_report.rmd`; this branch e
    scores that panels a-c plot as points" true for the figure it builds.
 Budget: one more test file per side in R2 (about one test-minute); the declared figures (expected 48.03, ceiling 163.46
 core-hours) are unchanged. No current run is disturbed.
+
+## R1c (run 45745220661, head 449720a7, new file only; an extra declared head check, charged to the ticket) against predictions-r1c.md
+
+183 passed, 2 failed, 0 errors, 34 test-minutes (42.4 job-minutes incl. setup, 2.83 core-hours). Prediction (all rows pass; E12 (c) among the
+rows at risk): confirmed for E1-E21 and G1-G6 except E12 (c). Read: E16 (managed pass-through), E17, E18, E19 (fallback logged), E20 (A111-01
+order, final figure 1950 px wide, 16 actions), E21 pass: through the in-process double the worker's files are found saved by the controller (the
+sibling save, its identity and its root work).
+E12 (c) failed on its two later assertions: after a second covariates press with the same inputs the marker and the list remain. Cause by
+reading and the log (the marker WAS removed by `removeDiaLimpaRuvMarkers`, line 47 of the log): `publishDIAActionOutputs` replays an earlier
+publication with the same identity (product, colour, shape), copying its staged files, markers included; the figure is not drawn again, so
+placeholder image, marker and list stay consistent with each other. The test's premise was wrong, not the code. Corrected in the tests-only
+base (no expected value changes: marker and list gone after a run that draws the figure): the second press follows a change of the
+aesthetics, which changes the identity. This is a test-premise correction before R2 (R2's base side carries it); not a re-send.
+
+## M1's failed path control: diagnosis (before any re-send; coordinator's rule (a))
+
+R1c shows E16 to E21 pass on the head, so the controller finds the worker's files saved when the worker role runs through the real entry point
+in process. The product side (sibling save, identity, root, acceptance, index) is therefore not the cause. The one difference in M1 between
+the controller and the child is the package: `m1.R:30` (first send) loaded the controller with `pkgload::load_all` (source tree) while the
+child ran the installed package; the identities carry the software fingerprint of the store's context. Not proven by reading which field
+differed. Repair (script only): the controller now runs the installed package (library + the test helpers sourced into an environment under
+its namespace), and a failed path control now prints which of the three files are found saved, the layout string and the software
+fingerprint, so a further failure is self-explaining. M1 is re-sent as instrument re-send 2 of 3 (VAL-54), declaration restated in
+m1/declaration.md.
+
+## Deviations accepted by the coordinator
+(1) The pass-through composite is the last action of the same runner run, not chained by `done` (the KIT-244 runner double has no `done`
+argument): same actions as the ticket (three). (2) The wrapper deletes an earlier list of replaced panels before writing the new one.
+(3) D1 caption: the ticket's draft named left, centre and right columns; the pass-through figure has two, so the caption now says "the first two
+columns are before the sample-correlation filter, and a third column, when the figure has one, is after it" (test row: it names no left, centre
+or right column). (4) The cyclic loess centre title has a 32-character first line (ticket limit 30); R3's lane uses method none and does not render it.
