@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-216 control (head), instrument run 1 of 3 (VAL-54: absolute dump paths), staging 80f26158: dumps of W1, W113, W108 and the prot_dia lane, 2 repeat(s); ceiling 180 job-minutes",
+  "label": "KIT-216 control2 head 26e45635",
+  "package_commit": "26e456350975ed09fe3a51391780ab8b2e97d3e3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-216/control-dumps.R",
+      "args": [
+        "head",
+        "2"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-216/control",
+      "out_pattern": "\\.(R|json|log)$",
+      "timeout_minutes": 170
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
