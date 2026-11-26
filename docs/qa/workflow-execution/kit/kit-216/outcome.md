@@ -204,3 +204,32 @@ Moves in `test-omic-enrich-module.R`, all at predicted leaves:
 Not checked: G21 on 854dcfc4.
 
 Next: merge staging 75acd421, then the controls and the re-freeze on the merged trees.
+
+## Controls, re-freeze and R2d (2026-11-26)
+
+- **Controls** (control2 runs 45731097902 and 45731106894; staging 80f26158). The first control runs, 45723149339 and
+  45723123145, wrote no dump: an instrument defect (a relative path), repaired. Results, against the ticket's four
+  conditions:
+
+| Condition | Result |
+|---|---|
+| (ii) two head dumps from separate processes are identical | met, byte for byte (W1, W113, W108; the lanes step by step) |
+| (iii) base and head differ only at the predicted leaves | met: W1 7 sessions × history/states; W113 7 × history; `prot_native` 4 leaves; `prot_dia` 24 leaves; the other four lanes identical |
+| (i) the base dump equals the stored value at each leaf that changes | met everywhere except two leaves (below) |
+
+  The two exceptions to (i):
+  - **W1 `kernel_clusterprofiler` `states`.** The base dump has `d8f57c99`; the stored value has `1167a2b0` (the
+    pre-existing KIT-173 failure). Not re-frozen: stop rule 3, to the owner.
+  - **`prot_dia` `states`.** Every state digest other than `enrichment_completed` differs between the base dump and
+    the stored file. This is not KIT-216's change, and its cause is not traced. Only the predicted change was applied:
+    the `enrichment_completed` entry was removed.
+
+  Details: `leaves.tsv`, `gui-entry-control.tsv`, `control/`.
+- **Re-freeze:** 28a42a75, at the predicted leaves only (VAL-179 SD-3).
+- **R2d** (45738197306): **misses its prediction; stopped.**
+  - `test-kit213-study-parameters-labels.R` E4 asserts that the head is `enrichment_completed`, as an enrichment
+    precondition. KIT-213 merged after R2c, so this design move in its file was not in 6.4.
+  - `test-omics-enrich-core.R:162` infers "saved" from the frozen run history. After the re-freeze that history is
+    `"<unchanged>"`, so each of the four W2 cases gains one failure. R1-01's "fixed by the re-freeze" was wrong for
+    this check.
+  - Everything else was as predicted.
