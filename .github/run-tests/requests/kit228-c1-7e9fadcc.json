@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-228 correction pass C1: tests-only (I04 to I07 rows) on the fix a7e3a582's R/; each new row fails for its stated reason (9 predicted), I07 passes; ceiling 60 job-min = 4.0 core-h; used 42.52 of 92.0",
+  "label": "KIT-228 C1 tests-only 7e9fadcc",
+  "package_commit": "7e9fadcc7b2563e6a63ddc7bb6745157d2297c98",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit228-integration-input-refused-save.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
