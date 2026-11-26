@@ -53,3 +53,13 @@
   Automatic mode it names no assay)."; the normalisation bullet's "Known limit, not yet resolved: on the DIA route that
   normalises and applies RUV in one step, the removed sample is not yet named in the tab or recorded in the analysis
   record; only the smaller design shows it."
+
+## VAL-373 (Q-C) texts, drafts
+
+- An assay in which a group is left with fewer than two samples holding values (log line "Warning: ..." and
+  notification; also the RUV summary): "RUV-III was not applied to assay <A>: the groups <groups> have fewer than two
+  samples with values in this assay, so control features cannot be chosen. The assay keeps its values without RUV."
+- Proteomics, the DIA normalisation step (log and warning notification): "Warning: samples <samples> have no value and
+  were removed from the design." (the limpa route's text).
+- NEWS: the two known-limit clauses are replaced by what the code now does (the RUV bullet's group sentence; the
+  normalisation bullet's DIA-route sentence).

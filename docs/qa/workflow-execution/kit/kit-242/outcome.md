@@ -702,3 +702,12 @@ Files: `test-kit242-normalisation-fallback.R`, `test-kit172-downstream.R`, `test
   this code `itsd_applied` is FALSE on the fixture whose ITSD matches nothing (`:138`) and in the overlay (`:188`); `:47`
   as re-pinned.
 - A miss is a result: recorded and handed back.
+
+### R1e (run 45759484108, a8c299c2; 29.0 job-minutes, 1.93 core-hours): observed
+
+As predicted. `test-kit242-normalisation-fallback.R` 527 passed, 10 failed, 0 errors: E17's four expectations (the
+warning escapes, `samples_removed` NULL, the commit's outcome NULL, no notice); E27 Automatic (lipid, metab) and the VE
+shape (lipid, metab) stop with "invalid 'type' (list) of argument" from `sum()`; E27 Manual (lipid, metab) stop with
+"the control-feature search found no control features for assay A2, because it could not read the assay". Every
+earlier row passes. `test-kit172-downstream.R` 84/0, `test-workflow-lipid-declarations.R` and
+`test-workflow-metab-declarations.R` 259/0 each. Used: 221.80 + 1.93 = 223.73 of 901.33 core-hours.
