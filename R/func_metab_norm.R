@@ -316,6 +316,204 @@ prepareOmicsRuvCancorObject <- function(theObject, data_slot, id_column_slot) {
     theObject
 }
 
+#' Whether lipid and metabolite RUV handle a sample, a feature or an assay that cannot be corrected by its cause
+#' (KIT-242 Part B; VAL-242 OD-1 (c), Q6.1, Q6.2 (c); VAL-290): TRUE under the current rule, FALSE only while a record
+#' made before it replays (`workflowReplayRuleMarkers$ruv_fallback`), when an assay whose correction failed was dropped.
+#' @return One logical.
+#' @noRd
+omicsRuvFallbackCurrent <- function() {
+    marker <- workflowReplayRuleMarkers$ruv_fallback
+    !identical(getOption(marker$option), marker$earlier)
+}
+
+#' Stop a lipid or metabolite RUV step (KIT-242, Q6.2 (c)): a failed computation or an invalid argument, with the assays
+#' and the step that failed (`reason`: `invalid_k`, `invalid_controls`, `malformed_assay`, `too_few_samples`,
+#' `correction_error`, `search_error`, or the search's `error_*` status).
+#' @noRd
+abortOmicsRuvFailed <- function(assay, reason, text, parent = NULL) {
+    rlang::abort(text, class = "omics_ruv_failed", assay = assay, reason = reason, parent = parent, call = NULL)
+}
+
+#' The samples and features with no finite value in each assay of a lipid or metabolite object, over the design's
+#' samples (KIT-242, VAL-242 Q6.1 and OD-1 (c)), and the object without them: RUV computes each assay without them and
+#' puts them back as missing. An assay with neither is unchanged.
+#' @param theObject A `LipidomicsAssayData` or `MetaboliteAssayData` object.
+#' @return `list(object, samples, features)`; `samples` and `features` per assay (character, empty where none).
+#' @noRd
+omicsRuvWithoutEmpty <- function(theObject) {
+    slots <- omicsRuvAssaySlots(theObject)
+    assays <- methods::slot(theObject, slots$data)
+    id_column <- methods::slot(theObject, slots$id)
+    design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+    samples <- stats::setNames(rep(list(character()), length(assays)), names(assays))
+    features <- samples
+    for (assay_name in names(assays)) {
+        assay <- assays[[assay_name]]
+        cols <- intersect(colnames(assay), design_samples)
+        if (!length(cols) || !nrow(assay) || !id_column %in% colnames(assay)) next
+        seen <- matrix(vapply(assay[cols], function(x) is.finite(suppressWarnings(as.numeric(x))), logical(nrow(assay))),
+            nrow = nrow(assay))
+        empty_cols <- cols[colSums(seen) == 0L]
+        empty_rows <- rowSums(seen) == 0L
+        if (!length(empty_cols) && !any(empty_rows)) next
+        samples[[assay_name]] <- empty_cols
+        features[[assay_name]] <- as.character(assay[[id_column]][empty_rows])
+        assays[[assay_name]] <- assay[!empty_rows, setdiff(colnames(assay), empty_cols), drop = FALSE]
+    }
+    methods::slot(theObject, slots$data) <- assays
+    list(object = theObject, samples = samples, features = features)
+}
+
+#' One assay after RUV with its left-out samples and features put back as missing (KIT-242): the corrected table, plus
+#' an all-missing column for each left-out sample and an all-missing row (the input's annotation) for each left-out
+#' feature, in the input's row and sample-column order.
+#' @noRd
+omicsRuvRestoreEmpty <- function(corrected, input, id_column, sample_cols, samples, features) {
+    if (!length(samples) && !length(features)) return(corrected)
+    for (sample in samples) corrected[[sample]] <- NA_real_
+    if (length(features)) {
+        extra <- input[as.character(input[[id_column]]) %in% features, intersect(colnames(corrected), colnames(input)), drop = FALSE]
+        for (column in intersect(colnames(extra), sample_cols)) extra[[column]] <- NA_real_
+        corrected <- dplyr::bind_rows(corrected, extra)
+        corrected <- corrected[order(match(as.character(corrected[[id_column]]), as.character(input[[id_column]]))), , drop = FALSE]
+    }
+    present <- sample_cols[sample_cols %in% colnames(corrected)]
+    corrected[, c(setdiff(colnames(corrected), sample_cols), present), drop = FALSE]
+}
+
+#' Legacy RUV-III-C on a lipid or metabolite object by cause (KIT-242 Part B; VAL-242 OD-1 (c), OD-3 (d), Q6.1,
+#' Q6.2 (c)): the `ruvIII_C_Varying` methods' body under the current rule. Per assay: an invalid k or control argument,
+#' or a malformed assay, stops (`omics_ruv_failed`); the samples and features with no value are left out and put back
+#' as missing after the correction (`omics_ruv_sample_excluded`, `omics_ruv_feature_excluded`); a feature the control
+#' vector does not name is not a control; an assay with no control feature keeps its values without RUV
+#' (`omics_ruv_not_applied`, reason `no_usable_controls`); the correction runs under the earlier rule on what remains,
+#' and an assay it cannot correct (an error, no matrix, no finite value) stops (`correction_error`). No assay is
+#' dropped. With nothing left out, every assay corrected and the controls aligned, the result is the earlier rule's.
+#' A NULL k or ctrl (read from the object's arguments) is handed to the earlier rule unchanged.
+#' @return The corrected object.
+#' @noRd
+omicsRuvCorrectByCause <- function(theObject, ruv_grouping_variable, ruv_number_k, ctrl) {
+    marker <- workflowReplayRuleMarkers$ruv_fallback
+    earlier <- stats::setNames(list(marker$earlier), marker$option)
+    inner <- function(object, k, controls) withr::with_options(earlier,
+        ruvIII_C_Varying(object, ruv_grouping_variable = ruv_grouping_variable, ruv_number_k = k, ctrl = controls))
+    slots <- omicsRuvAssaySlots(theObject)
+    assays <- methods::slot(theObject, slots$data)
+    id_column <- methods::slot(theObject, slots$id)
+    is_k_list <- is.list(ruv_number_k)
+    is_ctrl_list <- is.list(ctrl) && !is.data.frame(ctrl)
+    assay_names <- names(assays)
+    if (is.null(ruv_number_k) || is.null(ctrl) || !length(assays) || is.null(assay_names) || any(!nzchar(assay_names)) ||
+        (is_k_list && !all(assay_names %in% names(ruv_number_k))) || (is_ctrl_list && !all(assay_names %in% names(ctrl)))) {
+        return(inner(theObject, ruv_number_k, ctrl))
+    }
+    design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+    plan <- list()
+    for (assay_name in assay_names) {
+        k <- if (is_k_list) ruv_number_k[[assay_name]] else ruv_number_k
+        if (!is.numeric(k) || length(k) != 1L || is.na(k) || k < 0) {
+            abortOmicsRuvFailed(assay_name, "invalid_k", sprintf(paste("RUV-III was not run: the number of unwanted factors for",
+                "assay '%s' must be one whole number of 0 or more (given: %s)."), assay_name, paste(format(k), collapse = ", ")))
+        }
+        assay <- assays[[assay_name]]
+        sample_cols <- if (is.data.frame(assay)) intersect(colnames(assay), design_samples) else character()
+        if (!is.data.frame(assay) || !id_column %in% colnames(assay) || !nrow(assay) || length(sample_cols) < 2L) {
+            abortOmicsRuvFailed(assay_name, "malformed_assay", sprintf(paste("RUV-III was not run: assay '%s' needs the feature",
+                "id column '%s', at least one feature and at least two samples of the design."), assay_name, id_column))
+        }
+        if (!tibble::is_tibble(assay)) assay <- tibble::as_tibble(assay)
+        ids <- as.character(assay[[id_column]])
+        seen <- matrix(vapply(assay[sample_cols], function(x) is.finite(suppressWarnings(as.numeric(x))), logical(nrow(assay))),
+            nrow = nrow(assay))
+        empty_samples <- sample_cols[colSums(seen) == 0L]
+        empty_features <- unique(ids[rowSums(seen) == 0L])
+        if (length(sample_cols) - length(empty_samples) < 2L || length(empty_features) >= length(unique(ids))) {
+            abortOmicsRuvFailed(assay_name, "too_few_samples", sprintf(paste("RUV-III was not run: assay '%s' has values in fewer",
+                "than two samples or in no feature."), assay_name))
+        }
+        if (length(empty_samples)) {
+            rlang::warn(sprintf(paste("RUV-III for assay '%s' was computed without samples %s, which have no value there; they",
+                "stay empty in that assay."), assay_name, paste(empty_samples, collapse = ", ")),
+                class = "omics_ruv_sample_excluded", assay = assay_name, samples = empty_samples)
+        }
+        if (length(empty_features)) {
+            rlang::warn(sprintf(paste("RUV-III for assay '%s' was computed without %d features with no value (%s); they stay",
+                "empty."), assay_name, length(empty_features), paste(utils::head(empty_features, 3L), collapse = ", ")),
+                class = "omics_ruv_feature_excluded", assay = assay_name, features = empty_features)
+        }
+        kept_ids <- setdiff(ids, empty_features)
+        # VAL-242 Q6.1: the controls by feature id; a feature the control vector does not name is not a control.
+        given <- if (is_ctrl_list) ctrl[[assay_name]] else ctrl
+        invalid_controls <- function(what) abortOmicsRuvFailed(assay_name, "invalid_controls", sprintf(paste("RUV-III was not run:",
+            "the control features for assay '%s' %s."), assay_name, what))
+        aligned <- TRUE
+        control_ids <- if (is.null(given)) character() else if (is.numeric(given)) {
+            if (any(is.na(given)) || any(given < 1) || any(given > length(ids))) invalid_controls("are positions outside the assay")
+            ids[given]
+        } else if (is.logical(given)) {
+            if (length(given) == length(ids)) {
+                ids[given %in% TRUE]
+            } else if (!is.null(names(given))) {
+                aligned <- all(ids %in% names(given))
+                names(given)[given %in% TRUE]
+            } else {
+                invalid_controls("are an unnamed logical vector of another length than the assay")
+            }
+        } else if (is.character(given)) {
+            given
+        } else invalid_controls("must be feature ids, positions or a logical vector")
+        control_ids <- intersect(kept_ids, control_ids)
+        changed <- length(empty_samples) || length(empty_features) || !aligned || !tibble::is_tibble(assays[[assay_name]])
+        plan[[assay_name]] <- list(k = k, assay = assay, sample_cols = sample_cols, samples = empty_samples,
+            features = empty_features, controls = control_ids, changed = changed)
+        if (!length(control_ids)) {
+            rlang::warn(sprintf(paste("RUV-III was not applied to assay %s: none of its features with values is a control",
+                "feature. The assay keeps its values without RUV."), assay_name),
+                class = "omics_ruv_not_applied", assay = assay_name, reason = "no_usable_controls")
+        }
+    }
+    to_correct <- names(Filter(function(p) length(p$controls) > 0L, plan))
+    if (!length(to_correct)) {
+        theObject@args$ruv_grouping_variable <- ruv_grouping_variable
+        theObject@args$ruv_number_k <- ruv_number_k
+        theObject@args$ctrl <- ctrl
+        return(theObject)
+    }
+    direct <- identical(to_correct, assay_names) && !any(vapply(plan, `[[`, logical(1L), "changed"))
+    if (direct) {
+        result <- inner(theObject, ruv_number_k, ctrl)
+        inputs <- assays
+    } else {
+        inputs <- lapply(plan[to_correct], function(p) p$assay[!as.character(p$assay[[id_column]]) %in% p$features,
+            setdiff(colnames(p$assay), p$samples), drop = FALSE])
+        sub <- theObject
+        methods::slot(sub, slots$data) <- inputs
+        result <- inner(sub, lapply(plan[to_correct], `[[`, "k"), lapply(plan[to_correct], `[[`, "controls"))
+    }
+    result_assays <- methods::slot(result, slots$data)
+    failed <- Filter(function(assay_name) {
+        out <- result_assays[[assay_name]]
+        is.null(out) || (plan[[assay_name]]$k > 0 && identical(out, inputs[[assay_name]]))
+    }, to_correct)
+    if (length(failed)) {
+        abortOmicsRuvFailed(failed, "correction_error", sprintf(paste("RUV-III-C could not correct assay %s (an error, no",
+            "corrected matrix, or no finite value; see the log). Choose another k or control set, or run without RUV."),
+            paste(failed, collapse = ", ")))
+    }
+    if (direct) return(result)
+    final <- result
+    methods::slot(final, slots$data) <- stats::setNames(lapply(assay_names, function(assay_name) {
+        p <- plan[[assay_name]]
+        if (!assay_name %in% to_correct) return(assays[[assay_name]])
+        omicsRuvRestoreEmpty(result_assays[[assay_name]], p$assay, id_column, p$sample_cols, p$samples, p$features)
+    }), assay_names)
+    final@design_matrix <- theObject@design_matrix
+    final@args$ruv_grouping_variable <- ruv_grouping_variable
+    final@args$ruv_number_k <- ruv_number_k
+    final@args$ctrl <- ctrl
+    tryCatch(cleanDesignMatrix(final), error = function(e) final)
+}
+
 #' Run Per-Assay RUV Optimization
 #'
 #' @title Run RUV optimization per assay
@@ -430,6 +628,7 @@ runPerAssayRuvOptimization <- function(
                     , object_error = paste0("error_neg_ctrl_selection: ", ctrl_list$message)
                     , ctrl_list   = NULL
                     , cancor_list = NULL
+                    , refusal     = if (inherits(ctrl_list, "multischolar_ruv_grouping_unusable")) ctrl_list
                 ))
             }
 
@@ -458,6 +657,14 @@ runPerAssayRuvOptimization <- function(
                 , cancor_list = cancor_list
             )
         })
+
+        # A grouping that cannot be used is refused to the caller, not recorded as failed rows (KIT-190). Signalled
+        # here, outside purrr::map, so the refusal reaches the caller with its own class and message.
+        for (pct_res in percentage_results) {
+            if (!is.null(pct_res$refusal)) {
+                stop(pct_res$refusal)
+            }
+        }
 
         # --- Per-assay derivation from shared percentage results ---
         design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
@@ -535,6 +742,25 @@ runPerAssayRuvOptimization <- function(
                         , composite_score         = NA_real_
                         , status                  = "skipped_insufficient_controls"
                         , error_reason            = ""
+                        , ctrl_indices            = ctrl_indices
+                        , cancor_plot             = NULL
+                    ))
+                }
+
+                # KIT-242 (VAL-242 Q6.2 (c)): under the current rule an assay the canonical-correlation step returned no
+                # plot for (it could not be computed) is a failed computation, not a curve without an elbow.
+                if (omicsRuvFallbackCurrent() && is.list(pct_res$cancor_list) && !assay_name %in% names(pct_res$cancor_list)) {
+                    return(list(
+                        percentage_requested    = pct
+                        , candidate_feature_count = candidate_feature_count
+                        , realized_num_controls   = realized_num_controls
+                        , realized_percentage     = realized_percentage
+                        , sample_size             = sample_size
+                        , best_k                  = NA_integer_
+                        , separation_score        = NA_real_
+                        , composite_score         = NA_real_
+                        , status                  = "error_cancor"
+                        , error_reason            = "error_cancor: the canonical correlations could not be computed for this assay"
                         , ctrl_indices            = ctrl_indices
                         , cancor_plot             = NULL
                     ))
@@ -746,6 +972,9 @@ runPerAssayRuvOptimization <- function(
             )
 
         }, error = function(e) {
+            if (inherits(e, "multischolar_ruv_grouping_unusable")) {
+                return(list(refusal = e))
+            }
             logger::log_warn(paste("RUV manual mode failed for", assay_name, ":", e$message))
             list(
                 success               = FALSE
@@ -759,6 +988,14 @@ runPerAssayRuvOptimization <- function(
             )
         })
     })
+
+    # A grouping that cannot be used is refused to the caller (KIT-190); signalled outside purrr::imap so the
+    # refusal keeps its own class and message.
+    for (res in results) {
+        if (!is.null(res$refusal)) {
+            stop(res$refusal)
+        }
+    }
 
     names(results) <- assay_names
     return(results)

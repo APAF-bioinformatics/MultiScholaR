@@ -528,3 +528,69 @@ test_that("KIT-239 (L5): the report's limitations read the record: its samples, 
         expect_false(integrationRecordTexts()[["none_recorded"]] %in% none)
     }
 })
+
+test_that("KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers", {
+    # INT-31 corrects INT-24's evidence sentence: the z-score's sentence said "weak factors" (undefined) and "otherwise
+    # made no practical difference" (KIT-151 d: inconclusive at 20 samples without missing values). One journey with
+    # the default scaling; the paragraph as built and as read back from JSON. E2 and E5 (the owner's words and the
+    # agreement with the Model tab's help) were added with the fix.
+    old <- paste("each scaled to mean 0 and standard deviation 1 after the selection (which used the unscaled values);",
+        "in simulation, with few samples and missing values this scaling improved the recovery of weak factors, and",
+        "otherwise made no practical difference.")
+    project <- intRecProject()
+    journey <- intRecJourney(project)
+    record <- buildWorkflowAnalysisRecord(journey$manager)
+    json <- file.path(project$root, "record.json")
+    writeWorkflowAnalysisRecord(journey$manager, json)
+    read <- jsonlite::read_json(json, simplifyVector = FALSE)
+    t <- integrationRecordTexts()
+    # E1: every record prints the table's sentence, and not the old one.
+    for (methods in list(built = integrationMethodsText(record), json = integrationMethodsText(read))) {
+        expect_true(grepl(t[["methods_scaling_feature_zscore"]], methods, fixed = TRUE))
+        expect_false(grepl("weak factors", methods, fixed = TRUE))
+        expect_false(grepl("no practical difference", methods, fixed = TRUE))
+        expect_false(grepl(old, methods, fixed = TRUE))
+    }
+    # G1: a record whose scaling is "none" keeps its own sentence (the value replaced in the record's encoded form).
+    parameters <- read$analyses$integration_mofa_model$parameters
+    hit <- vapply(parameters, \(parameter) identical(integrationRecordScalar(parameter$name), "scaling"), logical(1))
+    expect_identical(sum(hit), 1L)
+    parameters[[which(hit)]]$value <- encodeWorkflowRecordValue("none")
+    read$analyses$integration_mofa_model$parameters <- parameters
+    unscaled <- integrationMethodsText(read)
+    expect_true(grepl(t[["methods_scaling_none"]], unscaled, fixed = TRUE))
+    expect_true(grepl("without per-feature scaling.", unscaled, fixed = TRUE))
+    expect_false(grepl(t[["methods_scaling_feature_zscore"]], unscaled, fixed = TRUE))
+    # E2: the owner's words (VAL-293, option (a), without the effect size): the numbers, the criterion and the
+    # condition; the two other results neither called small nor none.
+    sentence <- t[["methods_scaling_feature_zscore"]]
+    for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
+        "a correlation of at least 0.9", "missing", "could not be told from none")) {
+        expect_true(grepl(term, sentence, fixed = TRUE), info = term)
+    }
+    expect_false(grepl("weak", sentence, ignore.case = TRUE))
+    for (phrase in c("no practical difference", "too small", "there was none", "rose by")) {
+        expect_false(grepl(phrase, sentence, fixed = TRUE), info = phrase)
+    }
+    # E5: the Methods sentence and the Model tab's help end with one shared passage, so they cannot differ.
+    help <- integrationGuiTexts()[["help_scaling"]]
+    evidence <- integrationScalingEvidenceText()
+    expect_true(endsWith(sentence, evidence))
+    expect_true(endsWith(help, evidence))
+    # VAL-305: the four phrases of the text the owner was shown are in the one shared passage (so in both texts), and
+    # the passage's last sentence (VAL-251) is unchanged.
+    for (phrase in c("made for this software", "(two groups of 10)", "this scaling", "of four data sets")) {
+        expect_true(grepl(phrase, evidence, fixed = TRUE), info = phrase)
+        expect_true(grepl(phrase, sentence, fixed = TRUE) && grepl(phrase, help, fixed = TRUE), info = phrase)
+    }
+    expect_true(endsWith(evidence, paste("Without missing values the difference could not be told from none (29 rather",
+        "than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")))
+    for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
+        "could not be told from none", "a correlation of at least 0.9 with the true pattern",
+        "a tenth of the features of the two smallest")) {
+        expect_true(grepl(term, sentence, fixed = TRUE) && grepl(term, help, fixed = TRUE), info = term)
+    }
+    for (phrase in c("too small", "there was none")) {
+        expect_false(grepl(phrase, help, fixed = TRUE) || grepl(phrase, sentence, fixed = TRUE), info = phrase)
+    }
+})

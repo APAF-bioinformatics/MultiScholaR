@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit221-da-several-comparisons.R	43	38	0	0	0	11.9	failed
+test-kit218-da-wrapper-tail.R	80	0	0	2	0	11	ok

@@ -143,6 +143,9 @@ extractMetabS4Params <- function(metab_s4) {
         }
     )
 
+    # -- Correlation filter: samples set missing in one assay (KIT-255) --
+    if (!is.null(s4_args$correlation_exclusions)) result$correlation_exclusions <- s4_args$correlation_exclusions
+
     # -- RUV-III Parameters --
     tryCatch(
         {
@@ -371,6 +374,9 @@ extractLipidS4Params <- function(lipid_s4) {
             result$normalisation_method <- NA_character_
         }
     )
+
+    # -- Correlation filter: samples set missing in one assay (KIT-255) --
+    if (!is.null(s4_args$correlation_exclusions)) result$correlation_exclusions <- s4_args$correlation_exclusions
 
     # -- RUV-III Parameters --
     tryCatch(

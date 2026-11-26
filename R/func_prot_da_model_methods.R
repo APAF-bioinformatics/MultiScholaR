@@ -292,7 +292,14 @@ setMethod(
       message(paste("      Sample of rownames:", paste(head(rownames(protein_quant_matrix), 5), collapse = ", ")))
     }
     
-    contrast_strings_to_use <- contrasts_tbl[, 1]
+    # KIT-221 (VAL-193): the comparisons are read as text from a data frame, one per row of its first column (a tibble
+    # and a data frame give the same comparisons; a factor column is read by its labels, not its integer codes, which
+    # `topTreat()`/`topTable()` would use as `coef`); anything else is refused.
+    if (!is.data.frame(contrasts_tbl)) {
+      cli::cli_abort(c("{.arg contrasts_tbl} must be a data frame with one comparison per row in its first column",
+        x = "it is {.obj_type_friendly {contrasts_tbl}}"), class = "prot_da_contrasts_invalid", call = NULL)
+    }
+    contrast_strings_to_use <- as.character(contrasts_tbl[[1]])
     message(paste("   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
     message(paste("   differentialAbundanceAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))
 
@@ -418,44 +425,39 @@ setMethod(
 
 
     # The result from runTestsContrasts is a LIST with a 'results'
-    # element, which ITSELF is a list of tables. For a single contrast run, we
-    # need to extract the first table from the nested list.
+    # element, which ITSELF is a list of tables, one per comparison (KIT-221: every comparison is kept).
 
     # Check if the expected structure exists
     if (is.null(contrasts_results) || is.null(contrasts_results$results) || length(contrasts_results$results) == 0) {
       stop("Error: DE analysis function did not return results in the expected format.")
     }
 
-    # Extract the results table (it's the first element in the nested list)
-    da_results_table <- contrasts_results$results[[1]]
-
-    # Get the name of the contrast from the list element name
-    contrast_name <- names(contrasts_results$results)[1]
-
-    # Ensure it's a data frame before proceeding
-    if (!is.data.frame(da_results_table)) {
+    # Ensure every table is a data frame before proceeding
+    if (!all(vapply(contrasts_results$results, is.data.frame, logical(1)))) {
       stop("Error: DE analysis results are not in the expected data frame format.")
     }
 
-    # CRITICAL FIX 3.0: The 'topTreat' table needs a 'comparison' column added to it,
-    # containing the name of the contrast. It also needs the protein IDs from rownames.
-    da_results_table <- da_results_table |>
-      tibble::rownames_to_column(var = args_row_id) |>
-      dplyr::mutate(comparison = contrast_name)
-
+    # CRITICAL FIX 3.0: Each 'topTreat' table needs a 'comparison' column added to it,
+    # containing the name of its contrast. It also needs the protein IDs from rownames.
     # Map back to original group names in results if needed
-    if (exists("group_mapping")) {
-      contrasts_results_table <- da_results_table |>
-        dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
-          result <- x
-          for (safe_name in names(group_mapping)) {
-            result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
-          }
-          result
-        }))
-    } else {
-      contrasts_results_table <- da_results_table
-    }
+    contrast_tables <- purrr::imap(contrasts_results$results, \(table, contrast_name) {
+      table <- table |>
+        tibble::rownames_to_column(var = args_row_id) |>
+        dplyr::mutate(comparison = contrast_name)
+      if (exists("group_mapping")) {
+        table <- table |>
+          dplyr::mutate(comparison = purrr::map_chr(comparison, \(x) {
+            result <- x
+            for (safe_name in names(group_mapping)) {
+              result <- gsub(safe_name, group_mapping[safe_name], result, fixed = TRUE)
+            }
+            result
+          }))
+      }
+      table
+    })
+    # One comparison: the table itself, as before; several: their row-bind.
+    contrasts_results_table <- if (length(contrast_tables) == 1L) contrast_tables[[1L]] else dplyr::bind_rows(contrast_tables)
 
     return_list$contrasts_results <- contrasts_results
     return_list$contrasts_results_table <- contrasts_results_table
@@ -469,15 +471,12 @@ setMethod(
 
     # Prepare data for volcano plots
     # CRITICAL FIX: getSignificantData expects list_of_da_tables to be a list where each element
-    # is itself a list of data.frames. Since we're processing one contrast at a time, we need to
-    # wrap the single data.frame in an additional list layer.
-    # CRITICAL FIX 2: The list element name MUST contain "=" delimiter because countStatDaGenesHelper
-    # expects to split on "=" to separate comparison name from expression. Use contrast_name which
-    # contains the full format like "H4_vs_WT=groupH4-groupWT"
-    nested_list <- list(contrasts_results_table)
-    names(nested_list) <- contrast_name # Use actual contrast name with "=" delimiter
+    # is itself a list of data.frames: here, the one list of the per-comparison tables.
+    # CRITICAL FIX 2: Each list element name MUST contain the "=" delimiter because countStatDaGenesHelper
+    # expects to split on "=" to separate comparison name from expression. The names are the full contrast
+    # formats like "H4_vs_WT=groupH4-groupWT", as `runTestsContrasts` names its tables.
     significant_rows <- getSignificantData(
-      list_of_da_tables = list(nested_list),
+      list_of_da_tables = list(contrast_tables),
       list_of_descriptions = list("RUV applied"),
       row_id = !!sym(args_row_id),
       p_value_column = !!sym(raw_pvalue_column),
@@ -505,15 +504,15 @@ setMethod(
     return_list$volplot_plot <- volplot_plot
 
     # Count significant molecules
-    # CRITICAL FIX: Same as above - wrap in additional list layer and use contrast_name
-    nested_list_for_count <- list(contrasts_results_table)
-    names(nested_list_for_count) <- contrast_name # Use actual contrast name with "=" delimiter
+    # The same list of the per-comparison tables (one table per comparison, named by its full contrast format).
     # KIT-220 (VAL-191): counted at the analysis's threshold, as the second table below (it took the 0.05 default).
+    # KIT-204 (VAL-129 (1)): rows without a p-value are counted as "Not tested", not "Not significant".
     num_sig_da_molecules <- printCountDaGenesTable(
-      list_of_da_tables = list(nested_list_for_count),
+      list_of_da_tables = list(contrast_tables),
       list_of_descriptions = list("RUV applied"),
       formula_string = "analysis_type ~ comparison",
-      q_val_thresh = as.double(da_q_val_thresh)
+      q_val_thresh = as.double(da_q_val_thresh),
+      p_value_column = !!rlang::sym(raw_pvalue_column)
     )
 
     return_list$num_sig_da_molecules_first_go <- num_sig_da_molecules
@@ -599,8 +598,10 @@ setMethod(
     return_list$list_of_volcano_plots <- list_of_volcano_plots
 
     # Additional summary statistics
+    # KIT-204: a row without a p-value was not tested; the status is listed only where it occurs.
     num_sig_da_molecules <- significant_rows %>%
       dplyr::mutate(status = case_when(
+        is.na(.data[[raw_pvalue_column]]) ~ "Not tested",
         !!sym(qvalue_column) >= da_q_val_thresh ~ "Not significant",
         log2FC >= 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Up",
         log2FC < 0 & !!sym(qvalue_column) < da_q_val_thresh ~ "Significant and Down",
@@ -612,12 +613,12 @@ setMethod(
 
     return_list$num_sig_da_molecules <- num_sig_da_molecules
 
-    # Create barplots if significant results exist
+    # Create barplots if significant results exist (KIT-204: "Not tested" is neither)
     if (num_sig_da_molecules %>%
-      dplyr::filter(status != "Not significant") |>
+      dplyr::filter(!status %in% c("Not significant", "Not tested")) |>
       nrow() > 0) {
       num_sig_da_genes_barplot_only_significant <- num_sig_da_molecules %>%
-        dplyr::filter(status != "Not significant") %>%
+        dplyr::filter(!status %in% c("Not significant", "Not tested")) %>%
         ggplot(aes(x = status, y = counts)) +
         geom_bar(stat = "identity") +
         geom_text(stat = "identity", aes(label = counts), vjust = -0.5) +

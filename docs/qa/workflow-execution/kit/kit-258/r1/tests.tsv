@@ -1,0 +1,5 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit258-duplicate-completeness.R	76	26	0	0	0	70.5	failed
+test-kit214-sample-columns.R	176	0	0	0	0	81	ok
+test-metab-01m-s4-resolve-duplicate-intensity-characterization.R	15	3	0	0	0	7.1	failed
+test-metab-02u-resolve-duplicate-features-characterization.R	16	1	0	0	0	7.2	failed

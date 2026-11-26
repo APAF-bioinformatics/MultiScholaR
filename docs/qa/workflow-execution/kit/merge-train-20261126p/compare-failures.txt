@@ -1,0 +1,44 @@
+== test-prot-norm-core.R | message-changed | the normalisation action and the correlation action give the recorded output through the moved functions
+-- base:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "21ab8a3c0e9774ec2c30ca808c5cc40479409cc518409e229115dfefdc80aed1"
+  `expected`: "a5d707779c1311d65a32a6664cc56a94d569796b78dc878fdde1de292a956bf2"
+  
+  correlation
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "6850077e6ae352d87f922f6102d4e481ec79731404d868aab460c1a6915b773f"
+  `expected`: "e741aaed67b4371eb675644924c46bc2bdd7bccf0a9b9b407b9121398ef5a05c"
+  
+  normalization_manual
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "90a1539a824a5bd44e44da5879dd397a1bbaa9883e82a9be0407290077175568"
+  `expected`: "d21daf95829cd776ee2495206c2de1f40eec75da29c1396ec92db7142e2fd6cc"
+  
+  normalization_skip
+-- head:
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "21ab8a3c0e9774ec2c30ca808c5cc40479409cc518409e229115dfefdc80aed1"
+  `expected`: "a5d707779c1311d65a32a6664cc56a94d569796b78dc878fdde1de292a956bf2"
+  
+  correlation
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "6850077e6ae352d87f922f6102d4e481ec79731404d868aab460c1a6915b773f"
+  `expected`: "e741aaed67b4371eb675644924c46bc2bdd7bccf0a9b9b407b9121398ef5a05c"
+  
+  normalization_manual
+  Expected `found` to be identical to `pinned[[key]]`.
+  Differences:
+  `actual`:   "90a1539a824a5bd44e44da5879dd397a1bbaa9883e82a9be0407290077175568"
+  `expected`: "d21daf95829cd776ee2495206c2de1f40eec75da29c1396ec92db7142e2fd6cc"
+  
+  normalization_skip
+  Expected `skipped$calls` to be identical to `c(...)`.
+  Differences:
+    `actual[2:7]`: 0 0 1 2 1 1
+  `expected[2:7]`: 0 0 1 1 1 1
+

@@ -1,0 +1,184 @@
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 E25, G7: lipid a sample empty in every assay leaves the design, with or without a replicate pair
+-- base:
+  Expected `"Sample B_6 had no remaining value in any assay and was removed from the study." %in% omicsCorrelationExclusionNotice(out@args$correlation_exclusions)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out@args$correlation_exclusions$no_value` to be identical to `kit255S`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_6')
+  Expected `out@args$correlation_exclusions$no_value` to be identical to `kit255S`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_6')
+-- head:
+  <passes>
+
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 E25, G7: metab a sample empty in every assay leaves the design, with or without a replicate pair
+-- base:
+  Expected `"Sample B_6 had no remaining value in any assay and was removed from the study." %in% omicsCorrelationExclusionNotice(out@args$correlation_exclusions)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out@args$correlation_exclusions$no_value` to be identical to `kit255S`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_6')
+  Expected `out@args$correlation_exclusions$no_value` to be identical to `kit255S`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_6')
+-- head:
+  <passes>
+
+== test-kit255-omics-correlation-assays.R | message-changed | KIT-255 E20: lipid a group blank in one assay is not testable there and tested in the other
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `omicsCorrelationExclusionSummaryLine(record)` to match string "Comparisons not tested (no sample of the group has a value): group B in LCMS_Neg.".
+  Actual text:
+  x | Excluded in one assay only: B_1 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_2 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_3 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_4 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_5 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_6 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5).
+  Expected `record$not_tested` to be identical to `list(LCMS_Neg = "B")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+-- head:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 E20 (two replicates per group): lipid every one-assay failure leaves a group without a value in that assay, recorded as not tested
+-- base:
+  Expected `out@args$correlation_exclusions$not_tested` to be identical to `list(LCMS_Neg = "G6")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+-- head:
+  <passes>
+
+== test-kit255-omics-correlation-assays.R | message-changed | KIT-255 E20: metab a group blank in one assay is not testable there and tested in the other
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `omicsCorrelationExclusionSummaryLine(record)` to match string "Comparisons not tested (no sample of the group has a value): group B in LCMS_Neg.".
+  Actual text:
+  x | Excluded in one assay only: B_1 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_2 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_3 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_4 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_5 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_6 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5).
+  Expected `record$not_tested` to be identical to `list(LCMS_Neg = "B")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+-- head:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 E20 (two replicates per group): metab every one-assay failure leaves a group without a value in that assay, recorded as not tested
+-- base:
+  Expected `out@args$correlation_exclusions$not_tested` to be identical to `list(LCMS_Neg = "G6")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+-- head:
+  <passes>
+
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 I02: lipid the notice names only the assays where the sample reached the threshold or was not tested
+-- base:
+  Expected `grepl("GCMS", neg, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `grepl("LCMS_Pos (it reached the threshold there)", neg, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `summary` to match string "Set missing in some assays only:".
+  Actual text:
+  x | Excluded in one assay only: B_6 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_6 in GCMS (best correlation with a replicate 0.1; threshold 0.5).
+  Expected `text` to match string "GCMS (it was not tested there)".
+  Actual text:
+  x | Correlation filter: in assay LCMS_Neg, sample B_6 did not reach the threshold of 0.5 (its best correlation with a replicate there is 0.1). Its values in LCMS_Neg are set to missing. It stays in the analysis of the other assays (LCMS_Pos, GCMS), where it reached the threshold, and it is not removed from the study. Features in LCMS_Neg that met your minimum number of values per group before this step may now have fewer values in one group. The differential analysis tests each feature on the values that remain; a feature with no remaining values is not tested.
+  Expected `text` to match string "LCMS_Pos (it reached the threshold there)".
+  Actual text:
+  x | Correlation filter: in assay LCMS_Neg, sample B_6 did not reach the threshold of 0.5 (its best correlation with a replicate there is 0.1). Its values in LCMS_Neg are set to missing. It stays in the analysis of the other assays (LCMS_Pos, GCMS), where it reached the threshold, and it is not removed from the study. Features in LCMS_Neg that met your minimum number of values per group before this step may now have fewer values in one group. The differential analysis tests each feature on the values that remain; a feature with no remaining values is not tested.
+-- head:
+  <passes>
+
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 I02: metab the notice names only the assays where the sample reached the threshold or was not tested
+-- base:
+  Expected `grepl("GCMS", neg, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `grepl("LCMS_Pos (it reached the threshold there)", neg, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `summary` to match string "Set missing in some assays only:".
+  Actual text:
+  x | Excluded in one assay only: B_6 in LCMS_Neg (best correlation with a replicate 0.1; threshold 0.5); B_6 in GCMS (best correlation with a replicate 0.1; threshold 0.5).
+  Expected `text` to match string "GCMS (it was not tested there)".
+  Actual text:
+  x | Correlation filter: in assay LCMS_Neg, sample B_6 did not reach the threshold of 0.5 (its best correlation with a replicate there is 0.1). Its values in LCMS_Neg are set to missing. It stays in the analysis of the other assays (LCMS_Pos, GCMS), where it reached the threshold, and it is not removed from the study. Features in LCMS_Neg that met your minimum number of values per group before this step may now have fewer values in one group. The differential analysis tests each feature on the values that remain; a feature with no remaining values is not tested.
+  Expected `text` to match string "LCMS_Pos (it reached the threshold there)".
+  Actual text:
+  x | Correlation filter: in assay LCMS_Neg, sample B_6 did not reach the threshold of 0.5 (its best correlation with a replicate there is 0.1). Its values in LCMS_Neg are set to missing. It stays in the analysis of the other assays (LCMS_Pos, GCMS), where it reached the threshold, and it is not removed from the study. Features in LCMS_Neg that met your minimum number of values per group before this step may now have fewer values in one group. The differential analysis tests each feature on the values that remain; a feature with no remaining values is not tested.
+-- head:
+  <passes>
+
+== test-kit255-omics-correlation-assays.R | fixed | KIT-255 E16: the saved study parameters carry the samples set missing and the groups not tested; the other lines are unchanged
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `any(grepl("assay_main: group B", marked, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit236-report-sentences.R | fixed | KIT-255 (I01, I02): the comment counts each sample set missing once and says which comparisons were not tested
+-- base:
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+  Expected `k236Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+-- head:
+  <passes>
+

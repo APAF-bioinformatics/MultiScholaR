@@ -1,0 +1,71 @@
+{
+  "ticket": "KIT-211",
+  "script": "docs/qa/workflow-execution/kit/kit-211/sim-k211.R",
+  "script_sha256": "51c2d4672fc7e758b565c4e74e886eac5f805751871e0a47feaa382c518011b4",
+  "bound_commit": "cfcde043d1daadb44e18b18f8e6ce83cf7914662",
+  "lifecycle": false,
+  "determinism": false,
+  "cells": "B",
+  "cell_index": 202,
+  "masks": {
+    "B": ["vd5", "vd10", "vd25", "mcar5", "mcar10", "mcar25"]
+  },
+  "arms": {
+    "main": ["S", "A", "B", "Bp", "N", "C0"],
+    "Ag": ["S", "A", "B", "Bp", "B1", "Bp1"]
+  },
+  "arms_filter": [],
+  "share": 0.5,
+  "band_width": 1,
+  "old_rule": {
+    "A": {
+      "m": 3,
+      "g": 2
+    },
+    "B": {
+      "m": 3,
+      "g": 2
+    },
+    "C": {
+      "m": 3,
+      "g": 2
+    },
+    "D": {
+      "m": 2,
+      "g": 3
+    },
+    "Av": {
+      "m": 3,
+      "g": 2
+    },
+    "Ag": {
+      "m": 3,
+      "g": 2
+    }
+  },
+  "replicates": [201, 300],
+  "tasks_this_process": 100,
+  "tasks_complete": 100,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection)",
+  "workers": 4,
+  "seconds_per_cell": {
+    "B": 7366.481
+  },
+  "seconds_per_replicate_mask": 12.2774683333333,
+  "warnings": 0,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "limma": "3.68.4",
+  "qvalue": "2.44.0",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 9V74 80-Core Processor",
+  "started": "2026-11-25T23:50:29+0000",
+  "finished": "2026-11-26T00:21:29+0000",
+  "exit_status": 0,
+  "tables_sha256": {
+    "B.tsv.gz": "db51faae6afa60982e494c73ea7fba6048dd5c7539ec2a957b6293feb9c47b80",
+    "metrics.tsv": "952a7c5a27feb58f5908ea79a865dfcf3c18519f05e80af392c251b63d205147",
+    "range.tsv": "295b6691b54af0a97c3de0a01c6a6faea78b8d53e5fac3096ff6083fb7c5f8c8"
+  }
+}

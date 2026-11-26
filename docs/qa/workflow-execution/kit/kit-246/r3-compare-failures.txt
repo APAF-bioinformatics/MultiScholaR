@@ -1,0 +1,53 @@
+== test-integration-record.R | fixed | KIT-246: the Methods paragraph's scaling sentence states the simulations' numbers
+-- base:
+  Expected `grepl(phrase, evidence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  (two groups of 10)
+  Expected `grepl(phrase, evidence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  made for this software
+  Expected `grepl(phrase, evidence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  of four data sets
+  Expected `grepl(phrase, evidence, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  this scaling
+  Expected `grepl(phrase, sentence, fixed = TRUE) && grepl(phrase, help, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  (two groups of 10)
+  Expected `grepl(phrase, sentence, fixed = TRUE) && grepl(phrase, help, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  made for this software
+  Expected `grepl(phrase, sentence, fixed = TRUE) && grepl(phrase, help, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  of four data sets
+  Expected `grepl(phrase, sentence, fixed = TRUE) && grepl(phrase, help, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  this scaling
+-- head:
+  <passes>
+

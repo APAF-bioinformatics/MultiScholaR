@@ -449,13 +449,14 @@ omicSummaryW1InstallRecorders <- function(acc, setup, fallback = FALSE, env = pa
             rendered
         },
         createWorkflowArgsFromConfig = function(workflow_name, description = "", organism_name = NULL, taxon_id = NULL,
-            source_dir_path = NULL, final_s4_object = NULL, contrasts_tbl = NULL, workflow_data = NULL) {
+            source_dir_path = NULL, final_s4_object = NULL, contrasts_tbl = NULL, workflow_data = NULL, ...) {
+            # KIT-263: `...` (the writer's `omic_type`) is passed through, not recorded, so the frozen calls stand.
             call("createWorkflowArgsFromConfig", workflow_name = workflow_name, description = description,
                 organism_name = organism_name, taxon_id = taxon_id, source_dir_path = source_dir_path,
                 final_s4_object = final_s4_object, contrasts_tbl = contrasts_tbl, workflow_data = workflow_data)
             write_args(workflow_name = workflow_name, description = description, organism_name = organism_name,
                 taxon_id = taxon_id, source_dir_path = source_dir_path, final_s4_object = final_s4_object,
-                contrasts_tbl = contrasts_tbl, workflow_data = workflow_data)
+                contrasts_tbl = contrasts_tbl, workflow_data = workflow_data, ...)
         },
         omicsManagedProduct = function(operation, parameters, deliver, before = NULL) {
             call("omicsManagedProduct", operation = operation, parameters = paste(names(parameters),
@@ -2529,7 +2530,7 @@ omicSummaryW1Frozen[["trx_main"]] <- list(
             `scripts/transcriptomics/study_parameters.txt` = "<present>"),
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
-        study_parameters = "47 lines 96b3fdbde9b1bb30",
+        study_parameters = "47 lines 387b8047e011288e",
         integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)),
@@ -2615,7 +2616,7 @@ omicSummaryW1Frozen[["trx_main"]] <- list(
             `integration/transcriptomics_normalized_data.tsv` = "7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"),
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
-        study_parameters = "50 lines 6309448be78f095c",
+        study_parameters = "50 lines bbadf5a52d70875f",
         integration = c(transcriptomics_normalized_data.tsv = "7b9d35dbf33331d1"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -3056,7 +3057,7 @@ omicSummaryW1Frozen[["trx_managed"]] <- list(
             `scripts/transcriptomics/study_parameters.txt` = "<present>"),
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
-        study_parameters = "50 lines 6309448be78f095c",
+        study_parameters = "50 lines bbadf5a52d70875f",
         integration = c(transcriptomics_normalized_data.tsv = "7b9d35dbf33331d1"),
         session_state = "<unchanged>",
         errors = character(0)))

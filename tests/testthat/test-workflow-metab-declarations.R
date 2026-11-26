@@ -44,7 +44,8 @@ test_that("KIT-032: the metabolomics declarations are registered with the units,
     # The pre-pass statistics the step map records: the per-assay quantile and the mean standard factor.
     expect_named(declarations$metab_intensity_filter$global_statistics, "min_metabolite_intensity_threshold")
     expect_named(declarations$metab_itsd_normalisation$global_statistics, "mean_standard_factor")
-    expect_identical(declarations$metab_itsd_normalisation$fixed, list(method = "ITSD"))
+    # KIT-242 (VAL-303 (2)): the internal-standard marker joins the ITSD declaration's fixed constants.
+    expect_identical(declarations$metab_itsd_normalisation$fixed, list(method = "ITSD", itsd_outcome = "per_assay"))
     for (name in c("metab_da_output", "metab_da_contrast")) {
         expect_identical(declarations[[name]]$fixed, list(eBayes_trend = TRUE, eBayes_robust = TRUE))
         expect_null(declarations[[name]]$output_class)

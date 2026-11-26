@@ -1,0 +1,24 @@
+file	test (row)	predicted at base (staging 988512e6 code, this commit's tests)
+test-kit255-omics-correlation-assays.R	E1 lipid, metab	FAIL: design has 11 samples (B_6 removed), LCMS_Neg lacks the column, no args record
+test-kit255-omics-correlation-assays.R	E2	FAIL: design 2 samples
+test-kit255-omics-correlation-assays.R	E3	FAIL: validators report B_6 missing from design; class validity
+test-kit255-omics-correlation-assays.R	E4, E5 lipid	FAIL: DA stops 'Assay LCMS_Pos has sample column(s) missing from design: B_6'; preflight returns the error
+test-kit255-omics-correlation-assays.R	E4, E5 metab	FAIL: LCMS_Pos table equals the without-sample table (B_6 left out of every assay), the expectation that it differs fails
+test-kit255-omics-correlation-assays.R	E12, E22	FAIL on the current-rule half (design 11); the design_pooled half passes
+test-kit255-omics-correlation-assays.R	E18, E19, E25	FAIL: partner/untested/alone samples removed or kept with all-NA columns as the base body does
+test-kit255-omics-correlation-assays.R	G1, G2, G3, G5, G6 (G1..G7)	G1, G2, G3, G5 PASS; G6 FAILS on its first expectation (A_1 removed from the design at base, the stray object) because the test file asserts the new design; it is a combined test_that, so the whole test_that is reported failing at base
+test-kit255-omics-correlation-assays.R	G4	PASS (the base failing sets are the decision; recorded + removed equal them only under the new record: FAIL on base for the recorded part)
+test-kit255-omics-correlation-assays.R	G7	PASS
+test-kit255-omics-correlation-assays.R	E6 (G12 part passes)	FAIL on the DA for lipid (refuses) and on design 12
+test-kit255-omics-correlation-assays.R	E7 to E10 (new and legacy RUV, both omics)	FAIL: no sample blank in the copy or the matrices, design 11
+test-kit255-omics-correlation-assays.R	E13, E14	FAIL: no marker, no outcome fields (the replay part passes)
+test-kit255-omics-correlation-assays.R	E15	FAIL: no 'set to missing' text, no summary line
+test-kit255-omics-correlation-assays.R	E16	FAIL: no block
+test-kit255-omics-correlation-assays.R	E17	FAIL: LCMS_Pos shows 11 samples
+test-kit255-omics-correlation-assays.R	E20	FAIL: group B removed from the design
+test-kit255-omics-correlation-assays.R	E23	FAIL: B_6 absent from the Combined matrix (design lacks it) or present as zeros in LCMS_Neg
+test-kit255-omics-correlation-assays.R	E24	FAIL: reason '0 features are measured in every run, fewer than the 2 needed for 1 factors'
+test-kit255-omics-correlation-assays.R	T-OLD	PASS (a guard on base)
+test-metab-s4-qc-shared.R	filterSamplesByMetaboliteCorrelationThreshold (declared edit)	FAIL: design keeps 2 samples
+test-kit254-omics-correlation-skip.R	E9 lipid, metab (declared edit)	FAIL: A_1 removed after the first Apply
+test-kit254-omics-correlation-skip.R	E17 pos case (declared edit)	FAIL: A_1 removed; statement 'leaves out A_1'

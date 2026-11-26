@@ -1,0 +1,5 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-integration-record.R	201	8	0	0	0	643.5	failed
+test-integration-results.R	258	0	0	0	0	214.9	ok
+test-integration-gui.R	405	0	0	0	0	180.3	ok
+test-integration-model.R	265	0	0	0	0	311	ok

@@ -79,8 +79,7 @@ anything you cannot share.
 ## 6. Known limits of this build
 
 - The RUV design panel is **pre-release**: its wording, defaults and figures may still change. The performance figures
-  shown beside the RUV choices come from simulations and will be updated with public data before release. In the
-  Integration module, eight Enrichment settings are marked "default not yet confirmed".
+  shown beside the RUV choices come from simulations and will be updated with public data before release.
 - **DIA proteomics** (DIA, DIA with limpa, and enrichment after a DIA analysis) runs on **Linux only**; on Windows these
   routes stop with a message.
 - **Linux, DIA with limpa:** the fast engine is built for the processor of the build machine and can stop with

@@ -110,6 +110,8 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
     } else {
         runOmicNormHandler(input, workflowData, experimentPaths, normData, addLog, config)
     })
+    # KIT-261: under a managed session the Run button shows that a step of the omic is running.
+    if ("actions" %in% panels) registerOmicNormRunButtonState(session, config$binding$binding$omic_type, norm$panels$actions$run_label)
     shiny::observeEvent(input$reset_normalization, if (is.null(norm$reset)) {
         resetOmicNorm(workflowData, normData, addLog, config)
     } else {
@@ -254,6 +256,36 @@ runOmicNormPreQc <- function(workflowData, experimentPaths, normData, addLog, ge
         addLog(paste("Error generating Pre-QC:", e$message))
         invisible(FALSE)
     })
+}
+
+#' KIT-261: the Run button's label while a step of the omic runs (a draft for the owner's wording pass, VAL-41).
+#' @noRd
+omicNormRunButtonTexts <- function() list(busy = "Please wait: a step is still running...")
+
+#' KIT-261: under a managed session the Run button follows the omic's runner (a step of any of its tabs): disabled, with
+#' the busy label, while a step runs; enabled with its own label when none does. Sent only on a change (the first state
+#' is idle). Nothing is registered without a runner (in process); a runner without a step (a test double) counts as idle.
+#' The run rule's refusal (`omicNormRunStart`) stays the guard for a click that reaches the server before the disable
+#' reaches the page.
+#' @param session The tab's module session.
+#' @param omicType The binding's omic type.
+#' @param runLabel The button's own label, or NULL for the default.
+#' @return NULL, invisibly.
+#' @noRd
+registerOmicNormRunButtonState <- function(session, omicType, runLabel = NULL) {
+    runner <- workflowOmicsManagedActions(omicType)
+    if (is.null(runner)) return(invisible(NULL))
+    shown_idle <- TRUE
+    shiny::observe({
+        idle <- !is.function(runner$step$active) || is.null(runner$step$active())
+        if (identical(idle, shown_idle)) return()
+        shown_idle <<- idle
+        shinyjs::toggleState("run_normalization", condition = idle)
+        shiny::updateActionButton(session, "run_normalization",
+            label = if (idle) runLabel %||% "Run Normalization Pipeline" else omicNormRunButtonTexts()$busy,
+            icon = shiny::icon("play"))
+    })
+    invisible(NULL)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -564,6 +596,17 @@ completeOmicNormTab <- function(workflowData) {
     invisible(updated_status)
 }
 
+#' The notice for the samples the correlation filter set missing in one assay (KIT-255, VAL-283; DRAFT wording): read from the
+#' filtered state's exclusion record through the metadata reader, so the tab and the worker's completion both have it.
+#' @return A character vector, empty when no sample was set missing (or the record cannot be read).
+#' @noRd
+omicNormCorrelationNotice <- function(binding, manager, reference) {
+    tryCatch({
+        meta <- readWorkflowOmicsMetadata(binding, manager, reference)
+        omicsCorrelationExclusionNotice(meta$slots$args$correlation_exclusions, meta$assay_names)
+    }, error = function(error) character())
+}
+
 #' The correlation filter on the head (the normalisation's last commit): the pairs and the selection, committed under
 #' `<prefix>_correlation_filtered` (KIT-031, KIT-072); on the worker under a managed session (KIT-078).
 #' @noRd
@@ -574,9 +617,13 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
     addLog(paste("Applying correlation filter (threshold:", threshold, ")"))
     shiny::showNotification("Applying correlation filter...", id = "corr_working", duration = NULL)
     binding <- config$binding$binding
+    manager <- workflowData$state_manager
+    # KIT-254: whether this press returned the history to the run's result; a failure after it clears the tab's fields.
+    pressed <- new.env(parent = emptyenv())
+    pressed$cut <- FALSE
     tryCatch({
         # KIT-194: only the last run's result, or a correlation-step state made from it (7.4).
-        assertOmicNormHeadIsResult(binding, workflowData$state_manager, normData)
+        assertOmicNormHeadIsResult(binding, manager, normData)
         shiny::req(normData$ruv_corrected_obj %||% normData$post_norm_obj)
         logger::log_info("Calculating Pearson correlations per sample pair...")
         finish <- function(corr_results, reference) {
@@ -584,14 +631,25 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
             normData$correlation_filtered_obj <- reference # KIT-075: the state's reference
             normData$correlation_filtering_complete <- TRUE
             completeOmicNormTab(workflowData)
+            # KIT-255 (VAL-283): the samples the filter set missing in one assay (read from the state's `args` on both routes).
+            notice <- omicNormCorrelationNotice(binding, manager, reference)
+            for (line in notice) addLog(line)
+            if (length(notice)) shiny::showNotification(paste(notice, collapse = " "), type = "warning", duration = 20)
             addLog("Correlation filtering complete")
             shiny::removeNotification("corr_working")
             shiny::showNotification("Correlation filtering complete! Ready for DE analysis.", type = "message")
         }
         runner <- workflowOmicsManagedActions(binding$omic_type)
         if (!is.null(runner)) {
+            # KIT-254: the check and the return to the run's result when the actions start (a press queued behind a running
+            # action reads what that action left; KIT-194 A02's idiom).
+            start <- function() {
+                assertOmicNormHeadIsResult(binding, manager, normData)
+                pressed$cut <- omicNormCorrelationStart(manager, normData, addLog)
+            }
             config$norm$correlation$managed(binding, runner, input$ruv_grouping_variable, threshold, workflowData$config_list, finish,
                 function(error) {
+                    if (isTRUE(pressed$cut)) clearOmicNormCorrelation(normData)
                     addLog(paste("ERROR in correlation filtering:", conditionMessage(error)))
                     logger::log_error(paste("Correlation filtering error:", conditionMessage(error)))
                     shiny::removeNotification("corr_working")
@@ -599,13 +657,15 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
                     if (isTRUE(config$norm$managed_correlation_notify)) {
                         shiny::showNotification(paste("Error:", conditionMessage(error)), type = "error")
                     }
-                })
+                }, start)
             return(invisible(TRUE))
         }
-        config$norm$correlation$in_process(binding, workflowData$state_manager, input$ruv_grouping_variable, threshold,
+        pressed$cut <- omicNormCorrelationStart(manager, normData, addLog)
+        config$norm$correlation$in_process(binding, manager, input$ruv_grouping_variable, threshold,
             workflowData$config_list, finish)
         invisible(TRUE)
     }, error = function(e) {
+        if (isTRUE(pressed$cut)) clearOmicNormCorrelation(normData)
         addLog(paste("ERROR in correlation filtering:", e$message))
         logger::log_error(paste("Correlation filtering error:", e$message))
         shiny::removeNotification("corr_working")
@@ -623,7 +683,13 @@ skipOmicNormCorrelation <- function(workflowData, normData, addLog, config) {
     shiny::req(workflowData$state_manager)
     shiny::req(normData$ruv_complete || normData$normalization_complete)
     # KIT-194: only the last run's result, or a correlation-step state made from it (7.4); refused before any flag is set.
-    allowed <- tryCatch(assertOmicNormHeadIsResult(config$binding$binding, workflowData$state_manager, normData), error = function(e) {
+    # KIT-254: then, at a correlation-step state, the history returns to the run's result, so the Skip commits it.
+    cut_back <- FALSE
+    allowed <- tryCatch({
+        assertOmicNormHeadIsResult(config$binding$binding, workflowData$state_manager, normData)
+        cut_back <- omicNormCorrelationStart(workflowData$state_manager, normData, addLog)
+        TRUE
+    }, error = function(e) {
         addLog(paste("ERROR:", conditionMessage(e)))
         shiny::showNotification(paste("Error:", conditionMessage(e)), type = "error")
         FALSE
@@ -644,7 +710,8 @@ skipOmicNormCorrelation <- function(workflowData, normData, addLog, config) {
             "Normalization complete (correlation filtering skipped)")
         TRUE
     }, error = function(e) {
-        set_flags(held$obj, held$complete)
+        # KIT-254: after a return to the run's result the head is that table, so the tab's fields are cleared, not put back.
+        if (cut_back) clearOmicNormCorrelation(normData) else set_flags(held$obj, held$complete)
         addLog(paste("ERROR:", conditionMessage(e)))
         logger::log_error(paste("Skip correlation filtering error:", conditionMessage(e)))
         shiny::showNotification(paste("Error:", conditionMessage(e)), type = "error")
@@ -1028,7 +1095,8 @@ omicNormApplyRunStart <- function(binding, manager, normData, addLog, remove = N
 }
 
 #' KIT-257 (VAL-250): the normalisation stage's files that a run writes only conditionally, by exact name in the omic's
-#' own folders: transcriptomics' CCA panels and grid workbook (legacy grid only), lipidomics' and metabolomics'
+#' own folders: transcriptomics' CCA panels and grid workbook (legacy grid only) and, KIT-264, the figure of an earlier RUVIII
+#' integration export (every run makes a new `trx_ruvs`, so an earlier export is stale), lipidomics' and metabolomics'
 #' RUV-corrected QC figures per assay (RUV only; the safe name of the figure writers).
 #' @param binding The omic's declaration binding.
 #' @param experimentPaths The omic's project paths.
@@ -1038,11 +1106,44 @@ omicNormApplyRunStart <- function(binding, manager, normData, addLog, remove = N
 omicNormOwnFiles <- function(binding, experimentPaths, assayNames = NULL) {
     if (omicNormIsTrx(binding)) {
         return(file.path(experimentPaths$publication_graphs_dir, c("canonical_correlation_panels.png",
-            "canonical_correlation_panels.pdf", "canonical_correlation_optimization_summary.xlsx")))
+            "canonical_correlation_panels.pdf", "canonical_correlation_optimization_summary.xlsx",
+            "ruviii_before_and_after.png", "ruviii_before_and_after.pdf")))
     }
     safe <- gsub("[^A-Za-z0-9]", "_", tolower(as.character(assayNames)))
     file.path(experimentPaths[[binding$qc_dir_role]],
         sprintf("%s_ruv_corrected_%s.png", rep(safe, each = 4L), c("pca", "density", "rle", "correlation")))
+}
+
+#' KIT-254: before a correlation Apply or Skip at a correlation-step head (one `assertOmicNormHeadIsResult` accepted),
+#' the active history returns to the state holding the run's result (selected as Revert to it would, as
+#' `omicNormApplyRunStart` selects a remembered start), so the Apply reads, and the Skip commits, the table the filter
+#' first received. The correlation-step states after it leave the active history; no state record is deleted. A no-op on
+#' a manager that is not a session owner, on a tab whose final is not a saved reference, and at the run's result.
+#' @return TRUE when the history was cut, else FALSE; a condition of class `omic_norm_correlation_input_stale` when no
+#'   state of the active history holds the run's result.
+#' @noRd
+omicNormCorrelationStart <- function(manager, normData, addLog) {
+    if (!inherits(manager, "DIAStateAdapter")) return(FALSE)
+    final <- shiny::isolate(normData$ruv_corrected_obj %||% normData$post_norm_obj)
+    if (!isSavedWorkflowReference(final)) return(FALSE)
+    if (identical(getWorkflowStateReference(manager)$entity_id, final$entity_id)) return(FALSE)
+    history <- as.character(unlist(manager$getHistory()))
+    # The state in the active history whose current reference is the run's result (as `omicNormRunStart` finds a start).
+    name <- Find(\(state) identical(getWorkflowStateReference(manager, state)$entity_id, final$entity_id), history)
+    if (is.null(name)) rlang::abort(omicNormGuardTexts()$correlation, class = "omic_norm_correlation_input_stale")
+    selectWorkflowStateReference(manager, name)
+    addLog(sprintf("Correlation filter starts again from '%s', the table the normalisation produced", name))
+    TRUE
+}
+
+#' KIT-254: the tab's correlation fields at their initial values (`omicNormReactiveState`) after a failure that followed
+#' the return to the run's result, so the summary and the final PCA show the table the head and the analysis now hold.
+#' @noRd
+clearOmicNormCorrelation <- function(normData) {
+    normData$correlation_results <- list()
+    normData$correlation_filtered_obj <- NULL
+    normData$correlation_filtering_complete <- FALSE
+    invisible(normData)
 }
 
 #' The correlation and export guard (7.4, lipidomics and metabolomics): the head must be the last run's result, or a

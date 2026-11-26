@@ -198,10 +198,14 @@ test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, contr
     control_genes_index = NULL,
     error = "too few controls"
   )
+  # KIT-242 Part B (VAL-242 Q6.2 (c); declared edit, owner 2026-11-26, VAL-352 (5)): a failed Manual search stops the
+  # step, naming the assay, where LCMS_Pos was dropped and GCMS corrected alone.
   failed <- run_ruv("manual", function(...) failed_results, manual_percentage = 1)
-  expect_true(is.na(failed$best_k$LCMS_Pos))
   expect_null(extractCtrlPerAssay(failed_results)$LCMS_Pos)
-  expect_identical(failed$best_k$GCMS, 2L)
+  expect_false(failed$state$result)
+  expect_true("ERROR: RUV-III was not run: the search for assay LCMS_Pos failed: too few controls" %in% failed$state$logs)
+  expect_false(failed$norm_data$ruv_complete)
+  expect_null(failed$best_k)
 
   invalid <- run_ruv("manual", optimizer_stub, ruv_fn = function(...) stop("invalid k"), manual_k = 0L)
   invalid_norm_data <- invalid$norm_data

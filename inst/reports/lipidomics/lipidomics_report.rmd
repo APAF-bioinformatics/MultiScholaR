@@ -560,7 +560,7 @@ FormatMethodDetails <- function(numbers) {
     glue::glue(
       "The dataset contains {num_assays} assays: {assay_names}. ",
       # KIT-236 (D6, I09): what is done per assay; there is no integration step. Not "removed from every assay": a
-      # sample the correlation filter removes in one assay stays in the others until KIT-255.
+      # sample the correlation filter sets missing in one assay stays in the others (KIT-255).
       "Each assay was processed and tested for differential abundance separately; ",
       if (is.null(numbers$report_facts$failures)) "the results of the {num_assays} assays are reported together." else
         paste("the results are reported together for the assays and comparisons where the test could be computed",
@@ -841,8 +841,16 @@ FormatComments <- function(numbers = NULL) {
   }
   if (isTRUE(facts$record_present) && !is.null(facts$samples_kept)) {
     kept <- facts$samples_kept
+    # KIT-255 (VAL-283, DRAFT wording): the samples the filter set missing in one assay stay in the analysis of the others.
+    set_missing <- facts$samples_set_missing
     counts <- c(counts, paste0(kept$k, " of ", kept$n, " samples were kept by the sample-correlation filter",
-      if (ReportKnown(kept$threshold)) paste0(" (threshold ", kept$threshold, ")") else "", "."))
+      if (ReportKnown(kept$threshold)) paste0(" (threshold ", kept$threshold, ")") else "",
+      if (length(set_missing)) paste0("; ", length(set_missing), if (length(set_missing) == 1L) " sample was" else " samples were",
+        " set missing in some assays only (", paste(set_missing, collapse = "; "), ")") else "", "."))
+  }
+  if (isTRUE(facts$record_present) && length(facts$groups_not_tested)) {
+    counts <- c(counts, paste0("Comparisons with ", paste(facts$groups_not_tested, collapse = "; "),
+      " were not tested (no sample of the group has a value there)."))
   }
   field <- paste0("[To be completed by the analyst: quality-control assessment from Figure 1, technical performance and ",
     "limitations of this data set. ", if (length(counts)) "Apart from the counts above, nothing" else "Nothing",
@@ -1098,6 +1106,19 @@ ReportRecordFacts <- function(design_matrix, study_params) {
       facts$samples_kept <- list(k = length(rows), n = length(rows) + removed,
         threshold = if (length(threshold)) decode(threshold[[1L]]$value) else NULL)
     }
+    # KIT-255: the samples set missing in one assay (the step's outcome), named with the assay.
+    excluded <- steps[[at]]$outcomes$correlation_excluded_per_assay
+    if (length(excluded)) {
+      # one entry per sample, with every assay it was set missing in (a sample is counted once)
+      pairs <- do.call(rbind, lapply(names(excluded), function(assay) data.frame(sample = names(excluded[[assay]]), assay = assay,
+        stringsAsFactors = FALSE)))
+      facts$samples_set_missing <- vapply(unique(pairs$sample), function(s) paste0(s, " in ", paste(pairs$assay[pairs$sample == s],
+        collapse = ", ")), "")
+    }
+    # KIT-255 (I01): the groups left without a value in an assay, whose comparisons there were not tested.
+    blank <- steps[[at]]$outcomes$correlation_not_tested_per_assay
+    if (length(blank)) facts$groups_not_tested <- unlist(lapply(names(blank), function(assay)
+      paste0("group ", paste(unlist(blank[[assay]]), collapse = ", "), " in ", assay)), use.names = FALSE)
   }
   # KIT-236 (I09): the comparisons and assays whose test could not be computed, as the record names them.
   failed <- da$failures %||% list()

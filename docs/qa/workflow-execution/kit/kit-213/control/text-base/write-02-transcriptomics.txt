@@ -1,0 +1,50 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: kit108
+Description: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export
+Timestamp: <TIME>
+
+Version Information: <masked>
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+No additional configuration parameters available
+
+Analysis Record:
+----------------
+
+[2. trx_raw_data_s4: design_builder]
+  sample_id [unknown] = Run
+  group_id [unknown] = group
+  technical_replicate_id [unknown] = NA
+
+[5. trx_ruvs: trx_ruvs]
+  trx_ruv_grid.logcpm [input] = <HEX>
+  trx_ruv_grid.ruv_mode [no_shipped_default] = automatic
+  trx_ruv_grid.percentage_min [no_shipped_default] = 5
+  trx_ruv_grid.percentage_max [no_shipped_default] = 30
+  trx_ruv_grid.percentage_step [no_shipped_default] = 5
+  trx_ruv_grid.k_penalty_weight [no_shipped_default] = 0.<HEX>
+  trx_ruv_grid.manual_k [no_shipped_default] = NA
+  trx_ruv_grid.manual_percentage [no_shipped_default] = NA
+  logcpm [input] = <HEX>
+  grid [input] = <HEX>
+
+[differential_abundance: trx_da_contrast]
+  formula [input] = ~ 0 + group + W_1 + W_2
+  qvalue [no_shipped_default] = 0.<HEX>
+  lfc [no_shipped_default] = 1
+
+[trx_ruviii_export: trx_ruviii_export]
+  ruviii_m_source [no_shipped_default] = group
+
+
+Contrasts:
+----------
+   Sera_vs_RPMI=groupSera-groupRPMI

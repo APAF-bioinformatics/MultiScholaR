@@ -104,9 +104,13 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     if (!is.null(runner)) return(dispatchProtNormRuvCovariates(runner, settings, workflowData, normData, experimentPaths,
       generateRuvCorrectedQcFn, getRuvGroupingVariableFn, finish, function(e) reportProtNormRuvCovariatesError(e, output,
         renderTextFn, showNotificationFn, messageFn)))
-    accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
-      generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
-    finish(accepted)
+    # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I04): after the completion notice, one warning names the
+    # figures that could not be drawn, as after the normalisation.
+    withProtNormFigureNotice({
+      accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
+        generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
+      finish(accepted)
+    }, showNotificationFn, step = "RUV-III covariates step")
   }, error = function(e) reportProtNormRuvCovariatesError(e, output, renderTextFn, showNotificationFn, messageFn))
 }
 
@@ -297,9 +301,12 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
     prior_plot <- ggplot2::get_last_plot()
     on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
     # Published before the tab's completion reads it (an argument would be a promise).
-    accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, held$result[c("value", "reference")],
-      workflowData, normData, experimentPaths, ruvQc))
-    finish(accepted)
+    # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I04): one warning names the figures that could not be drawn.
+    withProtNormFigureNotice({
+      accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, held$result[c("value", "reference")],
+        workflowData, normData, experimentPaths, ruvQc))
+      finish(accepted)
+    }, step = "RUV-III covariates step")
   }
   figures <- function() runner$run(list(protNormFiguresAction(held$result$value$adjusted,
     omicNormPlotAestheticsGetter(settings)(), deliver = publish)), failed = failed)
@@ -647,7 +654,8 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   actions <- list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
     function(result) held$result <- result))
   if (isTRUE(request$redraw_pre) && is.function(preQc)) actions <- c(list(protNormFiguresAction(request$source,
-    omicNormPlotAestheticsGetter(settings)(), deliver = function(result) preQc())), actions)
+    # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I04): a redrawn figure that could not be drawn is named now.
+    omicNormPlotAestheticsGetter(settings)(), deliver = function(result) withProtNormFigureNotice(preQc(), step = NULL))), actions)
   # KIT-257 (VAL-250, R1-01): the earlier run's own files are removed when the actions start, not at the click: a click
   # that waited behind another action (a correlation still publishing its table) removes what that action wrote.
   runner$run(function() {

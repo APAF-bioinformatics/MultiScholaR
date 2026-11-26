@@ -328,6 +328,62 @@ omicsLog2ReportResult <- function(value, normMethod, addLog, warn) {
     invisible(TRUE)
 }
 
+#' What the ITSD step reports after it ran (KIT-242, VAL-242 OD-2 (b), OD-3 (d)), in process and on the worker: one log
+#' line with the count of standards used per assay (0 shown), and, for an assay not normalised to standards or a sample
+#' without standard signal, a log line each and one notification of type "warning". A result made before KIT-242 holds
+#' no per-assay outcome and reports nothing. The texts are drafts (VAL-41).
+#' @param value The ITSD operation's result value.
+#' @param addLog The tab's log.
+#' @param warn `function(text)`, the notification.
+#' @noRd
+omicsItsdReportResult <- function(value, addLog, warn) {
+    itsd <- value$itsd
+    if (is.null(itsd$applied_per_assay)) return(invisible(FALSE))
+    assays <- names(itsd$applied_per_assay)
+    counts <- vapply(assays, function(assay) as.integer(itsd$counts_per_assay[[assay]] %||% 0L), integer(1))
+    addLog(paste("Internal standards used per assay:", paste(sprintf("%s %d", assays, counts), collapse = "; ")))
+    # KIT-260 (VAL-241 OD-2 (b)): per assay that used standards, the rows used, annotation and identifier, with their count.
+    for (assay in names(itsd$rows_used)) {
+        words <- omicsItsdRowWords(itsd$rows_used[[assay]], itsd$id_column)
+        addLog(sprintf(omicGuiItsdTexts()[["used_log"]], assay, length(words), paste(words, collapse = "; ")))
+    }
+    reason_text <- function(reason) switch(reason,
+        no_standard_matched = sprintf("no internal standard matched the pattern '%s' in column '%s'", itsd$pattern %||% "",
+            paste(itsd$columns %||% character(), collapse = "', '")),
+        no_pattern_column = "the import named no annotation column in which to look for internal standards",
+        no_standard_selected = "no internal standard was selected for it in the ITSD selection table",
+        reason)
+    notes <- c(
+        vapply(names(itsd$not_applied_reason_per_assay), function(assay) sprintf(paste("Internal-standard normalisation was not",
+            "applied to assay %s: %s."), assay, reason_text(itsd$not_applied_reason_per_assay[[assay]])), character(1)),
+        vapply(names(itsd$samples_without_standard_per_assay), function(assay) sprintf(paste("Assay %s: samples %s have no",
+            "internal-standard signal; their values in %s are set missing, in this assay only."), assay,
+            paste(itsd$samples_without_standard_per_assay[[assay]], collapse = ", "), assay), character(1)))
+    for (note in notes) addLog(paste("Warning:", note))
+    if (length(notes)) warn(paste(notes, collapse = " "))
+    invisible(TRUE)
+}
+
+#' What between-sample normalisation reports after it ran (KIT-242, VAL-242 OD-1 (c)): a log line per assay that was
+#' normalised without a sample with no value there, a line for samples removed from the design (no value in any assay),
+#' and one notification of type "warning". A result made under the earlier rule reports nothing. Drafts (VAL-41).
+#' @param value The between-sample operation's result value.
+#' @param addLog The tab's log.
+#' @param warn `function(text)`, the notification.
+#' @noRd
+omicsBetweenSampleReportResult <- function(value, addLog, warn) {
+    per <- value$per_assay
+    if (is.null(per)) return(invisible(FALSE))
+    notes <- vapply(names(per$samples_excluded), function(assay) sprintf(paste("Assay %s was normalised without samples %s,",
+        "which have no value in %s; they are left empty in %s only."), assay, paste(per$samples_excluded[[assay]], collapse = ", "),
+        assay, assay), character(1))
+    if (length(per$samples_removed)) notes <- c(notes, sprintf("Samples %s have no value in any assay and were removed from the design.",
+        paste(per$samples_removed, collapse = ", ")))
+    for (note in notes) addLog(paste("Warning:", note))
+    if (length(notes)) warn(paste(notes, collapse = " "))
+    invisible(TRUE)
+}
+
 #' The normalisation tab's pipeline on the worker (`runWorkflowOmicsInProcessNormalisation` runs it in process): the QC figures, ITSD, log2, between-sample normalisation, the figures, RUV-III and its figures, the
 #' composite, one managed action each under one progress display. `normData` holds each step's state reference as in process.
 #' @param binding The omic's binding.
@@ -358,9 +414,12 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         actions <- c(actions, list(omicsManagedCommit(omicsItsdNormalisationStep(binding, settings$itsd_aggregation, settings$itsd_feature_ids), config,
             function(result) {
                 normData$post_itsd_obj <- result$stateReference
-                # KIT-260 (OD-2 (b)): the rows used per assay, from the step's result value (E-1).
-                omicsItsdReportResult(result$value, addLog, function(text) shiny::showNotification(text, type = "message"))
                 addLog("ITSD normalization complete")
+                # KIT-242: standards used per assay, and any assay or sample not normalised to standards; KIT-260: the rows
+                # used, named per assay in the log, and their counts in one notification.
+                omicsItsdReportResult(result$value, addLog, function(text) shiny::showNotification(text, type = "warning"))
+                notice <- omicsItsdRowsNotice(result$value)
+                if (!is.null(notice)) shiny::showNotification(notice, type = "message")
             }, function() {
                 advance("Applying ITSD normalization...")
                 addLog(paste("Applying ITSD normalization (aggregation:", settings$itsd_aggregation, ")"))
@@ -384,6 +443,8 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         omicsManagedCommit(omicsBetweenSampleNormalisationStep(binding, settings$norm_method), config, function(result) {
             normData$post_norm_obj <- result$stateReference
             addLog("Between-sample normalization complete")
+            # KIT-242: an assay normalised without a sample with no value there, and samples removed from the design.
+            omicsBetweenSampleReportResult(result$value, addLog, function(text) shiny::showNotification(text, type = "warning"))
             normData$normalization_complete <- TRUE
         }, function() {
             advance("Applying between-sample normalization...")
@@ -396,12 +457,15 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
             omicNormSetRuvDesignResult(normData, omicsRuvDesignResult(result$value))
             # A new design's product has no sweep (KIT-129 integration item 1).
             if (!is.null(result$value$optimisation))
-                normData$ruv_optimization_results <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
+                normData$ruv_optimization_results <- omicsRuvAnnotateResults(
+                    hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value, result$value)
+            # KIT-190 I01: the cap's notice and the Manual warning reach the tab.
+            omicsRuvReportNotices(result$value, addLog, function(text) shiny::showNotification(text, type = "warning"))
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(result$value$best_k), "=", unlist(result$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- result$stateReference
             normData$ruv_complete <- TRUE
-            addLog("RUV-III correction applied")
+            addLog(omicsRuvAppliedText(result$value))
         }, function() {
             advance("Running RUV-III batch correction...")
             addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
@@ -481,12 +545,15 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
             # managed twin resolves them; the head may have moved since (a second Run, a QC refilter).
             feature_ids <- omicsManualItsdFeatureIds(normData$itsd_selections, normData$itsd_candidate_ids, addLog)
             current <- NULL
-            itsd <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation, feature_ids, config)
-            normData$post_itsd_obj <- itsd$reference
-            # KIT-260 (OD-2 (b)): the rows used per assay, through the tab's notification.
-            omicsItsdReportResult(itsd$value, addLog, function(text) notify(text, type = "message"))
-            itsd <- NULL
+            itsd_run <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation, feature_ids, config)
+            normData$post_itsd_obj <- itsd_run$reference
             addLog("ITSD normalization complete")
+            # KIT-242: standards used per assay, and any assay or sample not normalised to standards; KIT-260: the rows used,
+            # named per assay in the log, and their counts in one notification.
+            omicsItsdReportResult(itsd_run$value, addLog, function(text) notify(text, type = "warning"))
+            notice <- omicsItsdRowsNotice(itsd_run$value)
+            if (!is.null(notice)) notify(notice, type = "message")
+            itsd_run <- NULL
         } else {
             addLog("ITSD normalization skipped")
         }
@@ -501,8 +568,12 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
         logged <- NULL
         advance("Applying between-sample normalization...")
         if (settings$norm_method != "none") addLog(paste("Applying between-sample normalization (method:", settings$norm_method, ")"))
-        normData$post_norm_obj <- runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, manager, settings$norm_method, config)$reference
+        between_run <- runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, manager, settings$norm_method, config)
+        normData$post_norm_obj <- between_run$reference
         addLog("Between-sample normalization complete")
+        # KIT-242: an assay normalised without a sample with no value there, and samples removed from the design.
+        omicsBetweenSampleReportResult(between_run$value, addLog, function(text) notify(text, type = "warning"))
+        between_run <- NULL
         normData$normalization_complete <- TRUE
         figures(readWorkflowOmicsState(binding, manager, normData$post_norm_obj), "post_norm", "Post-normalization QC plots generated")
         advance("Running RUV-III batch correction...")
@@ -510,12 +581,14 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
             addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
             ruv <- runWorkflowOmicsReferenceRuv(binding, manager, settings$ruv_parameters, config)
             omicNormSetRuvDesignResult(normData, omicsRuvDesignResult(ruv$value))
-            normData$ruv_optimization_results <- ruv$optimisation
+            normData$ruv_optimization_results <- omicsRuvAnnotateResults(ruv$optimisation, ruv$value)
+            # KIT-190 I01: the cap's notice and the Manual warning reach the tab through its notification.
+            omicsRuvReportNotices(ruv$value, addLog, function(text) notify(text, type = "warning"))
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(ruv$value$best_k), "=", unlist(ruv$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- ruv$reference
             normData$ruv_complete <- TRUE
-            addLog("RUV-III correction applied")
+            addLog(omicsRuvAppliedText(ruv$value))
             advance("Generating RUV QC plots...")
             figures(readWorkflowOmicsState(binding, manager, normData$ruv_corrected_obj), "ruv_corrected", "RUV QC plots generated")
         } else {
@@ -552,11 +625,19 @@ omicsNormFinalQcPcaPlot <- function(object, color, shape) {
 #' The correlation filter on the worker: the pairs, then the selection on them (`runWorkflowOmicsReferenceCorrelation`).
 #' @param deliver `function(correlations, reference)`, the tab's completion.
 #' @param failed `function(error)`, the tab's handling of a failure.
+#' @param start `function()` run when the actions start (KIT-254: the check and the return to the run's result), or
+#'   NULL. Not run while a failed publication waits for its retry, when the runner resolves the actions only to compare
+#'   them (R1-03); a press that waits is resolved again when it starts.
 #' @noRd
-runWorkflowOmicsManagedCorrelation <- function(binding, runner, group, threshold, config, deliver, failed) {
-    runner$run(list(omicsManagedProduct(paste0(binding$prefix, "_pearson_pairs"), list(correlation_group = group), function(result) {
+runWorkflowOmicsManagedCorrelation <- function(binding, runner, group, threshold, config, deliver, failed, start = NULL) {
+    pairs_action <- list(omicsManagedProduct(paste0(binding$prefix, "_pearson_pairs"), list(correlation_group = group), function(result) {
         runner$correlation_pairs <- result
-    })), done = function() {
+    }))
+    actions <- if (is.function(start)) function() {
+        if (!(is.function(runner$retrying) && isTRUE(runner$retrying()))) start()
+        pairs_action
+    } else pairs_action
+    runner$run(actions, done = function() {
         pairs <- runner$correlation_pairs
         runner$correlation_pairs <- NULL
         runner$run(list(omicsManagedCommit(omicsPearsonSelectionStep(binding, pairs$reference$entity_id, threshold), config,

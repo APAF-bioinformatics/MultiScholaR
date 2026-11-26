@@ -1,0 +1,13 @@
+index	path	exit	seconds	status
+1	docs/qa/workflow-execution/kit/kit-190/effect.R	0	638	ok
+2	docs/qa/workflow-execution/kit/kit-190/effect.R	1	69	failed
+3	docs/qa/workflow-execution/kit/kit-190/decide.R	0	30	ok
+4	docs/qa/workflow-execution/kit/kit-190/reestimate.R	0	0	ok
+5	docs/qa/workflow-execution/kit/kit-190/effect.R	0	307	ok
+6	docs/qa/workflow-execution/kit/kit-190/effect.R	0	310	ok
+7	docs/qa/workflow-execution/kit/kit-190/reestimate.R	0	1	ok
+8	docs/qa/workflow-execution/kit/kit-190/effect.R	0	310	ok
+9	docs/qa/workflow-execution/kit/kit-190/effect.R	0	181	ok
+10	docs/qa/workflow-execution/kit/kit-190/reestimate.R	0	0	ok
+11	docs/qa/workflow-execution/kit/kit-190/effect.R	1	309	failed
+12	docs/qa/workflow-execution/kit/kit-190/decide.R	0	0	ok
