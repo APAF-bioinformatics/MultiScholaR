@@ -1,0 +1,7 @@
+tag	tier	design	r	wall_seconds	exit	error
+D-D3-9101	D	D3	9101	327.5	0	
+D-D3-9101-rep	D	D3	9101	341	0	
+T-D3-9101	T	D3	9101	9	0	simpleError partial-match guard: partial match of 'abc' to 'abcdef'
+T-D3-9101-rep	T	D3	9101	163.8	0	
+S-D3-9101	S	D3	9101	128.7	0	
+S-D3-9101-rep	S	D3	9101	127.7	0	

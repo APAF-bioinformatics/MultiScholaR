@@ -1,0 +1,6 @@
+K275 smoke3-a: 6 units, 4 workers, lifecycle TRUE, smoke TRUE
+K275 smoke3-a: blind scorer exit 3
+K275 smoke3-a: FAILED check E9 (2 of 3); first: D3 the second run equals the first
+K275 smoke3-a: FAILED check unit_completed (1 of 1); first: D3 simpleError partial-match guard: partial match of 'abc' to 'abcdef'
+K275 smoke3-a: 10 checks, 2 failed
+K275 smoke3-a finished: 6 units (1 with an error), wall 5.8 min

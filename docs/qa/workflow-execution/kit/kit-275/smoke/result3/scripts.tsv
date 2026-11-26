@@ -1,0 +1,3 @@
+index	path	exit	seconds	status
+1	docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R	0	89	ok
+2	docs/qa/workflow-execution/kit/kit-275/sim-k275.R	0	347	ok

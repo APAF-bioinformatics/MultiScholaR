@@ -210,3 +210,18 @@ Plan = seconds x data sets x 1.25 / 4 / 60; timeout = ceil(1.5 x plan); ceiling 
 
 Counted jobs: expected 2,690.1 job-min, ceiling 4,519 (301.27 core-hours). **Total (with L1, L1-V, G1, SC, reserve, correction): ceiling 5,089 job-minutes = 339.27 core-hours; expected 2,813 = 187.5 core-hours.** The limit is 350.73: **339.27 is under it** (11.46 core-hours of headroom); nothing is trimmed and R is unchanged. Every D-job and K-job timeout is at or above 120 minutes, so those requests set `timeout_minutes` explicitly. Every plan is at most 93.8 (G2's 150 does not act).
 Measured: D3 and D6 for NO, LM, LA, GA, GK; D3 for LG, PEL2, PEG2. Scaled: D4 everything; LG, PEL2, PEG2 at D4 and D6; GSC (also from send 1). With send 1's times the auditor's figure was 386 to 424: LA, the largest class, was 40 s there and is 30 to 32 s here (the second send ran fewer simultaneous heavy units); L1 measures it for G2 and the stop at 350.73 stays in force. Not marked "awaiting the owner" because the total does not exceed 350.73 on these times.
+
+## 13. Smoke send 3 (run 45751802889, package d3eb29d2; scripts 89 + 347 s, about 17.3 job-minutes = 1.15 core-hours against 1.87; raw in `smoke/result3/`)
+
+Cause found by reading (not observed): the guard's `stop()` was raised from a GLOBAL calling handler, which R runs with every local handler disabled, so it reached no `tryCatch` and ended the child at top level (exit 1, nothing written). Repair: `guardWarning` as a local calling handler around each journey and each unit, the global handler kept as a net with an `options(error=)` trace writer; the planted fault now also exists at unit level. Details in `smoke/declaration-3.md`.
+
+| Declared item | Observed |
+|---|---|
+| 1 parse; E0 | met (38 hunks, 0 unmarked) |
+| 2 self-test | met: 37 cases, 2,751 predictions, 0 differ |
+| 3 planted journey-level guard | met: `GUARD_planted` 1 of 1 passes (journey status `instrument`, class `partial_match_guard: ...`), trace `progress/unit-trace-D-D3-9101-journey.txt`, the unit went on to complete |
+| 4 planted unit-level guard | met: unit `T-D3-9101` ended after 9 s with error `partial-match guard: partial match of 'abc' to 'abcdef'`, trace `progress/unit-trace-T-D3-9101.txt`, a failed `unit_completed`, a unit row of status instrument (the blind scorer counts 2 instrument rows, `instrument_stop` false) and exit 3 of the blind scorer; the job continued |
+| 5 control unit `S-D3-9101` | completes; none of its checks fails |
+| 6 no other failed check | **one**: `E9` fails for 2 of 3 comparisons (units D and T): the planted fault is in the first run only (journey-level in D, unit-level in T), so the repeat run differs from it by construction; the control pair (S) is equal. An artefact of the plants, not a defect; recorded as a miss of the declared wording |
+
+Running ceiling (core-hours; `runs.tsv`): smoke 1 used 1.67; smoke 2 used 1.53; smoke 3 used 1.15 (ceiling 1.87): used 4.35; planned (accepted re-plan) 339.27; sum 343.62 against 350.73 (headroom 7.11). L1 re-measures every arm class; G2 re-plans from L1's own times and stops at 350.73.

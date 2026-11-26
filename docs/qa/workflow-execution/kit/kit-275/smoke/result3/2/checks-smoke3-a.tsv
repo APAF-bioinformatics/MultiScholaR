@@ -1,0 +1,11 @@
+check	units_compared	units_passed	pass	max_abs_deviation
+E1	11	11	TRUE	25
+E12	1	1	TRUE	NA
+E2	1	1	TRUE	NA
+E3	1	1	TRUE	NA
+E5	82	82	TRUE	NA
+E9	3	1	FALSE	NA
+G2_coverage	6	6	TRUE	NA
+GUARD_planted	1	1	TRUE	NA
+L1_status	45	45	TRUE	NA
+unit_completed	1	0	FALSE	NA
