@@ -62,9 +62,10 @@ daQvalueFallbackText <- function(comparisons, assays) {
   comparisons <- as.character(comparisons)
   assays <- rep_len(ifelse(is.na(assays), "", as.character(assays)), length(comparisons))
   groups <- split(comparisons, factor(assays, levels = unique(assays)))
-  parts <- vapply(names(groups), function(assay) {
-    named <- paste(unique(groups[[assay]]), collapse = ", ")
-    if (nzchar(assay)) paste0(named, " in ", assay) else named
+  # By position: a list cannot be indexed by the name "" (the assay-less proteomics notice).
+  parts <- vapply(seq_along(groups), function(i) {
+    named <- paste(unique(groups[[i]]), collapse = ", ")
+    if (nzchar(names(groups)[[i]])) paste0(named, " in ", names(groups)[[i]]) else named
   }, character(1))
   paste0("Storey's q-values could not be computed for these comparisons, so Benjamini-Hochberg adjusted p-values are ",
     "shown in the q-value column instead: ", paste(parts, collapse = "; "), ".")
