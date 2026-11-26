@@ -45,3 +45,33 @@ row changes; the ceiling is unchanged.
 Binds the commit that carries the fix of the two guards (tests only; nothing under R/ or inst/). Base = staging
 7f17547f9. Ceiling 45 job-minutes; expected 21. Prediction: the same as R1 for every failing row; T8 and G1' now pass.
 Totals: 269 failed, 104 passed, 0 errors.
+
+## R1b observed (run 45728034972, commit 57d83190, 19.9 job-minutes)
+
+104 passed, 269 failed, 0 errors: exactly the prediction (T1 to T3 and T10 51, T5 192, T6 10, T7 4, T4 8, T11 4 failing
+expectations, by value; T8, G1', T9 pass). Stop rule 1 not triggered: every base value is the section 7 value.
+
+## R2: fix commit against the tests-only commit
+
+- Purpose: the fix passes every row, nothing else moves. Head = the fix commit (templates, the three declared edits,
+  NEWS, ledger, this file); base = 57d83190 (R1b's commit: new file, old templates). One shard per side (19 files),
+  `check: true`. Ceiling 340 job-minutes (22.67 core-h), expected 161 (10.7). Decides: stop rule 2; A2, A3.
+- Files (19, recounted at the branch point; the grep gives these on staging 7f17547f9): test-enrichment-significance,
+  test-go-propagation, test-kit204-prot-da-not-tested, test-kit205-enrichment-background, test-kit215-not-tested-lists,
+  test-kit220-da-threshold-consumers, test-kit227-report-ruv-sentences, test-kit234-workbooks-withdrawn,
+  test-kit235-lipid-metab-report-parser, test-kit236-report-sentences, test-kit245-github-push-safety,
+  test-kit259b-second-correction, test-kit264-trx-export-current (new on staging since the ticket's count),
+  test-kit272-prot-box-panel-text, test-omic-gui-config, test-omic-summary-module, test-omics-summary-core,
+  test-prot-summary-report-templates, test-workflow-analysis-record. KIT-266's file does not exist. No `R/mod_omic_*`
+  or lipid/metabolite code is edited, so test-omics-module-globals.R is not in the comparison.
+
+| File | Prediction base -> head |
+|---|---|
+| test-kit272-prot-box-panel-text.R | 104/269/0 failed -> 373/0/0 ok: verdict `fixed` (the file exists on both sides) |
+| test-kit227-report-ruv-sentences.R | `same` (G1 edited: passes on both sides) |
+| test-kit236-report-sentences.R | `same` (G1 edited) |
+| test-kit235-lipid-metab-report-parser.R | `same` (T6 edited) |
+| the 15 other files | `same` (they read other chunks) |
+| R CMD check | identical findings on both sides |
+
+Any other verdict stops the work (stop rule 2).

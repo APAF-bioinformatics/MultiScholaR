@@ -1,0 +1,3 @@
+run	commit	purpose	job_minutes	result
+45726305082	84ee54db	R1 tests-only, failing first	20.5	failed by value as predicted except 12 unpredicted guard failures (instrument defect 1): 116 passed 281 failed 0 errors
+45728034972	57d83190	R1b tests-only after guard fix (instrument defect 1 of 3)	19.9	as predicted: 104 passed 269 failed 0 errors; T8, G1p, T9 pass

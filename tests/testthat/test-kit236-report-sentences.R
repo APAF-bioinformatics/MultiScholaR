@@ -491,6 +491,25 @@ test_that("KIT-236 T19, T19g: the count sentence reads the table Copy writes (da
 
 # --- G1 and the waiting sentences (W) ---------------------------------------------------------------------------------
 
+# KIT-272 (declared edit, by substitution on the base side; the frozen base copies are untouched): the Methods bullet
+# "Density boxplots to assess distribution consistency" describes the figure's box plots of principal component scores,
+# which here come from a separate PCA of every feature with at least two values (the owner's decision VAL-332).
+# File-local copy of the constants of test-kit272-prot-box-panel-text.R, never sourced.
+k272OldBullet <- "\u2022 Density boxplots to assess distribution consistency"
+k272NewBullet <- c(
+    lipid = paste0("\u2022 Box plots of the samples' scores on the first two principal components of every lipid with ",
+        "at least two values, a separate analysis from the PCA panels, which use the tenth of the lipids with the ",
+        "largest ratio of standard deviation to mean"),
+    metab = paste0("\u2022 Box plots of the samples' scores on the first two principal components of every metabolite ",
+        "with at least two values, a separate analysis from the PCA panels, which use the tenth of the metabolites with ",
+        "the largest ratio of standard deviation to mean"))
+
+#' `text` with the one `old` replaced by `new`, after asserting that `old` is there exactly once
+k272Substitute <- function(text, old, new) {
+    expect_identical(lengths(regmatches(text, gregexpr(old, text, fixed = TRUE))), 1L, info = old)
+    sub(old, new, text, fixed = TRUE)
+}
+
 test_that("KIT-236 G1: the Methods paragraphs outside section 1 print the base text, with and without a record", {
     for (name in k236Omics) {
         for (record in list(NULL, k236Record(k236Spec[[name]]$prefix))) {
@@ -498,7 +517,10 @@ test_that("KIT-236 G1: the Methods paragraphs outside section 1 print the base t
             head <- k236Case(name, record = record)$raw$method_details
             base <- k236Case(name, record = record, side = "base")$raw$method_details
             for (heading in c("Batch Effect Correction", "Quality Control", "ITSD Normalization")) {
-                expect_identical(k236Paragraph(head, heading), k236Paragraph(base, heading), info = paste(info, heading))
+                base_paragraph <- k236Paragraph(base, heading)
+                if (identical(heading, "Quality Control")) base_paragraph <- k272Substitute(base_paragraph, k272OldBullet,
+                    k272NewBullet[[name]])
+                expect_identical(k236Paragraph(head, heading), base_paragraph, info = paste(info, heading))
             }
             expect_identical(k236ParagraphFrom(head, "Between-sample normalization was performed"),
                 k236ParagraphFrom(base, "Between-sample normalization was performed"), info = info)

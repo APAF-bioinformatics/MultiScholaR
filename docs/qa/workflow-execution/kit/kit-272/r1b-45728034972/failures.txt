@@ -1,0 +1,2951 @@
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (LFQ): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ three their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ two their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (LFQ): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ unrecorded their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (LFQ): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Count(k272Norm(text), k272NewMethod)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  LFQ limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (LFQ): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Has(text, "density boxplots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T7 (LFQ): a replaced panel d is named by what it plots
+kind: failure
+message:
+  Expected `k272Placeholder(file, "d\tpre_norm_density")` to be identical to `k272PlaceholderSentence`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panel d (density plot after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+  - ""
+  + "In Figure 1, panel d (principal component scores by group after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (LFQ): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("protein intensities per sample", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (LFQ): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("Density plots", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (TMT): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT three their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT two their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (TMT): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT unrecorded their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (TMT): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Count(k272Norm(text), k272NewMethod)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  TMT limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (TMT): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Has(text, "density boxplots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T7 (TMT): a replaced panel d is named by what it plots
+kind: failure
+message:
+  Expected `k272Placeholder(file, "d\tpre_norm_density")` to be identical to `k272PlaceholderSentence`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panel d (density plot after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+  - ""
+  + "In Figure 1, panel d (principal component scores by group after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (TMT): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("protein intensities per sample", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (TMT): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("Density plots", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN three their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN two their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN unrecorded their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (DIANN): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Count(k272Norm(text), k272NewMethod)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  DIANN limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (DIANN): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Has(text, "density boxplots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T7 (DIANN): a replaced panel d is named by what it plots
+kind: failure
+message:
+  Expected `k272Placeholder(file, "d\tpre_norm_density")` to be identical to `k272PlaceholderSentence`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panel d (density plot after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+  - ""
+  + "In Figure 1, panel d (principal component scores by group after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (DIANN): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("protein intensities per sample", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (DIANN): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("Density plots", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa three
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa two
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca[[variant]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "protein intensities per sample")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa unrecorded
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewBullet$unrecorded)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  limpa, stages not known
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, k272NewPca$unrecorded)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  limpa, stages not known
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T1 to T3, T10 (DIANN_limpa): the Results bullets say what panels d to f are, in every RUV state
+kind: failure
+message:
+  Expected `k272Has(text, "Density plots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  limpa, stages not known
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa three their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa two their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded Principal component scores by group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded principal component 1 (upper plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded principal component 2 (lower plot)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded for each experimental group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded the same scores that
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded plot as points
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded The line in each box is the median
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded the box spans the first to the third quartile
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded 1.58 times the interquartile range divided by the square root of the number of samples in the group
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded two groups whose notches do not overlap have medians that differ at about the 5% level
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded (McGill, Tukey and Larsen, 1978)
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded With fewer than about ten samples in a group the notch extends beyond the box and should not be read
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded Each stage is a separate analysis
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded not on a common scale
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T5 (DIANN_limpa): the bullet names the scores, the group, the box, the whiskers, the notch and its limit
+kind: failure
+message:
+  Expected `k272Has(text, fact)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa unrecorded their signs are arbitrary
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (DIANN_limpa): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Count(k272Norm(text), k272NewMethod)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  DIANN_limpa limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (DIANN_limpa): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Has(text, "density boxplots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa limpa route: FALSE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (DIANN_limpa): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Count(k272Norm(text), k272NewMethod)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  DIANN_limpa limpa route: TRUE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T6 (DIANN_limpa): the Methods quality-control sentence names the box plots of the scores
+kind: failure
+message:
+  Expected `k272Has(text, "density boxplots")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa limpa route: TRUE
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T7 (DIANN_limpa): a replaced panel d is named by what it plots
+kind: failure
+message:
+  Expected `k272Placeholder(file, "d\tpre_norm_density")` to be identical to `k272PlaceholderSentence`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - ""
+  - ""
+  - "In Figure 1, panel d (density plot after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+  - ""
+  + "In Figure 1, panel d (principal component scores by group after log2 transformation) could not be drawn by the application; it shows a note giving the reason instead of the plot."
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (DIANN_limpa): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("protein intensities per sample", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T4 (DIANN_limpa): the old description appears nowhere in the template
+kind: failure
+message:
+  Expected `sum(grepl("Density plots", lines, fixed = TRUE))` to be identical to 0L.
+  Differences:
+    `actual`: 3
+  `expected`: 0
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T11: the lipidomics and metabolomics bullets describe their own box plots, in the Methods and when RUV is not recorded
+kind: failure
+message:
+  Expected `k272Count(text, k272Norm(k272NewLipidMetab[[omic]]))` to be identical to 2L.
+  Differences:
+    `actual`: 0
+  `expected`: 2
+  
+  lipid
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T11: the lipidomics and metabolomics bullets describe their own box plots, in the Methods and when RUV is not recorded
+kind: failure
+message:
+  Expected `k272Count(text, "Density boxplots to assess distribution consistency")` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+  
+  lipid
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T11: the lipidomics and metabolomics bullets describe their own box plots, in the Methods and when RUV is not recorded
+kind: failure
+message:
+  Expected `k272Count(text, k272Norm(k272NewLipidMetab[[omic]]))` to be identical to 2L.
+  Differences:
+    `actual`: 0
+  `expected`: 2
+  
+  metab
+
+file: test-kit272-prot-box-panel-text.R
+test: KIT-272 T11: the lipidomics and metabolomics bullets describe their own box plots, in the Methods and when RUV is not recorded
+kind: failure
+message:
+  Expected `k272Count(text, "Density boxplots to assess distribution consistency")` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+  
+  metab
+

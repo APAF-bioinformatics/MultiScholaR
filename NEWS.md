@@ -83,6 +83,17 @@
 
 ### Fixes
 
+ * Proteomics reports: the description of panels d to f of Figure 1 (QC metrics across normalisation stages) was
+   wrong. The panels are not distributions of protein intensities per sample: they are box plots of the samples' scores
+   on principal components 1 and 2 by group, the same scores that the principal component analysis panels plot as
+   points. The reports of all four routes (DIA, DIA with limpa, label-free, TMT) now say so, and say what the box, the
+   whiskers and the notches show (the notches are a rough guide for comparing medians and are not readable with fewer
+   than about ten samples per group). The PCA bullet now says which proteins the analysis uses. The Methods sentence
+   says "box plots of the principal component scores". The lipidomics and metabolomics reports describe their own box
+   plots (a separate analysis of every lipid or metabolite with at least two values). The figure itself is unchanged.
+   A project that has already generated a report keeps the report template it copied then, with the earlier wording:
+   delete `scripts/proteomics/<template>.rmd` in the project folder to receive the corrected text at the next report.
+   This wording is new to 0.9 (it replaced a correct paragraph of the earlier version). (KIT-272)
  * Lipidomics, metabolomics and transcriptomics normalisation, installed application: 'Run Normalization Pipeline' is
    greyed out and says a step is still running while another step of the same analysis runs, for example the
    quality-control figures drawn when the lipidomics or metabolomics tab opens. Before, a press made while those
