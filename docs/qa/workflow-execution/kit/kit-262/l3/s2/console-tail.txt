@@ -1,0 +1,4 @@
+Error in if (score(hi) > 0) hi else if (score(lo) < 0) lo else stats::uniroot(score,  : 
+  the condition has length > 1
+Calls: selfTest ... isTRUE -> near -> isTRUE -> tangoBound -> f -> tangoZb
+Execution halted

@@ -1,0 +1,60 @@
+  invisible(NULL)
+}
+M3: 10 units planned (10 main) in 2 cells; workers 4; lifecycle TRUE; stage1 TRUE; continuation FALSE
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************0%   10   20   30   40   50   60   70   80   90   100%
+***********************|
+***************************************|
+unit c10-r9012: ok (43 s)
+unit c09-r9012: ok (43 s)
+unit c09-r9011: ok (44 s)
+unit c10-r9011: ok (44 s)
+unit c09-r9013: ok (32 s)
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+*********************************************0%   10   20   30   40   50   60   70   80   90   100%
+*********|
+**********************************************|
+unit c10-r9013: ok (43 s)
+unit c10-r9014: ok (43 s)
+unit c09-r9014: ok (44 s)
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+unit c09-r9015: ok (32 s)
+0%   10   20   30   40   50   60   70   80   90   100%
+**************************************************|
+unit c10-r9015: ok (28 s)
+units S-E: 5
+units S-N: 5
+instrument rows: 0; error rows: 0; seconds: 396
+  cell                  endpoint n_pairs
+1  S-N any_call_discordant_share       5
+2  S-E         fdp_difference_sd       5
+                    check units passed failed status
+1                      E1    10     10      0   pass
+2                      E7    10     10      0   pass
+3                      E9     0      0      0   pass
+4                     E10    10     10      0   pass
+5                     E11     0      0      0   pass
+6                      E8     0      0      0   pass
+7                      F2     0      0      0   pass
+8               F2_STRESS     9      0      9   FAIL
+9              COMPLETION    10     10      0   pass
+10        INSTRUMENT_ROWS    10     10      0   pass
+11    ERROR_ROWS_REPORTED    10     10      0   pass
+12                  SEEDS    10     10      0   pass
+13     FLOOR_ORDER_STRESS     1      1      0   pass
+14             SEED_RANGE    10     10      0   pass
+15        E6_BLIND_SCORER     1      1      0   pass
+16     BLIND_ESTIMANDS_NA     1      1      0   pass
+17    FULL_SCORER_ON_ROWS     1      0      1   FAIL
+18 STAGE1_ESTIMATE_SCHEMA     1      1      0   pass
+  cell purpose seconds_total seconds_p
+1  S-E    main       40.1690   19.2698
+2  S-N    main       39.0026   20.0844
+units: 10; ok: 10; error rows: 0; instrument rows: 0
