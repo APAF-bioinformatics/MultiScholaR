@@ -391,7 +391,8 @@ completeProtNormCorrelationWorkflow <- function(
   messagePrefix,
   showNotificationFn = shiny::showNotification,
   renderTextFn = shiny::renderText,
-  messageFn = message
+  messageFn = message,
+  ruvRemoved = FALSE
 ) {
   correlation_metrics <- finalizeProtNormCorrelationWorkflowState(
     finalS4ForDe = finalS4ForDe,
@@ -409,6 +410,14 @@ completeProtNormCorrelationWorkflow <- function(
     skipped = skipped
   )
   output$correlation_filter_summary <- renderTextFn(correlation_summary)
+
+  # KIT-276 (P02, P05): the filter applied after a RUV step (`ruvRemoved`, read from the head before the filter ran) leaves
+  # the table without the RUV result, so the tab's RUV holders and summary say so (drafts, VAL-41). The first filter, or one
+  # after no RUV step, leaves them alone.
+  if (isTRUE(ruvRemoved)) {
+    clearProtNormRuvHolders(normData, workflowData)
+    output$ruv_covariates_summary <- renderTextFn(protNormRuvSkipTexts()$reapplied)
+  }
 
   normData$correlation_filtering_complete <- TRUE
 

@@ -83,6 +83,18 @@
 
 ### Fixes
 
+ * DIA with limpa: what the normalisation tab, the analysis record, the study parameters, the session file and the report
+   say about RUV now agrees with what the differential analysis uses (DRAFT, for the wording pass). Applying the
+   correlation filter again after the RUV step no longer leaves the earlier RUV step in the record and the report, and the
+   RUV tab shows nothing from it; and "Skip RUV" pressed after a RUV covariates or correction run now takes the RUV result
+   out of the analysis, as the tab said it did (before, the next differential analysis still used the factors or the
+   corrected matrix); a differential analysis or enrichment made with it is to be run again. No number any step computes
+   changed; after "Skip RUV" the next differential analysis now reads the table without RUV, as the tab said. The record
+   lists the steps that produced the current table: running one RUV mode after the other removes the first from the record
+   (its saved result stays in the project). A project saved by an earlier build that holds a superseded RUV step keeps it
+   in its record until the correlation filter is applied again, a differential analysis is run with settings other than
+   the last ones used on that table, or the normalisation is reset. The same rule for label-free, TMT and DIA and for
+   Quality Control follows separately. This route is new in 0.9 (tag v0.9.0 and later). (KIT-276)
  * Proteomics reports: the description of panels d to f of Figure 1 (QC metrics across normalisation stages) was
    wrong. The panels are not distributions of protein intensities per sample: they are box plots of the samples' scores
    on principal components 1 and 2 by group, the same scores that the principal component analysis panels plot as
@@ -173,10 +185,7 @@
    with an earlier version has no Figure 1 until a step that builds it is run again (a normalisation press on the current
    table, a RUV step that applied RUV, or the correlation filter re-applied after the RUV step); until then its report
    still describes a figure it does not have. Its first Figure 1 shows a note in the first column unless that step is a
-   normalisation press, which draws the column from the DPC-Quant output. No number or result changes. One limit: if you
-   re-apply the sample-correlation filter after the RUV step, Figure 1 is rebuilt with two columns, but the report's
-   Methods and Results text still describe the earlier RUV step as part of the analysis (this was so before this change
-   and is not changed by it). This was so in the first 0.9 release (v0.9.0). (KIT-266)
+   normalisation press, which draws the column from the DPC-Quant output. No number or result changes. This was so in the first 0.9 release (v0.9.0). (KIT-266)
  * Lipidomics and metabolomics with two or more assays (for example positive and negative mode): the sample-correlation
    filter now judges each sample within each assay. A sample whose correlation with its replicates is below the threshold
    in one assay only has its values in that assay set to missing; it stays in the analysis of the other assays and leaves
@@ -220,9 +229,7 @@
    delivered as `Study_report/design_matrix_with_ruv_factors.tab`. The matrix that the covariates mode draws for quality
    control only is not delivered, because the analysis did not use it. The tables are written from the project's current
    differential analysis when Copy runs, so projects from earlier builds receive them at their next Copy without a re-run,
-   and nothing is delivered when no differential analysis has been run or when it is not current. The file follows what
-   the analysis used: pressing "Skip RUV" after a RUV run does not yet undo that run (the next analysis still uses the
-   factors or the corrected matrix, whatever the tab says), so the file is then still delivered. The quantification's
+   and nothing is delivered when no differential analysis has been run or when it is not current. The quantification's
    per-protein, per-sample standard errors and which values were imputed are also inputs of the model (in limpa 1.4.2 the
    standard errors enter as a predictor of the precision trend and the observation counts flag imputed values for the
    residual degrees-of-freedom correction; a reproduction also needs the technical-replicate block, the contrasts and the

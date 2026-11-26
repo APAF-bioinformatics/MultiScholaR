@@ -850,6 +850,26 @@ truncateDIAStepProvenance <- function(snapshot) {
     snapshot
 }
 
+#' KIT-276 (VAL-334, VAL-346, VAL-359): the history after the on-disk owner commits `state_name`. On DIA with limpa the
+#' history is the steps that produced the current table: the committed table state moves to the end (the head is last)
+#' and the states it supersedes leave (a `correlation_filtered` commit removes the RUV states, which were computed from
+#' the table it replaces; a commit of one RUV mode removes the other, both being computed from the same
+#' `correlation_filtered`). Their state records stay in the store. Every other route and state: `history` as it is.
+#' @param workflow_type The owner's workflow type.
+#' @param history The history after the legacy commit rule (a name is added only when new).
+#' @param state_name The committed state.
+#' @return `history`, of the same type (list or character).
+#' @noRd
+workflowHistoryAfterCommit <- function(workflow_type, history, state_name) {
+    supersedes <- list(DIA_LIMPA = list(correlation_filtered = c("ruv_covariates", "ruv_corrected"),
+        ruv_covariates = "ruv_corrected", ruv_corrected = "ruv_covariates"))
+    removed <- if (is.character(workflow_type) && length(workflow_type) == 1L && workflow_type %in% names(supersedes))
+        supersedes[[workflow_type]][[state_name]]
+    if (is.null(removed)) return(history)
+    kept <- c(setdiff(as.character(unlist(history)), c(removed, state_name)), state_name)
+    if (is.list(history)) as.list(kept) else kept
+}
+
 commitWorkflowReferenceState <- function(manager, state_name, checkpoint, config, description,
     timestamp = Sys.time()) {
     assertWorkflowController()
@@ -892,6 +912,12 @@ commitWorkflowReferenceState <- function(manager, state_name, checkpoint, config
     snapshot$state_history <- native$state_history
     # KIT-216 (VAL-175): a new table ends the enrichment product of the earlier one.
     if (!identical(snapshot$enrichment_results$source$entity_id, reference$entity_id)) snapshot$enrichment_results <- NULL
+    # KIT-276: the history after the commit (limpa: the superseded RUV states leave); the provenance is cut with it.
+    history <- workflowHistoryAfterCommit(tryCatch(manager$workflow_type, error = function(e) NULL), snapshot$state_history, state_name)
+    if (!identical(history, snapshot$state_history)) {
+        snapshot$state_history <- history
+        snapshot <- truncateDIAStepProvenance(snapshot)
+    }
     snapshot$sizes[[state_name]] <- list(rows = checkpoint$dimensions$rows,
         columns = length(checkpoint$dimensions$columns),
         note = "component dimensions; no assay hydration or R heap-size estimate")

@@ -1817,6 +1817,11 @@ refreshDIANativeSummaryArchive <- function(workflow, source_dir) {
     if (!is.null(run$ruv_mode)) {
         metadata$ruv_mode <- run$ruv_mode
         metadata$ruv_applied <- !run$ruv_mode %in% c("skip", "none")
+    } else if (!is.null(diaLimpaNoRuvMode(manager))) {
+        # KIT-276: the head carries no RUV result (a correlation re-applied after RUV, or a Skip).
+        metadata$ruv_mode <- "none"
+        metadata$ruv_applied <- FALSE
+        metadata["ruv_k"] <- list(NULL)
     }
     metadata$normalization_method <- resolveDIANormalisationMethod(manager, run, metadata$normalization_method)
     metadata$r6_current_state_name <- manager$current_state
@@ -1965,6 +1970,17 @@ removeDIAReplacedSessionFolder <- function(root, keep, paths) {
     invisible(!dir.exists(root))
 }
 
+#' KIT-276: "none" on DIA with limpa when the head's history holds a normalisation-tab state but no RUV state (the RUV
+#' description is then NULL: a correlation applied again after a RUV step, or a Skip); NULL otherwise, so that the tab's
+#' own setting still speaks before any normalisation.
+#' @param manager The session's owner.
+#' @return `"none"` or NULL.
+#' @noRd
+diaLimpaNoRuvMode <- function(manager) {
+    if (!identical(tryCatch(manager$workflow_type, error = function(e) NULL), "DIA_LIMPA")) return(NULL)
+    if (any(c("correlation_filtered", "ruv_covariates", "ruv_corrected") %in% diaStateHistory(manager))) "none"
+}
+
 #' Gather the existing export metadata without materializing historical states.
 #' @param workflow_data,norm_data,input Existing GUI data owners and settings.
 #' @return Metadata value and explicitly named extra descriptor roots.
@@ -1999,7 +2015,7 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
     results_file <- resolveProtNormCorrelationTableNames(manager, norm_data$ruv_optimization_result,
         workflow_data$ruv_optimization_result, messageFn = function(...) invisible(NULL))$tsvFilename
     run <- resolveDIARuvRunDescription(manager)
-    ruv_mode <- run$ruv_mode %||% input$ruv_mode
+    ruv_mode <- run$ruv_mode %||% diaLimpaNoRuvMode(manager) %||% input$ruv_mode
     metadata <- list(r6_current_state_name = state, r6_state_history = context$snapshot$state_history,
         contrasts_tbl = workflow_data$contrasts_tbl, design_matrix = workflow_data$design_matrix,
         config_list = config, export_timestamp = Sys.time(),

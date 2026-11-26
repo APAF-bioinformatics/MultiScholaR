@@ -1007,13 +1007,26 @@ protNormLimpaRebuildAtCorrelation <- function(manager) {
 }
 
 #' The markers of the RUV figures' placeholders that a RUV covariates or correction run replaces, removed by exact name
-#' before the run, so a failed earlier run cannot make the list of replaced panels name a drawn panel.
+#' before the run, so a failed earlier run cannot make the list of replaced panels name a drawn panel. KIT-276 (note 1.5,
+#' AUDIT-KIT-266-impl I03): also the canonical-correlation image itself, so that a declared-rule run with no sweep does not
+#' show an earlier run's plot as panel m.
 #' @param paths The omic's project paths (`protein_qc_dir`).
 #' @return The removed paths, invisibly; a condition of class `workflow_figure_unwritten` when one cannot be removed.
 #' @noRd
 removeDiaLimpaRuvMarkers <- function(paths) {
   names <- paste0(c(paste0("ruv_corrected_", c("pca", "rle", "density", "correlation")), "ruv_covariates_cancor"), ".png.placeholder")
-  removeWorkflowOwnFiles(file.path(paths$protein_qc_dir, names), omicNormGuardTexts()$norm_unremoved)
+  removeWorkflowOwnFiles(file.path(paths$protein_qc_dir, c(names, "ruv_covariates_cancor.png")), omicNormGuardTexts()$norm_unremoved)
+}
+
+#' KIT-276 (S02): the RUV run's own project file `ruv_optimization_results.RDS` (a session export writes it from the RUV
+#' result), removed by exact name when the table no longer carries the RUV result (a correlation applied again after a RUV
+#' step, or "Skip RUV"), so that the study parameters do not print that run's sweep beside a table without RUV.
+#' @param paths The omic's project paths (`source_dir`).
+#' @return The removed paths, invisibly; a condition of class `workflow_figure_unwritten` when one cannot be removed.
+#' @noRd
+removeProtNormLeftoverRuvResults <- function(paths) {
+  if (is.null(paths$source_dir)) return(invisible(character()))
+  removeWorkflowOwnFiles(file.path(paths$source_dir, "ruv_optimization_results.RDS"), omicNormGuardTexts()$norm_unremoved)
 }
 
 # --- Correlation result files (#17, #18) ---

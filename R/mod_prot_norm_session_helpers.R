@@ -498,6 +498,12 @@ runProtNormResetWorkflow <- function(
     output = output
   )
 
+  # KIT-276: the RUV summary of the limpa route's cleared RUV run goes with it (`resetProtNormOutputs` does not assign it:
+  # KIT-122 F10; the other routes' summaries render the tab's state).
+  if (identical(tryCatch(workflowData$state_manager$workflow_type, error = function(e) NULL), "DIA_LIMPA")) {
+    output$ruv_covariates_summary <- shiny::renderText("")
+  }
+
   showNotificationFn(
     buildNotificationMessageFn(reset_result$previousState),
     type = "warning",

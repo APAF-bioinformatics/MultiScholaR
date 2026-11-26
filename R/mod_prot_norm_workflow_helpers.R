@@ -82,6 +82,9 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     if (identical(mode, "skip")) {
       # KIT-129 fourth pass item 3: under the gate the design none is what was done.
       omicNormSetRuvDesignResult(normData, if (identical(choice$ruv_design, "none")) omicNormRuvDesignResult("none", NA, NA, NA, list()))
+      # KIT-276 (VAL-346 Q1): after a covariates or correction run the Skip takes that result out of the analysis.
+      if (protNormLimpaRebuildAtCorrelation(manager)) return(runProtNormRuvSkipAtRuvHead(input, output, workflowData, normData,
+        experimentPaths, omicType, renderTextFn, showNotificationFn, messageFn))
       messageFn("*** RUV covariates skipped by the user (DIA with limpa) ***")
       normData$ruv_covariates_complete <- TRUE
       text <- "RUV-III covariates skipped by the user; the DA model carries no W terms."
@@ -120,6 +123,72 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
       finish(accepted)
     }, showNotificationFn, step = "RUV-III covariates step")
   }, error = function(e) reportProtNormRuvCovariatesError(e, output, renderTextFn, showNotificationFn, messageFn))
+}
+
+#' The texts of the RUV step's Skip and of the correlation filter applied again after a RUV step (KIT-276; drafts for the
+#' owner's wording pass, VAL-41).
+#' @noRd
+protNormRuvSkipTexts <- function() list(
+  skipped = paste0("RUV-III skipped. The earlier RUV-III result is set aside: the differential analysis will use the ",
+    "correlation-filtered table without RUV factors or correction."),
+  run_da = " Run the differential analysis again.",
+  reapplied = paste0("The correlation filter was applied again, so the table no longer carries the RUV-III result. ",
+    "Compute the RUV-III covariates again to use them."),
+  busy = "A step is still running. Press \"Compute RUV-III Covariates\" again when it has finished.")
+
+#' The tab's RUV holders after the table no longer carries a RUV result (KIT-276): k, controls, the sweep and its table, and
+#' the workflow's copy of the sweep. `ruv_covariates_input_reference` stays, so a later RUV run starts from the same table.
+#' @noRd
+clearProtNormRuvHolders <- function(normData, workflowData) {
+  normData$best_k <- NULL
+  normData$control_genes_index <- NULL
+  normData$ruv_optimization_result <- NULL
+  normData$ruv_optimization_table <- NULL
+  workflowData$ruv_optimization_result <- NULL
+  invisible(NULL)
+}
+
+#' "Skip RUV" at a RUV head on DIA with limpa (KIT-276, VAL-346 Q1): refused while the managed runner has a step active;
+#' otherwise the head goes back to `correlation_filtered` (the history is cut there; no commit), the tab's holders point at
+#' it and the RUV holders are cleared, the RUV run's project file goes, Figure 1 is rebuilt with two columns (dispatched to
+#' the worker on a managed session, after the state scope has closed), and a differential analysis or enrichment made on
+#' the RUV table reads as not current.
+#' @return TRUE when the Skip was done, FALSE when refused, invisibly.
+#' @noRd
+runProtNormRuvSkipAtRuvHead <- function(input, output, workflowData, normData, experimentPaths, omicType, renderTextFn,
+                                        showNotificationFn, messageFn) {
+  manager <- workflowData$state_manager
+  texts <- protNormRuvSkipTexts()
+  runner <- workflowOmicsManagedActions("proteomics")
+  if (!is.null(runner) && !is.null(shiny::isolate(runner$step$active()))) {
+    showNotificationFn(texts$busy, type = "warning", duration = 10)
+    return(invisible(FALSE))
+  }
+  analysed <- identical(workflowDaResultStatus(manager), "current") ||
+    !is.null(withDIAStateScope(manager, function() diaEnrichmentProduct(manager)))
+  messageFn("*** RUV-III skipped after a RUV run (DIA with limpa): back to the correlation-filtered table ***")
+  accepted <- withDIAStateScope(manager, function() {
+    selectDIAStateReference(manager, "correlation_filtered")
+    getDIAStateReference(manager)
+  })
+  clearProtNormRuvHolders(normData, workflowData)
+  normData$ruv_normalized_obj <- accepted
+  normData$correlation_filtered_obj <- accepted
+  workflowData$ruv_normalised_for_da_analysis_obj <- accepted
+  normData$ruv_covariates_complete <- TRUE
+  removeProtNormLeftoverRuvResults(experimentPaths)
+  workflowData$state_update_trigger <- Sys.time()
+  text <- paste0(texts$skipped, if (analysed) texts$run_da)
+  output$ruv_covariates_summary <- renderTextFn(text)
+  showNotificationFn(text, type = "message", duration = 10)
+  if (is.null(runner)) {
+    buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, "skip", manager)
+  } else {
+    dispatchProtNormLimpaComposite(runner, workflowData, normData, experimentPaths, omicType,
+      omicNormPlotAestheticsGetter(list(color_variable = input$color_variable, shape_variable = input$shape_variable)),
+      function(e) reportProtNormRuvCovariatesError(e, output, renderTextFn, showNotificationFn, messageFn))
+  }
+  invisible(TRUE)
 }
 
 #' The DIA with limpa RUV mode of the RUV design section's choice (KIT-129 fourth pass item 2): the legacy designs'
@@ -750,6 +819,19 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   invisible(TRUE)
 }
 
+#' The correlation workflow's completion with KIT-276's flag (the head before the filter was a RUV state): passed only when
+#' TRUE, so a completion that does not know it is called as before; then the RUV run's project file goes.
+#' @param completeFn The completion (`completeProtNormCorrelationWorkflow` or an injected one).
+#' @param ruvRemoved TRUE when the head before the filter was a RUV state.
+#' @param experimentPaths The omic's project paths.
+#' @param arguments The completion's named arguments.
+#' @noRd
+completeProtNormCorrelationAndCleanUp <- function(completeFn, ruvRemoved, experimentPaths, arguments) {
+  value <- do.call(completeFn, c(arguments, if (isTRUE(ruvRemoved)) list(ruvRemoved = TRUE)))
+  if (isTRUE(ruvRemoved)) removeProtNormLeftoverRuvResults(experimentPaths)
+  invisible(value)
+}
+
 runProtNormApplyCorrelationObserver <- function(
   input,
   output,
@@ -773,9 +855,12 @@ runProtNormApplyCorrelationObserver <- function(
   # KIT-111 D3: on a managed session the pairs and the selection run on the worker and the delivery finishes the tab.
   runner <- workflowOmicsManagedActions("proteomics")
   threshold <- input$min_pearson_correlation_threshold
+  # KIT-276: `ruv_removed` is the head read before the filter ran (`held$rebuild` of the dispatcher); the completion gets the
+  # flag only when it is TRUE, so a completion without it is called as before.
   if (!is.null(runner)) return(tryCatch(dispatchProtNormCorrelation(runner, workflowData, normData, experimentPaths,
     threshold, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn,
-    function(final) completeCorrelationWorkflowFn(
+    function(final, ruv_removed = FALSE) completeProtNormCorrelationAndCleanUp(completeCorrelationWorkflowFn, ruv_removed,
+      experimentPaths, list(
       finalS4ForDe = final,
       workflowData = workflowData,
       output = output,
@@ -785,7 +870,7 @@ runProtNormApplyCorrelationObserver <- function(
       successNotification = "Correlation filtering completed! Ready for differential expression analysis.",
       completionMessage = "Correlation workflow completed",
       messagePrefix = "Correlation"
-    ), failed, composite = function(composeFailed) dispatchProtNormLimpaComposite(runner, workflowData, normData,
+    )), failed, composite = function(composeFailed) dispatchProtNormLimpaComposite(runner, workflowData, normData,
       experimentPaths, omicType, getPlotAestheticsFn, composeFailed)), error = failed))
   return(tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
     # KIT-266 (VAL-308): on the DIA with limpa route a filter applied again after a RUV step leaves no RUV result behind it, so
@@ -793,7 +878,7 @@ runProtNormApplyCorrelationObserver <- function(
     rebuild <- protNormLimpaRebuildAtCorrelation(workflowData$state_manager)
     final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
       input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn)
-    completeCorrelationWorkflowFn(
+    completeProtNormCorrelationAndCleanUp(completeCorrelationWorkflowFn, rebuild, experimentPaths, list(
       finalS4ForDe = final,
       workflowData = workflowData,
       output = output,
@@ -803,7 +888,7 @@ runProtNormApplyCorrelationObserver <- function(
       successNotification = "Correlation filtering completed! Ready for differential expression analysis.",
       completionMessage = "Correlation workflow completed",
       messagePrefix = "Correlation"
-    )
+    ))
     if (rebuild) buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, "skip", workflowData$state_manager)
     # KIT-041/053: on the DIA_LIMPA route the RUV-III covariates are the tab's own action after the filter
     # (`apply_ruv_covariates`), the script's order; nothing runs here.
@@ -817,7 +902,8 @@ runProtNormApplyCorrelationObserver <- function(
 #' selection naming the pairs product; then the publication half and `finish`.
 #' @param threshold The filter's threshold.
 #' @param grouping,aesthetics The module's grouping and aesthetics functions.
-#' @param finish `function(final)`; `failed` `function(error)`.
+#' @param finish `function(final)`; `failed` `function(error)`. KIT-276: `finish(final, ruv_removed = TRUE)` when the head read
+#'   before the pairs started was a RUV state.
 #' @param composite KIT-266: `function(failed)`, which dispatches the DIA with limpa combined QC figure's action; run from
 #'   this run's `done` when the head, read before the pairs start, was a RUV state (the figure is rebuilt with two columns).
 #' @return TRUE, invisibly, once dispatched.
@@ -834,7 +920,9 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
     run <- list(pairs = held$pairs$reference, final = held$final)
     final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
       threshold, FALSE, omicType, experimentLabel, aesthetics))
-    finish(final)
+    # KIT-276: the head read before the pairs started (S06) goes to the completion; a `finish` that does not know it is
+    # called as before.
+    if (isTRUE(held$rebuild)) finish(final, ruv_removed = TRUE) else finish(final)
   })), done = function() if (isTRUE(held$rebuild) && is.function(composite)) composite(stopped), failed = stopped)
   select <- function() runner$run(list(protNormManagedAction(entry$selection,
     list(pairs = held$pairs$reference$entity_id, threshold = threshold), held$source, "correlation_filtered",
@@ -887,7 +975,7 @@ runProtNormSkipCorrelationObserver <- function(
     rebuild <<- protNormLimpaRebuildAtCorrelation(workflowData$state_manager)
     final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
       0, TRUE, omicType, experimentLabel, function() NULL, getPlotAestheticsFn)
-    completeCorrelationWorkflowFn(
+    completeProtNormCorrelationAndCleanUp(completeCorrelationWorkflowFn, rebuild, experimentPaths, list(
       finalS4ForDe = final,
       workflowData = workflowData,
       output = output,
@@ -897,7 +985,7 @@ runProtNormSkipCorrelationObserver <- function(
       successNotification = "Correlation filtering skipped! Ready for differential expression analysis.",
       completionMessage = "Correlation workflow completed",
       messagePrefix = "Correlation"
-    )
+    ))
     completed <<- TRUE
     if (rebuild && is.null(runner)) buildDiaLimpaCombinedQcFigure(experimentPaths, omicType, "skip", workflowData$state_manager)
     # KIT-041/053: the RUV-III covariates follow the (skipped) filter through the tab's own action.

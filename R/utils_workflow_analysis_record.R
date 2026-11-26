@@ -1058,14 +1058,15 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             } else if (identical(operation, "protein_ruv_covariates") && !is.null(parameters$ruv_control_rule)) {
                 # KIT-129 sixth pass item 5: declared rules, as the tab runs and commits them (`computeDIAReferenceRuvCovariates`,
                 # `diaRuvCovariatesCommit`).
-                run <- computeDIAReferenceRuvCovariates(manager, getWorkflowStateReference(manager), parameters)
+                # KIT-276 (VAL-346's replay item, its limpa part): both RUV modes read the recorded pre-RUV table, as the tab does.
+                run <- computeDIAReferenceRuvCovariates(manager, getWorkflowStateReference(manager, "correlation_filtered") %||% getWorkflowStateReference(manager), parameters)
                 commit <- diaRuvCovariatesCommit(manager, parameters, run)
                 if (!is.null(commit)) commitWorkflowReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
             } else if (identical(operation, "protein_ruv_covariates")) {
                 # KIT-053: as `runDIAReferenceRuvCovariates` commits on the DIA_LIMPA route. KIT-056: the mode is a
                 # declared parameter; records written before it carry none and replay as covariates.
                 parameters$ruv_mode <- parameters$ruv_mode %||% "covariates"
-                run <- runSavedOperation(manager, diaRuvCovariatesOperation(), getWorkflowStateReference(manager), parameters)
+                run <- runSavedOperation(manager, diaRuvCovariatesOperation(), getWorkflowStateReference(manager, "correlation_filtered") %||% getWorkflowStateReference(manager), parameters)
                 saved <- run$value
                 correction <- identical(saved$ruv_mode %||% "covariates", "correction")
                 final <- readWorkflowStateMetadata(manager, saved$final %||% saved$covariates)$data
