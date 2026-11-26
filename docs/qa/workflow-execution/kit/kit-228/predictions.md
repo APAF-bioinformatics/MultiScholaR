@@ -39,3 +39,7 @@ name; KIT-212's, KIT-216's, KIT-219's (when it exists on staging; its branch is 
 every file `same` except `only-on-head` for the new file (all rows pass on head, G3 included); no stored reference moves;
 no `new-failure`; `check` identical. Observation to record: base-side counts that already differ from the last record
 (checkpoint findings of train 35) are "unchanged" when identical on both sides.
+
+## R2b (instrument repair of R2; declared before sending)
+
+R2's only red item: `test-kit247-design-resave.R` hit the file timeout I set (3600 s) on base and on head, so it gave no result on either side (an instrument defect of my request: no result seen, no expectation touched). It matters to KIT-228: its E23 asserts a refused Save removes the folder AND the top-level file, and E21 the design cut. Request R2b: that one file, head only (a7e3a582), `file_timeouts` 150 min, ceiling 160 job-min = 10.7 core-h; running total before it 37.0 of 92.0. Prediction: all expectations pass (the start removal keeps the folder-and-top-level-file removal); any failure there is a result, to be judged against base by a second request only if needed.

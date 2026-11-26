@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	result
 45774845920	96f32e917	R1 tests-only; 22 of 22 predicted failures (R01 1, prot 4, trx E1 2, E2 2, trx managed 3, lipid 5, metab 5); 95 passed; no instrument defect; E1 manifest sha before/after differs only because G1 re-saved between (evidence note)	8.2 (job 8.2 + overhead; 0.6 core-h)	failed as predicted
+45776244327	a7e3a582	R2 comparison base 0bdf7213 vs fix; 52 same, new file 117/0 only-on-head, check identical, 0 new failures; test-kit247-design-resave.R timed out at my own 3600 s file limit on BOTH sides (no result): run red	545 job-min = 36.4 core-h (ceiling 540 / 36.0 exceeded by about 5 job-min incl. plan and results jobs)	clean under the rule; kit247 file unobserved
