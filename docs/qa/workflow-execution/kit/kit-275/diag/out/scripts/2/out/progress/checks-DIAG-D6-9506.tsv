@@ -1,0 +1,5 @@
+check	cell	rep	condition	value	threshold	pass	note
+D1_plant	D6	9506	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9506	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9506	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9506	none	ok	ok	TRUE	stopped_before_da

@@ -1,0 +1,602 @@
+check	cell	rep	condition	value	threshold	pass	note
+E3	lipid	0	defaults	NA	equal to 5.2	TRUE	differ: ; markers off their current token: ; markers absent: ; correlation_exclusion within_assay: TRUE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=1
+D1_plant	D3	9501	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9501	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9501	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9501	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9502	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9502	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9502	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9502	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9503	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9503	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9503	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9503	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9504	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9504	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9504	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9504	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9505	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9505	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9505	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9505	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9506	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9506	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9506	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9506	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9507	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9507	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9507	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9507	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9508	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9508	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9508	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9508	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9509	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9509	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9509	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9509	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9510	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9510	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9510	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9510	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9511	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9511	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9511	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9511	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9512	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9512	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9512	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9512	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9513	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9513	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9513	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9513	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9514	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9514	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9514	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9514	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9515	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9515	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9515	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9515	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9516	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9516	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9516	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9516	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9517	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9517	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9517	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9517	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9518	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9518	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9518	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9518	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9519	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9519	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9519	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9519	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9520	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9520	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9520	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9520	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9521	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9521	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9521	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9521	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9522	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9522	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9522	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9522	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9523	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9523	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9523	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9523	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9524	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9524	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9524	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9524	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9525	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9525	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9525	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9525	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9526	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9526	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9526	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9526	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9527	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9527	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9527	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9527	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9528	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9528	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9528	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9528	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9529	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9529	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9529	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9529	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9530	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9530	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9530	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9530	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9531	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9531	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9531	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9531	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9532	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9532	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9532	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9532	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9533	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9533	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9533	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9533	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9534	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9534	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9534	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9534	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9535	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9535	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9535	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9535	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9536	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9536	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9536	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9536	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9537	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9537	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9537	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9537	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9538	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9538	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9538	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9538	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9539	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9539	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9539	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9539	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9540	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9540	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9540	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9540	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9541	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9541	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9541	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9541	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9542	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9542	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9542	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9542	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9543	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9543	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9543	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9543	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9544	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9544	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9544	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9544	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9545	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9545	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9545	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9545	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9546	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9546	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9546	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9546	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9547	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9547	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9547	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9547	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9548	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9548	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9548	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9548	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9549	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9549	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9549	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9549	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D3	9550	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D3	9550	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9550	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9550	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9501	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9501	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9501	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9501	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9502	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9502	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9502	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9502	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9503	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9503	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9503	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9503	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9504	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9504	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9504	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9504	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9505	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9505	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9505	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9505	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9506	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9506	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9506	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9506	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9507	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9507	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9507	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9507	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9508	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9508	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9508	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9508	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9509	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9509	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9509	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9509	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9510	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9510	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9510	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9510	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9511	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9511	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9511	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9511	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9512	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9512	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9512	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9512	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9513	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9513	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9513	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9513	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9514	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9514	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9514	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9514	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9515	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9515	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9515	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9515	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9516	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9516	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9516	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9516	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9517	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9517	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9517	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9517	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9518	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9518	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9518	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9518	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9519	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9519	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9519	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9519	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9520	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9520	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9520	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9520	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9521	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9521	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9521	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9521	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9522	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9522	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9522	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9522	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9523	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9523	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9523	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9523	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9524	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9524	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9524	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9524	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9525	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9525	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9525	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9525	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9526	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9526	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9526	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9526	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9527	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9527	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9527	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9527	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9528	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9528	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9528	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9528	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9529	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9529	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9529	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9529	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9530	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9530	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9530	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9530	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9531	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9531	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9531	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9531	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9532	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9532	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9532	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9532	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9533	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9533	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9533	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9533	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9534	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9534	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9534	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9534	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9535	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9535	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9535	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9535	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9536	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9536	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9536	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9536	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9537	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9537	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9537	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9537	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9538	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9538	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9538	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9538	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9539	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9539	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9539	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9539	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9540	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9540	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9540	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9540	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9541	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9541	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9541	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9541	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9542	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9542	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9542	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9542	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9543	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9543	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9543	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9543	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9544	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9544	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9544	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9544	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9545	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9545	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9545	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9545	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9546	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9546	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9546	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9546	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9547	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9547	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9547	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9547	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9548	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9548	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9548	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9548	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9549	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9549	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9549	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9549	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D4	9550	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D4	9550	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9550	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9550	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9501	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9501	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9501	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9501	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9502	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9502	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9502	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9502	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9503	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9503	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9503	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9503	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9504	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9504	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9504	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9504	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9505	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9505	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9505	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9505	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9506	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9506	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9506	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9506	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9507	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9507	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9507	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9507	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9508	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9508	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9508	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9508	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9509	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9509	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9509	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9509	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9510	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9510	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9510	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9510	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9511	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9511	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9511	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9511	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9512	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9512	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9512	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9512	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9513	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9513	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9513	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9513	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9514	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9514	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9514	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9514	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9515	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9515	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9515	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9515	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9516	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9516	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9516	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9516	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9517	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9517	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9517	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9517	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9518	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9518	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9518	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9518	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9519	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9519	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9519	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9519	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9520	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9520	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9520	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9520	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9521	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9521	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9521	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9521	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9522	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9522	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9522	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9522	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9523	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9523	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9523	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9523	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9524	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9524	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9524	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9524	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9525	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9525	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9525	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9525	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9526	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9526	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9526	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9526	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9527	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9527	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9527	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9527	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9528	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9528	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9528	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9528	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9529	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9529	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9529	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9529	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9530	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9530	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9530	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9530	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9531	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9531	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9531	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9531	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9532	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9532	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9532	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9532	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9533	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9533	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9533	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9533	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9534	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9534	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9534	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9534	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9535	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9535	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9535	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9535	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9536	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9536	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9536	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9536	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9537	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9537	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9537	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9537	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9538	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9538	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9538	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9538	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9539	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9539	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9539	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9539	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9540	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9540	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9540	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9540	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9541	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9541	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9541	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9541	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9542	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9542	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9542	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9542	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9543	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9543	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9543	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9543	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9544	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9544	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9544	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9544	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9545	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9545	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9545	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9545	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9546	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9546	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9546	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9546	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9547	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9547	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9547	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9547	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9548	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9548	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9548	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9548	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9549	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9549	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9549	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9549	none	ok	ok	TRUE	stopped_before_da
+D1_plant	D6	9550	V1g against V0	NA	differs only in the planted sample's Y entries	TRUE	
+D2_status	D6	9550	cyclicloess	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9550	quantile	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9550	none	ok	ok	TRUE	stopped_before_da

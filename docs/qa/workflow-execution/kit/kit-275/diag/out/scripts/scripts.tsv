@@ -1,0 +1,4 @@
+index	path	exit	seconds	status
+1	docs/qa/workflow-execution/kit/kit-275/diag/selftest/run-diag-selftest.R	0	1	ok
+2	docs/qa/workflow-execution/kit/kit-275/diag/diag-k275.R	0	2249	ok
+3	docs/qa/workflow-execution/kit/kit-275/diag/score-diag.R	0	0	ok

@@ -1,0 +1,10 @@
+score-diag: 450 rows from 1 file(s); 0 unit rows; cells below, planted sample (of valid data sets, two-sided 95% Clopper-Pearson):
+  D3 cyclicloess  valid 50 of 50  below 0.5: 50 (1.000000; 0.928878 to 1.000000)  planted min/h1/med/h3/max 0.050000 0.098000 0.148000 0.198000 0.246000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D3 quantile     valid 50 of 50  below 0.5: 50 (1.000000; 0.928878 to 1.000000)  planted min/h1/med/h3/max 0.090000 0.150000 0.212500 0.275000 0.335000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D3 none         valid 50 of 50  below 0.5: 50 (1.000000; 0.928878 to 1.000000)  planted min/h1/med/h3/max 0.130000 0.202000 0.277000 0.352000 0.424000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D4 cyclicloess  valid 50 of 50  below 0.5: 48 (0.960000; 0.862862 to 0.995119)  planted min/h1/med/h3/max 0.170000 0.254000 0.341500 0.429000 0.513000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D4 quantile     valid 50 of 50  below 0.5: 36 (0.720000; 0.575095 to 0.837689)  planted min/h1/med/h3/max 0.210000 0.306000 0.410000 0.506000 0.602000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D4 none         valid 50 of 50  below 0.5: 28 (0.560000; 0.412544 to 0.700093)  planted min/h1/med/h3/max 0.250000 0.358000 0.470500 0.583000 0.691000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D6 cyclicloess  valid 50 of 50  below 0.5: 21 (0.420000; 0.281882 to 0.567940)  planted min/h1/med/h3/max 0.290000 0.410000 0.535000 0.660000 0.780000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0
+  D6 quantile     valid 50 of 50  below 0.5: 16 (0.320000; 0.195204 to 0.466994)  planted min/h1/med/h3/max 0.330000 0.462000 0.599500 0.737000 0.869000  genuine 0.700000 0.757500 0.827500 0.887500 0.945000  not ok 0
+  D6 none         valid 50 of 50  below 0.5: 11 (0.220000; 0.115266 to 0.359612)  planted min/h1/med/h3/max 0.370000 0.514000 0.664000 0.814000 0.958000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  not ok 0

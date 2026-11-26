@@ -1,0 +1,2 @@
+Error: score-diag: no rows in /home/runner/work/MultiScholaR/MultiScholaR/pkg/k275-diag-selftest/cases/norows/rows
+Execution halted

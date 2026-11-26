@@ -1,0 +1,9 @@
+bound: sim-k275.R 2cc87ea569eef7fd (as declared)
+bound: score-k275.R a43a2c10c9a41ec2 (as declared)
+bound: fixture-k275.R 407949a9a6c0f90f (as declared)
+parse: diag-k275.R parses
+parse: score-diag.R parses
+parse: run-diag-selftest.R parses
+diag-selftest: 3 cases, 360 predictions
+selftest: 3 cases run, scorer exit codes 0 0 1
+diag-selftest: 363 predictions checked, 0 differ
