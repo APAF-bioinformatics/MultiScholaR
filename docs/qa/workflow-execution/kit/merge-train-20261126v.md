@@ -213,3 +213,57 @@ findings identical on both sides, nothing only on head.
 - `kit-247/outcome.md`: names `VAL-<merge>` in its text and carries "88 files" (D.4's text; the recount is 87).
 - Records owed at landing: plan and DISPATCH rows, I08 (the browser observation) before the release tag, the KIT-216 order
   (the second of KIT-216 and KIT-247 to merge runs the other's new and edited test files).
+
+## Results (run 45734833773, request `merge-train-20261126v-3f7826d1`)
+
+Run: success; base `7bbc344e`, head `3f7826d1`; tables `merge-train-20261126v-compare.tsv`, `-tests.tsv`, `-tests-base.tsv`,
+`-check-compare.txt` in this directory. **Verdict: TRAIN GREEN for KIT-247; every verdict prediction held.**
+
+- **Base versus head:** 87 files; same 84, only-on-head 3, new-failure 0, message-changed 0, count-changed 0, fixed 0,
+  compare-error 0; `compare-failures.txt`: "no non-identical failures". Head: passed 19,024, failed 558, errors 3, skipped
+  236, no timeout, no crash; base: passed 18,827, failed 558, errors 3, skipped 236 (the 197 passed more on head are the
+  three KIT-247 files: 188 + 2 + 7).
+- **The three KIT-247 files, only on head:** `test-kit247-design-resave.R` 188/0/0/0 ok, `test-kit247-import-config.R`
+  2/0/0/0 ok, `test-kit247-resave-no-session.R` 7/0/0/0 ok, as predicted.
+- `test-omics-module-globals.R` 13/1/0/0 on both sides (predicted); `test-prot-norm-core.R` 1547/307/0/0 on both sides
+  (predicted).
+- **R CMD check:** base and head each ERRORs 0, WARNINGs 3, NOTEs 3 (exit 0); findings identical on both, 6; only on head 0.
+
+### Prediction errors of the declaration's absolute base counts (verdicts unaffected)
+
+The verdict `same` held for all 84 files; the stop rule concerns new failures or changed messages against the run's own base
+side. The declaration's absolute base counts missed for five files (the declaration had said the train's own base run is the
+reference for them); actual counts, the same on base and head:
+
+| File | Declared base | Actual base = head |
+|---|---|---|
+| test-gui-entry-lipidomics.R | 35/0/0/0 | 19/16/0/0 |
+| test-gui-entry-metabolomics.R | 105/0/0/0 | 57/48/0/0 |
+| test-gui-entry-proteomics.R | 168/25/0/0 | 92/101/0/0 |
+| test-omic-qc-module.R | 160/0/0/0 | 156/4/0/0 |
+| test-omics-norm-state-guards.R | 647/0/0/0 | 651/0/0/0 |
+
+The coordinator's note of 2026-11-26 (quoted): "it lists stale base counts for three files: test-gui-entry-lipidomics.R 35/0,
+test-gui-entry-metabolomics.R 105/0 and test-omic-qc-module.R 160/0; the committed values on staging are 19/16, 57/48 and
+156/4 (these files already fail on stored values since KIT-217). The verdict `same` is unaffected." The run was already out
+when it arrived, so the declaration was not changed. Two more files in the declaration's table also carried a register
+count that the newest committed table had already moved: `test-gui-entry-proteomics.R` (newest table 92/101, named in the
+note column) and `test-omics-norm-state-guards.R` (651/0, from KIT-264's merge-train m table, named in the note column).
+
+### Job-minutes and core-hours
+
+Job minutes (from the jobs' own start and end times): plan 0.4; check base 15.8, check head 16.3; tests head 1 to 6 =
+79.0, 58.9, 39.8, 59.9, 70.5, 54.0; tests base 1 to 6 = 11.2, 72.1, 65.8, 45.4, 58.6, 62.7; results 0.5.
+**Total 710.7 job-minutes = 47.38 core-hours** (ceiling 1,000 job-minutes; expected about 750).
+
+**Declaration slip: the 75-minute job bound.** At the committed timings no job was to pass 75 minutes (longest estimated
+about 70). Head shard 1 took **79.0 minutes**: `test-kit247-design-resave.R` ran 3,999.4 s (66.7 minutes) against the
+3,378.7 s (56.3 minutes) of the earlier committed run, on an AMD EPYC 7763 runner (setup 638 s). The file stayed inside its
+100-minute timeout; no verdict depends on it. The arithmetic was correct for the committed timings and wrong for the file's
+real spread (+18 percent).
+
+### What the coordinator resolves at landing (unchanged from the declaration)
+
+`VAL-<train29-1>` number and its status cells ("<merge date>", "merged into `v0.9-staging` <date> by merge train <n>", run
+id 45734833773), VAL-239's, VAL-277's and VAL-331's status cells as the register names them, `NEWS.md` order,
+`kit-247/outcome.md` ("88 files" per D.4 against the recount of 87; `VAL-<merge>` in its text, line 90), plan and DISPATCH rows.
