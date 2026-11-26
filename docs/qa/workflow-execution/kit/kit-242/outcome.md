@@ -756,3 +756,38 @@ the combined `test-omic-norm-module.R` count are KIT-260's to predict. Request a
 | `test-gui-entry-proteomics.R`, `test-workflow-operation-registry.R`, `test-kit172-reopen.R`, `test-kit236-report-sentences.R`, `test-kit235-…`, `test-omics-module-globals.R`, the RUV and control-selection characterisation files (`test-metab-03a-…`, `test-lipid-12b/12c-…`, `test-metab-02y-…`, `test-metab-04-…`, `test-ruv-control-anova-grouping.R`), `test-kit224-ruv-feature-levels.R`, `test-kit255-omics-correlation-assays.R` | same | as on the base | no value moves where a correction acted before; the control selection's new attribute is set only when it skips an assay under the current rule |
 | every other file | same | as on the base | |
 | check | identical findings | | |
+
+## Re-check of 666e5e9d (2026-11-27): RC-1 repaired; R1f declared
+
+**RC-1** (the coordinator's ruling (a)): the six `<<-` the correction added to the control selection
+(`R/func_lipid_s4_ruv_control_methods.R`, `R/func_metab_s4_design_control_methods.R`) are replaced by an environment
+accumulator (`skip_collector$reasons`, Part A's `itsd_collector` idiom). Commit 5be656b2, part of the same bounded
+correction VAL-373 (Q-C) allowed; behaviour, values, record fields and texts unchanged; `test-omics-module-globals.R`
+and its allowlist not edited. The other super-assignments KIT-242 adds are in `utils_*` files, which the KIT-030 scan
+does not read (`^(mod|func)_(lipid|metab|omic|omics)`).
+
+### R1f, declared before the run: the correction's first evidence
+
+Head-only, on 5be656b2 (the corrected head), 1 job, ceiling 6.0 core-hours (90 job-minutes). Comparable records: R1e (the
+same file on a8c299c2) and R2's head tables (afb27738) for the other files; staging's counts from the audit for the
+globals file. No transcriptomics file, so no `env`. Predictions (passed/failed/errors):
+
+| File | Prediction | Reason |
+|---|---|---|
+| `test-kit242-normalisation-fallback.R` | 571/0/0 | R1e's 537 plus the 34 E27/VE expectations reached on the fix; E17 passes |
+| `test-omics-module-globals.R` | 14/0/0 | RC-1 repaired: no `<<-` in the two control-selection files |
+| `test-workflow-omics-worker.R` | 265/0/0 | as R2's head; the raw fixture's duplicated ids give `not_read`, the same stop and text |
+| `test-module-ci-metab-norm.R` | 158/0/0 | as R2's head; MCI-015.3's stub has no skip reason |
+| `test-metab-02w-normalise-between-samples-characterization.R` | 18/0/0 | as R2's head |
+| `test-kit172-downstream.R` | 84/0/0 | as R1e |
+| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | 259/0/0 each | as R1e |
+| `test-prot-norm-core.R` | 1547/307/0 | as R2's head (staging's failures); no fixture removes a sample, so no new field |
+| `test-lipid-12b-norm-ruv-helpers-shared.R` | 77/0/0 | as R2's head |
+| `test-lipid-12c-ruv-s4-characterization.R` | 67/0/0 | as R2's head |
+| `test-metab-02y-get-neg-ctrl-metab-anova-characterization.R` | 26/0/0 | as R2's head |
+| `test-metab-04-ruv-optimization.R` | 53/0/0 | as R2's head |
+| `test-metab-norm-standalone-shared.R` | 21/0/0 | as R2's head |
+| `test-ruv-control-anova-grouping.R` | 139/0/0 | as R2's head |
+| `test-metab-03a-ruviii-c-varying-characterization.R` | 40/0/0 | as R2's head |
+
+Any miss: stop and hand back, no repair (the correction is then spent).
