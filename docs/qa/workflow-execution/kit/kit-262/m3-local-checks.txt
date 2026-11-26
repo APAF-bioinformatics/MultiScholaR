@@ -1,7 +1,7 @@
 # KIT-262 M3 local checks (no R on this machine; standard-library Python, python3 -I), run from the repository root
 
 ## bracket balance
-PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 770 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 780 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 667 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R: 148 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/rules-k262.R: 147 lines, brackets balanced
@@ -52,7 +52,7 @@ PASS no globalCallingHandlers in the M3 scripts
 PASS every stop of the guard is reached through a local calling handler (withCallingHandlers present around journeys and units)
 exit 0
 
-## e5hand-m3-k262.py (regenerates e5hand-m3-expected.tsv)
+## e5hand-m3-k262.py
 wrote 38 expected values to /home/doktersmol/Projects/APAF/MultiScholaR-kit-262/docs/qa/workflow-execution/kit/kit-262/e5hand-m3-expected.tsv
 tango_z.b0_c0_n100_m0.10           -3.3333333332962964
 tango_z.b40_c0_n100_m0.10          5.222329678670935
