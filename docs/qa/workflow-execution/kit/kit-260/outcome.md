@@ -370,6 +370,44 @@ line in `test-integration-gui.R` and confirmed the 20 captures of `test-omic-nor
 - **Budget:** 498.8 job-minutes; running total 2,252.3 of 3,020 (150.2 of 201.33 core-hours). A further comparison of
   this size (about 500) fits the remainder (767.7); only one correction pass remains.
 
+## The ticket's one correction pass (2026-11-26), and the 16 keys for the owner
+
+**The correction pass, spent.** The coordinator's ruling, quoted: "the one failing assertion
+(`product$itsd_used$A1$annotation`) asserts a product path that the agreed interface moved (your fields live in
+`value$itsd`, by my instruction); the expected value is unchanged and the same value is asserted through the record
+outcome and the tab log in the same file. The repair you propose is allowed: `expect_identical(product$itsd$rows_used$A1$annotation,
+KIT260_STANDARDS_HEAD)`, nothing else. It is recorded as the ticket's ONE correction pass (a declared edit of an
+expectation's path after a result was seen), not as an instrument repair." Applied in f59a2af7 (tests only, that line
+alone). No correction pass remains.
+
+**The 16 keys of `tests/testthat/test-omic-norm-module.R` (`omicNormFrozen`)** whose stored values VAL-275 approved at
+KIT-260's stand-alone values and which on the combined head (KIT-242 + KIT-260) carry both tickets' lines. "Today" is
+the stored value on origin/kit-242 8162ea52 (staging's, not yet re-pinned by KIT-242); "KIT-260 re-pin" is commit
+63e29c04 (and the merged tree, which keeps it); "combined head" is what kit-260 0c7fbdf7 produced in run 45750259637
+(from its `failures.txt`). Not re-pinned further.
+
+| Key (line on the merged tree) | Today (origin/kit-242) | KIT-260 re-pin (63e29c04) | Combined head (run 45750259637) |
+|---|---|---|---|
+| `lipid manual run log` (:1016) | the 0.9 lines (20 entries; no internal-standard line) | today's plus KIT-260's two per-assay lines before "ITSD normalization complete" (22 entries) | "ITSD normalization complete", then KIT-242's "Internal standards used per assay: LCMS_Pos 1; GCMS 1", then KIT-260's two per-assay lines; and KIT-242's "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV" in place of "RUV-III correction applied" (23 entries) |
+| `lipid manual run outputs` (:1050) | a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c | d3cc98f4ee7167dee0764a30300f87b96c7f394c3fb464d70cce6590934892d5 | 6b3257380985053f717deb20ad965f7f196ccf5943582871e36bdd4f5017b8d2 |
+| `lipid manual skip_correlation outputs` (:1102) | 701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8 | e1058a016b6290767718154fea3003b12384442225ca601b158afa38b1a02ffd | 0100859bb3a50c0122d87f9629c23467ee1bf1ef02c582a430e536f6f481fc96 |
+| `lipid manual reset outputs` (:1139) | 3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f | 1c3646ad814d6ae58bf628301f6aeae3b1ee8f3a751ddca396a3682a1114a0d1 | 257b7fcacf230304c4bf38116b9857241d66e94b604d5caf770b7f725d41306f |
+| `metab manual run log` (:1158) | the 0.9 lines (20 entries; no internal-standard line) | today's plus KIT-260's two per-assay lines before "ITSD normalization complete" (22 entries) | "ITSD normalization complete", then KIT-242's "Internal standards used per assay: LCMS_Pos 1; GCMS 1", then KIT-260's two per-assay lines; and KIT-242's "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV" in place of "RUV-III correction applied" (23 entries) |
+| `metab manual run outputs` (:1192) | a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c | 45624e015319acf091d92ea85574964e93ebe9e350ab00b2e473cfd4bf939690 | eb58e3d9a7b494bd7ee959f5b6c5caf9fb4b3207b4e23531174a80042037b63e |
+| `metab manual skip_correlation outputs` (:1244) | 701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8 | 9d473dbca0ede8af25475634752283310652012facc2cf169780a2303873f12b | 433336fdb161af9ba079ecc28bc249a9e34ce9524511425608a0f5abe9e38796 |
+| `metab manual reset outputs` (:1281) | 3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f | 962bce5d0ee602e1b52a4204061fa1396a7922e70baf4d6aa93d5df95d6fe7e7 | be2771ee2999e73d3ee7214bfe81e6425604f4486e997d60d6f683d5e4da4f4e |
+| `lipid automatic run log` (:1300) | the 0.9 lines (18 entries; no internal-standard line) | today's plus KIT-260's two per-assay lines before "ITSD normalization complete" (20 entries) | "ITSD normalization complete", then KIT-242's "Internal standards used per assay: LCMS_Pos 2; GCMS 2", then KIT-260's two per-assay lines; and KIT-242's "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV" in place of "RUV-III correction applied" (21 entries) |
+| `lipid automatic run outputs` (:1333) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | b024bcd03404063dad170d139517809a5d00a445de94f5ca3949225003e3a1f3 | be600cf55f440c4ae3bbde44503cf741275fe7a469e3376e6b303493e7007477 |
+| `lipid automatic final_plot outputs` (:1371) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | b024bcd03404063dad170d139517809a5d00a445de94f5ca3949225003e3a1f3 | be600cf55f440c4ae3bbde44503cf741275fe7a469e3376e6b303493e7007477 |
+| `lipid automatic final_plot_failing outputs` (:1388) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | b024bcd03404063dad170d139517809a5d00a445de94f5ca3949225003e3a1f3 | be600cf55f440c4ae3bbde44503cf741275fe7a469e3376e6b303493e7007477 |
+| `metab automatic run log` (:1430) | the 0.9 lines (18 entries; no internal-standard line) | today's plus KIT-260's two per-assay lines before "ITSD normalization complete" (20 entries) | "ITSD normalization complete", then KIT-242's "Internal standards used per assay: LCMS_Pos 2; GCMS 2", then KIT-260's two per-assay lines; and KIT-242's "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV" in place of "RUV-III correction applied" (21 entries) |
+| `metab automatic run outputs` (:1463) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | 3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018 | 295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642 |
+| `metab automatic final_plot outputs` (:1501) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | 3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018 | 295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642 |
+| `metab automatic final_plot_failing outputs` (:1518) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | 3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018 | 295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642 |
+
+The combined head's `log` and `outputs` values differ from KIT-260's re-pin by KIT-242's lines (its count line and its
+RUV outcome line), so the owner's by-file question for these 16 keys is the combined values above, put once with row 50.
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
