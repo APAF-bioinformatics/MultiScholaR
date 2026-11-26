@@ -1,0 +1,28 @@
+mode: two
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+images present: post_norm_correlation.png post_norm_density.png post_norm_pca.png post_norm_rle.png pre_norm_correlation.png pre_norm_density.png pre_norm_pca.png pre_norm_rle.png proteomics_composite_QC_figure.png ruv_corrected_correlation.png ruv_corrected_density.png ruv_corrected_pca.png ruv_corrected_rle.png ruv_covariates_cancor.png
+images missing: 
+   [generateCompositeFromFiles] Generating composite from 8 files...
+   [generateCompositeFromFiles] Added column titles
+   [generateCompositeFromFiles] Added row: pca
+   [generateCompositeFromFiles] Added row: density
+   [generateCompositeFromFiles] Added row: rle
+   [generateCompositeFromFiles] Added row: correlation
+   [generateCompositeFromFiles] Combining plot sections...
+BEFORE
+VmPeak:	  544944 kB
+VmSize:	  544944 kB
+VmHWM:	  386536 kB
+VmRSS:	  386536 kB
+AFTER
+VmPeak:	 1339084 kB
+VmSize:	 1280144 kB
+VmHWM:	  952416 kB
+VmRSS:	  952416 kB
+builder messages:
+*** STEP 6B: Generating composite QC figure from saved images ***
+*** STEP 6B: Composite QC figure saved to protein_qc_dir ***
+output files: proteomics_composite_QC_figure.pdf proteomics_composite_QC_figure.png proteomics_composite_QC_figure.rds
+PNG 1500 x 3300 px
+MEMORY_READING mode=two VmRSS_before_kB=386536 VmHWM_before_kB=386536 VmRSS_after_kB=952416 VmHWM_after_kB=952416 build_seconds=15.7
+MEMORY_RISE mode=two rise_GiB=0.540 (VmHWM after minus VmRSS before) build_ok=TRUE
