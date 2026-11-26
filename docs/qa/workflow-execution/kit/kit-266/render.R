@@ -160,6 +160,7 @@ for (short in names(lanes)) {
             p <- mapPaths(cap$dirs[[short]], cap$base[[short]], file.path(work, short, "base"))[["proteomics"]]
             record(short, "V0", "QC_figures holds the composite PNG and PDF", TRUE,
                 all(file.exists(file.path(p$qc_figures_dir, paste0("proteomics_composite_QC_figure.", c("png", "pdf"))))))
+            file.copy(file.path(p$qc_figures_dir, "proteomics_composite_QC_figure.png"), file.path(out, "dial-V0-figure.png"), overwrite = TRUE)
             size <- pngSize(file.path(p$qc_figures_dir, "proteomics_composite_QC_figure.png"))
             record(short, "V0", "PNG width x height (three columns with m)", "1950x3900", paste0(size[[1L]], "x", size[[2L]]))
             # V1: markers on a, f and m, the list written through the limpa layout and carried into QC_figures as Copy does.
@@ -183,6 +184,7 @@ for (short in names(lanes)) {
                 json <- jsonlite::read_json(record_path)
                 json$steps <- Filter(function(s) !identical(s$operation, "protein_ruv_covariates"), json$steps)
                 jsonlite::write_json(json, record_path, auto_unbox = TRUE, null = "null", digits = NA)
+                file.copy(file.path(p$qc_figures_dir, "proteomics_composite_QC_figure.png"), file.path(out, "dial-V2-figure.png"), overwrite = TRUE)
                 assign("v2size", pngSize(file.path(p$qc_figures_dir, "proteomics_composite_QC_figure.png")), envir = globalenv())
             })
             record(short, "V2", "PNG 1500 x 3300", "1500x3300", paste0(v2size[[1L]], "x", v2size[[2L]]))
