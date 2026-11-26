@@ -378,8 +378,8 @@ setMethod("resolveDuplicateFeatures",
                     processed_non_itsd_rows <- non_itsd_rows # Already has .original_row_id
                 } else {
                     # *** Refer to the correct ID column in the message ***
-                    message(sprintf("Resolving duplicates in non-ITSD ID column '%s' by keeping highest average intensity feature...", id_col))
-                    # Resolve duplicates using the original intensity logic based on id_col
+                    message(sprintf("Resolving duplicates in non-ITSD ID column '%s': keeping the most completely measured row, then the highest average of its measured values...", id_col))
+                    # Resolve duplicates on id_col: the most measured row, then the highest mean, then the first (KIT-258)
                     processed_non_itsd_rows <- non_itsd_rows %>%
                         dplyr::rowwise() %>%
                         dplyr::mutate(
@@ -401,7 +401,7 @@ setMethod("resolveDuplicateFeatures",
 
                     rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                     if (rows_removed_non_itsd > 0) {
-                        message(sprintf("Removed %d lower-intensity duplicate non-ITSD feature row(s).", rows_removed_non_itsd))
+                        message(sprintf("Removed %d duplicate non-ITSD feature row(s).", rows_removed_non_itsd))
                     }
                 }
                 message(sprintf("Finished processing non-ITSD rows. Resulting non-ITSD rows: %d", nrow(processed_non_itsd_rows)))
