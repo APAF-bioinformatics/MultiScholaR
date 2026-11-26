@@ -518,8 +518,8 @@ test_that("through the operations: the RUV state carries the factors and the DA 
 
 test_that("through the operations the DA table is arm 7 on every protein of the normalised matrix (audit F-03, F-07; M14)", {
     # the centre fixture, and the audit's case: 3 per group with k = 3, where RUV-III-C cannot correct every protein
-    cases <- list(list(fixture = ruvModelFixture(), k = 2L, zero_df = 0L),
-        list(fixture = ruvModelFixture(per_group = 3L), k = 3L, zero_df = 95L))
+    cases <- list(list(fixture = ruvModelFixture(), k = 2L, zero_df = 0L, uncorrected_empty = TRUE),
+        list(fixture = ruvModelFixture(per_group = 3L), k = 3L, zero_df = 95L, uncorrected_empty = FALSE))
     for (case in cases) {
         fixture <- case$fixture
         outcome <- ruvModelThroughOperations(fixture, case$k)
@@ -528,7 +528,11 @@ test_that("through the operations the DA table is arm 7 on every protein of the 
         corrected_ids <- outcome$state@protein_quant_table$Protein.Group
         uncorrected_only <- setdiff(rownames(normalised), corrected_ids)
         # the corrected matrix keeps its own cleanup; the test does not follow it
-        expect_gt(length(uncorrected_only), 0L)
+        # KIT-280 (declared expected-value change, VAL-394 (1)): the clean-up after RUV counts only absent values, so in the
+        # 6-per-group case (every protein has at least 3 of 6 values per group) it removes none; in the 3-per-group case
+        # the uncorrectable proteins stay absent under either rule.
+        cat(sprintf("KIT-280 H2 k=%d uncorrected_only=%d\n", case$k, length(uncorrected_only)))
+        if (case$uncorrected_empty) expect_length(uncorrected_only, 0L) else expect_gt(length(uncorrected_only), 0L)
         table <- outcome$tables$contrasts_results_table
         rownames(table) <- table$Protein.Group
         expect_setequal(table$Protein.Group, rownames(normalised))
