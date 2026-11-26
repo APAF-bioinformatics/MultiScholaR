@@ -1,0 +1,69 @@
+{
+  "requested_by": "KIT-188 L1r job L (declaration-l1r.md; mechanics and controls only, estimands blinded; bound commit e4a6d4ae; L1r line 51.05)",
+  "label": "KIT-188 L1r L 7ec04b43",
+  "package_commit": "7ec04b43373cb5f472b5b1920a0f8f3bc9230fb3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-smoke-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 12
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12,L64,L24,K172c",
+        "401",
+        "401",
+        "l1r-l-401"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "deciding,reported,munit,ba,lp,las,k172c",
+        "K188_JOB": "l1r-l-401",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-l1c.tsv"
+      },
+      "out": "l1r-l-401",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 118
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "402",
+        "403",
+        "l1r-l-402"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "deciding",
+        "K188_JOB": "l1r-l-402",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-l1c.tsv"
+      },
+      "out": "l1r-l-402",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
