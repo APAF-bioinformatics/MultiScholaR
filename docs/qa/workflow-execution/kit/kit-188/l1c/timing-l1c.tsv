@@ -1,0 +1,9 @@
+cell	job	rep	scenario	mask	wall_seconds	unit_seconds	exit	error	rows	rows_sha256	fault	e7
+L12	l1c	401	N1	none	58.5	NA	0	no_result_no_trace: child exit 0	2	1f47f291d37375e4e9743cb9bf38c8b722db23ead5a908ccd1bb543125d0c8f1	FALSE	FALSE
+L12	l1c	401	N1	none	58.2	NA	0	no_result_no_trace: child exit 0	2	c5249091f40fde6ef0d14991a32e412233882304152bfd26b8b2e250fe0a9d76	FALSE	FALSE
+L12	l1c	401	N1	none	33.4	NA	0	no_result_no_trace: child exit 0	2	7b0b91f0d10487efe851ece195a41666a6b85e44eac56573f0041882485e1a79	FALSE	FALSE
+L12	l1c	401	N1	none	38.3	NA	0	no_result_no_trace: child exit 0	2	65bd1334de413bc7cf770091a07385b2f364f9bd9b142a0f32061e2e2adf4bb6	FALSE	FALSE
+L12	l1c	401	N1	none	45.4	NA	0	no_result_no_trace: child exit 0	2	0add8818eb1fb10ccc01b1193d13b9aa7449087525c9e4431c10021923b73674	FALSE	FALSE
+L12	l1c	401	N1	none	34.4	NA	0	no_result_no_trace: child exit 0	2	a8f0da92071d3248bbacacacac46e695d682f34694c2765a79b97739509996a3	FALSE	FALSE
+L12	l1c	401	N1	none	43.3	NA	0	no_result_no_trace: child exit 0	2	bb7ddf8790043e6fe9d5a98e496a1b1e87e2745187da3fc9f020e1d722a398fc	FALSE	FALSE
+L12	l1c	401	N1	none	5.9	NA	3	child process exit 3, no result 	1	b9dedf4d9e6d1277cea87e00acc1eea748c3f37b7719598ec29642e0e390391f	FALSE	FALSE
