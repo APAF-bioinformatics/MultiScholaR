@@ -1,0 +1,256 @@
+traced in MultiScholaR : TRUE 
+traced in package:MultiScholaR : TRUE 
+omic-summary-module: ................................................................................................................................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-lipid-summary-71804ada0ebc holds differential analysis files that no differential analysis of this session made (da_output/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx, da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx, publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+......................1.2.3........................................................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-lipid-summary-7180659ceed4/da_output holds differential analysis files that no differential analysis of this session made (de_negmode_lipids_groupKO-groupWT_long_annot.xlsx, de_posmode_lipids_groupKO-groupWT_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+......................4.5.6..............................::notice title=INFO::Results summary directory for lipidomics_kit108 (/tmp/Rtmpva28OM/module-ci-lipid-summary-718013eb0799/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for lipidomics_kit108 (/tmp/Rtmpva28OM/module-ci-lipid-summary-718013eb0799/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::error title=ERROR::Failed to copy files: Required publication artifacts missing: Contrasts Table, Design Matrix
+...........................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-lipid-summary-71804d231b61 holds differential analysis files that no differential analysis of this session made (da_output/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx, da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx, publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+...................................................7.8.9................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-lipid-summary-71803aeafa48 holds differential analysis files that no differential analysis of this session made (da_output/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx, da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx, publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+..................................................................................................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-metab-summary-71802c381689/da_output holds differential analysis files that no differential analysis of this session made (de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx, de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+......................a.b.c........................................................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-metab-summary-7180147151a2/da_output holds differential analysis files that no differential analysis of this session made (de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx, de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+......................d.e.f..............................::notice title=INFO::Results summary directory for metabolomics_kit108 (/tmp/Rtmpva28OM/module-ci-metab-summary-71801796b041/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for metabolomics_kit108 (/tmp/Rtmpva28OM/module-ci-metab-summary-71801796b041/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::error title=ERROR::Failed to copy files: Required publication artifacts missing: Contrasts Table, Design Matrix
+...........................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-metab-summary-7180450cb1d0/da_output holds differential analysis files that no differential analysis of this session made (de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx, de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+...................................................g.h.i................::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/Rtmpva28OM/file71806709c825/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/Rtmpva28OM/file71806709c825/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_220450
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/Rtmpva28OM/file71806709c825/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+::error title=ERROR::RUVIII export error: the technical-replicate column is absent (trx_ruviii_replicates_invalid)
+::notice title=INFO::Results summary directory for transcriptomics_kit108 (/tmp/Rtmpva28OM/file71806709c825/project/kit097/results_summary/transcriptomics) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for transcriptomics_kit108 (/tmp/Rtmpva28OM/file71806709c825/project/kit097/results_summary/transcriptomics) is empty. No backup needed. Proceeding to create subdirectories.
+........................j.......................................................................k.l...........m................................::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/Rtmpva28OM/file71803abfed5/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/Rtmpva28OM/file71803abfed5/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_220513
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/Rtmpva28OM/file71803abfed5/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+........................n...................::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/Rtmpva28OM/file71805588c931/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/Rtmpva28OM/file71805588c931/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_220527
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/Rtmpva28OM/file71805588c931/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+........................o............................p.q.....................................................................................................::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-71801df79c42/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-71801df79c42/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+.......................................................................::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-7180237060f/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-7180237060f/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+.......................................................................::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-718078f82819/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-718078f82819/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+.......................................................................::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-71802dd4eecc/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-71802dd4eecc/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+.......................................................................::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-7180611d9a85/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-7180611d9a85/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+...........................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-prot-summary-71804ee00f6/da_output holds differential analysis files that no differential analysis of this session made (da_groupB-groupA_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+........................r..........................................................................::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-prot-summary-7180576b4f3e/da_output holds differential analysis files that no differential analysis of this session made (da_groupB-groupA_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+::error title=ERROR::Copy refused: The results folder /tmp/Rtmpva28OM/module-ci-prot-summary-7180576b4f3e/da_output holds differential analysis files that no differential analysis of this session made (da_groupB-groupA_long_annot.xlsx): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report.
+........................s...........................................................................::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-7180332aa0da/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_kit108 (/tmp/Rtmpva28OM/module-ci-prot-summary-7180332aa0da/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+.............................::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/Rtmpva28OM/file718042be90f5/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/Rtmpva28OM/file718042be90f5/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261125_220624
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/Rtmpva28OM/file718042be90f5/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::   All DA results written to disk successfully
+....
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_main: the output
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+actual vs expected
+- "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData f572474d1e99a9b6>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
++ "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 5093d18fc8ce6eca>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+
+lipid_main save calls
+
+── 2. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_main: the output
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+names(actual) vs names(expected)
+- "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+- "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+- "integration/lipidomics/integration_input.json"
+- "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+- "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+- "integration/lipidomics/samples.parquet"
+  "integration/lipidomics_kit108_final_s4.RDS"
+  "source/analysis_record.json"
+
+    actual      | expected       
+[1] "<present>" | "<present>" [1]
+[2] "<present>" | "<present>" [2]
+[3] "<present>" -                
+[4] "<present>" -                
+[5] "<present>" -                
+[6] "<present>" -                
+[7] "<present>" -                
+[8] "<present>" -                
+
+lipid_main save files
+
+── 3. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_main: the output
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+`names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+`names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+
+actual vs expected
+- lipidomics"<present>"
+- lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
++ lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+
+lipid_main save integration
+
+── 4. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_variants: the ou
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+actual vs expected
+- "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData f572474d1e99a9b6>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
++ "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 5093d18fc8ce6eca>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+
+lipid_variants save_record_fails calls
+
+── 5. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_variants: the ou
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+names(actual) vs names(expected)
+- "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+- "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+- "integration/lipidomics/integration_input.json"
+- "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+- "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+- "integration/lipidomics/samples.parquet"
+  "integration/lipidomics_kit108_final_s4.RDS"
+
+    actual      | expected       
+[1] "<present>" | "<present>" [1]
+[2] "<present>" -                
+[3] "<present>" -                
+[4] "<present>" -                
+[5] "<present>" -                
+[6] "<present>" -                
+[7] "<present>" -                
+
+lipid_variants save_record_fails files
+
+── 6. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_variants: the ou
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+`names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+`names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+
+actual vs expected
+- lipidomics"<present>"
+- lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
++ lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+
+lipid_variants save_record_fails integration
+
+── 7. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_managed: the out
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+actual vs expected
+- "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 4befd000c00c9e37>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
++ "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 0c6c2c4042cdbee7>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  "omicsManagedProduct(operation=lipid_integration_export, parameters=path:<ROOT>/integration/lipidomics_kit108_final_s4.RDS;state_name:lipid_correlation_filtered)"
+
+lipid_managed save calls
+
+── 8. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_managed: the out
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+names(actual) vs names(expected)
+- "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+- "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+- "integration/lipidomics/integration_input.json"
+- "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+- "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+- "integration/lipidomics/samples.parquet"
+  "integration/lipidomics_kit108_final_s4.RDS"
+  "source/analysis_record.json"
+
+    actual      | expected       
+[1] "<present>" | "<present>" [1]
+[2] "<present>" | "<present>" [2]
+[3] "<present>" -                
+[4] "<present>" -                
+[5] "<present>" -                
+[6] "<present>" -                
+[7] "<present>" -                
+[8] "<present>" -                
+
+lipid_managed save files
+
+── 9. Failure ('test-omic-summary-module.R:4410:21'): (b) lipid_managed: the out
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+`names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+`names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+
+actual vs expected
+- lipidomics"<present>"
+- lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
++ lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+
+lipid_managed save integration
+
+── 10. Failure ('test-omic-summary-module.R:4410:21'): (b) metab_main: the outpu
+Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+Differences:
+actual vs expected
+- "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 1002f2aa54ef0fb8>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
++ "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 075de31ac869b80e>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+
+metab_main save calls
+  ... and 18 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+=== G0 test-omic-summary-module.R : completeOmicDaRun calls: 4 ; fallback keys: 0 

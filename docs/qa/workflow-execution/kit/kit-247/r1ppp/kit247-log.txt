@@ -1,0 +1,29 @@
+KIT247-LOG I07 prot_lfq run_committed=TRUE da=WT record_group=WT builder_entity=37ed5af1b8fdf76d62c56d4560069ce0eae57bbd697ed0d60dc8e2aa6993c617 design_entity=37ed5af1b8fdf76d62c56d4560069ce0eae57bbd697ed0d60dc8e2aa6993c617
+KIT247-LOG I07 prot_lfq record_steps: initial=import > protein_s4_initial=design_builder > normalized=normalization-ruv > correlation_filtered=pearson-selection
+KIT247-LOG I07 prot_lfq [resave + confirm] history: initial > protein_s4_initial | notes: Design saved successfully. You can close this builder. || UniProt annotations retrieved successfully. || Design matrix and contrasts saved successfully! || The design was saved again. The Quality Control, normalisation and later results made with the previous design are set aside: apply Quality Control again, then run the normalisation and the later steps.
+KIT247-LOG I07 prot_lfq [reset] history: initial > protein_s4_initial | notes: Please complete the Quality Control filtering steps before accessing normalization. || Normalisation reset: no normalisation result was current, so the Quality Control steps were left as they are.
+KIT247-LOG I07 prot_lfq [run] history: initial > protein_s4_initial > normalized | notes: Please complete the Quality Control filtering steps before accessing normalization. || Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+KIT247-LOG I07 prot_lfq [correlation] history: initial > protein_s4_initial > normalized > correlation_filtered | notes: Correlation filtering completed! Ready for differential expression analysis.
+KIT247-LOG I07 prot_lfq [export] history: initial > protein_s4_initial > normalized > correlation_filtered | notes: Filtered session data exported successfully!
+KIT247-LOG I07 prot_lfq [load] history: initial > protein_s4_initial > normalized > correlation_filtered | notes: Session loaded successfully!
+KIT247-LOG I07 prot_lfq [da] history: initial > protein_s4_initial > normalized > correlation_filtered | notes: Running differential abundance analysis... || Differential abundance analysis completed successfully!
+KIT247-LOG I07 lipid_canonical record_steps: initial=import
+KIT247-LOG I07 lipid_canonical [resave + confirm] history: initial | notes: Design saved successfully! || Error saving design matrix results: KIT-247 planted failure after the bus write
+KIT247-LOG I07 lipid_canonical [reset] history: initial | notes: Reset to pre-normalization state
+KIT247-LOG I07 lipid_canonical [run] history: initial | notes: state requires explicit legacy conversion
+KIT247-LOG I07 lipid_canonical [correlation] history: initial | notes: 
+KIT247-LOG I07 lipid_canonical [export] history: initial | notes: Please complete normalization before exporting session data.
+KIT247-LOG I07 lipid_canonical [load] history: initial | notes: Session file not found: /tmp/RtmpIQ8BKJ/k247-lipid_canonical-4cc521648df6/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_latest.rds
+KIT247-LOG I07 lipid_canonical [da] history: initial | notes: No lipidomics data loaded. Please load a filtered session first.
+KIT247-LOG I07b lipid_canonical record_steps: initial=import
+KIT247-LOG I07b lipid_canonical [resave + confirm] history: initial | notes: Design saved successfully! || Error saving design matrix results: KIT-247 planted failure after the bus write
+KIT247-LOG I07b lipid_canonical [reset] history: initial | notes: Reset to pre-normalization state
+KIT247-LOG I07b lipid_canonical [qc_intensity] history: initial | notes: 
+KIT247-LOG I07b lipid_canonical [qc_duplicates] history: initial | notes: 
+KIT247-LOG I07b lipid_canonical [qc_finalize] history: initial | notes: 
+KIT247-LOG I07b lipid_canonical [run] history: initial | notes: state requires explicit legacy conversion
+KIT247-LOG I07b lipid_canonical [correlation] history: initial | notes: 
+KIT247-LOG I07b lipid_canonical [export] history: initial | notes: Please complete normalization before exporting session data.
+KIT247-LOG I07b lipid_canonical [load] history: initial | notes: Session file not found: /tmp/RtmpIQ8BKJ/k247-lipid_canonical-4cc559df7e60/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_latest.rds
+KIT247-LOG I07b lipid_canonical [da] history: initial | notes: No lipidomics data loaded. Please load a filtered session first.
+KIT247-LOG E15b before: initial | after: initial | notes: state requires explicit legacy conversion

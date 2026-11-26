@@ -1,0 +1,370 @@
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) lipidomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `help` to match regexp "(measured in the most|most completely measured|measured in more)".
+  Actual text:
+  x | Identify and resolve duplicate lipid IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) lipidomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `help` to match regexp "highest (average|mean) of (its|the) measured values".
+  Actual text:
+  x | Identify and resolve duplicate lipid IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) lipidomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `help` to match regexp "first (row )?in the table".
+  Actual text:
+  x | Identify and resolve duplicate lipid IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) lipidomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `grepl(k258bOld, help, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) metabolomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `help` to match regexp "(measured in the most|most completely measured|measured in more)".
+  Actual text:
+  x | Identify and resolve duplicate metabolite IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) metabolomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `help` to match regexp "highest (average|mean) of (its|the) measured values".
+  Actual text:
+  x | Identify and resolve duplicate metabolite IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) metabolomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `help` to match regexp "first (row )?in the table".
+  Actual text:
+  x | Identify and resolve duplicate metabolite IDs within each assay. Duplicates are resolved by keeping the feature with the highest average intensity across samples.
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (1) metabolomics: the Duplicates help states the rule as merged
+kind: failure
+message:
+  Expected `grepl(k258bOld, help, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (2) lipid: the step's result text states the rule as merged
+kind: failure
+message:
+  Expected `text` to match regexp "(measured in the most|most completely measured|measured in more)".
+  Actual text:
+  x | Duplicate Resolution Complete ============================== Strategy: Keep feature with highest average intensity Per-Assay Results: LCMS_Pos: 5 -> 4 rows (removed 1 duplicates) Total duplicate rows removed: 1 State saved as: 'lipid_duplicates_resolved'
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (2) lipid: the step's result text states the rule as merged
+kind: failure
+message:
+  Expected `text` to match regexp "highest (average|mean) of (its|the) measured values".
+  Actual text:
+  x | Duplicate Resolution Complete ============================== Strategy: Keep feature with highest average intensity Per-Assay Results: LCMS_Pos: 5 -> 4 rows (removed 1 duplicates) Total duplicate rows removed: 1 State saved as: 'lipid_duplicates_resolved'
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (2) lipid: the step's result text states the rule as merged
+kind: failure
+message:
+  Expected `grepl(k258bOld, text, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (2) metab: the step's result text states the rule as merged
+kind: failure
+message:
+  Expected `text` to match regexp "(measured in the most|most completely measured|measured in more)".
+  Actual text:
+  x | Duplicate Resolution Complete ============================== Strategy: Keep feature with highest average intensity Per-Assay Results: LCMS_Pos: 5 -> 4 rows (removed 1 duplicates) Total duplicate rows removed: 1 State saved as: 'metab_duplicates_resolved'
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (2) metab: the step's result text states the rule as merged
+kind: failure
+message:
+  Expected `text` to match regexp "highest (average|mean) of (its|the) measured values".
+  Actual text:
+  x | Duplicate Resolution Complete ============================== Strategy: Keep feature with highest average intensity Per-Assay Results: LCMS_Pos: 5 -> 4 rows (removed 1 duplicates) Total duplicate rows removed: 1 State saved as: 'metab_duplicates_resolved'
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (2) metab: the step's result text states the rule as merged
+kind: failure
+message:
+  Expected `grepl(k258bOld, text, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) resolveDuplicateFeaturesByIntensity: its console messages state the rule as merged
+kind: failure
+message:
+  Expected `any(grepl(k258bMost, messages, ignore.case = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  resolveDuplicateFeaturesByIntensity
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:78:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:67:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) resolveDuplicateFeaturesByIntensity: its console messages state the rule as merged
+kind: failure
+message:
+  Expected `any(grepl(removed_pattern, messages))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  resolveDuplicateFeaturesByIntensity
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:78:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:68:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) resolveDuplicateFeaturesByIntensity: its console messages state the rule as merged
+kind: failure
+message:
+  Expected `grepl(k258bOld, flat, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  resolveDuplicateFeaturesByIntensity
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:78:7
+   2.   └─testthat::expect_false(...) at test-kit258b-duplicate-texts.R:69:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) resolveLipidDuplicateFeaturesByIntensity: its console messages state the rule as merged
+kind: failure
+message:
+  Expected `any(grepl(k258bMost, messages, ignore.case = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  resolveLipidDuplicateFeaturesByIntensity
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:78:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:67:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) resolveLipidDuplicateFeaturesByIntensity: its console messages state the rule as merged
+kind: failure
+message:
+  Expected `any(grepl(removed_pattern, messages))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  resolveLipidDuplicateFeaturesByIntensity
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:78:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:68:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) resolveLipidDuplicateFeaturesByIntensity: its console messages state the rule as merged
+kind: failure
+message:
+  Expected `grepl(k258bOld, flat, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  resolveLipidDuplicateFeaturesByIntensity
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:78:7
+   2.   └─testthat::expect_false(...) at test-kit258b-duplicate-texts.R:69:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) lipidomics: the S4 method resolveDuplicateFeatures's console messages state the rule
+kind: failure
+message:
+  Expected `any(grepl(k258bMost, messages, ignore.case = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:100:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:67:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) lipidomics: the S4 method resolveDuplicateFeatures's console messages state the rule
+kind: failure
+message:
+  Expected `any(grepl(removed_pattern, messages))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:100:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:68:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) lipidomics: the S4 method resolveDuplicateFeatures's console messages state the rule
+kind: failure
+message:
+  Expected `grepl(k258bOld, flat, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipidomics
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:100:7
+   2.   └─testthat::expect_false(...) at test-kit258b-duplicate-texts.R:69:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) metabolomics: the S4 method resolveDuplicateFeatures's console messages state the rule
+kind: failure
+message:
+  Expected `any(grepl(k258bMost, messages, ignore.case = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:100:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:67:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) metabolomics: the S4 method resolveDuplicateFeatures's console messages state the rule
+kind: failure
+message:
+  Expected `any(grepl(removed_pattern, messages))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:100:7
+   2.   └─testthat::expect_true(...) at test-kit258b-duplicate-texts.R:68:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (3) metabolomics: the S4 method resolveDuplicateFeatures's console messages state the rule
+kind: failure
+message:
+  Expected `grepl(k258bOld, flat, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metabolomics
+trace (first lines):
+      ▆
+   1. └─k258bExpectMessages(...) at test-kit258b-duplicate-texts.R:100:7
+   2.   └─testthat::expect_false(...) at test-kit258b-duplicate-texts.R:69:3
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `rd_title` to match regexp "most completely measured".
+  Actual text:
+  x | Resolve Duplicate Features by Keeping Highest Average Intensity
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `grepl("highest average intensity", rd_title, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `roxygen_title` to match regexp "most completely measured".
+  Actual text:
+  x | Resolve Duplicate Features by Keeping Highest Average Intensity
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `grepl("highest average intensity", roxygen_title, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveLipidDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `rd_title` to match regexp "most completely measured".
+  Actual text:
+  x | Resolve Duplicate Features by Keeping Highest Average Intensity
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveLipidDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `grepl("highest average intensity", rd_title, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveLipidDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `roxygen_title` to match regexp "most completely measured".
+  Actual text:
+  x | Resolve Duplicate Features by Keeping Highest Average Intensity
+
+file: test-kit258b-duplicate-texts.R
+test: KIT-258b (4) resolveLipidDuplicateFeaturesByIntensity: the help title (man/ and roxygen) states the rule as merged
+kind: failure
+message:
+  Expected `grepl("highest average intensity", roxygen_title, ignore.case = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-lipid-01-qc-filtering-helpers.R
+test: resolveLipidDuplicateFeaturesByIntensity keeps the highest-average duplicate row
+kind: failure
+message:
+  Expected `... <- NULL` to throw a message.
+

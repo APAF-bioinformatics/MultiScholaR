@@ -382,6 +382,18 @@ workflowRecordExportIsCurrent <- function(snapshot, export) {
     any(vapply(history, function(state) identical(snapshot$states[[state]]$entity_id, entity), logical(1)))
 }
 
+#' Whether the record being built shows RUV applied (KIT-274, VAL-318): its own last `trx_ruvs` step has `ruv_applied` TRUE
+#' and a k above 0 (the report template's `no_ruv` rule; no state is read). A RUVIII export made when this is FALSE returns
+#' the TMM logCPM unchanged and is not listed.
+#' @param steps The record's steps, as `buildWorkflowAnalysisRecord` built them.
+#' @noRd
+workflowRecordTrxRuvApplied <- function(steps) {
+    ruvs <- Filter(function(step) identical(step$operation, "trx_ruvs"), steps)
+    if (!length(ruvs)) return(FALSE)
+    outcomes <- ruvs[[length(ruvs)]]$outcomes
+    isTRUE(outcomes$ruv_applied) && isTRUE(as.integer(outcomes$k) > 0L)
+}
+
 #' One accepted export of the head as a record analysis (KIT-095): its operation, source, parameters with their provenance,
 #' product and the outcomes its omic binding records.
 #' @noRd
@@ -417,7 +429,7 @@ workflowRecordDaFdrMethod <- function(operation, result) {
     if (!length(result$qvalue_warnings)) return(list(fdr_method = "qvalue"))
     list(fdr_method = "BH", fdr_fallback_reason = paste("qvalue() could not be used for this contrast (it failed, or",
         "fewer than 3 p-values were valid, or every p-value was 0 or 1); fdr_qvalue holds Benjamini-Hochberg adjusted",
-        "p-values"))
+        "p-values.", daQvalueFallbackSentence()))
 }
 
 #' Build the analysis record from head metadata (schema `multischolar.analysis_record.v1`).
@@ -430,6 +442,10 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     context <- manager$.context
     snapshot <- context$snapshot
     history <- unlist(snapshot$state_history)
+    # KIT-216 (VAL-175): the current enrichment product, kept outside the history, is the last step, as when it was the
+    # last history step; its input is the table it was made from. Its build joins the software block's builds.
+    product <- diaEnrichmentProduct(manager)
+    if (!is.null(product) && !product$state %in% history) history <- c(history, product$state)
     shipped <- readWorkflowShippedDefaults()
     defaults_path <- system.file("config", "config.ini", package = "MultiScholaR")
     installed_defaults <- if (nzchar(defaults_path)) digest::digest(file = defaults_path, algo = "sha256") else NA_character_
@@ -480,6 +496,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         parameters <- workflowRecordIntensityFilterEarlier(operation, parameters)
         previous <- record$previous_state
         input <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) snapshot$states[[previous]]$entity_id else NULL
+        if (!is.null(product) && identical(state, product$state)) input <- product$source$entity_id
         products <- lapply(unname(record$data$products %||% list()), function(product) {
             if (!isSavedWorkflowReference(product)) return(NULL)
             list(entity_id = product$entity_id, kind = product$kind,
@@ -582,6 +599,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     # model's export has its own inputs state and is listed as before.
     for (name in names(snapshot$exports)) {
         if (!identical(name, INTEGRATION_MODEL_OPERATION) && !workflowRecordExportIsCurrent(snapshot, snapshot$exports[[name]])) next
+        # KIT-274 (VAL-318): a RUVIII export made when no RUV was applied (an earlier build accepted it) is not listed.
+        if (identical(name, "trx_ruviii_export") && !workflowRecordTrxRuvApplied(steps)) next
         analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
     }
     # KIT-142: an integration store's model analysis carries what the integration adds (inputs, the confirmed match, each
@@ -1135,17 +1154,28 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             withr::with_options(workflowReplayRuleOptions(step, workflowOperationEntry("enrichment")$declaration),
                 withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters,
                     da_manifest, contrasts, paths, scratch, recorded_resources = record$external_resources)))
-            if (!identical(manager$current_state, step$state))
-                cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
+            # KIT-216 (VAL-175, P01): the enrichment is a product of the DA's table; the head stays that table. A record
+            # saved before (the enrichment its last history step) and one saved after replay through this same check.
+            if (!identical(getDIACurrentReference(manager)$entity_id, da_manifest$source$entity_id) ||
+                is.null(diaEnrichmentProduct(manager)))
+                cli::cli_abort("replayed step {.val {step$state}} left no current enrichment of the DA's table (head {.val {manager$current_state}})",
+                    class = "workflow_replay_invalid")
             if (is.function(on_step)) on_step(step, manager)
         }
     }
     # KIT-095: the exports after the DA, through their binding's replay entry with the recorded parameters.
+    export_skipped <- FALSE
     for (analysis in record$analyses[setdiff(names(record$analyses %||% list()), "differential_abundance")]) {
         # KIT-062: the integration model, on the replayed inputs state with the recorded parameters.
         if (identical(analysis$operation, INTEGRATION_MODEL_OPERATION)) {
             replayIntegrationModel(manager, analysis)
             if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
+            next
+        }
+        # KIT-274 (VAL-318, VAL-332): a RUVIII export is no longer made when the replayed head applied no RUV; it is skipped.
+        if (identical(analysis$operation, "trx_ruviii_export") &&
+            !is.null(withWorkflowStateScope(manager, function() trxRuvNotApplied(manager)))) {
+            export_skipped <- TRUE
             next
         }
         binding <- Find(function(b) isTRUE(startsWith(analysis$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
@@ -1157,6 +1187,13 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
     }
     replayed <- list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
+    # KIT-274 (VAL-332; DRAFT wording, docs/qa/workflow-execution/kit/kit-274/wording.md).
+    if (export_skipped) {
+        replayed$export_statement <- paste("This record lists a RUVIII export made when no correction for unwanted variation had",
+            "been applied (k = 0). The replay does not repeat it: such an export is no longer made, and in this state the",
+            "integration uses the TMM logCPM, which the replay writes as before.")
+        cli::cli_warn("{replayed$export_statement}", class = "workflow_replay_export_skipped")
+    }
     if (!is.null(key_collisions$collisions) && nrow(key_collisions$collisions) > 0L) {
         replayed$design_statement <- workflowReplayKeyCollisionStatement(key_collisions$collisions)
         cli::cli_warn("{replayed$design_statement}", class = "workflow_replay_replicate_key_collision")

@@ -1,0 +1,28 @@
+lane	variant	check	predicted	observed	verdict
+lfq	V0	text equal to staging's template	1	0	DIFFERS
+lfq	V0	drawings	3	3	as predicted
+lfq	V0	no placeholder sentence	0	0	as predicted
+lfq	V1	sentences	1	1	as predicted
+lfq	V1	the predicted sentence (letters a and h)	1	1	as predicted
+lfq	V1	text otherwise equal to V0	1	1	as predicted
+lfq	V2	no placeholder sentence	0	0	as predicted
+tmt	V0	text equal to staging's template	1	0	DIFFERS
+tmt	V0	drawings	3	3	as predicted
+tmt	V0	no placeholder sentence	0	0	as predicted
+tmt	V1	sentences	1	1	as predicted
+tmt	V1	the predicted sentence (letters a and h)	1	1	as predicted
+tmt	V1	text otherwise equal to V0	1	1	as predicted
+tmt	V2	no placeholder sentence	0	0	as predicted
+dia	V0	text equal to staging's template	1	0	DIFFERS
+dia	V0	drawings	3	3	as predicted
+dia	V0	no placeholder sentence	0	0	as predicted
+dia	V1	sentences	1	1	as predicted
+dia	V1	the predicted sentence (letters a and h)	1	1	as predicted
+dia	V1	text otherwise equal to V0	1	1	as predicted
+dia	V2	no placeholder sentence	0	0	as predicted
+dial	V0	text equal to staging's template	1	0	DIFFERS
+dial	V0	drawings	1	1	as predicted
+dial	V0	no placeholder sentence	0	0	as predicted
+dial	V1	sentences	0	0	as predicted
+dial	V1	text equal to V0	1	1	as predicted
+dial	V2	no placeholder sentence	0	0	as predicted

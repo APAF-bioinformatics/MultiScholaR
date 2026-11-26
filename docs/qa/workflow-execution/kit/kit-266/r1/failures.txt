@@ -1,0 +1,961 @@
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E1 (in process): the pass-through press builds the combined figure, once
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E1 (in process): the pass-through press builds the combined figure, once
+kind: failure
+message:
+  Expected `step$builds` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E1 (in process): the pass-through press builds the combined figure, once
+kind: failure
+message:
+  Expected `k266First(step$builds)$process` to be identical to `if (managed) "worker" else "application"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('application')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E1 (managed): the pass-through press builds the combined figure, once
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E1 (managed): the pass-through press builds the combined figure, once
+kind: failure
+message:
+  Expected `step$builds` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E1 (managed): the pass-through press builds the combined figure, once
+kind: failure
+message:
+  Expected `k266First(step$builds)$process` to be identical to `if (managed) "worker" else "application"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('worker')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E2: the pass-through build is the two-column layout with the limpa image titles and letters a to h
+kind: failure
+message:
+  Expected `build$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E2: the pass-through build is the two-column layout with the limpa image titles and letters a to h
+kind: failure
+message:
+  Expected `build$columns` to be identical to `c(k266Left, k266CentreNone)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('DPC-Quant estimates\n(log2)', 'After the peptide count filter\n(no between-sample\nnormalisation applied)')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E2: the pass-through build is the two-column layout with the limpa image titles and letters a to h
+kind: failure
+message:
+  Expected `build$letters` to be identical to `paste0(letters[1:8], ")")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('a)', 'b)', 'c)', 'd)', 'e)', ...)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E2: the pass-through build is the two-column layout with the limpa image titles and letters a to h
+kind: failure
+message:
+  Expected `build$files` to be identical to `k266TwoColumnFiles`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('pre_norm_pca.png', 'post_norm_pca.png', 'pre_norm_density.png', 'post_norm_density.png', 'pre_norm_rle.png', ...)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E2: the pass-through build is the two-column layout with the limpa image titles and letters a to h
+kind: failure
+message:
+  Expected `is.function(resolver)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `build$ncol` to be identical to 3.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (3)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `build$columns` to be identical to `c(k266Left, k266CentreNone, k266RightCovariates)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('DPC-Quant estimates\n(log2)', 'After the peptide count filter\n(no between-sample\nnormalisation applied)', 'RUV-III-adjusted\n(for quality control only;\nnot the data analysed)')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `build$files[1:12]` to be identical to `k266ThreeColumnFiles`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('pre_norm_pca.png', 'post_norm_pca.png', 'ruv_corrected_pca.png', 'pre_norm_density.png', 'post_norm_density.png', ...)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `any(build$files == "ruv_covariates_cancor.png", na.rm = TRUE)` to be identical to `step$cancor`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `build$letters[1:12]` to be identical to `paste0(letters[1:12], ")")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('a)', 'b)', 'c)', 'd)', 'e)', ...)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `build$letters[13:15]` to be identical to `c("", "m)", "")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('', 'm)', '')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E3: the covariates step rebuilds the figure with three columns; the cancor panel m) only when its image exists
+kind: failure
+message:
+  Expected `is.function(resolver)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E4: the correction step's third image title is 'RUV-III-corrected (the data analysed)'
+kind: failure
+message:
+  Expected `build$ncol` to be identical to 3.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (3)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E4: the correction step's third image title is 'RUV-III-corrected (the data analysed)'
+kind: failure
+message:
+  Expected `build$columns` to be identical to `c(k266Left, k266CentreNone, k266RightCorrection)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('DPC-Quant estimates\n(log2)', 'After the peptide count filter\n(no between-sample\nnormalisation applied)', 'RUV-III-corrected\n(the data analysed)')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E5: RUV skipped after the pass-through leaves the two-column figure, bytes unchanged
+kind: failure
+message:
+  Expected `got$steps$pass_through$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E5: RUV skipped after the pass-through leaves the two-column figure, bytes unchanged
+kind: failure
+message:
+  Expected `... && length(got$builds) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E6: a covariates step that found no factor (k = 0) leaves the two-column figure
+kind: failure
+message:
+  Expected `got$steps$ruv_none$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E6: a covariates step that found no factor (k = 0) leaves the two-column figure
+kind: failure
+message:
+  Expected `... && length(got$builds) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E7: Reset, then a head press after a covariates run: the RUV figures go (KIT-257) and the figure is two-column again
+kind: failure
+message:
+  Expected `got$steps$press$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E7: Reset, then a head press after a covariates run: the RUV figures go (KIT-257) and the figure is two-column again
+kind: failure
+message:
+  Expected `k266Last(got$steps$press$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E7: Reset, then a head press after a covariates run: the RUV figures go (KIT-257) and the figure is two-column again
+kind: failure
+message:
+  Expected `identical(got$steps$press$md5, got$steps$ruv$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (in process): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `step$pre` to be identical to `rep(TRUE, 4L)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (in process): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `step$source` to be identical to `k266Dpc(fixture)`.
+  Differences:
+  `actual`:   NA                                                                
+  `expected`: "f2483a726025f29d30b1fad761780075cbb83d39fd5d86c99f54ada182104131"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (in process): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `isTRUE(step$generated)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (in process): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `got$sources[[1L]] %||% NA_character_` to be identical to `k266Dpc(fixture)`.
+  Differences:
+  `actual`:   "1bf5b37f9fcd1ca95eb40340754f7d969332b618e63947cafe28d9c09fe39510"
+  `expected`: "f2483a726025f29d30b1fad761780075cbb83d39fd5d86c99f54ada182104131"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (managed): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `step$pre` to be identical to `rep(TRUE, 4L)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (managed): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `step$source` to be identical to `k266Dpc(fixture)`.
+  Differences:
+  `actual`:   NA                                                                
+  `expected`: "2b532be5036b5705c1fa6153ab292fd7f46f1089265cf38fac8466d73ba5e076"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (managed): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `isTRUE(step$generated)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8 (managed): the head press draws the pre-normalisation figures from the DPC-Quant state
+kind: failure
+message:
+  Expected `got$sources[[1L]] %||% NA_character_` to be identical to `k266Dpc(fixture)`.
+  Differences:
+  `actual`:   "9d24575ce6780698394f594c8efdd4f06cc5adeb1bb422319db65fde3919d3cb"
+  `expected`: "2b532be5036b5705c1fa6153ab292fd7f46f1089265cf38fac8466d73ba5e076"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8b: after a head press a tab re-entry at correlation_filtered redraws nothing; the source stays the DPC-Quant state
+kind: failure
+message:
+  Expected `got$steps$tab_entry$source` to be identical to `k266Dpc(fixture)`.
+  Differences:
+  `actual`:   "16bfe47d0861ebf74b688dabab2470acd90dc4224932ecd907518eaf934a0450"
+  `expected`: "92341a18548209630019453fa52be4d9938d85067429b94289152e82e901f273"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E8b: after a head press a tab re-entry at correlation_filtered redraws nothing; the source stays the DPC-Quant state
+kind: failure
+message:
+  Expected `got$steps$tab_entry$pre_md5` to be identical to `got$steps$correlation$pre_md5`.
+  Differences:
+  `actual`:   "c5f76b0a5be97ba5b4e07bc073761d40"
+  `expected`: NA                                
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9: with no DPC-Quant state in the history the four left cells are labelled notes and the list names a, d, g, j
+kind: failure
+message:
+  Expected buildDiaLimpaCombinedQcFigure does not exist to be NULL.
+  Differences:
+  `actual` is an S3 object of class <simpleError/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9: with no DPC-Quant state in the history the four left cells are labelled notes and the list names a, d, g, j
+kind: failure
+message:
+  Expected `got$markers` to be identical to `rep(TRUE, 4L)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9: with no DPC-Quant state in the history the four left cells are labelled notes and the list names a, d, g, j
+kind: failure
+message:
+  Expected `all(got$composite)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9: with no DPC-Quant state in the history the four left cells are labelled notes and the list names a, d, g, j
+kind: failure
+message:
+  Expected `got$list` to be identical to `k266LeftLines`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('a\tpre_norm_pca', 'd\tpre_norm_density', 'g\tpre_norm_rle', 'j\tpre_norm_correlation')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9b: a session whose pre-normalisation source is the correlation-filtered table gets notes, not the stale images
+kind: failure
+message:
+  Expected buildDiaLimpaCombinedQcFigure does not exist to be NULL.
+  Differences:
+  `actual` is an S3 object of class <simpleError/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9b: a session whose pre-normalisation source is the correlation-filtered table gets notes, not the stale images
+kind: failure
+message:
+  Expected `got$markers` to be identical to `rep(TRUE, 4L)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9b: a session whose pre-normalisation source is the correlation-filtered table gets notes, not the stale images
+kind: failure
+message:
+  Expected `all(got$composite)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E9b: a session whose pre-normalisation source is the correlation-filtered table gets notes, not the stale images
+kind: failure
+message:
+  Expected `got$list` to be identical to `k266LeftLines`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('a\tpre_norm_pca', 'd\tpre_norm_density', 'g\tpre_norm_rle', 'j\tpre_norm_correlation')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E10: Copy to Results Summary after the covariates step delivers the combined figure
+kind: failure
+message:
+  Expected `file.exists(file.path(figures, "proteomics_composite_QC_figure.png"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E10: Copy to Results Summary after the covariates step delivers the combined figure
+kind: failure
+message:
+  Expected `file.exists(file.path(figures, "proteomics_composite_QC_figure.pdf"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E10: Copy to Results Summary after the covariates step delivers the combined figure
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E11: a session exported after the covariates step and imported again carries the combined figure, bytes equal
+kind: failure
+message:
+  Expected native archive command failed: /usr/bin/tar: This does not look like a tar archive /usr/bin/tar: Skipping to next header /usr/bin/tar: Exiting with failure status due to previous errors to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E12 (a), (c): a replaced RUV panel writes the list; a second run that draws it leaves no stale marker or list
+kind: failure
+message:
+  Expected `got$steps$ruv_failing$list` to be identical to "l\truv_corrected_correlation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('l\truv_corrected_correlation')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E12 (a), (c): a replaced RUV panel writes the list; a second run that draws it leaves no stale marker or list
+kind: failure
+message:
+  Expected `file.exists(file.path(fixture$paths$protein_qc_dir, "ruv_corrected_correlation.png.placeholder"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E12 (b): a replaced canonical-correlation panel is named through the limpa resolver
+kind: failure
+message:
+  Expected `is.function(resolver)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E13: the limpa template's Results text names the stages, the method and the panel letters the figure has
+kind: failure
+message:
+  Expected `is.function(resolver)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E13 (caption): the limpa template's Figure 1 caption names the sample-correlation filter; the other three keep theirs
+kind: failure
+message:
+  Expected `caption("DIANN_limpa_report.rmd")` to match string "fig.cap=\"Figure 1: QC metrics across normalisation stages. On DIA with limpa the left and centre columns are before the sample-correlation filter and the right column is after it.\"".
+  Actual text:
+  x | ```{r QC_metrics, echo=FALSE, warning=FALSE, out.height="8.5in", fig.align="center", fig.cap="Figure 1: QC metrics across normalisation stages"}
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E14: the covariates summary text names the RUV-III-adjusted QC figures
+kind: failure
+message:
+  Expected `texts$summary` to match string "RUV-III-adjusted QC figures".
+  Actual text:
+  x | RUV-III covariates appended to the design: k = 2 (W1..W2); negative controls 10% (2 proteins); replicate structure group. The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.
+    | State saved as: 'ruv_covariates'
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E14: the covariates summary text names the RUV-III-adjusted QC figures
+kind: failure
+message:
+  Expected `grepl("RUV-corrected QC plots", texts$summary, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$builds` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$process` to be identical to `if (case$managed) "worker" else "application"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('application')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `identical(step$md5, lane$steps$ruv$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$size[[1L]]` to be identical to 1500L.
+  Differences:
+    `actual`:   NA
+  `expected`: 1500
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$builds` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$process` to be identical to `if (case$managed) "worker" else "application"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('worker')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `identical(step$md5, lane$steps$ruv$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (apply, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$size[[1L]]` to be identical to 1500L.
+  Differences:
+    `actual`:   NA
+  `expected`: 1500
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$builds` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$process` to be identical to `if (case$managed) "worker" else "application"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('application')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `identical(step$md5, lane$steps$ruv$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, in process): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$size[[1L]]` to be identical to 1500L.
+  Differences:
+    `actual`:   NA
+  `expected`: 1500
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$builds` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `k266First(step$builds)$process` to be identical to `if (case$managed) "worker" else "application"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('worker')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `identical(step$md5, lane$steps$ruv$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E15 (skip, managed): after a covariates run the re-applied correlation filter leaves the two-column figure
+kind: failure
+message:
+  Expected `step$size[[1L]]` to be identical to 1500L.
+  Differences:
+    `actual`:   NA
+  `expected`: 1500
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E16: managed pass-through: the pre figures, the source's figures, then one limpa_composite action built by the worker
+kind: failure
+message:
+  Expected `step$actions` to be identical to `rep("normalization-qc-figures", 3L)`.
+  Differences:
+      actual                     | expected                      
+  [1] "normalization-qc-figures" | "normalization-qc-figures" [1]
+                                 - "normalization-qc-figures" [2]
+                                 - "normalization-qc-figures" [3]
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E16: managed pass-through: the pre figures, the source's figures, then one limpa_composite action built by the worker
+kind: failure
+message:
+  Expected `workers` to have length 1.
+  Actual length: 0.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E16: managed pass-through: the pre figures, the source's figures, then one limpa_composite action built by the worker
+kind: failure
+message:
+  Expected `step$exists` to be identical to `c(TRUE, TRUE, TRUE)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E16: managed pass-through: the pre figures, the source's figures, then one limpa_composite action built by the worker
+kind: failure
+message:
+  Expected `step$assets - unmanaged$steps$pass_through$assets` to be identical to 3L.
+  Differences:
+    `actual`: 0
+  `expected`: 3
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E17: managed covariates step: a limpa_composite action after the stage action, built by the worker; a repeat finds it saved
+kind: failure
+message:
+  Expected `step$actions` to be identical to `c("protein_ruv_covariates", "normalization-qc-figures", "normalization-qc-figures")`.
+  Differences:
+      actual                     | expected                      
+  [1] "protein_ruv_covariates"   | "protein_ruv_covariates"   [1]
+  [2] "normalization-qc-figures" | "normalization-qc-figures" [2]
+                                 - "normalization-qc-figures" [3]
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E17: managed covariates step: a limpa_composite action after the stage action, built by the worker; a repeat finds it saved
+kind: failure
+message:
+  Expected `vapply(step$builds, `[[`, "", "process")` to be identical to "worker".
+  Differences:
+  `actual`:           
+  `expected`: "worker"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E17: managed covariates step: a limpa_composite action after the stage action, built by the worker; a repeat finds it saved
+kind: failure
+message:
+  Expected `k266Last(step$builds)$ncol` to be identical to 3.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (3)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E17: managed covariates step: a limpa_composite action after the stage action, built by the worker; a repeat finds it saved
+kind: failure
+message:
+  Expected `repeated$actions` to be identical to `c("protein_ruv_covariates", "normalization-qc-figures", "normalization-qc-figures")`.
+  Differences:
+      actual                     | expected                      
+  [1] "protein_ruv_covariates"   | "protein_ruv_covariates"   [1]
+  [2] "normalization-qc-figures" | "normalization-qc-figures" [2]
+                                 - "normalization-qc-figures" [3]
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E17: managed covariates step: a limpa_composite action after the stage action, built by the worker; a repeat finds it saved
+kind: failure
+message:
+  Expected `step$assets - unmanaged$steps$ruv$assets` to be identical to 6L.
+  Differences:
+    `actual`: 0
+  `expected`: 6
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E18: managed correlation re-apply after a covariates run dispatches one limpa_composite (two columns); a first correlation none
+kind: failure
+message:
+  Expected `again$actions` to be identical to `c("pearson-pairs", "pearson-selection", figures, figures)`.
+  Differences:
+      actual                     | expected                      
+  [1] "pearson-pairs"            | "pearson-pairs"            [1]
+  [2] "pearson-selection"        | "pearson-selection"        [2]
+  [3] "normalization-qc-figures" | "normalization-qc-figures" [3]
+                                 - "normalization-qc-figures" [4]
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E18: managed correlation re-apply after a covariates run dispatches one limpa_composite (two columns); a first correlation none
+kind: failure
+message:
+  Expected `vapply(again$builds, `[[`, "", "process")` to be identical to "worker".
+  Differences:
+  `actual`:           
+  `expected`: "worker"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E18: managed correlation re-apply after a covariates run dispatches one limpa_composite (two columns); a first correlation none
+kind: failure
+message:
+  Expected `k266First(again$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E18: managed correlation re-apply after a covariates run dispatches one limpa_composite (two columns); a first correlation none
+kind: failure
+message:
+  Expected `skipped$actions` to be identical to `figures`.
+  Differences:
+  `actual`:                             
+  `expected`: "normalization-qc-figures"
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E18: managed correlation re-apply after a covariates run dispatches one limpa_composite (two columns); a first correlation none
+kind: failure
+message:
+  Expected `k266First(skipped$builds)$ncol` to be identical to 2.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (2)
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E19: when the worker saved nothing the delivery builds in the application and logs why
+kind: failure
+message:
+  Expected `is.function(saving)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E20: GUI audit A111-01 on limpa: the final figure has the layout of the final head
+kind: failure
+message:
+  Expected `final$size[[1L]]` to be identical to 1950L.
+  Differences:
+    `actual`:   NA
+  `expected`: 1950
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E20: GUI audit A111-01 on limpa: the final figure has the layout of the final head
+kind: failure
+message:
+  Expected `final$operations` to have length 16.
+  Actual length: 11.
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E21: the labelled notes are in the project before the managed composite action starts; the figure carries them
+kind: failure
+message:
+  Expected `step$markers` to be identical to `rep(TRUE, 4L)`.
+  Differences:
+  `actual`:   FALSE FALSE FALSE FALSE
+  `expected`: TRUE  TRUE  TRUE  TRUE 
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E21: the labelled notes are in the project before the managed composite action starts; the figure carries them
+kind: failure
+message:
+  Expected `step$list` to be identical to `k266LeftLines`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('a\tpre_norm_pca', 'd\tpre_norm_density', 'g\tpre_norm_rle', 'j\tpre_norm_correlation')
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E21: the labelled notes are in the project before the managed composite action starts; the figure carries them
+kind: failure
+message:
+  Expected `identical(step$md5, got$steps$correlation$md5)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E21: the labelled notes are in the project before the managed composite action starts; the figure carries them
+kind: failure
+message:
+  Expected `vapply(step$builds, `[[`, "", "process")` to be identical to "worker".
+  Differences:
+  `actual`:           
+  `expected`: "worker"
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-G1 (KIT-266): DIA with limpa builds the combined figure, so the list is written when a figure is replaced
+kind: failure
+message:
+  Expected `file.exists(file.path(fixture$paths$protein_qc_dir, k259bList))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 C01-G1 (KIT-266): DIA with limpa builds the combined figure, so the list is written when a figure is replaced
+kind: failure
+message:
+  Expected `file.exists(file.path(fixture$paths$protein_qc_dir, "proteomics_composite_QC_figure.png"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, c("a\tpre_norm_pca", "h\tpost_norm_correlation"))` to match regexp "In Figure 1, panels a \\(principal component analysis of DPC-Quant's protein estimates\\) and h \\(Pearson correlation after the peptide count filter and any between-sample normalisation\\) could not be drawn by the application; each shows a note giving the reason instead of the plot.".
+  Actual text:
+  x | 
+    | 
+    | In Figure 1, panels a (principal component analysis after log2 transformation) and h (Pearson correlation after between-sample normalisation) could not be drawn by the application; each shows a note giving the reason instead of the plot.
+    | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(...)` to match regexp "panels a \\(.*\\), k \\(Pearson correlation after the peptide count filter and any between-sample normalisation\\) and m \\(RUV-III canonical correlation\\)".
+  Actual text:
+  x | 
+    | 
+    | In Figure 1, panels a (principal component analysis after log2 transformation), k (Pearson correlation after between-sample normalisation) and m (ruv_covariates_cancor) could not be drawn by the application; each shows a note giving the reason instead of the plot.
+    | 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names Figure 1's replaced panels from the list beside it
+kind: failure
+message:
+  Expected `k259bSentence(file, "f\tpost_norm_rle")` to match regexp "In Figure 1, panel f \\(relative log expression after the peptide count filter and any between-sample normalisation\\) could not be drawn by the application; it shows a note".
+  Actual text:
+  x | 
+    | 
+    | In Figure 1, panel f (relative log expression after between-sample normalisation) could not be drawn by the application; it shows a note giving the reason instead of the plot.
+    | 
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 E7: the limpa route's Results caption claims covariates only when they were the model's
+kind: failure
+message:
+  Expected `k227Has(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

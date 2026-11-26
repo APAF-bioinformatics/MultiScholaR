@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit266-limpa-combined-qc-figure.R	46	101	0	5	48	728.9	failed

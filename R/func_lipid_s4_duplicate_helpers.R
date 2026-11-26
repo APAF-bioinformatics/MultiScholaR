@@ -291,7 +291,7 @@ resolveDuplicateFeaturesForLipidObject <- function(theObject, itsd_pattern_colum
                 processed_non_itsd_rows <- non_itsd_rows
             } else {
                 message(sprintf(
-                    "Resolving duplicates in non-ITSD ID column '%s' by keeping highest average intensity feature...",
+                    "Resolving duplicates in non-ITSD ID column '%s': keeping the most completely measured row, then the highest average of its measured values...",
                     id_col
                 ))
                 processed_non_itsd_rows <- non_itsd_rows %>%
@@ -315,7 +315,7 @@ resolveDuplicateFeaturesForLipidObject <- function(theObject, itsd_pattern_colum
                 rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                 if (rows_removed_non_itsd > 0) {
                     message(sprintf(
-                        "Removed %d lower-intensity duplicate non-ITSD feature row(s).",
+                        "Removed %d duplicate non-ITSD feature row(s).",
                         rows_removed_non_itsd
                     ))
                 }

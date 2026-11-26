@@ -46,6 +46,9 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
               archive <- if (is.null(selected_session)) readDIANativeLatestPath(native_pointer) else selected_session
               imported <- openDIANativeSession(archive, source_dir)
               session_data <- adoptDIANativeSession(imported, workflow_data, session, source_dir, experiment_paths)
+              # KIT-216 (item 6, T1): an archive whose current state was the enrichment opened at its table.
+              if (!is.null(session_data$enrichment_conversion)) shiny::showNotification(session_data$enrichment_conversion,
+                type = "message", duration = NULL)
             }
             owned_generation <- TRUE
           } else {

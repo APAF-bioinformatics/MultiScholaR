@@ -1131,7 +1131,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid)
     updateProtEnrichStateManagerUiParams(workflowData = workflow, storedUiParams = ui_parameters$storedUiParams)
     saved <- saveWorkflowEnrichmentState(workflow, config, stamped, declared$parameters, method, parameters,
-        directories$pathwayDir, outcomes = outcomes, not_tested = declared$not_tested, no_list = declared$no_list)
+        directories$pathwayDir, outcomes = outcomes, not_tested = declared$not_tested, no_list = declared$no_list,
+        source = manifest$source)
     if (isTRUE(saved$saved)) {
         status <- workflow$tab_status
         status[[config$status_key]] <- "complete"
@@ -1208,10 +1209,13 @@ workflowEnrichmentGoOutcomes <- function(annotations, go_propagation, da_results
 #' @param not_tested,no_list KIT-215: the lists not tested and the directions with no list
 #'   (`diaEnrichmentNoIdentifiers`), committed in the config beside `outcomes` only when they have rows (display
 #'   only: neither identity nor record).
+#' @param source KIT-216 (VAL-175): the DA manifest's source, the table the enrichment was run on. On a reference-state
+#'   owner the result is committed as a product of that table (`commitWorkflowEnrichmentProduct`): the head and the
+#'   history stay the table. Another owner commits the state as before.
 #' @return `list(attempted, saved, warning)`.
 #' @noRd
 saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,
-    outcomes = NULL, not_tested = NULL, no_list = NULL) {
+    outcomes = NULL, not_tested = NULL, no_list = NULL, source = NULL) {
     manager <- workflow$state_manager
     warning_message <- NULL
     saved <- FALSE
@@ -1223,10 +1227,7 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
         setWorkflowStepProvenance(manager, entry$name, entry$default_variant,
             c(intersect(entry$parameters, names(declared)), intersect(referenceEnrichmentNames, names(declared))),
             entry$declaration$fixed, values = declared)
-        saveDIAOwnerState(manager,
-            state_name = config$state_name,
-            s4_data_object = results,
-            config_object = c(list(
+        config_object <- c(list(
                 selected_contrast = parameters$selected_contrast,
                 analysis_method = method$method,
                 organism_supported = method$supported,
@@ -1237,9 +1238,16 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
                 pathway_dir = pathway_dir),
                 if (length(outcomes)) list(outcomes = outcomes),
                 if (NROW(not_tested) > 0L) list(not_tested = not_tested),
-                if (NROW(no_list) > 0L) list(no_list = no_list)),
-            description = paste("Enrichment analysis completed using", method$method, "for contrast:",
-                parameters$selected_contrast))
+                if (NROW(no_list) > 0L) list(no_list = no_list))
+        description <- paste("Enrichment analysis completed using", method$method, "for contrast:",
+            parameters$selected_contrast)
+        if (usesDIAReferenceStates(manager)) {
+            commitWorkflowEnrichmentProduct(manager, config$state_name, checkpointDIAExecutionResult(manager, results),
+                config_object, description, source)
+        } else {
+            saveDIAOwnerState(manager, state_name = config$state_name, s4_data_object = results,
+                config_object = config_object, description = description)
+        }
         saved <- TRUE
     }, error = function(e) {
         clearWorkflowStepProvenance(manager)
@@ -1332,7 +1340,16 @@ portableWorkflowEnrichmentResults <- function(results) {
 #'   state's config when it carries them.
 #' @noRd
 restoreWorkflowEnrichment <- function(manager, config) {
-    if (is.null(manager) || !config$state_name %in% unlist(diaStateHistory(manager))) return(NULL)
+    if (is.null(manager)) return(NULL)
+    # KIT-216 (VAL-175): on a reference-state owner the enrichment is the current product of the head's table (a store
+    # adopted from an archive written before it is converted on adoption); another owner reads it from its history.
+    # r1.4 (audit F01, F02): an old-shape store whose head is the enrichment state itself (not converted; in the application
+    # only test-built stores) is read from the history as before; an enrichment below a table head never is.
+    if (usesDIAReferenceStates(manager) && !identical(manager$current_state, config$state_name)) {
+        if (is.null(diaEnrichmentProduct(manager))) return(NULL)
+    } else if (!config$state_name %in% unlist(diaStateHistory(manager))) {
+        return(NULL)
+    }
     results <- readDIAStateObject(manager, config$state_name)
     if (!methods::is(results, "EnrichmentResults")) return(NULL)
     method <- list(method = diaEnrichmentMethodOf(results))

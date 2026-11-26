@@ -1,0 +1,97 @@
+== test-omic-qc-module.R | message-changed | (b) each omic's QC UI, sub-tab UIs and namespaced ids are today's (lipid, metab, trx, prot by route)
+-- base:
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+    `actual[1:5]`: 33 33 14 94 47
+  `expected[1:5]`: 29 29 14 94 47
+  
+  id_counts
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+  actual[1:5] vs expected[1:5]
+  - lipid_qc"98d59eb1080df002c34d893946cce59e815f47ef004923ce5efb251d293d926f"
+  + lipid_qc"52668f1002eb15eb88a3d5117909127e96f1ea5e2647c550b96c5eedb69cd8d7"
+  - metab_qc"ff8c946c542ee03faca291634d346879b87b0ac166f5338e2a77fb48210dc832"
+  + metab_qc"a65948c8fe4cf9e5972b8338a3cb0b019526938bb73d502a11f6ad047973c3ff"
+    trx_qc"93a1d79e1e11b35de297b8f2267709e871709bd1cacb5081c727744a719208a2"
+    prot_DIA"718c024732fed8dc11f1cbd664da539ef3a8a82ad922103dda44001888f46aa1"
+    prot_DIA_LIMPA"b78791ba561d4441ad8cefc91881f4e1734c55b9a29bc95fb233c0b4a938a252"
+  
+  ids
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+  actual[1:5] vs expected[1:5]
+  - lipid_qc"aff67c886064b7531b9118fcc9e6142e66982673d46ba981ecc6819ec2ca1af6"
+  + lipid_qc"d5724b7ded8cf9851f8f262f7f81803fbd6f672ff57008e8c7b1489fb2ab7ba5"
+  - metab_qc"c9d67a3f9c9d37e2d5c42c28e45387dc7f58a7f09243d4db3471ecb8bc3c2bda"
+  + metab_qc"b63cab30bb386095e8b2e2a7dee290eded2495f5eb7a277032f560c9ccdf2a6d"
+    trx_qc"9d6924956f5e70f8076fdebdb31e9ea728df900fe36cfd527760ead918d7bfc1"
+    prot_DIA"002b2539c64a30b9dba67cc8d603a598206fcfad00c42642039bf1fa7044cb2f"
+    prot_DIA_LIMPA"e61f42bfb37301ba6c76b6a8d38ca59b89780e89b2b5069caf3c17bb162cf064"
+  
+  tabs
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+  actual[1:8] vs expected[1:8]
+  - lipid_intensity"b76b0cbb96a82ad8c96f900401dbdb31af6aecd61aa115da125b848da8cab964"
+  + lipid_intensity"cdd5302311c548ea1674f5f3df604e435870d99aacdf0396751d47b9412c5419"
+    lipid_duplicates"ab0f3fc1010376677b0084178f055b14438c37af1ddd73b645fc200965d0b825"
+    lipid_itsd"f214992241d651fb815bef303869e5c20e5fc2c0c7286a7f92f4302d66dafcbe"
+    lipid_finalize"e21323fc516e940694e91f0bcf69329625e0b6d90a405ae41826bc8cf61a1054"
+  - metab_intensity"832e38029b08c7eacfa7a4a85b7d5408534da33ae0236cb5648551682640718b"
+  + metab_intensity"8af27b71c011f13ff33e8492d58ef8507ed7e76e5554c1ab487ba1c226fb2c98"
+    metab_duplicates"f766e81a7074d73bd21c1c8db63b4ed2d0e36abd40a8695c45e2eea19dc575cf"
+    metab_itsd"786265276d71b4fdbcf44f1e6ec9369d661bceeb481a2dcc107223af71aaf9a1"
+    metab_finalize"e21323fc516e940694e91f0bcf69329625e0b6d90a405ae41826bc8cf61a1054"
+  
+  subtabs
+-- head:
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+    `actual[1:5]`: 33 33 14 94 47
+  `expected[1:5]`: 29 29 14 94 47
+  
+  id_counts
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+  actual[1:5] vs expected[1:5]
+  - lipid_qc"98d59eb1080df002c34d893946cce59e815f47ef004923ce5efb251d293d926f"
+  + lipid_qc"52668f1002eb15eb88a3d5117909127e96f1ea5e2647c550b96c5eedb69cd8d7"
+  - metab_qc"ff8c946c542ee03faca291634d346879b87b0ac166f5338e2a77fb48210dc832"
+  + metab_qc"a65948c8fe4cf9e5972b8338a3cb0b019526938bb73d502a11f6ad047973c3ff"
+    trx_qc"93a1d79e1e11b35de297b8f2267709e871709bd1cacb5081c727744a719208a2"
+    prot_DIA"718c024732fed8dc11f1cbd664da539ef3a8a82ad922103dda44001888f46aa1"
+    prot_DIA_LIMPA"b78791ba561d4441ad8cefc91881f4e1734c55b9a29bc95fb233c0b4a938a252"
+  
+  ids
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+  actual[1:5] vs expected[1:5]
+  - lipid_qc"9b790e5eae78e07a727dd00d7fa4f840078bf3fdac8b6e55bdef3dd238588e24"
+  + lipid_qc"d5724b7ded8cf9851f8f262f7f81803fbd6f672ff57008e8c7b1489fb2ab7ba5"
+  - metab_qc"45d43789076a19ab06e5dfd64fc24cee935c216946d36dfd65183053f5644f0f"
+  + metab_qc"b63cab30bb386095e8b2e2a7dee290eded2495f5eb7a277032f560c9ccdf2a6d"
+    trx_qc"9d6924956f5e70f8076fdebdb31e9ea728df900fe36cfd527760ead918d7bfc1"
+    prot_DIA"002b2539c64a30b9dba67cc8d603a598206fcfad00c42642039bf1fa7044cb2f"
+    prot_DIA_LIMPA"e61f42bfb37301ba6c76b6a8d38ca59b89780e89b2b5069caf3c17bb162cf064"
+  
+  tabs
+  Expected `actual[[part]]` to be identical to `omicQcFrozen[[part]]`.
+  Differences:
+  actual[1:9] vs expected[1:9]
+  - lipid_intensity"b76b0cbb96a82ad8c96f900401dbdb31af6aecd61aa115da125b848da8cab964"
+  + lipid_intensity"cdd5302311c548ea1674f5f3df604e435870d99aacdf0396751d47b9412c5419"
+  - lipid_duplicates"db88499eac9db087a11f0a75070c72103eecb8bc8c82cdbc4db8dd6851df1fba"
+  + lipid_duplicates"ab0f3fc1010376677b0084178f055b14438c37af1ddd73b645fc200965d0b825"
+    lipid_itsd"f214992241d651fb815bef303869e5c20e5fc2c0c7286a7f92f4302d66dafcbe"
+    lipid_finalize"e21323fc516e940694e91f0bcf69329625e0b6d90a405ae41826bc8cf61a1054"
+  - metab_intensity"832e38029b08c7eacfa7a4a85b7d5408534da33ae0236cb5648551682640718b"
+  + metab_intensity"8af27b71c011f13ff33e8492d58ef8507ed7e76e5554c1ab487ba1c226fb2c98"
+  - metab_duplicates"f04872eaf58d8b04a39d97d1cfe6f1b091bef7c58fcfca9b2e50af9795679253"
+  + metab_duplicates"f766e81a7074d73bd21c1c8db63b4ed2d0e36abd40a8695c45e2eea19dc575cf"
+    metab_itsd"786265276d71b4fdbcf44f1e6ec9369d661bceeb481a2dcc107223af71aaf9a1"
+    metab_finalize"e21323fc516e940694e91f0bcf69329625e0b6d90a405ae41826bc8cf61a1054"
+    trx_filter"64458a3f45faf1d137e7266f450cfb17cc235ae8bc04f6f5a97bbd0a897ba162"
+  
+  subtabs
+

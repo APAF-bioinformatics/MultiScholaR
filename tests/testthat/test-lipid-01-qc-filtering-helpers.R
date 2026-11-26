@@ -442,7 +442,7 @@ test_that("resolveLipidDuplicateFeaturesByIntensity keeps the highest-average du
             id_col = "lipid_id",
             sample_cols = c("S1", "S2")
         ),
-        "Removed 1 lower-intensity duplicate feature row"
+        "Removed 1 duplicate feature row"
     )
 
     expect_equal(nrow(resolved), 2)

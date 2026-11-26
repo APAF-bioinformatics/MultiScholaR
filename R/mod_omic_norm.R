@@ -522,13 +522,34 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
     })
 }
 
+#' KIT-247 (VAL-239, OD-2 (a); VAL-203's rule for lipidomics, metabolomics and transcriptomics): whether the table a
+#' run started from is still held by a state of the active history (its entity unchanged), as `omicNormRunStart` tests.
+#' A non-owner manager keeps today's Reset.
+#' @param manager The session owner.
+#' @param start The recorded start (`post_filter_obj`), or NULL.
+#' @noRd
+omicNormResetStartHeld <- function(manager, start) {
+    if (!inherits(manager, "DIAStateAdapter") || !isSavedWorkflowReference(start)) return(TRUE)
+    history <- as.character(unlist(manager$getHistory()))
+    any(vapply(history, function(state) identical(getWorkflowStateReference(manager, state)$entity_id, start$entity_id),
+        logical(1)))
+}
+
+#' KIT-247. The Reset's text when nothing is brought back (DRAFT wording, VAL-41).
+#' @noRd
+omicNormResetNothingText <- function() {
+    paste("Normalisation reset: the table the normalisation started from is no longer current (for example, the design",
+        "was saved again), so nothing was brought back. Apply Quality Control again, then run the normalisation.")
+}
+
 #' Reset to the state the run started from: the store step `<prefix>_reset` recommits its record (KIT-075), and the
 #' tab's flags and results are cleared.
 #' @noRd
 resetOmicNorm <- function(workflowData, normData, addLog, config) {
     shiny::req(workflowData$state_manager)
     tryCatch({
-        if (!is.null(normData$post_filter_obj)) {
+        held <- omicNormResetStartHeld(workflowData$state_manager, normData$post_filter_obj)
+        if (!is.null(normData$post_filter_obj) && held) {
             step <- paste0(config$binding$binding$prefix, "_reset")
             commitWorkflowOmicsStoreStep(workflowData$state_manager, step, step, workflowData$config_list,
                 "Reset to pre-normalization state", source = normData$post_filter_obj)
@@ -540,8 +561,13 @@ resetOmicNorm <- function(workflowData, normData, addLog, config) {
         normData$ruv_corrected_obj <- NULL
         normData$correlation_filtered_obj <- NULL
         normData$ruv_optimization_results <- list()
-        addLog("Reset to pre-normalization state")
-        shiny::showNotification("Reset to pre-normalization state", type = "message")
+        if (!is.null(normData$post_filter_obj) && !held) {
+            addLog("Reset: the starting table is no longer current; nothing was brought back")
+            shiny::showNotification(omicNormResetNothingText(), type = "warning", duration = NULL)
+        } else {
+            addLog("Reset to pre-normalization state")
+            shiny::showNotification("Reset to pre-normalization state", type = "message")
+        }
         invisible(TRUE)
     }, error = function(e) {
         addLog(paste("ERROR during reset:", e$message))
@@ -879,6 +905,12 @@ omicNormGuardTexts <- function() {
             "normalisation was reset, after it ran. Run the normalisation again, then press this button again."),
         summary_none = paste("No normalisation has been run in this session, so there is no final table to save. Run the",
             "normalisation (and the correlation filter or its Skip), then press this button again."),
+        # KIT-216 (I10, T3; SD-1, VAL-179): the proteomics Summary's refusals (VAL-41 drafts).
+        summary_prot = paste("the current table is not the result of a normalisation: Quality Control was reverted, or a",
+            "Quality Control step was applied again, after the normalisation. Press 'Run Normalization & RUV' again, apply",
+            "or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then save."),
+        summary_prot_none = paste("No normalisation has been run in this project, so there is no final table to save. Press",
+            "'Run Normalization & RUV' (and apply or skip the correlation filter), then press this button again."),
         summary_loaded = paste("This session file was saved after Quality Control was reverted past the normalisation, so its",
             "table (\"%s\") was not normalised. Import the data again, run quality control and the normalisation, then press",
             "this button again."),

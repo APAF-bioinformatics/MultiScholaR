@@ -1,0 +1,74 @@
+file: test-kit247-design-resave.R
+test: KIT-247 E7 error (VAL-277, AUDIT I01): prot_lfq an import refused after the confirmation is shown, the session lives on, nothing changes
+kind: error
+message:
+  <shiny.destroyed.error/error/condition>
+  Error: Can't access reactive `reactiveValues1844`; its module session has been destroyed
+trace (first lines):
+       ▆
+    1. ├─kit247Lane(...) at test-kit247-design-resave.R:509:9
+    2. │ ├─base::suppressWarnings(...) at test-kit247-design-resave.R:140:5
+    3. │ │ └─base::withCallingHandlers(...)
+    4. │ ├─base::suppressMessages(...) at test-kit247-design-resave.R:140:5
+    5. │ │ └─base::withCallingHandlers(...)
+    6. │ ├─utils::capture.output(...) at test-kit247-design-resave.R:140:5
+    7. │ │ └─base::withVisible(...elt(i))
+    8. │ └─shiny::testServer(...) at test-kit247-design-resave.R:140:5
+    9. │   ├─shiny:::withMockContext(...)
+   10. │   │ ├─shiny::isolate(...)
+   11. │   │ │ ├─shiny::..stacktraceoff..(...)
+
+file: test-kit247-design-resave.R
+test: KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged
+kind: failure
+message:
+  Expected `any(grepl("nothing changed|Comparisons saved", out$notes))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit247-design-resave.R
+test: KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged
+kind: failure
+message:
+  Expected `out$head` to be identical to "lipid_raw_data_s4".
+  Differences:
+  `actual`:   "lipid_correlation_filtered"
+  `expected`: "lipid_raw_data_s4"         
+
+file: test-kit247-design-resave.R
+test: KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged
+kind: failure
+message:
+  Expected `utils::tail(out$history, 1L)` to be identical to "lipid_raw_data_s4".
+  Differences:
+  `actual`:   "lipid_correlation_filtered"
+  `expected`: "lipid_raw_data_s4"         
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07 (VAL-277): lipid_canonical after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$da` to be identical to `new`.
+  Differences:
+  `actual`:   "<no DA>"
+  `expected`: "WT"     
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07 (VAL-277): lipid_canonical after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$record_group` to be identical to `new`.
+  Differences:
+  `actual`:       
+  `expected`: "WT"
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07 (VAL-277): lipid_canonical after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$builder_entity` to be identical to `out$design_entity`.
+  Differences:
+  `actual` is a character vector (NA)
+  `expected` is NULL
+
