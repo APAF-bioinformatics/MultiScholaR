@@ -55,3 +55,21 @@ the Copy press, F5/F6 x3, F2b, F3, F4 x2, F7) and G2 pass; S2, S3 rows are skipp
 global reference added to R/mod_omic_da.R or R/mod_omic_design.R). Expected 40 job-minutes, worst case 6.67 core-hours; running
 total 10.60 + R1c worst 6.67 + SG1 worst 6.67 = 23.94 of 200.00. Decision: a failing S1 row or the globals test = stop rule 3
 (the one correction pass); S2/S3 do not start until SG1 holds.
+
+## R2 (declared before sending): head = the code commit, base = the tests-only tree f16edb13 (R/ = staging 38443af8)
+134 files, 4 shards per side in the committed order (order4.json), file_timeouts 120 (test-kit247-design-resave.R) and 90
+(the new file), check true, MULTISCHOLAR_TRX_MANIFEST_NOTE=1, blas reference.
+Per file (compare.tsv verdicts):
+- test-kit277-resave-carried-through.R: base fails (R1 values), head passes every row: `fixed` (base failures, head none).
+  Where a head row still fails, that is a miss (stop rule 3), not re-run.
+- test-kit247-design-resave.R: base fails W288a x2 and W288b (16 expectations), head passes them: `fixed`; every other
+  row passes on both sides (E1, E2, E7, E12, E17, E18, E19 unchanged).
+- test-kit247-import-config.R, test-kit247-resave-no-session.R: `same`. test-omics-module-globals.R: `same`.
+- Every other file (including the module-CI DA and enrichment files, test-workflow-saved-da.R, test-kit212-da-current.R,
+  test-kit205-enrichment-background.R, test-prot-annotation-uniprot-empty.R, test-workflow-prot-declarations.R,
+  test-prot-04-design.R, test-prot-04a-design-module-characterization.R, test-prot-design-core.R,
+  test-kit216-prot-session-after-enrichment.R and the 8 files that joined the grep since 7bbc344e): `same`.
+- R CMD check: identical on both sides (new functions are @noRd; no Rd, no NAMESPACE change).
+- No stored value moves. Any other verdict stops the work.
+Budget line: spent 10.60 + R1c (about 3) + SG1 (about 3) = about 17 before R2; R2 expected 58.04, worst case 92.00; total
+worst case under 200.00.
