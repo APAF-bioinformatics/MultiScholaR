@@ -172,3 +172,41 @@ S14 (tier V's mask clauses of E1), S15, S16 (34 self-test cases, 2,745 predictio
 - **R-4.** G1's bootstrap stream is t = 10; the scorer emits no bootstrap cell for tier ID (E8 only).
 - **Routed to KIT-242, not ours:** on the route where the legacy control method skips an assay (a group with fewer than two samples), the package's record says RUV succeeded with k = 2 for an assay that got no controls.
 - Interpretation 9 (pairing by per-data-set scalars and a tested-set signature) is accepted with the dropped-pair count printed in every paired cell; in tier V pi's denominator runs over all 250 features while its numerator runs over the tested ones: a stated limit.
+
+## 11. Smoke send 2 (run 45748396833, package dfd14ad2; scripts 88 + 333 + 355 s, about 23 job-minutes = 1.53 core-hours against 3.33; raw in `smoke/result2/`)
+
+Nothing is a result; nothing was repaired; no third send.
+
+| Declared item (smoke/declaration-2.md) | Observed |
+|---|---|
+| 1 parse, E0 with the new marks | met: 36 hunks, 0 unmarked (K275-assaycols, K275-nogroup, the moved K275-REFUSALS listed) |
+| 2 self-test | met: 34 cases, 2,745 predictions, 0 differ |
+| 3 unit E-D3-9101 completes | met: V1g PEL2 `uncorrected` (class `filter_removed_group:B`: the VE design lost group B), V1g PEG2 `refused_after_exclusion` (`ruv_k_above_limit`); E11 4 of 4 |
+| 4 VD NO `no_da` accepted | met: `no_da`, class `filter_removed_group:B`, `L1_status` 34 of 34 |
+| 5 planted guard journey ends `instrument`, the blind scorer stops on it | **MISSED**: the unit holding the planted guard (`D-D3-9101`, K275_FAULT_GUARD) died after 13.9 s with exit 1 and no result (`child process exit 1, no result`), before any row, check or trace was written, so no `GUARD_planted` check exists and the blind scorer saw 0 instrument rows (`instrument_stop` item passes, exit 0). The cause is not visible (no trace: the failure is outside the child's `tryCatch`, or the process was ended); the other units ran without a guard stop. Not repaired |
+| 6 E3 lists `correlation_exclusion` at `within_assay` | met |
+| 7 completed-journey means at D3 and D6, `G2_coverage` passes | met (8 of 8 and 5 of 5; tier D at D6 has NO, LM, LA, GA, GK) |
+| 8 no other failed check | one: `unit_completed` for the guard unit (item 5) |
+
+Measured seconds per completed journey (4 workers): D3: NO 15.7, LM 19.4, LG 17.4, LA 31.7, GA 20.1, GK 21.0, PEL2 16.3, PEG2 15.9; D6: NO 16.6, LM 21.7, LA 29.8, GA 22.5, GK 22.3.
+
+## 12. G2's job plan re-derived on the times of smoke 2 (`budget-replan.py`; "measured" = D3 and D6 above; "scaled" = D4 as the midpoint of D3 and D6; LG, PEL2, PEG2 at D4 and D6 and GSC (send 1's D3 31.9 s) scaled by LM's time at that design)
+
+Plan = seconds x data sets x 1.25 / 4 / 60; timeout = ceil(1.5 x plan); ceiling = timeout + 10; expected = seconds x data sets / 4 / 60 + 13.
+
+| Job (tier, design: jobs) | s per data set | Plan | `timeout_minutes` | Ceiling | Expected |
+|---|---|---|---|---|---|
+| D D3, D4, D6: 4 each | 308.0, 315.0, 322.1 | 80.2, 82.0, 83.9 | 121, 124, 126 | 131, 134, 136 | 77.2, 78.6, 80.1 |
+| K D3, D4, D6: 2 each | 328.1, 344.1, 360.1 | 85.4, 89.6, 93.8 | 129, 135, 141 | 139, 145, 151 | 81.4, 84.7, 88.0 |
+| F+S: 2 each | 224.6, 233.4, 242.2 | 58.5, 60.8, 63.1 | 88, 92, 95 | 98, 102, 105 | 59.8, 61.6, 63.5 |
+| V (waits): 2 each | 256.2, 263.0, 269.8 | 66.7, 68.5, 70.3 | 101, 103, 106 | 111, 113, 116 | 66.4, 67.8, 69.2 |
+| M D6 (R 100) | 148.6 | 77.4 | 117 | 127 | 74.9 |
+| ID D4 (R 20) | 110.4 | 11.5 | 18 | 28 | 22.2 |
+| T D3, D4, D6 (R 100) | 125.3, 128.8, 132.4 | 65.3, 67.1, 68.9 | 98, 101, 104 | 108, 111, 114 | 65.2, 66.7, 68.2 |
+| E D3, D4, D6 (R 100) | 95.8, 100.5, 105.2 | 49.9, 52.4, 54.8 | 75, 79, 83 | 85, 89, 93 | 52.9, 54.9, 56.8 |
+| L1 (V waits; 3 data sets + E9 repeat per design) | 14,499 s | 75.5 | 114 | 124 | about 70 |
+| L1-V | 3,156 s | 16.4 | 25 | 35 | about 28 |
+| G1, SC, reserve, correction | | | 20, 30, 150 pool | 30, 40, 150, 191 (largest job 151 + 40) | 15, 20 |
+
+Counted jobs: expected 2,690.1 job-min, ceiling 4,519 (301.27 core-hours). **Total (with L1, L1-V, G1, SC, reserve, correction): ceiling 5,089 job-minutes = 339.27 core-hours; expected 2,813 = 187.5 core-hours.** The limit is 350.73: **339.27 is under it** (11.46 core-hours of headroom); nothing is trimmed and R is unchanged. Every D-job and K-job timeout is at or above 120 minutes, so those requests set `timeout_minutes` explicitly. Every plan is at most 93.8 (G2's 150 does not act).
+Measured: D3 and D6 for NO, LM, LA, GA, GK; D3 for LG, PEL2, PEG2. Scaled: D4 everything; LG, PEL2, PEG2 at D4 and D6; GSC (also from send 1). With send 1's times the auditor's figure was 386 to 424: LA, the largest class, was 40 s there and is 30 to 32 s here (the second send ran fewer simultaneous heavy units); L1 measures it for G2 and the stop at 350.73 stays in force. Not marked "awaiting the owner" because the total does not exceed 350.73 on these times.

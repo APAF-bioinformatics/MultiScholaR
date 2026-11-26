@@ -1,0 +1,6 @@
+tag	tier	design	r	wall_seconds	exit	error
+K-D3-9101	K	D3	9101	325.9	0	
+D-D3-9101	D	D3	9101	13.9	1	child process exit 1, no result
+E-D3-9101	E	D3	9101	120.6	0	
+T-D3-9101	T	D3	9101	154.6	0	
+T-D3-9101-rep	T	D3	9101	152.4	0	

@@ -1,0 +1,5 @@
+K275 smoke2-a: 5 units, 4 workers, lifecycle TRUE, smoke TRUE
+K275 smoke2-a: blind scorer exit 0
+K275 smoke2-a: FAILED check unit_completed (1 of 1); first: D3 child process exit 1, no result
+K275 smoke2-a: 9 checks, 1 failed
+K275 smoke2-a finished: 5 units (1 with an error), wall 5.5 min

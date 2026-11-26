@@ -1,0 +1,10 @@
+item	value	pass
+parse	32 rows, 76 columns, 2 row files	TRUE
+coverage GA D6	6 journeys, 6 completed	TRUE
+coverage GK D6	6 journeys, 6 completed	TRUE
+coverage LA D6	6 journeys, 6 completed	TRUE
+coverage LM D6	6 journeys, 6 completed	TRUE
+coverage LX D6	4 journeys, 4 completed	TRUE
+coverage NO D6	4 journeys, 4 completed	TRUE
+E8	0 compared, 0 equal, max deviation 0	TRUE
+instrument_stop	0 row(s) with status instrument or a guard class	TRUE

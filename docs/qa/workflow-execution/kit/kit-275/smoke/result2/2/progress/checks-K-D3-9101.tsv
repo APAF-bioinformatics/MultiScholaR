@@ -1,0 +1,53 @@
+check	cell	rep	condition	value	threshold	pass	note
+L1_status	D3	9101	V0 LM3	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V0 LM3 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V0 LM3 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V0 GK1	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V0 GK1 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V0 GK1 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V0 GK3	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V0 GK3 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V0 GK3 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V0 LM2@20	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V0 LM2@20 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V0 LM2@20 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V0 LG2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V0 LG2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V0 LG2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+E12	D3	9101	V0 LG2	NA	first round(rows x 5 / 100) rows in table order	TRUE	LCMS_Neg TRUE; LCMS_Pos TRUE
+L1_status	D3	9101	V1g LM1	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V1g LM1 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g LM1 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V1g LM3	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V1g LM3 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g LM3 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V1g GK1	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V1g GK1 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g GK1 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V1g GK3	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V1g GK3 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g GK3 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V1g LM2@20	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V1g LM2@20 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g LM2@20 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	V1g LG2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	V1g LG2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g LG2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+E12	D3	9101	V1g LG2	NA	first round(rows x 5 / 100) rows in table order	TRUE	LCMS_Neg TRUE; LCMS_Pos TRUE
+L1_status	D3	9101	VD NO	no_da	ok or a stated result	TRUE	NA filter_removed_group:B
+E5	D3	9101	VD NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	VD NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	VD LM2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	VD LM2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	VD LM2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	VD GK2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	VD GK2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	VD GK2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	VD LM1@20	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	VD LM1@20 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	VD LM1@20 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9101	VD LG1	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9101	VD LG1 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	VD LG1 e5_x	NA	fail list equals the filter's removed set	TRUE	
+E12	D3	9101	VD LG1	NA	first round(rows x 5 / 100) rows in table order	TRUE	LCMS_Neg TRUE; LCMS_Pos TRUE
+E7_crash	D3	9101	first journey of the first unit	NA	recorded crashed, with its step	TRUE	

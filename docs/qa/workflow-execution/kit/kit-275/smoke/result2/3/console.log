@@ -1,0 +1,4 @@
+K275 smoke2-b: 2 units, 4 workers, lifecycle TRUE, smoke TRUE
+K275 smoke2-b: blind scorer exit 0
+K275 smoke2-b: 7 checks, 0 failed
+K275 smoke2-b finished: 2 units (0 with an error), wall 5.9 min
