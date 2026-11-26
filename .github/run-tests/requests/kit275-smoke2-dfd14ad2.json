@@ -1,0 +1,76 @@
+{
+  "requested_by": "KIT-275 smoke send 2 (the one allowed after the script audit; instrument check, nothing judged, blind; charged to L1's line; declaration smoke/declaration-2.md on branch kit-275)",
+  "label": "KIT-275 smoke2 dfd14ad2",
+  "package_commit": "dfd14ad2ee1342d249fe0f47a1fde4d1167463e6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-smoke2-selftest"
+      },
+      "out": "k275-smoke2-selftest",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 8
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D,K,E,T",
+        "D3",
+        "9101",
+        "9101",
+        "k275-smoke2-a"
+      ],
+      "env": {
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/smoke/declaration-2.md",
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_SMOKE": "1",
+        "K275_FAULT": "1",
+        "K275_FAULT_GUARD": "1",
+        "K275_REPEAT": "T",
+        "K275_JOB": "smoke2-a"
+      },
+      "out": "k275-smoke2-a",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D",
+        "D6",
+        "9101",
+        "9101",
+        "k275-smoke2-b"
+      ],
+      "env": {
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/smoke/declaration-2.md",
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_SMOKE": "1",
+        "K275_JOB": "smoke2-b"
+      },
+      "out": "k275-smoke2-b",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 12
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
