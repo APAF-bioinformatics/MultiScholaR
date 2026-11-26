@@ -27,3 +27,7 @@ J4	k262-j4-4cd31d50	45913214142	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 coun
 J5	k262-j5-4cd31d50	45913216640	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job J5 (N-r,N-s 1:100)	running					
 J6	k262-j6-4cd31d50	45913219252	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job J6 (S-N 1:250)	running					
 J7	k262-j7-4cd31d50	45913221711	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job J7 (S-E 1:200)	running					
+J3A	k262-j3a-4cd31d50	45913431247	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job j3a (E-r 1:200; replaces refused J3/J4)	running					
+J3B	k262-j3b-4cd31d50	45913434156	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job j3b (E-s 1:200; replaces refused J3/J4)	running					
+J4A	k262-j4a-4cd31d50	45913437184	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job j4a (E-g 1:200; replaces refused J3/J4)	running					
+J4B	k262-j4b-4cd31d50	45913440012	4cd31d501cf396da854d2809b8275822f54bf8cd	M3 counted job j4b (E-w 1:200; replaces refused J3/J4)	running					
