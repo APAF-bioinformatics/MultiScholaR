@@ -340,19 +340,42 @@ for the GUI-entry files and `test-prot-norm-core.R`; check on both sides. Rows f
 
 | File | Base | Head | Verdict |
 |---|---|---|---|
-| `test-kit242-normalisation-fallback.R` | the Part B tests fail (17 per class as R1b-B) and E25m errors (no `omicsRuvSearchOutcomes`) | all pass | fixed |
+| `test-kit242-normalisation-fallback.R` | the Part B tests fail (17 per class as R1b-B) and E25m fails by value (c93c4848: the function is absent; no error) | all pass | fixed |
 | `test-workflow-omics-worker.R` | the new RUV branch fails for lipid_ruv and metab_ruv (the step completes on the code before the fix) | all pass | fixed |
 | `test-module-ci-metab-norm.R` | MCI-015.3's edited block fails (the run completes with LCMS_Pos dropped) | all pass | fixed |
 | `test-metab-02w-normalise-between-samples-characterization.R` | passes (Part A's code is on the base) | passes | same |
-| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | `:138`, `:188` fail (Part A, re-record list); `:47` passes (VAL-303 re-pin) | the same two | same |
-| `test-omic-norm-module.R` | the 56 fail (Part A) | the same 56; the 12 provenance digests of the manual and automatic sessions with other values (`ruv_fallback`) | same or message-changed (VAL-352 (4)) |
-| `test-workflow-omics-declarations.R` (KIT-073), `test-workflow-omics-binding-steps.R` (KIT-094) | fail as on staging | the same, plus the `ruv_fallback` row inside the same expectations | same or message-changed (VAL-352 (3)) |
-| `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R` | fail as on staging | the same expectations | same or message-changed (VAL-352 (2)) |
+| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | `:138`, `:188` fail (Part A, re-record list); `:47` passes (VAL-303 re-pin) | the same two, identical messages (ITSD outcomes; no RUV value in them) | same |
+| `test-omic-norm-module.R` | the 56 fail (Part A) | see below | message-changed, exactly the keys below |
+| `test-workflow-omics-declarations.R` (KIT-073) | fails as on staging (registry, values, states, correlations, DA) | `current$registry` (the `lipid_ruv` and `metab_ruv` declarations' `fixed` gain `ruv_fallback`) and `current[[omic]]$values` for lipidomics and metabolomics (the RUV step's value gains `ruv_applied`, `ruv_not_applied_reason`, `ruv_not_applied_text`, `ruv_samples_excluded`, `ruv_features_excluded`) change their actual values; states, correlations and DA identical | message-changed, those 3 expectations |
+| `test-workflow-omics-binding-steps.R` (KIT-094) | the `report_sources` and `records` parts fail as on staging | the `records` part changes its actual value (the RUV step's record gains the parameter row `ruv_fallback` and the outcomes `ruv_applied_per_assay`, `ruv_not_applied_reason_per_assay`); `report_sources` identical; `registry` passes on both (it lists no `fixed`, test file `:57-63`) | message-changed, the `records` expectation |
+| `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R` | fail as on staging | identical: the lipid and metab lanes set `norm-ruv_mode` "skip" (`helper-gui-entry.R:615`), so no legacy RUV step, marker or value enters them | same |
 | `test-workflow-operation-registry.R` | staging's 2 failures | the same 2 (the KIT-025 scan passes after correction 1) | same |
-| `test-kit172-downstream.R` | 14 (Part A) | 14 | same |
+| `test-kit172-downstream.R` | 14 (Part A) | 14, identical (T10 is the between-sample `scale` warning; no RUV) | same |
 | the transcriptomics files (`test-kit129-run-path.R`, `test-kit224-…`, `test-module-ci-trx-norm.R`, `test-trx-da-without-ruv.R`, `test-trx-ruv-designs.R`, `test-workflow-trx-declarations.R`) | with the trains' `env` the 22 manifest digests pass; any staging failures stay | the same | same |
 | every other file | as on staging after the merge | the same | same |
 | check | | | identical findings on both sides |
 
+**`test-omic-norm-module.R`, by reading (the frozen captures `:1560`-`:1585`, compared at `:1549`).** The test stubs the
+search and replaces `ruvIII_C_Varying` with a stub that returns the object with its assays unchanged
+(`test-omic-norm-module.R:283-289`). On the head the kernel therefore records both assays `uncorrected`, `ruv_applied`
+FALSE, and the tab's closing line becomes "RUV-III not applied: no assay could be corrected (see the warnings above);
+the data continue without RUV" (`omicsRuvAppliedText`) in place of "RUV-III correction applied". The provenance
+captures carry each step's `fixed` (`omicNormProvenance`, `:244-249`), so the RUV step's `ruv_fallback` enters them. The
+states are the S4 states (unchanged by the stub), so they do not move; no notification is added (no notice text).
+Expectations whose actual value changes from base to head (both omics):
+- `log`: manual run, automatic run (4 keys);
+- `provenance`: manual run, manual skip_correlation, manual reset, automatic run, automatic final_plot, automatic
+  final_plot_failing (12 keys);
+- `outputs`: manual run, manual skip_correlation, automatic run, automatic final_plot, automatic final_plot_failing (10
+  keys; the `norm_log` output holds the cumulative log, `R/mod_omic_norm_panels.R:1136-1145`).
+- Not settled by reading: manual `reset outputs` (2 keys): whether the reset clears the log before the capture. Not
+  predicted; observed and recorded: changed means the log survives the reset, identical means it is cleared.
+- Identical on both sides: the skip sessions (10), every `states` and `final_pca` key, and `normdata` (passing on both:
+  no assay is kept, so the RUV results are not annotated).
+
 Any other verdict (a new failure, a file fixed that is not listed, a count change in a file not listed) is outside the
 prediction: stop and report.
+
+**Change to E25m (c93c4848), on the base only.** On the code before Part B `omicsRuvSearchOutcomes` does not exist, so the
+row now fails by value there (`expect_true(is.function(...))`) instead of erroring; what it asserts on the head is
+unchanged.
