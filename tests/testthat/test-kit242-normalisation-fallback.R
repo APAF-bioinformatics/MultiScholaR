@@ -1179,7 +1179,11 @@ for (class in c("lipid", "metab")) {
     methods::slot(object, binding$data_slot, check = FALSE) <- tables
     parameters <- kit242ManualRuv()
     results <- kit172Quiet(binding$optimise_ruv(object, "manual", parameters[setdiff(names(parameters), "ruv_mode")]))
-    outcome <- omicsRuvSearchOutcomes(results, "manual", object)
+    # On the code before Part B the function does not exist: the row fails by value there, not by an error.
+    searchOutcomes <- get0("omicsRuvSearchOutcomes", envir = asNamespace("MultiScholaR"), mode = "function")
+    expect_true(is.function(searchOutcomes), info = "omicsRuvSearchOutcomes is absent: the search's outcome is not decided by cause")
+    if (!is.function(searchOutcomes)) return(invisible())
+    outcome <- searchOutcomes(results, "manual", object)
     expect_identical(outcome$A2$action, "stop")
     expect_identical(outcome$A2$reason, "search_error")
     expect_match(outcome$A2$text, "found no control features for assay A2", fixed = TRUE)
